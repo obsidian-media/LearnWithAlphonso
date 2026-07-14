@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LeagueRouteImport } from './routes/league'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LessonIdRouteImport } from './routes/lesson.$id'
 
+const LeagueRoute = LeagueRouteImport.update({
+  id: '/league',
+  path: '/league',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const LessonIdRoute = LessonIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/league': typeof LeagueRoute
   '/lesson/$id': typeof LessonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/league': typeof LeagueRoute
   '/lesson/$id': typeof LessonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/league': typeof LeagueRoute
   '/lesson/$id': typeof LessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lesson/$id'
+  fullPaths: '/' | '/league' | '/lesson/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lesson/$id'
-  id: '__root__' | '/' | '/lesson/$id'
+  to: '/' | '/league' | '/lesson/$id'
+  id: '__root__' | '/' | '/league' | '/lesson/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeagueRoute: typeof LeagueRoute
   LessonIdRoute: typeof LessonIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/league': {
+      id: '/league'
+      path: '/league'
+      fullPath: '/league'
+      preLoaderRoute: typeof LeagueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeagueRoute: LeagueRoute,
   LessonIdRoute: LessonIdRoute,
 }
 export const routeTree = rootRouteImport
