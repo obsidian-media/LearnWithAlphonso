@@ -14,7 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          category: string
+          description: string
+          icon: string
+          id: string
+          sort_order: number
+          threshold: number
+          tier: string
+          title: string
+        }
+        Insert: {
+          category: string
+          description: string
+          icon: string
+          id: string
+          sort_order?: number
+          threshold: number
+          tier: string
+          title: string
+        }
+        Update: {
+          category?: string
+          description?: string
+          icon?: string
+          id?: string
+          sort_order?: number
+          threshold?: number
+          tier?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      activity_days: {
+        Row: {
+          day: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          day: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          day?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lesson_completions: {
+        Row: {
+          completed_at: string
+          correct: number
+          id: string
+          lesson_id: string
+          total: number
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed_at?: string
+          correct: number
+          id?: string
+          lesson_id: string
+          total: number
+          user_id: string
+          xp_earned: number
+        }
+        Update: {
+          completed_at?: string
+          correct?: number
+          id?: string
+          lesson_id?: string
+          total?: number
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_seed: string
+          country: string | null
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_seed?: string
+          country?: string | null
+          created_at?: string
+          display_name: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_seed?: string
+          country?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          progress: number
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          progress?: number
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          progress?: number
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progress: {
+        Row: {
+          hearts: number
+          hearts_refill_at: string | null
+          last_active_date: string | null
+          league_tier: string
+          longest_streak: number
+          streak: number
+          streak_freezes: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          hearts?: number
+          hearts_refill_at?: string | null
+          last_active_date?: string | null
+          league_tier?: string
+          longest_streak?: number
+          streak?: number
+          streak_freezes?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          hearts?: number
+          hearts_refill_at?: string | null
+          last_active_date?: string | null
+          league_tier?: string
+          longest_streak?: number
+          streak?: number
+          streak_freezes?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
