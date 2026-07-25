@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -11,6 +11,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
+import { useProgress } from "../lib/progress";
+import { fetchProgress } from "../lib/sync.functions";
 
 function NotFoundComponent() {
   return (
@@ -120,8 +123,48 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <AuthSync />
       <Outlet />
     </QueryClientProvider>
   );
+}
+
+function AuthSync() {
+  const hydrate = useProgress((s) => s.hydrate);
+  const reset = useProgress((s) => s.reset);
+  const router = useRouter();
+  const qc = useQueryClient();
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!data.session) {
+        reset();
+        return;
+      }
+      try {
+        const snap = await fetchProgress();
+        if (!cancelled) hydrate(snap);
+      } catch {
+        /* ignore */
+      }
+    }
+    void load();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event === "SIGNED_OUT") {
+        reset();
+      } else {
+        qc.invalidateQueries();
+        void load();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [hydrate, reset, router, qc]);
+  return null;
 }

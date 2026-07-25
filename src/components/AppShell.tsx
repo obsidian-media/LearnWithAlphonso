@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useProgress } from "../lib/progress";
 import { FlameIcon, BoltIcon, HeartIcon } from "./icons";
+import { LeagueTierBadge } from "./LeagueTierBadge";
 
 function StatPill({
   icon,
@@ -23,14 +24,12 @@ function StatPill({
 }
 
 export function TopBar() {
-  const { xp, streak, hearts, hydrated } = useProgress();
+  const { xp, streak, hearts, hydrated, leagueTier } = useProgress();
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-surface/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-[430px] items-center justify-between px-5 py-3.5">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-md bg-moss text-surface">
-            <span className="font-display text-[13px] font-semibold leading-none">L</span>
-          </div>
+        <Link to="/learn" className="flex items-center gap-2">
+          <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
           <span className="font-display text-[15px] font-semibold tracking-tight text-ink">
             Lingua
           </span>
@@ -88,7 +87,7 @@ export function BottomTabs() {
   return (
     <nav className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-[430px] items-stretch px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-1">
-        <TabItem to="/" label="Learn" active={pathname === "/"}>
+        <TabItem to="/learn" label="Learn" active={pathname === "/learn"}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none">
             <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-8z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
           </svg>
