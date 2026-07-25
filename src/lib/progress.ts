@@ -1,13 +1,9 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
-function todayStr() {
+import type { LeagueTier } from "../data/achievements";
+
+export function todayStr() {
   return new Date().toISOString().slice(0, 10);
-}
-function yesterdayStr() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
 }
 
 export type ProgressState = {
@@ -17,13 +13,30 @@ export type ProgressState = {
   lastActiveDate: string | null;
   hearts: number;
   heartsRefillAt: number | null;
+  streakFreezes: number;
+  leagueTier: LeagueTier;
   completedLessons: string[];
   answersByLesson: Record<string, { correct: number; total: number }>;
-  activityDates: string[]; // last 30 days of activity
+  activityDates: string[];
+  unlockedAchievements: string[];
   hydrated: boolean;
-  _setHydrated: () => void;
-  completeLesson: (lessonId: string, correct: number, total: number) => number;
-  loseHeart: () => void;
+  loading: boolean;
+  setLoading: (v: boolean) => void;
+  hydrate: (input: Partial<ProgressState>) => void;
+  applyCompletion: (patch: {
+    xp: number;
+    streak: number;
+    longestStreak: number;
+    hearts: number;
+    streakFreezes: number;
+    leagueTier: LeagueTier;
+    lastActiveDate: string;
+    completedLessons: string[];
+    activityDates: string[];
+    answersByLesson: Record<string, { correct: number; total: number }>;
+    unlockedAchievements: string[];
+  }) => void;
+  loseHeartLocal: () => void;
   reset: () => void;
 };
 
@@ -34,64 +47,26 @@ const initial = {
   lastActiveDate: null as string | null,
   hearts: 5,
   heartsRefillAt: null as number | null,
+  streakFreezes: 0,
+  leagueTier: "bronze" as LeagueTier,
   completedLessons: [] as string[],
   answersByLesson: {} as Record<string, { correct: number; total: number }>,
   activityDates: [] as string[],
+  unlockedAchievements: [] as string[],
 };
 
-export const useProgress = create<ProgressState>()(
-  persist(
-    (set, get) => ({
-      ...initial,
-      hydrated: false,
-      _setHydrated: () => set({ hydrated: true }),
-      completeLesson: (lessonId, correct, total) => {
-        const s = get();
-        const today = todayStr();
-        let streak = s.streak;
-        if (s.lastActiveDate === today) {
-          // same day, no streak change
-        } else if (s.lastActiveDate === yesterdayStr()) {
-          streak = s.streak + 1;
-        } else {
-          streak = 1;
-        }
-        const xpGain = correct * 10 + (correct === total ? 20 : 0);
-        const completed = s.completedLessons.includes(lessonId)
-          ? s.completedLessons
-          : [...s.completedLessons, lessonId];
-        const activityDates = s.activityDates.includes(today)
-          ? s.activityDates
-          : [...s.activityDates, today].slice(-30);
-        set({
-          xp: s.xp + xpGain,
-          streak,
-          longestStreak: Math.max(s.longestStreak, streak),
-          lastActiveDate: today,
-          completedLessons: completed,
-          answersByLesson: {
-            ...s.answersByLesson,
-            [lessonId]: { correct, total },
-          },
-          activityDates,
-        });
-        return xpGain;
-      },
-      loseHeart: () => {
-        const s = get();
-        const next = Math.max(0, s.hearts - 1);
-        set({
-          hearts: next,
-          heartsRefillAt: next === 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
-        });
-      },
-      reset: () => set({ ...initial, hydrated: true }),
-    }),
-    {
-      name: "lingua-progress-v1",
-      onRehydrateStorage: () => (state) => {
-        state?._setHydrated();
-      },
-    },
-  ),
-);
+export const useProgress = create<ProgressState>()((set) => ({
+  ...initial,
+  hydrated: false,
+  loading: false,
+  setLoading: (v) => set({ loading: v }),
+  hydrate: (input) => set({ ...initial, ...input, hydrated: true, loading: false }),
+  applyCompletion: (patch) => set((s) => ({ ...s, ...patch })),
+  loseHeartLocal: () =>
+    set((s) => ({
+      hearts: Math.max(0, s.hearts - 1),
+      heartsRefillAt:
+        s.hearts - 1 <= 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
+    })),
+  reset: () => set({ ...initial, hydrated: true }),
+}));
