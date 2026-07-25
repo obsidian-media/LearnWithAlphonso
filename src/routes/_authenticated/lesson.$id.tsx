@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
 function LessonPage() {
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
-  const lesson = useMemo(() => {
+  const maybeLesson = useMemo(() => {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
     return null;
   }, [id]);
@@ -40,7 +40,7 @@ function LessonPage() {
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
 
-  if (!lesson) {
+  if (!maybeLesson) {
     return (
       <LessonFrame>
         <div className="p-6 text-center">
@@ -52,7 +52,7 @@ function LessonPage() {
       </LessonFrame>
     );
   }
-
+  const lesson = maybeLesson;
   const q: Question = lesson.questions[idx];
   const total = lesson.questions.length;
 
