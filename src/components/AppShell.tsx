@@ -92,6 +92,12 @@ export function BottomTabs() {
             <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-8z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
           </svg>
         </TabItem>
+        <TabItem to="/converse" label="Chat" active={pathname.startsWith("/converse")}>
+          <svg viewBox="0 0 24 24" className="size-5" fill="none">
+            <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-4 4v-4H6a2 2 0 0 1-2-2V6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            <path d="M8 9h8M8 12h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </TabItem>
         <TabItem to="/league" label="League" active={pathname.startsWith("/league")}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none">
             <path d="M8 4h8v3a4 4 0 0 1-8 0V4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
