@@ -1,3 +1,7 @@
+import { advancedUnits, type Level } from "./levels";
+export type { Level };
+export { LEVELS } from "./levels";
+
 export type Question =
   | {
       id: string;
@@ -25,15 +29,17 @@ export type Lesson = {
 
 export type Unit = {
   id: string;
+  level: Level;
   eyebrow: string;
   title: string;
   description: string;
   lessons: Lesson[];
 };
 
-export const curriculum: Unit[] = [
+const foundationUnits: Unit[] = [
   {
     id: "u1",
+    level: "A1",
     eyebrow: "Unit 1",
     title: "Everyday Basics",
     description: "Greetings, introductions, and the present simple.",
@@ -102,6 +108,7 @@ export const curriculum: Unit[] = [
   },
   {
     id: "u2",
+    level: "A1",
     eyebrow: "Unit 2",
     title: "The Daily Routine",
     description: "Common verbs and time expressions.",
@@ -170,6 +177,7 @@ export const curriculum: Unit[] = [
   },
   {
     id: "u3",
+    level: "A1",
     eyebrow: "Unit 3",
     title: "Polite Requests",
     description: "Ask, offer, and respond with grace.",
@@ -237,6 +245,12 @@ export const curriculum: Unit[] = [
     ]
   }
 ];
+
+export const curriculum: Unit[] = [...foundationUnits, ...advancedUnits];
+
+export function unitsForLevel(level: Level): Unit[] {
+  return curriculum.filter((u) => u.level === level);
+}
 
 export function findLesson(id: string): { unit: Unit; lesson: Lesson; index: number } | null {
   for (const unit of curriculum) {

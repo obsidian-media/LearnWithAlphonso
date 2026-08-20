@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
-import { curriculum } from "../../data/curriculum";
+import { curriculum, LEVELS, type Level } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -84,11 +85,78 @@ function LessonNode({
 function LearnPage() {
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
+  const [level, setLevel] = useState<Level>("A1");
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem("lingua.level") : null;
+    if (saved && LEVELS.some((l) => l.id === saved)) setLevel(saved as Level);
+  }, []);
+
+  function pick(next: Level) {
+    setLevel(next);
+    try {
+      window.localStorage.setItem("lingua.level", next);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const units = curriculum.filter((u) => u.level === level);
+  const levelLessons = units.flatMap((u) => u.lessons);
+  const levelDone = hydrated ? levelLessons.filter((l) => completed.includes(l.id)).length : 0;
+  const pct = levelLessons.length ? Math.round((levelDone / levelLessons.length) * 100) : 0;
+  const meta = LEVELS.find((l) => l.id === level)!;
+  const firstUndone = levelLessons.find((l) => !completed.includes(l.id));
 
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
-        {curriculum.map((unit, ui) => {
+        <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+          {LEVELS.map((l) => {
+            const active = l.id === level;
+            const done = hydrated
+              ? curriculum
+                  .filter((u) => u.level === l.id)
+                  .flatMap((u) => u.lessons)
+                  .every((ls) => completed.includes(ls.id))
+              : false;
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => pick(l.id)}
+                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
+                  active
+                    ? "border-ink bg-ink text-surface"
+                    : "border-hairline bg-surface text-ink-soft hover:bg-parchment"
+                }`}
+              >
+                {l.id}
+                {done && !active ? " ✓" : ""}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-hairline bg-parchment p-4">
+          <div className="flex items-baseline justify-between">
+            <p className="font-display text-lg font-semibold text-ink">
+              {meta.id} · {meta.name}
+            </p>
+            <span className="tnum text-[11px] font-medium text-ink-soft">{pct}%</span>
+          </div>
+          <p className="mt-1 text-xs text-ink-soft/80">{meta.blurb}</p>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
+            <motion.div
+              className="h-full rounded-full bg-moss"
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </div>
+        </div>
+
+        {units.map((unit, ui) => {
           const allDone = hydrated && unit.lessons.every((l) => completed.includes(l.id));
           return (
             <section key={unit.id} className="mb-14 last:mb-4">
@@ -105,37 +173,20 @@ function LearnPage() {
                   </p>
                 </div>
                 <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                  {hydrated
-                    ? unit.lessons.filter((l) => completed.includes(l.id)).length
-                    : 0}
+                  {hydrated ? unit.lessons.filter((l) => completed.includes(l.id)).length : 0}
                   /{unit.lessons.length}
                 </div>
               </header>
               <div className="relative flex flex-col items-center gap-7">
                 {unit.lessons.map((lesson, li) => {
                   const isDone = hydrated && completed.includes(lesson.id);
-                  const globalIndex = ui * 100 + li;
-                  const firstUndoneUnit = curriculum.find((u) =>
-                    u.lessons.some((l) => !completed.includes(l.id)),
-                  );
-                  const firstUndoneLesson = firstUndoneUnit?.lessons.find(
-                    (l) => !completed.includes(l.id),
-                  );
-                  const isActive =
-                    hydrated && !isDone && firstUndoneLesson?.id === lesson.id;
-                  const isLocked = hydrated && !isDone && !isActive;
-                  const state = isDone
-                    ? "done"
-                    : isActive
-                      ? "active"
-                      : isLocked
-                        ? "locked"
-                        : "active";
+                  const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
+                  const state = isDone ? "done" : isActive ? "active" : hydrated ? "locked" : "active";
                   return (
                     <LessonNode
                       key={lesson.id}
                       state={state}
-                      index={globalIndex}
+                      index={ui * 100 + li}
                       lessonId={lesson.id}
                       title={lesson.title}
                     />
@@ -147,9 +198,7 @@ function LearnPage() {
                       <StarIcon className="size-5" />
                     </div>
                     <p className="font-display text-base font-semibold">Unit complete</p>
-                    <p className="text-xs text-ink-soft">
-                      You mastered {unit.title.toLowerCase()}.
-                    </p>
+                    <p className="text-xs text-ink-soft">You mastered {unit.title.toLowerCase()}.</p>
                   </div>
                 )}
               </div>
