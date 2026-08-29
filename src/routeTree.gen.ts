@@ -16,6 +16,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
@@ -56,6 +57,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
+  id: '/placement',
+  path: '/placement',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/converse': typeof AuthenticatedConverseRouteWithChildren
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/converse': typeof AuthenticatedConverseRouteWithChildren
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/_authenticated/converse': typeof AuthenticatedConverseRouteWithChildren
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
+  '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/converse'
     | '/league'
     | '/learn'
+    | '/placement'
     | '/profile'
     | '/api/chat'
     | '/api/stt'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/converse'
     | '/league'
     | '/learn'
+    | '/placement'
     | '/profile'
     | '/api/chat'
     | '/api/stt'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/_authenticated/converse'
     | '/_authenticated/league'
     | '/_authenticated/learn'
+    | '/_authenticated/placement'
     | '/_authenticated/profile'
     | '/api/chat'
     | '/api/stt'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/placement': {
+      id: '/_authenticated/placement'
+      path: '/placement'
+      fullPath: '/placement'
+      preLoaderRoute: typeof AuthenticatedPlacementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/learn': {
       id: '/_authenticated/learn'
       path: '/learn'
@@ -282,6 +301,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRouteWithChildren
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
+  AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
 }
@@ -290,6 +310,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConverseRoute: AuthenticatedConverseRouteWithChildren,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
+  AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
 }
