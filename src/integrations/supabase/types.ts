@@ -65,6 +65,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage: {
+        Row: {
+          count: number
+          day: string
+          kind: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          day?: string
+          kind: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          kind?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string
@@ -177,11 +201,15 @@ export type Database = {
       }
       user_progress: {
         Row: {
+          cefr_level: string
           hearts: number
           hearts_refill_at: string | null
           last_active_date: string | null
           league_tier: string
           longest_streak: number
+          placement_level: string | null
+          placement_score: number | null
+          placement_taken_at: string | null
           streak: number
           streak_freezes: number
           updated_at: string
@@ -189,11 +217,15 @@ export type Database = {
           xp: number
         }
         Insert: {
+          cefr_level?: string
           hearts?: number
           hearts_refill_at?: string | null
           last_active_date?: string | null
           league_tier?: string
           longest_streak?: number
+          placement_level?: string | null
+          placement_score?: number | null
+          placement_taken_at?: string | null
           streak?: number
           streak_freezes?: number
           updated_at?: string
@@ -201,11 +233,15 @@ export type Database = {
           xp?: number
         }
         Update: {
+          cefr_level?: string
           hearts?: number
           hearts_refill_at?: string | null
           last_active_date?: string | null
           league_tier?: string
           longest_streak?: number
+          placement_level?: string | null
+          placement_score?: number | null
+          placement_taken_at?: string | null
           streak?: number
           streak_freezes?: number
           updated_at?: string
@@ -219,6 +255,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_ai_quota: {
+        Args: { _kind: string; _limit: number }
+        Returns: {
+          allowed: boolean
+          quota: number
+          used: number
+        }[]
+      }
       get_leaderboard: {
         Args: { _period: string; _scope: string }
         Returns: {
