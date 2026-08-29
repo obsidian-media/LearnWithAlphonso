@@ -86,10 +86,16 @@ function LearnPage() {
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
   const [level, setLevel] = useState<Level>("A1");
+  const [placed, setPlaced] = useState(true);
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("lingua.level") : null;
     if (saved && LEVELS.some((l) => l.id === saved)) setLevel(saved as Level);
+    try {
+      setPlaced(Boolean(window.localStorage.getItem("lingua.placement")));
+    } catch {
+      setPlaced(true);
+    }
   }, []);
 
   function pick(next: Level) {
@@ -100,6 +106,7 @@ function LearnPage() {
       /* ignore */
     }
   }
+
 
   const units = curriculum.filter((u) => u.level === level);
   const levelLessons = units.flatMap((u) => u.lessons);
