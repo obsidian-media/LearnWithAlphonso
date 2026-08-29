@@ -118,6 +118,27 @@ function LearnPage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
+        {!placed && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
+          >
+            <p className="font-display text-base font-semibold text-ink">
+              Not sure where to start?
+            </p>
+            <p className="mt-1 text-xs text-ink-soft/80">
+              Take a 15-question placement test and we&apos;ll set your CEFR level for you.
+            </p>
+            <Link
+              to="/placement"
+              className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
+            >
+              Take the placement test
+            </Link>
+          </motion.div>
+        )}
+
         <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
           {LEVELS.map((l) => {
             const active = l.id === level;
