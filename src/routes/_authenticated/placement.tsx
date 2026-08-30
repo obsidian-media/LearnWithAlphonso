@@ -3,12 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMemo, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
-import {
-  PLACEMENT_QUESTIONS,
-  PLACEMENT_KEY,
-  LEVEL_KEY,
-  scorePlacement,
-} from "../../data/placement";
+import { useServerFn } from "@tanstack/react-start";
+import { PLACEMENT_QUESTIONS, scorePlacement } from "../../data/placement";
+import { savePlacementResult } from "../../lib/sync.functions";
+import { useProgress } from "../../lib/progress";
 import { LEVELS, type Level } from "../../data/levels";
 
 export const Route = createFileRoute("/_authenticated/placement")({
@@ -30,6 +28,8 @@ export const Route = createFileRoute("/_authenticated/placement")({
 
 function PlacementPage() {
   const navigate = useNavigate();
+  const savePlacement = useServerFn(savePlacementResult);
+  const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -59,15 +59,14 @@ function PlacementPage() {
         if (next[i]) byLevel[item.level] += 1;
       });
       const { level } = scorePlacement(byLevel);
-      try {
-        window.localStorage.setItem(LEVEL_KEY, level);
-        window.localStorage.setItem(
-          PLACEMENT_KEY,
-          JSON.stringify({ level, takenAt: new Date().toISOString() }),
-        );
-      } catch {
-        /* ignore */
-      }
+      const score = next.filter(Boolean).length;
+      setPlacementLocal({
+        cefrLevel: level,
+        placementLevel: level,
+        placementScore: score,
+        placementTakenAt: new Date().toISOString(),
+      });
+      void savePlacement({ data: { level, score } }).catch(() => {});
     } else {
       setAnswers(next);
       setStep(step + 1);

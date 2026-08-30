@@ -4,7 +4,8 @@ import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { curriculum, LEVELS, type Level } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
-import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { setCefrLevel } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -85,28 +86,16 @@ function LessonNode({
 function LearnPage() {
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
-  const [level, setLevel] = useState<Level>("A1");
-  const [placed, setPlaced] = useState(true);
-
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? window.localStorage.getItem("lingua.level") : null;
-    if (saved && LEVELS.some((l) => l.id === saved)) setLevel(saved as Level);
-    try {
-      setPlaced(Boolean(window.localStorage.getItem("lingua.placement")));
-    } catch {
-      setPlaced(true);
-    }
-  }, []);
+  const level = useProgress((s) => s.cefrLevel) as Level;
+  const placementTakenAt = useProgress((s) => s.placementTakenAt);
+  const setCefrLevelLocal = useProgress((s) => s.setCefrLevelLocal);
+  const saveLevel = useServerFn(setCefrLevel);
+  const placed = !hydrated || Boolean(placementTakenAt);
 
   function pick(next: Level) {
-    setLevel(next);
-    try {
-      window.localStorage.setItem("lingua.level", next);
-    } catch {
-      /* ignore */
-    }
+    setCefrLevelLocal(next);
+    void saveLevel({ data: { level: next } }).catch(() => {});
   }
-
 
   const units = curriculum.filter((u) => u.level === level);
   const levelLessons = units.flatMap((u) => u.lessons);
