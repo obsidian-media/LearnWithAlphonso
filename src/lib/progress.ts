@@ -19,6 +19,17 @@ export type ProgressState = {
   answersByLesson: Record<string, { correct: number; total: number }>;
   activityDates: string[];
   unlockedAchievements: string[];
+  cefrLevel: string;
+  placementLevel: string | null;
+  placementScore: number | null;
+  placementTakenAt: string | null;
+  setCefrLevelLocal: (level: string) => void;
+  setPlacementLocal: (p: {
+    cefrLevel: string;
+    placementLevel: string;
+    placementScore: number;
+    placementTakenAt: string;
+  }) => void;
   hydrated: boolean;
   loading: boolean;
   setLoading: (v: boolean) => void;
@@ -53,6 +64,10 @@ const initial = {
   answersByLesson: {} as Record<string, { correct: number; total: number }>,
   activityDates: [] as string[],
   unlockedAchievements: [] as string[],
+  cefrLevel: "A1",
+  placementLevel: null as string | null,
+  placementScore: null as number | null,
+  placementTakenAt: null as string | null,
 };
 
 export const useProgress = create<ProgressState>()((set) => ({
@@ -60,6 +75,8 @@ export const useProgress = create<ProgressState>()((set) => ({
   hydrated: false,
   loading: false,
   setLoading: (v) => set({ loading: v }),
+  setCefrLevelLocal: (level) => set({ cefrLevel: level }),
+  setPlacementLocal: (p) => set({ ...p }),
   hydrate: (input) => set({ ...initial, ...input, hydrated: true, loading: false }),
   applyCompletion: (patch) => set((s) => ({ ...s, ...patch })),
   loseHeartLocal: () =>
