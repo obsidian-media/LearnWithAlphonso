@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { getScenario } from "../../data/scenarios";
+import { authHeaders } from "../../lib/auth-headers";
 
 export const Route = createFileRoute("/_authenticated/converse/$scenarioId")({
   component: ConverseChatPage,
@@ -50,7 +51,7 @@ function ConverseChatPage() {
     try {
       const resp = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ text }),
       });
       if (!resp.ok) return;
@@ -89,7 +90,7 @@ function ConverseChatPage() {
     try {
       const resp = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({
           systemPrompt: scenario.systemPrompt,
           messages: next,
@@ -99,7 +100,7 @@ function ConverseChatPage() {
         const t = await resp.text().catch(() => "");
         throw new Error(
           resp.status === 429
-            ? "Slow down a moment — rate limit reached."
+            ? t || "Daily limit reached — try again tomorrow."
             : resp.status === 402
               ? "AI credits exhausted. Add credits to keep chatting."
               : t || "Something went wrong.",
@@ -145,7 +146,11 @@ function ConverseChatPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, `recording.${ext}`);
-          const resp = await fetch("/api/stt", { method: "POST", body: fd });
+          const resp = await fetch("/api/stt", {
+            method: "POST",
+            headers: await authHeaders(),
+            body: fd,
+          });
           if (!resp.ok) throw new Error(await resp.text().catch(() => "Transcription failed"));
           const data = (await resp.json()) as { text?: string };
           const text = (data.text ?? "").trim();

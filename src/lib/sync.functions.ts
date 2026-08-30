@@ -27,6 +27,10 @@ export type ProgressSnapshot = {
   answersByLesson: Record<string, { correct: number; total: number }>;
   activityDates: string[];
   unlockedAchievements: string[];
+  cefrLevel: string;
+  placementLevel: string | null;
+  placementScore: number | null;
+  placementTakenAt: string | null;
 };
 
 export const fetchProgress = createServerFn({ method: "GET" })
@@ -71,6 +75,10 @@ export const fetchProgress = createServerFn({ method: "GET" })
       answersByLesson: answers,
       activityDates: (acts.data ?? []).map((a) => a.day as string),
       unlockedAchievements: (unlocks.data ?? []).map((u) => u.achievement_id as string),
+      cefrLevel: p?.cefr_level ?? "A1",
+      placementLevel: p?.placement_level ?? null,
+      placementScore: p?.placement_score ?? null,
+      placementTakenAt: p?.placement_taken_at ?? null,
     };
   });
 
@@ -330,4 +338,47 @@ export const mergeGuestProgress = createServerFn({ method: "POST" })
           .upsert(acts, { onConflict: "user_id,day" });
     }
     return { merged: true };
+  });
+const LEVELS_ENUM = ["A1", "A2", "B1", "B2", "C1"] as const;
+
+export const setCefrLevel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ level: z.enum(LEVELS_ENUM) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await supabase
+      .from("user_progress")
+      .upsert({ user_id: userId, cefr_level: data.level }, { onConflict: "user_id" });
+    return { cefrLevel: data.level };
+  });
+
+export const savePlacementResult = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        level: z.enum(LEVELS_ENUM),
+        score: z.number().int().min(0).max(100),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const takenAt = new Date().toISOString();
+    await supabase.from("user_progress").upsert(
+      {
+        user_id: userId,
+        cefr_level: data.level,
+        placement_level: data.level,
+        placement_score: data.score,
+        placement_taken_at: takenAt,
+      },
+      { onConflict: "user_id" },
+    );
+    return {
+      cefrLevel: data.level,
+      placementLevel: data.level,
+      placementScore: data.score,
+      placementTakenAt: takenAt,
+    };
   });
