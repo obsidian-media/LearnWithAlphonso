@@ -8,6 +8,9 @@ export const Route = createFileRoute("/api/chat")({
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const { consumeQuota } = await import("@/lib/ai-quota.server");
+        const quota = await consumeQuota(request, "chat");
+        if (!quota.ok) return new Response(quota.message, { status: quota.status });
         let body: { messages?: ChatMessage[]; systemPrompt?: string };
         try {
           body = await request.json();

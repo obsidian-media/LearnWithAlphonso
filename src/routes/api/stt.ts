@@ -6,6 +6,9 @@ export const Route = createFileRoute("/api/stt")({
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const { consumeQuota } = await import("@/lib/ai-quota.server");
+        const quota = await consumeQuota(request, "stt");
+        if (!quota.ok) return new Response(quota.message, { status: quota.status });
         const inForm = await request.formData().catch(() => null);
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {

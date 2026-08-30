@@ -6,6 +6,9 @@ export const Route = createFileRoute("/api/tts")({
       POST: async ({ request }) => {
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const { consumeQuota } = await import("@/lib/ai-quota.server");
+        const quota = await consumeQuota(request, "tts");
+        if (!quota.ok) return new Response(quota.message, { status: quota.status });
         let body: { text?: string; voice?: string };
         try {
           body = await request.json();
