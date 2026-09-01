@@ -170,6 +170,54 @@ export type Database = {
         }
         Relationships: []
       }
+      review_items: {
+        Row: {
+          created_at: string
+          due_on: string
+          ease: number
+          id: string
+          interval_days: number
+          item_key: string
+          lapses: number
+          last_reviewed_at: string | null
+          lesson_id: string
+          level: string
+          repetitions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_on?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_key: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          lesson_id: string
+          level?: string
+          repetitions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          due_on?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_key?: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          lesson_id?: string
+          level?: string
+          repetitions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
