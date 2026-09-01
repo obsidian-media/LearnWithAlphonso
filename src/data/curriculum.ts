@@ -246,7 +246,37 @@ const foundationUnits: Unit[] = [
   }
 ];
 
-export const curriculum: Unit[] = [...foundationUnits, ...advancedUnits];
+const handAuthored: Unit[] = [...foundationUnits, ...advancedUnits];
+
+const existingCountByLevel = handAuthored.reduce(
+  (acc, u) => ({ ...acc, [u.level]: (acc[u.level] ?? 0) + 1 }),
+  {} as Record<Level, number>,
+);
+
+export const curriculum: Unit[] = [
+  ...handAuthored,
+  ...generatedUnits(existingCountByLevel),
+];
+
+export type QuestionRef = { lessonId: string; unitId: string; level: Level; question: Question };
+
+export const questionIndex: Record<string, QuestionRef> = (() => {
+  const map: Record<string, QuestionRef> = {};
+  for (const unit of curriculum)
+    for (const lesson of unit.lessons)
+      for (const question of lesson.questions)
+        map[`${lesson.id}:${question.id}`] = {
+          lessonId: lesson.id,
+          unitId: unit.id,
+          level: unit.level,
+          question,
+        };
+  return map;
+})();
+
+export function lookupQuestion(key: string): QuestionRef | null {
+  return questionIndex[key] ?? null;
+}
 
 export function unitsForLevel(level: Level): Unit[] {
   return curriculum.filter((u) => u.level === level);
