@@ -71,6 +71,7 @@ function LessonPage() {
     setChecked(true);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
+      setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
       loseHeartLocal();
       void loseHeartRemote();
     }
@@ -82,6 +83,11 @@ function LessonPage() {
       setPicked(null);
       setChecked(false);
       return;
+    }
+    if (missed.length) {
+      void recordMisses({
+        data: { lessonId: lesson.id, level: lessonLevel, itemKeys: missed },
+      }).catch(() => {});
     }
     try {
       const res = await completeLessonRemote({
