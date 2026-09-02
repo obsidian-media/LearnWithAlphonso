@@ -29,6 +29,10 @@ function LessonPage() {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
     return null;
   }, [id]);
+  const lessonLevel = useMemo(() => {
+    for (const u of curriculum) if (u.lessons.some((l) => l.id === id)) return u.level;
+    return "A1";
+  }, [id]);
 
   const applyCompletion = useProgress((s) => s.applyCompletion);
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
@@ -36,9 +40,11 @@ function LessonPage() {
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
+  const [missed, setMissed] = useState<string[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
+
 
   if (!maybeLesson) {
     return (
