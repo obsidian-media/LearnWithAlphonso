@@ -6,6 +6,7 @@ import { curriculum } from "../../data/curriculum";
 import type { Question } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
 import { completeLessonRemote, loseHeartRemote } from "../../lib/sync.functions";
+import { recordMisses } from "../../lib/review.functions";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
@@ -29,6 +30,10 @@ function LessonPage() {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
     return null;
   }, [id]);
+  const lessonLevel = useMemo(() => {
+    for (const u of curriculum) if (u.lessons.some((l) => l.id === id)) return u.level;
+    return "A1";
+  }, [id]);
 
   const applyCompletion = useProgress((s) => s.applyCompletion);
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
@@ -36,9 +41,11 @@ function LessonPage() {
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
+  const [missed, setMissed] = useState<string[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
+
 
   if (!maybeLesson) {
     return (
@@ -65,6 +72,7 @@ function LessonPage() {
     setChecked(true);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
+      setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
       loseHeartLocal();
       void loseHeartRemote();
     }
@@ -76,6 +84,11 @@ function LessonPage() {
       setPicked(null);
       setChecked(false);
       return;
+    }
+    if (missed.length) {
+      void recordMisses({
+        data: { lessonId: lesson.id, level: lessonLevel, itemKeys: missed },
+      }).catch(() => {});
     }
     try {
       const res = await completeLessonRemote({
