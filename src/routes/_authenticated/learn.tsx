@@ -128,7 +128,23 @@ function LearnPage() {
           </motion.div>
         )}
 
+        <Link
+          to="/review"
+          className="mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+        >
+          <span>
+            <span className="block font-display text-base font-semibold text-ink">
+              Review missed items
+            </span>
+            <span className="block text-xs text-ink-soft/80">
+              Spaced repetition brings back what you got wrong.
+            </span>
+          </span>
+          <span className="text-ink-soft">→</span>
+        </Link>
+
         <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+
           {LEVELS.map((l) => {
             const active = l.id === level;
             const done = hydrated
