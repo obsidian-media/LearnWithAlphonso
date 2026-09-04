@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -7,6 +7,7 @@ import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
+import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/profile")({
