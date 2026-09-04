@@ -171,6 +171,12 @@ function AuthPage() {
           >
             {mode === "signup" ? "Have an account? Sign in" : "New here? Create an account"}
           </button>
+
+          <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
+            By continuing you agree to our{" "}
+            <Link to="/terms" className="underline hover:text-ink">Terms</Link> and{" "}
+            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link>.
+          </p>
         </div>
       </div>
     </div>
