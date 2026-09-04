@@ -18,15 +18,16 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const out: Record<string, unknown> = {
+    const tables: Record<string, unknown[]> = {};
+    for (const table of USER_TABLES) {
+      const { data } = await (supabase.from(table) as any).select("*").eq("user_id", userId);
+      tables[table] = (data as unknown[]) ?? [];
+    }
+    return {
       exported_at: new Date().toISOString(),
       user_id: userId,
+      tables: JSON.stringify(tables),
     };
-    for (const table of USER_TABLES) {
-      const { data } = await supabase.from(table).select("*").eq("user_id", userId);
-      out[table] = data ?? [];
-    }
-    return out;
   });
 
 /** Permanently delete the account and all associated data (GDPR erasure). */
@@ -38,12 +39,12 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     // Remove owned rows first, as the caller, so RLS stays the source of truth.
     for (const table of USER_TABLES) {
-      await supabase.from(table).delete().eq("user_id", userId);
+      await (supabase.from(table) as any).delete().eq("user_id", userId);
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Friend rows pointing at this user are not owned by them.
-    await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
+    await (supabaseAdmin.from("friendships") as any).delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
 

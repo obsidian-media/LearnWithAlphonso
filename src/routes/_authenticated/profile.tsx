@@ -164,7 +164,12 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
     setError(null);
     try {
       const payload = await exportMyData();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const pretty = {
+        exported_at: payload.exported_at,
+        user_id: payload.user_id,
+        ...JSON.parse(payload.tables),
+      };
+      const blob = new Blob([JSON.stringify(pretty, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
