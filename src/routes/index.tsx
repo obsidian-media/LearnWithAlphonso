@@ -96,6 +96,11 @@ function Landing() {
           <p className="mt-3 text-center text-[11px] text-ink-soft/70">
             Sign in to sync your streak across devices.
           </p>
+          <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-ink-soft/60">
+            <Link to="/privacy" className="hover:text-ink">Privacy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/terms" className="hover:text-ink">Terms</Link>
+          </div>
         </div>
       </div>
     </div>

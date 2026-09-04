@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -7,6 +7,7 @@ import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
+import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -133,16 +134,129 @@ function ProfilePage() {
           </button>
         </div>
 
+        <YourData onSignedOut={() => navigate({ to: "/auth", replace: true })} />
+
         <button
           onClick={signOut}
           className="mt-4 w-full rounded-full border border-hairline bg-surface px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
         >
           Sign out
         </button>
+
+        <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
+          <Link to="/privacy" className="hover:text-ink">Privacy</Link>
+          <span aria-hidden>·</span>
+          <Link to="/terms" className="hover:text-ink">Terms</Link>
+        </div>
       </div>
     </MobileFrame>
   );
 }
+
+function YourData({ onSignedOut }: { onSignedOut: () => void }) {
+  const [busy, setBusy] = useState<null | "export" | "delete">(null);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function download() {
+    setBusy("export");
+    setError(null);
+    try {
+      const payload = await exportMyData();
+      const pretty = {
+        exported_at: payload.exported_at,
+        user_id: payload.user_id,
+        ...JSON.parse(payload.tables),
+      };
+      const blob = new Blob([JSON.stringify(pretty, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lingua-my-data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function remove() {
+    setBusy("delete");
+    setError(null);
+    try {
+      await deleteMyAccount({ data: { confirm: "DELETE" } });
+      await supabase.auth.signOut();
+      onSignedOut();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Deletion failed");
+      setBusy(null);
+    }
+  }
+
+  return (
+    <>
+      <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Your data</h2>
+      <div className="mt-3 space-y-3 rounded-2xl border border-hairline bg-surface p-4">
+        <p className="text-xs leading-relaxed text-ink-soft">
+          Download everything we hold about you, or permanently erase your account.
+        </p>
+        <button
+          onClick={download}
+          disabled={busy !== null}
+          className="w-full rounded-full border border-hairline bg-parchment px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
+        >
+          {busy === "export" ? "Preparing…" : "Download my data"}
+        </button>
+
+        {!confirming ? (
+          <button
+            onClick={() => setConfirming(true)}
+            disabled={busy !== null}
+            className="w-full rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 disabled:opacity-50"
+          >
+            Delete my account
+          </button>
+        ) : (
+          <div className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-3">
+            <p className="text-xs leading-relaxed text-rose-800">
+              This permanently deletes your account, progress, streaks, achievements and review
+              history. It cannot be undone. Type DELETE to confirm.
+            </p>
+            <input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+              placeholder="DELETE"
+              className="w-full rounded-lg border border-rose-200 bg-surface px-3 py-2 text-sm outline-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setConfirming(false);
+                  setConfirmText("");
+                }}
+                className="flex-1 rounded-full border border-hairline bg-surface px-3 py-2 text-sm text-ink-soft"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={remove}
+                disabled={confirmText !== "DELETE" || busy !== null}
+                className="flex-1 rounded-full bg-rose-600 px-3 py-2 text-sm font-semibold text-surface disabled:opacity-50"
+              >
+                {busy === "delete" ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
+        )}
+        {error && <p className="text-xs text-rose-700">{error}</p>}
+      </div>
+    </>
+  );
+}
+
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
