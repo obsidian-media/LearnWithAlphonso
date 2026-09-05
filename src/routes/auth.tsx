@@ -114,13 +114,20 @@ function AuthPage() {
             <span className="font-display text-lg font-semibold">L</span>
           </div>
           <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
+            {mode === "signup"
+              ? "Create your account"
+              : mode === "forgot"
+                ? "Reset your password"
+                : "Welcome back"}
           </h1>
           <p className="mt-1.5 text-sm text-ink-soft/80">
             {mode === "signup"
               ? "Save your streak and pick up on any device."
-              : "Sign in to continue where you left off."}
+              : mode === "forgot"
+                ? "Enter your email and we'll send you a link to set a new password."
+                : "Sign in to continue where you left off."}
           </p>
+
         </motion.div>
 
         <div className="mt-8 space-y-3">
