@@ -100,7 +100,10 @@ function Landing() {
             <Link to="/privacy" className="hover:text-ink">Privacy</Link>
             <span aria-hidden>·</span>
             <Link to="/terms" className="hover:text-ink">Terms</Link>
+            <span aria-hidden>·</span>
+            <Link to="/cookies" className="hover:text-ink">Cookies</Link>
           </div>
+
         </div>
       </div>
     </div>

@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { CookieConsent } from "../components/CookieConsent";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
 import { fetchProgress } from "../lib/sync.functions";
@@ -125,7 +127,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthSync />
       <Outlet />
+      <CookieConsent />
     </QueryClientProvider>
+
   );
 }
 
