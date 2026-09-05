@@ -20,12 +20,13 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,10 +37,19 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/reset-password",
+        });
+        if (error) throw error;
+        setNotice(
+          "If an account exists for that address, we've sent a link to reset your password. Check your inbox.",
+        );
+      } else if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,7 +58,13 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        navigate({ to: "/learn", replace: true });
+        if (data.session) {
+          navigate({ to: "/learn", replace: true });
+        } else {
+          setNotice(
+            "Almost there — check your email and click the confirmation link to activate your account.",
+          );
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -60,6 +76,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   async function google() {
     setError(null);
