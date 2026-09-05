@@ -167,40 +167,77 @@ function AuthPage() {
               placeholder="Email"
               className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
             />
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
-            />
+            {mode !== "forgot" && (
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
+              />
+            )}
             {error && (
               <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+            )}
+            {notice && (
+              <p className="rounded-xl border border-hairline bg-parchment px-3 py-2 text-xs leading-relaxed text-ink">
+                {notice}
+              </p>
             )}
             <button
               type="submit"
               disabled={busy}
               className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {busy
+                ? "Please wait…"
+                : mode === "signup"
+                  ? "Create account"
+                  : mode === "forgot"
+                    ? "Send reset link"
+                    : "Sign in"}
             </button>
           </form>
 
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("forgot");
+                setError(null);
+                setNotice(null);
+              }}
+              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink"
+            >
+              Forgot your password?
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+            onClick={() => {
+              setMode(mode === "signup" ? "signin" : mode === "forgot" ? "signin" : "signup");
+              setError(null);
+              setNotice(null);
+            }}
             className="w-full py-2 text-center text-xs text-ink-soft/70 hover:text-ink"
           >
-            {mode === "signup" ? "Have an account? Sign in" : "New here? Create an account"}
+            {mode === "signup"
+              ? "Have an account? Sign in"
+              : mode === "forgot"
+                ? "Back to sign in"
+                : "New here? Create an account"}
           </button>
 
           <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
             By continuing you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-ink">Terms</Link> and{" "}
-            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link>.
+            <Link to="/terms" className="underline hover:text-ink">Terms</Link>,{" "}
+            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link> and{" "}
+            <Link to="/cookies" className="underline hover:text-ink">Cookie Policy</Link>.
           </p>
+
         </div>
       </div>
     </div>
