@@ -20,12 +20,13 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,10 +37,19 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/reset-password",
+        });
+        if (error) throw error;
+        setNotice(
+          "If an account exists for that address, we've sent a link to reset your password. Check your inbox.",
+        );
+      } else if (mode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,7 +58,13 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        navigate({ to: "/learn", replace: true });
+        if (data.session) {
+          navigate({ to: "/learn", replace: true });
+        } else {
+          setNotice(
+            "Almost there — check your email and click the confirmation link to activate your account.",
+          );
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -60,6 +76,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   async function google() {
     setError(null);
@@ -97,13 +114,20 @@ function AuthPage() {
             <span className="font-display text-lg font-semibold">L</span>
           </div>
           <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
+            {mode === "signup"
+              ? "Create your account"
+              : mode === "forgot"
+                ? "Reset your password"
+                : "Welcome back"}
           </h1>
           <p className="mt-1.5 text-sm text-ink-soft/80">
             {mode === "signup"
               ? "Save your streak and pick up on any device."
-              : "Sign in to continue where you left off."}
+              : mode === "forgot"
+                ? "Enter your email and we'll send you a link to set a new password."
+                : "Sign in to continue where you left off."}
           </p>
+
         </motion.div>
 
         <div className="mt-8 space-y-3">
@@ -143,40 +167,77 @@ function AuthPage() {
               placeholder="Email"
               className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
             />
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
-            />
+            {mode !== "forgot" && (
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
+              />
+            )}
             {error && (
               <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+            )}
+            {notice && (
+              <p className="rounded-xl border border-hairline bg-parchment px-3 py-2 text-xs leading-relaxed text-ink">
+                {notice}
+              </p>
             )}
             <button
               type="submit"
               disabled={busy}
               className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {busy
+                ? "Please wait…"
+                : mode === "signup"
+                  ? "Create account"
+                  : mode === "forgot"
+                    ? "Send reset link"
+                    : "Sign in"}
             </button>
           </form>
 
+          {mode === "signin" && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("forgot");
+                setError(null);
+                setNotice(null);
+              }}
+              className="w-full text-center text-xs text-ink-soft/70 hover:text-ink"
+            >
+              Forgot your password?
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+            onClick={() => {
+              setMode(mode === "signup" ? "signin" : mode === "forgot" ? "signin" : "signup");
+              setError(null);
+              setNotice(null);
+            }}
             className="w-full py-2 text-center text-xs text-ink-soft/70 hover:text-ink"
           >
-            {mode === "signup" ? "Have an account? Sign in" : "New here? Create an account"}
+            {mode === "signup"
+              ? "Have an account? Sign in"
+              : mode === "forgot"
+                ? "Back to sign in"
+                : "New here? Create an account"}
           </button>
 
           <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
             By continuing you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-ink">Terms</Link> and{" "}
-            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link>.
+            <Link to="/terms" className="underline hover:text-ink">Terms</Link>,{" "}
+            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link> and{" "}
+            <Link to="/cookies" className="underline hover:text-ink">Cookie Policy</Link>.
           </p>
+
         </div>
       </div>
     </div>
