@@ -46,6 +46,9 @@ function LessonPage() {
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
+  const vocab = useMemo(() => vocabForLesson(id), [id]);
+  const [phase, setPhase] = useState<"vocab" | "quiz">("vocab");
+
 
 
   if (!maybeLesson) {
