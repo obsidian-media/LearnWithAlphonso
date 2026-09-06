@@ -142,16 +142,28 @@ function LessonPage() {
         <div className="flex-1 overflow-hidden rounded-full bg-parchment">
           <div
             className="h-2 rounded-full bg-moss transition-all"
-            style={{ width: `${((idx + (checked ? 1 : 0)) / total) * 100}%` }}
+            style={{
+              width:
+                phase === "vocab" && !done
+                  ? "0%"
+                  : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
+            }}
           />
         </div>
         <span className="tnum text-[11px] font-medium text-ink-soft">
-          {idx + 1}/{total}
+          {phase === "vocab" && !done ? "Words" : `${idx + 1}/${total}`}
         </span>
       </div>
 
       {done ? (
         <FinishScreen xp={done.xp} unlocked={done.unlocked} lessonTitle={lesson.title} />
+      ) : phase === "vocab" ? (
+        <VocabScreen
+          items={vocab}
+          title={lesson.title}
+          subtitle={lesson.subtitle}
+          onStart={() => setPhase("quiz")}
+        />
       ) : (
         <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
