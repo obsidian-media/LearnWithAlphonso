@@ -260,6 +260,57 @@ function LessonPage() {
   );
 }
 
+function VocabScreen({
+  items,
+  title,
+  subtitle,
+  onStart,
+}: {
+  items: VocabItem[];
+  title: string;
+  subtitle: string;
+  onStart: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
+        Vocabulary · {subtitle}
+      </p>
+      <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">{title}</h2>
+      <p className="mt-1.5 text-sm text-ink-soft/80">
+        {items.length} word{items.length === 1 ? "" : "s"} to learn before you practise.
+      </p>
+
+      <div className="mt-6 space-y-2.5">
+        {items.map((v, i) => (
+          <motion.div
+            key={`${v.term}-${i}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+          >
+            <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+            <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
+            <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
+              {v.example}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="mt-auto pt-6">
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+        >
+          Start practice
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FinishScreen({
   xp,
   unlocked,
