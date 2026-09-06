@@ -157,7 +157,7 @@ function LessonPage() {
 
       {done ? (
         <FinishScreen xp={done.xp} unlocked={done.unlocked} lessonTitle={lesson.title} />
-      ) : phase === "vocab" ? (
+      ) : phase === "vocab" && vocab.length > 0 ? (
         <VocabScreen
           items={vocab}
           title={lesson.title}
