@@ -8,6 +8,7 @@ import { useProgress } from "../../lib/progress";
 import { completeLessonRemote, loseHeartRemote } from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
+import { vocabForLesson, type VocabItem } from "../../data/vocab";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPage,
