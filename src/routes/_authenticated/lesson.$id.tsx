@@ -43,11 +43,12 @@ function LessonPage() {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [missed, setMissed] = useState<string[]>([]);
+  const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id), [id]);
-  const [phase, setPhase] = useState<"vocab" | "quiz">("vocab");
+  const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
 
 
 
@@ -77,6 +78,7 @@ function LessonPage() {
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
+      setMissedQs((m) => [...m, q]);
       loseHeartLocal();
       void loseHeartRemote();
     }
