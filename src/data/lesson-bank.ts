@@ -725,6 +725,64 @@ conclude|conclusion
 refuse|refusal
 depart|departure`,
   },
+  {
+    id: "b2p5", title: "Reporting & Hedging", subtitle: "Report what was said", kind: "cloze",
+    note: "Reported speech shifts tense back and changes time and place words.",
+    data: `She said she ___ tired.|was
+He told ___ he would call.|me
+They asked where I ___ from.|came
+She wondered ___ I had finished.|whether
+He admitted ___ the money.|taking
+She denied ___ anything wrong.|doing
+He suggested ___ earlier.|leaving
+They insisted ___ paying the bill.|on
+She warned us ___ to touch it.|not
+He apologised ___ being late.|for
+She claimed ___ have seen him.|to
+He refused ___ comment.|to
+They announced that the deal ___ off.|was
+She explained ___ the system worked.|how
+He complained ___ the noise.|about
+She reminded me ___ lock the door.|to
+He accused her ___ lying.|of
+They agreed ___ meet on Friday.|to
+She promised she ___ help.|would
+He asked me ___ I needed anything.|if
+She pointed ___ the flaw in the plan.|out
+He implied that something ___ wrong.|was
+They confirmed the flight ___ been delayed.|had
+She urged them ___ reconsider.|to
+He maintained that he ___ innocent.|was`,
+  },
+  {
+    id: "b2p6", title: "Collocations", subtitle: "Words that go together", kind: "pair",
+    prompt: "Complete: \"%s ___\"", note: "Natural English depends on the right partner word.",
+    data: `make a|decision
+take a|risk
+pay|attention
+draw a|conclusion
+meet a|deadline
+raise|awareness
+break the|news
+keep a|promise
+run a|business
+hold a|meeting
+reach an|agreement
+set a|precedent
+bear in|mind
+take|responsibility
+place an|order
+gain|experience
+cause|damage
+express|concern
+launch a|campaign
+strike a|balance
+face a|challenge
+issue a|statement
+conduct|research
+achieve a|goal
+lose|patience`,
+  },
 ];
 
 const C1: Pack[] = [
