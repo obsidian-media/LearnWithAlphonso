@@ -43,11 +43,12 @@ function LessonPage() {
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [missed, setMissed] = useState<string[]>([]);
+  const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id), [id]);
-  const [phase, setPhase] = useState<"vocab" | "quiz">("vocab");
+  const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
 
 
 
@@ -77,6 +78,7 @@ function LessonPage() {
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
+      setMissedQs((m) => [...m, { q, yours: picked }]);
       loseHeartLocal();
       void loseHeartRemote();
     }
@@ -131,32 +133,63 @@ function LessonPage() {
 
   return (
     <LessonFrame>
-      <div className="flex items-center gap-3 px-5 pt-5">
-        <button
-          onClick={() => navigate({ to: "/learn" })}
-          aria-label="Close"
-          className="grid size-8 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
-        >
-          ✕
-        </button>
-        <div className="flex-1 overflow-hidden rounded-full bg-parchment">
-          <div
-            className="h-2 rounded-full bg-moss transition-all"
-            style={{
-              width:
-                phase === "vocab" && !done
-                  ? "0%"
-                  : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
-            }}
-          />
+      <div className="px-5 pt-5">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <button
+            onClick={() => navigate({ to: "/learn" })}
+            aria-label="Close"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
+          >
+            ✕
+          </button>
+          <div className="min-w-0 overflow-hidden rounded-full bg-parchment">
+            <div
+              className="h-2 rounded-full bg-moss transition-all"
+              style={{
+                width: done
+                  ? "100%"
+                  : phase !== "quiz"
+                    ? "0%"
+                    : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
+              }}
+            />
+          </div>
+          <span className="tnum shrink-0 text-[11px] font-medium text-ink-soft">
+            {done ? "Done" : phase === "quiz" ? `${idx + 1}/${total}` : phase === "vocab" ? "Words" : "Start"}
+          </span>
         </div>
-        <span className="tnum text-[11px] font-medium text-ink-soft">
-          {phase === "vocab" && !done ? "Words" : `${idx + 1}/${total}`}
-        </span>
+        <div className="mt-3 flex gap-1.5">
+          {(["overview", "vocab", "quiz", "done"] as const).map((s) => {
+            const order = ["overview", "vocab", "quiz", "done"];
+            const current = done ? "done" : phase;
+            const active = order.indexOf(s) <= order.indexOf(current);
+            return (
+              <span
+                key={s}
+                className={`h-1 flex-1 rounded-full ${active ? "bg-ink" : "bg-hairline"}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {done ? (
-        <FinishScreen xp={done.xp} unlocked={done.unlocked} lessonTitle={lesson.title} />
+        <FinishScreen
+          xp={done.xp}
+          unlocked={done.unlocked}
+          lessonTitle={lesson.title}
+          correct={correct}
+          total={total}
+          missedQs={missedQs}
+        />
+      ) : phase === "overview" ? (
+        <OverviewScreen
+          title={lesson.title}
+          subtitle={lesson.subtitle}
+          words={vocab.length}
+          questions={total}
+          onStart={() => setPhase(vocab.length > 0 ? "vocab" : "quiz")}
+        />
       ) : phase === "vocab" && vocab.length > 0 ? (
         <VocabScreen
           items={vocab}
@@ -311,17 +344,78 @@ function VocabScreen({
   );
 }
 
+function OverviewScreen({
+  title,
+  subtitle,
+  words,
+  questions,
+  onStart,
+}: {
+  title: string;
+  subtitle: string;
+  words: number;
+  questions: number;
+  onStart: () => void;
+}) {
+  const steps = [
+    { label: "Vocabulary", detail: `${words} word${words === 1 ? "" : "s"} with examples` },
+    { label: "Practice", detail: `${questions} questions` },
+    { label: "Review", detail: "Anything you miss comes back later" },
+  ];
+  return (
+    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
+        {subtitle}
+      </p>
+      <h2 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
+        {title}
+      </h2>
+      <div className="mt-6 space-y-2.5">
+        {steps.map((s, i) => (
+          <div
+            key={s.label}
+            className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+          >
+            <span className="tnum grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-xs font-semibold text-ink">
+              {i + 1}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-ink">{s.label}</span>
+              <span className="block truncate text-xs text-ink-soft/80">{s.detail}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-auto pt-6">
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+        >
+          Begin lesson
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FinishScreen({
   xp,
   unlocked,
   lessonTitle,
+  correct,
+  total,
+  missedQs,
 }: {
   xp: number;
   unlocked: string[];
   lessonTitle: string;
+  correct: number;
+  total: number;
+  missedQs: { q: Question; yours: string }[];
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 text-center">
+    <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
+
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -337,6 +431,31 @@ function FinishScreen({
       </p>
       <h2 className="mt-1 font-display text-[24px] font-semibold text-ink">{lessonTitle}</h2>
       <p className="mt-3 tnum text-lg font-semibold text-moss">+{xp} XP</p>
+      <p className="tnum mt-1 text-xs text-ink-soft">
+        {correct}/{total} correct
+      </p>
+
+      {missedQs.length > 0 && (
+        <div className="mt-6 w-full space-y-2 text-left">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Review · {missedQs.length} to practise again
+          </p>
+          {missedQs.map(({ q, yours }, i) => (
+            <div
+              key={`${q.id}-${i}`}
+              className="rounded-2xl border border-hairline bg-parchment px-4 py-3"
+            >
+              <p className="text-sm font-medium text-ink">{q.prompt}</p>
+              <p className="mt-1 text-xs text-ink-soft/80">
+                You said <span className="line-through">{yours}</span> ·{" "}
+                <span className="font-semibold text-moss">
+                  {q.type === "mc" ? q.choices[q.answer] : q.answer}
+                </span>
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <AnimatePresence>
         {unlocked.length > 0 && (
