@@ -133,32 +133,63 @@ function LessonPage() {
 
   return (
     <LessonFrame>
-      <div className="flex items-center gap-3 px-5 pt-5">
-        <button
-          onClick={() => navigate({ to: "/learn" })}
-          aria-label="Close"
-          className="grid size-8 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
-        >
-          ✕
-        </button>
-        <div className="flex-1 overflow-hidden rounded-full bg-parchment">
-          <div
-            className="h-2 rounded-full bg-moss transition-all"
-            style={{
-              width:
-                phase === "vocab" && !done
-                  ? "0%"
-                  : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
-            }}
-          />
+      <div className="px-5 pt-5">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <button
+            onClick={() => navigate({ to: "/learn" })}
+            aria-label="Close"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
+          >
+            ✕
+          </button>
+          <div className="min-w-0 overflow-hidden rounded-full bg-parchment">
+            <div
+              className="h-2 rounded-full bg-moss transition-all"
+              style={{
+                width: done
+                  ? "100%"
+                  : phase !== "quiz"
+                    ? "0%"
+                    : `${((idx + (checked ? 1 : 0)) / total) * 100}%`,
+              }}
+            />
+          </div>
+          <span className="tnum shrink-0 text-[11px] font-medium text-ink-soft">
+            {done ? "Done" : phase === "quiz" ? `${idx + 1}/${total}` : phase === "vocab" ? "Words" : "Start"}
+          </span>
         </div>
-        <span className="tnum text-[11px] font-medium text-ink-soft">
-          {phase === "vocab" && !done ? "Words" : `${idx + 1}/${total}`}
-        </span>
+        <div className="mt-3 flex gap-1.5">
+          {(["overview", "vocab", "quiz", "done"] as const).map((s) => {
+            const order = ["overview", "vocab", "quiz", "done"];
+            const current = done ? "done" : phase;
+            const active = order.indexOf(s) <= order.indexOf(current);
+            return (
+              <span
+                key={s}
+                className={`h-1 flex-1 rounded-full ${active ? "bg-ink" : "bg-hairline"}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {done ? (
-        <FinishScreen xp={done.xp} unlocked={done.unlocked} lessonTitle={lesson.title} />
+        <FinishScreen
+          xp={done.xp}
+          unlocked={done.unlocked}
+          lessonTitle={lesson.title}
+          correct={correct}
+          total={total}
+          missedQs={missedQs}
+        />
+      ) : phase === "overview" ? (
+        <OverviewScreen
+          title={lesson.title}
+          subtitle={lesson.subtitle}
+          words={vocab.length}
+          questions={total}
+          onStart={() => setPhase(vocab.length > 0 ? "vocab" : "quiz")}
+        />
       ) : phase === "vocab" && vocab.length > 0 ? (
         <VocabScreen
           items={vocab}
