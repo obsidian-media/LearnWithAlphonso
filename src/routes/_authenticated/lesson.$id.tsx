@@ -344,17 +344,78 @@ function VocabScreen({
   );
 }
 
+function OverviewScreen({
+  title,
+  subtitle,
+  words,
+  questions,
+  onStart,
+}: {
+  title: string;
+  subtitle: string;
+  words: number;
+  questions: number;
+  onStart: () => void;
+}) {
+  const steps = [
+    { label: "Vocabulary", detail: `${words} word${words === 1 ? "" : "s"} with examples` },
+    { label: "Practice", detail: `${questions} questions` },
+    { label: "Review", detail: "Anything you miss comes back later" },
+  ];
+  return (
+    <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
+        {subtitle}
+      </p>
+      <h2 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
+        {title}
+      </h2>
+      <div className="mt-6 space-y-2.5">
+        {steps.map((s, i) => (
+          <div
+            key={s.label}
+            className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+          >
+            <span className="tnum grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-xs font-semibold text-ink">
+              {i + 1}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-ink">{s.label}</span>
+              <span className="block truncate text-xs text-ink-soft/80">{s.detail}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-auto pt-6">
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+        >
+          Begin lesson
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FinishScreen({
   xp,
   unlocked,
   lessonTitle,
+  correct,
+  total,
+  missedQs,
 }: {
   xp: number;
   unlocked: string[];
   lessonTitle: string;
+  correct: number;
+  total: number;
+  missedQs: { q: Question; yours: string }[];
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 text-center">
+    <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
+
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
