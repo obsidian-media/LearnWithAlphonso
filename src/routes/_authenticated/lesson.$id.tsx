@@ -431,6 +431,31 @@ function FinishScreen({
       </p>
       <h2 className="mt-1 font-display text-[24px] font-semibold text-ink">{lessonTitle}</h2>
       <p className="mt-3 tnum text-lg font-semibold text-moss">+{xp} XP</p>
+      <p className="tnum mt-1 text-xs text-ink-soft">
+        {correct}/{total} correct
+      </p>
+
+      {missedQs.length > 0 && (
+        <div className="mt-6 w-full space-y-2 text-left">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Review · {missedQs.length} to practise again
+          </p>
+          {missedQs.map(({ q, yours }, i) => (
+            <div
+              key={`${q.id}-${i}`}
+              className="rounded-2xl border border-hairline bg-parchment px-4 py-3"
+            >
+              <p className="text-sm font-medium text-ink">{q.prompt}</p>
+              <p className="mt-1 text-xs text-ink-soft/80">
+                You said <span className="line-through">{yours}</span> ·{" "}
+                <span className="font-semibold text-moss">
+                  {q.type === "mc" ? q.choices[q.answer] : q.answer}
+                </span>
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <AnimatePresence>
         {unlocked.length > 0 && (
