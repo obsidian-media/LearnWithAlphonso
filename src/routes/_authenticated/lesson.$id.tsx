@@ -78,7 +78,7 @@ function LessonPage() {
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
-      setMissedQs((m) => [...m, q]);
+      setMissedQs((m) => [...m, { q, yours: picked }]);
       loseHeartLocal();
       void loseHeartRemote();
     }
