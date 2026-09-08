@@ -113,11 +113,51 @@ export type Database = {
         }
         Relationships: []
       }
+      language_progress: {
+        Row: {
+          cefr_level: string
+          created_at: string
+          language: string
+          league_tier: string
+          placement_level: string | null
+          placement_score: number | null
+          placement_taken_at: string | null
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          cefr_level?: string
+          created_at?: string
+          language: string
+          league_tier?: string
+          placement_level?: string | null
+          placement_score?: number | null
+          placement_taken_at?: string | null
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          cefr_level?: string
+          created_at?: string
+          language?: string
+          league_tier?: string
+          placement_level?: string | null
+          placement_score?: number | null
+          placement_taken_at?: string | null
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       lesson_completions: {
         Row: {
           completed_at: string
           correct: number
           id: string
+          language: string
           lesson_id: string
           total: number
           user_id: string
@@ -127,6 +167,7 @@ export type Database = {
           completed_at?: string
           correct: number
           id?: string
+          language?: string
           lesson_id: string
           total: number
           user_id: string
@@ -136,6 +177,7 @@ export type Database = {
           completed_at?: string
           correct?: number
           id?: string
+          language?: string
           lesson_id?: string
           total?: number
           user_id?: string
@@ -145,6 +187,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_language: string
           avatar_seed: string
           country: string | null
           created_at: string
@@ -153,6 +196,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_language?: string
           avatar_seed?: string
           country?: string | null
           created_at?: string
@@ -161,6 +205,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_language?: string
           avatar_seed?: string
           country?: string | null
           created_at?: string
@@ -178,6 +223,7 @@ export type Database = {
           id: string
           interval_days: number
           item_key: string
+          language: string
           lapses: number
           last_reviewed_at: string | null
           lesson_id: string
@@ -193,6 +239,7 @@ export type Database = {
           id?: string
           interval_days?: number
           item_key: string
+          language?: string
           lapses?: number
           last_reviewed_at?: string | null
           lesson_id: string
@@ -208,6 +255,7 @@ export type Database = {
           id?: string
           interval_days?: number
           item_key?: string
+          language?: string
           lapses?: number
           last_reviewed_at?: string | null
           lesson_id?: string
