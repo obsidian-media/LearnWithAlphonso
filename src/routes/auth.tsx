@@ -6,9 +6,10 @@ import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//")
+      ? { next: s.next }
+      : {},
   head: () => ({
     meta: [
       { title: "Sign in — Lingua" },
