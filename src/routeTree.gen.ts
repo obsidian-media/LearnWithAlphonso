@@ -29,6 +29,7 @@ import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticat
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse.$scenarioId'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -131,6 +132,11 @@ const AuthenticatedConverseScenarioIdRoute =
     path: '/$scenarioId',
     getParentRoute: () => AuthenticatedConverseRoute,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
 }
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
 }
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
 }
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
     | '/lesson/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
     | '/lesson/$id'
   id:
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/converse/$scenarioId'
     | '/_authenticated/lesson/$id'
   fileRoutesById: FileRoutesById
@@ -277,6 +289,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -421,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConverseScenarioIdRouteImport
       parentRoute: typeof AuthenticatedConverseRoute
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -474,6 +494,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
