@@ -6,6 +6,9 @@ import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Lingua" },
@@ -20,6 +23,11 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const afterAuth = () => {
+    if (next) window.location.href = next;
+    else navigate({ to: "/learn", replace: true });
+  };
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +38,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/learn", replace: true });
+      if (data.session) afterAuth();
     });
   }, [navigate]);
 
@@ -53,13 +61,13 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin + "/learn",
+            emailRedirectTo: window.location.origin + (next ?? "/learn"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
         if (error) throw error;
         if (data.session) {
-          navigate({ to: "/learn", replace: true });
+          afterAuth();
         } else {
           setNotice(
             "Almost there — check your email and click the confirmation link to activate your account.",
@@ -68,7 +76,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/learn", replace: true });
+        afterAuth();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -83,7 +91,8 @@ function AuthPage() {
     setBusy(true);
     try {
       const res = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/auth",
+        redirect_uri:
+          window.location.origin + "/auth" + (next ? `?next=${encodeURIComponent(next)}` : ""),
       });
       if (res.error) {
         setError(String(res.error));
@@ -91,7 +100,7 @@ function AuthPage() {
         return;
       }
       if (res.redirected) return;
-      navigate({ to: "/learn", replace: true });
+      afterAuth();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
