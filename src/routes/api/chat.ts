@@ -6,8 +6,8 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const key = process.env.NVIDIA_API_KEY;
+        if (!key) return new Response("Missing NVIDIA_API_KEY", { status: 500 });
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "chat");
         if (!quota.ok) return new Response(quota.message, { status: quota.status });
@@ -23,14 +23,22 @@ export const Route = createFileRoute("/api/chat")({
           ? [{ role: "system", content: body.systemPrompt }, ...messages]
           : messages;
 
-        const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
+        // OpenAI-compatible, so only the URL/key/model name change from the
+        // Lovable Gateway. Model id is env-configurable — NVIDIA's catalog
+        // shifts (e.g. the Nemotron-70B chat NIM was deprecated on
+        // build.nvidia.com) — verify the default below is still live at
+        // https://build.nvidia.com before relying on it, adjust via
+        // NVIDIA_CHAT_MODEL if not.
+        const model = process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct";
+        const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
-            model: "google/gemini-3.6-flash",
+            model,
             messages: finalMessages,
           }),
         });

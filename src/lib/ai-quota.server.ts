@@ -3,7 +3,11 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type QuotaKind = "chat" | "stt" | "tts";
 
-/** Hard per-user daily caps on AI usage. */
+/**
+ * Per-user daily caps on AI usage, for display only — the real cap is
+ * enforced inside `consume_ai_quota` in the database (see migration
+ * 20260910000000). Keep these in sync with that function.
+ */
 export const DAILY_LIMITS: Record<QuotaKind, number> = {
   chat: 60,
   stt: 60,
@@ -55,7 +59,6 @@ export async function consumeQuota(request: Request, kind: QuotaKind): Promise<Q
   const limit = DAILY_LIMITS[kind];
   const { data, error } = await supabase.rpc("consume_ai_quota", {
     _kind: kind,
-    _limit: limit,
   });
   if (error) return { ok: false, status: 500, message: "Could not verify your usage." };
 

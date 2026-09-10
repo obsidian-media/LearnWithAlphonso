@@ -4,8 +4,8 @@ export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const key = process.env.OPENAI_API_KEY;
+        if (!key) return new Response("Missing OPENAI_API_KEY", { status: 500 });
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "tts");
         if (!quota.ok) return new Response(quota.message, { status: quota.status });
@@ -17,14 +17,14 @@ export const Route = createFileRoute("/api/tts")({
         }
         const text = (body.text ?? "").trim();
         if (!text) return new Response("text required", { status: 400 });
-        const resp = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+        const resp = await fetch("https://api.openai.com/v1/audio/speech", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
-            model: "openai/gpt-4o-mini-tts",
+            model: "gpt-4o-mini-tts",
             input: text.slice(0, 2000),
             voice: body.voice || "alloy",
             response_format: "mp3",
