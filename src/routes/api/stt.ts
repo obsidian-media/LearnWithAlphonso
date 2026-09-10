@@ -4,8 +4,8 @@ export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const key = process.env.OPENAI_API_KEY;
+        if (!key) return new Response("Missing OPENAI_API_KEY", { status: 500 });
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "stt");
         if (!quota.ok) return new Response(quota.message, { status: quota.status });
@@ -16,9 +16,9 @@ export const Route = createFileRoute("/api/stt")({
         }
         const name = (file as File).name || "recording.webm";
         const out = new FormData();
-        out.append("model", "openai/gpt-4o-mini-transcribe");
+        out.append("model", "gpt-4o-mini-transcribe");
         out.append("file", file, name);
-        const resp = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+        const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
           method: "POST",
           headers: { Authorization: `Bearer ${key}` },
           body: out,

@@ -352,7 +352,7 @@ export type Database = {
     }
     Functions: {
       consume_ai_quota: {
-        Args: { _kind: string; _limit: number }
+        Args: { _kind: string }
         Returns: {
           allowed: boolean
           quota: number
