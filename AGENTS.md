@@ -1,18 +1,5 @@
 # AGENTS.md — English Buddy App
 
-## Lovable Connection
-
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
-
 ## Project Overview
 
 English Buddy is a mobile-first English learning app with 300 lessons across 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification.
@@ -52,9 +39,11 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 
 ## Testing
 
+No test runner is installed yet (no Vitest/Playwright) despite earlier docs
+claiming otherwise — see `audits/2026-09-09_ClaudeCode_EnglishBuddyApp33FullAudit.md`
+in the Boardroom repo. Only lint is currently wired up:
+
 ```sh
-npm run test        # Unit tests (Vitest)
-npm run test:e2e    # E2E tests (Playwright)
 npm run lint        # ESLint
 ```
 

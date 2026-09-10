@@ -2,7 +2,9 @@
 
 A full-stack mobile-first English learning app with gamification, AI-powered conversation practice, and a spaced repetition review system.
 
-**Live app**: https://english-buddy-app-33.lovable.app
+> Being decoupled from Lovable hosting/tooling as of TASK-078 — the
+> `lovable.app` URL above will move once redeployed (Vercel planned, see
+> `docs/DESIGN-english-buddy-33-decoupling.md` in the Boardroom repo).
 
 ## Tech Stack
 
@@ -12,7 +14,7 @@ A full-stack mobile-first English learning app with gamification, AI-powered con
 | **Styling** | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion |
 | **State** | Zustand (client) + TanStack Query (server) |
 | **Backend** | Supabase (PostgreSQL + Auth + RLS) |
-| **AI** | Gemini 3.6 Flash (chat) + GPT-4o-mini (TTS/STT) via Lovable Gateway |
+| **AI** | Gemini 3.6 Flash (chat, direct) + GPT-4o-mini (TTS/STT, direct via OpenAI) |
 | **Routing** | TanStack Router (file-based) |
 
 ## Features
@@ -59,7 +61,7 @@ The app uses the SM-2 algorithm to schedule review of missed items:
 git clone <this-repository-url>
 cd <repository-name>
 npm i
-cp .env.example .env  # Add your Supabase + Lovable keys
+cp .env.example .env  # Fill in your Supabase + AI provider keys
 npm run dev
 ```
 
@@ -69,7 +71,9 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_PUBLISHABLE_KEY=your-anon-key
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-LOVABLE_API_KEY=your-lovable-api-key  # For AI gateway
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # server-only, never VITE_-prefixed
+GEMINI_API_KEY=your-gemini-api-key    # chat
+OPENAI_API_KEY=your-openai-api-key    # TTS/STT
 ```
 
 ### Available Scripts
@@ -86,7 +90,7 @@ src/
 ├── components/          # React components (AppShell, icons, ui/)
 ├── data/               # Curriculum, levels, lesson bank, achievements
 ├── hooks/              # Custom React hooks
-├── integrations/       # Supabase client, Lovable OAuth
+├── integrations/       # Supabase client
 ├── lib/                # Progress store, server functions, utils
 └── routes/             # File-based routes (TanStack Router)
     ├── api/            # AI endpoints (chat, TTS, STT)
@@ -98,14 +102,6 @@ src/
 - `AUDIT.md` — Full codebase audit (security, architecture, accessibility, content, performance, UX, testing)
 - `LESSON_ASSETS.md` — Complete asset list for all lesson content (audio, images, icons, animations)
 - `ARCHITECTURE.md` — Architecture decision records and system design
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c8d49982-e065-4713-b385-a1a2eba6f01e).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## License
 
