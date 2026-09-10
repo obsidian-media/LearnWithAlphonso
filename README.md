@@ -14,7 +14,7 @@ A full-stack mobile-first English learning app with gamification, AI-powered con
 | **Styling** | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion |
 | **State** | Zustand (client) + TanStack Query (server) |
 | **Backend** | Supabase (PostgreSQL + Auth + RLS) |
-| **AI** | Gemini 3.6 Flash (chat, direct) + GPT-4o-mini (TTS/STT, direct via OpenAI) |
+| **AI** | NVIDIA NIM (chat, direct) + GPT-4o-mini (TTS/STT, direct via OpenAI) |
 | **Routing** | TanStack Router (file-based) |
 
 ## Features
@@ -72,7 +72,7 @@ SUPABASE_PUBLISHABLE_KEY=your-anon-key
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # server-only, never VITE_-prefixed
-GEMINI_API_KEY=your-gemini-api-key    # chat
+NVIDIA_API_KEY=your-nvidia-api-key    # chat (integrate.api.nvidia.com)
 OPENAI_API_KEY=your-openai-api-key    # TTS/STT
 ```
 
