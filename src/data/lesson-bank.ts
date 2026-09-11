@@ -368,6 +368,64 @@ programs computers|programmer
 cleans buildings|cleaner
 delivers babies|midwife`,
   },
+  {
+    id: "a1p13", title: "Animals", subtitle: "Pets and wild animals", kind: "pair",
+    prompt: "This animal is a…", note: "Common animals, from pets to farm and wild species.",
+    data: `barks and wags its tail|dog
+says meow|cat
+gives us milk|cow
+lays eggs and clucks|hen
+hops and has long ears|rabbit
+is the king of the jungle|lion
+has a long trunk|elephant
+is very tall with a long neck|giraffe
+lives in water and has fins|fish
+can fly and has feathers|bird
+is slow and carries a shell|turtle
+says quack|duck
+is pink and says oink|pig
+has stripes like a cat|tiger
+climbs trees and eats bananas|monkey
+is black and white and eats bamboo|panda
+hops on strong back legs|kangaroo
+is a very large grey animal with tusks|elephant seal
+lives in a hive and makes honey|bee
+spins a web|spider
+is a fast desert animal with a hump|camel
+swims and is the largest animal|whale
+has a shell and moves slowly|snail
+barks like a dog but is wild|fox
+flies at night and sleeps upside down|bat`,
+  },
+  {
+    id: "a1p14", title: "Days, Months & Time", subtitle: "Everyday time expressions", kind: "cloze",
+    note: "Days of the week, months, and simple time phrases.",
+    data: `The first day of the school week is ___.|Monday
+The last day of the weekend is ___.|Sunday
+Christmas is in the month of ___.|December
+The shortest month of the year is ___.|February
+We eat lunch in the ___.|afternoon
+We usually sleep at ___.|night
+There are seven days in a ___.|week
+There are twelve ___ in a year.|months
+My birthday is in the month of ___.|July
+The clock shows what ___ it is.|time
+I wake up early in the ___.|morning
+The first month of the year is ___.|January
+Halloween is celebrated in ___.|October
+We go to work on weekday ___, not weekends.|mornings
+A year has three hundred and sixty-five ___.|days
+The day after Friday is ___.|Saturday
+Summer holidays often start in ___.|June
+The day before Wednesday is ___.|Tuesday
+New Year's Eve is on the last day of the ___.|year
+There are sixty minutes in an ___.|hour
+There are sixty seconds in a ___.|minute
+The middle day of the week is ___.|Wednesday
+Valentine's Day is celebrated with cards and ___.|flowers
+We often relax on the ___.|weekend
+The day after Thursday is ___.|Friday`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -661,6 +719,64 @@ quiet|quietest
 strange|strangest
 useful|most useful`,
   },
+  {
+    id: "a2p11", title: "At the Restaurant", subtitle: "Ordering and dining out", kind: "cloze",
+    note: "Common phrases for eating out.",
+    data: `Could I see the ___, please?|menu
+I'd like to ___ a table for two.|book
+Are you ready to ___?|order
+I'll ___ the chicken, please.|have
+Could we have the ___ when you're ready?|bill
+Is service ___ in the price?|included
+Do you have any ___ dishes for people who don't eat meat?|vegetarian
+I'm allergic to ___, so no peanuts please.|nuts
+Could I get some tap ___ as well?|water
+The ___ recommended the fish today.|waiter
+We're just ___ a table for now, not ready to order.|looking
+Could you bring some more ___, please?|bread
+I'd like my steak ___, not too well done.|medium
+Is there a ___ menu for the children?|kids
+Can I pay by ___ card?|credit
+We'd like to sit by the ___, please.|window
+This soup is ___ hot, be careful.|very
+Could we get some extra ___ for the fries?|ketchup
+The ___ was excellent tonight, please thank the chef.|meal
+I'll have the same ___ as my friend.|dish
+Do you take ___ or only cash?|cards
+Could you box this up, we'd like a ___ bag?|doggy
+The restaurant was fully ___, so we waited outside.|booked
+Please leave a ___ for the staff if service was good.|tip
+Enjoy your ___!|dinner`,
+  },
+  {
+    id: "a2p12", title: "Adverbs of Frequency", subtitle: "How often things happen", kind: "pair",
+    prompt: "How often does \"%s\" happen?", note: "Frequency adverbs matched to how often they mean.",
+    data: `always|every single time, without exception
+usually|the great majority of the time
+normally|as a rule, under typical conditions
+generally|in most cases you'll find
+frequently|on many separate occasions
+often|quite a lot, many times
+regularly|at fixed, repeated intervals
+sometimes|on certain occasions but not most
+occasionally|now and then, but not often
+periodically|at intervals, coming and going
+now and then|every so often, casually
+once in a while|not very often, infrequently
+from time to time|at scattered, irregular moments
+seldom|only rarely, not very often
+rarely|very infrequently indeed
+hardly ever|almost never at all
+scarcely ever|barely ever, close to never
+barely ever|almost not at all
+infrequently|not often, with gaps between
+never|not on any occasion, ever
+constantly|without stopping, all the time
+continually|again and again over time
+repeatedly|one time after another
+routinely|as part of a fixed routine
+habitually|out of a settled habit`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -953,6 +1069,64 @@ We should walk instead of ___ short distances.|driving
 The river was cleaned up after years of ___.|neglect
 Wind farms generate clean ___.|energy
 Protecting the environment is everyone's ___.|responsibility`,
+  },
+  {
+    id: "b1p11", title: "Education & Learning", subtitle: "School, study and exams", kind: "cloze",
+    note: "B1-level vocabulary for talking about education.",
+    data: `She is studying for a ___ in biology at university.|degree
+He failed the exam, so he has to ___ it in June.|resit
+Students must ___ their assignments by Friday.|submit
+The teacher gave us some homework to ___ overnight.|complete
+She got a ___ mark of ninety percent.|top
+He dropped out of school and never got his ___.|diploma
+The lecture ___ was very clear and easy to follow.|hall
+We have a ___ exam at the end of term.|final
+She was awarded a ___ to study abroad.|scholarship
+He struggled with maths, so he hired a private ___.|tutor
+The school offers extra ___ classes after hours.|tutoring
+Attendance is compulsory for all ___ students.|registered
+The professor asked us to ___ our essays in class.|present
+She is doing a ___ degree in psychology.|master's
+He was ___ for cheating during the exam.|caught
+The library is a quiet place to ___ for tests.|revise
+Class ___ starts at nine every morning.|registration
+She earned a ___ grade in her final report.|distinction
+The teacher marked the essay and gave useful ___.|feedback
+He is ___ to graduate next summer.|due
+The school ___ all students who miss too many classes.|warns
+Good study ___ help you remember more information.|habits
+She took extra ___ classes to improve her English.|evening
+The university offers many ___ courses online.|distance
+He passed every subject except ___, which he must repeat.|chemistry`,
+  },
+  {
+    id: "b1p12", title: "Describing Trends", subtitle: "Talking about graphs and change", kind: "cloze",
+    note: "B1-level language for describing statistics and change over time.",
+    data: `Sales ___ sharply after the new product launched.|increased
+Prices ___ slightly over the last three months.|rose
+Unemployment ___ steadily since last year.|fell
+The graph shows a clear ___ in online shopping.|rise
+Profits ___ dramatically after the factory closed.|dropped
+The number of visitors ___ constant throughout the year.|remained
+There was a sudden ___ in demand for masks.|surge
+The trend shows a gradual ___ in average income.|increase
+The company's revenue ___ off after a strong start.|levelled
+House prices have ___ significantly in the city.|risen
+The population is expected to ___ over the next decade.|grow
+Costs ___ slightly before stabilising again.|fluctuated
+The chart shows a steady ___ in pollution levels.|decline
+Exports ___ by ten percent last quarter.|shrank
+The line on the graph shows a sharp ___ in usage.|peak
+Interest rates have stayed ___ for two years.|stable
+The number of students ___ every year since 2020.|increases
+Traffic in the city has ___ noticeably this year.|worsened
+The figures show a slight ___ compared to last month.|dip
+Demand ___ rapidly after the advertising campaign.|grew
+The report predicts a further ___ in oil prices.|fall
+Wages have barely ___ despite rising costs.|changed
+The company saw a huge ___ in customer complaints.|drop
+Tourism numbers ___ to record levels last summer.|climbed
+Overall, the data shows an upward ___.|trend`,
   },
 ];
 
@@ -1305,6 +1479,64 @@ Forensic experts examined the ___ carefully.|scene
 The gang was involved in a series of ___.|robberies
 He was found ___ innocent by the jury.|not`,
   },
+  {
+    id: "b2p13", title: "Politics & Society", subtitle: "Government and public debate", kind: "cloze",
+    note: "B2-level vocabulary for discussing politics and social issues.",
+    data: `The government announced a new ___ to tackle unemployment.|policy
+Voters will go to the ___ next month.|polls
+The party won a clear ___ in parliament.|majority
+Citizens have the right to ___ in elections.|vote
+The proposal sparked a heated public ___.|debate
+The minister was forced to ___ after the scandal.|resign
+The new law will ___ into effect next year.|come
+Protesters gathered to ___ against the reform.|demonstrate
+The opposition ___ the government's handling of the crisis.|criticised
+Many people feel ___ by the lack of change.|frustrated
+The council held a ___ to discuss local issues.|meeting
+The bill was passed after months of ___.|negotiation
+Inequality remains a major ___ in society.|issue
+The campaign focused on ___ reform in healthcare.|systemic
+Freedom of ___ is protected by the constitution.|speech
+The election result surprised most political ___.|analysts
+The president signed the treaty after lengthy ___.|talks
+Local communities are demanding greater ___ in decisions.|say
+The government faces pressure to ___ its spending.|cut
+Turnout at the election was ___ lower than expected.|significantly
+The candidate promised to ___ taxes for low earners.|lower
+Public trust in politicians has ___ in recent years.|declined
+The referendum will decide whether the country should ___ the union.|leave
+Activists are calling for stronger ___ rights.|workers'
+The new policy aims to reduce the wealth ___.|gap`,
+  },
+  {
+    id: "b2p14", title: "Arts & Culture", subtitle: "Museums, film and performance", kind: "cloze",
+    note: "B2-level vocabulary for discussing the arts.",
+    data: `The gallery is hosting an ___ of modern sculpture.|exhibition
+The film received ___ reviews from critics.|mixed
+The novel was later ___ into a successful film.|adapted
+The orchestra gave a ___ performance last night.|stunning
+The museum's new wing displays ___ artefacts.|ancient
+The play explores themes of loss and ___.|identity
+Tickets for the concert sold out within ___.|minutes
+The director is known for his unique visual ___.|style
+The choreography was both bold and ___.|graceful
+The exhibition features works by local ___.|artists
+The band's latest album was a huge commercial ___.|success
+Critics praised the film's stunning ___.|cinematography
+The theatre company is famous for its innovative ___.|productions
+The painting sold at auction for a record ___.|price
+The festival celebrates classical and contemporary ___.|music
+The actor gave a deeply moving ___.|performance
+The sculpture was carved from a single block of ___.|marble
+The author's latest book explores modern ___.|society
+The gallery curator selected pieces that challenge ___.|perception
+The documentary sheds light on an overlooked ___ movement.|artistic
+The opera house is renowned for its stunning ___.|acoustics
+The mural depicts the city's rich cultural ___.|heritage
+The critics called the performance a true work of ___.|art
+The exhibition runs until the end of the ___.|month
+The novel won several literary ___ this year.|awards`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -1597,6 +1829,64 @@ The results were ___ statistically significant.|deemed
 The team ___ their methodology in the appendix.|detailed
 The study ___ a gap in the existing literature.|addresses
 The conclusions are ___ by the limited sample.|constrained`,
+  },
+  {
+    id: "c1p11", title: "Diplomatic Language", subtitle: "Softening and hedging in formal talk", kind: "cloze",
+    note: "C1-level diplomatic phrasing for sensitive conversations.",
+    data: `With all due ___, I have to disagree with that assessment.|respect
+It might be ___ to reconsider the timing of this decision.|prudent
+We would ___ appreciate a more detailed explanation.|greatly
+Perhaps we could ___ this matter from a different angle.|approach
+It's not entirely ___ that the plan will succeed.|clear
+There are, ___, a few concerns we should address first.|however
+We understand your ___, but the budget remains fixed.|position
+It would be ___ to say the negotiations went smoothly.|generous
+Let's not ___ this issue any further today.|belabour
+We ___ acknowledge the difficulties this has caused.|fully
+It might be worth ___ a compromise instead.|considering
+We remain open to ___ should circumstances change.|discussion
+While we ___ your concerns, the decision stands.|understand
+It would be ___ to comment further at this stage.|premature
+We'd like to ___ our gratitude for your patience.|express
+There is, ___, room for further discussion.|admittedly
+We should ___ from making any hasty judgements.|refrain
+It may be ___ to revisit this proposal next quarter.|advisable
+We ___ hope this matter can be resolved amicably.|sincerely
+Let us ___ the matter with the care it deserves.|treat
+It would be ___ to overstate the challenges ahead.|easy
+We trust this explanation will ___ any confusion.|clear up
+Some concerns, ___ valid, fall outside our remit.|while
+We ___ that further consultation is required.|maintain
+It is with some ___ that we must decline the offer.|reluctance`,
+  },
+  {
+    id: "c1p12", title: "Idiomatic Expressions II", subtitle: "Meaning match, advanced idioms", kind: "pair",
+    prompt: "The idiom \"%s\" means…", note: "Advanced idioms beyond the basics.",
+    data: `to jump on the bandwagon|to join something popular
+to read between the lines|to understand hidden meaning
+to bite the bullet|to accept something difficult
+to burn bridges|to end a relationship badly
+to see eye to eye|to agree completely
+to go the extra mile|to make extra effort
+to cut to the chase|to get to the point quickly
+to hit the nail on the head|to be exactly right
+to be on the same page|to have the same understanding
+to throw in the towel|to give up
+to keep someone at arm's length|to avoid becoming close
+to have a change of heart|to change one's opinion
+to be caught red-handed|to be caught doing something wrong
+to take something with a grain of salt|to not fully believe it
+to beat around the bush|to avoid speaking directly
+to be a blessing in disguise|to seem bad but turn out good
+to let the cat out of the bag|to reveal a secret
+to go back to the drawing board|to start planning again
+to raise the bar|to increase the standard expected
+to be under the weather|to feel slightly unwell
+to pull strings|to use influence to get something
+to be a double-edged sword|to have both good and bad effects
+to keep one's fingers crossed|to hope for good luck
+to be at a crossroads|to face an important decision
+to weather the storm|to survive a difficult period`,
   },
 ];
 
