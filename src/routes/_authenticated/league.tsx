@@ -12,9 +12,9 @@ export const Route = createFileRoute("/_authenticated/league")({
   component: LeaguePage,
   head: () => ({
     meta: [
-      { title: "League — Lingua" },
+      { title: "League — Alphonso" },
       { name: "description", content: "Compete on weekly and all-time leaderboards with learners worldwide." },
-      { property: "og:title", content: "League — Lingua" },
+      { property: "og:title", content: "League — Alphonso" },
       { property: "og:description", content: "Weekly leagues, friends, and country leaderboards." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

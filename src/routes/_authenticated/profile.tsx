@@ -14,9 +14,9 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
   head: () => ({
     meta: [
-      { title: "Profile — Lingua" },
+      { title: "Profile — Alphonso" },
       { name: "description", content: "Your streak, XP, achievements, and account settings." },
-      { property: "og:title", content: "Profile — Lingua" },
+      { property: "og:title", content: "Profile — Alphonso" },
       { property: "og:description", content: "Track your English learning progress and achievements." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -176,7 +176,7 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "lingua-my-data.json";
+      a.download = "alphonso-my-data.json";
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

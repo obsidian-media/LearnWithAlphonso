@@ -7,9 +7,9 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Lingua — Learn English, one lesson at a time" },
+      { title: "Learn with Alphonso — English, one lesson at a time" },
       { name: "description", content: "A calm, gamified way to build real English skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices." },
-      { property: "og:title", content: "Lingua — Learn English, one lesson at a time" },
+      { property: "og:title", content: "Learn with Alphonso — English, one lesson at a time" },
       { property: "og:description", content: "Bite-size English lessons, streaks, and leagues that stay with you." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -35,9 +35,9 @@ function Landing() {
           className="flex items-center gap-2"
         >
           <div className="grid size-8 place-items-center rounded-lg bg-moss text-surface">
-            <span className="font-display text-sm font-semibold">L</span>
+            <span className="font-display text-sm font-semibold">A</span>
           </div>
-          <span className="font-display text-[16px] font-semibold tracking-tight text-ink">Lingua</span>
+          <span className="font-display text-[16px] font-semibold tracking-tight text-ink">Alphonso</span>
         </motion.div>
 
         <motion.div

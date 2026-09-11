@@ -11,12 +11,12 @@ export const Route = createFileRoute("/_authenticated/review")({
   component: ReviewPage,
   head: () => ({
     meta: [
-      { title: "Review — Lingua" },
+      { title: "Review — Alphonso" },
       {
         name: "description",
         content: "Spaced-repetition review of the questions you got wrong.",
       },
-      { property: "og:title", content: "Review — Lingua" },
+      { property: "og:title", content: "Review — Alphonso" },
       {
         property: "og:description",
         content: "Bring back the items you missed, exactly when you're about to forget them.",

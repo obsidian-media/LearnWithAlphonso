@@ -7,9 +7,9 @@ export const Route = createFileRoute("/_authenticated/converse")({
   component: ConversePage,
   head: () => ({
     meta: [
-      { title: "Converse — Lingua" },
+      { title: "Converse — Alphonso" },
       { name: "description", content: "Voice roleplay with an AI English tutor: coffee shop, job interview, and more." },
-      { property: "og:title", content: "Converse — Lingua" },
+      { property: "og:title", content: "Converse — Alphonso" },
       { property: "og:description", content: "Practice real English conversations with an AI tutor." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

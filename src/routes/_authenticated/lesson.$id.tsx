@@ -14,9 +14,9 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPage,
   head: () => ({
     meta: [
-      { title: "Lesson — Lingua" },
+      { title: "Lesson — Alphonso" },
       { name: "description", content: "Practice English with a quick interactive lesson." },
-      { property: "og:title", content: "Lesson — Lingua" },
+      { property: "og:title", content: "Lesson — Alphonso" },
       { property: "og:description", content: "Practice English with a quick interactive lesson." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -11,9 +11,9 @@ export const Route = createFileRoute("/auth")({
       : {},
   head: () => ({
     meta: [
-      { title: "Sign in — Lingua" },
+      { title: "Sign in — Alphonso" },
       { name: "description", content: "Sign in to sync your English learning progress across devices." },
-      { property: "og:title", content: "Sign in — Lingua" },
+      { property: "og:title", content: "Sign in — Alphonso" },
       { property: "og:description", content: "Save your streak, XP, and league rank to your account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
