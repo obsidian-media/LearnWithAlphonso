@@ -1,4 +1,5 @@
 import { curriculum, type Lesson, type Question } from "./curriculum";
+import { VOCAB_IMAGES } from "./vocab-images";
 
 export type VocabItem = {
   /** The word, phrase or form to learn. */
@@ -7,6 +8,8 @@ export type VocabItem = {
   meaning: string;
   /** A model sentence showing the term in use. */
   example: string;
+  /** Stock photo illustrating the term, when one exists in VOCAB_IMAGES. */
+  image?: { url: string; alt: string; credit: string };
 };
 
 function answerOf(q: Question): string {
@@ -37,7 +40,7 @@ export function deriveVocab(lesson: Lesson): VocabItem[] {
     const key = titleCaseKey(term);
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push({ term, meaning: q.explanation, example: exampleOf(q) });
+    items.push({ term, meaning: q.explanation, example: exampleOf(q), image: VOCAB_IMAGES[key] });
   }
   return items;
 }
