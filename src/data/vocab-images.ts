@@ -135,4 +135,60 @@ export const VOCAB_IMAGES: Record<string, VocabImage> = {
     alt: "A collection of vintage suitcases stacked high, showcasing diverse textures and colors.",
     credit: "Ahmet  Kayra",
   },
+  // Batch 2 — added alongside the "Family & People" and "Food & Drink" packs.
+  mother: {
+    url: "https://images.pexels.com/photos/38624440/pexels-photo-38624440.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Warm portrait of a mother and son sharing a happy embrace at home.",
+    credit: "Krishna Kids  Photography",
+  },
+  father: {
+    url: "https://images.pexels.com/photos/33292938/pexels-photo-33292938.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A father holds his child as they enjoy ice cream together.",
+    credit: "Артем Зелюткин",
+  },
+  sister: {
+    url: "https://images.pexels.com/photos/2469645/pexels-photo-2469645.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A captivating portrait of two young sisters with striking blue eyes in a studio setting.",
+    credit: "Janko Ferlic",
+  },
+  brother: {
+    url: "https://images.pexels.com/photos/590472/pexels-photo-590472.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A joyful brother and sister smiling outdoors in a sunlit garden.",
+    credit: "Janko Ferlic",
+  },
+  daughter: {
+    url: "https://images.pexels.com/photos/28589227/pexels-photo-28589227.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Mother and daughter enjoying quality time outdoors at a cafe.",
+    credit: "Nishant Aneja",
+  },
+  grandmother: {
+    url: "https://images.pexels.com/photos/18671527/pexels-photo-18671527.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A smiling elderly woman sitting indoors, exuding warmth and contentment.",
+    credit: "Q. Hưng Phạm",
+  },
+  bacon: {
+    url: "https://images.pexels.com/photos/9296995/pexels-photo-9296995.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A traditional English breakfast featuring eggs, sausage, bacon, and beans.",
+    credit: "Jesus Cabrera",
+  },
+  tomato: {
+    url: "https://images.pexels.com/photos/18254763/pexels-photo-18254763.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of vibrant ripe cherry tomatoes with fresh dew.",
+    credit: "frank minjarez",
+  },
+  cake: {
+    url: "https://images.pexels.com/photos/32191351/pexels-photo-32191351.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant pink frosted cake with candles on a decorative party table.",
+    credit: "Nadiye Şamlı",
+  },
+  cheese: {
+    url: "https://images.pexels.com/photos/24206934/pexels-photo-24206934.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A delectable brunch platter featuring assorted cheeses, fruits, and bagel.",
+    credit: "Ali Dashti",
+  },
+  bread: {
+    url: "https://images.pexels.com/photos/31744871/pexels-photo-31744871.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Top view of fresh, rustic brown bread slices on a white plate.",
+    credit: "Gaurav  Sinha",
+  },
 };
