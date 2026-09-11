@@ -194,6 +194,64 @@ ___ long does it take?|How
 ___ bag is on the chair?|Whose
 ___ do we start?|When`,
   },
+  {
+    id: "a1p7", title: "Family & People", subtitle: "Male → female counterparts", kind: "pair",
+    prompt: "Female form of \"%s\":", note: "Many family and role words change form by gender in English.",
+    data: `father|mother
+brother|sister
+son|daughter
+husband|wife
+uncle|aunt
+nephew|niece
+grandfather|grandmother
+boy|girl
+man|woman
+king|queen
+prince|princess
+actor|actress
+waiter|waitress
+host|hostess
+hero|heroine
+groom|bride
+gentleman|lady
+godfather|godmother
+grandson|granddaughter
+stepfather|stepmother
+father-in-law|mother-in-law
+landlord|landlady
+widower|widow
+duke|duchess
+salesman|saleswoman`,
+  },
+  {
+    id: "a1p8", title: "Food & Drink", subtitle: "Everyday meals", kind: "cloze",
+    note: "High-frequency food vocabulary used in daily conversation.",
+    data: `I'd like a cup of ___, please.|coffee
+Can I have some ___ with my tea?|milk
+We had ___ and eggs for breakfast.|bacon
+She ordered a bowl of ___ soup.|tomato
+Pass the ___ and pepper, please.|salt
+I'll have a slice of ___ bread.|brown
+Would you like some ___ on your salad?|dressing
+He always has ___ for dessert.|cake
+Can we get the ___ for the table?|menu
+I'm allergic to ___.|peanuts
+She drinks ___ juice every morning.|orange
+We need more ___ for the sandwiches.|cheese
+Could you pass the ___ for my tea?|sugar
+Let's order a ___ of pizza to share.|slice
+He spread some ___ on his toast.|jam
+I prefer ___ tea to green tea.|black
+Could I have the bill, or the ___?|check
+This restaurant is famous for its ___.|steak
+She's a vegetarian, so no ___ for her.|meat
+We ran out of ___ for breakfast.|bread
+This dish needs a squeeze of ___.|lemon
+He always orders his steak ___.|rare
+Could we split the ___ between us?|bill
+This cake is made with real ___.|butter
+Would you like ___ or sparkling water?|still`,
+  },
 ];
 
 const A2: Pack[] = [

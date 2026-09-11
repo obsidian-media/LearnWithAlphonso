@@ -50,8 +50,6 @@ function LessonPage() {
   const vocab = useMemo(() => vocabForLesson(id), [id]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
 
-
-
   if (!maybeLesson) {
     return (
       <LessonFrame>
@@ -155,7 +153,13 @@ function LessonPage() {
             />
           </div>
           <span className="tnum shrink-0 text-[11px] font-medium text-ink-soft">
-            {done ? "Done" : phase === "quiz" ? `${idx + 1}/${total}` : phase === "vocab" ? "Words" : "Start"}
+            {done
+              ? "Done"
+              : phase === "quiz"
+                ? `${idx + 1}/${total}`
+                : phase === "vocab"
+                  ? "Words"
+                  : "Start"}
           </span>
         </div>
         <div className="mt-3 flex gap-1.5">
@@ -321,13 +325,23 @@ function VocabScreen({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+            className="overflow-hidden rounded-2xl border border-hairline bg-surface"
           >
-            <p className="font-display text-base font-semibold text-ink">{v.term}</p>
-            <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-            <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
-              {v.example}
-            </p>
+            {v.image && (
+              <img
+                src={v.image.url}
+                alt={v.image.alt}
+                loading="lazy"
+                className="h-32 w-full object-cover"
+              />
+            )}
+            <div className="px-4 py-3.5">
+              <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+              <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
+              <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
+                {v.example}
+              </p>
+            </div>
           </motion.div>
         ))}
       </div>
@@ -415,7 +429,6 @@ function FinishScreen({
 }) {
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
-
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -423,7 +436,13 @@ function FinishScreen({
         className="mb-6 grid size-24 place-items-center rounded-full bg-moss text-surface hard-shadow"
       >
         <svg viewBox="0 0 24 24" className="size-12" fill="none">
-          <path d="m6 12 4 4 8-9" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m6 12 4 4 8-9"
+            stroke="white"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </motion.div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
