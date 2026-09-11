@@ -484,6 +484,180 @@ He ___ home late on Fridays.|arrives
 We ___ the weekend relaxing at home.|spend
 I always ___ my alarm before I sleep.|set`,
   },
+  {
+    id: "a1p17", title: "In the Classroom", subtitle: "School objects and language", kind: "cloze",
+    note: "Common classroom vocabulary for beginners.",
+    data: `Open your ___ to page ten.|book
+Please write on the ___.|whiteboard
+I need a ___ to write my answer.|pen
+Can I borrow your ___ to draw a line?|ruler
+The ___ sits at the front of the class.|teacher
+Please put your hand ___ if you know the answer.|up
+We do our homework in a ___.|notebook
+The students sit at their ___.|desks
+Please ___ your books before the test.|close
+The teacher gave us a new ___ today.|worksheet
+I forgot my ___, so I can't do the maths today.|calculator
+Please ___ to the teacher carefully.|listen
+The ___ rings at the end of the lesson.|bell
+We use a ___ to erase mistakes.|rubber
+Please sit ___ and be quiet.|down
+The teacher asked us to ___ our hands.|raise
+I need to ___ my pencil, it's too short.|sharpen
+Our classroom has a big ___ on the wall.|map
+Please hand in your ___ at the end of class.|homework
+The students are reading their ___ quietly.|textbooks
+We have a test ___ Friday.|on
+Please turn to the next ___.|page
+The teacher wrote the date on the ___.|board
+I keep my pens in a ___.|pencil case
+Please be ___ during the exam.|quiet`,
+  },
+  {
+    id: "a1p18", title: "Describing Things", subtitle: "Adjective + noun matches", kind: "pair",
+    prompt: "Which noun goes with \"%s\"?", note: "Common adjectives matched to a noun they naturally describe.",
+    data: `sharp|knife
+soft|pillow
+hard|rock
+bright|light
+loud|noise
+quiet|library
+fast|car
+slow|turtle
+heavy|suitcase
+light|feather
+hot|fire
+cold|ice
+sweet|sugar
+sour|lemon
+tall|building
+short|pencil
+wide|road
+narrow|path
+clean|kitchen
+dirty|shoes
+full|glass
+empty|bottle
+new|phone
+old|book
+wet|towel`,
+  },
+  {
+    id: "a1p19", title: "At the Supermarket", subtitle: "Shopping for groceries", kind: "cloze",
+    note: "Everyday vocabulary for grocery shopping.",
+    data: `I need to buy some ___ for dinner tonight.|food
+Can you push the ___ while I shop?|trolley
+Put the apples in the ___.|basket
+We're out of ___, so I need to buy more bread.|bread
+Please check the ___ before you buy the milk.|date
+The ___ is at the front of the shop.|checkout
+I forgot my shopping ___ at home.|list
+This ___ is on sale this week.|item
+Could you weigh these ___ for me?|vegetables
+I paid with my ___ card.|debit
+The ___ scanned each item quickly.|cashier
+We need to buy more ___ for breakfast.|eggs
+The ___ are in aisle five.|snacks
+I always bring my own shopping ___.|bag
+Could you tell me where the ___ is?|dairy section
+This shop has a big ___ this week.|discount
+I need to buy some ___ for cooking.|oil
+The queue at the ___ was very long.|till
+Please put the frozen food in the ___.|freezer
+I always check the ___ before I buy something.|price
+We ran out of ___, so buy some soap.|soap
+The shop closes at ___ o'clock.|nine
+I need a ___ to carry all these bags.|bag for life
+Could you get some ___ for the salad?|lettuce
+The receipt shows the total ___.|amount`,
+  },
+  {
+    id: "a1p20", title: "Transport & Travel Basics", subtitle: "Getting from A to B", kind: "cloze",
+    note: "Basic transport vocabulary for beginners.",
+    data: `I go to work by ___ every day.|bus
+The ___ leaves from platform three.|train
+We need to catch a ___ to the airport.|taxi
+I ride my ___ to school.|bike
+The ___ takes off in an hour.|plane
+Could you tell me where the ___ stop is?|coach
+I usually ___ to work, it's not far.|walk
+The ___ station is near my house.|metro
+We need to buy a ___ before we board.|ticket
+The ___ was late this morning.|tram
+I left my ___ at home, so I can't drive.|keys
+The ___ takes you across the river.|ferry
+Please fasten your ___ before we take off.|seatbelt
+The ___ is the fastest way to travel abroad.|jet
+I usually take the ___ to avoid traffic.|underground
+Our ___ leaves at six in the morning.|flight
+The ___ dropped us right outside the hotel.|cab
+I need to ___ my ticket before boarding.|show
+The road was closed, so we took a ___.|detour
+We waited at the ___ for twenty minutes.|station
+The ___ was full, so we had to stand.|carriage
+I always check the ___ before I travel.|timetable
+The car needs more ___ before the trip.|petrol
+We arrived at the ___ two hours early.|airport
+The ___ takes you underground across the city.|subway`,
+  },
+  {
+    id: "a1p21", title: "Parts of the Body", subtitle: "Naming body parts", kind: "pair",
+    prompt: "Point to your…", note: "Basic body part vocabulary.",
+    data: `you see with these|eyes
+you hear with these|ears
+you smell with this|nose
+you speak with this|mouth
+you chew with these|teeth
+this is on top of your neck|head
+these help you walk|legs
+these help you hold things|hands
+you bend this in the middle of your arm|elbow
+you bend this in the middle of your leg|knee
+these are at the end of your legs|feet
+these are at the end of your hands|fingers
+this connects your head to your body|neck
+this is in the middle of your body|stomach
+these are at the end of your feet|toes
+this pumps blood around your body|heart
+you use these to breathe|lungs
+this covers your whole body|skin
+these grow on your head|hair
+this is above your eyes|eyebrow
+these are on the sides of your face|cheeks
+this is at the front of your leg, below the knee|shin
+these connect your hands to your arms|wrists
+this connects your feet to your legs|ankle
+this is the largest bone in your face|jaw`,
+  },
+  {
+    id: "a1p22", title: "Hobbies & Free Time", subtitle: "What people enjoy doing", kind: "pair",
+    prompt: "This hobby involves…", note: "Common free-time activities.",
+    data: `reading|books
+watching|films
+listening to|music
+playing|video games
+taking|photographs
+drawing|pictures
+painting|art
+dancing|to music
+singing|songs
+collecting|stamps
+gardening|plants
+baking|cakes
+writing|stories
+traveling|new places
+camping|outdoors
+fishing|by the river
+cycling|on a bike
+running|for exercise
+swimming|in a pool
+knitting|with wool
+enjoying|board games
+following|sports on TV
+volunteering|in the community
+learning|a new language
+meditating|for relaxation`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -893,6 +1067,180 @@ Let's ___ on a place to meet.|agree
 I'll ___ the tickets in advance.|book
 We're all ___ to meet at six sharp.|set`,
   },
+  {
+    id: "a2p15", title: "Post Office & Bank", subtitle: "Everyday errands", kind: "cloze",
+    note: "A2-level vocabulary for post office and banking errands.",
+    data: `I'd like to send this ___ to Spain, please.|parcel
+Could I have a ___ for this letter?|stamp
+I need to ___ some money into my account.|deposit
+Could I ___ some cash from the machine?|withdraw
+I'd like to open a new bank ___.|account
+The parcel should arrive within three working ___.|days
+Could you weigh this ___ for me?|package
+I need to ___ this form before I send it.|fill in
+The ___ machine is outside the bank.|ATM
+Could I get a ___ for this transaction?|receipt
+I'd like to send this by ___ post.|airmail
+My card was ___ by the machine.|declined
+I need to ___ my PIN number.|change
+The queue at the ___ was very long today.|post office
+Could you check my account ___, please?|balance
+I'd like to ___ a cheque, please.|cash
+The letter needs more ___ to be sent abroad.|stamps
+I forgot my ___ number for the account.|PIN
+Could I transfer money to another ___?|bank
+The bank ___ closes at five o'clock.|branch
+I need to ___ my bank card, it's expired.|renew
+Could you tell me the ___ to send this parcel?|cost
+I'd like to set up a standing ___.|order
+The clerk asked me to ___ the form.|sign
+I need to collect a ___ from the post office.|delivery`,
+  },
+  {
+    id: "a2p16", title: "Your Neighbourhood", subtitle: "Describing where you live", kind: "cloze",
+    note: "A2-level vocabulary for describing a local area.",
+    data: `My ___ is very quiet and friendly.|neighbourhood
+There's a small ___ at the end of my street.|park
+The ___ next door always says hello.|neighbour
+We have a good ___ near our house.|school
+There's a busy ___ close to where I live.|road
+My area has lots of ___ shops.|local
+The ___ centre is a ten-minute walk away.|shopping
+I live in a ___ area, not the city.|residential
+There's a nice ___ where I walk my dog.|field
+The bus ___ is right outside my house.|stop
+My street is very ___ at night.|quiet
+We have a great ___ where I can buy fresh food.|market
+The ___ station is a short walk from home.|train
+There's a lovely ___ near my flat.|café
+My neighbourhood is close to the city ___.|centre
+The area has lots of green ___.|space
+There's a friendly ___ atmosphere here.|community
+The ___ near my house has great restaurants.|area
+We live in a ___ that's popular with families.|suburb
+The streets here are very ___ and safe.|clean
+My building is close to the ___ stop.|bus
+There's a good ___ centre nearby for sports.|leisure
+The area gets quite ___ during rush hour.|busy
+My neighbourhood has changed a lot over the ___.|years
+I really like living in this part of ___.|town`,
+  },
+  {
+    id: "a2p17", title: "Prepositions of Place", subtitle: "Where things are", kind: "cloze",
+    note: "A2-level prepositions describing location.",
+    data: `The cat is sitting ___ the table.|under
+The book is ___ the shelf.|on
+She is standing ___ the door.|behind
+The keys are ___ the drawer.|in
+The park is ___ the school and the shop.|between
+He is sitting ___ to his sister.|next
+The picture is hanging ___ the wall.|against
+The dog is running ___ the garden.|around
+The shop is right ___ the corner.|round
+She parked the car ___ the building.|outside
+The ball rolled ___ the stairs.|down
+The plane flew ___ the clouds.|above
+The cat hid ___ the sofa cushions.|beneath
+The children are playing ___ the swings.|by
+The bridge goes ___ the river.|over
+The bank is ___ from the café.|opposite
+He walked ___ the room and sat down.|into
+The lamp is ___ the desk.|beside
+She placed the vase ___ the window.|near
+The tunnel goes ___ the mountain.|through
+The cinema is ___ the shopping centre.|inside
+He stood ___ the crowd, watching.|among
+The car is parked ___ the garage.|alongside
+The plane flew ___ the city.|past
+The path leads ___ the forest.|towards`,
+  },
+  {
+    id: "a2p18", title: "Past Continuous", subtitle: "Actions in progress in the past", kind: "cloze",
+    note: "A2-level past continuous tense practice.",
+    data: `I was ___ TV when the phone rang.|watching
+They were ___ football when it started to rain.|playing
+She was ___ dinner when I arrived home.|cooking
+We were ___ when the teacher walked in.|talking
+He was ___ when the alarm went off.|sleeping
+I was ___ a book when you called me.|reading
+They were ___ to work when the accident happened.|driving
+She was ___ when her friend visited.|studying
+We were ___ in the park when it began to snow.|walking
+He was ___ when the power went out.|working
+I was ___ for the bus when it started to rain.|waiting
+They were ___ dinner when the doorbell rang.|having
+She was ___ to music when I knocked.|listening
+We were ___ when we bumped into an old friend.|shopping
+He was ___ when he twisted his ankle.|jogging
+I was ___ an email when the computer crashed.|writing
+They were ___ when the storm began.|swimming
+She was ___ when the microphone stopped working.|singing
+We were ___ when the tent collapsed.|camping
+He was ___ the fence when it started to rain.|painting
+I was ___ when the alarm woke me up.|dreaming
+They were ___ when their mother walked in.|arguing
+She was ___ when she slipped and fell.|dancing
+We were ___ when the lights suddenly went out.|chatting
+He was ___ his bike when he saw the accident.|riding`,
+  },
+  {
+    id: "a2p19", title: "Modal Verbs — Ability & Permission", subtitle: "Can, could, may", kind: "cloze",
+    note: "A2-level modal verbs for ability and permission.",
+    data: `I ___ swim very well when I was younger.|could
+___ I open the window, please?|may
+She ___ speak three languages fluently.|can
+___ you help me carry this bag?|could
+We ___ leave early if we finish the work.|can
+___ I use your phone for a moment?|may
+He ___ ride a bike when he was five.|could
+You ___ park here, it's not allowed.|can't
+___ I ask you a question?|may
+They ___ not attend the meeting yesterday.|could
+She ___ drive, but she doesn't have a car.|can
+___ you pass me the salt, please?|could
+We ___ not enter without a ticket.|can
+He ___ not swim before he took lessons.|could
+___ I sit here, or is this seat taken?|may
+I ___ not hear you, could you speak louder?|can
+She ___ not come to the party last week.|could
+___ we borrow your umbrella, please?|could
+He ___ lift very heavy weights at the gym.|can
+___ I leave the room for a moment?|may
+They ___ not afford the tickets last year.|could
+We ___ finish the project by Friday.|can
+___ you show me the way to the station?|could
+She ___ not attend school due to illness.|could
+I ___ help you with your homework if you want.|can`,
+  },
+  {
+    id: "a2p20", title: "Comparisons — As...As", subtitle: "Equal comparisons", kind: "cloze",
+    note: "A2-level equal comparison structures.",
+    data: `This bag is as ___ as that one.|heavy
+She is as ___ as her sister.|tall
+The test was as ___ as I expected.|difficult
+His car is as ___ as mine.|fast
+This soup is as ___ as the last one.|spicy
+The film was as ___ as the book.|good
+He runs as ___ as a professional sprinter.|quick
+This hotel is as ___ as the other one.|expensive
+Her English is as ___ as her brother's.|fluent
+The weather today is as ___ as yesterday.|cold
+This restaurant is as ___ as the one downtown.|popular
+The exam was not as ___ as I thought.|hard
+This coffee is as ___ as the one at home.|strong
+The journey was as ___ as we expected.|long
+His new phone is as ___ as the old one.|reliable
+This road is as ___ as the motorway.|busy
+The party was as ___ as last year's.|fun
+Her cooking is as ___ as a professional chef's.|delicious
+The city is as ___ as the countryside.|peaceful
+This jacket is as ___ as the other colour.|warm
+My flat is as ___ as yours.|small
+The lesson was as ___ as the last one.|interesting
+This wine is as ___ as the other bottle.|sweet
+Her plan is as ___ as mine.|simple
+The bridge is as ___ as the old one.|sturdy`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -1301,6 +1649,180 @@ jealous|feel envious of others
 sensitive|get upset easily
 creative|come up with original ideas
 tactless|say things without thinking of others' feelings`,
+  },
+  {
+    id: "b1p15", title: "Used to & Would", subtitle: "Past habits and states", kind: "cloze",
+    note: "B1-level structures for talking about past habits.",
+    data: `I ___ to walk to school every day when I was young.|used
+We ___ visit our grandparents every summer.|would
+She ___ to have long hair, but she cut it short.|used
+He ___ play football every weekend as a teenager.|would
+I ___ to live in a small village.|used
+They ___ argue about everything when they were kids.|would
+She ___ to be afraid of the dark.|used
+We ___ spend hours playing outside after school.|would
+He ___ to smoke, but he quit years ago.|used
+I ___ eat sweets every day when I was a child.|would
+She ___ to work as a teacher before she retired.|used
+We ___ to have a dog when I was young.|used
+They ___ meet at the same café every Friday.|would
+He ___ to be much thinner than he is now.|used
+I ___ to hate vegetables when I was a kid.|used
+We ___ stay up late telling stories.|would
+She ___ to own a bright red car.|used
+He ___ complain about the weather every winter.|would
+I ___ to study French at school.|used
+They ___ to travel a lot before they had children.|used
+We ___ sing songs on long car journeys.|would
+She ___ to be much more confident as a teenager.|used
+He ___ to play the piano every evening.|used
+I ___ collect stamps when I was younger.|would
+They ___ to live next door to us years ago.|used`,
+  },
+  {
+    id: "b1p16", title: "Question Tags", subtitle: "Confirming and checking information", kind: "cloze",
+    note: "B1-level question tag practice.",
+    data: `You're coming to the party, ___ you?|aren't
+She's happy with the result, ___ she?|isn't
+He can dance really well, ___ he?|can't
+He can't swim very far, ___ he?|can
+It was sunny yesterday, ___ it?|wasn't
+It wasn't sunny yesterday, ___ it?|was
+They were at the party, ___ they?|weren't
+They weren't at home last night, ___ they?|were
+She likes chocolate, ___ she?|doesn't
+She doesn't like tea very much, ___ she?|does
+You smoke sometimes, ___ you?|don't
+You don't smoke at all, ___ you?|do
+You've seen this film before, ___ you?|haven't
+You haven't seen my keys, ___ you?|have
+He's finished his homework, ___ he?|hasn't
+He hasn't finished the report yet, ___ he?|has
+She'll call us later, ___ she?|won't
+She won't be late again, ___ she?|will
+You'd like some tea, ___ you?|wouldn't
+You wouldn't mind helping, ___ you?|would
+He could swim as a child, ___ he?|couldn't
+He couldn't swim before lessons, ___ he?|could
+We should leave soon, ___ we?|shouldn't
+We shouldn't be late, ___ we?|should
+They didn't call you yesterday, ___ they?|did`,
+  },
+  {
+    id: "b1p17", title: "Giving Opinions & Agreeing", subtitle: "Sharing your point of view", kind: "cloze",
+    note: "B1-level phrases for discussion and debate.",
+    data: `In my ___, this is the best option.|opinion
+I ___ agree with what you're saying.|totally
+I'm not really ___ about that idea.|sure
+That's a fair ___, but I see it differently.|point
+I couldn't ___ more with you.|agree
+Personally, I ___ that we should wait.|think
+I see what you ___, but I disagree.|mean
+As ___ as I'm concerned, it's a bad idea.|far
+I'm ___ sure that's correct.|not
+I'd have to ___ with you on that one.|disagree
+From my point of ___, it's a good plan.|view
+I ___ your point, but I still disagree.|understand
+Honestly, I don't ___ it that way.|see
+I tend to ___ with the majority here.|side
+That's exactly what I was going to ___.|say
+I'm ___ convinced by that argument.|hardly
+It seems to ___ that we have no choice.|me
+I have to ___ with you there.|concur
+I'm afraid I ___ agree with that.|can't
+That's a good ___, actually.|observation
+I'm ___ of two minds about this.|kind
+I really don't think that's ___.|true
+Let's agree to ___ on this one.|differ
+I ___ what you're saying, but I still think I'm right.|hear
+To be ___, I hadn't thought of it that way.|honest`,
+  },
+  {
+    id: "b1p18", title: "Health & Fitness", subtitle: "Exercise and healthy living", kind: "cloze",
+    note: "B1-level vocabulary for talking about fitness and wellbeing.",
+    data: `I try to ___ out at the gym three times a week.|work
+Eating a ___ diet keeps you healthy.|balanced
+I always ___ up before I start exercising.|warm
+Getting enough ___ is important for your health.|sleep
+She ___ five kilometres every morning.|runs
+Drinking plenty of ___ keeps you hydrated.|water
+He joined a ___ to get fit.|gym
+Doing ___ exercise strengthens your heart.|cardio
+I need to ___ down after my workout.|cool
+Lifting ___ builds muscle strength.|weights
+Cutting down on ___ food is good for you.|junk
+Stretching helps prevent ___.|injuries
+I try to eat five portions of ___ a day.|fruit
+Getting regular exercise reduces ___.|stress
+She follows a strict fitness ___.|routine
+He hired a personal ___ to help him train.|trainer
+Drinking too much ___ isn't good for you.|alcohol
+Yoga is great for ___ and relaxation.|flexibility
+I go ___ every weekend to stay active.|swimming
+Skipping breakfast isn't a healthy ___.|habit
+Getting fresh ___ is good for your lungs.|air
+Cycling to work is good ___.|exercise
+He tracks his ___ intake carefully.|calorie
+A good night's ___ helps you recover.|rest
+She takes a daily ___ for her health.|vitamin`,
+  },
+  {
+    id: "b1p19", title: "Weather & Natural Events", subtitle: "Extreme weather vocabulary", kind: "cloze",
+    note: "B1-level vocabulary for weather and natural events.",
+    data: `A strong ___ knocked down several trees.|storm
+The ___ caused severe flooding in the town.|rain
+Scientists are monitoring the approaching ___.|hurricane
+The ___ shook the entire building.|earthquake
+Heavy ___ blocked the roads for days.|snow
+The region suffered a long ___ last summer.|drought
+The ___ destroyed several homes near the coast.|flood
+A sudden ___ hit the coastal town.|gale
+The ___ warning was issued early this morning.|weather
+Thick ___ made driving dangerous.|fog
+The ___ caused widespread damage to crops.|hailstorm
+Firefighters battled a huge ___ in the forest.|wildfire
+The city experienced a rare ___ this winter.|blizzard
+The ___ swept through the village overnight.|tornado
+Rising sea levels are linked to climate ___.|change
+The ___ lasted for nearly three hours.|thunderstorm
+The heatwave caused several ___ related illnesses.|heat
+The ___ left thousands without electricity.|blackout
+Meteorologists predicted a severe ___ this weekend.|downpour
+The volcano's ___ affected air travel for days.|eruption
+The ___ made the roads extremely slippery.|ice
+A powerful ___ hit the island nation.|cyclone
+The ___ brought record-breaking temperatures.|heatwave
+Officials issued a ___ warning for the coast.|tsunami
+The ___ has caused significant coastal erosion.|surge`,
+  },
+  {
+    id: "b1p20", title: "Describing a Process", subtitle: "Sequencing and instructions", kind: "cloze",
+    note: "B1-level sequencing language for describing steps.",
+    data: `___ of all, you need to gather the ingredients.|first
+The ___ step is to preheat the oven.|next
+After that, you should ___ the flour and sugar.|mix
+Once the mixture is ready, you ___ it into the tin.|pour
+___ this, place the tin in the oven.|following
+While it bakes, you can ___ the kitchen.|clean
+After twenty minutes, ___ the cake to check it's done.|check
+Then, you need to ___ it out to cool.|take
+Finally, you can ___ the cake with icing.|decorate
+The ___ stage involves cutting the pieces.|final
+Before you start, make sure you ___ your hands.|wash
+The ___ step is to switch on the machine.|initial
+Once it's ready, you should ___ off the power.|turn
+After the process is finished, ___ everything away.|put
+The ___ thing you do is check the results.|last
+To begin ___, gather all the necessary tools.|with
+Next, you ___ the pieces together carefully.|fit
+Once assembled, you need to ___ the screws.|tighten
+After that, ___ the device before use.|test
+The ___ step is often the most important.|closing
+Before finishing, you should ___ everything twice.|verify
+Once complete, you can ___ the finished product.|use
+The process ___ with a simple inspection.|starts
+After preparation, the next ___ is mixing.|step
+Lastly, allow the mixture to ___ overnight.|rest`,
   },
 ];
 
@@ -1769,6 +2291,122 @@ in light of|introduce a reason based on new information
 stemming from|show that something originates from a cause
 triggered by|show what set off a sudden reaction or event`,
   },
+  {
+    id: "b2p17", title: "Phrasal Verbs II", subtitle: "Meaning match, everyday phrasal verbs", kind: "pair",
+    prompt: "The phrasal verb \"%s\" means…", note: "B2-level phrasal verbs beyond the basics.",
+    data: `come across|to find something by chance
+get away with|to avoid punishment for something
+look into|to investigate something
+put off|to postpone something
+turn down|to refuse an offer
+figure out|to understand or solve something
+carry out|to perform or complete a task
+bring up|to mention a topic
+give up|to stop trying
+hold on|to wait a moment
+run into|to meet someone by chance
+set up|to arrange or establish something
+take after|to resemble a family member
+work out|to solve a problem or exercise
+break down|to stop functioning
+call off|to cancel something
+come up with|to think of an idea
+cut down on|to reduce the amount of something
+fall through|to fail to happen
+get by|to manage with limited resources
+go through with|to complete something as planned
+keep up with|to stay at the same pace as others
+look forward to|to feel excited about something future
+point out|to draw attention to something
+stand up for|to defend a person or belief`,
+  },
+  {
+    id: "b2p18", title: "Mixed Conditionals", subtitle: "Past, present, and unreal combinations", kind: "cloze",
+    note: "B2-level mixed conditional structures.",
+    data: `If I ___ harder at school, I'd have a better job now.|had studied
+If she weren't so busy, she ___ have missed the meeting.|wouldn't
+If he had taken the job, he ___ be living abroad now.|would
+If they ___ more careful, the accident wouldn't have happened.|had been
+If I were you, I ___ have accepted the offer.|would
+If she had left earlier, she ___ be stuck in traffic now.|wouldn't
+If we hadn't missed the flight, we ___ be at the hotel now.|would
+If he weren't so stubborn, he ___ have listened to us.|would
+If I hadn't lost my job, I ___ be so stressed now.|wouldn't
+If she were more confident, she ___ have taken the promotion.|would
+If they had saved money, they ___ be able to travel now.|would
+If I weren't allergic, I ___ have eaten the cake.|would
+If he had trained harder, he ___ be a professional athlete now.|would
+If we ___ checked the weather, we wouldn't be stuck in the rain.|had
+If she hadn't quit, she ___ be the manager by now.|would
+If I were rich, I ___ have bought that house last year.|would
+If he ___ listened to advice, he wouldn't be in this mess now.|had
+If they weren't so tired, they ___ have finished the project.|would
+If I hadn't met her, my life ___ be very different now.|would
+If she were taller, she ___ have made the basketball team.|would
+If we had planned better, we ___ be so stressed right now.|wouldn't
+If he weren't afraid of flying, he ___ have taken the job abroad.|would
+If I ___ known about the traffic, I would have left earlier.|had
+If she hadn't studied medicine, she ___ be a doctor today.|wouldn't
+If they were more organised, they ___ have missed the deadline.|wouldn't`,
+  },
+  {
+    id: "b2p19", title: "Wish & If Only", subtitle: "Expressing regret and desire", kind: "cloze",
+    note: "B2-level wish structures.",
+    data: `I wish I ___ more time to finish this project.|had
+If only I ___ studied harder for the exam.|had
+I wish she ___ stop interrupting me.|would
+If only he ___ listen to advice sometimes.|would
+I wish I ___ speak French fluently.|could
+If only we ___ afford a bigger house.|could
+I wish it ___ stop raining.|would
+If only I ___ known about the meeting earlier.|had
+I wish he ___ so careless with money.|weren't
+If only she ___ here to see this.|were
+I wish I ___ never said that to him.|had
+If only they ___ listened to the warning.|had
+I wish you ___ stop smoking.|would
+If only I ___ taller.|were
+I wish we ___ more time together.|had
+If only he ___ apologise for what he did.|would
+I wish I ___ that decision differently.|had made
+If only she ___ more patient with the children.|were
+I wish they ___ visit more often.|would
+If only I ___ studied medicine instead.|had
+I wish my neighbours ___ so noisy.|weren't
+If only we ___ booked the tickets earlier.|had
+I wish he ___ trust me more.|would
+If only I ___ able to help you then.|had been
+I wish this day ___ never end.|would`,
+  },
+  {
+    id: "b2p20", title: "Food & Cooking", subtitle: "Kitchen vocabulary and techniques", kind: "cloze",
+    note: "B2-level cooking vocabulary.",
+    data: `You need to ___ the onions before adding them.|chop
+Please ___ the sauce so it doesn't burn.|stir
+The chef decided to ___ the vegetables instead of boiling them.|roast
+You should ___ the meat before cooking it further.|marinate
+Let the soup ___ for twenty minutes.|simmer
+He likes to ___ the chicken until it's golden brown.|fry
+You need to ___ the pastry before baking it.|roll
+Add a pinch of salt to ___ the flavour.|enhance
+The recipe says to ___ the oven to 200 degrees.|preheat
+You should ___ the vegetables before serving.|steam
+Let the dough ___ for an hour before baking.|rise
+He likes to ___ fresh herbs over the dish.|sprinkle
+You need to ___ the sauce until it thickens.|reduce
+Please ___ the ingredients thoroughly.|combine
+The recipe calls for you to ___ the garlic finely.|mince
+You should ___ the meat before slicing it.|rest
+He decided to ___ the vegetables on the grill.|grill
+You need to ___ the excess fat from the pan.|drain
+Add the spices to ___ the dish more flavour.|give
+The chef used a whisk to ___ the eggs.|beat
+You should ___ the cake before removing it from the tin.|cool
+He likes to ___ the meat in breadcrumbs before frying.|coat
+You need to ___ the vegetables into small pieces.|dice
+Let the meat ___ overnight in the fridge.|chill
+The sauce needs to ___ before you can serve it.|thicken`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -2177,6 +2815,180 @@ I am ___ that you found the presentation useful.|glad
 Should circumstances ___, please inform us immediately.|change
 We remain at your ___ should you require further assistance.|disposal
 I look forward to your ___ response.|prompt`,
+  },
+  {
+    id: "c1p15", title: "Nominalisation", subtitle: "Turning verbs into abstract nouns", kind: "pair",
+    prompt: "The noun form of \"%s\" is…", note: "C1-level nominalisation, common in academic and formal writing.",
+    data: `to decide|decision
+to argue|argument
+to analyse|analysis
+to conclude|conclusion
+to assume|assumption
+to describe|description
+to explain|explanation
+to suggest|suggestion
+to develop|development
+to require|requirement
+to fail|failure
+to succeed|success
+to propose|proposal
+to reduce|reduction
+to improve|improvement
+to discover|discovery
+to expand|expansion
+to achieve|achievement
+to establish|establishment
+to interpret|interpretation
+to justify|justification
+to maintain|maintenance
+to produce|production
+to recognise|recognition
+to resolve|resolution`,
+  },
+  {
+    id: "c1p16", title: "Cleft Sentences", subtitle: "Emphasis through structure", kind: "cloze",
+    note: "C1-level cleft sentence structures for emphasis.",
+    data: `___ was John who broke the vase, not me.|it
+What I really need ___ a good night's sleep.|is
+It was the manager ___ made the final decision.|who
+What surprised me most ___ his honesty.|was
+It was ___ in 1990 that the company was founded.|not
+What we need to do ___ act quickly.|is
+It was because of the delay ___ we missed the flight.|that
+What annoys me most ___ people who are always late.|is
+It ___ the weather that ruined our plans.|was
+What she wants ___ a bit of peace and quiet.|is
+It was only ___ that I realised my mistake.|later
+What matters most to me ___ my family's happiness.|is
+It was the teacher ___ noticed the problem first.|who
+What I admire about her ___ her determination.|is
+It was ___ during the meeting that he resigned.|not
+What we found strange ___ his sudden silence.|was
+It was the noise ___ woke everyone up.|that
+What she really meant ___ something quite different.|was
+It was not until later ___ we understood the plan.|that
+What impressed the judges most ___ his confidence.|was
+It ___ the traffic, not the weather, that delayed us.|was
+What I regret most ___ not speaking up sooner.|is
+It was her ___ who suggested the idea first.|colleague
+What worries me ___ the lack of preparation.|is
+It ___ exactly what I expected.|was`,
+  },
+  {
+    id: "c1p17", title: "Collocations with Make, Do, Take & Have", subtitle: "Fixed verb-noun pairs", kind: "pair",
+    prompt: "Complete the collocation with \"%s\"…", note: "C1-level fixed collocations with common light verbs.",
+    data: `make|a decision
+make|an effort
+make|a mistake
+make|progress
+make|a difference
+do|homework
+do|business
+do|damage
+do|research
+do|a favour
+take|responsibility
+take|a risk
+take|advantage
+take|notice
+take|a break
+have|an argument
+have|a conversation
+have|an impact
+have|a look
+have|a chance
+make|an impression
+do|harm
+take|action
+have|doubts
+make|arrangements`,
+  },
+  {
+    id: "c1p18", title: "Euphemisms & Indirect Language", subtitle: "Softening sensitive topics", kind: "pair",
+    prompt: "The phrase \"%s\" is a polite way of saying…", note: "C1-level euphemisms for sensitive or blunt topics.",
+    data: `to pass away|to die
+to let someone go|to fire someone
+between jobs|unemployed
+economical with the truth|dishonest
+pre-owned|second-hand
+downsize|reduce staff numbers
+in a delicate condition|pregnant
+senior moment|forgetfulness
+differently abled|disabled
+economically disadvantaged|poor
+correctional facility|prison
+collateral damage|unintended harm
+letting you go|firing you
+put to sleep|euthanised
+vertically challenged|short
+a bit under the weather|slightly ill
+of a certain age|older
+enhanced interrogation|torture
+negative growth|decline
+downsized position|job cut
+substance abuse|drug addiction
+in between opportunities|currently without a job
+not the sharpest tool in the shed|not very intelligent
+letting nature take its course|not intervening medically
+economical|cheap or stingy`,
+  },
+  {
+    id: "c1p19", title: "Contrast & Concession", subtitle: "Advanced linking of opposing ideas", kind: "cloze",
+    note: "C1-level connectors for contrast and concession.",
+    data: `___ the heavy rain, the match went ahead as planned.|despite
+The plan succeeded, ___ several early setbacks.|notwithstanding
+___ he was exhausted, he kept working.|although
+The project failed ___ the team's best efforts.|in spite of
+He accepted the offer, ___ his initial doubts.|regardless of
+The company thrived, ___ competitors struggled badly.|whereas
+He stayed calm ___ his colleagues panicked.|while
+The results were disappointing; ___, the team kept trying.|however
+The setbacks were serious; ___, morale remained high.|nevertheless
+The plan had flaws; it worked out well ___.|nonetheless
+Sales were falling, ___ the company kept hiring.|yet
+The risks were high; he took the job ___.|even so
+It was a difficult year; profits rose, ___.|that said
+He is, ___ talented, still very inexperienced.|albeit
+___ the results are disappointing, we should continue.|granted that
+The evidence is weak; it may, ___, still be true.|be that as it may
+He was tired; he finished the race ___.|all the same
+The rules are strict; ___, exceptions are sometimes made.|on the other hand
+Critics say it failed; ___, sales figures suggest otherwise.|on the contrary
+He apologised; ___, the damage had already been done.|for all that
+The odds were against them; they pressed on ___.|still
+The forecast was poor; ___, they went ahead with the trip.|in any case
+___ appearances, the company was struggling.|contrary to
+___ popular belief, the theory has been disproven.|contrary to what most think
+Experts warned against it; they proceeded with the plan ___.|regardless`,
+  },
+  {
+    id: "c1p20", title: "Academic Cohesion", subtitle: "Linking ideas across a text", kind: "cloze",
+    note: "C1-level cohesive devices for academic writing.",
+    data: `___ mentioned earlier, the results support the hypothesis.|as
+The ___ point to consider is the sample size.|next
+Having established this, we can now ___ to the next issue.|turn
+This ___ raises further questions about the methodology.|finding
+Building ___ this idea, the next chapter examines causation.|on
+The ___ section will explore alternative explanations.|following
+In ___ of the above, further research is needed.|light
+To ___ up, the study has several key limitations.|sum
+This leads us ___ to the question of validity.|onward
+The ___ mentioned study supports this conclusion.|above
+Broadly ___, the findings align with prior research.|speaking
+This ___ ties in with the earlier discussion of ethics.|point
+The argument outlined above rests upon ___ core assumptions.|three
+Taking this ___ account, the results seem reliable.|into
+The following ___ builds on the previous analysis.|section
+This brings us ___ to the central argument.|back
+The data ___ referred to can be found in the appendix.|previously
+It is ___ to note the limitations of this approach.|worth
+This ___ leads into a discussion of policy implications.|naturally
+The ___ analysis reveals a clear pattern.|subsequent
+As ___ in Table 2, the results vary by region.|shown
+This ___ us to the final point of the discussion.|brings
+The closing chapter will ___ these concerns in detail.|address
+Consistent ___ with prior research, the findings confirm the theory.|with
+In ___ words, the results were not as expected.|other`,
   },
 ];
 
