@@ -12,8 +12,12 @@ import { unitsFromBank } from "./bank-engine";
 
 const A1: Pack[] = [
   {
-    id: "fra1p1", title: "Greetings & Everyday Phrases", subtitle: "First words in French", kind: "pair",
-    prompt: "How do you say \"%s\" in French?", note: "Core greetings and polite phrases.",
+    id: "fra1p1",
+    title: "Greetings & Everyday Phrases",
+    subtitle: "First words in French",
+    kind: "pair",
+    prompt: 'How do you say "%s" in French?',
+    note: "Core greetings and polite phrases.",
     data: `hello (informal)|Salut
 hello (formal)|Bonjour
 good evening|Bonsoir
@@ -41,8 +45,12 @@ do you speak English?|Parlez-vous anglais ?
 good luck|Bonne chance`,
   },
   {
-    id: "fra1p2", title: "Numbers 1–100", subtitle: "Counting in French", kind: "pair",
-    prompt: "The French word for \"%s\" is…", note: "Cardinal numbers from one to a hundred.",
+    id: "fra1p2",
+    title: "Numbers 1–100",
+    subtitle: "Counting in French",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Cardinal numbers from one to a hundred.",
     data: `one|un
 two|deux
 three|trois
@@ -70,8 +78,12 @@ fifty|cinquante
 one hundred|cent`,
   },
   {
-    id: "fra1p3", title: "Family & People", subtitle: "Talking about people you know", kind: "pair",
-    prompt: "The French word for \"%s\" is…", note: "Family members and common people vocabulary.",
+    id: "fra1p3",
+    title: "Family & People",
+    subtitle: "Talking about people you know",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Family members and common people vocabulary.",
     data: `mother|la mère
 father|le père
 sister|la sœur
@@ -102,8 +114,11 @@ student|l'étudiant`,
 
 const A2: Pack[] = [
   {
-    id: "fra2p1", title: "Common Verbs (je form)", subtitle: "Present tense, first person", kind: "cloze",
-    note: "Present-tense \"je\" conjugation of common verbs.",
+    id: "fra2p1",
+    title: "Common Verbs (je form)",
+    subtitle: "Present tense, first person",
+    kind: "cloze",
+    note: 'Present-tense "je" conjugation of common verbs.',
     data: `Je ___ (parler) français.|parle
 Je ___ (manger) une pomme.|mange
 Je ___ (avoir) un chat.|ai
@@ -131,8 +146,12 @@ Je ___ (comprendre) la question.|comprends
 Je ___ (connaître) Paris.|connais`,
   },
   {
-    id: "fra2p2", title: "Food & Drink", subtitle: "Ordering and shopping for food", kind: "pair",
-    prompt: "The French word for \"%s\" is…", note: "Everyday food and drink vocabulary.",
+    id: "fra2p2",
+    title: "Food & Drink",
+    subtitle: "Ordering and shopping for food",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Everyday food and drink vocabulary.",
     data: `bread|le pain
 cheese|le fromage
 water|l'eau
@@ -160,7 +179,10 @@ juice|le jus
 breakfast|le petit-déjeuner`,
   },
   {
-    id: "fra2p3", title: "Directions & Places", subtitle: "Finding your way in French", kind: "cloze",
+    id: "fra2p3",
+    title: "Directions & Places",
+    subtitle: "Finding your way in French",
+    kind: "cloze",
     note: "Everyday vocabulary for asking and giving directions.",
     data: `Tournez à ___ au feu.|droite
 Tournez à ___ après la banque.|gauche
@@ -192,7 +214,10 @@ Dans quelle ___ dois-je aller ?|direction`,
 
 const B1: Pack[] = [
   {
-    id: "frb1p1", title: "Passé Composé", subtitle: "Talking about the past", kind: "cloze",
+    id: "frb1p1",
+    title: "Passé Composé",
+    subtitle: "Talking about the past",
+    kind: "cloze",
     note: "Passé composé with both avoir and être auxiliaries.",
     data: `J'___ (manger) une pizza hier.|ai mangé
 Tu ___ (regarder) un film.|as regardé
@@ -221,8 +246,12 @@ Elles ___ (descendre) les escaliers.|sont descendues
 J'___ (perdre) mes clés.|ai perdu`,
   },
   {
-    id: "frb1p2", title: "Adjectives & Descriptions", subtitle: "Describing people and things", kind: "pair",
-    prompt: "The French word for \"%s\" is…", note: "Common descriptive adjectives (masculine form).",
+    id: "frb1p2",
+    title: "Adjectives & Descriptions",
+    subtitle: "Describing people and things",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common descriptive adjectives (masculine form).",
     data: `happy|content
 sad|triste
 tall|grand
@@ -250,7 +279,10 @@ interesting|intéressant
 boring|ennuyeux`,
   },
   {
-    id: "frb1p3", title: "Travel Phrases", subtitle: "Getting around abroad in French", kind: "cloze",
+    id: "frb1p3",
+    title: "Travel Phrases",
+    subtitle: "Getting around abroad in French",
+    kind: "cloze",
     note: "Everyday travel vocabulary for airports, trains, and hotels.",
     data: `Je voudrais ___ un billet, s'il vous plaît.|réserver
 Où est la salle d'___ ?|attente
@@ -282,8 +314,11 @@ Je cherche l'___ principale de l'aéroport.|entrée`,
 
 const B2: Pack[] = [
   {
-    id: "frb2p1", title: "Subjunctive Mood", subtitle: "Expressing necessity, doubt, and wish", kind: "cloze",
-    note: "Present subjunctive after common triggers like \"il faut que\".",
+    id: "frb2p1",
+    title: "Subjunctive Mood",
+    subtitle: "Expressing necessity, doubt, and wish",
+    kind: "cloze",
+    note: 'Present subjunctive after common triggers like "il faut que".',
     data: `Il faut que je ___ (faire) mes devoirs.|fasse
 Il faut que tu ___ (être) à l'heure.|sois
 Il faut qu'il ___ (avoir) de la patience.|ait
@@ -311,8 +346,12 @@ Il faut que nous ___ (être) prêts à temps.|soyons
 Je doute qu'elle ___ (comprendre) le problème.|comprenne`,
   },
   {
-    id: "frb2p2", title: "Idiomatic Expressions", subtitle: "Meaning match", kind: "pair",
-    prompt: "The idiom \"%s\" means…", note: "Common French idioms beyond literal translation.",
+    id: "frb2p2",
+    title: "Idiomatic Expressions",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: 'The idiom "%s" means…',
+    note: "Common French idioms beyond literal translation.",
     data: `avoir le cafard|to feel down or depressed
 poser un lapin à quelqu'un|to stand someone up
 coûter les yeux de la tête|to be very expensive
@@ -340,7 +379,10 @@ tourner autour du pot|to beat around the bush
 il pleut des cordes|it's raining heavily`,
   },
   {
-    id: "frb2p3", title: "Business & Formal French", subtitle: "Professional written French", kind: "cloze",
+    id: "frb2p3",
+    title: "Business & Formal French",
+    subtitle: "Professional written French",
+    kind: "cloze",
     note: "Formal phrases for business correspondence and meetings.",
     data: `Je vous prie de bien vouloir ___ ma demande.|considérer
 Veuillez trouver ci-joint mon ___.|CV
@@ -372,8 +414,12 @@ Veuillez ___ les documents joints.|consulter`,
 
 const C1: Pack[] = [
   {
-    id: "frc1p1", title: "Advanced Idioms & Nuance", subtitle: "Meaning match", kind: "pair",
-    prompt: "The idiom \"%s\" roughly means…", note: "C1-level idioms for nuanced, natural French.",
+    id: "frc1p1",
+    title: "Advanced Idioms & Nuance",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: 'The idiom "%s" roughly means…',
+    note: "C1-level idioms for nuanced, natural French.",
     data: `mettre les points sur les i|to clarify things precisely
 avoir maille à partir avec quelqu'un|to have a dispute with someone
 ne pas y aller par quatre chemins|to get straight to the point
@@ -401,7 +447,10 @@ se serrer les coudes|to support each other, stick together
 avoir carte blanche|to have full freedom to act`,
   },
   {
-    id: "frc1p2", title: "Formal & Literary Register", subtitle: "High-register written French", kind: "cloze",
+    id: "frc1p2",
+    title: "Formal & Literary Register",
+    subtitle: "High-register written French",
+    kind: "cloze",
     note: "C1-level formal and literary phrasing.",
     data: `Nonobstant les difficultés, il a ___ son objectif.|atteint
 Il convient de ___ que la situation est complexe.|souligner
@@ -430,8 +479,12 @@ Il demeure difficile de ___ avec certitude.|conclure
 Toute chose étant égale par ailleurs, la situation devrait s'___.|améliorer`,
   },
   {
-    id: "frc1p3", title: "Nuanced Connectors", subtitle: "Advanced discourse markers", kind: "pair",
-    prompt: "The connector \"%s\" is used to…", note: "C1-level connectors for formal spoken and written French.",
+    id: "frc1p3",
+    title: "Nuanced Connectors",
+    subtitle: "Advanced discourse markers",
+    kind: "pair",
+    prompt: 'The connector "%s" is used to…',
+    note: "C1-level connectors for formal spoken and written French.",
     data: `néanmoins|introduce a contrast, similar to "nevertheless"
 toutefois|introduce a formal contrast, "however"
 cela dit|concede a point before continuing, "that said"

@@ -2,10 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
-import { curriculum, LEVELS, type Level } from "../../data/curriculum";
+import { LEVELS, type Level } from "../../data/curriculum";
+import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useServerFn } from "@tanstack/react-start";
-import { setCefrLevel } from "../../lib/sync.functions";
+import { setCefrLevel, fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -33,8 +34,7 @@ function LessonNode({
   title: string;
 }) {
   const offset = index % 4;
-  const translateX =
-    offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
+  const translateX = offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
   const inner =
     state === "done" ? (
       <CheckIcon className="size-7" />
@@ -89,12 +89,30 @@ function LearnPage() {
   const level = useProgress((s) => s.cefrLevel) as Level;
   const placementTakenAt = useProgress((s) => s.placementTakenAt);
   const setCefrLevelLocal = useProgress((s) => s.setCefrLevelLocal);
+  const course = useProgress((s) => s.course);
+  const setCourse = useProgress((s) => s.setCourse);
+  const hydrate = useProgress((s) => s.hydrate);
+  const setLoading = useProgress((s) => s.setLoading);
   const saveLevel = useServerFn(setCefrLevel);
+  const loadProgress = useServerFn(fetchProgress);
   const placed = !hydrated || Boolean(placementTakenAt);
+  const curriculum = getCourse(course).curriculum;
 
   function pick(next: Level) {
     setCefrLevelLocal(next);
-    void saveLevel({ data: { level: next } }).catch(() => {});
+    void saveLevel({ data: { level: next, course } }).catch(() => {});
+  }
+
+  async function switchCourse(next: typeof course) {
+    if (next === course) return;
+    setCourse(next);
+    setLoading(true);
+    try {
+      const snap = await loadProgress({ data: { course: next } });
+      hydrate(snap);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const units = curriculum.filter((u) => u.level === level);
@@ -107,6 +125,23 @@ function LearnPage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
+        <div className="mb-6 flex gap-2">
+          {COURSES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => void switchCourse(c.id)}
+              className={`flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
+                c.id === course
+                  ? "border-ink bg-ink text-surface"
+                  : "border-hairline bg-surface text-ink-soft hover:bg-parchment"
+              }`}
+            >
+              {c.flag} {c.label}
+            </button>
+          ))}
+        </div>
+
         {!placed && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -144,7 +179,6 @@ function LearnPage() {
         </Link>
 
         <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-
           {LEVELS.map((l) => {
             const active = l.id === level;
             const done = hydrated
@@ -206,15 +240,21 @@ function LearnPage() {
                   </p>
                 </div>
                 <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                  {hydrated ? unit.lessons.filter((l) => completed.includes(l.id)).length : 0}
-                  /{unit.lessons.length}
+                  {hydrated ? unit.lessons.filter((l) => completed.includes(l.id)).length : 0}/
+                  {unit.lessons.length}
                 </div>
               </header>
               <div className="relative flex flex-col items-center gap-7">
                 {unit.lessons.map((lesson, li) => {
                   const isDone = hydrated && completed.includes(lesson.id);
                   const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
-                  const state = isDone ? "done" : isActive ? "active" : hydrated ? "locked" : "active";
+                  const state = isDone
+                    ? "done"
+                    : isActive
+                      ? "active"
+                      : hydrated
+                        ? "locked"
+                        : "active";
                   return (
                     <LessonNode
                       key={lesson.id}
@@ -231,7 +271,9 @@ function LearnPage() {
                       <StarIcon className="size-5" />
                     </div>
                     <p className="font-display text-base font-semibold">Unit complete</p>
-                    <p className="text-xs text-ink-soft">You mastered {unit.title.toLowerCase()}.</p>
+                    <p className="text-xs text-ink-soft">
+                      You mastered {unit.title.toLowerCase()}.
+                    </p>
                   </div>
                 )}
               </div>

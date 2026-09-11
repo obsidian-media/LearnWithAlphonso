@@ -1,12 +1,16 @@
 import { create } from "zustand";
 
 import type { LeagueTier } from "../data/achievements";
+import type { Course } from "../data/courses";
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export type ProgressState = {
+  /** Which course's lessons/xp/level the rest of this store reflects. */
+  course: Course;
+  setCourse: (course: Course) => void;
   xp: number;
   streak: number;
   longestStreak: number;
@@ -72,6 +76,8 @@ const initial = {
 
 export const useProgress = create<ProgressState>()((set) => ({
   ...initial,
+  course: "en",
+  setCourse: (course) => set({ course }),
   hydrated: false,
   loading: false,
   setLoading: (v) => set({ loading: v }),
@@ -82,8 +88,7 @@ export const useProgress = create<ProgressState>()((set) => ({
   loseHeartLocal: () =>
     set((s) => ({
       hearts: Math.max(0, s.hearts - 1),
-      heartsRefillAt:
-        s.hearts - 1 <= 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
+      heartsRefillAt: s.hearts - 1 <= 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
     })),
   reset: () => set({ ...initial, hydrated: true }),
 }));
