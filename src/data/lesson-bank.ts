@@ -252,6 +252,122 @@ Could we split the ___ between us?|bill
 This cake is made with real ___.|butter
 Would you like ___ or sparkling water?|still`,
   },
+  {
+    id: "a1p9", title: "Clothes & Colours", subtitle: "What people wear", kind: "cloze",
+    note: "Common clothing vocabulary with colour adjectives.",
+    data: `She's wearing a red ___.|dress
+He always wears a black ___.|jacket
+I need new ___ for winter.|boots
+Put on your ___ before you go out.|coat
+These ___ are too tight.|jeans
+She bought a blue ___ for work.|shirt
+He wears ___ to bed.|pyjamas
+I can't find my left ___.|sock
+It's cold — wear a ___.|scarf
+She never leaves home without her ___.|sunglasses
+He wore a ___ to the wedding.|suit
+These shoes have a broken ___.|lace
+I like your green ___.|sweater
+She wears a ___ on her wrist.|watch
+He always carries a leather ___.|bag
+Take your ___ — it might rain.|umbrella
+She wore a yellow ___ to the party.|hat
+He loosened his ___ after a long day.|tie
+I need to buy new ___ for the gym.|shorts
+She wore a white ___ under her jacket.|blouse
+He put on his ___ before the run.|trainers
+These ___ don't match my shoes.|socks
+She tied her hair back with a ___.|ribbon
+He rolled up his ___.|sleeves
+I ironed my ___ this morning.|trousers`,
+  },
+  {
+    id: "a1p10", title: "Weather & Seasons", subtitle: "Talking about the sky", kind: "cloze",
+    note: "Basic weather vocabulary and seasonal expressions.",
+    data: `It's very ___ today — take an umbrella.|rainy
+The sky is ___ and blue.|clear
+It's ___ outside, so wear a coat.|cold
+There's a strong ___ blowing today.|wind
+It ___ heavily all night.|rained
+The forecast says it will ___ tomorrow.|snow
+Summer is the ___ season of the year.|hottest
+In autumn, the leaves turn ___.|brown
+It's very ___ today — over thirty degrees.|hot
+The ___ is out, so let's go to the beach.|sun
+There was a loud ___ during the storm.|thunder
+It's ___ this morning — I can barely see.|foggy
+Winter in this city is very ___.|harsh
+The temperature dropped ___ overnight.|suddenly
+Spring brings warmer ___ and flowers.|weather
+It's ___ outside — the ground is icy.|freezing
+A ___ crossed the sky before the rain.|cloud
+We had a picnic on a ___ day.|sunny
+The ___ made it hard to drive.|fog
+The sky turned dark before the ___ began.|storm
+It's too ___ to go swimming today.|windy
+The ___ melted quickly in the sun.|ice
+Autumn is also called ___ in American English.|fall
+It's a ___ day, perfect for a walk.|mild
+Bring a jacket — it's ___ this evening.|chilly`,
+  },
+  {
+    id: "a1p11", title: "Numbers & Money", subtitle: "Prices and quantities", kind: "cloze",
+    note: "Everyday number and money vocabulary.",
+    data: `This shirt costs ___ dollars.|twenty
+Can I pay in ___ instead of cash?|coins
+I'd like to ___ some money from the machine.|withdraw
+The bill comes to ___ euros.|fifteen
+Could you ___ this note, please?|change
+I need to ___ some money for the trip.|save
+She ___ ten dollars on the gift.|spent
+He asked for a ___ on the price.|discount
+This costs ___ than I expected.|more
+Do you have ___ change for a ten?|exact
+The total is ___ pounds and fifty pence.|three
+I paid by ___, not cash.|card
+Could I get a ___ for this purchase?|receipt
+The price includes ___.|tax
+She counted the ___ carefully.|money
+I only have a few ___ left.|notes
+He borrowed ___ dollars from his brother.|fifty
+The shop only accepts ___ payments.|contactless
+We split the bill ___.|equally
+I forgot my ___ at home.|wallet
+The item is on ___ this week.|sale
+She saved ___ money for college.|enough
+The price went ___ last month.|up
+He paid the ___ in full.|amount
+I need to check my bank ___.|balance`,
+  },
+  {
+    id: "a1p12", title: "Jobs & Occupations", subtitle: "What people do", kind: "pair",
+    prompt: "Someone who \"%s\" is a…", note: "Common job titles matched to their main duty.",
+    data: `teaches students|teacher
+treats sick people|doctor
+cooks food in a restaurant|chef
+flies a plane|pilot
+fixes cars|mechanic
+delivers letters|postman
+puts out fires|firefighter
+defends the law|lawyer
+builds houses|builder
+cuts hair|hairdresser
+serves food in a restaurant|waiter
+designs buildings|architect
+grows crops|farmer
+sells goods in a shop|shopkeeper
+catches criminals|police officer
+writes news stories|journalist
+looks after teeth|dentist
+drives a taxi|taxi driver
+takes care of patients|nurse
+paints houses|painter
+manages a company|manager
+repairs pipes|plumber
+programs computers|programmer
+cleans buildings|cleaner
+delivers babies|midwife`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -429,6 +545,122 @@ I ___ call you when I arrive.|will
 She ___ flying to Rome tomorrow.|is
 Nobody ___ notice.|will`,
   },
+  {
+    id: "a2p7", title: "House & Home", subtitle: "Rooms and furniture", kind: "cloze",
+    note: "Everyday vocabulary for describing where you live.",
+    data: `We cook dinner in the ___.|kitchen
+I keep my clothes in the ___.|wardrobe
+She's watching TV in the ___.|living room
+He's brushing his teeth in the ___.|bathroom
+Put the plates in the ___.|cupboard
+We sleep in the ___.|bedroom
+There's a nice garden behind the ___.|house
+I left my keys on the ___.|table
+She sat down on the ___ to relax.|sofa
+Hang your coat on the ___.|hook
+We eat breakfast in the ___.|dining room
+He's fixing a shelf in the ___.|garage
+The washing machine is in the ___.|laundry room
+Open the ___ to let some air in.|window
+Please close the ___ when you leave.|door
+We keep the car in the ___.|driveway
+The stairs lead up to the ___.|attic
+She's watering the plants in the ___.|garden
+He's cleaning the ___ before guests arrive.|hallway
+The bed has a soft ___.|mattress
+Turn off the ___ before you sleep.|light
+We're renting a small ___ downtown.|flat
+The ___ needs painting.|ceiling
+I store old boxes in the ___.|basement
+Please wipe your feet on the ___.|mat`,
+  },
+  {
+    id: "a2p8", title: "Sport & Hobbies", subtitle: "Free-time activities", kind: "pair",
+    prompt: "Which sport or hobby uses \"%s\"?", note: "Match the equipment or place to the activity.",
+    data: `a racket|tennis
+a ball and hoop|basketball
+a board and wheels|skateboarding
+a net and ball|volleyball
+a pool|swimming
+a track|running
+a helmet and bike|cycling
+a bat and ball|cricket
+gloves and a ring|boxing
+skis and snow|skiing
+a rod and hook|fishing
+a needle and thread|sewing
+a canvas and brush|painting
+a camera|photography
+clay and a wheel|pottery
+a deck of cards|card games
+a chessboard|chess
+a guitar|music
+a needle and yarn|knitting
+a court and net|badminton
+a climbing wall|climbing
+a yoga mat|yoga
+a set of clubs|golf
+a rowing boat|rowing
+a garden and seeds|gardening`,
+  },
+  {
+    id: "a2p9", title: "Body & Health", subtitle: "Illness and doctor visits", kind: "cloze",
+    note: "Basic health vocabulary for describing how you feel.",
+    data: `I have a bad ___ and can't stop coughing.|cold
+She's got a ___ — take some painkillers.|headache
+My ___ hurts after running.|leg
+He broke his ___ playing football.|arm
+I feel ___ — I need to sit down.|dizzy
+She has a ___ — please be quiet.|migraine
+My ___ is sore from shouting.|throat
+He's got a high ___.|temperature
+I twisted my ___ on the stairs.|ankle
+She's allergic to ___.|nuts
+The doctor gave me some ___.|medicine
+I need to make a ___ appointment.|dentist
+My ___ hurts when I chew.|tooth
+He's been ___ since Monday.|sick
+She fainted because she felt ___.|faint
+I cut my ___ while cooking.|finger
+The nurse checked my ___.|pulse
+He needs to rest his ___ leg.|injured
+I have a ___ stomach.|upset
+She's recovering from a ___ .|fever
+My back ___ after lifting the box.|hurts
+He's got a nasty ___ on his knee.|bruise
+I should see a doctor about my ___.|cough
+She sprained her ___ at the gym.|wrist
+The pharmacist recommended this ___ for allergies.|spray`,
+  },
+  {
+    id: "a2p10", title: "Superlatives", subtitle: "Adjective → superlative", kind: "pair",
+    prompt: "Superlative of \"%s\":", note: "Short adjectives take -est; long ones take \"most\".",
+    data: `big|biggest
+hot|hottest
+happy|happiest
+easy|easiest
+good|best
+bad|worst
+far|furthest
+expensive|most expensive
+beautiful|most beautiful
+thin|thinnest
+early|earliest
+busy|busiest
+safe|safest
+large|largest
+simple|simplest
+careful|most careful
+tired|most tired
+funny|funniest
+heavy|heaviest
+modern|most modern
+narrow|narrowest
+polite|most polite
+quiet|quietest
+strange|strangest
+useful|most useful`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -605,6 +837,122 @@ The year ___ we moved was 2012.|when
 She's someone ___ opinion I respect.|whose
 The road ___ leads to the lake is closed.|which
 People ___ exercise sleep better.|who`,
+  },
+  {
+    id: "b1p7", title: "Travel & Tourism", subtitle: "Getting around abroad", kind: "cloze",
+    note: "Common vocabulary for booking and navigating trips.",
+    data: `We need to ___ our flight before it fills up.|book
+Our hotel has a great ___ of the sea.|view
+Could you recommend a good ___ to visit?|attraction
+We're planning a two-week ___ around Europe.|trip
+I forgot to pack my ___ before the flight.|passport
+The tour ___ showed us around the old town.|guide
+We stayed in a small ___ near the beach.|guesthouse
+Our flight was ___ by two hours.|delayed
+We need to ___ our luggage before boarding.|check
+The hotel offers a free airport ___.|shuttle
+We got lost, so we asked for ___.|directions
+This city is famous for its ancient ___.|ruins
+We booked a ___ tour of the museum.|guided
+Make sure your ___ hasn't expired.|visa
+We spent the afternoon ___ around the market.|wandering
+The ___ desk can help with excursions.|reception
+We took a scenic ___ along the coast.|route
+Our train has a short ___ in Milan.|stopover
+The local ___ was incredibly friendly.|staff
+We need travel ___ in case something goes wrong.|insurance
+The ___ office can exchange currency for you.|tourist
+We're staying in a ___ apartment downtown.|rental
+The flight was fully ___, so we waited standby.|booked
+We explored the city on a ___ tour bus.|hop-on-hop-off
+Remember to keep your boarding ___ safe.|pass`,
+  },
+  {
+    id: "b1p8", title: "Feelings & Emotions", subtitle: "Adjective ↔ noun forms", kind: "pair",
+    prompt: "Noun form of \"%s\":", note: "Emotion adjectives and their matching nouns.",
+    data: `happy|happiness
+sad|sadness
+angry|anger
+anxious|anxiety
+excited|excitement
+proud|pride
+jealous|jealousy
+confident|confidence
+nervous|nervousness
+curious|curiosity
+embarrassed|embarrassment
+grateful|gratitude
+disappointed|disappointment
+confused|confusion
+relieved|relief
+frustrated|frustration
+lonely|loneliness
+surprised|surprise
+ashamed|shame
+content|contentment
+bored|boredom
+hopeful|hope
+suspicious|suspicion
+satisfied|satisfaction
+sympathetic|sympathy`,
+  },
+  {
+    id: "b1p9", title: "Money & Shopping", subtitle: "Banking and budgeting", kind: "cloze",
+    note: "Intermediate vocabulary for managing money.",
+    data: `I need to ___ some money before payday.|budget
+She's saving up to ___ a deposit for a flat.|pay
+We ___ a loan to buy the car.|took out
+He's ___ into debt because of his spending.|falling
+I set up a standing ___ for my rent.|order
+The bank charges a ___ for overdrafts.|fee
+She transferred money ___ her savings account.|to
+We compared prices before making a ___.|decision
+He's trying to ___ his monthly expenses.|track
+I applied for a credit ___.|card
+The store offers a money-back ___.|guarantee
+She always shops around for the best ___.|deal
+We're on a tight ___ this month.|allowance
+He returned the item for a full ___.|refund
+I prefer to pay in ___ rather than instalments.|full
+The interest ___ on that account is low.|rate
+She's trying to pay off her ___.|debt
+We split the cost ___ between us.|evenly
+He negotiated better ___ on the loan.|terms
+I keep an eye on my bank ___ daily.|balance
+She's saving for a rainy ___.|day
+The shop was offering a seasonal ___.|discount
+We opened a joint ___ together.|account
+He's careful with his ___.|spending
+I always check the ___ before buying online.|reviews`,
+  },
+  {
+    id: "b1p10", title: "Environment", subtitle: "Talking about the planet", kind: "cloze",
+    note: "B1-level environmental vocabulary.",
+    data: `We should ___ less plastic to protect the ocean.|use
+Recycling helps ___ waste going to landfill.|reduce
+The factory was fined for ___ the river.|polluting
+Many species are at risk of ___.|extinction
+We need to ___ energy to fight climate change.|save
+Solar panels use ___ energy from the sun.|renewable
+The forest was cut down for ___.|farming
+Rising temperatures are causing the ice to ___.|melt
+We should ___ more trees to help the planet.|plant
+The city introduced a ban on single-use ___.|plastic
+Air ___ is a serious problem in big cities.|pollution
+We can ___ our carbon footprint by cycling.|lower
+The government promised to cut carbon ___.|emissions
+Many animals lost their natural ___.|habitat
+We should ___ water instead of wasting it.|conserve
+The beach was covered in ___ after the storm.|litter
+Electric cars produce ___ pollution than petrol ones.|less
+The charity works to protect ___ species.|endangered
+We separate our rubbish for ___.|recycling
+The company switched to ___ packaging.|sustainable
+Deforestation is a major cause of climate ___.|change
+We should walk instead of ___ short distances.|driving
+The river was cleaned up after years of ___.|neglect
+Wind farms generate clean ___.|energy
+Protecting the environment is everyone's ___.|responsibility`,
   },
 ];
 
@@ -841,6 +1189,122 @@ conduct|research
 achieve a|goal
 lose|patience`,
   },
+  {
+    id: "b2p9", title: "Health & Medicine", subtitle: "Describing symptoms and care", kind: "cloze",
+    note: "Intermediate-plus vocabulary for talking about health.",
+    data: `The doctor ___ a full recovery within weeks.|predicted
+She's been ___ from a bad cold all week.|suffering
+He was ___ to hospital after the accident.|admitted
+The medicine should ___ the pain quickly.|relieve
+She's ___ to penicillin, so avoid it.|allergic
+The nurse took his ___ before the appointment.|temperature
+He's on ___ to manage his blood pressure.|medication
+The wound needs to be ___ regularly.|dressed
+She was ___ with a mild infection.|diagnosed
+Rest and fluids should help you ___.|recover
+The clinic offers a free ___ once a year.|check-up
+He ___ his ankle playing football.|twisted
+The vaccine helps ___ the disease.|prevent
+She's been feeling ___ since yesterday.|nauseous
+The doctor ___ two weeks of rest.|recommended
+His symptoms ___ after a few days.|improved
+The hospital ___ him overnight for observation.|kept
+She takes a daily ___ for her allergies.|tablet
+The surgeon ___ the operation successfully.|performed
+He's ___ to a specialist for further tests.|referred
+The patient's condition remained ___.|stable
+She was given ___ before the procedure.|anaesthesia
+The clinic is fully ___ for emergencies.|equipped
+His recovery has been slow but ___.|steady
+The doctor advised him to ___ smoking.|quit`,
+  },
+  {
+    id: "b2p10", title: "Technology & Media", subtitle: "Talking about devices and news", kind: "cloze",
+    note: "Everyday tech and media vocabulary at B2 level.",
+    data: `My phone's ___ died, so I couldn't call.|battery
+The app keeps ___ every time I open it.|crashing
+We need to ___ the software before using it.|update
+The article went ___ within hours.|viral
+He ___ his password and got locked out.|forgot
+The company was ___ over a data breach.|criticised
+Streaming services have ___ how we watch TV.|changed
+She ___ the video before sharing it.|verified
+The signal ___ whenever it rains.|drops
+This site collects your data without ___.|consent
+The report was ___ by several news outlets.|shared
+He ___ his old laptop for a new one.|upgraded
+The story was quickly ___ by fact-checkers.|debunked
+Most people now get news through social ___.|media
+The website ___ if too many users log in.|crashes
+She backed up her files to the ___.|cloud
+The headline was clearly ___.|misleading
+He ___ the news alert before reading it.|dismissed
+The device connects ___ to your phone.|wirelessly
+Online ___ can spread faster than facts.|misinformation
+The company issued a public ___.|apology
+She disabled ___ to save her battery.|notifications
+The article cited an ___ source.|unreliable
+His account was ___ after suspicious activity.|suspended
+The platform introduced stricter privacy ___.|settings`,
+  },
+  {
+    id: "b2p11", title: "Business & Negotiation", subtitle: "Deals and workplace talk", kind: "cloze",
+    note: "B2-level vocabulary for meetings and negotiations.",
+    data: `We need to ___ a deal before the deadline.|close
+Both sides made a ___ to reach agreement.|compromise
+The company plans to ___ into new markets.|expand
+We're hoping to ___ a long-term partnership.|build
+The talks broke down over pricing ___.|disputes
+She was promoted to ___ the new division.|head
+The merger was finally ___ this week.|approved
+We need to ___ the terms before signing.|finalise
+His proposal was ___ by the board.|rejected
+The company had to ___ several employees.|lay off
+We're aiming to ___ costs by ten percent.|cut
+The client asked for a better ___.|quote
+They reached a ___ after hours of talks.|deal
+The firm plans to ___ with a rival company.|merge
+We need more data before we can ___.|decide
+The negotiation ___ down to price alone.|came
+She's known for driving a hard ___.|bargain
+The board will ___ on the proposal tomorrow.|vote
+We're under pressure to ___ a decision quickly.|make
+The deal fell ___ at the last minute.|through
+They agreed to ___ the contract for a year.|extend
+The company issued new ___ to investors.|shares
+We need buy-in from all ___ involved.|stakeholders
+The CEO announced a major ___ in strategy.|shift
+Negotiations are still ___ ongoing.|very much`,
+  },
+  {
+    id: "b2p12", title: "Crime & Law", subtitle: "Reporting incidents", kind: "cloze",
+    note: "B2-level vocabulary for news and crime reports.",
+    data: `The suspect was ___ near the scene.|arrested
+Police are ___ the robbery as a priority case.|treating
+The witness gave a detailed ___ to police.|statement
+He was found ___ of the crime.|guilty
+The jury reached a ___ after two days.|verdict
+She was ___ to five years in prison.|sentenced
+The thief managed to ___ before police arrived.|escape
+Detectives are still ___ the case.|investigating
+The court will ___ the case next month.|hear
+He pleaded ___ to the charges.|not guilty
+The victim reported the ___ to the police.|theft
+CCTV footage helped ___ the suspect.|identify
+The judge dismissed the case due to lack of ___.|evidence
+The lawyer argued for a lighter ___.|sentence
+Police are appealing for ___ from the public.|witnesses
+The burglar broke ___ through a window.|in
+He was released on ___ pending trial.|bail
+The case was ___ due to insufficient evidence.|dropped
+The officer read him his ___.|rights
+The trial is expected to ___ several weeks.|last
+She was charged with ___ a false report.|filing
+The defendant appeared in court to ___ the charges.|answer
+Forensic experts examined the ___ carefully.|scene
+The gang was involved in a series of ___.|robberies
+He was found ___ innocent by the jury.|not`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -1017,6 +1481,122 @@ It would be ___ to generalise.|premature
 The difference is ___ significant.|marginally
 Such readings are ___ open to dispute.|arguably
 The mechanism is ___ understood.|poorly`,
+  },
+  {
+    id: "c1p7", title: "Legal & Formal Documents", subtitle: "Contract and policy language", kind: "cloze",
+    note: "Formal, legalistic register found in contracts, policies, and official notices.",
+    data: `The tenant shall ___ the premises in good condition.|maintain
+This agreement is ___ upon signature by both parties.|binding
+The clause shall be ___ null and void if breached.|deemed
+Either party may ___ this contract with 30 days' notice.|terminate
+The company reserves the ___ to amend these terms.|right
+All disputes shall be ___ by arbitration.|resolved
+The parties hereby ___ to the following terms.|agree
+This policy is ___ to change without prior notice.|subject
+The signatory ___ that all information is accurate.|warrants
+Failure to comply may result in immediate ___.|termination
+The agreement shall remain in ___ for two years.|effect
+Nothing herein shall be ___ as legal advice.|construed
+The buyer shall ___ full payment within 14 days.|remit
+This clause is ___ from the rest of the contract.|severable
+The undersigned hereby ___ receipt of the goods.|acknowledges
+The contract is governed by the ___ of this state.|laws
+Any amendment must be made in ___.|writing
+The company shall not be held ___ for delays.|liable
+The parties agree to keep the terms ___.|confidential
+This document shall ___ all prior agreements.|supersede
+The recipient must ___ the terms before proceeding.|accept
+The obligation shall ___ upon the successor entity.|pass
+Each party shall bear its own ___ costs.|legal
+The waiver shall not be ___ as a precedent.|interpreted
+The clause takes ___ immediately upon execution.|force`,
+  },
+  {
+    id: "c1p8", title: "Nuanced Character & Emotion", subtitle: "Precise personality vocabulary", kind: "pair",
+    prompt: "Which trait means \"%s\"?", note: "C1-level adjectives for describing character precisely.",
+    data: `extremely careful with details|meticulous
+boldly daring, sometimes reckless|audacious
+refusing to change one's mind|obstinate
+quick to notice small details|perceptive
+excessively proud of oneself|conceited
+easily annoyed or irritated|irascible
+showing great attention to duty|conscientious
+lacking confidence or self-esteem|insecure
+unwilling to spend money|frugal
+openly expressing one's feelings|candid
+avoiding unnecessary risk|prudent
+having a sharp, cutting wit|acerbic
+easily influenced by others|impressionable
+showing no emotion outwardly|impassive
+tending to think the worst will happen|pessimistic
+having strong, unshakeable opinions|dogmatic
+quick to take offence|touchy
+showing deep, genuine care|compassionate
+lacking experience or worldliness|naive
+skilled at avoiding difficulty|resourceful
+overly critical of small faults|fastidious
+reluctant to reveal information|reticent
+having a calm, unshakeable temperament|imperturbable
+excessively eager to please|obsequious
+unpredictable and prone to sudden mood changes|capricious`,
+  },
+  {
+    id: "c1p9", title: "Rhetoric & Persuasion", subtitle: "Argumentative language", kind: "cloze",
+    note: "C1-level vocabulary for constructing a persuasive argument.",
+    data: `The speaker made a ___ case for reform.|compelling
+Her argument ___ on a single flawed assumption.|hinges
+The evidence ___ against his claim.|militates
+This point ___ the very heart of the debate.|strikes
+The policy has been ___ criticised by experts.|widely
+His speech was designed to ___ public opinion.|sway
+The argument ___ down to a matter of values.|boils
+She ___ her point with a striking example.|illustrated
+The rhetoric was ___ but ultimately hollow.|persuasive
+His claim does not ___ up to scrutiny.|stand
+The debate ___ on questions of fairness.|turns
+She skilfully ___ the opposing argument.|dismantled
+The speech was carefully ___ to appeal to emotion.|crafted
+His conclusion ___ naturally from the evidence.|follows
+The argument gained ___ as more facts emerged.|traction
+She ___ the audience with a powerful anecdote.|won over
+The claim is ___ by a wealth of research.|substantiated
+His tone ___ conviction rather than certainty.|conveyed
+The counterargument ___ to address the core issue.|fails
+She ___ her opponent's logic point by point.|unpicked
+The rhetoric ___ more heat than light.|generated
+His appeal was ___ rather than rational.|emotional
+The argument ___ scrutiny remarkably well.|withstands
+She ___ the audience's scepticism head-on.|addressed
+The speech left little room for ___.|doubt`,
+  },
+  {
+    id: "c1p10", title: "Scientific & Technical Prose", subtitle: "Precision in research writing", kind: "cloze",
+    note: "C1-level vocabulary for describing scientific findings.",
+    data: `The experiment was ___ under controlled conditions.|conducted
+The results were ___ across multiple trials.|consistent
+The hypothesis was ___ by the data.|supported
+Researchers ___ a significant correlation.|observed
+The findings ___ from earlier studies.|diverge
+The sample size was ___ to ensure reliability.|sufficient
+The variables were ___ carefully controlled.|meticulously
+The study's ___ limits its generalisability.|scope
+The data was ___ using standard statistical methods.|analysed
+The results were ___ reproducible.|largely
+The team ___ a novel methodology.|developed
+The findings ___ implications for future research.|carry
+The experiment was ___ due to funding cuts.|discontinued
+The paper was ___ in a peer-reviewed journal.|published
+The results ___ the initial hypothesis.|confirm
+The methodology has since been ___ by other researchers.|adopted
+The study's ___ have been widely debated.|conclusions
+The data set was ___ for anomalies.|screened
+The researchers ___ several confounding variables.|controlled for
+The findings were ___ with caution.|presented
+The experiment's ___ remains a subject of debate.|validity
+The results were ___ statistically significant.|deemed
+The team ___ their methodology in the appendix.|detailed
+The study ___ a gap in the existing literature.|addresses
+The conclusions are ___ by the limited sample.|constrained`,
   },
 ];
 
