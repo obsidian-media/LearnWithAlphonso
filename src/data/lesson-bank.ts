@@ -726,7 +726,7 @@ refuse|refusal
 depart|departure`,
   },
   {
-    id: "b2p5", title: "Reporting & Hedging", subtitle: "Report what was said", kind: "cloze",
+    id: "b2p7", title: "Reporting & Hedging", subtitle: "Report what was said", kind: "cloze",
     note: "Reported speech shifts tense back and changes time and place words.",
     data: `She said she ___ tired.|was
 He told ___ he would call.|me
@@ -755,7 +755,7 @@ She urged them ___ reconsider.|to
 He maintained that he ___ innocent.|was`,
   },
   {
-    id: "b2p6", title: "Collocations", subtitle: "Words that go together", kind: "pair",
+    id: "b2p8", title: "Collocations", subtitle: "Words that go together", kind: "pair",
     prompt: "Complete: \"%s ___\"", note: "Natural English depends on the right partner word.",
     data: `make a|decision
 take a|risk
@@ -959,64 +959,6 @@ It would be ___ to generalise.|premature
 The difference is ___ significant.|marginally
 Such readings are ___ open to dispute.|arguably
 The mechanism is ___ understood.|poorly`,
-  },
-  {
-    id: "c1p5", title: "Inversion & Emphasis", subtitle: "Formal fronting", kind: "cloze",
-    note: "After a fronted negative or limiting adverbial, subject and auxiliary invert.",
-    data: `Never ___ I seen such chaos.|have
-Rarely ___ he admit a mistake.|does
-Not only ___ she resign, she sued.|did
-Seldom ___ we encounter such candour.|do
-No sooner ___ we arrived than it rained.|had
-Little ___ they know what awaited them.|did
-Under no circumstances ___ you sign this.|should
-Only later ___ the truth emerge.|did
-Hardly ___ the talk begun when the lights failed.|had
-Not until dawn ___ the search resume.|did
-So compelling ___ the argument that all agreed.|was
-Such ___ his charm that nobody objected.|was
-Nowhere ___ the report mention costs.|does
-On no account ___ the door be left open.|must
-Had I ___ , I would have called.|known
-Were he ___ ask, I'd refuse.|to
-Should you ___ questions, contact us.|have
-At no time ___ the risk disclosed.|was
-Only by testing ___ we be certain.|can
-Scarcely ___ she spoken when he left.|had
-In vain ___ they protest.|did
-Not for a moment ___ I doubt her.|did
-Barely ___ the ink dry before disputes began.|was
-Little ___ be gained from delay.|would
-Only then ___ the pattern become clear.|did`,
-  },
-  {
-    id: "c1p6", title: "Register & Nuance", subtitle: "Neutral → formal", kind: "pair",
-    prompt: "A more formal word for \"%s\":", note: "Academic and professional writing prefers the formal register.",
-    data: `get worse|deteriorate
-find out|ascertain
-put off|postpone
-go up|increase
-look into|investigate
-set up|establish
-give up|relinquish
-point out|indicate
-carry out|conduct
-bring about|effect
-take away|remove
-leave out|omit
-think about|consider
-deal with|address
-get rid of|eliminate
-make up|constitute
-cut down|reduce
-help|facilitate
-show|demonstrate
-start|commence
-end|terminate
-need|require
-ask for|request
-tell|inform
-allow|permit`,
   },
 ];
 
