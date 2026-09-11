@@ -11,9 +11,9 @@ export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
   head: () => ({
     meta: [
-      { title: "Learn — Lingua" },
+      { title: "Learn — Alphonso" },
       { name: "description", content: "Your English learning path with bite-size lessons." },
-      { property: "og:title", content: "Learn — Lingua" },
+      { property: "og:title", content: "Learn — Alphonso" },
       { property: "og:description", content: "Bite-size English lessons that stick." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

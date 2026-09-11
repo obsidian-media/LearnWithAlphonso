@@ -5,13 +5,13 @@ export const Route = createFileRoute("/terms")({
   component: Terms,
   head: () => ({
     meta: [
-      { title: "Terms of Service — Lingua" },
+      { title: "Terms of Service — Alphonso" },
       {
         name: "description",
-        content: "The rules for using Lingua: your account, acceptable use, AI features and liability.",
+        content: "The rules for using Alphonso: your account, acceptable use, AI features and liability.",
       },
-      { property: "og:title", content: "Terms of Service — Lingua" },
-      { property: "og:description", content: "The agreement between you and Lingua." },
+      { property: "og:title", content: "Terms of Service — Alphonso" },
+      { property: "og:description", content: "The agreement between you and Alphonso." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -25,7 +25,7 @@ function Terms() {
     <LegalPage title="Terms of Service" updated="4 September 2026">
       <Section heading="Agreement">
         <p>
-          By creating an account or using Lingua you agree to these terms. If you do not agree,
+          By creating an account or using Alphonso you agree to these terms. If you do not agree,
           please do not use the app.
         </p>
       </Section>

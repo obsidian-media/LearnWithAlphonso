@@ -13,12 +13,12 @@ export const Route = createFileRoute("/_authenticated/placement")({
   component: PlacementPage,
   head: () => ({
     meta: [
-      { title: "Placement Test — Lingua" },
+      { title: "Placement Test — Alphonso" },
       {
         name: "description",
         content: "A 15-question check that places you at the right CEFR level, from A1 to C1.",
       },
-      { property: "og:title", content: "Placement Test — Lingua" },
+      { property: "og:title", content: "Placement Test — Alphonso" },
       { property: "og:description", content: "Find your English level in two minutes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

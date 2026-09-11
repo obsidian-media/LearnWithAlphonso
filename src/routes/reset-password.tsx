@@ -6,9 +6,9 @@ export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
   head: () => ({
     meta: [
-      { title: "Set a new password — Lingua" },
-      { name: "description", content: "Choose a new password and get back into your Lingua account." },
-      { property: "og:title", content: "Set a new password — Lingua" },
+      { title: "Set a new password — Alphonso" },
+      { name: "description", content: "Choose a new password and get back into your Alphonso account." },
+      { property: "og:title", content: "Set a new password — Alphonso" },
       { property: "og:description", content: "Recover access to your English learning progress." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

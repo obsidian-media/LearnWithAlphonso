@@ -13,9 +13,9 @@ export const Route = createFileRoute("/_authenticated/converse/$scenarioId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.scenario.title ?? "Chat"} — Lingua` },
+      { title: `${loaderData?.scenario.title ?? "Chat"} — Alphonso` },
       { name: "description", content: `Roleplay ${loaderData?.scenario.title?.toLowerCase() ?? "a scene"} with an AI English tutor.` },
-      { property: "og:title", content: `${loaderData?.scenario.title ?? "Chat"} — Lingua` },
+      { property: "og:title", content: `${loaderData?.scenario.title ?? "Chat"} — Alphonso` },
       { property: "og:description", content: "Practice real English out loud with an AI tutor." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

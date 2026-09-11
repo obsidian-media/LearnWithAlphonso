@@ -31,7 +31,7 @@ export function TopBar() {
         <Link to="/learn" className="flex items-center gap-2">
           <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
           <span className="font-display text-[15px] font-semibold tracking-tight text-ink">
-            Lingua
+            Alphonso
           </span>
         </Link>
         <div className="flex items-center gap-4">

@@ -5,14 +5,14 @@ export const Route = createFileRoute("/cookies")({
   component: Cookies,
   head: () => ({
     meta: [
-      { title: "Cookie Policy — Lingua" },
+      { title: "Cookie Policy — Alphonso" },
       {
         name: "description",
         content:
-          "Which cookies and local storage Lingua uses, what each is for, and how to change your choice.",
+          "Which cookies and local storage Alphonso uses, what each is for, and how to change your choice.",
       },
-      { property: "og:title", content: "Cookie Policy — Lingua" },
-      { property: "og:description", content: "Cookies and storage used by Lingua, and how to control them." },
+      { property: "og:title", content: "Cookie Policy — Alphonso" },
+      { property: "og:description", content: "Cookies and storage used by Alphonso, and how to control them." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -24,7 +24,7 @@ function Cookies() {
     <LegalPage title="Cookie Policy" updated="5 September 2026">
       <Section heading="What this covers">
         <p>
-          Lingua stores small amounts of data on your device using cookies and browser storage.
+          Alphonso stores small amounts of data on your device using cookies and browser storage.
           This page explains what each item does and how to change your choice.
         </p>
       </Section>

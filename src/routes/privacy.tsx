@@ -5,14 +5,14 @@ export const Route = createFileRoute("/privacy")({
   component: Privacy,
   head: () => ({
     meta: [
-      { title: "Privacy Policy — Lingua" },
+      { title: "Privacy Policy — Alphonso" },
       {
         name: "description",
         content:
-          "How Lingua collects, uses, stores and deletes your data, and how to exercise your GDPR rights.",
+          "How Alphonso collects, uses, stores and deletes your data, and how to exercise your GDPR rights.",
       },
-      { property: "og:title", content: "Privacy Policy — Lingua" },
-      { property: "og:description", content: "What data Lingua stores and how to delete or export it." },
+      { property: "og:title", content: "Privacy Policy — Alphonso" },
+      { property: "og:description", content: "What data Alphonso stores and how to delete or export it." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -26,7 +26,7 @@ function Privacy() {
     <LegalPage title="Privacy Policy" updated="4 September 2026">
       <Section heading="Who we are">
         <p>
-          Lingua is an English learning app. This policy explains what we collect, why, and the
+          Alphonso is an English learning app. This policy explains what we collect, why, and the
           choices you have. Questions? Write to {CONTACT}.
         </p>
       </Section>
@@ -87,7 +87,7 @@ function Privacy() {
 
       <Section heading="Children">
         <p>
-          Lingua is not intended for children under 13 (or under 16 where local law requires). We do
+          Alphonso is not intended for children under 13 (or under 16 where local law requires). We do
           not knowingly create accounts for them.
         </p>
       </Section>
