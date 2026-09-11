@@ -426,6 +426,64 @@ Valentine's Day is celebrated with cards and ___.|flowers
 We often relax on the ___.|weekend
 The day after Thursday is ___.|Friday`,
   },
+  {
+    id: "a1p15", title: "Shapes & Sizes", subtitle: "Describing objects", kind: "pair",
+    prompt: "This shape or size word is…", note: "Basic shapes and size adjectives.",
+    data: `has three sides|triangle
+has four equal sides|square
+is perfectly round|circle
+has four sides, two longer than the others|rectangle
+has five sides|pentagon
+has six sides|hexagon
+is shaped like an egg|oval
+has eight sides|octagon
+is very big|huge
+is very small|tiny
+is not thick|thin
+is not thin|thick
+is longer than usual|long
+is not long|short
+is very tall|towering
+is not wide|narrow
+is very wide|broad
+is not heavy|light
+is very heavy|heavy
+is a perfect cube shape|cube
+is round like a ball|sphere
+has a pointed top|cone
+is shaped like a tube|cylinder
+is medium, not big or small|average
+is bigger than expected|oversized`,
+  },
+  {
+    id: "a1p16", title: "Daily Routine", subtitle: "Everyday actions in order", kind: "cloze",
+    note: "Simple present tense sentences describing a typical day.",
+    data: `I ___ up at seven o'clock every morning.|wake
+She ___ a shower before breakfast.|takes
+He ___ his teeth twice a day.|brushes
+We ___ breakfast together as a family.|eat
+I ___ dressed before I leave the house.|get
+She ___ to work by bus.|travels
+He ___ his email first thing at the office.|checks
+We ___ lunch at around one o'clock.|have
+I ___ home from work at six.|come
+She ___ dinner for the family.|cooks
+He ___ the dishes after dinner.|washes
+We ___ television in the evening.|watch
+I ___ a book before bed.|read
+She ___ to bed at eleven o'clock.|goes
+He ___ his phone one last time before sleeping.|glances at
+We ___ the house before we leave in the morning.|tidy
+I ___ my bag the night before.|pack
+She ___ the kids to school every day.|drives
+He ___ out three times a week.|works
+We ___ the dog every evening.|walk
+I ___ my clothes for the next day.|choose
+She ___ up early on weekdays.|gets
+He ___ home late on Fridays.|arrives
+We ___ the weekend relaxing at home.|spend
+I always ___ my alarm before I sleep.|set`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -777,6 +835,64 @@ repeatedly|one time after another
 routinely|as part of a fixed routine
 habitually|out of a settled habit`,
   },
+  {
+    id: "a2p13", title: "Directions & Places in Town", subtitle: "Finding your way around", kind: "cloze",
+    note: "Everyday vocabulary for giving and following directions.",
+    data: `Go ___ at the traffic lights.|straight
+Turn ___ at the next corner.|left
+Turn ___ at the bank.|right
+The supermarket is ___ from the bakery.|opposite
+The park is ___ to the school.|next
+Walk ___ two blocks and you'll see it.|for
+The bank is ___ the post office and the cafe.|between
+Cross the ___ carefully.|road
+The museum is just ___ the corner.|around
+Keep walking ___ the river.|along
+The station is at the ___ of the street.|end
+Go ___ the bridge to reach the old town.|over
+The hotel is ___ the city centre.|near
+Take the first ___ on your left.|turning
+The library is ___ the town hall.|behind
+Go ___ the stairs to the first floor.|up
+The car park is ___ the shopping centre.|under
+Follow the signs to reach the ___.|exit
+The pharmacy is ___ the corner from here.|round
+It's about a five-minute ___ from here.|walk
+The bus stop is ___ the church.|outside
+Go ___ this road until you reach the roundabout.|down
+The café is ___ the corner of Main Street.|on
+The nearest ATM is ___ the entrance.|inside
+You can't miss it, it's ___ the town square.|in`,
+  },
+  {
+    id: "a2p14", title: "Making Plans", subtitle: "Invitations and arrangements", kind: "cloze",
+    note: "Everyday phrases for arranging to meet and making plans.",
+    data: `Would you like to ___ out for dinner tonight?|go
+I'm ___ to a party on Saturday, do you want to come?|going
+Are you ___ this weekend?|free
+Let's ___ up at the cinema at seven.|meet
+I'd love to, but I already have ___.|plans
+Could we ___ the meeting to next week?|postpone
+I'm afraid I can't ___, I have other plans.|make it
+Shall we ___ a date for the trip?|fix
+Let's ___ it a rain check and go another time.|call
+I need to ___ my schedule before I confirm.|check
+Can you ___ me know by Friday?|let
+We're ___ to have a picnic on Sunday.|planning
+I'll ___ you up at eight o'clock.|pick
+Let's ___ for coffee sometime next week.|arrange
+I'm really ___ forward to seeing you.|looking
+Could you ___ me an invite for the party?|forward
+We should ___ this again sometime.|do
+I'll ___ you a text to confirm the time.|write
+Let's ___ it for Thursday instead.|keep
+I'm not sure I can ___ that day, I'll let you know.|manage
+Can we ___ the time to later in the day?|change
+I'd rather we ___ it for another day.|leave
+Let's ___ on a place to meet.|agree
+I'll ___ the tickets in advance.|book
+We're all ___ to meet at six sharp.|set`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -1127,6 +1243,64 @@ Wages have barely ___ despite rising costs.|changed
 The company saw a huge ___ in customer complaints.|drop
 Tourism numbers ___ to record levels last summer.|climbed
 Overall, the data shows an upward ___.|trend`,
+  },
+  {
+    id: "b1p13", title: "Job Interviews & CVs", subtitle: "Applying for work", kind: "cloze",
+    note: "B1-level vocabulary for job applications and interviews.",
+    data: `I'm writing to ___ for the marketing position.|apply
+Please find my ___ attached to this email.|CV
+I have three years of ___ in customer service.|experience
+I'm looking for a role with more ___.|responsibility
+Could you tell me about your ___ strengths?|main
+I'm a very ___ team player.|reliable
+The interviewer asked about my greatest ___.|weakness
+I believe I would be a great ___ for this role.|fit
+I'm available for an ___ any day next week.|interview
+My current ___ ends next month.|contract
+I'm hoping to ___ my career to the next level.|take
+The job ___ mentions strong communication skills.|description
+I have a ___ in business administration.|degree
+I worked as an ___ for a local company last summer.|intern
+Could you describe your ___ working style?|typical
+I'm confident I can meet the ___ deadlines.|tight
+The company offers a competitive ___ package.|salary
+I would appreciate the chance to ___ my skills.|demonstrate
+Please let me know if you need any further ___.|information
+I'm currently ___ for new opportunities.|searching
+I have excellent ___ skills, both written and spoken.|communication
+The recruiter will be in ___ shortly.|touch
+I'm keen to ___ more about the role.|learn
+Thank you for ___ my application.|considering
+I look forward to ___ from you soon.|hearing`,
+  },
+  {
+    id: "b1p14", title: "Describing People's Character", subtitle: "Personality traits", kind: "pair",
+    prompt: "Someone who is \"%s\" tends to…", note: "Personality adjectives matched to typical behaviour.",
+    data: `generous|share what they have with others
+stubborn|refuse to change their mind
+honest|always tell the truth
+reliable|always do what they promise
+ambitious|work hard to achieve big goals
+patient|stay calm while waiting
+curious|ask a lot of questions
+confident|believe in their own abilities
+shy|feel nervous meeting new people
+outgoing|enjoy meeting new people
+careless|make mistakes without noticing
+organised|keep everything neat and planned
+lazy|avoid doing work
+hardworking|put a lot of effort into tasks
+selfish|think mainly of themselves
+kind|treat others with care
+arrogant|think they are better than others
+modest|not boast about achievements
+cheerful|stay happy and positive
+moody|change mood suddenly and often
+loyal|stay faithful to friends
+jealous|feel envious of others
+sensitive|get upset easily
+creative|come up with original ideas
+tactless|say things without thinking of others' feelings`,
   },
 ];
 
@@ -1537,6 +1711,64 @@ The critics called the performance a true work of ___.|art
 The exhibition runs until the end of the ___.|month
 The novel won several literary ___ this year.|awards`,
   },
+  {
+    id: "b2p15", title: "Idioms & Fixed Expressions", subtitle: "Meaning match", kind: "pair",
+    prompt: "The expression \"%s\" means…", note: "Common B2-level idioms and fixed expressions.",
+    data: `to be on the ball|to be alert and quick to understand
+to cost an arm and a leg|to be very expensive
+to hit the books|to study hard
+to get the ball rolling|to start something
+to be in hot water|to be in trouble
+to call it a day|to stop working for now
+to break the ice|to ease tension in a social situation
+to be under the weather|to feel slightly ill
+to keep an eye on|to watch carefully
+to make ends meet|to have just enough money to live on
+to be a piece of cake|to be very easy
+to spill the beans|to reveal a secret
+to be in the same boat|to be in the same difficult situation
+to give someone the benefit of the doubt|to trust them despite uncertainty
+to sit on the fence|to avoid choosing a side
+to get cold feet|to become nervous about doing something
+to go back to square one|to start again from the beginning
+to be a piece of the puzzle|to be one part of a larger issue
+to hit the nail on the head|to describe something exactly right
+to pull someone's leg|to joke with someone
+to be up in the air|to be undecided or uncertain
+to bite off more than you can chew|to take on too much
+to take something for granted|to not appreciate something properly
+to be out of the blue|to happen unexpectedly
+to keep your chin up|to stay positive during hard times`,
+  },
+  {
+    id: "b2p16", title: "Cause & Effect", subtitle: "Connectors for reasons and results", kind: "pair",
+    prompt: "The connector \"%s\" is used to…", note: "B2-level connectors matched to how they signal cause or effect.",
+    data: `because|give a direct reason for something
+because of|introduce a noun reason
+due to|introduce a noun reason, often formal
+owing to|introduce a noun reason, formal
+as a result of|show what caused something, formal
+as a result|introduce the consequence of an action
+consequently|show a formal, logical consequence
+therefore|show a logical conclusion follows
+thus|show a formal result, similar to therefore
+hence|show a formal consequence, often written
+so|show an everyday, simple result
+which resulted in|link an event to its outcome, mid-sentence
+which led to|link a cause to its eventual outcome
+thanks to|give a positive reason for something
+on account of|give a formal reason, similar to because of
+in view of|introduce a reason that affects a decision
+for this reason|refer back to a reason just given
+as a consequence|introduce a formal result
+accordingly|show a result that logically follows
+that is why|give an informal reason in speech
+given that|introduce a condition-like reason
+seeing that|introduce an obvious reason, informal
+in light of|introduce a reason based on new information
+stemming from|show that something originates from a cause
+triggered by|show what set off a sudden reaction or event`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -1887,6 +2119,64 @@ to be a double-edged sword|to have both good and bad effects
 to keep one's fingers crossed|to hope for good luck
 to be at a crossroads|to face an important decision
 to weather the storm|to survive a difficult period`,
+  },
+  {
+    id: "c1p13", title: "Complex Passive & Causative", subtitle: "Advanced passive structures", kind: "cloze",
+    note: "C1-level passive and causative constructions.",
+    data: `The report is believed to have been ___ deliberately.|leaked
+It is thought that the decision will be ___ soon.|reversed
+The building is said to have been ___ in the 1920s.|designed
+She had her car ___ while she was on holiday.|stolen
+He got his proposal ___ by the board.|approved
+The bridge is due to be ___ next year.|completed
+It is rumoured that the company is planning ___.|layoffs
+The contract is expected to be ___ by Friday.|signed
+She had the documents ___ before the meeting.|translated
+The changes are said to have ___ efficiency.|improved
+He had his passport ___ at the embassy.|renewed
+It is widely believed that the treaty will be ___.|ratified
+The results are yet to be ___.|confirmed
+She got her essay ___ before submitting it.|proofread
+The suspect is alleged to have ___ the country.|fled
+The proposal is being carefully ___ by the committee.|considered
+It is understood that negotiations are ___.|ongoing
+He had the roof ___ after the storm.|repaired
+The findings are reported to have ___ researchers.|surprised
+She had her application ___ by a lawyer.|reviewed
+The policy is expected to be ___ next year.|revised
+It is claimed that the figures were ___.|manipulated
+He had the engine ___ before the long trip.|serviced
+The event is scheduled to take ___ in June.|place
+The data is believed to have been ___.|compromised`,
+  },
+  {
+    id: "c1p14", title: "Formal Emails & Correspondence", subtitle: "Professional written English", kind: "cloze",
+    note: "C1-level phrases for formal written communication.",
+    data: `I am writing to ___ your attention to a recent issue.|draw
+Please do not ___ to contact me if you need further information.|hesitate
+I would be ___ if you could confirm receipt of this email.|grateful
+With reference ___ our earlier conversation, I am attaching the report.|to
+I ___ forward to hearing from you soon.|look
+Please find ___ the requested documents.|attached
+I am writing ___ behalf of the marketing department.|on
+Should you have any questions, please do not hesitate to ___ out.|reach
+I apologise ___ any inconvenience this may have caused.|for
+We would like to ___ you for your continued support.|thank
+I am ___ to inform you that your application has been successful.|pleased
+Following ___ discussion, I have revised the proposal.|our
+Please let me know if this ___ with your schedule.|fits
+I trust this email finds you ___.|well
+We ___ to inform you that the position has been filled.|regret
+Kindly ___ me know your availability for next week.|let
+I am writing to ___ up on my previous email.|follow
+Please ___ this matter as a priority.|treat
+I would appreciate it if you could ___ this at your earliest convenience.|address
+We are ___ forward to a successful collaboration.|looking
+Please accept our ___ apologies for the delay.|sincere
+I am ___ that you found the presentation useful.|glad
+Should circumstances ___, please inform us immediately.|change
+We remain at your ___ should you require further assistance.|disposal
+I look forward to your ___ response.|prompt`,
   },
 ];
 
