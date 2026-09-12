@@ -14,7 +14,7 @@ A full-stack mobile-first English learning app with gamification, AI-powered con
 | **Styling** | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion |
 | **State** | Zustand (client) + TanStack Query (server) |
 | **Backend** | Supabase (PostgreSQL + Auth + RLS) |
-| **AI** | NVIDIA NIM (chat, direct) + GPT-4o-mini (TTS/STT, direct via OpenAI) |
+| **AI** | NVIDIA NIM (chat, direct) + Deepgram Aura-2/Nova-3 (TTS/STT, direct) |
 | **Routing** | TanStack Router (file-based) |
 
 ## Features
@@ -73,7 +73,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # server-only, never VITE_-prefixed
 NVIDIA_API_KEY=your-nvidia-api-key    # chat (integrate.api.nvidia.com)
-OPENAI_API_KEY=your-openai-api-key    # TTS/STT
+DEEPGRAM_API_KEY=your-deepgram-api-key # TTS/STT (deepgram.com)
 ```
 
 ### Available Scripts
