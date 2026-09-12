@@ -79,7 +79,7 @@ function Consent() {
     <main className="grain min-h-dvh bg-surface text-ink">
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col justify-center px-6 py-12">
         <div className="mb-4 grid size-11 place-items-center rounded-xl bg-moss text-surface">
-          <span className="font-display text-lg font-semibold">L</span>
+          <span className="font-display text-lg font-semibold">A</span>
         </div>
         <h1 className="font-display text-[26px] font-semibold leading-tight text-ink">
           Connect {clientName} to your account
