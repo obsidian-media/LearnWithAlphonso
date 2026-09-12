@@ -54,6 +54,3 @@ export function scorePlacement(correctByLevel: Record<Level, number>): {
   const next = PLACEMENT_ORDER[Math.min(idx + 1, PLACEMENT_ORDER.length - 1)];
   return { level: next, passed };
 }
-
-export const PLACEMENT_KEY = "lingua.placement";
-export const LEVEL_KEY = "lingua.level";
