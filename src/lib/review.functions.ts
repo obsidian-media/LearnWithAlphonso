@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/** Same course-awareness pattern as sync.functions.ts. */
+const courseSchema = z.enum(["en", "fr"]).default("en");
+
 export type ReviewItem = {
   itemKey: string;
   lessonId: string;
@@ -22,12 +25,13 @@ function addDays(days: number) {
 /** Record questions answered incorrectly during a lesson. */
 export const recordMisses = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { lessonId: string; level: string; itemKeys: string[] }) =>
+  .inputValidator((d: { lessonId: string; level: string; itemKeys: string[]; course?: string }) =>
     z
       .object({
         lessonId: z.string().min(1).max(80),
         level: z.string().min(2).max(4),
         itemKeys: z.array(z.string().min(1).max(120)).max(40),
+        course: courseSchema,
       })
       .parse(d),
   )
@@ -39,6 +43,7 @@ export const recordMisses = createServerFn({ method: "POST" })
       item_key: key,
       lesson_id: data.lessonId,
       level: data.level,
+      language: data.course,
       ease: 2.3,
       interval_days: 0,
       repetitions: 0,
@@ -46,28 +51,32 @@ export const recordMisses = createServerFn({ method: "POST" })
     }));
     const { error } = await supabase
       .from("review_items")
-      .upsert(rows, { onConflict: "user_id,item_key" });
+      .upsert(rows, { onConflict: "user_id,item_key,language" });
     if (error) throw new Error(error.message);
     return { added: rows.length };
   });
 
-/** Items due today (plus overdue), oldest first. */
+/** Items due today (plus overdue), oldest first, for the given course. */
 export const fetchDueReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ due: ReviewItem[]; total: number }> => {
+  .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<{ due: ReviewItem[]; total: number }> => {
     const { supabase, userId } = context;
+    const { course } = data;
     const [dueRes, totalRes] = await Promise.all([
       supabase
         .from("review_items")
         .select("item_key,lesson_id,level,ease,interval_days,repetitions,due_on")
         .eq("user_id", userId)
+        .eq("language", course)
         .lte("due_on", today())
         .order("due_on", { ascending: true })
         .limit(20),
       supabase
         .from("review_items")
         .select("item_key", { count: "exact", head: true })
-        .eq("user_id", userId),
+        .eq("user_id", userId)
+        .eq("language", course),
     ]);
     const due = (dueRes.data ?? []).map((r) => ({
       itemKey: r.item_key,
@@ -84,16 +93,20 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
 /** SM-2 style grading. correct=false resets the item; three clean reps retires it. */
 export const gradeReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { itemKey: string; correct: boolean }) =>
-    z.object({ itemKey: z.string().min(1).max(120), correct: z.boolean() }).parse(d),
+  .inputValidator((d: { itemKey: string; correct: boolean; course?: string }) =>
+    z
+      .object({ itemKey: z.string().min(1).max(120), correct: z.boolean(), course: courseSchema })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const { course } = data;
     const { data: row } = await supabase
       .from("review_items")
       .select("*")
       .eq("user_id", userId)
       .eq("item_key", data.itemKey)
+      .eq("language", course)
       .maybeSingle();
     if (!row) return { retired: false, dueOn: today() };
 
@@ -110,7 +123,8 @@ export const gradeReview = createServerFn({ method: "POST" })
           last_reviewed_at: new Date().toISOString(),
         })
         .eq("user_id", userId)
-        .eq("item_key", data.itemKey);
+        .eq("item_key", data.itemKey)
+        .eq("language", course);
       return { retired: false, dueOn: today() };
     }
 
@@ -121,7 +135,8 @@ export const gradeReview = createServerFn({ method: "POST" })
         .from("review_items")
         .delete()
         .eq("user_id", userId)
-        .eq("item_key", data.itemKey);
+        .eq("item_key", data.itemKey)
+        .eq("language", course);
       return { retired: true, dueOn: today() };
     }
     const intervalDays =
@@ -137,6 +152,7 @@ export const gradeReview = createServerFn({ method: "POST" })
         last_reviewed_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
-      .eq("item_key", data.itemKey);
+      .eq("item_key", data.itemKey)
+      .eq("language", course);
     return { retired: false, dueOn };
   });

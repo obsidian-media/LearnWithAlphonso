@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
-import { lookupQuestion } from "../../data/curriculum";
+import { getCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { fetchDueReviews, gradeReview } from "../../lib/review.functions";
+import { useProgress } from "../../lib/progress";
 
 export const Route = createFileRoute("/_authenticated/review")({
   component: ReviewPage,
@@ -32,6 +33,7 @@ type Card = { itemKey: string; question: Question };
 function ReviewPage() {
   const load = useServerFn(fetchDueReviews);
   const grade = useServerFn(gradeReview);
+  const course = useProgress((s) => s.course);
   const [cards, setCards] = useState<Card[] | null>(null);
   const [total, setTotal] = useState(0);
   const [idx, setIdx] = useState(0);
@@ -41,12 +43,14 @@ function ReviewPage() {
 
   useEffect(() => {
     let alive = true;
-    void load()
+    setCards(null);
+    const questionIndex = getCourse(course).questionIndex;
+    void load({ data: { course } })
       .then((res) => {
         if (!alive) return;
         const built: Card[] = [];
         for (const item of res.due) {
-          const ref = lookupQuestion(item.itemKey);
+          const ref = questionIndex[item.itemKey];
           if (ref) built.push({ itemKey: item.itemKey, question: ref.question });
         }
         setCards(built);
@@ -56,7 +60,7 @@ function ReviewPage() {
     return () => {
       alive = false;
     };
-  }, [load]);
+  }, [load, course]);
 
   const card = cards && idx < cards.length ? cards[idx] : null;
   const q = card?.question;
@@ -72,7 +76,7 @@ function ReviewPage() {
     setChecked(true);
     const ok = isCorrect;
     setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-    void grade({ data: { itemKey: card.itemKey, correct: ok } })
+    void grade({ data: { itemKey: card.itemKey, correct: ok, course } })
       .then((r) => {
         if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
       })

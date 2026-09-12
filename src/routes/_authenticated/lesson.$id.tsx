@@ -104,7 +104,7 @@ function LessonPage() {
     }
     if (missed.length) {
       void recordMisses({
-        data: { lessonId: lesson.id, level: lessonLevel, itemKeys: missed },
+        data: { lessonId: lesson.id, level: lessonLevel, itemKeys: missed, course },
       }).catch(() => {});
     }
     try {
