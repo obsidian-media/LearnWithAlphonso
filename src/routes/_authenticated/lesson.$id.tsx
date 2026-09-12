@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { getCourse } from "../../data/courses";
+import { reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
 import { completeLessonRemote, loseHeartRemote } from "../../lib/sync.functions";
@@ -51,6 +52,16 @@ function LessonPage() {
   const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id), [id]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
+  // Fresh per-mount seed so replaying the same lesson shuffles answer
+  // order differently each time, instead of always looking identical.
+  const [attemptSeed] = useState(() => `${id}-${Date.now()}-${Math.random()}`);
+  const questions = useMemo(
+    () =>
+      (maybeLesson?.questions ?? []).map((question, i) =>
+        reshuffleQuestion(question, `${attemptSeed}-${i}`),
+      ),
+    [maybeLesson, attemptSeed],
+  );
 
   if (!maybeLesson) {
     return (
@@ -65,8 +76,8 @@ function LessonPage() {
     );
   }
   const lesson = maybeLesson;
-  const q: Question = lesson.questions[idx];
-  const total = lesson.questions.length;
+  const q: Question = questions[idx];
+  const total = questions.length;
 
   function checkAnswer() {
     if (!picked) return;

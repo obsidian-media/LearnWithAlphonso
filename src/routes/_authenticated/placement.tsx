@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,11 +32,15 @@ function PlacementPage() {
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
   const course = useProgress((s) => s.course);
-  const PLACEMENT_QUESTIONS = useMemo(() => getCourse(course).placementQuestions, [course]);
+  const [PLACEMENT_QUESTIONS, setQuestionSet] = useState(() => getCourse(course).pickPlacement());
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setQuestionSet(getCourse(course).pickPlacement());
+  }, [course]);
 
   const q = PLACEMENT_QUESTIONS[step];
   const total = PLACEMENT_QUESTIONS.length;
@@ -111,6 +115,7 @@ function PlacementPage() {
           <button
             type="button"
             onClick={() => {
+              setQuestionSet(getCourse(course).pickPlacement());
               setAnswers([]);
               setStep(0);
               setPicked(null);
