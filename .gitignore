@@ -25,6 +25,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Agent working notes — deferred/postponed work items, local-only scratch
+DEFERRED-WORDS.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
