@@ -110,6 +110,72 @@ colleague|le collègue
 teacher|le professeur
 student|l'étudiant`,
   },
+  {
+    id: "fra1p4",
+    title: "Colours & Clothes",
+    subtitle: "Describing what people wear",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common colours and clothing items.",
+    data: `red|rouge
+blue|bleu
+green|vert
+yellow|jaune
+black|noir
+white|blanc
+grey|gris
+brown|marron
+pink|rose
+purple|violet
+shirt|la chemise
+t-shirt|le t-shirt
+trousers|le pantalon
+dress|la robe
+skirt|la jupe
+shoes|les chaussures
+jacket|la veste
+coat|le manteau
+hat|le chapeau
+scarf|l'écharpe
+socks|les chaussettes
+sweater|le pull
+belt|la ceinture
+gloves|les gants
+boots|les bottes`,
+  },
+  {
+    id: "fra1p5",
+    title: "Days, Months & Seasons",
+    subtitle: "Talking about time and calendar",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Days of the week, months, and seasons.",
+    data: `Monday|lundi
+Tuesday|mardi
+Wednesday|mercredi
+Thursday|jeudi
+Friday|vendredi
+Saturday|samedi
+Sunday|dimanche
+January|janvier
+February|février
+March|mars
+April|avril
+May|mai
+June|juin
+July|juillet
+August|août
+September|septembre
+October|octobre
+November|novembre
+December|décembre
+spring|le printemps
+summer|l'été
+autumn|l'automne
+winter|l'hiver
+today|aujourd'hui
+tomorrow|demain`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -209,6 +275,71 @@ Je suis complètement ___ dans cette ville.|perdu
 Quelle est votre ___ exacte ?|adresse
 J'habite dans un ___ très calme.|quartier
 Dans quelle ___ dois-je aller ?|direction`,
+  },
+  {
+    id: "fra2p4",
+    title: "Weather & Seasons",
+    subtitle: "Talking about the weather",
+    kind: "cloze",
+    note: "Everyday weather vocabulary and expressions.",
+    data: `Il fait beau ___.|aujourd'hui
+Il pleut souvent en ___.|automne
+Il fait très ___ en été.|chaud
+Il fait ___ en hiver.|froid
+Le ciel est ___ aujourd'hui.|nuageux
+Il y a du ___ ce matin.|vent
+Il neige beaucoup en ___.|hiver
+Le ___ annonce de la pluie demain.|bulletin
+Il fait un temps ___ aujourd'hui.|magnifique
+La température est de vingt ___.|degrés
+Il y a du ___ sur la route.|brouillard
+Prends un parapluie, il va ___.|pleuvoir
+Le soleil ___ tôt en été.|se lève
+Il fait un ___ épouvantable dehors.|temps
+Le ciel est ___ ce soir.|dégagé
+Il y a eu un orage avec des ___.|éclairs
+La météo prévoit une ___ de chaleur.|vague
+En automne, les feuilles ___.|tombent
+Le vent souffle très ___ aujourd'hui.|fort
+Il fait un froid ___ ce matin.|glacial
+Le ciel est couvert de ___.|nuages
+Il fait doux pour un jour de ___.|printemps
+La pluie a duré toute la ___.|journée
+Il gèle souvent en ___.|janvier
+Le climat ici est très ___.|humide`,
+  },
+  {
+    id: "fra2p5",
+    title: "Opposites",
+    subtitle: "Common adjective pairs",
+    kind: "pair",
+    prompt: 'The opposite of "%s" in French is…',
+    note: "Common adjective opposites.",
+    data: `grand|petit
+chaud|froid
+rapide|lent
+facile|difficile
+propre|sale
+plein|vide
+riche|pauvre
+jeune|vieux
+fort|faible
+heureux|triste
+beau|laid
+ouvert|fermé
+haut|bas
+long|court
+cher|bon marché
+lourd|léger
+dur|mou
+clair|foncé
+calme|bruyant
+gentil|méchant
+poli|impoli
+gros|mince
+sec|mouillé
+tôt|tard
+neuf|usé`,
   },
 ];
 
@@ -310,6 +441,70 @@ Notre vol a été ___ à cause de la météo.|annulé
 Le douanier a vérifié mes ___.|bagages
 Je cherche l'___ principale de l'aéroport.|entrée`,
   },
+  {
+    id: "frb1p4",
+    title: "Futur Simple",
+    subtitle: "Talking about the future",
+    kind: "cloze",
+    note: "Futur simple conjugation of common verbs.",
+    data: `Demain, je ___ (parler) à mon patron.|parlerai
+Tu ___ (finir) tes devoirs ce soir.|finiras
+Il ___ (partir) en vacances la semaine prochaine.|partira
+Nous ___ (voyager) en France l'année prochaine.|voyagerons
+Vous ___ (arriver) à quelle heure ?|arriverez
+Elles ___ (venir) nous voir demain.|viendront
+Je ___ (être) en retard, je pense.|serai
+Tu ___ (avoir) trente ans cette année.|auras
+Il ___ (faire) beau ce week-end.|fera
+Nous ___ (aller) au cinéma vendredi.|irons
+Vous ___ (pouvoir) m'aider demain ?|pourrez
+Elles ___ (vouloir) sûrement venir.|voudront
+Je ___ (savoir) la réponse bientôt.|saurai
+Tu ___ (voir) le résultat demain.|verras
+Il ___ (envoyer) le colis lundi.|enverra
+Nous ___ (devoir) partir tôt.|devrons
+Vous ___ (recevoir) la lettre bientôt.|recevrez
+Elles ___ (tenir) leur promesse.|tiendront
+Je ___ (courir) le marathon en mai.|courrai
+Tu ___ (mourir) de rire en voyant ça.|mourras
+Il ___ (venir) nous rendre visite bientôt.|viendra
+Nous ___ (finir) le projet à temps.|finirons
+Vous ___ (choisir) un nouveau modèle.|choisirez
+Elles ___ (réussir) leur examen.|réussiront
+Je ___ (acheter) une nouvelle voiture bientôt.|achèterai`,
+  },
+  {
+    id: "frb1p5",
+    title: "Imparfait",
+    subtitle: "Describing the past",
+    kind: "cloze",
+    note: "Imperfect tense for past habits and descriptions.",
+    data: `Quand j'étais petit, je ___ (jouer) souvent dehors.|jouais
+Tu ___ (habiter) à Paris avant, non ?|habitais
+Il ___ (être) très timide à l'école.|était
+Nous ___ (avoir) un chien quand nous étions jeunes.|avions
+Vous ___ (aller) souvent à la plage en été.|alliez
+Elles ___ (manger) toujours ensemble le dimanche.|mangeaient
+Je ___ (faire) du vélo tous les jours.|faisais
+Tu ___ (venir) nous voir chaque été.|venais
+Il ___ (parler) très doucement.|parlait
+Nous ___ (finir) toujours nos devoirs avant le dîner.|finissions
+Vous ___ (savoir) déjà nager à cet âge.|saviez
+Elles ___ (vouloir) toujours sortir le soir.|voulaient
+Quand il pleuvait, nous ___ (rester) à la maison.|restions
+Autrefois, elle ___ (chanter) dans une chorale.|chantait
+Il ___ (croire) encore au père Noël à six ans.|croyait
+Nous ___ (vivre) à la campagne à cette époque.|vivions
+Tu ___ (lire) beaucoup quand tu étais jeune.|lisais
+Elles ___ (dormir) toujours tard le week-end.|dormaient
+Je ___ (prendre) le bus tous les matins.|prenais
+Il ___ (écrire) des lettres à ses amis.|écrivait
+Vous ___ (boire) du lait chaud avant de dormir.|buviez
+Nous ___ (attendre) le bus ensemble chaque jour.|attendions
+Elle ___ (rire) beaucoup à cette époque.|riait
+Ils ___ (connaître) bien le quartier.|connaissaient
+La vie ___ (sembler) plus simple à cette époque.|semblait`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -409,6 +604,70 @@ Nous devons ___ les coûts de production.|réduire
 La proposition a été ___ à l'unanimité.|acceptée
 Nous vous remercions pour votre ___.|collaboration
 Veuillez ___ les documents joints.|consulter`,
+  },
+  {
+    id: "frb2p4",
+    title: "Comparatives & Superlatives",
+    subtitle: "Comparing people and things",
+    kind: "cloze",
+    note: "Comparative and superlative structures.",
+    data: `Elle est plus ___ que son frère.|grande
+Il est aussi ___ que moi.|intelligent
+Cette voiture est moins ___ que l'autre.|chère
+C'est le meilleur ___ de la ville.|restaurant
+C'est la pire journée de ma ___.|vie
+Il court plus ___ que son ami.|vite
+Elle chante aussi ___ que sa sœur.|bien
+Ce livre est moins ___ que le film.|intéressant
+C'est le plus haut ___ de Paris.|bâtiment
+Cette solution est la meilleure de ___.|toutes
+Il travaille plus ___ que les autres.|dur
+Ma maison est aussi ___ que la tienne.|spacieuse
+Ce plat est moins ___ que je pensais.|épicé
+C'est le film le plus ___ que j'ai vu.|triste
+Elle est la meilleure de la ___.|classe
+Il est aussi ___ que le champion.|rapide
+Ce quartier est moins ___ que le centre-ville.|cher
+C'est la pire ___ de l'année.|nouvelle
+Il parle plus ___ que moi.|couramment
+Cette région est la plus ___ du pays.|belle
+Elle est moins ___ que son collègue.|patiente
+C'est le pire résultat de tous les ___.|temps
+Ce trajet est plus ___ que prévu.|long
+Il est le meilleur ___ de l'équipe.|joueur
+Cette histoire est plus ___ que l'autre.|drôle`,
+  },
+  {
+    id: "frb2p5",
+    title: "Reported Speech",
+    subtitle: "Le discours indirect",
+    kind: "cloze",
+    note: "Reported speech with tense and pronoun shifts.",
+    data: `Il a dit qu'il ___ (être) fatigué.|était
+Elle a dit qu'elle ___ (venir) demain.|viendrait
+Il a expliqué qu'il ___ (avoir) besoin d'aide.|avait
+Elle a annoncé qu'elle ___ (partir) bientôt.|partirait
+Il m'a dit qu'il ___ (finir) le travail hier.|avait fini
+Elle a demandé si je ___ (pouvoir) l'aider.|pouvais
+Il a répondu qu'il ne ___ (savoir) pas.|savait
+Elle a expliqué qu'elle ___ (aller) au marché.|allait
+Il a dit qu'il ___ (vouloir) partir tôt.|voulait
+Elle m'a demandé où j'___ (habiter).|habitais
+Il a affirmé qu'il ___ (dire) la vérité.|disait
+Elle a précisé qu'elle ___ (manger) déjà.|avait mangé
+Il a demandé quand nous ___ (arriver).|arriverions
+Elle a dit qu'elle ___ (être) très contente du résultat.|était très
+Il a expliqué pourquoi il ___ (être) toujours en retard.|était toujours
+Elle a promis qu'elle ___ (appeler) plus tard.|appellerait
+Il a affirmé que le projet ___ (être) enfin terminé.|était enfin
+Elle a demandé si nous ___ (avoir) fini.|avions
+Il a dit qu'il ___ (faire) beau la veille.|avait fait
+Elle a précisé qu'elle ___ (revenir) bientôt.|reviendrait
+Il a expliqué que la réunion ___ (commencer) à midi.|commençait
+Elle a dit qu'elle ne ___ (comprendre) pas.|comprenait
+Il a demandé combien cela ___ (coûter).|coûtait
+Elle a affirmé qu'elle ___ (avoir) toujours raison.|avait toujours
+Il a dit qu'il ___ (essayer) de son mieux.|essayait`,
   },
 ];
 
@@ -510,6 +769,71 @@ au demeurant|add a nuanced final remark, "moreover, besides"
 qui pis est|introduce a worse consequence, "what is worse"
 il n'empêche que|concede despite an obstacle, "the fact remains that"
 tant et si bien que|emphasize an extreme resulting consequence`,
+  },
+  {
+    id: "frc1p4",
+    title: "Nominalisation",
+    subtitle: "Turning verbs into abstract nouns",
+    kind: "pair",
+    prompt: 'The noun form of "%s" is…',
+    note: "C1-level nominalisation, common in formal French writing.",
+    data: `décider|la décision
+analyser|l'analyse
+conclure|la conclusion
+proposer|la proposition
+réduire|la réduction
+améliorer|l'amélioration
+développer|le développement
+exiger|l'exigence
+échouer|l'échec
+réussir|la réussite
+produire|la production
+reconnaître|la reconnaissance
+résoudre|la résolution
+interpréter|l'interprétation
+justifier|la justification
+maintenir|le maintien
+établir|l'établissement
+expliquer|l'explication
+suggérer|la suggestion
+découvrir|la découverte
+augmenter|l'augmentation
+diminuer|la diminution
+créer|la création
+transformer|la transformation
+choisir|le choix`,
+  },
+  {
+    id: "frc1p5",
+    title: "Precision Vocabulary for Debate",
+    subtitle: "Arguing and persuading in French",
+    kind: "cloze",
+    note: "C1-level vocabulary for structured argument and debate.",
+    data: `Il convient de ___ plusieurs points avant de conclure.|nuancer
+Cet argument repose sur une ___ erronée.|prémisse
+Il serait ___ de ne pas tenir compte de ce facteur.|réducteur
+Cette affirmation mérite d'être ___.|relativisée
+Il faut ___ les avantages et les inconvénients.|peser
+Son raisonnement manque de ___.|rigueur
+Il est essentiel de ___ les faits des opinions.|distinguer
+Cette thèse est difficile à ___.|réfuter
+Il convient de ___ cette hypothèse avec prudence.|aborder
+Son argumentation repose sur des ___ solides.|preuves
+Il faut ___ la portée de cette déclaration.|évaluer
+Cette position est difficile à ___.|défendre
+Il est nécessaire de ___ les contre-arguments.|anticiper
+Son discours manque de ___.|nuance
+Il convient de ___ les implications de cette décision.|considérer
+Cette conclusion découle logiquement des ___.|prémisses
+Il faut ___ les biais possibles dans cette étude.|identifier
+Son point de vue mérite d'être ___.|entendu
+Il est important de ___ les sources utilisées.|vérifier
+Cette critique semble ___.|infondée
+Il convient de ___ la validité de cet argument.|questionner
+Son raisonnement est ___ mais contestable.|cohérent
+Il faut ___ les faits avant de juger.|examiner
+Cette hypothèse reste à ___.|démontrer
+Il est essentiel de ___ un débat constructif.|favoriser`,
   },
 ];
 
