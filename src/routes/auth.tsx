@@ -122,7 +122,7 @@ function AuthPage() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="mb-2 grid size-11 place-items-center rounded-xl bg-moss text-surface">
-            <span className="font-display text-lg font-semibold">L</span>
+            <span className="font-display text-lg font-semibold">A</span>
           </div>
           <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
             {mode === "signup"
