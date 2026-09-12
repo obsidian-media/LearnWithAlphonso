@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
-import { curriculum } from "../../data/curriculum";
+import { getCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
 import { completeLessonRemote, loseHeartRemote } from "../../lib/sync.functions";
@@ -27,14 +27,16 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
 function LessonPage() {
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
+  const course = useProgress((s) => s.course);
+  const curriculum = useMemo(() => getCourse(course).curriculum, [course]);
   const maybeLesson = useMemo(() => {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
     return null;
-  }, [id]);
+  }, [curriculum, id]);
   const lessonLevel = useMemo(() => {
     for (const u of curriculum) if (u.lessons.some((l) => l.id === id)) return u.level;
     return "A1";
-  }, [id]);
+  }, [curriculum, id]);
 
   const applyCompletion = useProgress((s) => s.applyCompletion);
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
@@ -96,7 +98,7 @@ function LessonPage() {
     }
     try {
       const res = await completeLessonRemote({
-        data: { lessonId: lesson.id, correct, total },
+        data: { lessonId: lesson.id, correct, total, course },
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons

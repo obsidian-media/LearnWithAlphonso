@@ -1,4 +1,5 @@
 import { curriculum, type Lesson, type Question } from "./curriculum";
+import { curriculumFr } from "./curriculum-fr";
 import { VOCAB_IMAGES } from "./vocab-images";
 
 export type VocabItem = {
@@ -47,7 +48,7 @@ export function deriveVocab(lesson: Lesson): VocabItem[] {
 
 const cache: Record<string, VocabItem[]> = (() => {
   const map: Record<string, VocabItem[]> = {};
-  for (const unit of curriculum)
+  for (const unit of [...curriculum, ...curriculumFr])
     for (const lesson of unit.lessons) map[lesson.id] = deriveVocab(lesson);
   return map;
 })();

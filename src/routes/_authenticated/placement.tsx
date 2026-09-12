@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { useServerFn } from "@tanstack/react-start";
-import { PLACEMENT_QUESTIONS, scorePlacement } from "../../data/placement";
+import { scorePlacement } from "../../data/placement";
+import { getCourse } from "../../data/courses";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
 import { LEVELS, type Level } from "../../data/levels";
@@ -30,6 +31,8 @@ function PlacementPage() {
   const navigate = useNavigate();
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
+  const course = useProgress((s) => s.course);
+  const PLACEMENT_QUESTIONS = useMemo(() => getCourse(course).placementQuestions, [course]);
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -45,7 +48,7 @@ function PlacementPage() {
       if (answers[i]) byLevel[item.level] += 1;
     });
     return scorePlacement(byLevel);
-  }, [done, answers]);
+  }, [done, answers, PLACEMENT_QUESTIONS]);
 
   function submit() {
     if (picked === null) return;
@@ -66,7 +69,7 @@ function PlacementPage() {
         placementScore: score,
         placementTakenAt: new Date().toISOString(),
       });
-      void savePlacement({ data: { level, score } }).catch(() => {});
+      void savePlacement({ data: { level, score, course } }).catch(() => {});
     } else {
       setAnswers(next);
       setStep(step + 1);

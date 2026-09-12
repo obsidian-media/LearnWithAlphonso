@@ -21,7 +21,12 @@ export const COURSES: CourseMeta[] = [
   { id: "fr", label: "French", flag: "🇫🇷", targetLanguage: "French" },
 ];
 
-export type QuestionRef = { lessonId: string; unitId: string; level: Level; question: Unit["lessons"][number]["questions"][number] };
+export type QuestionRef = {
+  lessonId: string;
+  unitId: string;
+  level: Level;
+  question: Unit["lessons"][number]["questions"][number];
+};
 
 type CourseBundle = {
   curriculum: Unit[];

@@ -4,6 +4,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
 
+/**
+ * Course-specific progress (xp, cefr level, placement, league) lives in
+ * `language_progress` (PK: user_id + language), keyed by this field.
+ * Account-wide state (streak, hearts, streak freezes, achievements,
+ * activity calendar) stays in `user_progress` / `activity_days` /
+ * `user_achievements`, unaffected by which course is active — the same
+ * split Duolingo-style apps use: one streak, one set of hearts, but a
+ * separate level/XP per course.
+ */
+const courseSchema = z.enum(["en", "fr"]).default("en");
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -35,11 +46,19 @@ export type ProgressSnapshot = {
 
 export const fetchProgress = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<ProgressSnapshot> => {
+  .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<ProgressSnapshot> => {
     const { supabase, userId } = context;
-    const [prog, comps, acts, unlocks] = await Promise.all([
+    const { course } = data;
+    const [prog, lang, comps, acts, unlocks] = await Promise.all([
       supabase.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("lesson_completions").select("*").eq("user_id", userId),
+      supabase
+        .from("language_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("language", course)
+        .maybeSingle(),
+      supabase.from("lesson_completions").select("*").eq("user_id", userId).eq("language", course),
       supabase
         .from("activity_days")
         .select("day,xp_earned")
@@ -56,6 +75,29 @@ export const fetchProgress = createServerFn({ method: "GET" })
         .single();
       p = ins.data;
     }
+    let lp = lang.data;
+    if (!lp) {
+      // First time this course has been opened. For "en", seed from the
+      // legacy user_progress row so nothing appears to reset; for any
+      // other course, start fresh at the defaults.
+      const seed =
+        course === "en"
+          ? {
+              xp: p?.xp ?? 0,
+              cefr_level: p?.cefr_level ?? "A1",
+              placement_level: p?.placement_level ?? null,
+              placement_score: p?.placement_score ?? null,
+              placement_taken_at: p?.placement_taken_at ?? null,
+              league_tier: p?.league_tier ?? "bronze",
+            }
+          : { xp: 0, cefr_level: "A1", league_tier: "bronze" };
+      const ins = await supabase
+        .from("language_progress")
+        .upsert({ user_id: userId, language: course, ...seed }, { onConflict: "user_id,language" })
+        .select("*")
+        .single();
+      lp = ins.data;
+    }
     const answers: Record<string, { correct: number; total: number }> = {};
     const completedLessons: string[] = [];
     for (const c of comps.data ?? []) {
@@ -63,22 +105,22 @@ export const fetchProgress = createServerFn({ method: "GET" })
       answers[c.lesson_id] = { correct: c.correct, total: c.total };
     }
     return {
-      xp: p?.xp ?? 0,
+      xp: lp?.xp ?? 0,
       streak: p?.streak ?? 0,
       longestStreak: p?.longest_streak ?? 0,
       lastActiveDate: p?.last_active_date ?? null,
       hearts: p?.hearts ?? 5,
       heartsRefillAt: p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
       streakFreezes: p?.streak_freezes ?? 0,
-      leagueTier: ((p?.league_tier as LeagueTier) ?? "bronze") as LeagueTier,
+      leagueTier: ((lp?.league_tier as LeagueTier) ?? "bronze") as LeagueTier,
       completedLessons,
       answersByLesson: answers,
       activityDates: (acts.data ?? []).map((a) => a.day as string),
       unlockedAchievements: (unlocks.data ?? []).map((u) => u.achievement_id as string),
-      cefrLevel: p?.cefr_level ?? "A1",
-      placementLevel: p?.placement_level ?? null,
-      placementScore: p?.placement_score ?? null,
-      placementTakenAt: p?.placement_taken_at ?? null,
+      cefrLevel: lp?.cefr_level ?? "A1",
+      placementLevel: lp?.placement_level ?? null,
+      placementScore: lp?.placement_score ?? null,
+      placementTakenAt: lp?.placement_taken_at ?? null,
     };
   });
 
@@ -86,6 +128,7 @@ const completeLessonSchema = z.object({
   lessonId: z.string().min(1).max(100),
   correct: z.number().int().min(0).max(50),
   total: z.number().int().min(1).max(50),
+  course: courseSchema,
 });
 
 export const completeLessonRemote = createServerFn({ method: "POST" })
@@ -93,11 +136,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { lessonId, correct, total } = data;
+    const { lessonId, correct, total, course } = data;
     const today = todayStr();
     const xpGain = correct * 10 + (correct === total ? 20 : 0);
 
-    // load current progress
+    // account-wide state: streak, hearts, freezes (unaffected by course)
     const { data: pRow } = await supabase
       .from("user_progress")
       .select("*")
@@ -105,13 +148,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       .maybeSingle();
     const cur = pRow ?? {
       user_id: userId,
-      xp: 0,
       streak: 0,
       longest_streak: 0,
       last_active_date: null as string | null,
       hearts: 5,
       streak_freezes: 0,
-      league_tier: "bronze",
     };
 
     // streak
@@ -134,10 +175,18 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // freeze reward every 10 streak days (award once per milestone by only bumping when %10==0 and crossed today)
     if (streak > cur.streak && streak % 10 === 0) freezes += 1;
 
-    const xp = cur.xp + xpGain;
+    // per-course state: xp and league live in language_progress
+    const { data: lpRow } = await supabase
+      .from("language_progress")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .maybeSingle();
+    const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
+    const xp = curLp.xp + xpGain;
 
     // league promotion
-    const oldIdx = LEAGUES.indexOf(cur.league_tier as LeagueTier);
+    const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
     const thresholds = [0, 300, 1000, 3000, 8000];
     let newIdx = oldIdx;
     for (let i = LEAGUES.length - 1; i >= 0; i--) {
@@ -148,21 +197,34 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
     const leagueTier = LEAGUES[newIdx];
 
-    // upsert progress
+    // upsert account-wide progress
     await supabase.from("user_progress").upsert({
       user_id: userId,
-      xp,
       streak,
       longest_streak: longest,
       last_active_date: today,
       hearts: cur.hearts,
       streak_freezes: freezes,
-      league_tier: leagueTier,
     });
+
+    // upsert per-course progress
+    await supabase
+      .from("language_progress")
+      .upsert(
+        { user_id: userId, language: course, xp, league_tier: leagueTier },
+        { onConflict: "user_id,language" },
+      );
 
     // upsert lesson completion (best score kept)
     await supabase.from("lesson_completions").upsert(
-      { user_id: userId, lesson_id: lessonId, correct, total, xp_earned: xpGain },
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        correct,
+        total,
+        xp_earned: xpGain,
+        language: course,
+      },
       { onConflict: "user_id,lesson_id" },
     );
 
@@ -205,7 +267,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const newlyUnlocked: string[] = [];
 
     // league_promote counter is cumulative: track via user_achievements progress
-    const prevPromoteCount = prevMap.get("league_promote_3") ?? prevMap.get("league_promote_1") ?? 0;
+    const prevPromoteCount =
+      prevMap.get("league_promote_3") ?? prevMap.get("league_promote_1") ?? 0;
     const promoteCount = prevPromoteCount + (newIdx > oldIdx ? 1 : 0);
     stats.league = promoteCount;
 
@@ -261,8 +324,7 @@ export const loseHeartRemote = createServerFn({ method: "POST" })
       .from("user_progress")
       .update({
         hearts: next,
-        hearts_refill_at:
-          next === 0 ? new Date(Date.now() + 30 * 60 * 1000).toISOString() : null,
+        hearts_refill_at: next === 0 ? new Date(Date.now() + 30 * 60 * 1000).toISOString() : null,
       })
       .eq("user_id", userId);
     return { hearts: next };
@@ -333,9 +395,7 @@ export const mergeGuestProgress = createServerFn({ method: "POST" })
         xp_earned: 0,
       }));
       if (acts.length)
-        await supabase
-          .from("activity_days")
-          .upsert(acts, { onConflict: "user_id,day" });
+        await supabase.from("activity_days").upsert(acts, { onConflict: "user_id,day" });
     }
     return { merged: true };
   });
@@ -343,12 +403,17 @@ const LEVELS_ENUM = ["A1", "A2", "B1", "B2", "C1"] as const;
 
 export const setCefrLevel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ level: z.enum(LEVELS_ENUM) }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ level: z.enum(LEVELS_ENUM), course: courseSchema }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await supabase
-      .from("user_progress")
-      .upsert({ user_id: userId, cefr_level: data.level }, { onConflict: "user_id" });
+      .from("language_progress")
+      .upsert(
+        { user_id: userId, language: data.course, cefr_level: data.level },
+        { onConflict: "user_id,language" },
+      );
     return { cefrLevel: data.level };
   });
 
@@ -359,21 +424,23 @@ export const savePlacementResult = createServerFn({ method: "POST" })
       .object({
         level: z.enum(LEVELS_ENUM),
         score: z.number().int().min(0).max(100),
+        course: courseSchema,
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const takenAt = new Date().toISOString();
-    await supabase.from("user_progress").upsert(
+    await supabase.from("language_progress").upsert(
       {
         user_id: userId,
+        language: data.course,
         cefr_level: data.level,
         placement_level: data.level,
         placement_score: data.score,
         placement_taken_at: takenAt,
       },
-      { onConflict: "user_id" },
+      { onConflict: "user_id,language" },
     );
     return {
       cefrLevel: data.level,
