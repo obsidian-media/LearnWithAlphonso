@@ -80,6 +80,27 @@ export function packQuestions(pack: Pack): Question[] {
   });
 }
 
+/**
+ * Re-shuffles a question's answer-order presentation (MC choice order, or
+ * fill-bank word order) using a fresh seed, leaving the underlying prompt/
+ * answer/explanation untouched. Since the curriculum is built once at
+ * module load (not per-attempt), this is what makes replaying the same
+ * lesson feel different each time: call it with a new per-attempt seed
+ * when a lesson mounts, rather than relying on packQuestions()'s
+ * one-time-at-load seed.
+ */
+export function reshuffleQuestion(q: Question, seed: string): Question {
+  if (q.type === "mc") {
+    const order = q.choices
+      .map((_, i) => i)
+      .sort((a, b) => hash(`${seed}-${a}`) - hash(`${seed}-${b}`));
+    const choices = order.map((i) => q.choices[i]!);
+    return { ...q, choices, answer: order.indexOf(q.answer) };
+  }
+  const bank = [...q.bank].sort((a, b) => hash(seed + a) - hash(seed + b));
+  return { ...q, bank };
+}
+
 const QUESTIONS_PER_LESSON = 5;
 const LESSONS_PER_UNIT = 5;
 

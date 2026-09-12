@@ -7,7 +7,7 @@ import {
   findLessonFr,
   allLessonIdsFr,
 } from "./curriculum-fr";
-import { PLACEMENT_QUESTIONS } from "./placement";
+import { PLACEMENT_QUESTIONS, pickPlacementSet } from "./placement";
 import { PLACEMENT_QUESTIONS_FR } from "./placement-fr";
 import type { PlacementQuestion } from "./placement";
 import type { Level } from "./levels";
@@ -34,7 +34,10 @@ type CourseBundle = {
   unitsForLevel: (level: Level) => Unit[];
   findLesson: (id: string) => { unit: Unit; lesson: Unit["lessons"][number]; index: number } | null;
   allLessonIds: string[];
-  placementQuestions: PlacementQuestion[];
+  /** Full placement-question pool for this course (9 per CEFR band). */
+  placementPool: PlacementQuestion[];
+  /** Randomly samples a fresh 15-question placement set (3 per band) from the pool. */
+  pickPlacement: () => PlacementQuestion[];
 };
 
 const bundles: Record<Course, CourseBundle> = {
@@ -44,7 +47,8 @@ const bundles: Record<Course, CourseBundle> = {
     unitsForLevel,
     findLesson,
     allLessonIds,
-    placementQuestions: PLACEMENT_QUESTIONS,
+    placementPool: PLACEMENT_QUESTIONS,
+    pickPlacement: () => pickPlacementSet(PLACEMENT_QUESTIONS),
   },
   fr: {
     curriculum: curriculumFr,
@@ -52,7 +56,8 @@ const bundles: Record<Course, CourseBundle> = {
     unitsForLevel: unitsForLevelFr,
     findLesson: findLessonFr,
     allLessonIds: allLessonIdsFr,
-    placementQuestions: PLACEMENT_QUESTIONS_FR,
+    placementPool: PLACEMENT_QUESTIONS_FR,
+    pickPlacement: () => pickPlacementSet(PLACEMENT_QUESTIONS_FR),
   },
 };
 
