@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/profile")({
       { title: "Profile — Alphonso" },
       { name: "description", content: "Your streak, XP, achievements, and account settings." },
       { property: "og:title", content: "Profile — Alphonso" },
-      { property: "og:description", content: "Track your English learning progress and achievements." },
+      {
+        property: "og:description",
+        content: "Track your English learning progress and achievements.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -75,14 +78,10 @@ function ProfilePage() {
             {(name || "?").slice(0, 1).toUpperCase()}
           </span>
           <div className="flex-1">
-            <h1 className="font-display text-[22px] font-semibold text-ink">
-              {name || "Learner"}
-            </h1>
+            <h1 className="font-display text-[22px] font-semibold text-ink">{name || "Learner"}</h1>
             <div className="mt-1 flex items-center gap-2">
               <LeagueTierBadge tier={p.leagueTier} size="sm" />
-              <span className="text-[11px] text-ink-soft">
-                {p.longestStreak}-day best streak
-              </span>
+              <span className="text-[11px] text-ink-soft">{p.longestStreak}-day best streak</span>
             </div>
           </div>
         </div>
@@ -104,6 +103,19 @@ function ProfilePage() {
             <AchievementBadge key={a.id} achievement={a} unlocked={unlockedSet.has(a.id)} />
           ))}
         </div>
+
+        <Link
+          to="/profile/friends"
+          className="mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+        >
+          <span>
+            <span className="block font-display text-base font-semibold text-ink">Friends</span>
+            <span className="block text-xs text-ink-soft/80">
+              See how your friends are doing, or invite one
+            </span>
+          </span>
+          <span className="text-ink-soft">→</span>
+        </Link>
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
         <div className="mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4">
@@ -144,13 +156,18 @@ function ProfilePage() {
         </button>
 
         <div className="mt-6 flex items-center justify-center gap-4 text-[11px] text-ink-soft/70">
-          <Link to="/privacy" className="hover:text-ink">Privacy</Link>
+          <Link to="/privacy" className="hover:text-ink">
+            Privacy
+          </Link>
           <span aria-hidden>·</span>
-          <Link to="/terms" className="hover:text-ink">Terms</Link>
+          <Link to="/terms" className="hover:text-ink">
+            Terms
+          </Link>
           <span aria-hidden>·</span>
-          <Link to="/cookies" className="hover:text-ink">Cookies</Link>
+          <Link to="/cookies" className="hover:text-ink">
+            Cookies
+          </Link>
         </div>
-
       </div>
     </MobileFrame>
   );
@@ -260,7 +277,6 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
   );
 }
 
-
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-hairline bg-surface px-3 py-3 text-center">
@@ -282,10 +298,7 @@ function ActivityHeatmap({ dates }: { dates: string[] }) {
   return (
     <div className="mt-5 rounded-2xl border border-hairline bg-parchment p-4">
       <p className="mb-2 text-[10px] uppercase tracking-wider text-ink-soft">Last 30 days</p>
-      <div
-        className="grid gap-1"
-        style={{ gridTemplateColumns: "repeat(15, 1fr)" }}
-      >
+      <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(15, 1fr)" }}>
         {cells.map((c) => (
           <span
             key={c.date}

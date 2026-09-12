@@ -27,7 +27,9 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile.friends'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
+import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse.$scenarioId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -121,11 +123,23 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedProfileFriendsRoute =
+  AuthenticatedProfileFriendsRouteImport.update({
+    id: '/friends',
+    path: '/friends',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
   id: '/lesson/$id',
   path: '/lesson/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInviteInviterIdRoute =
+  AuthenticatedInviteInviterIdRouteImport.update({
+    id: '/invite/$inviterId',
+    path: '/invite/$inviterId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConverseScenarioIdRoute =
   AuthenticatedConverseScenarioIdRouteImport.update({
     id: '/$scenarioId',
@@ -151,14 +165,16 @@ export interface FileRoutesByFullPath {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
+  '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/profile/friends': typeof AuthenticatedProfileFriendsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -173,14 +189,16 @@ export interface FileRoutesByTo {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
-  '/profile': typeof AuthenticatedProfileRoute
+  '/profile': typeof AuthenticatedProfileRouteWithChildren
   '/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
+  '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/profile/friends': typeof AuthenticatedProfileFriendsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,14 +215,16 @@ export interface FileRoutesById {
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
+  '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/_authenticated/profile/friends': typeof AuthenticatedProfileFriendsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -228,7 +248,9 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
+    | '/invite/$inviterId'
     | '/lesson/$id'
+    | '/profile/friends'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -250,7 +272,9 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
+    | '/invite/$inviterId'
     | '/lesson/$id'
+    | '/profile/friends'
   id:
     | '__root__'
     | '/'
@@ -273,7 +297,9 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/.lovable/oauth/consent'
     | '/_authenticated/converse/$scenarioId'
+    | '/_authenticated/invite/$inviterId'
     | '/_authenticated/lesson/$id'
+    | '/_authenticated/profile/friends'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -420,11 +446,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/profile/friends': {
+      id: '/_authenticated/profile/friends'
+      path: '/friends'
+      fullPath: '/profile/friends'
+      preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
+    }
     '/_authenticated/lesson/$id': {
       id: '/_authenticated/lesson/$id'
       path: '/lesson/$id'
       fullPath: '/lesson/$id'
       preLoaderRoute: typeof AuthenticatedLessonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/invite/$inviterId': {
+      id: '/_authenticated/invite/$inviterId'
+      path: '/invite/$inviterId'
+      fullPath: '/invite/$inviterId'
+      preLoaderRoute: typeof AuthenticatedInviteInviterIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/converse/$scenarioId': {
@@ -457,13 +497,25 @@ const AuthenticatedConverseRouteWithChildren =
     AuthenticatedConverseRouteChildren,
   )
 
+interface AuthenticatedProfileRouteChildren {
+  AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
+}
+
+const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
+  AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
+}
+
+const AuthenticatedProfileRouteWithChildren =
+  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRouteWithChildren
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
 }
 
@@ -472,8 +524,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
 }
 
