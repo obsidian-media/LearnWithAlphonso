@@ -20,6 +20,11 @@ export const exportMyData = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const tables: Record<string, unknown[]> = {};
     for (const table of USER_TABLES) {
+      // Table name is a union of literals from a heterogeneous table list;
+      // the generated per-table query builder types don't unify across the
+      // loop, so this cast is the pragmatic escape hatch rather than a
+      // type-safety gap (each name is still a real, known table).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = await (supabase.from(table) as any).select("*").eq("user_id", userId);
       tables[table] = (data as unknown[]) ?? [];
     }
@@ -39,11 +44,14 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     // Remove owned rows first, as the caller, so RLS stays the source of truth.
     for (const table of USER_TABLES) {
+      // See the matching cast + comment in exportMyData above.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from(table) as any).delete().eq("user_id", userId);
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Friend rows pointing at this user are not owned by them.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabaseAdmin.from("friendships") as any).delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);

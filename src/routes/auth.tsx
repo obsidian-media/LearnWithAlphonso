@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -30,10 +30,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { next } = Route.useSearch();
-  const afterAuth = () => {
+  const afterAuth = useCallback(() => {
     if (next) window.location.href = next;
     else navigate({ to: "/learn", replace: true });
-  };
+  }, [next, navigate]);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +46,7 @@ function AuthPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) afterAuth();
     });
-  }, [navigate]);
+  }, [afterAuth]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
