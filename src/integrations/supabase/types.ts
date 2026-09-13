@@ -353,6 +353,14 @@ export type Database = {
           used: number;
         }[];
       };
+      consume_ai_rate_limit: {
+        Args: { _kind: string };
+        Returns: {
+          allowed: boolean;
+          count: number;
+          per_minute_limit: number;
+        }[];
+      };
       get_leaderboard: {
         Args: { _period: string; _scope: string };
         Returns: {

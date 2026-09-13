@@ -56,6 +56,21 @@ export async function consumeQuota(request: Request, kind: QuotaKind): Promise<Q
     return { ok: false, status: 401, message: "Session expired — sign in again." };
   }
 
+  // Per-minute burst limit, on top of the daily cap below — checked first
+  // so a rejected burst doesn't also eat into the day's quota.
+  const { data: rlData, error: rlError } = await supabase.rpc("consume_ai_rate_limit", {
+    _kind: kind,
+  });
+  if (rlError) return { ok: false, status: 500, message: "Could not verify your usage." };
+  const rlRow = Array.isArray(rlData) ? rlData[0] : rlData;
+  if (!rlRow || !rlRow.allowed) {
+    return {
+      ok: false,
+      status: 429,
+      message: "Too many requests — slow down and try again in a minute.",
+    };
+  }
+
   const limit = DAILY_LIMITS[kind];
   const { data, error } = await supabase.rpc("consume_ai_quota", {
     _kind: kind,
