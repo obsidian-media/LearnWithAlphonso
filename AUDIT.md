@@ -8,6 +8,16 @@ against the current code and git history rather than trusting prior docs.
 **Scope:** Security, architecture, accessibility, content, performance, UX,
 testing, tooling/CI, documentation
 
+> **Update (2026-09-13, same day):** items 1-5 of the priority action plan
+> below were implemented immediately after this audit: CI (§8.2 #1), AI
+> route rate limiting (§1.4 #2), a Vitest suite for SRS/XP/streak/league
+> math (§8.2 #2 — see `src/lib/*.test.ts`), the `learn.tsx` level switcher
+> now reuses `SegmentedControl` (§5.3 #1), and the four unused dependencies
+> are removed (§6). The scores/tables below are left as originally written
+> to preserve the audit as a point-in-time record — treat "Testing 0/10"
+> and "No CI" as describing the _pre-fix_ state this document was written
+> against, not the current one.
+
 ---
 
 ## Executive Summary

@@ -16,9 +16,9 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 | `src/routes/_authenticated/learn.tsx`      | Learning path UI (units, lessons, progress)                     |
 | `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank)                              |
 | `src/routes/_authenticated/review.tsx`     | Spaced repetition review queue                                  |
-| `src/routes/api/chat.ts`                   | AI chat endpoint (NVIDIA NIM)                                    |
-| `src/routes/api/tts.ts`                    | Text-to-speech endpoint (Deepgram)                               |
-| `src/routes/api/stt.ts`                    | Speech-to-text endpoint (Deepgram)                               |
+| `src/routes/api/chat.ts`                   | AI chat endpoint (NVIDIA NIM)                                   |
+| `src/routes/api/tts.ts`                    | Text-to-speech endpoint (Deepgram)                              |
+| `src/routes/api/stt.ts`                    | Speech-to-text endpoint (Deepgram)                              |
 
 ## Content Structure
 
