@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
+import { SegmentedControl } from "../../components/SegmentedControl";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
@@ -178,31 +179,21 @@ function LearnPage() {
           <span className="text-ink-soft">→</span>
         </Link>
 
-        <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-          {LEVELS.map((l) => {
-            const active = l.id === level;
-            const done = hydrated
-              ? curriculum
-                  .filter((u) => u.level === l.id)
-                  .flatMap((u) => u.lessons)
-                  .every((ls) => completed.includes(ls.id))
-              : false;
-            return (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => pick(l.id)}
-                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
-                  active
-                    ? "border-ink bg-ink text-surface"
-                    : "border-hairline bg-surface text-ink-soft hover:bg-parchment"
-                }`}
-              >
-                {l.id}
-                {done && !active ? " ✓" : ""}
-              </button>
-            );
-          })}
+        <div className="-mx-6 mb-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+          <SegmentedControl
+            ariaLabel="Select CEFR level"
+            value={level}
+            onChange={pick}
+            options={LEVELS.map((l) => {
+              const done = hydrated
+                ? curriculum
+                    .filter((u) => u.level === l.id)
+                    .flatMap((u) => u.lessons)
+                    .every((ls) => completed.includes(ls.id))
+                : false;
+              return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
+            })}
+          />
         </div>
 
         <div className="mb-8 rounded-2xl border border-hairline bg-parchment p-4">
