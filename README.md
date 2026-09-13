@@ -8,14 +8,14 @@ A full-stack mobile-first English learning app with gamification, AI-powered con
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Framework** | TanStack Start (SSR) + React 19 + Vite 8 |
-| **Styling** | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion |
-| **State** | Zustand (client) + TanStack Query (server) |
-| **Backend** | Supabase (PostgreSQL + Auth + RLS) |
-| **AI** | NVIDIA NIM (chat, direct) + Deepgram Aura-2/Nova-3 (TTS/STT, direct) |
-| **Routing** | TanStack Router (file-based) |
+| Layer         | Technology                                                           |
+| ------------- | -------------------------------------------------------------------- |
+| **Framework** | TanStack Start (SSR) + React 19 + Vite 8                             |
+| **Styling**   | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion               |
+| **State**     | Zustand (client) + TanStack Query (server)                           |
+| **Backend**   | Supabase (PostgreSQL + Auth + RLS)                                   |
+| **AI**        | NVIDIA NIM (chat, direct) + Deepgram Aura-2/Nova-3 (TTS/STT, direct) |
+| **Routing**   | TanStack Router (file-based)                                         |
 
 ## Features
 
@@ -30,13 +30,13 @@ A full-stack mobile-first English learning app with gamification, AI-powered con
 
 Each level contains 12 units × 5 lessons = 60 lessons per band.
 
-| Level | Units | Lessons | Questions |
-|---|---|---|---|
-| A1 | 12 | 60 | 480 |
-| A2 | 12 | 60 | 480 |
-| B1 | 12 | 60 | 480 |
-| B2 | 12 | 60 | 480 |
-| C1 | 12 | 60 | 480 |
+| Level     | Units  | Lessons | Questions |
+| --------- | ------ | ------- | --------- |
+| A1        | 12     | 60      | 480       |
+| A2        | 12     | 60      | 480       |
+| B1        | 12     | 60      | 480       |
+| B2        | 12     | 60      | 480       |
+| C1        | 12     | 60      | 480       |
 | **Total** | **60** | **300** | **2,400** |
 
 Each lesson contains 8 questions (MC + fill-in-blank) with explanations.
@@ -53,10 +53,12 @@ The app uses the SM-2 algorithm to schedule review of missed items:
 ## Development
 
 ### Prerequisites
+
 - Node.js 18+ ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
 - npm or bun
 
 ### Setup
+
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
@@ -66,6 +68,7 @@ npm run dev
 ```
 
 ### Environment Variables
+
 ```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_PUBLISHABLE_KEY=your-anon-key
@@ -77,6 +80,7 @@ DEEPGRAM_API_KEY=your-deepgram-api-key # TTS/STT (deepgram.com)
 ```
 
 ### Available Scripts
+
 ```sh
 npm run dev      # Start development server
 npm run build    # Production build

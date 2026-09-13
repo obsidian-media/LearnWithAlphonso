@@ -12,7 +12,10 @@ export const Route = createFileRoute("/cookies")({
           "Which cookies and local storage Alphonso uses, what each is for, and how to change your choice.",
       },
       { property: "og:title", content: "Cookie Policy — Alphonso" },
-      { property: "og:description", content: "Cookies and storage used by Alphonso, and how to control them." },
+      {
+        property: "og:description",
+        content: "Cookies and storage used by Alphonso, and how to control them.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -52,8 +55,8 @@ function Cookies() {
       <Section heading="Changing your mind">
         <p>
           Choose Essential only in the banner to refuse optional storage. To change your choice
-          later, clear this site's data in your browser settings and the banner will appear again
-          on your next visit. Blocking strictly necessary storage will sign you out.
+          later, clear this site's data in your browser settings and the banner will appear again on
+          your next visit. Blocking strictly necessary storage will sign you out.
         </p>
       </Section>
 

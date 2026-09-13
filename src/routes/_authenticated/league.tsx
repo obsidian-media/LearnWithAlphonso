@@ -13,7 +13,10 @@ export const Route = createFileRoute("/_authenticated/league")({
   head: () => ({
     meta: [
       { title: "League — Alphonso" },
-      { name: "description", content: "Compete on weekly and all-time leaderboards with learners worldwide." },
+      {
+        name: "description",
+        content: "Compete on weekly and all-time leaderboards with learners worldwide.",
+      },
       { property: "og:title", content: "League — Alphonso" },
       { property: "og:description", content: "Weekly leagues, friends, and country leaderboards." },
       { property: "og:type", content: "website" },

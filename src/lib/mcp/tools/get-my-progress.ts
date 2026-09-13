@@ -14,7 +14,11 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
     const [progress, profile, completions] = await Promise.all([
       supabase.from("user_progress").select("*").eq("user_id", ctx.getUserId()!).maybeSingle(),
-      supabase.from("profiles").select("display_name,country").eq("id", ctx.getUserId()!).maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("display_name,country")
+        .eq("id", ctx.getUserId()!)
+        .maybeSingle(),
       supabase
         .from("lesson_completions")
         .select("lesson_id", { count: "exact", head: true })

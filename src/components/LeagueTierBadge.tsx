@@ -1,6 +1,12 @@
 import { LEAGUE_TIER_META, type LeagueTier } from "../data/achievements";
 
-export function LeagueTierBadge({ tier, size = "md" }: { tier: LeagueTier; size?: "sm" | "md" | "lg" }) {
+export function LeagueTierBadge({
+  tier,
+  size = "md",
+}: {
+  tier: LeagueTier;
+  size?: "sm" | "md" | "lg";
+}) {
   const meta = LEAGUE_TIER_META[tier];
   const px = size === "sm" ? 24 : size === "lg" ? 44 : 32;
   return (

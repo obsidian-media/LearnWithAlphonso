@@ -8,9 +8,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Learn with Alphonso — English, one lesson at a time" },
-      { name: "description", content: "A calm, gamified way to build real English skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices." },
+      {
+        name: "description",
+        content:
+          "A calm, gamified way to build real English skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices.",
+      },
       { property: "og:title", content: "Learn with Alphonso — English, one lesson at a time" },
-      { property: "og:description", content: "Bite-size English lessons, streaks, and leagues that stay with you." },
+      {
+        property: "og:description",
+        content: "Bite-size English lessons, streaks, and leagues that stay with you.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -37,7 +44,9 @@ function Landing() {
           <div className="grid size-8 place-items-center rounded-lg bg-moss text-surface">
             <span className="font-display text-sm font-semibold">A</span>
           </div>
-          <span className="font-display text-[16px] font-semibold tracking-tight text-ink">Alphonso</span>
+          <span className="font-display text-[16px] font-semibold tracking-tight text-ink">
+            Alphonso
+          </span>
         </motion.div>
 
         <motion.div
@@ -53,14 +62,18 @@ function Landing() {
             Learn English with lessons that actually stick.
           </h1>
           <p className="mt-4 max-w-[320px] text-[15px] leading-relaxed text-ink-soft">
-            Bite-size lessons, warm gamified streaks, and weekly leagues — synced to your account so your progress follows you anywhere.
+            Bite-size lessons, warm gamified streaks, and weekly leagues — synced to your account so
+            your progress follows you anywhere.
           </p>
         </motion.div>
 
         <motion.ul
           initial="hidden"
           animate="show"
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } } }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
+          }}
           className="mt-10 space-y-3"
         >
           {[
@@ -75,7 +88,13 @@ function Landing() {
             >
               <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-moss text-surface">
                 <svg viewBox="0 0 24 24" className="size-4" fill="none">
-                  <path d="m6 12 4 4 8-9" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="m6 12 4 4 8-9"
+                    stroke="white"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </span>
               <div>
@@ -97,13 +116,18 @@ function Landing() {
             Sign in to sync your streak across devices.
           </p>
           <div className="mt-5 flex items-center justify-center gap-4 text-[11px] text-ink-soft/60">
-            <Link to="/privacy" className="hover:text-ink">Privacy</Link>
+            <Link to="/privacy" className="hover:text-ink">
+              Privacy
+            </Link>
             <span aria-hidden>·</span>
-            <Link to="/terms" className="hover:text-ink">Terms</Link>
+            <Link to="/terms" className="hover:text-ink">
+              Terms
+            </Link>
             <span aria-hidden>·</span>
-            <Link to="/cookies" className="hover:text-ink">Cookies</Link>
+            <Link to="/cookies" className="hover:text-ink">
+              Cookies
+            </Link>
           </div>
-
         </div>
       </div>
     </div>

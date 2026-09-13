@@ -8,7 +8,8 @@ export const Route = createFileRoute("/terms")({
       { title: "Terms of Service — Alphonso" },
       {
         name: "description",
-        content: "The rules for using Alphonso: your account, acceptable use, AI features and liability.",
+        content:
+          "The rules for using Alphonso: your account, acceptable use, AI features and liability.",
       },
       { property: "og:title", content: "Terms of Service — Alphonso" },
       { property: "og:description", content: "The agreement between you and Alphonso." },

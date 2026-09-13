@@ -12,7 +12,10 @@ export const Route = createFileRoute("/privacy")({
           "How Alphonso collects, uses, stores and deletes your data, and how to exercise your GDPR rights.",
       },
       { property: "og:title", content: "Privacy Policy — Alphonso" },
-      { property: "og:description", content: "What data Alphonso stores and how to delete or export it." },
+      {
+        property: "og:description",
+        content: "What data Alphonso stores and how to delete or export it.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -65,8 +68,8 @@ function Privacy() {
       <Section heading="How long we keep it">
         <p>
           We keep your account data for as long as your account exists. When you delete your
-          account, your data is removed immediately from our live systems and is purged from
-          routine backups within 30 days.
+          account, your data is removed immediately from our live systems and is purged from routine
+          backups within 30 days.
         </p>
       </Section>
 
@@ -87,8 +90,8 @@ function Privacy() {
 
       <Section heading="Children">
         <p>
-          Alphonso is not intended for children under 13 (or under 16 where local law requires). We do
-          not knowingly create accounts for them.
+          Alphonso is not intended for children under 13 (or under 16 where local law requires). We
+          do not knowingly create accounts for them.
         </p>
       </Section>
 

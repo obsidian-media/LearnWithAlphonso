@@ -6,19 +6,19 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `src/data/curriculum.ts` | Lesson content types + foundation units (A1) |
-| `src/data/levels.ts` | Level definitions + advanced units (A2-C1) |
-| `src/data/lesson-bank.ts` | Generated lesson packs (SM-2 compatible, 150 potential lessons) |
-| `src/lib/progress.ts` | Zustand progress store (client-side state) |
-| `src/lib/sync.functions.ts` | Server functions (progress sync, lesson completion, SRS) |
-| `src/routes/_authenticated/learn.tsx` | Learning path UI (units, lessons, progress) |
-| `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank) |
-| `src/routes/_authenticated/review.tsx` | Spaced repetition review queue |
-| `src/routes/api/chat.ts` | AI chat endpoint (Gemini) |
-| `src/routes/api/tts.ts` | Text-to-speech endpoint |
-| `src/routes/api/stt.ts` | Speech-to-text endpoint |
+| File                                       | Purpose                                                         |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `src/data/curriculum.ts`                   | Lesson content types + foundation units (A1)                    |
+| `src/data/levels.ts`                       | Level definitions + advanced units (A2-C1)                      |
+| `src/data/lesson-bank.ts`                  | Generated lesson packs (SM-2 compatible, 150 potential lessons) |
+| `src/lib/progress.ts`                      | Zustand progress store (client-side state)                      |
+| `src/lib/sync.functions.ts`                | Server functions (progress sync, lesson completion, SRS)        |
+| `src/routes/_authenticated/learn.tsx`      | Learning path UI (units, lessons, progress)                     |
+| `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank)                              |
+| `src/routes/_authenticated/review.tsx`     | Spaced repetition review queue                                  |
+| `src/routes/api/chat.ts`                   | AI chat endpoint (Gemini)                                       |
+| `src/routes/api/tts.ts`                    | Text-to-speech endpoint                                         |
+| `src/routes/api/stt.ts`                    | Speech-to-text endpoint                                         |
 
 ## Content Structure
 

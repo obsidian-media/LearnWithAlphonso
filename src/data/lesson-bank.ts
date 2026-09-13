@@ -21,8 +21,12 @@ type Pack = {
 
 const A1: Pack[] = [
   {
-    id: "a1p1", title: "Plurals", subtitle: "Singular → plural", kind: "pair",
-    prompt: "Plural of \"%s\":", note: "Irregular and spelling-change plurals must be memorised.",
+    id: "a1p1",
+    title: "Plurals",
+    subtitle: "Singular → plural",
+    kind: "pair",
+    prompt: 'Plural of "%s":',
+    note: "Irregular and spelling-change plurals must be memorised.",
     data: `child|children
 man|men
 woman|women
@@ -50,7 +54,10 @@ half|halves
 life|lives`,
   },
   {
-    id: "a1p2", title: "To Be & Present Simple", subtitle: "Core verb forms", kind: "cloze",
+    id: "a1p2",
+    title: "To Be & Present Simple",
+    subtitle: "Core verb forms",
+    kind: "cloze",
     note: "Match the verb form to the subject.",
     data: `I ___ a student.|am
 She ___ my sister.|is
@@ -79,8 +86,12 @@ You ___ right.|are
 She ___ in London.|lives`,
   },
   {
-    id: "a1p3", title: "Opposites", subtitle: "Everyday adjectives", kind: "pair",
-    prompt: "Opposite of \"%s\":", note: "Learning adjectives in pairs doubles your vocabulary.",
+    id: "a1p3",
+    title: "Opposites",
+    subtitle: "Everyday adjectives",
+    kind: "pair",
+    prompt: 'Opposite of "%s":',
+    note: "Learning adjectives in pairs doubles your vocabulary.",
     data: `big|small
 hot|cold
 old|young
@@ -108,7 +119,10 @@ same|different
 first|last`,
   },
   {
-    id: "a1p4", title: "Time & Place", subtitle: "Basic prepositions", kind: "cloze",
+    id: "a1p4",
+    title: "Time & Place",
+    subtitle: "Basic prepositions",
+    kind: "cloze",
     note: "Use in for months/years, on for days/dates, at for clock times.",
     data: `The meeting is ___ Monday.|on
 I was born ___ 1998.|in
@@ -137,8 +151,12 @@ The ball rolled ___ the hill.|down
 She waited ___ the rain.|in`,
   },
   {
-    id: "a1p5", title: "Everyday Verbs", subtitle: "Verb + noun pairs", kind: "pair",
-    prompt: "Which verb goes with \"%s\"?", note: "English fixes certain verbs to certain nouns.",
+    id: "a1p5",
+    title: "Everyday Verbs",
+    subtitle: "Verb + noun pairs",
+    kind: "pair",
+    prompt: 'Which verb goes with "%s"?',
+    note: "English fixes certain verbs to certain nouns.",
     data: `a shower|take
 breakfast|have
 homework|do
@@ -166,7 +184,10 @@ attention|pay
 care|take`,
   },
   {
-    id: "a1p6", title: "Questions", subtitle: "Question words", kind: "cloze",
+    id: "a1p6",
+    title: "Questions",
+    subtitle: "Question words",
+    kind: "cloze",
     note: "Choose the question word that matches the answer you want.",
     data: `___ is your name?|What
 ___ do you live?|Where
@@ -195,8 +216,12 @@ ___ bag is on the chair?|Whose
 ___ do we start?|When`,
   },
   {
-    id: "a1p7", title: "Family & People", subtitle: "Male → female counterparts", kind: "pair",
-    prompt: "Female form of \"%s\":", note: "Many family and role words change form by gender in English.",
+    id: "a1p7",
+    title: "Family & People",
+    subtitle: "Male → female counterparts",
+    kind: "pair",
+    prompt: 'Female form of "%s":',
+    note: "Many family and role words change form by gender in English.",
     data: `father|mother
 brother|sister
 son|daughter
@@ -224,7 +249,10 @@ duke|duchess
 salesman|saleswoman`,
   },
   {
-    id: "a1p8", title: "Food & Drink", subtitle: "Everyday meals", kind: "cloze",
+    id: "a1p8",
+    title: "Food & Drink",
+    subtitle: "Everyday meals",
+    kind: "cloze",
     note: "High-frequency food vocabulary used in daily conversation.",
     data: `I'd like a cup of ___, please.|coffee
 Can I have some ___ with my tea?|milk
@@ -253,7 +281,10 @@ This cake is made with real ___.|butter
 Would you like ___ or sparkling water?|still`,
   },
   {
-    id: "a1p9", title: "Clothes & Colours", subtitle: "What people wear", kind: "cloze",
+    id: "a1p9",
+    title: "Clothes & Colours",
+    subtitle: "What people wear",
+    kind: "cloze",
     note: "Common clothing vocabulary with colour adjectives.",
     data: `She's wearing a red ___.|dress
 He always wears a black ___.|jacket
@@ -282,7 +313,10 @@ He rolled up his ___.|sleeves
 I ironed my ___ this morning.|trousers`,
   },
   {
-    id: "a1p10", title: "Weather & Seasons", subtitle: "Talking about the sky", kind: "cloze",
+    id: "a1p10",
+    title: "Weather & Seasons",
+    subtitle: "Talking about the sky",
+    kind: "cloze",
     note: "Basic weather vocabulary and seasonal expressions.",
     data: `It's very ___ today — take an umbrella.|rainy
 The sky is ___ and blue.|clear
@@ -311,7 +345,10 @@ It's a ___ day, perfect for a walk.|mild
 Bring a jacket — it's ___ this evening.|chilly`,
   },
   {
-    id: "a1p11", title: "Numbers & Money", subtitle: "Prices and quantities", kind: "cloze",
+    id: "a1p11",
+    title: "Numbers & Money",
+    subtitle: "Prices and quantities",
+    kind: "cloze",
     note: "Everyday number and money vocabulary.",
     data: `This shirt costs ___ dollars.|twenty
 Can I pay in ___ instead of cash?|coins
@@ -340,8 +377,12 @@ He paid the ___ in full.|amount
 I need to check my bank ___.|balance`,
   },
   {
-    id: "a1p12", title: "Jobs & Occupations", subtitle: "What people do", kind: "pair",
-    prompt: "Someone who \"%s\" is a…", note: "Common job titles matched to their main duty.",
+    id: "a1p12",
+    title: "Jobs & Occupations",
+    subtitle: "What people do",
+    kind: "pair",
+    prompt: 'Someone who "%s" is a…',
+    note: "Common job titles matched to their main duty.",
     data: `teaches students|teacher
 treats sick people|doctor
 cooks food in a restaurant|chef
@@ -369,8 +410,12 @@ cleans buildings|cleaner
 delivers babies|midwife`,
   },
   {
-    id: "a1p13", title: "Animals", subtitle: "Pets and wild animals", kind: "pair",
-    prompt: "This animal is a…", note: "Common animals, from pets to farm and wild species.",
+    id: "a1p13",
+    title: "Animals",
+    subtitle: "Pets and wild animals",
+    kind: "pair",
+    prompt: "This animal is a…",
+    note: "Common animals, from pets to farm and wild species.",
     data: `barks and wags its tail|dog
 says meow|cat
 gives us milk|cow
@@ -398,7 +443,10 @@ barks like a dog but is wild|fox
 flies at night and sleeps upside down|bat`,
   },
   {
-    id: "a1p14", title: "Days, Months & Time", subtitle: "Everyday time expressions", kind: "cloze",
+    id: "a1p14",
+    title: "Days, Months & Time",
+    subtitle: "Everyday time expressions",
+    kind: "cloze",
     note: "Days of the week, months, and simple time phrases.",
     data: `The first day of the school week is ___.|Monday
 The last day of the weekend is ___.|Sunday
@@ -427,8 +475,12 @@ We often relax on the ___.|weekend
 The day after Thursday is ___.|Friday`,
   },
   {
-    id: "a1p15", title: "Shapes & Sizes", subtitle: "Describing objects", kind: "pair",
-    prompt: "This shape or size word is…", note: "Basic shapes and size adjectives.",
+    id: "a1p15",
+    title: "Shapes & Sizes",
+    subtitle: "Describing objects",
+    kind: "pair",
+    prompt: "This shape or size word is…",
+    note: "Basic shapes and size adjectives.",
     data: `has three sides|triangle
 has four equal sides|square
 is perfectly round|circle
@@ -456,7 +508,10 @@ is medium, not big or small|average
 is bigger than expected|oversized`,
   },
   {
-    id: "a1p16", title: "Daily Routine", subtitle: "Everyday actions in order", kind: "cloze",
+    id: "a1p16",
+    title: "Daily Routine",
+    subtitle: "Everyday actions in order",
+    kind: "cloze",
     note: "Simple present tense sentences describing a typical day.",
     data: `I ___ up at seven o'clock every morning.|wake
 She ___ a shower before breakfast.|takes
@@ -485,7 +540,10 @@ We ___ the weekend relaxing at home.|spend
 I always ___ my alarm before I sleep.|set`,
   },
   {
-    id: "a1p17", title: "In the Classroom", subtitle: "School objects and language", kind: "cloze",
+    id: "a1p17",
+    title: "In the Classroom",
+    subtitle: "School objects and language",
+    kind: "cloze",
     note: "Common classroom vocabulary for beginners.",
     data: `Open your ___ to page ten.|book
 Please write on the ___.|whiteboard
@@ -514,8 +572,12 @@ I keep my pens in a ___.|pencil case
 Please be ___ during the exam.|quiet`,
   },
   {
-    id: "a1p18", title: "Describing Things", subtitle: "Adjective + noun matches", kind: "pair",
-    prompt: "Which noun goes with \"%s\"?", note: "Common adjectives matched to a noun they naturally describe.",
+    id: "a1p18",
+    title: "Describing Things",
+    subtitle: "Adjective + noun matches",
+    kind: "pair",
+    prompt: 'Which noun goes with "%s"?',
+    note: "Common adjectives matched to a noun they naturally describe.",
     data: `sharp|knife
 soft|pillow
 hard|rock
@@ -543,7 +605,10 @@ old|book
 wet|towel`,
   },
   {
-    id: "a1p19", title: "At the Supermarket", subtitle: "Shopping for groceries", kind: "cloze",
+    id: "a1p19",
+    title: "At the Supermarket",
+    subtitle: "Shopping for groceries",
+    kind: "cloze",
     note: "Everyday vocabulary for grocery shopping.",
     data: `I need to buy some ___ for dinner tonight.|food
 Can you push the ___ while I shop?|trolley
@@ -572,7 +637,10 @@ Could you get some ___ for the salad?|lettuce
 The receipt shows the total ___.|amount`,
   },
   {
-    id: "a1p20", title: "Transport & Travel Basics", subtitle: "Getting from A to B", kind: "cloze",
+    id: "a1p20",
+    title: "Transport & Travel Basics",
+    subtitle: "Getting from A to B",
+    kind: "cloze",
     note: "Basic transport vocabulary for beginners.",
     data: `I go to work by ___ every day.|bus
 The ___ leaves from platform three.|train
@@ -601,8 +669,12 @@ We arrived at the ___ two hours early.|airport
 The ___ takes you underground across the city.|subway`,
   },
   {
-    id: "a1p21", title: "Parts of the Body", subtitle: "Naming body parts", kind: "pair",
-    prompt: "Point to your…", note: "Basic body part vocabulary.",
+    id: "a1p21",
+    title: "Parts of the Body",
+    subtitle: "Naming body parts",
+    kind: "pair",
+    prompt: "Point to your…",
+    note: "Basic body part vocabulary.",
     data: `you see with these|eyes
 you hear with these|ears
 you smell with this|nose
@@ -630,8 +702,12 @@ this connects your feet to your legs|ankle
 this is the largest bone in your face|jaw`,
   },
   {
-    id: "a1p22", title: "Hobbies & Free Time", subtitle: "What people enjoy doing", kind: "pair",
-    prompt: "This hobby involves…", note: "Common free-time activities.",
+    id: "a1p22",
+    title: "Hobbies & Free Time",
+    subtitle: "What people enjoy doing",
+    kind: "pair",
+    prompt: "This hobby involves…",
+    note: "Common free-time activities.",
     data: `reading|books
 watching|films
 listening to|music
@@ -662,8 +738,12 @@ meditating|for relaxation`,
 
 const A2: Pack[] = [
   {
-    id: "a2p1", title: "Irregular Past", subtitle: "Base → past simple", kind: "pair",
-    prompt: "Past simple of \"%s\":", note: "Irregular verbs don't take -ed.",
+    id: "a2p1",
+    title: "Irregular Past",
+    subtitle: "Base → past simple",
+    kind: "pair",
+    prompt: 'Past simple of "%s":',
+    note: "Irregular verbs don't take -ed.",
     data: `go|went
 eat|ate
 buy|bought
@@ -691,7 +771,10 @@ win|won
 leave|left`,
   },
   {
-    id: "a2p2", title: "Talking About the Past", subtitle: "Past tenses in use", kind: "cloze",
+    id: "a2p2",
+    title: "Talking About the Past",
+    subtitle: "Past tenses in use",
+    kind: "cloze",
     note: "Past simple for finished events; past continuous for background action.",
     data: `I ___ to the cinema yesterday.|went
 She ___ cooking when I arrived.|was
@@ -720,8 +803,12 @@ The lights ___ out suddenly.|went
 She ___ born in Lisbon.|was`,
   },
   {
-    id: "a2p3", title: "Comparatives", subtitle: "Adjective → comparative", kind: "pair",
-    prompt: "Comparative of \"%s\":", note: "Short adjectives add -er; long ones take \"more\".",
+    id: "a2p3",
+    title: "Comparatives",
+    subtitle: "Adjective → comparative",
+    kind: "pair",
+    prompt: 'Comparative of "%s":',
+    note: 'Short adjectives add -er; long ones take "more".',
     data: `big|bigger
 hot|hotter
 happy|happier
@@ -749,7 +836,10 @@ strange|stranger
 useful|more useful`,
   },
   {
-    id: "a2p4", title: "Out & About", subtitle: "Shopping and travel", kind: "cloze",
+    id: "a2p4",
+    title: "Out & About",
+    subtitle: "Shopping and travel",
+    kind: "cloze",
     note: "Fixed travel and shopping phrases.",
     data: `Can I ___ this on?|try
 I'd like to ___ a room.|book
@@ -778,7 +868,10 @@ Where can I ___ the bus?|catch
 The hotel ___ breakfast.|includes`,
   },
   {
-    id: "a2p5", title: "How Much, How Many", subtitle: "Quantifiers", kind: "cloze",
+    id: "a2p5",
+    title: "How Much, How Many",
+    subtitle: "Quantifiers",
+    kind: "cloze",
     note: "Countable nouns take many/few; uncountable nouns take much/little.",
     data: `How ___ sugar do you want?|much
 How ___ people came?|many
@@ -807,8 +900,11 @@ Neither ___ us was ready.|of
 She has ___ friends here.|no`,
   },
   {
-    id: "a2p6", title: "Future Forms", subtitle: "Will, going to, present continuous", kind: "cloze",
-    note: "\"Will\" for decisions now, \"going to\" for plans, present continuous for arrangements.",
+    id: "a2p6",
+    title: "Future Forms",
+    subtitle: "Will, going to, present continuous",
+    kind: "cloze",
+    note: '"Will" for decisions now, "going to" for plans, present continuous for arrangements.',
     data: `I think it ___ rain.|will
 We ___ going to move house.|are
 She ___ meeting Tom at six.|is
@@ -836,7 +932,10 @@ She ___ flying to Rome tomorrow.|is
 Nobody ___ notice.|will`,
   },
   {
-    id: "a2p7", title: "House & Home", subtitle: "Rooms and furniture", kind: "cloze",
+    id: "a2p7",
+    title: "House & Home",
+    subtitle: "Rooms and furniture",
+    kind: "cloze",
     note: "Everyday vocabulary for describing where you live.",
     data: `We cook dinner in the ___.|kitchen
 I keep my clothes in the ___.|wardrobe
@@ -865,8 +964,12 @@ I store old boxes in the ___.|basement
 Please wipe your feet on the ___.|mat`,
   },
   {
-    id: "a2p8", title: "Sport & Hobbies", subtitle: "Free-time activities", kind: "pair",
-    prompt: "Which sport or hobby uses \"%s\"?", note: "Match the equipment or place to the activity.",
+    id: "a2p8",
+    title: "Sport & Hobbies",
+    subtitle: "Free-time activities",
+    kind: "pair",
+    prompt: 'Which sport or hobby uses "%s"?',
+    note: "Match the equipment or place to the activity.",
     data: `a racket|tennis
 a ball and hoop|basketball
 a board and wheels|skateboarding
@@ -894,7 +997,10 @@ a rowing boat|rowing
 a garden and seeds|gardening`,
   },
   {
-    id: "a2p9", title: "Body & Health", subtitle: "Illness and doctor visits", kind: "cloze",
+    id: "a2p9",
+    title: "Body & Health",
+    subtitle: "Illness and doctor visits",
+    kind: "cloze",
     note: "Basic health vocabulary for describing how you feel.",
     data: `I have a bad ___ and can't stop coughing.|cold
 She's got a ___ — take some painkillers.|headache
@@ -923,8 +1029,12 @@ She sprained her ___ at the gym.|wrist
 The pharmacist recommended this ___ for allergies.|spray`,
   },
   {
-    id: "a2p10", title: "Superlatives", subtitle: "Adjective → superlative", kind: "pair",
-    prompt: "Superlative of \"%s\":", note: "Short adjectives take -est; long ones take \"most\".",
+    id: "a2p10",
+    title: "Superlatives",
+    subtitle: "Adjective → superlative",
+    kind: "pair",
+    prompt: 'Superlative of "%s":',
+    note: 'Short adjectives take -est; long ones take "most".',
     data: `big|biggest
 hot|hottest
 happy|happiest
@@ -952,7 +1062,10 @@ strange|strangest
 useful|most useful`,
   },
   {
-    id: "a2p11", title: "At the Restaurant", subtitle: "Ordering and dining out", kind: "cloze",
+    id: "a2p11",
+    title: "At the Restaurant",
+    subtitle: "Ordering and dining out",
+    kind: "cloze",
     note: "Common phrases for eating out.",
     data: `Could I see the ___, please?|menu
 I'd like to ___ a table for two.|book
@@ -981,8 +1094,12 @@ Please leave a ___ for the staff if service was good.|tip
 Enjoy your ___!|dinner`,
   },
   {
-    id: "a2p12", title: "Adverbs of Frequency", subtitle: "How often things happen", kind: "pair",
-    prompt: "How often does \"%s\" happen?", note: "Frequency adverbs matched to how often they mean.",
+    id: "a2p12",
+    title: "Adverbs of Frequency",
+    subtitle: "How often things happen",
+    kind: "pair",
+    prompt: 'How often does "%s" happen?',
+    note: "Frequency adverbs matched to how often they mean.",
     data: `always|every single time, without exception
 usually|the great majority of the time
 normally|as a rule, under typical conditions
@@ -1010,7 +1127,10 @@ routinely|as part of a fixed routine
 habitually|out of a settled habit`,
   },
   {
-    id: "a2p13", title: "Directions & Places in Town", subtitle: "Finding your way around", kind: "cloze",
+    id: "a2p13",
+    title: "Directions & Places in Town",
+    subtitle: "Finding your way around",
+    kind: "cloze",
     note: "Everyday vocabulary for giving and following directions.",
     data: `Go ___ at the traffic lights.|straight
 Turn ___ at the next corner.|left
@@ -1039,7 +1159,10 @@ The nearest ATM is ___ the entrance.|inside
 You can't miss it, it's ___ the town square.|in`,
   },
   {
-    id: "a2p14", title: "Making Plans", subtitle: "Invitations and arrangements", kind: "cloze",
+    id: "a2p14",
+    title: "Making Plans",
+    subtitle: "Invitations and arrangements",
+    kind: "cloze",
     note: "Everyday phrases for arranging to meet and making plans.",
     data: `Would you like to ___ out for dinner tonight?|go
 I'm ___ to a party on Saturday, do you want to come?|going
@@ -1068,7 +1191,10 @@ I'll ___ the tickets in advance.|book
 We're all ___ to meet at six sharp.|set`,
   },
   {
-    id: "a2p15", title: "Post Office & Bank", subtitle: "Everyday errands", kind: "cloze",
+    id: "a2p15",
+    title: "Post Office & Bank",
+    subtitle: "Everyday errands",
+    kind: "cloze",
     note: "A2-level vocabulary for post office and banking errands.",
     data: `I'd like to send this ___ to Spain, please.|parcel
 Could I have a ___ for this letter?|stamp
@@ -1097,7 +1223,10 @@ The clerk asked me to ___ the form.|sign
 I need to collect a ___ from the post office.|delivery`,
   },
   {
-    id: "a2p16", title: "Your Neighbourhood", subtitle: "Describing where you live", kind: "cloze",
+    id: "a2p16",
+    title: "Your Neighbourhood",
+    subtitle: "Describing where you live",
+    kind: "cloze",
     note: "A2-level vocabulary for describing a local area.",
     data: `My ___ is very quiet and friendly.|neighbourhood
 There's a small ___ at the end of my street.|park
@@ -1126,7 +1255,10 @@ My neighbourhood has changed a lot over the ___.|years
 I really like living in this part of ___.|town`,
   },
   {
-    id: "a2p17", title: "Prepositions of Place", subtitle: "Where things are", kind: "cloze",
+    id: "a2p17",
+    title: "Prepositions of Place",
+    subtitle: "Where things are",
+    kind: "cloze",
     note: "A2-level prepositions describing location.",
     data: `The cat is sitting ___ the table.|under
 The book is ___ the shelf.|on
@@ -1155,7 +1287,10 @@ The plane flew ___ the city.|past
 The path leads ___ the forest.|towards`,
   },
   {
-    id: "a2p18", title: "Past Continuous", subtitle: "Actions in progress in the past", kind: "cloze",
+    id: "a2p18",
+    title: "Past Continuous",
+    subtitle: "Actions in progress in the past",
+    kind: "cloze",
     note: "A2-level past continuous tense practice.",
     data: `I was ___ TV when the phone rang.|watching
 They were ___ football when it started to rain.|playing
@@ -1184,7 +1319,10 @@ We were ___ when the lights suddenly went out.|chatting
 He was ___ his bike when he saw the accident.|riding`,
   },
   {
-    id: "a2p19", title: "Modal Verbs — Ability & Permission", subtitle: "Can, could, may", kind: "cloze",
+    id: "a2p19",
+    title: "Modal Verbs — Ability & Permission",
+    subtitle: "Can, could, may",
+    kind: "cloze",
     note: "A2-level modal verbs for ability and permission.",
     data: `I ___ swim very well when I was younger.|could
 ___ I open the window, please?|may
@@ -1213,7 +1351,10 @@ She ___ not attend school due to illness.|could
 I ___ help you with your homework if you want.|can`,
   },
   {
-    id: "a2p20", title: "Comparisons — As...As", subtitle: "Equal comparisons", kind: "cloze",
+    id: "a2p20",
+    title: "Comparisons — As...As",
+    subtitle: "Equal comparisons",
+    kind: "cloze",
     note: "A2-level equal comparison structures.",
     data: `This bag is as ___ as that one.|heavy
 She is as ___ as her sister.|tall
@@ -1245,8 +1386,12 @@ The bridge is as ___ as the old one.|sturdy`,
 
 const B1: Pack[] = [
   {
-    id: "b1p1", title: "Phrasal Verbs", subtitle: "Meaning match", kind: "pair",
-    prompt: "\"%s\" means:", note: "Phrasal verbs rarely mean the sum of their parts.",
+    id: "b1p1",
+    title: "Phrasal Verbs",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: '"%s" means:',
+    note: "Phrasal verbs rarely mean the sum of their parts.",
     data: `give up|stop trying
 look after|take care of
 put off|postpone
@@ -1274,7 +1419,10 @@ cut down on|reduce
 look forward to|anticipate happily`,
   },
   {
-    id: "b1p2", title: "Conditionals", subtitle: "If-clauses", kind: "cloze",
+    id: "b1p2",
+    title: "Conditionals",
+    subtitle: "If-clauses",
+    kind: "cloze",
     note: "First conditional: if + present, will. Second: if + past, would.",
     data: `If it rains, we ___ stay home.|will
 If I ___ rich, I'd travel.|were
@@ -1303,7 +1451,10 @@ If I ___ time, I'd learn piano.|had
 Should you need help, ___ me.|call`,
   },
   {
-    id: "b1p3", title: "Modal Verbs", subtitle: "Obligation, advice, possibility", kind: "cloze",
+    id: "b1p3",
+    title: "Modal Verbs",
+    subtitle: "Obligation, advice, possibility",
+    kind: "cloze",
     note: "Modals express degree of certainty, permission, or obligation.",
     data: `You ___ see a doctor.|should
 I ___ speak three languages.|can
@@ -1332,7 +1483,10 @@ We ___ not have bothered.|need
 ___ you like some tea?|Would`,
   },
   {
-    id: "b1p4", title: "Perfect Tenses", subtitle: "Present perfect vs past", kind: "cloze",
+    id: "b1p4",
+    title: "Perfect Tenses",
+    subtitle: "Present perfect vs past",
+    kind: "cloze",
     note: "Present perfect links past to now; past simple names a finished time.",
     data: `I ___ never been to Japan.|have
 She ___ here since 2019.|has lived
@@ -1361,8 +1515,12 @@ They ___ arrived a moment ago.|arrived
 I've lived here ___ 2010.|since`,
   },
   {
-    id: "b1p5", title: "Work & Opinions", subtitle: "Natural collocations", kind: "pair",
-    prompt: "Which word completes \"%s\"?", note: "Collocations make speech sound natural.",
+    id: "b1p5",
+    title: "Work & Opinions",
+    subtitle: "Natural collocations",
+    kind: "pair",
+    prompt: 'Which word completes "%s"?',
+    note: "Collocations make speech sound natural.",
     data: `make a ___ (job application)|application
 take ___ (accept blame)|responsibility
 meet a ___ (finish on time)|deadline
@@ -1390,7 +1548,10 @@ build a ___ (working bond)|relationship
 face a ___ (difficulty)|challenge`,
   },
   {
-    id: "b1p6", title: "Relative Clauses", subtitle: "Who, which, that, whose", kind: "cloze",
+    id: "b1p6",
+    title: "Relative Clauses",
+    subtitle: "Who, which, that, whose",
+    kind: "cloze",
     note: "Use who for people, which for things, whose for possession.",
     data: `The man ___ called is my boss.|who
 The book ___ I read was great.|that
@@ -1419,7 +1580,10 @@ The road ___ leads to the lake is closed.|which
 People ___ exercise sleep better.|who`,
   },
   {
-    id: "b1p7", title: "Travel & Tourism", subtitle: "Getting around abroad", kind: "cloze",
+    id: "b1p7",
+    title: "Travel & Tourism",
+    subtitle: "Getting around abroad",
+    kind: "cloze",
     note: "Common vocabulary for booking and navigating trips.",
     data: `We need to ___ our flight before it fills up.|book
 Our hotel has a great ___ of the sea.|view
@@ -1448,8 +1612,12 @@ We explored the city on a ___ tour bus.|hop-on-hop-off
 Remember to keep your boarding ___ safe.|pass`,
   },
   {
-    id: "b1p8", title: "Feelings & Emotions", subtitle: "Adjective ↔ noun forms", kind: "pair",
-    prompt: "Noun form of \"%s\":", note: "Emotion adjectives and their matching nouns.",
+    id: "b1p8",
+    title: "Feelings & Emotions",
+    subtitle: "Adjective ↔ noun forms",
+    kind: "pair",
+    prompt: 'Noun form of "%s":',
+    note: "Emotion adjectives and their matching nouns.",
     data: `happy|happiness
 sad|sadness
 angry|anger
@@ -1477,7 +1645,10 @@ satisfied|satisfaction
 sympathetic|sympathy`,
   },
   {
-    id: "b1p9", title: "Money & Shopping", subtitle: "Banking and budgeting", kind: "cloze",
+    id: "b1p9",
+    title: "Money & Shopping",
+    subtitle: "Banking and budgeting",
+    kind: "cloze",
     note: "Intermediate vocabulary for managing money.",
     data: `I need to ___ some money before payday.|budget
 She's saving up to ___ a deposit for a flat.|pay
@@ -1506,7 +1677,10 @@ He's careful with his ___.|spending
 I always check the ___ before buying online.|reviews`,
   },
   {
-    id: "b1p10", title: "Environment", subtitle: "Talking about the planet", kind: "cloze",
+    id: "b1p10",
+    title: "Environment",
+    subtitle: "Talking about the planet",
+    kind: "cloze",
     note: "B1-level environmental vocabulary.",
     data: `We should ___ less plastic to protect the ocean.|use
 Recycling helps ___ waste going to landfill.|reduce
@@ -1535,7 +1709,10 @@ Wind farms generate clean ___.|energy
 Protecting the environment is everyone's ___.|responsibility`,
   },
   {
-    id: "b1p11", title: "Education & Learning", subtitle: "School, study and exams", kind: "cloze",
+    id: "b1p11",
+    title: "Education & Learning",
+    subtitle: "School, study and exams",
+    kind: "cloze",
     note: "B1-level vocabulary for talking about education.",
     data: `She is studying for a ___ in biology at university.|degree
 He failed the exam, so he has to ___ it in June.|resit
@@ -1564,7 +1741,10 @@ The university offers many ___ courses online.|distance
 He passed every subject except ___, which he must repeat.|chemistry`,
   },
   {
-    id: "b1p12", title: "Describing Trends", subtitle: "Talking about graphs and change", kind: "cloze",
+    id: "b1p12",
+    title: "Describing Trends",
+    subtitle: "Talking about graphs and change",
+    kind: "cloze",
     note: "B1-level language for describing statistics and change over time.",
     data: `Sales ___ sharply after the new product launched.|increased
 Prices ___ slightly over the last three months.|rose
@@ -1593,7 +1773,10 @@ Tourism numbers ___ to record levels last summer.|climbed
 Overall, the data shows an upward ___.|trend`,
   },
   {
-    id: "b1p13", title: "Job Interviews & CVs", subtitle: "Applying for work", kind: "cloze",
+    id: "b1p13",
+    title: "Job Interviews & CVs",
+    subtitle: "Applying for work",
+    kind: "cloze",
     note: "B1-level vocabulary for job applications and interviews.",
     data: `I'm writing to ___ for the marketing position.|apply
 Please find my ___ attached to this email.|CV
@@ -1622,8 +1805,12 @@ Thank you for ___ my application.|considering
 I look forward to ___ from you soon.|hearing`,
   },
   {
-    id: "b1p14", title: "Describing People's Character", subtitle: "Personality traits", kind: "pair",
-    prompt: "Someone who is \"%s\" tends to…", note: "Personality adjectives matched to typical behaviour.",
+    id: "b1p14",
+    title: "Describing People's Character",
+    subtitle: "Personality traits",
+    kind: "pair",
+    prompt: 'Someone who is "%s" tends to…',
+    note: "Personality adjectives matched to typical behaviour.",
     data: `generous|share what they have with others
 stubborn|refuse to change their mind
 honest|always tell the truth
@@ -1651,7 +1838,10 @@ creative|come up with original ideas
 tactless|say things without thinking of others' feelings`,
   },
   {
-    id: "b1p15", title: "Used to & Would", subtitle: "Past habits and states", kind: "cloze",
+    id: "b1p15",
+    title: "Used to & Would",
+    subtitle: "Past habits and states",
+    kind: "cloze",
     note: "B1-level structures for talking about past habits.",
     data: `I ___ to walk to school every day when I was young.|used
 We ___ visit our grandparents every summer.|would
@@ -1680,7 +1870,10 @@ I ___ collect stamps when I was younger.|would
 They ___ to live next door to us years ago.|used`,
   },
   {
-    id: "b1p16", title: "Question Tags", subtitle: "Confirming and checking information", kind: "cloze",
+    id: "b1p16",
+    title: "Question Tags",
+    subtitle: "Confirming and checking information",
+    kind: "cloze",
     note: "B1-level question tag practice.",
     data: `You're coming to the party, ___ you?|aren't
 She's happy with the result, ___ she?|isn't
@@ -1709,7 +1902,10 @@ We shouldn't be late, ___ we?|should
 They didn't call you yesterday, ___ they?|did`,
   },
   {
-    id: "b1p17", title: "Giving Opinions & Agreeing", subtitle: "Sharing your point of view", kind: "cloze",
+    id: "b1p17",
+    title: "Giving Opinions & Agreeing",
+    subtitle: "Sharing your point of view",
+    kind: "cloze",
     note: "B1-level phrases for discussion and debate.",
     data: `In my ___, this is the best option.|opinion
 I ___ agree with what you're saying.|totally
@@ -1738,7 +1934,10 @@ I ___ what you're saying, but I still think I'm right.|hear
 To be ___, I hadn't thought of it that way.|honest`,
   },
   {
-    id: "b1p18", title: "Health & Fitness", subtitle: "Exercise and healthy living", kind: "cloze",
+    id: "b1p18",
+    title: "Health & Fitness",
+    subtitle: "Exercise and healthy living",
+    kind: "cloze",
     note: "B1-level vocabulary for talking about fitness and wellbeing.",
     data: `I try to ___ out at the gym three times a week.|work
 Eating a ___ diet keeps you healthy.|balanced
@@ -1767,7 +1966,10 @@ A good night's ___ helps you recover.|rest
 She takes a daily ___ for her health.|vitamin`,
   },
   {
-    id: "b1p19", title: "Weather & Natural Events", subtitle: "Extreme weather vocabulary", kind: "cloze",
+    id: "b1p19",
+    title: "Weather & Natural Events",
+    subtitle: "Extreme weather vocabulary",
+    kind: "cloze",
     note: "B1-level vocabulary for weather and natural events.",
     data: `A strong ___ knocked down several trees.|storm
 The ___ caused severe flooding in the town.|rain
@@ -1796,7 +1998,10 @@ Officials issued a ___ warning for the coast.|tsunami
 The ___ has caused significant coastal erosion.|surge`,
   },
   {
-    id: "b1p20", title: "Describing a Process", subtitle: "Sequencing and instructions", kind: "cloze",
+    id: "b1p20",
+    title: "Describing a Process",
+    subtitle: "Sequencing and instructions",
+    kind: "cloze",
     note: "B1-level sequencing language for describing steps.",
     data: `___ of all, you need to gather the ingredients.|first
 The ___ step is to preheat the oven.|next
@@ -1828,7 +2033,10 @@ Lastly, allow the mixture to ___ overnight.|rest`,
 
 const B2: Pack[] = [
   {
-    id: "b2p1", title: "The Passive", subtitle: "Passive structures", kind: "cloze",
+    id: "b2p1",
+    title: "The Passive",
+    subtitle: "Passive structures",
+    kind: "cloze",
     note: "Passive = be + past participle; the doer becomes optional.",
     data: `The report ___ written last week.|was
 The bridge is ___ repaired.|being
@@ -1857,8 +2065,12 @@ The issue ___ dealt with promptly.|was
 Nothing ___ be done about it.|can`,
   },
   {
-    id: "b2p2", title: "Confusable Words", subtitle: "Choose precisely", kind: "pair",
-    prompt: "Which fits: \"%s\"?", note: "These pairs are frequently mixed up by learners.",
+    id: "b2p2",
+    title: "Confusable Words",
+    subtitle: "Choose precisely",
+    kind: "pair",
+    prompt: 'Which fits: "%s"?',
+    note: "These pairs are frequently mixed up by learners.",
     data: `affect / effect (verb, to influence)|affect
 practice / practise (British verb)|practise
 principal / principle (a rule)|principle
@@ -1886,7 +2098,10 @@ assure / ensure (make certain)|ensure
 imply / infer (draw a conclusion)|infer`,
   },
   {
-    id: "b2p3", title: "Linking Ideas", subtitle: "Discourse markers", kind: "cloze",
+    id: "b2p3",
+    title: "Linking Ideas",
+    subtitle: "Discourse markers",
+    kind: "cloze",
     note: "Linkers signal contrast, cause, or addition — choose by logic.",
     data: `It was raining; ___ , we went out.|nevertheless
 He was tired. ___ , he kept working.|Even so
@@ -1915,7 +2130,10 @@ ___ , nothing has changed.|Meanwhile
 The claim is, ___ , unproven.|however`,
   },
   {
-    id: "b2p4", title: "Reported Speech", subtitle: "Backshift and reporting verbs", kind: "cloze",
+    id: "b2p4",
+    title: "Reported Speech",
+    subtitle: "Backshift and reporting verbs",
+    kind: "cloze",
     note: "Tenses usually shift back one step when reporting.",
     data: `He said he ___ tired.|was
 She told me she ___ finished.|had
@@ -1944,8 +2162,12 @@ She confirmed that she ___ attend.|would
 He asked what time the meeting ___ .|started`,
   },
   {
-    id: "b2p5", title: "Strong Collocations", subtitle: "Natural word partners", kind: "pair",
-    prompt: "Which word pairs with \"%s\"?", note: "Advanced fluency lives in collocation.",
+    id: "b2p5",
+    title: "Strong Collocations",
+    subtitle: "Natural word partners",
+    kind: "pair",
+    prompt: 'Which word pairs with "%s"?',
+    note: "Advanced fluency lives in collocation.",
     data: `___ rain (very heavy)|heavy
 ___ evidence (convincing)|compelling
 ___ difference (large)|significant
@@ -1973,8 +2195,12 @@ ___ decision (final)|firm
 ___ support (broad)|widespread`,
   },
   {
-    id: "b2p6", title: "Word Formation", subtitle: "Verb → noun", kind: "pair",
-    prompt: "Noun form of \"%s\":", note: "Suffix patterns are predictable once learned.",
+    id: "b2p6",
+    title: "Word Formation",
+    subtitle: "Verb → noun",
+    kind: "pair",
+    prompt: 'Noun form of "%s":',
+    note: "Suffix patterns are predictable once learned.",
     data: `analyse|analysis
 decide|decision
 argue|argument
@@ -2002,7 +2228,10 @@ refuse|refusal
 depart|departure`,
   },
   {
-    id: "b2p7", title: "Reporting & Hedging", subtitle: "Report what was said", kind: "cloze",
+    id: "b2p7",
+    title: "Reporting & Hedging",
+    subtitle: "Report what was said",
+    kind: "cloze",
     note: "Reported speech shifts tense back and changes time and place words.",
     data: `She said she ___ tired.|was
 He told ___ he would call.|me
@@ -2031,8 +2260,12 @@ She urged them ___ reconsider.|to
 He maintained that he ___ innocent.|was`,
   },
   {
-    id: "b2p8", title: "Collocations", subtitle: "Words that go together", kind: "pair",
-    prompt: "Complete: \"%s ___\"", note: "Natural English depends on the right partner word.",
+    id: "b2p8",
+    title: "Collocations",
+    subtitle: "Words that go together",
+    kind: "pair",
+    prompt: 'Complete: "%s ___"',
+    note: "Natural English depends on the right partner word.",
     data: `make a|decision
 take a|risk
 pay|attention
@@ -2060,7 +2293,10 @@ achieve a|goal
 lose|patience`,
   },
   {
-    id: "b2p9", title: "Health & Medicine", subtitle: "Describing symptoms and care", kind: "cloze",
+    id: "b2p9",
+    title: "Health & Medicine",
+    subtitle: "Describing symptoms and care",
+    kind: "cloze",
     note: "Intermediate-plus vocabulary for talking about health.",
     data: `The doctor ___ a full recovery within weeks.|predicted
 She's been ___ from a bad cold all week.|suffering
@@ -2089,7 +2325,10 @@ His recovery has been slow but ___.|steady
 The doctor advised him to ___ smoking.|quit`,
   },
   {
-    id: "b2p10", title: "Technology & Media", subtitle: "Talking about devices and news", kind: "cloze",
+    id: "b2p10",
+    title: "Technology & Media",
+    subtitle: "Talking about devices and news",
+    kind: "cloze",
     note: "Everyday tech and media vocabulary at B2 level.",
     data: `My phone's ___ died, so I couldn't call.|battery
 The app keeps ___ every time I open it.|crashing
@@ -2118,7 +2357,10 @@ His account was ___ after suspicious activity.|suspended
 The platform introduced stricter privacy ___.|settings`,
   },
   {
-    id: "b2p11", title: "Business & Negotiation", subtitle: "Deals and workplace talk", kind: "cloze",
+    id: "b2p11",
+    title: "Business & Negotiation",
+    subtitle: "Deals and workplace talk",
+    kind: "cloze",
     note: "B2-level vocabulary for meetings and negotiations.",
     data: `We need to ___ a deal before the deadline.|close
 Both sides made a ___ to reach agreement.|compromise
@@ -2147,7 +2389,10 @@ The CEO announced a major ___ in strategy.|shift
 Negotiations are still ___ ongoing.|very much`,
   },
   {
-    id: "b2p12", title: "Crime & Law", subtitle: "Reporting incidents", kind: "cloze",
+    id: "b2p12",
+    title: "Crime & Law",
+    subtitle: "Reporting incidents",
+    kind: "cloze",
     note: "B2-level vocabulary for news and crime reports.",
     data: `The suspect was ___ near the scene.|arrested
 Police are ___ the robbery as a priority case.|treating
@@ -2176,7 +2421,10 @@ The gang was involved in a series of ___.|robberies
 He was found ___ innocent by the jury.|not`,
   },
   {
-    id: "b2p13", title: "Politics & Society", subtitle: "Government and public debate", kind: "cloze",
+    id: "b2p13",
+    title: "Politics & Society",
+    subtitle: "Government and public debate",
+    kind: "cloze",
     note: "B2-level vocabulary for discussing politics and social issues.",
     data: `The government announced a new ___ to tackle unemployment.|policy
 Voters will go to the ___ next month.|polls
@@ -2205,7 +2453,10 @@ Activists are calling for stronger ___ rights.|workers'
 The new policy aims to reduce the wealth ___.|gap`,
   },
   {
-    id: "b2p14", title: "Arts & Culture", subtitle: "Museums, film and performance", kind: "cloze",
+    id: "b2p14",
+    title: "Arts & Culture",
+    subtitle: "Museums, film and performance",
+    kind: "cloze",
     note: "B2-level vocabulary for discussing the arts.",
     data: `The gallery is hosting an ___ of modern sculpture.|exhibition
 The film received ___ reviews from critics.|mixed
@@ -2234,8 +2485,12 @@ The exhibition runs until the end of the ___.|month
 The novel won several literary ___ this year.|awards`,
   },
   {
-    id: "b2p15", title: "Idioms & Fixed Expressions", subtitle: "Meaning match", kind: "pair",
-    prompt: "The expression \"%s\" means…", note: "Common B2-level idioms and fixed expressions.",
+    id: "b2p15",
+    title: "Idioms & Fixed Expressions",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: 'The expression "%s" means…',
+    note: "Common B2-level idioms and fixed expressions.",
     data: `to be on the ball|to be alert and quick to understand
 to cost an arm and a leg|to be very expensive
 to hit the books|to study hard
@@ -2263,8 +2518,12 @@ to be out of the blue|to happen unexpectedly
 to keep your chin up|to stay positive during hard times`,
   },
   {
-    id: "b2p16", title: "Cause & Effect", subtitle: "Connectors for reasons and results", kind: "pair",
-    prompt: "The connector \"%s\" is used to…", note: "B2-level connectors matched to how they signal cause or effect.",
+    id: "b2p16",
+    title: "Cause & Effect",
+    subtitle: "Connectors for reasons and results",
+    kind: "pair",
+    prompt: 'The connector "%s" is used to…',
+    note: "B2-level connectors matched to how they signal cause or effect.",
     data: `because|give a direct reason for something
 because of|introduce a noun reason
 due to|introduce a noun reason, often formal
@@ -2292,8 +2551,12 @@ stemming from|show that something originates from a cause
 triggered by|show what set off a sudden reaction or event`,
   },
   {
-    id: "b2p17", title: "Phrasal Verbs II", subtitle: "Meaning match, everyday phrasal verbs", kind: "pair",
-    prompt: "The phrasal verb \"%s\" means…", note: "B2-level phrasal verbs beyond the basics.",
+    id: "b2p17",
+    title: "Phrasal Verbs II",
+    subtitle: "Meaning match, everyday phrasal verbs",
+    kind: "pair",
+    prompt: 'The phrasal verb "%s" means…',
+    note: "B2-level phrasal verbs beyond the basics.",
     data: `come across|to find something by chance
 get away with|to avoid punishment for something
 look into|to investigate something
@@ -2321,7 +2584,10 @@ point out|to draw attention to something
 stand up for|to defend a person or belief`,
   },
   {
-    id: "b2p18", title: "Mixed Conditionals", subtitle: "Past, present, and unreal combinations", kind: "cloze",
+    id: "b2p18",
+    title: "Mixed Conditionals",
+    subtitle: "Past, present, and unreal combinations",
+    kind: "cloze",
     note: "B2-level mixed conditional structures.",
     data: `If I ___ harder at school, I'd have a better job now.|had studied
 If she weren't so busy, she ___ have missed the meeting.|wouldn't
@@ -2350,7 +2616,10 @@ If she hadn't studied medicine, she ___ be a doctor today.|wouldn't
 If they were more organised, they ___ have missed the deadline.|wouldn't`,
   },
   {
-    id: "b2p19", title: "Wish & If Only", subtitle: "Expressing regret and desire", kind: "cloze",
+    id: "b2p19",
+    title: "Wish & If Only",
+    subtitle: "Expressing regret and desire",
+    kind: "cloze",
     note: "B2-level wish structures.",
     data: `I wish I ___ more time to finish this project.|had
 If only I ___ studied harder for the exam.|had
@@ -2379,7 +2648,10 @@ If only I ___ able to help you then.|had been
 I wish this day ___ never end.|would`,
   },
   {
-    id: "b2p20", title: "Food & Cooking", subtitle: "Kitchen vocabulary and techniques", kind: "cloze",
+    id: "b2p20",
+    title: "Food & Cooking",
+    subtitle: "Kitchen vocabulary and techniques",
+    kind: "cloze",
     note: "B2-level cooking vocabulary.",
     data: `You need to ___ the onions before adding them.|chop
 Please ___ the sauce so it doesn't burn.|stir
@@ -2411,8 +2683,12 @@ The sauce needs to ___ before you can serve it.|thicken`,
 
 const C1: Pack[] = [
   {
-    id: "c1p1", title: "Idioms", subtitle: "Meaning match", kind: "pair",
-    prompt: "\"%s\" means:", note: "Idioms are fixed — the words can't be swapped.",
+    id: "c1p1",
+    title: "Idioms",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: '"%s" means:',
+    note: "Idioms are fixed — the words can't be swapped.",
     data: `bite the bullet|accept something unpleasant
 hit the nail on the head|be exactly right
 under the weather|slightly unwell
@@ -2440,8 +2716,12 @@ play devil's advocate|argue the opposing view
 cost an arm and a leg|be very expensive`,
   },
   {
-    id: "c1p2", title: "Register", subtitle: "Informal → formal", kind: "pair",
-    prompt: "Formal equivalent of \"%s\":", note: "Academic and professional writing prefers Latinate verbs.",
+    id: "c1p2",
+    title: "Register",
+    subtitle: "Informal → formal",
+    kind: "pair",
+    prompt: 'Formal equivalent of "%s":',
+    note: "Academic and professional writing prefers Latinate verbs.",
     data: `find out|ascertain
 get|obtain
 help|assist
@@ -2469,7 +2749,10 @@ carry out|conduct
 back up|corroborate`,
   },
   {
-    id: "c1p3", title: "Inversion & Emphasis", subtitle: "Advanced structures", kind: "cloze",
+    id: "c1p3",
+    title: "Inversion & Emphasis",
+    subtitle: "Advanced structures",
+    kind: "cloze",
     note: "Fronted negatives and adverbials trigger question word order.",
     data: `Never ___ I seen such chaos.|have
 Rarely ___ she complain.|does
@@ -2498,7 +2781,10 @@ So rarely ___ it snow here.|does
 Not once ___ he apologise.|did`,
   },
   {
-    id: "c1p4", title: "Precision Connectors", subtitle: "Nuanced signposting", kind: "cloze",
+    id: "c1p4",
+    title: "Precision Connectors",
+    subtitle: "Nuanced signposting",
+    kind: "cloze",
     note: "Each connector carries a distinct logical relationship.",
     data: `The claim is plausible; ___ , evidence is thin.|that said
 ___ , the two datasets differ in scope.|Crucially
@@ -2527,8 +2813,12 @@ The study is limited ___ its scope.|in terms of
 ___ , no consensus has emerged.|To date`,
   },
   {
-    id: "c1p5", title: "Academic Verbs", subtitle: "Precise reporting verbs", kind: "pair",
-    prompt: "Which verb means \"%s\"?", note: "Reporting verbs encode your stance on a claim.",
+    id: "c1p5",
+    title: "Academic Verbs",
+    subtitle: "Precise reporting verbs",
+    kind: "pair",
+    prompt: 'Which verb means "%s"?',
+    note: "Reporting verbs encode your stance on a claim.",
     data: `state something as true without proof|assert
 suggest indirectly|imply
 provide evidence for|substantiate
@@ -2556,7 +2846,10 @@ insist despite objection|maintain
 support with authority|endorse`,
   },
   {
-    id: "c1p6", title: "Hedging", subtitle: "Cautious academic language", kind: "cloze",
+    id: "c1p6",
+    title: "Hedging",
+    subtitle: "Cautious academic language",
+    kind: "cloze",
     note: "Hedging protects claims from overstatement.",
     data: `The results ___ suggest a correlation.|appear to
 This ___ be attributed to sampling error.|may
@@ -2585,7 +2878,10 @@ Such readings are ___ open to dispute.|arguably
 The mechanism is ___ understood.|poorly`,
   },
   {
-    id: "c1p7", title: "Legal & Formal Documents", subtitle: "Contract and policy language", kind: "cloze",
+    id: "c1p7",
+    title: "Legal & Formal Documents",
+    subtitle: "Contract and policy language",
+    kind: "cloze",
     note: "Formal, legalistic register found in contracts, policies, and official notices.",
     data: `The tenant shall ___ the premises in good condition.|maintain
 This agreement is ___ upon signature by both parties.|binding
@@ -2614,8 +2910,12 @@ The waiver shall not be ___ as a precedent.|interpreted
 The clause takes ___ immediately upon execution.|force`,
   },
   {
-    id: "c1p8", title: "Nuanced Character & Emotion", subtitle: "Precise personality vocabulary", kind: "pair",
-    prompt: "Which trait means \"%s\"?", note: "C1-level adjectives for describing character precisely.",
+    id: "c1p8",
+    title: "Nuanced Character & Emotion",
+    subtitle: "Precise personality vocabulary",
+    kind: "pair",
+    prompt: 'Which trait means "%s"?',
+    note: "C1-level adjectives for describing character precisely.",
     data: `extremely careful with details|meticulous
 boldly daring, sometimes reckless|audacious
 refusing to change one's mind|obstinate
@@ -2643,7 +2943,10 @@ excessively eager to please|obsequious
 unpredictable and prone to sudden mood changes|capricious`,
   },
   {
-    id: "c1p9", title: "Rhetoric & Persuasion", subtitle: "Argumentative language", kind: "cloze",
+    id: "c1p9",
+    title: "Rhetoric & Persuasion",
+    subtitle: "Argumentative language",
+    kind: "cloze",
     note: "C1-level vocabulary for constructing a persuasive argument.",
     data: `The speaker made a ___ case for reform.|compelling
 Her argument ___ on a single flawed assumption.|hinges
@@ -2672,7 +2975,10 @@ She ___ the audience's scepticism head-on.|addressed
 The speech left little room for ___.|doubt`,
   },
   {
-    id: "c1p10", title: "Scientific & Technical Prose", subtitle: "Precision in research writing", kind: "cloze",
+    id: "c1p10",
+    title: "Scientific & Technical Prose",
+    subtitle: "Precision in research writing",
+    kind: "cloze",
     note: "C1-level vocabulary for describing scientific findings.",
     data: `The experiment was ___ under controlled conditions.|conducted
 The results were ___ across multiple trials.|consistent
@@ -2701,7 +3007,10 @@ The study ___ a gap in the existing literature.|addresses
 The conclusions are ___ by the limited sample.|constrained`,
   },
   {
-    id: "c1p11", title: "Diplomatic Language", subtitle: "Softening and hedging in formal talk", kind: "cloze",
+    id: "c1p11",
+    title: "Diplomatic Language",
+    subtitle: "Softening and hedging in formal talk",
+    kind: "cloze",
     note: "C1-level diplomatic phrasing for sensitive conversations.",
     data: `With all due ___, I have to disagree with that assessment.|respect
 It might be ___ to reconsider the timing of this decision.|prudent
@@ -2730,8 +3039,12 @@ We ___ that further consultation is required.|maintain
 It is with some ___ that we must decline the offer.|reluctance`,
   },
   {
-    id: "c1p12", title: "Idiomatic Expressions II", subtitle: "Meaning match, advanced idioms", kind: "pair",
-    prompt: "The idiom \"%s\" means…", note: "Advanced idioms beyond the basics.",
+    id: "c1p12",
+    title: "Idiomatic Expressions II",
+    subtitle: "Meaning match, advanced idioms",
+    kind: "pair",
+    prompt: 'The idiom "%s" means…',
+    note: "Advanced idioms beyond the basics.",
     data: `to jump on the bandwagon|to join something popular
 to read between the lines|to understand hidden meaning
 to bite the bullet|to accept something difficult
@@ -2759,7 +3072,10 @@ to be at a crossroads|to face an important decision
 to weather the storm|to survive a difficult period`,
   },
   {
-    id: "c1p13", title: "Complex Passive & Causative", subtitle: "Advanced passive structures", kind: "cloze",
+    id: "c1p13",
+    title: "Complex Passive & Causative",
+    subtitle: "Advanced passive structures",
+    kind: "cloze",
     note: "C1-level passive and causative constructions.",
     data: `The report is believed to have been ___ deliberately.|leaked
 It is thought that the decision will be ___ soon.|reversed
@@ -2788,7 +3104,10 @@ The event is scheduled to take ___ in June.|place
 The data is believed to have been ___.|compromised`,
   },
   {
-    id: "c1p14", title: "Formal Emails & Correspondence", subtitle: "Professional written English", kind: "cloze",
+    id: "c1p14",
+    title: "Formal Emails & Correspondence",
+    subtitle: "Professional written English",
+    kind: "cloze",
     note: "C1-level phrases for formal written communication.",
     data: `I am writing to ___ your attention to a recent issue.|draw
 Please do not ___ to contact me if you need further information.|hesitate
@@ -2817,8 +3136,12 @@ We remain at your ___ should you require further assistance.|disposal
 I look forward to your ___ response.|prompt`,
   },
   {
-    id: "c1p15", title: "Nominalisation", subtitle: "Turning verbs into abstract nouns", kind: "pair",
-    prompt: "The noun form of \"%s\" is…", note: "C1-level nominalisation, common in academic and formal writing.",
+    id: "c1p15",
+    title: "Nominalisation",
+    subtitle: "Turning verbs into abstract nouns",
+    kind: "pair",
+    prompt: 'The noun form of "%s" is…',
+    note: "C1-level nominalisation, common in academic and formal writing.",
     data: `to decide|decision
 to argue|argument
 to analyse|analysis
@@ -2846,7 +3169,10 @@ to recognise|recognition
 to resolve|resolution`,
   },
   {
-    id: "c1p16", title: "Cleft Sentences", subtitle: "Emphasis through structure", kind: "cloze",
+    id: "c1p16",
+    title: "Cleft Sentences",
+    subtitle: "Emphasis through structure",
+    kind: "cloze",
     note: "C1-level cleft sentence structures for emphasis.",
     data: `___ was John who broke the vase, not me.|it
 What I really need ___ a good night's sleep.|is
@@ -2875,8 +3201,12 @@ What worries me ___ the lack of preparation.|is
 It ___ exactly what I expected.|was`,
   },
   {
-    id: "c1p17", title: "Collocations with Make, Do, Take & Have", subtitle: "Fixed verb-noun pairs", kind: "pair",
-    prompt: "Complete the collocation with \"%s\"…", note: "C1-level fixed collocations with common light verbs.",
+    id: "c1p17",
+    title: "Collocations with Make, Do, Take & Have",
+    subtitle: "Fixed verb-noun pairs",
+    kind: "pair",
+    prompt: 'Complete the collocation with "%s"…',
+    note: "C1-level fixed collocations with common light verbs.",
     data: `make|a decision
 make|an effort
 make|a mistake
@@ -2904,8 +3234,12 @@ have|doubts
 make|arrangements`,
   },
   {
-    id: "c1p18", title: "Euphemisms & Indirect Language", subtitle: "Softening sensitive topics", kind: "pair",
-    prompt: "The phrase \"%s\" is a polite way of saying…", note: "C1-level euphemisms for sensitive or blunt topics.",
+    id: "c1p18",
+    title: "Euphemisms & Indirect Language",
+    subtitle: "Softening sensitive topics",
+    kind: "pair",
+    prompt: 'The phrase "%s" is a polite way of saying…',
+    note: "C1-level euphemisms for sensitive or blunt topics.",
     data: `to pass away|to die
 to let someone go|to fire someone
 between jobs|unemployed
@@ -2933,7 +3267,10 @@ letting nature take its course|not intervening medically
 economical|cheap or stingy`,
   },
   {
-    id: "c1p19", title: "Contrast & Concession", subtitle: "Advanced linking of opposing ideas", kind: "cloze",
+    id: "c1p19",
+    title: "Contrast & Concession",
+    subtitle: "Advanced linking of opposing ideas",
+    kind: "cloze",
     note: "C1-level connectors for contrast and concession.",
     data: `___ the heavy rain, the match went ahead as planned.|despite
 The plan succeeded, ___ several early setbacks.|notwithstanding
@@ -2962,7 +3299,10 @@ ___ popular belief, the theory has been disproven.|contrary to what most think
 Experts warned against it; they proceeded with the plan ___.|regardless`,
   },
   {
-    id: "c1p20", title: "Academic Cohesion", subtitle: "Linking ideas across a text", kind: "cloze",
+    id: "c1p20",
+    title: "Academic Cohesion",
+    subtitle: "Linking ideas across a text",
+    kind: "cloze",
     note: "C1-level cohesive devices for academic writing.",
     data: `___ mentioned earlier, the results support the hypothesis.|as
 The ___ point to consider is the sample size.|next
@@ -3025,10 +3365,7 @@ function packQuestions(pack: Pack): Question[] {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
     const distractors = pickDistractors(answer, pool, seed);
-    const prompt =
-      pack.kind === "pair"
-        ? (pack.prompt ?? "%s").replace("%s", left!)
-        : left!;
+    const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
@@ -3052,7 +3389,7 @@ function packQuestions(pack: Pack): Question[] {
       id: `${pack.id}q${i}`,
       type: "fill",
       prompt: pack.kind === "cloze" ? prompt : `${prompt} ___`,
-      bank: [answer, ...distractors].sort((a, b) => (hash(a + seed) - hash(b + seed))),
+      bank: [answer, ...distractors].sort((a, b) => hash(a + seed) - hash(b + seed)),
       answer,
       explanation,
     };

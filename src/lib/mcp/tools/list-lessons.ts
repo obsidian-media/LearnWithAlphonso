@@ -17,8 +17,13 @@ export default defineTool({
     const lvl = level?.trim().toUpperCase();
     const q = query?.trim().toLowerCase();
     const max = Math.min(Math.max(limit ?? 25, 1), 100);
-    const rows: { lessonId: string; title: string; level: string; unit: string; questions: number }[] =
-      [];
+    const rows: {
+      lessonId: string;
+      title: string;
+      level: string;
+      unit: string;
+      questions: number;
+    }[] = [];
     for (const unit of curriculum) {
       if (lvl && unit.level !== lvl) continue;
       for (const lesson of unit.lessons) {

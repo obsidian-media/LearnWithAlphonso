@@ -83,7 +83,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Learn with Alphonso — English, one lesson at a time" },
-      { name: "description", content: "A calm, gamified way to build real English skills. Bite-size lessons, streaks, and progress that stays with you." },
+      {
+        name: "description",
+        content:
+          "A calm, gamified way to build real English skills. Bite-size lessons, streaks, and progress that stays with you.",
+      },
       { property: "og:title", content: "Learn with Alphonso — English, one lesson at a time" },
       { property: "og:description", content: "A calm, gamified way to build real English skills." },
       { property: "og:type", content: "website" },
@@ -92,7 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@400;500;600;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -133,7 +140,6 @@ function RootComponent() {
       <Outlet />
       <CookieConsent />
     </QueryClientProvider>
-
   );
 }
 
