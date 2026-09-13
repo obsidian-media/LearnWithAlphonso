@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
+import { getCourse } from "../data/courses";
 
 /**
  * Course-specific progress (xp, cefr level, placement, league) lives in
@@ -137,6 +138,16 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { lessonId, correct, total, course } = data;
+
+    // Trust boundary: the client reports its own score, so verify the
+    // lesson exists and that `total` matches its real question count
+    // before paying out XP for it — otherwise a crafted request could
+    // claim a perfect score on a lesson with more questions than it has.
+    const found = getCourse(course).findLesson(lessonId);
+    if (!found || total !== found.lesson.questions.length) {
+      throw new Error("Invalid lesson completion payload");
+    }
+
     const today = todayStr();
     const xpGain = correct * 10 + (correct === total ? 20 : 0);
 
