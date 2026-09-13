@@ -1,489 +1,281 @@
-# English Buddy App — Comprehensive Audit Report
+# English Buddy App — Codebase Audit Report (Refresh)
 
-**Date:** 2026-08-31
-**Auditor:** Opencode (automated full-stack audit)
-**Scope:** Security, architecture, accessibility, content, performance, UX, testing, maintainability
+**Date:** 2026-09-13
+**Auditor:** Claude Code (full codebase index + manual review, not a doc-only pass)
+**Supersedes:** the 2026-08-31 audit below is stale on several facts (AI provider
+stack, SRS status, content activation) — this refresh re-verifies everything
+against the current code and git history rather than trusting prior docs.
+**Scope:** Security, architecture, accessibility, content, performance, UX,
+testing, tooling/CI, documentation
 
 ---
 
 ## Executive Summary
 
-The app is a well-designed mobile-first English learning platform built on TanStack Start + Supabase + Lovable AI Gateway. It has strong visual polish and solid authentication, but **critical gaps in content depth, spaced repetition, testing, and accessibility** prevent it from being production-ready for serious learners.
+The app has matured significantly since the last audit: most of that
+document's "critical" architecture gaps are now closed — the generated
+lesson bank is wired into the curriculum, a working SM-2 spaced-repetition
+system exists end-to-end (`review_items` table + `review.functions.ts` +
+`/review` route), lesson choices are real `<button>` elements, a friends
+feature shipped with a correctly-designed `SECURITY DEFINER` RPC, and a real
+AI-quota bypass was patched (migration `20260910000000`).
+
+What's newly notable:
+- **The AI provider stack has completely changed** and neither `AUDIT.md`
+  (old) nor `AGENTS.md` reflected it until this pass: chat now calls
+  **NVIDIA NIM** directly, TTS/STT call **Deepgram** directly. The "Lovable
+  Gateway / Gemini / GPT-4o-mini" description in the old audit is wrong.
+- **A real trust-boundary bug survived two content cycles**: `completeLessonRemote`
+  accepted client-reported `correct`/`total` with no server-side check that
+  the lesson even exists or that `total` matches its real question count.
+  **Fixed in this session** — see §1.3.
+- **Lint had silently drifted to 949 problems** (mostly Prettier formatting),
+  with no CI to catch it. **Fixed in this session** via `npm run format`
+  — down to 12 pre-existing, mostly cosmetic issues.
+- **Still zero tests and no CI pipeline** — this is the single biggest
+  structural risk in the repo today.
 
 | Category | Score (1-10) | Verdict |
 |---|---|---|
-| **Security** | 7/10 | Good basics; missing rate limiting, input hardening |
-| **Architecture** | 6/10 | Clean but monolithic content, no SRS, duplicate clients |
-| **Accessibility** | 3/10 | No ARIA, no keyboard nav, no screen reader support |
-| **Content** | 2/10 | Only 24 lessons total; massive gaps at A2-C1 |
-| **Performance** | 7/10 | Good SSR, but 38 unused shadcn components bloat bundle |
-| **UX** | 5/10 | Polished shell; missing review, streaks, hearts UI |
-| **Testing** | 0/10 | Zero tests of any kind |
-| **Maintainability** | 5/10 | TypeScript + good structure, but no docs or tests |
+| **Security** | 7/10 | Quota bypass and score-forgery bug now fixed; still no rate limiting |
+| **Architecture** | 7/10 | Lesson bank activated, real SRS, clean multi-course (en/fr) abstraction |
+| **Accessibility** | 4/10 | Semantic buttons + `lang` attr shipped; still no ARIA landmarks/focus mgmt |
+| **Content** | 6/10 | Bank generator makes ~300 lessons structurally reachable; depth unverified |
+| **Performance** | 6/10 | Unused deps (recharts, cmdk, vaul, embla) still dead weight |
+| **UX** | 6/10 | Friends UI shipped; hearts-blocking / streak-freeze UI still missing |
+| **Testing** | 0/10 | Zero tests of any kind, no test runner installed |
+| **Tooling/CI** | 3/10 | No `.github/workflows` at all; lint had drifted uncaught |
+| **Documentation** | 6/10 | `AGENTS.md`/old `AUDIT.md` now corrected; keep re-verifying vs. code |
 
 ---
 
 ## 1. SECURITY AUDIT
 
 ### 1.1 What's Good
-- **Auth middleware** properly validates Supabase JWT on all protected routes
-- **RLS policies** enabled on all tables (per migration 3)
-- **Server-side admin client** isolated in `client.server.ts` (service role key not exposed to client)
-- **AI quota system** prevents abuse: 60 chat / 60 STT / 80 TTS per day via atomic `consume_ai_quota` RPC
-- **Zod validation** on all server function inputs (`completeLessonSchema`, `mergeSchema`, `setCefrLevel`)
-- **`VITE_` prefix** used correctly for client-safe keys; `SUPABASE_SERVICE_ROLE_KEY` not in `.env`
+- Auth middleware (`src/integrations/supabase/auth-middleware.ts`) validates
+  a real Supabase JWT (3-segment check + `getClaims`) on every protected
+  server function.
+- RLS enabled across the schema; sensitive multi-row writes (friend invite
+  acceptance, leaderboard, friends list) go through `SECURITY DEFINER` RPCs
+  rather than relying on client-side inserts across users — this is the
+  right pattern for "write the other side of a relationship."
+- `supabaseAdmin` (service-role client) is lazily constructed behind a
+  `Proxy` and explicitly commented as server-only; not imported from any
+  route or `*.functions.ts` file that ships to the client bundle.
+- `consume_ai_quota` bypass (caller-supplied limit) was already fixed in
+  migration `20260910000000` — limits are now hardcoded server-side.
+- Zod validation on every server function input.
 
 ### 1.2 Issues Found
 
 | Severity | Issue | Location |
 |---|---|---|
-| **HIGH** | No rate limiting on API routes beyond daily AI quota. An attacker could spam `/api/chat` 60 times in 1 second, exhausting a user's daily quota. | `src/routes/api/chat.ts` |
-| **HIGH** | `LOVABLE_API_KEY` checked at runtime (`process.env.LOVABLE_API_KEY`) — if missing, returns 500 with generic message, but no graceful degradation | `src/routes/api/chat.ts:10` |
-| **MEDIUM** | `lessonId` validated only by length (`z.string().min(1).max(100)`) — no format/pattern check. Could inject arbitrary text stored in DB | `src/lib/sync.functions.ts:86` |
-| **MEDIUM** | `completeLessonRemote` trusts client-sent `correct` and `total` values — a malicious client could claim perfect scores without answering. Server should validate against actual question data. | `src/lib/sync.functions.ts:96-97` |
-| **MEDIUM** | No CSRF protection on server functions beyond the Bearer token (acceptable for SPA, but worth noting) | Global |
-| **LOW** | Duplicate Supabase client creation across `client.ts`, `auth-middleware.ts`, `ai-quota.server.ts` — each creates its own `isNewSupabaseApiKey` check. Could drift out of sync. | Multiple files |
-| **LOW** | `mergeGuestProgress` allows merging up to 500 completed lessons and 90 activity dates — no rate limiting on merge calls | `src/lib/sync.functions.ts:300` |
-| **INFO** | Google OAuth via Lovable Cloud Auth — no direct key management needed, but dependency on Lovable's infra | `src/integrations/lovable/index.ts` |
+| **HIGH (fixed this session)** | `completeLessonRemote` trusted client-sent `correct`/`total` with no check the lesson exists or that `total` matches its real question count — a crafted request could mint XP for a nonexistent or short lesson. | `src/lib/sync.functions.ts` |
+| **HIGH** | No per-minute rate limiting on `/api/chat`, `/api/tts`, `/api/stt` beyond the daily quota RPC — a burst of requests still costs real NVIDIA/Deepgram spend before the quota check fails it out, and there's no protection against a user's key being hammered in a short window. | `src/routes/api/{chat,tts,stt}.ts` |
+| **MEDIUM** | `lessonId`/`item_key` validated only by length (`z.string().min(1).max(N)`), no character allow-list — low risk since these are only ever compared/stored, not interpolated into queries, but worth tightening for defense-in-depth. | `src/lib/sync.functions.ts`, `src/lib/review.functions.ts` |
+| **LOW** | `isNewSupabaseApiKey`/`createSupabaseFetch` duplicated near-verbatim in `client.ts`, `client.server.ts`, `auth-middleware.ts`, and again inline in `ai-quota.server.ts` — four copies that can drift. | Multiple files |
+| **LOW** | `mergeGuestProgress` allows merging up to 500 completed lessons / 90 activity dates in one call with no rate limit on the endpoint itself (mitigated by only firing once per first sign-in, but not enforced server-side). | `src/lib/sync.functions.ts` |
+| **INFO** | Secrets hygiene is good: `.env.example` documents server-only vs. `VITE_`-prefixed vars correctly, `.gitignore` excludes all `.env*`, no keys found committed. | Global |
 
-### 1.3 Recommendations
-1. Add per-minute rate limiting to API routes (e.g., 10 req/min per user for chat)
-2. Add `z.string().regex(/^[a-z0-9_-]+$/i)` pattern validation to `lessonId`
-3. Server-side lesson answer validation: store correct answers in DB or validate against curriculum data
-4. Consolidate Supabase client creation into a single shared module
+### 1.3 Fix applied this session
+`completeLessonRemote` now looks up the lesson via `getCourse(course).findLesson(lessonId)`
+and rejects the request unless the lesson exists and `total` equals its real
+question count, before computing XP or touching any table. This closes the
+score-forgery gap without requiring a full redesign of the answer-submission
+flow (which would need per-question answer submission to fully close the
+"claim all correct" case — see Recommendation 1 below for that follow-up).
+
+### 1.4 Recommendations
+1. Follow-up: today's fix stops fabricated lesson IDs/lengths, but a client can still report `correct = total` truthfully-shaped for a real lesson without having answered it. Closing that fully requires submitting per-question answers to the server (or at minimum a signed session token issued at lesson-start) — worth scoping as a follow-on if score integrity matters for leaderboards/leagues.
+2. Add per-minute rate limiting (e.g. a small token-bucket keyed by user id) in front of the three `/api/*` AI routes.
+3. Consolidate the four copies of `isNewSupabaseApiKey`/`createSupabaseFetch` into one shared `src/integrations/supabase/fetch.ts`.
+4. Add a regex allow-list to `lessonId`/`item_key` schemas.
 
 ---
 
 ## 2. ARCHITECTURE AUDIT
 
-### 2.1 Current Structure
+### 2.1 Current Structure (verified against code, not docs)
 ```
 Foundation: TanStack Start (SSR) + React 19 + Vite 8 + Nitro
-Styling: Tailwind v4 + shadcn/ui (New York) + Framer Motion
-State: Zustand (client) + TanStack Query (server)
-Backend: Supabase (PostgreSQL + Auth + RPC)
-AI: Gemini 3.6 Flash (chat) + GPT-4o-mini (TTS/STT) via Lovable Gateway
+Styling:    Tailwind v4 + shadcn/ui (New York) + Framer Motion
+State:      Zustand (client) + TanStack Query (server)
+Backend:    Supabase (PostgreSQL + Auth + RLS + SECURITY DEFINER RPCs)
+AI chat:    NVIDIA NIM (integrate.api.nvidia.com, OpenAI-compatible), model
+            configurable via NVIDIA_CHAT_MODEL
+AI voice:   Deepgram directly — Aura-2 for TTS, Nova-3 for STT
+Content:    Two-course model (en/fr) via src/data/courses.ts, each course
+            pairing hand-written units (curriculum.ts / curriculum-fr.ts)
+            with a generator-produced bank (lesson-bank.ts / lesson-bank-fr.ts)
+Extras:     An MCP server (src/lib/mcp) exposing get_my_progress,
+            get_due_reviews, list_lessons, get_leaderboard over OAuth,
+            forwarding the caller's token so RLS applies — well-scoped.
 ```
 
 ### 2.2 Issues Found
 
 | Severity | Issue | Detail |
 |---|---|---|
-| **HIGH** | All 24 lessons hardcoded in TypeScript | No database content, no CMS, no way to add lessons without code changes |
-| **HIGH** | `generatedUnits()` function exists but is NEVER called | 150 potential generated lessons (30 per level) sit unused in `lesson-bank.ts` |
-| **HIGH** | No spaced repetition system | Completed lessons show checkmarks forever; no review queue, no SRS scheduling |
-| **MEDIUM** | Duplicate code across Supabase client modules | `isNewSupabaseApiKey` and `createSupabaseFetch` duplicated in 3+ files |
-| **MEDIUM** | `recharts` dependency installed but unused | Adds ~200KB to bundle for nothing |
-| **MEDIUM** | 38 shadcn/ui components installed, ~10 actually used | Bundle bloat from unused components (accordion, calendar, chart, carousel, command, etc.) |
-| **LOW** | No service worker / offline support | All content requires network; lessons fail offline |
-| **LOW** | `useStreakFreeze` server function exists but has no UI trigger | Server logic is complete but no button in any route calls it |
-| **LOW** | Hearts system half-implemented | Hearts decrement, refill timer set, but no "out of hearts" blocking UI |
-| **INFO** | File-based routing via TanStack Router — clean and conventional | |
+| **RESOLVED** | ~~`generatedUnits()` never called~~ | Now called from `curriculum.ts:259` (and the French equivalent from `curriculum-fr.ts`) — the bank is live. |
+| **RESOLVED** | ~~No spaced repetition system~~ | `review_items` table + SM-2-style grading in `review.functions.ts`, surfaced at `/review`, wired into lesson completion via `recordMisses`. |
+| **MEDIUM** | Duplicate Supabase client bootstrap code across 4 files | See §1.2 |
+| **MEDIUM** | `recharts`, `cmdk`, `vaul`, `embla-carousel-react` still in `package.json` with zero usage outside their own unused `src/components/ui/*` wrapper files (confirmed via grep) | Bundle bloat, no functional benefit |
+| **LOW** | `useStreakFreeze` server function has no UI trigger (button) anywhere in the routes | `src/lib/sync.functions.ts` |
+| **LOW** | Hearts decrement and set a refill timer, but no blocking "out of hearts" screen exists | UX/architecture overlap, see §7 |
+| **INFO** | File-based routing via TanStack Router remains clean; the en/fr course abstraction (`getCourse`) is a good pattern for adding more languages later. | |
 
 ### 2.3 Recommendations
-1. **Activate the lesson bank**: Import `generatedUnits()` into `curriculum.ts` and merge with manually-written units
-2. **Add spaced repetition**: Create a `review_items` table with SRS fields (ease_factor, interval, next_review, repetitions)
-3. **Move content to database**: Migrate lessons from TypeScript to Supabase tables for non-code updates
-4. **Remove unused dependencies**: `recharts`, unused shadcn components
-5. **Complete the hearts/streak-freeze UI**: Add blocking screen when hearts = 0, add freeze button in profile
+1. Remove the four confirmed-unused dependencies and their wrapper components.
+2. Add the hearts-blocking modal and a streak-freeze trigger (both server-side logic already exists, only UI is missing).
+3. Consider whether `review_items`/SRS integration should also feed the `/learn` due-count badge (verify current wiring before assuming it's complete).
 
 ---
 
 ## 3. CONTENT AUDIT
 
-### 3.1 Current Lesson Count
+`lesson-bank.ts` is now 3,439 lines and `curriculum.ts` imports and appends
+`generatedUnits()` per level, so the structural path to ~300 English lessons
+(and a French equivalent via `lesson-bank-fr.ts`, currently smaller at 847
+lines) exists and is active. This audit did **not** hand-count final lesson/
+question totals per CEFR band or grade content quality/pedagogical accuracy
+— that requires either running the generator and inspecting output or a
+dedicated content review pass, which is worth doing explicitly rather than
+assuming the target in `AGENTS.md` ("300 lessons, 60 per level") is fully
+met just because the code path exists.
 
-| Level | Units | Lessons | Questions/Lesson | Total Questions |
-|---|---|---|---|---|
-| **A1** | 3 (u1-u3) | 12 | 8 | 96 |
-| **A2** | 2 (u4-u5) | 4 | 6 | 24 |
-| **B1** | 2 (u6-u7) | 4 | 6 | 24 |
-| **B2** | 1 (u8) | 2 | 6 | 12 |
-| **C1** | 1 (u9) | 2 | 6 | 12 |
-| **TOTAL** | **9** | **24** | — | **168** |
-
-### 3.2 Generated Lesson Bank (UNUSED)
-
-| Level | Packs | Items/Pack | Potential Lessons (5q each) |
-|---|---|---|---|
-| A1 | 6 | 25 | 30 |
-| A2 | 6 | 25 | 30 |
-| B1 | 6 | 25 | 30 |
-| B2 | 6 | 25 | 30 |
-| C1 | 6 | 25 | 30 |
-| **TOTAL** | **30** | **150** | **150** |
-
-### 3.3 Critical Content Gaps
-
-1. **A1 is the only level with adequate content** (12 lessons). A2-C1 are severely underserved.
-2. **No listening/speaking exercises** — only MC and fill-in-blank (reading/writing skills only).
-3. **No conversation practice in lessons** — the `/converse` route exists but is separate from the learning path.
-4. **Lesson inconsistency**: A1 lessons have 8 questions; A2-C1 have 6. No standardized length.
-5. **No grammar explanations** — just one-line explanations per question. No teaching, only testing.
-6. **No vocabulary lists** — words appear only in context of questions.
-7. **No cultural context** — all content is language-only, no cultural notes.
-8. **No progression indicators** — users don't know what they'll learn next.
-
-### 3.4 Expansion Plan: 60+ Lessons Per Band
-
-**Target: 60 lessons per CEFR level × 5 levels = 300 total lessons**
-
-| Level | Current | Target | New Lessons Needed | New Units Needed |
-|---|---|---|---|---|
-| A1 | 12 | 60 | 48 | ~10 |
-| A2 | 4 | 60 | 56 | ~12 |
-| B1 | 4 | 60 | 56 | ~12 |
-| B2 | 2 | 60 | 58 | ~12 |
-| C1 | 2 | 60 | 58 | ~12 |
-| **TOTAL** | **24** | **300** | **276** | **~58** |
-
-**Lesson structure per level (recommended 12 units × 5 lessons each):**
-
-#### A1 — Beginner (60 lessons)
-| Unit | Title | Lesson Topics |
-|---|---|---|
-| 1 | Everyday Basics | Greetings, Introductions, Numbers & Time, Small Talk, Politeness |
-| 2 | The Daily Routine | Morning Habits, At Work, Free Time, Evening & Sleep, Weekly Activities |
-| 3 | Polite Requests | Please & Thank You, At a Café, Asking Directions, Making Plans, Phone Basics |
-| 4 | Family & People | Family Members, Describing People, Relationships, Jobs, Nationalities |
-| 5 | Food & Drink | Meals, Fruits & Vegetables, Ordering Food, At the Restaurant, Cooking Verbs |
-| 6 | My Home | Rooms, Furniture, At the Office, In the Garden, Housework |
-| 7 | Shopping | Clothes, Sizes & Colours, At the Market, Bargaining, Returns & Exchanges |
-| 8 | Travel | At the Airport, On the Plane, At the Hotel, Sightseeing, Emergencies |
-| 9 | Health & Body | Body Parts, At the Doctor, Medicine, Exercise, Feelings & Emotions |
-| 10 | Technology | Phone & Internet, Apps, Social Media, Computer Basics, Email |
-| 11 | Weather & Nature | Seasons, Weather Words, Animals, Plants, The Environment |
-| 12 | Review & Consolidation | Mixed Review 1-5, Weak Areas Focus, Speed Challenge, Final Test |
-
-#### A2 — Elementary (60 lessons)
-| Unit | Title | Lesson Topics |
-|---|---|---|
-| 1 | Past Tense Mastery | Regular Past, Irregular Past, Negative Past, Questions, Time Markers |
-| 2 | Storytelling | Sequencing, Dialogue Narration, Fairy Tales, News Reports, Personal Stories |
-| 3 | Comparisons | Comparatives, Superlatives, As...As, Modifiers, Preferences |
-| 4 | Future Plans | Will, Going To, Present Continuous, Predictions, Schedules |
-| 5 | Modals of Ability | Can/Could, May/Might, Have To, Be Able To, Permission |
-| 6 | Describing Places | Towns, Buildings, Directions, Maps, Countries & Cultures |
-| 7 | Shopping & Services | Prices, Sizes, Complaints, Services, Online Shopping |
-| 8 | Travel & Transport | Tickets, Timetables, Complaints, Car Rental, Public Transport |
-| 9 | Work & Study | Jobs, Skills, Education, Applications, Daily Tasks |
-| 10 | Health & Wellness | Symptoms, Appointments, Medication, Fitness, Diet |
-| 11 | Entertainment | Movies, Music, Books, Sports, Hobbies |
-| 12 | Review & Consolidation | Mixed Review, Weak Areas, Speed Challenge, Final Test |
-
-#### B1 — Intermediate (60 lessons)
-| Unit | Title | Lesson Topics |
-|---|---|---|
-| 1 | Opinions & Debate | Agreeing, Disagreeing, Hedging, Persuasion, Discussion |
-| 2 | Conditionals | First, Second, Third, Mixed, Inversion |
-| 3 | Email & Writing | Formal Tone, Structure, Complaints, Proposals, Follow-ups |
-| 4 | Meetings & Calls | Turn-taking, Clarification, Summarizing, Negotiation, Presentations |
-| 5 | Phrasal Verbs | Common Verbs, Work Phrasal Verbs, Travel Phrasal Verbs, Slang, Idioms |
-| 6 | Relative Clauses | Who/Which/That, Defining, Non-defining, Reduced, Advanced |
-| 7 | Passive Voice | All Tenses, Questions, Reporting, Causatives, Get-Passive |
-| 8 | Reported Speech | Statements, Questions, Commands, Mixed, Advanced |
-| 9 | News & Media | Headlines, Bias, Opinion Pieces, Statistics, Interviews |
-| 10 | Environment | Climate, Pollution, Solutions, Debate, Activism |
-| 11 | Technology & Society | AI, Privacy, Social Media, Digital Divide, Innovation |
-| 12 | Review & Consolidation | Mixed Review, Weak Areas, Speed Challenge, Final Test |
-
-#### B2 — Upper Intermediate (60 lessons)
-| Unit | Title | Lesson Topics |
-|---|---|---|
-| 1 | Nuance & Precision | Hedging, Qualifying, Precision Vocabulary, Formality, Register |
-| 2 | Advanced Linking | Contrast, Cause/Effect, Addition, Concession, Sequence |
-| 3 | Word Formation | Suffixes, Prefixes, Root Words, Confusables, Collocations |
-| 4 | Essay Structure | Introduction, Body, Conclusion, Cohesion, Academic Style |
-| 5 | Debate & Argument | Claim/Support, Rebuttal, Evidence, Rhetoric, Logical Fallacies |
-| 6 | Business English | Meetings, Negotiations, Presentations, Reports, Correspondence |
-| 7 | Science & Research | Methodology, Findings, Journals, Peer Review, Data Description |
-| 8 | Culture & Society | Traditions, Diversity, Global Issues, Arts, Philosophy |
-| 9 | Advanced Grammar | Inversion, Cleft Sentences, Subjunctive, Ellipsis, Fronting |
-| 10 | Idiomatic Language | Idioms, Proverbs, Collocations, Fixed Expressions, Slang |
-| 11 | Creative Writing | Narrative, Descriptive, Persuasive, Informative, Style |
-| 12 | Review & Consolidation | Mixed Review, Weak Areas, Speed Challenge, Final Test |
-
-#### C1 — Advanced (60 lessons)
-| Unit | Title | Lesson Topics |
-|---|---|---|
-| 1 | Academic Register | Formal Verbs, Nominalisation, Hedging, Citation Language, Abstracts |
-| 2 | Complex Structures | Inversion, Cleft Sentences, Subjunctive, Advanced Relative Clauses |
-| 3 | Precise Vocabulary | Synonyms, Antonyms, Connotation, Denotation, Nuance |
-| 4 | Discourse Management | Topic Shift, Summarizing, Signposting, Transition, Framing |
-| 5 | Professional Communication | Boardroom, Legal, Medical, Technical, Cross-cultural |
-| 6 | Literature & Style | Tone, Mood, Figurative Language, Rhetoric, Literary Analysis |
-| 7 | Current Affairs | Politics, Economics, Technology, Environment, Social Issues |
-| 8 | Advanced Idioms | Business Idioms, Academic Idioms, Phrasal Verbs, Proverbs |
-| 9 | Research Writing | Literature Review, Methodology, Results, Discussion, Abstract |
-| 10 | Presentation Skills | Structure, Delivery, Visual Aids, Q&A, Persuasion |
-| 11 | Critical Thinking | Analysis, Evaluation, Synthesis, Argumentation, Logic |
-| 12 | Review & Consolidation | Mixed Review, Weak Areas, Speed Challenge, Final Test |
+### 3.1 Recommendations
+1. Run the generator and produce an actual per-level lesson/question count (don't trust the aspirational number in `AGENTS.md` without checking).
+2. Spot-check generated question quality/uniqueness — `lesson-bank.ts`'s scale (3,400+ lines) makes manual review of everything impractical; sample a few units per level instead.
+3. Confirm French content (`lesson-bank-fr.ts`, `curriculum-fr.ts`) is at parity or explicitly scoped as "coming later" in user-facing copy.
 
 ---
 
-## 4. SPACED REPETITION SYSTEM (SRS) AUDIT
+## 4. SPACED REPETITION (SRS) — now implemented
 
-### 4.1 Current State
-**There is NO spaced repetition system.** The app has:
-- `lesson_completions` table — stores best score per lesson (upsert on conflict)
-- `answersByLesson` in Zustand — tracks `{correct, total}` per lesson
-- Once a lesson shows a checkmark, it's never revisited
+`review_items` (schema in migrations `20260908020628` and
+`20260912040533`) tracks `ease`, `interval_days`, `repetitions`, `due_on`,
+scoped per `(user_id, item_key, language)`. `review.functions.ts` implements:
+- `recordMisses` — called after a lesson to seed review items for missed questions
+- `fetchDueReviews` — due-today + overdue, oldest first, capped at 20
+- `gradeReview` — SM-2-style: wrong answer resets ease/interval to 0 and increments `lapses`; correct answer grows the interval, retiring the item after 4 clean repetitions
 
-### 4.2 What Needs to Be Built
-
-#### Database Schema
-```sql
--- New table: review_items
-CREATE TABLE review_items (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-  lesson_id text NOT NULL,
-  question_id text NOT NULL,
-  ease_factor float DEFAULT 2.5,  -- SM-2 algorithm
-  interval integer DEFAULT 1,      -- days until next review
-  repetitions integer DEFAULT 0,   -- successful reviews in a row
-  next_review date NOT NULL,       -- when to review next
-  last_review date,
-  correct_streak integer DEFAULT 0,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, lesson_id, question_id)
-);
-
--- Index for efficient review queue queries
-CREATE INDEX idx_review_items_due ON review_items(user_id, next_review);
-```
-
-#### SM-2 Algorithm Implementation
-```
-Quality rating (0-5):
-  0 = complete blackout
-  1 = wrong answer
-  2 = wrong but remembered after seeing answer
-  3 = correct with difficulty
-  4 = correct with hesitation
-  5 = perfect, instant recall
-
-If quality >= 3 (correct):
-  repetitions += 1
-  if repetitions == 1: interval = 1
-  if repetitions == 2: interval = 6
-  else: interval = round(interval * ease_factor)
-  ease_factor += 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)
-  ease_factor = max(1.3, ease_factor)
-else (incorrect):
-  repetitions = 0
-  interval = 1
-
-next_review = today + interval
-```
-
-#### UI Components Needed
-1. **Review Queue** — new route `/review` showing due items
-2. **Review Session** — same lesson player but filtered to due questions
-3. **Due Counter Badge** — on the learn page, show number of items due for review
-4. **Review Statistics** — progress chart showing items learned vs due
-5. **Lesson Completion Flow** — after completing a lesson, automatically create review items for missed/wrong questions
-
-#### Integration Points
-- `completeLessonRemote` → after saving, insert/update `review_items` for each question
-- Learn page → show "Review" tab with due count
-- `lesson.$id.tsx` → after checking answer, update SRS data locally
-- New server function: `fetchReviewQueue` — returns questions due for review
-- New server function: `submitReview` — updates SRS data after review
+This is a reasonable, working implementation. Not verified in this pass:
+whether `/learn` surfaces a due-count badge, and whether `lesson.$id.tsx`
+actually calls `recordMisses` on every wrong answer (confirm before assuming
+full integration).
 
 ---
 
 ## 5. ACCESSIBILITY AUDIT
 
 ### 5.1 Current State
-**Accessibility is severely lacking.** The app is visually polished but functionally inaccessible.
+Improved since the old audit but still the weakest category for a
+learning app that should support diverse users.
 
 ### 5.2 Issues Found
 
-| Severity | Issue | WCAG | Location |
-|---|---|---|---|
-| **CRITICAL** | No skip-to-content link | 2.4.1 | `__root.tsx` |
-| **CRITICAL** | No ARIA landmarks (nav, main, etc.) | 1.3.1 | Global |
-| **CRITICAL** | Lesson nodes use `<div>` instead of `<button>` or `<a>` with proper roles | 4.1.2 | `learn.tsx:78` |
-| **CRITICAL** | No focus management in lesson player | 2.4.3 | `lesson.$id.tsx` |
-| **HIGH** | No `aria-label` on interactive elements (close button is `✕` with only `aria-label`) | 1.1.1 | `lesson.$id.tsx:121` |
-| **HIGH** | Progress bar has no accessible label | 1.3.1 | `learn.tsx:166` |
-| **HIGH** | Answer feedback not announced to screen readers | 4.1.3 | `lesson.$id.tsx:197` |
-| **HIGH** | No keyboard navigation for MC choices (space/enter to select) | 2.1.1 | `lesson.$id.tsx:149` |
-| **MEDIUM** | No `prefers-reduced-motion` support | 2.3.3 | Global (Framer Motion) |
-| **MEDIUM** | Color contrast issues: `text-ink-soft/70` and `text-ink-soft/80` may fail 4.5:1 ratio | 1.4.3 | Global |
-| **MEDIUM** | No visible focus indicator on buttons | 2.4.7 | Global |
-| **MEDIUM** | Tab buttons in level switcher have no `role="tablist"`/`role="tab"` | 4.1.2 | `learn.tsx:131` |
-| **LOW** | No `lang` attribute on `<html>` element | 3.1.1 | `__root.tsx` |
-| **LOW** | Images (if any added) would need `alt` text | 1.1.1 | N/A currently |
+| Severity | Issue | Location |
+|---|---|---|
+| **RESOLVED** | ~~Lesson nodes use `<div>` instead of `<button>`~~ | `lesson.$id.tsx` now uses real `<button>` elements for MC choices and controls — keyboard nav (Tab/Enter/Space) works natively. |
+| **RESOLVED** | ~~No `lang` attribute~~ | `<html lang="en">` present in `__root.tsx`. |
+| **CRITICAL** | No skip-to-content link, no `<main>` landmark | `__root.tsx` |
+| **HIGH** | No `aria-live` region for answer feedback | `lesson.$id.tsx` |
+| **HIGH** | Level switcher in `learn.tsx` has no `role="tablist"`/`role="tab"` — note `src/components/SegmentedControl.tsx` *does* implement this pattern correctly and is used on the league page, it's just not reused here | `learn.tsx` |
+| **MEDIUM** | No `prefers-reduced-motion` handling anywhere in the Framer Motion usage | Global |
+| **MEDIUM** | No visible focus-ring audit performed; verify Tailwind defaults aren't suppressing `:focus-visible` | Global |
+| **LOW** | No axe-core or other automated a11y check in CI (moot until CI exists) | — |
 
 ### 5.3 Recommendations
-1. Add `<a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>` in root layout
-2. Wrap lesson content in `<main id="main">` landmark
-3. Add `role="tablist"` to level switcher, `role="tab"` to each button
-4. Add `aria-live="polite"` to answer feedback area
-5. Add `role="progressbar"` with `aria-valuenow` to progress bars
-6. Implement focus trap in lesson player (focus should stay in lesson)
-7. Add `prefers-reduced-motion: reduce` media query to disable animations
-8. Ensure all text meets 4.5:1 contrast ratio (check `text-ink-soft/70` against `bg-surface`)
-9. Add keyboard event handlers: Enter/Space to select choices, Escape to close
-10. Add `aria-current="step"` to current lesson in the path
+1. Reuse `SegmentedControl` (already accessible) for the level switcher in `learn.tsx` instead of ad-hoc buttons — this alone would close the tablist finding for free.
+2. Add a skip link + `<main id="main">` in `__root.tsx`.
+3. Add `aria-live="polite"` to the answer-feedback element in `lesson.$id.tsx`.
+4. Wrap Framer Motion transition props behind a `prefers-reduced-motion` media-query check (a small shared hook).
 
 ---
 
 ## 6. PERFORMANCE AUDIT
 
-### 6.1 Current State
-- **SSR via TanStack Start** — good for initial load
-- **Vite 8** — modern build tool
-- **Tailwind v4** — efficient CSS
-- **Framer Motion** — adds ~40KB to bundle
+No change from the prior audit's findings — confirmed still accurate by
+grep against current source:
 
-### 6.2 Issues Found
-
-| Severity | Issue | Impact |
+| Severity | Issue | Confirmed |
 |---|---|---|
-| **HIGH** | `recharts` dependency imported but unused — ~200KB gzipped | Bundle bloat |
-| **MEDIUM** | 38 shadcn/ui components installed, ~10 used | ~150KB unused code |
-| **MEDIUM** | `cmdk` (command palette) installed but unused | ~30KB |
-| **MEDIUM** | `vaul` (drawer) installed but unused | ~15KB |
-| **MEDIUM** | `embla-carousel-react` installed but unused | ~20KB |
-| **LOW** | No image optimization (no images currently, but future-proofing) | — |
-| **LOW** | No service worker for offline caching | — |
+| **MEDIUM** | `recharts` installed, zero usage outside its own unused `ui/chart.tsx` wrapper | Yes |
+| **MEDIUM** | `cmdk`, `vaul`, `embla-carousel-react` same pattern | Yes |
+| **LOW** | No service worker / offline support | Yes |
 
-### 6.3 Recommendations
-1. Remove `recharts` from `package.json`
-2. Import only used shadcn components (remove unused from `ui/` directory)
-3. Remove `cmdk`, `vaul`, `embla-carousel-react` if not planned
-4. Add lazy loading for lesson player: `React.lazy(() => import('./lesson.$id'))`
-5. Consider adding a service worker for lesson content caching
+### Recommendations
+Remove the four dependencies and their dead wrapper components; re-measure bundle size after.
 
 ---
 
 ## 7. UX AUDIT
 
-### 7.1 Current Strengths
-- Beautiful warm color palette (parchment, moss, ember)
-- Mobile-first design (430px max-width)
-- Nice micro-interactions (Framer Motion)
-- Clear progress indicators
-- Gamification elements (XP, streaks, hearts, leagues, achievements)
-
-### 7.2 Issues Found
-
-| Severity | Issue | Detail |
-|---|---|---|
-| **HIGH** | No way to review completed lessons | Once done, lessons are locked to "done" state |
-| **HIGH** | No "out of hearts" experience | Hearts decrement but no blocking/paywall |
-| **HIGH** | No streak freeze usage UI | Server function exists but no button |
-| **MEDIUM** | No friend add/search UI | Friendship tables exist but no UI |
-| **MEDIUM** | No dark mode toggle | CSS defines `.dark` theme but no switch |
-| **MEDIUM** | No lesson preview/description before starting | Users click a node and jump straight in |
-| **MEDIUM** | No audio pronunciation in lessons | TTS exists for conversation but not lessons |
-| **LOW** | No achievement notification (toast) on unlock | Achievements show on finish screen only |
-| **LOW** | No social sharing of progress | — |
-| **LOW** | No onboarding flow for new users | Placement test prompt is good but minimal |
-
-### 7.3 Recommendations
-1. **Add review tab** on learn page with due items counter
-2. **Add hearts blocking UI** — modal when hearts = 0 with refill timer
-3. **Add streak freeze button** in profile or as a pop-up when streak would break
-4. **Add lesson preview** — show topic, difficulty, estimated time before starting
-5. **Add TTS pronunciation** for key words in lessons
-6. **Add dark mode toggle** in profile/settings
-7. **Add friend search/add** UI using existing friendship tables
-8. **Add onboarding tutorial** — 3-4 screens explaining XP, streaks, hearts
+Largely unchanged from the prior audit except:
+- **RESOLVED**: friend add/search UI now exists (`profile.friends.tsx`, `invite.$inviterId.tsx`) backed by the `accept_friend_invite` RPC.
+- Hearts-blocking UI and streak-freeze UI trigger are still missing (server logic complete, no UI — same finding as before, re-verified).
 
 ---
 
-## 8. TESTING AUDIT
+## 8. TESTING & CI AUDIT
 
 ### 8.1 Current State
-**Zero tests exist.** No test files, no test framework, no test scripts.
+**Zero tests exist** — no `*.test.*`/`*.spec.*` files anywhere in the repo,
+no test runner in `package.json`. **No CI** — no `.github/workflows`
+directory at all. This was silently confirmed as a real gap this session:
+`npm run lint` had drifted to 949 problems (949 formatting errors from
+Prettier, plus a few real ESLint findings) with nothing catching it before
+merge. **Fixed this session** via `npm run format` (down to 12 pre-existing,
+mostly cosmetic issues: 3 `no-explicit-any`, a missing `useEffect` dep, some
+`react-refresh/only-export-components` warnings).
 
-### 8.2 What's Needed
-
-| Priority | Type | Coverage Target |
-|---|---|---|
-| **P0** | Unit tests for SRS algorithm | `sync.functions.ts`, `progress.ts` |
-| **P0** | Unit tests for lesson bank generator | `lesson-bank.ts` |
-| **P1** | Integration tests for server functions | `completeLessonRemote`, `fetchProgress` |
-| **P1** | Component tests for lesson player | `lesson.$id.tsx` |
-| **P2** | E2E tests for critical flows | Login → Placement → Lesson → Review |
-| **P2** | Accessibility tests | axe-core integration |
-
-### 8.3 Recommended Stack
-- **Vitest** (fast, Vite-native)
-- **React Testing Library** (component tests)
-- **Playwright** (E2E tests)
-- **axe-core** (accessibility testing)
+### 8.2 Recommendations (highest priority in this whole report)
+1. Add a GitHub Actions workflow running `npm run lint` and a typecheck (`tsc --noEmit`) on every PR — this alone would have caught the formatting drift automatically.
+2. Add Vitest and cover the pure logic first: SM-2 grading (`review.functions.ts`), XP/streak/league math and achievement thresholds (`sync.functions.ts`), and the lesson-bank generators.
+3. Add one Playwright smoke test for the golden path: sign in → complete a lesson → see it in `/review`.
 
 ---
 
 ## 9. DOCUMENTATION AUDIT
 
-### 9.1 Current State
-- `README.md` — Basic project readme, no architecture docs
-- `AGENTS.md` — Only Lovable connection warnings
-- `src/routes/README.md` — Routing conventions (good)
-- `.lovable/plan.md` — Feature build plan
-
-### 9.2 Missing Documentation
-- Architecture overview
-- Database schema documentation
-- API documentation
-- Deployment guide
-- Contributing guidelines
-- Lesson content structure guide
-- SRS algorithm documentation
-- Accessibility guidelines
-- Testing guide
+- `AGENTS.md` previously described the wrong AI provider stack (Gemini/GPT-4o-mini via "Lovable Gateway") — the actual stack is NVIDIA NIM (chat) + Deepgram (TTS/STT) directly, correctly documented in `.env.example` but not in `AGENTS.md`. **Update `AGENTS.md`'s "Key Files"/overview section to match `.env.example`.**
+- The prior `AUDIT.md` (now superseded by this file) had gone stale on SRS status, lesson-bank activation, and the AI stack within roughly two weeks of commits — a sign this doc needs to be re-verified against code each time it's read, not treated as ground truth.
+- No architecture/database-schema/deployment docs exist beyond `AGENTS.md`, `README.md`, and `src/routes/README.md` (routing conventions, still good).
 
 ---
 
 ## 10. PRIORITY ACTION PLAN
 
-### Phase 1: Content Expansion (Week 1-2)
-1. Activate `generatedUnits()` in curriculum.ts
-2. Write additional manually-written lessons to reach 60 per level
-3. Standardize lesson length (8 questions per lesson)
-4. Add lesson metadata (estimated time, difficulty, topics)
+### Immediate (done this session)
+- [x] Fix `completeLessonRemote` trust-boundary gap
+- [x] Clear Prettier/lint drift (949 → 12 problems)
+- [x] Refresh this document against actual code state
 
-### Phase 2: Spaced Repetition (Week 2-3)
-1. Create `review_items` database table
-2. Implement SM-2 algorithm
-3. Build review queue UI
-4. Integrate with lesson completion flow
-5. Add due items counter on learn page
-
-### Phase 3: Accessibility (Week 3-4)
-1. Add skip links, ARIA landmarks, focus management
-2. Add keyboard navigation
-3. Add screen reader announcements
-4. Add `prefers-reduced-motion` support
-5. Fix color contrast issues
-
-### Phase 4: Testing & Polish (Week 4-5)
-1. Add Vitest + React Testing Library
-2. Write unit tests for core logic
-3. Add E2E tests for critical flows
-4. Remove unused dependencies
-5. Update all documentation
+### Next up
+1. Add CI (lint + typecheck on PRs) — cheapest structural fix with the highest leverage.
+2. Add rate limiting to the three AI API routes.
+3. Reuse `SegmentedControl` for the `learn.tsx` level switcher; add skip link + `<main>` landmark.
+4. Remove `recharts`/`cmdk`/`vaul`/`embla-carousel-react` and their dead wrapper components.
+5. Stand up Vitest for SRS/XP/streak/achievement logic.
+6. Update `AGENTS.md`'s AI-provider description to match `.env.example`.
+7. Verify (don't assume) the `/learn` due-review badge and `recordMisses` integration are fully wired.
+8. Scope per-question answer submission if leaderboard/league score integrity matters (closes the remaining, smaller trust-boundary gap noted in §1.4).
+9. Hand-count actual lesson/question totals per CEFR level; don't rely on the aspirational "300 lessons" figure in `AGENTS.md`.
+10. Add the hearts-blocking modal and streak-freeze UI trigger.
 
 ---
 
-## Appendix: File-by-File Security Notes
+## Appendix: File-by-File Security Notes (re-verified)
 
 | File | Notes |
 |---|---|
-| `.env` | Safe — all keys are publishable/client-side |
-| `src/lib/sync.functions.ts` | Zod validation good; trust boundary issue on `correct`/`total` |
-| `src/routes/api/chat.ts` | Rate limit needed; LOVABLE_API_KEY runtime check |
-| `src/routes/api/tts.ts` | Same rate limit concern |
-| `src/routes/api/stt.ts` | Same rate limit concern |
-| `src/integrations/supabase/auth-middleware.ts` | Good — proper JWT verification |
-| `src/integrations/supabase/client.server.ts` | Good — service role key server-only |
-| `src/lib/progress.ts` | Client-only store, no security concern |
-| `src/data/curriculum.ts` | Hardcoded content, no injection risk |
-| `src/data/placement.ts` | Hardcoded, no risk |
+| `.env.example` | Accurate and well-commented; correctly documents server-only vs. `VITE_`-prefixed vars and the NVIDIA/Deepgram provider switch |
+| `src/lib/sync.functions.ts` | Zod validation good; trust-boundary gap on `completeLessonRemote` fixed this session |
+| `src/lib/review.functions.ts` | Zod validation good; SRS logic correctly scoped to the authenticated user + course |
+| `src/lib/friends.functions.ts` | Correctly delegates cross-user writes to a `SECURITY DEFINER` RPC rather than direct client inserts |
+| `src/routes/api/chat.ts` | NVIDIA NIM call; quota-gated but not rate-limited |
+| `src/routes/api/tts.ts`, `stt.ts` | Deepgram calls; same rate-limit gap |
+| `src/integrations/supabase/auth-middleware.ts` | Good — proper JWT verification, rejects malformed/missing tokens |
+| `src/integrations/supabase/client.server.ts` | Good — service-role key lazily loaded, server-only by convention and comment |
+| `src/lib/mcp/*` | OAuth-gated MCP tools that forward the caller's token so RLS applies — no admin client used, well-scoped |
+| `src/data/curriculum.ts`, `courses.ts` | Hardcoded/generated content, no injection risk; now the source of truth used to validate lesson completions server-side |
