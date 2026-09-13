@@ -16,9 +16,9 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 | `src/routes/_authenticated/learn.tsx`      | Learning path UI (units, lessons, progress)                     |
 | `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank)                              |
 | `src/routes/_authenticated/review.tsx`     | Spaced repetition review queue                                  |
-| `src/routes/api/chat.ts`                   | AI chat endpoint (Gemini)                                       |
-| `src/routes/api/tts.ts`                    | Text-to-speech endpoint                                         |
-| `src/routes/api/stt.ts`                    | Speech-to-text endpoint                                         |
+| `src/routes/api/chat.ts`                   | AI chat endpoint (NVIDIA NIM)                                    |
+| `src/routes/api/tts.ts`                    | Text-to-speech endpoint (Deepgram)                               |
+| `src/routes/api/stt.ts`                    | Speech-to-text endpoint (Deepgram)                               |
 
 ## Content Structure
 
@@ -39,12 +39,14 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 
 ## Testing
 
-No test runner is installed yet (no Vitest/Playwright) despite earlier docs
-claiming otherwise — see `audits/2026-09-09_ClaudeCode_EnglishBuddyApp33FullAudit.md`
-in the Boardroom repo. Only lint is currently wired up:
+Vitest covers the pure logic (SRS grading, XP/streak/league math) in
+`src/lib/*.test.ts`; no component or E2E tests exist yet (no Playwright).
+Both lint and tests are wired into CI (`.github/workflows/ci.yml`) on every
+PR and push to `main`:
 
 ```sh
 npm run lint        # ESLint
+npm run test        # Vitest (src/lib/*.test.ts)
 ```
 
 ## Assets

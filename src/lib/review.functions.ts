@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { computeReviewGrade } from "./srs";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr"]).default("en");
@@ -110,27 +111,15 @@ export const gradeReview = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!row) return { retired: false, dueOn: today() };
 
-    if (!data.correct) {
-      const ease = Math.max(1.3, row.ease - 0.2);
-      await supabase
-        .from("review_items")
-        .update({
-          ease,
-          interval_days: 0,
-          repetitions: 0,
-          lapses: row.lapses + 1,
-          due_on: today(),
-          last_reviewed_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId)
-        .eq("item_key", data.itemKey)
-        .eq("language", course);
-      return { retired: false, dueOn: today() };
-    }
+    const grade = computeReviewGrade({
+      correct: data.correct,
+      ease: row.ease,
+      intervalDays: row.interval_days,
+      repetitions: row.repetitions,
+      lapses: row.lapses,
+    });
 
-    const repetitions = row.repetitions + 1;
-    const ease = Math.min(2.8, row.ease + 0.15);
-    if (repetitions >= 4) {
+    if (grade.retired) {
       await supabase
         .from("review_items")
         .delete()
@@ -139,15 +128,15 @@ export const gradeReview = createServerFn({ method: "POST" })
         .eq("language", course);
       return { retired: true, dueOn: today() };
     }
-    const intervalDays =
-      repetitions === 1 ? 1 : repetitions === 2 ? 3 : Math.round(row.interval_days * ease) || 6;
-    const dueOn = addDays(intervalDays);
+
+    const dueOn = data.correct ? addDays(grade.intervalDays) : today();
     await supabase
       .from("review_items")
       .update({
-        ease,
-        repetitions,
-        interval_days: intervalDays,
+        ease: grade.ease,
+        interval_days: grade.intervalDays,
+        repetitions: grade.repetitions,
+        lapses: grade.lapses,
         due_on: dueOn,
         last_reviewed_at: new Date().toISOString(),
       })

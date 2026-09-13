@@ -4,6 +4,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
 import { getCourse } from "../data/courses";
+import {
+  LEAGUES,
+  computeLeaguePromotion,
+  computeStreakUpdate,
+  computeXpGain,
+} from "./progress-math";
 
 /**
  * Course-specific progress (xp, cefr level, placement, league) lives in
@@ -19,12 +25,6 @@ const courseSchema = z.enum(["en", "fr"]).default("en");
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
-function daysDiff(a: string, b: string) {
-  const ms = new Date(b).getTime() - new Date(a).getTime();
-  return Math.round(ms / (1000 * 60 * 60 * 24));
-}
-
-const LEAGUES: LeagueTier[] = ["bronze", "silver", "sapphire", "ruby", "diamond"];
 
 export type ProgressSnapshot = {
   xp: number;
@@ -149,7 +149,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
 
     const today = todayStr();
-    const xpGain = correct * 10 + (correct === total ? 20 : 0);
+    const xpGain = computeXpGain(correct, total);
 
     // account-wide state: streak, hearts, freezes (unaffected by course)
     const { data: pRow } = await supabase
@@ -166,25 +166,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       streak_freezes: 0,
     };
 
-    // streak
-    let streak = cur.streak;
-    let freezes = cur.streak_freezes;
-    if (cur.last_active_date === today) {
-      // same day, no change
-    } else if (!cur.last_active_date) {
-      streak = 1;
-    } else {
-      const diff = daysDiff(cur.last_active_date, today);
-      if (diff === 1) streak = cur.streak + 1;
-      else if (diff === 2 && freezes > 0) {
-        streak = cur.streak + 1;
-        freezes -= 1;
-      } else streak = 1;
-    }
-    const longest = Math.max(cur.longest_streak, streak);
-
-    // freeze reward every 10 streak days (award once per milestone by only bumping when %10==0 and crossed today)
-    if (streak > cur.streak && streak % 10 === 0) freezes += 1;
+    const {
+      streak,
+      longestStreak: longest,
+      freezes,
+    } = computeStreakUpdate({
+      lastActiveDate: cur.last_active_date,
+      today,
+      streak: cur.streak,
+      longestStreak: cur.longest_streak,
+      freezes: cur.streak_freezes,
+    });
 
     // per-course state: xp and league live in language_progress
     const { data: lpRow } = await supabase
@@ -196,17 +188,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
     const xp = curLp.xp + xpGain;
 
-    // league promotion
     const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
-    const thresholds = [0, 300, 1000, 3000, 8000];
-    let newIdx = oldIdx;
-    for (let i = LEAGUES.length - 1; i >= 0; i--) {
-      if (xp >= thresholds[i]) {
-        newIdx = Math.max(oldIdx, i);
-        break;
-      }
-    }
-    const leagueTier = LEAGUES[newIdx];
+    const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
     // upsert account-wide progress
     await supabase.from("user_progress").upsert({
