@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-English Buddy is a mobile-first English learning app with 300 lessons across 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification.
+English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification. Also ships a much thinner French course (see Content Structure below).
 
 ## Key Files
 
@@ -22,10 +22,19 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 
 ## Content Structure
 
-- **300 lessons** (60 per CEFR level × 5 levels)
-- **12 units per level** × **5 lessons per unit**
-- **8 questions per lesson** (MC + fill-in-blank)
-- **SM-2 spaced repetition** for missed items
+Counted directly from `curriculum` / `curriculumFr` on 2026-09-13 (do not
+trust a stale number here — re-run the count if this drifts):
+
+| Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
+| ------- | --- | --- | --- | --- | --- | ------------- |
+| English | 122 | 104 | 104 | 102 | 102 | **534**       |
+| French  | 25  | 25  | 25  | 25  | 25  | **125**       |
+
+French has less than a quarter of English's lesson count — either treat it
+as explicitly "in progress" in the UI, or prioritize closing the gap (see
+AUDIT.md's action plan).
+
+- **SM-2 spaced repetition** for missed items (all levels, both courses)
 
 ## Code Conventions
 

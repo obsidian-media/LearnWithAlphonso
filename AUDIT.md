@@ -149,21 +149,36 @@ Extras:     An MCP server (src/lib/mcp) exposing get_my_progress,
 
 ## 3. CONTENT AUDIT
 
-`lesson-bank.ts` is now 3,439 lines and `curriculum.ts` imports and appends
-`generatedUnits()` per level, so the structural path to ~300 English lessons
-(and a French equivalent via `lesson-bank-fr.ts`, currently smaller at 847
-lines) exists and is active. This audit did **not** hand-count final lesson/
-question totals per CEFR band or grade content quality/pedagogical accuracy
-— that requires either running the generator and inspecting output or a
-dedicated content review pass, which is worth doing explicitly rather than
-assuming the target in `AGENTS.md` ("300 lessons, 60 per level") is fully
-met just because the code path exists.
+**Update (2026-09-13):** the three recommendations below have now been run
+for real, against the actual `curriculum`/`curriculumFr` bundles (not the
+generator source) — see the table in `AGENTS.md`'s Content Structure
+section for the authoritative counts.
+
+- **English: 534 lessons, 2,718 questions** across A1-C1 — well past the
+  "300 lessons" figure `AGENTS.md` previously claimed (that number
+  undercounted, not overcounted).
+- **French: 125 lessons, 625 questions** — a complete 5-level course, but
+  less than a quarter of English's depth. Not a placeholder/broken course,
+  just meaningfully thinner. Whether to label it "in progress" in the
+  course-switcher UI (`learn.tsx`'s `COURSES.map`) or prioritize closing
+  the gap is a product call, not made in this pass.
+- **Content integrity (English + French): no structural corruption** — 0
+  malformed answer options, 0 answers pointing outside their own
+  choices/bank, across all 3,343 questions in both courses.
+- **Content quality (English only): heavy template reuse.** 73 instances of
+  the exact same question prompt appearing twice within the same lesson,
+  and 8 distinct prompts (e.g. `"This animal is a… ___"`, `"Point to
+your… ___"`) each repeated 12-13 times across the whole course — a
+  templated vocab-drill generator reusing the same sentence frame for many
+  different words. Not a bug, but confirms the earlier "generic templated
+  questions, no teaching, only testing" content note. French did not show
+  this pattern (0 same-lesson duplicates, 0 prompts repeated >5x).
 
 ### 3.1 Recommendations
 
-1. Run the generator and produce an actual per-level lesson/question count (don't trust the aspirational number in `AGENTS.md` without checking).
-2. Spot-check generated question quality/uniqueness — `lesson-bank.ts`'s scale (3,400+ lines) makes manual review of everything impractical; sample a few units per level instead.
-3. Confirm French content (`lesson-bank-fr.ts`, `curriculum-fr.ts`) is at parity or explicitly scoped as "coming later" in user-facing copy.
+1. ~~Run the generator and produce an actual per-level lesson/question count~~ — done, see above and `AGENTS.md`.
+2. ~~Spot-check generated question quality/uniqueness~~ — done; structurally sound, but template-prompt diversity in the English bank is worth a content pass if pedagogical variety matters.
+3. Confirm French content parity or explicitly scope it as "coming later" in user-facing copy — still open, product decision.
 
 ---
 
