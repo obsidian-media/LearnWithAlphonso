@@ -8,9 +8,15 @@ export const Route = createFileRoute("/_authenticated/converse")({
   head: () => ({
     meta: [
       { title: "Converse — Alphonso" },
-      { name: "description", content: "Voice roleplay with an AI English tutor: coffee shop, job interview, and more." },
+      {
+        name: "description",
+        content: "Voice roleplay with an AI English tutor: coffee shop, job interview, and more.",
+      },
       { property: "og:title", content: "Converse — Alphonso" },
-      { property: "og:description", content: "Practice real English conversations with an AI tutor." },
+      {
+        property: "og:description",
+        content: "Practice real English conversations with an AI tutor.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -28,7 +34,8 @@ function ConversePage() {
           Practice out loud
         </h1>
         <p className="mt-1.5 max-w-[320px] text-sm text-ink-soft/80">
-          Pick a scene and roleplay with an AI tutor. Type or hold to speak — get a natural reply back.
+          Pick a scene and roleplay with an AI tutor. Type or hold to speak — get a natural reply
+          back.
         </p>
 
         <div className="mt-7 grid grid-cols-1 gap-3">
@@ -59,7 +66,13 @@ function ConversePage() {
                   <p className="mt-0.5 truncate text-xs text-ink-soft/80">{s.blurb}</p>
                 </div>
                 <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-ink-soft/50" fill="none">
-                  <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M9 6l6 6-6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </Link>
             </motion.div>

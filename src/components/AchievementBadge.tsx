@@ -10,13 +10,32 @@ const TIER_COLORS: Record<string, string> = {
 function GlyphSvg({ icon }: { icon: string }) {
   switch (icon) {
     case "flame":
-      return <path d="M12 3c1.5 3 5 4.5 5 8.5A5 5 0 0 1 7 12c0-2 1-3 2-4-.4 2 .8 3 1.5 3-.3-3 1-6 1.5-8z" fill="white" />;
+      return (
+        <path
+          d="M12 3c1.5 3 5 4.5 5 8.5A5 5 0 0 1 7 12c0-2 1-3 2-4-.4 2 .8 3 1.5 3-.3-3 1-6 1.5-8z"
+          fill="white"
+        />
+      );
     case "bolt":
       return <path d="M13 3 5 14h5l-1 7 9-12h-5l1-6z" fill="white" />;
     case "star":
-      return <path d="m12 3 2.5 5.7 6.2.6-4.7 4.2 1.4 6.1L12 16.7 6.6 19.6l1.4-6.1L3.3 9.3l6.2-.6L12 3z" fill="white" />;
+      return (
+        <path
+          d="m12 3 2.5 5.7 6.2.6-4.7 4.2 1.4 6.1L12 16.7 6.6 19.6l1.4-6.1L3.3 9.3l6.2-.6L12 3z"
+          fill="white"
+        />
+      );
     case "check":
-      return <path d="m6 12 4 4 8-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />;
+      return (
+        <path
+          d="m6 12 4 4 8-9"
+          stroke="white"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      );
     case "shield":
       return <path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3z" fill="white" />;
     case "snow":

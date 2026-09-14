@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,9 +12,15 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — Alphonso" },
-      { name: "description", content: "Sign in to sync your English learning progress across devices." },
+      {
+        name: "description",
+        content: "Sign in to sync your English learning progress across devices.",
+      },
       { property: "og:title", content: "Sign in — Alphonso" },
-      { property: "og:description", content: "Save your streak, XP, and league rank to your account." },
+      {
+        property: "og:description",
+        content: "Save your streak, XP, and league rank to your account.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -24,10 +30,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { next } = Route.useSearch();
-  const afterAuth = () => {
+  const afterAuth = useCallback(() => {
     if (next) window.location.href = next;
     else navigate({ to: "/learn", replace: true });
-  };
+  }, [next, navigate]);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +46,7 @@ function AuthPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) afterAuth();
     });
-  }, [navigate]);
+  }, [afterAuth]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,7 +90,6 @@ function AuthPage() {
       setBusy(false);
     }
   }
-
 
   async function google() {
     setError(null);
@@ -138,7 +143,6 @@ function AuthPage() {
                 ? "Enter your email and we'll send you a link to set a new password."
                 : "Sign in to continue where you left off."}
           </p>
-
         </motion.div>
 
         <div className="mt-8 space-y-3">
@@ -149,14 +153,19 @@ function AuthPage() {
             className="flex w-full items-center justify-center gap-2.5 rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-              <path d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z" fill="#4285F4" />
+              <path
+                d="M21.35 11.1H12v3.2h5.35c-.23 1.5-1.68 4.4-5.35 4.4a5.7 5.7 0 1 1 0-11.4c1.79 0 2.99.77 3.68 1.43l2.5-2.4A9 9 0 1 0 12 21c5.2 0 8.7-3.65 8.7-8.8 0-.6-.07-1.05-.15-1.55z"
+                fill="#4285F4"
+              />
             </svg>
             Continue with Google
           </button>
 
           <div className="relative py-2 text-center">
             <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-hairline" />
-            <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">or</span>
+            <span className="bg-surface px-3 text-[11px] uppercase tracking-[0.16em] text-ink-soft/60">
+              or
+            </span>
           </div>
 
           <form onSubmit={submit} className="space-y-3">
@@ -244,11 +253,19 @@ function AuthPage() {
 
           <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
             By continuing you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-ink">Terms</Link>,{" "}
-            <Link to="/privacy" className="underline hover:text-ink">Privacy Policy</Link> and{" "}
-            <Link to="/cookies" className="underline hover:text-ink">Cookie Policy</Link>.
+            <Link to="/terms" className="underline hover:text-ink">
+              Terms
+            </Link>
+            ,{" "}
+            <Link to="/privacy" className="underline hover:text-ink">
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link to="/cookies" className="underline hover:text-ink">
+              Cookie Policy
+            </Link>
+            .
           </p>
-
         </div>
       </div>
     </div>

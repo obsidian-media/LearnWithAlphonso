@@ -1,12 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
+import { SegmentedControl } from "../../components/SegmentedControl";
+import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { setCefrLevel, fetchProgress } from "../../lib/sync.functions";
+import { fetchDueReviews } from "../../lib/review.functions";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -27,11 +31,15 @@ function LessonNode({
   index,
   lessonId,
   title,
+  blocked,
+  onBlockedClick,
 }: {
   state: "done" | "active" | "locked";
   index: number;
   lessonId: string;
   title: string;
+  blocked: boolean;
+  onBlockedClick: () => void;
 }) {
   const offset = index % 4;
   const translateX = offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
@@ -76,6 +84,13 @@ function LessonNode({
     </motion.div>
   );
   if (state === "locked") return <div>{button}</div>;
+  if (blocked) {
+    return (
+      <button type="button" onClick={onBlockedClick} aria-label={`Start ${title} (out of hearts)`}>
+        {button}
+      </button>
+    );
+  }
   return (
     <Link to="/lesson/$id" params={{ id: lessonId }} aria-label={`Start ${title}`}>
       {button}
@@ -93,10 +108,29 @@ function LearnPage() {
   const setCourse = useProgress((s) => s.setCourse);
   const hydrate = useProgress((s) => s.hydrate);
   const setLoading = useProgress((s) => s.setLoading);
+  const hearts = useProgress((s) => s.hearts);
+  const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const saveLevel = useServerFn(setCefrLevel);
   const loadProgress = useServerFn(fetchProgress);
+  const loadDueReviews = useServerFn(fetchDueReviews);
   const placed = !hydrated || Boolean(placementTakenAt);
   const curriculum = getCourse(course).curriculum;
+  const outOfHearts = hydrated && hearts <= 0;
+  const [showHeartsModal, setShowHeartsModal] = useState(false);
+  const [dueCount, setDueCount] = useState(0);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let alive = true;
+    void loadDueReviews({ data: { course } })
+      .then((res) => {
+        if (alive) setDueCount(res.due.length);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [hydrated, course, loadDueReviews]);
 
   function pick(next: Level) {
     setCefrLevelLocal(next);
@@ -168,8 +202,18 @@ function LearnPage() {
           className="mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
         >
           <span>
-            <span className="block font-display text-base font-semibold text-ink">
-              Review missed items
+            <span className="flex items-center gap-2">
+              <span className="block font-display text-base font-semibold text-ink">
+                Review missed items
+              </span>
+              {dueCount > 0 && (
+                <span
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-surface"
+                  aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
+                >
+                  {dueCount}
+                </span>
+              )}
             </span>
             <span className="block text-xs text-ink-soft/80">
               Spaced repetition brings back what you got wrong.
@@ -178,31 +222,21 @@ function LearnPage() {
           <span className="text-ink-soft">→</span>
         </Link>
 
-        <div className="-mx-6 mb-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-          {LEVELS.map((l) => {
-            const active = l.id === level;
-            const done = hydrated
-              ? curriculum
-                  .filter((u) => u.level === l.id)
-                  .flatMap((u) => u.lessons)
-                  .every((ls) => completed.includes(ls.id))
-              : false;
-            return (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => pick(l.id)}
-                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
-                  active
-                    ? "border-ink bg-ink text-surface"
-                    : "border-hairline bg-surface text-ink-soft hover:bg-parchment"
-                }`}
-              >
-                {l.id}
-                {done && !active ? " ✓" : ""}
-              </button>
-            );
-          })}
+        <div className="-mx-6 mb-6 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
+          <SegmentedControl
+            ariaLabel="Select CEFR level"
+            value={level}
+            onChange={pick}
+            options={LEVELS.map((l) => {
+              const done = hydrated
+                ? curriculum
+                    .filter((u) => u.level === l.id)
+                    .flatMap((u) => u.lessons)
+                    .every((ls) => completed.includes(ls.id))
+                : false;
+              return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
+            })}
+          />
         </div>
 
         <div className="mb-8 rounded-2xl border border-hairline bg-parchment p-4">
@@ -262,6 +296,8 @@ function LearnPage() {
                       index={ui * 100 + li}
                       lessonId={lesson.id}
                       title={lesson.title}
+                      blocked={outOfHearts}
+                      onBlockedClick={() => setShowHeartsModal(true)}
                     />
                   );
                 })}
@@ -281,6 +317,11 @@ function LearnPage() {
           );
         })}
       </div>
+      <HeartsModal
+        open={showHeartsModal}
+        refillAt={heartsRefillAt}
+        onClose={() => setShowHeartsModal(false)}
+      />
     </MobileFrame>
   );
 }

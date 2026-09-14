@@ -1,0 +1,115 @@
+import { describe, expect, it } from "vitest";
+import {
+  computeLeaguePromotion,
+  computeStreakUpdate,
+  computeXpGain,
+  LEAGUES,
+} from "./progress-math";
+
+describe("computeXpGain", () => {
+  it("awards 10 xp per correct answer", () => {
+    expect(computeXpGain(3, 5)).toBe(30);
+  });
+
+  it("adds a 20xp perfect-lesson bonus when every answer is correct", () => {
+    expect(computeXpGain(5, 5)).toBe(70);
+  });
+
+  it("awards nothing for zero correct answers", () => {
+    expect(computeXpGain(0, 6)).toBe(0);
+  });
+});
+
+describe("computeStreakUpdate", () => {
+  const base = { today: "2026-09-13", streak: 4, longestStreak: 10, freezes: 1 };
+
+  it("makes no change on a repeat activity the same day", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-13" });
+    expect(result).toEqual({ streak: 4, longestStreak: 10, freezes: 1 });
+  });
+
+  it("starts a new streak at 1 on first-ever activity", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: null });
+    expect(result.streak).toBe(1);
+    expect(result.freezes).toBe(1);
+  });
+
+  it("extends the streak by one on a consecutive day", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-12" });
+    expect(result.streak).toBe(5);
+    expect(result.longestStreak).toBe(10);
+  });
+
+  it("bridges a missed day by spending a freeze when one is available", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-11" });
+    expect(result.streak).toBe(5);
+    expect(result.freezes).toBe(0);
+  });
+
+  it("resets to 1 across a missed day with no freeze available", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-11", freezes: 0 });
+    expect(result.streak).toBe(1);
+    expect(result.freezes).toBe(0);
+  });
+
+  it("resets to 1 after a gap wider than 2 days regardless of freezes", () => {
+    const result = computeStreakUpdate({ ...base, lastActiveDate: "2026-09-01" });
+    expect(result.streak).toBe(1);
+  });
+
+  it("raises longestStreak when the new streak exceeds it", () => {
+    const result = computeStreakUpdate({
+      ...base,
+      streak: 10,
+      longestStreak: 10,
+      lastActiveDate: "2026-09-12",
+    });
+    expect(result.longestStreak).toBe(11);
+  });
+
+  it("awards a bonus freeze on every 10th streak day", () => {
+    const result = computeStreakUpdate({
+      today: "2026-09-13",
+      streak: 9,
+      longestStreak: 9,
+      freezes: 0,
+      lastActiveDate: "2026-09-12",
+    });
+    expect(result.streak).toBe(10);
+    expect(result.freezes).toBe(1);
+  });
+
+  it("does not award a freeze when the streak resets on a milestone-adjacent count", () => {
+    const result = computeStreakUpdate({
+      today: "2026-09-13",
+      streak: 9,
+      longestStreak: 9,
+      freezes: 0,
+      lastActiveDate: "2026-09-01",
+    });
+    expect(result.streak).toBe(1);
+    expect(result.freezes).toBe(0);
+  });
+});
+
+describe("computeLeaguePromotion", () => {
+  it("stays in bronze below the first threshold", () => {
+    expect(computeLeaguePromotion(50, 0)).toEqual({ leagueTier: "bronze", newIdx: 0 });
+  });
+
+  it("promotes to the highest league whose threshold is met", () => {
+    expect(computeLeaguePromotion(3200, 0)).toEqual({ leagueTier: "ruby", newIdx: 3 });
+  });
+
+  it("promotes all the way to diamond at the top threshold", () => {
+    expect(computeLeaguePromotion(8000, 0)).toEqual({ leagueTier: "diamond", newIdx: 4 });
+  });
+
+  it("never demotes even if xp math were to imply a lower league", () => {
+    const diamondIdx = LEAGUES.indexOf("diamond");
+    expect(computeLeaguePromotion(0, diamondIdx)).toEqual({
+      leagueTier: "diamond",
+      newIdx: diamondIdx,
+    });
+  });
+});

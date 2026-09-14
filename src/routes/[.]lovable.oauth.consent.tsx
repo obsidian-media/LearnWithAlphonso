@@ -9,7 +9,9 @@ type OAuthDetails = {
 };
 
 type OAuthApi = {
-  getAuthorizationDetails: (id: string) => Promise<{ data: OAuthDetails | null; error: Error | null }>;
+  getAuthorizationDetails: (
+    id: string,
+  ) => Promise<{ data: OAuthDetails | null; error: Error | null }>;
   approveAuthorization: (id: string) => Promise<{ data: OAuthDetails | null; error: Error | null }>;
   denyAuthorization: (id: string) => Promise<{ data: OAuthDetails | null; error: Error | null }>;
 };
@@ -89,7 +91,10 @@ function Consent() {
           and leaderboard rankings as you.
         </p>
         {error && (
-          <p role="alert" className="mt-4 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm">
+          <p
+            role="alert"
+            className="mt-4 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm"
+          >
             {error}
           </p>
         )}

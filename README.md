@@ -1,107 +1,131 @@
 # English Buddy App
 
-A full-stack mobile-first English learning app with gamification, AI-powered conversation practice, and a spaced repetition review system.
+A full-stack mobile-first English (and French) learning app with gamification, AI-powered conversation practice, and a spaced repetition review system.
 
-> Being decoupled from Lovable hosting/tooling as of TASK-078 — the
-> `lovable.app` URL above will move once redeployed (Vercel planned, see
-> `docs/DESIGN-english-buddy-33-decoupling.md` in the Boardroom repo).
+> Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
+> code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
+> gateway), and deploy targets Vercel. `@lovable.dev/mcp-js` is still used
+> as a library for the `/mcp` route's MCP server scaffolding, which is
+> unrelated to Lovable hosting. Whether the broader decoupling task
+> (`docs/DESIGN-english-buddy-33-decoupling.md` in the Boardroom repo) is
+> fully closed is tracked there, not here.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Framework** | TanStack Start (SSR) + React 19 + Vite 8 |
-| **Styling** | Tailwind CSS v4 + shadcn/ui (New York) + Framer Motion |
-| **State** | Zustand (client) + TanStack Query (server) |
-| **Backend** | Supabase (PostgreSQL + Auth + RLS) |
-| **AI** | NVIDIA NIM (chat, direct) + Deepgram Aura-2/Nova-3 (TTS/STT, direct) |
-| **Routing** | TanStack Router (file-based) |
+| Layer               | Technology                                                           |
+| ------------------- | -------------------------------------------------------------------- |
+| **Framework**       | TanStack Start (SSR) + React 19 + Vite 8                             |
+| **Styling**         | Tailwind CSS v4 + hand-written components + Framer Motion            |
+| **State**           | Zustand (client) + TanStack Query (server)                           |
+| **Backend**         | Supabase (PostgreSQL + Auth + RLS + RPCs)                            |
+| **AI**              | NVIDIA NIM (chat, direct) + Deepgram Aura-2/Nova-3 (TTS/STT, direct) |
+| **Routing**         | TanStack Router (file-based)                                         |
+| **Testing**         | Vitest (unit) + Playwright + axe-core (E2E/accessibility)            |
+| **Package manager** | bun (`bun.lock` is authoritative; no `package-lock.json`)            |
+
+See `ARCHITECTURE.md` for the full request flow, database schema, and design notes.
 
 ## Features
 
-- **5 CEFR Levels**: A1 (Beginner) → C1 (Advanced) with 60 lessons per band
-- **Spaced Repetition**: SM-2 algorithm for long-term retention of missed items
-- **Placement Test**: 15-question adaptive test to set starting level
-- **AI Conversation**: Voice-enabled chat with 6 scenarios
-- **Gamification**: XP, streaks, hearts, leagues (Bronze → Diamond), 18 achievements
-- **Leaderboards**: Global, friends, and country rankings
+- **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
+- **Two courses**: English and French, via a shared `getCourse()` content bundle
+- **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page
+- **Placement test**: 15-question adaptive test to set starting level
+- **AI conversation**: voice-enabled chat with 6 scenarios
+- **Gamification**: XP, streaks, streak freezes, hearts (with a blocking modal + refill countdown), leagues (Bronze → Diamond), achievements
+- **Friends**: invite-link based, with a friends leaderboard scope
+- **Leaderboards**: global, friends, and country rankings
+- **MCP server** at `/mcp`: OAuth-gated tools (`get_my_progress`, `get_due_reviews`, `list_lessons`, `get_leaderboard`) for external MCP clients
 
-## Content Structure
+## Content
 
-Each level contains 12 units × 5 lessons = 60 lessons per band.
+Counted directly from the actual `curriculum`/`curriculumFr` bundles (see
+`AGENTS.md`'s Content Structure table for how/when this was last verified —
+re-run the count rather than trusting a number here if it's been a while):
 
-| Level | Units | Lessons | Questions |
-|---|---|---|---|
-| A1 | 12 | 60 | 480 |
-| A2 | 12 | 60 | 480 |
-| B1 | 12 | 60 | 480 |
-| B2 | 12 | 60 | 480 |
-| C1 | 12 | 60 | 480 |
-| **Total** | **60** | **300** | **2,400** |
+| Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
+| ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
+| **English** | 122 | 104 | 104 | 102 | 102 | **534**       | 2,718           |
+| **French**  | 25  | 25  | 25  | 25  | 25  | **125**       | 625             |
 
-Each lesson contains 8 questions (MC + fill-in-blank) with explanations.
+French is a complete 5-level course, just meaningfully thinner than English —
+not a stub or placeholder.
 
 ## Spaced Repetition System
 
-The app uses the SM-2 algorithm to schedule review of missed items:
+The app uses an SM-2-style algorithm to schedule review of missed items:
 
-- **Quality 0-2**: Item resets, reviewed again tomorrow
-- **Quality 3-5**: Interval increases based on ease factor
-- **Ease factor**: Adjusts based on performance (min 1.3, starts at 2.5)
-- **Review queue**: Due items shown on learn page with counter badge
+- **Wrong answer**: item resets to the start, ease decreases, a lapse is recorded
+- **Correct answer**: interval grows (1 day → 3 days → interval × ease), item retires after 4 clean repetitions in a row
+- **Review queue** (`/review`): due items shown oldest-first; the learn page shows a live due-count badge
 
 ## Development
 
 ### Prerequisites
-- Node.js 18+ ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
-- npm or bun
+
+- [bun](https://bun.sh) (this repo uses bun's lockfile and `bunfig.toml`; npm/yarn aren't tested against it)
+- A Supabase project (for local dev against a real backend) — see `ARCHITECTURE.md`'s "Applying migrations" note if you're standing up a fresh one
 
 ### Setup
+
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm i
-cp .env.example .env  # Fill in your Supabase + AI provider keys
-npm run dev
+bun install
+cp .env.example .env  # fill in your Supabase + AI provider keys
+bun run dev
 ```
 
 ### Environment Variables
+
+See `.env.example` for the full, commented list. Summary:
+
 ```
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_PUBLISHABLE_KEY=your-anon-key
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # server-only, never VITE_-prefixed
-NVIDIA_API_KEY=your-nvidia-api-key    # chat (integrate.api.nvidia.com)
-DEEPGRAM_API_KEY=your-deepgram-api-key # TTS/STT (deepgram.com)
+SUPABASE_URL / VITE_SUPABASE_URL
+SUPABASE_PUBLISHABLE_KEY / VITE_SUPABASE_PUBLISHABLE_KEY
+SUPABASE_SERVICE_ROLE_KEY      # server-only, never VITE_-prefixed
+NVIDIA_API_KEY                 # chat (integrate.api.nvidia.com)
+DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 ```
 
 ### Available Scripts
+
 ```sh
-npm run dev      # Start development server
-npm run build    # Production build
-npm run lint     # ESLint
+bun run dev        # Start the dev server
+bun run build       # Production build
+bun run preview     # Preview a production build
+bun run lint         # ESLint (includes eslint-plugin-jsx-a11y)
+bun run format      # Prettier --write
+bun run test         # Vitest (src/lib/*.test.ts)
+bun run test:e2e    # Playwright + axe-core (e2e/*.spec.ts) — needs a running dev server
 ```
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, `test`, and `test:e2e`
+on every PR and push to `main`.
 
 ## Project Structure
 
 ```
 src/
-├── components/          # React components (AppShell, icons, ui/)
-├── data/               # Curriculum, levels, lesson bank, achievements
-├── hooks/              # Custom React hooks
-├── integrations/       # Supabase client
-├── lib/                # Progress store, server functions, utils
-└── routes/             # File-based routes (TanStack Router)
-    ├── api/            # AI endpoints (chat, TTS, STT)
-    └── _authenticated/ # Protected routes (learn, lesson, review, etc.)
+├── components/          # React components (AppShell, icons, SegmentedControl, HeartsModal, ...)
+├── data/                # Curriculum, levels, lesson bank, achievements, courses
+├── hooks/                # Custom React hooks
+├── integrations/         # Supabase clients (client.ts, client.server.ts, auth-middleware.ts)
+├── lib/                  # Progress store, server functions (*.functions.ts), SRS/XP pure-math modules, MCP tools
+└── routes/                # File-based routes (TanStack Router)
+    ├── api/               # AI endpoints (chat, TTS, STT)
+    ├── mcp.ts              # MCP server route (auto-generated)
+    └── _authenticated/    # Protected routes (learn, lesson, review, profile, league, converse, friends)
+e2e/                      # Playwright + axe-core E2E/accessibility tests
+supabase/migrations/      # SQL migrations (not auto-applied — see ARCHITECTURE.md)
 ```
 
 ## Documentation
 
-- `AUDIT.md` — Full codebase audit (security, architecture, accessibility, content, performance, UX, testing)
-- `LESSON_ASSETS.md` — Complete asset list for all lesson content (audio, images, icons, animations)
-- `ARCHITECTURE.md` — Architecture decision records and system design
+- `ARCHITECTURE.md` — stack, request flow, database schema, content model, known rough edges
+- `AUDIT.md` — full codebase audit (security, architecture, accessibility, content, performance, UX, testing) with a running log of what's been fixed
+- `AGENTS.md` — conventions and key-file map for agents/contributors working in this repo
+- `LESSON_ASSETS.md` — asset plan for lesson content (audio, images, icons, animations); its status banner explains what's actually built vs. still aspirational
 
 ## License
 

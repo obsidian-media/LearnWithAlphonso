@@ -2,30 +2,39 @@
 
 ## Project Overview
 
-English Buddy is a mobile-first English learning app with 300 lessons across 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification.
+English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification. Also ships a much thinner French course (see Content Structure below).
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `src/data/curriculum.ts` | Lesson content types + foundation units (A1) |
-| `src/data/levels.ts` | Level definitions + advanced units (A2-C1) |
-| `src/data/lesson-bank.ts` | Generated lesson packs (SM-2 compatible, 150 potential lessons) |
-| `src/lib/progress.ts` | Zustand progress store (client-side state) |
-| `src/lib/sync.functions.ts` | Server functions (progress sync, lesson completion, SRS) |
-| `src/routes/_authenticated/learn.tsx` | Learning path UI (units, lessons, progress) |
-| `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank) |
-| `src/routes/_authenticated/review.tsx` | Spaced repetition review queue |
-| `src/routes/api/chat.ts` | AI chat endpoint (Gemini) |
-| `src/routes/api/tts.ts` | Text-to-speech endpoint |
-| `src/routes/api/stt.ts` | Speech-to-text endpoint |
+| File                                       | Purpose                                                         |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `src/data/curriculum.ts`                   | Lesson content types + foundation units (A1)                    |
+| `src/data/levels.ts`                       | Level definitions + advanced units (A2-C1)                      |
+| `src/data/lesson-bank.ts`                  | Generated lesson packs (SM-2 compatible, 150 potential lessons) |
+| `src/lib/progress.ts`                      | Zustand progress store (client-side state)                      |
+| `src/lib/sync.functions.ts`                | Server functions (progress sync, lesson completion, SRS)        |
+| `src/routes/_authenticated/learn.tsx`      | Learning path UI (units, lessons, progress)                     |
+| `src/routes/_authenticated/lesson.$id.tsx` | Lesson player (MC + fill-in-blank)                              |
+| `src/routes/_authenticated/review.tsx`     | Spaced repetition review queue                                  |
+| `src/routes/api/chat.ts`                   | AI chat endpoint (NVIDIA NIM)                                   |
+| `src/routes/api/tts.ts`                    | Text-to-speech endpoint (Deepgram)                              |
+| `src/routes/api/stt.ts`                    | Speech-to-text endpoint (Deepgram)                              |
 
 ## Content Structure
 
-- **300 lessons** (60 per CEFR level × 5 levels)
-- **12 units per level** × **5 lessons per unit**
-- **8 questions per lesson** (MC + fill-in-blank)
-- **SM-2 spaced repetition** for missed items
+Counted directly from `curriculum` / `curriculumFr` on 2026-09-13 (do not
+trust a stale number here — re-run the count if this drifts):
+
+| Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
+| ------- | --- | --- | --- | --- | --- | ------------- |
+| English | 122 | 104 | 104 | 102 | 102 | **534**       |
+| French  | 25  | 25  | 25  | 25  | 25  | **125**       |
+
+French has less than a quarter of English's lesson count — either treat it
+as explicitly "in progress" in the UI, or prioritize closing the gap (see
+AUDIT.md's action plan).
+
+- **SM-2 spaced repetition** for missed items (all levels, both courses)
 
 ## Code Conventions
 
@@ -39,12 +48,14 @@ English Buddy is a mobile-first English learning app with 300 lessons across 5 C
 
 ## Testing
 
-No test runner is installed yet (no Vitest/Playwright) despite earlier docs
-claiming otherwise — see `audits/2026-09-09_ClaudeCode_EnglishBuddyApp33FullAudit.md`
-in the Boardroom repo. Only lint is currently wired up:
+Vitest covers the pure logic (SRS grading, XP/streak/league math) in
+`src/lib/*.test.ts`; no component or E2E tests exist yet (no Playwright).
+Both lint and tests are wired into CI (`.github/workflows/ci.yml`) on every
+PR and push to `main`:
 
 ```sh
 npm run lint        # ESLint
+npm run test        # Vitest (src/lib/*.test.ts)
 ```
 
 ## Assets

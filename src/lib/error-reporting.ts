@@ -15,7 +15,6 @@ export function reportError(
   options: ErrorReportOptions = {},
 ) {
   if (typeof window === "undefined") return;
-  // eslint-disable-next-line no-console
   console.error("[error-report]", error, {
     route: window.location.pathname,
     mechanism: options.mechanism ?? "manual",

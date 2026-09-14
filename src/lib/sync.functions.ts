@@ -3,6 +3,13 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
+import { getCourse } from "../data/courses";
+import {
+  LEAGUES,
+  computeLeaguePromotion,
+  computeStreakUpdate,
+  computeXpGain,
+} from "./progress-math";
 
 /**
  * Course-specific progress (xp, cefr level, placement, league) lives in
@@ -18,12 +25,6 @@ const courseSchema = z.enum(["en", "fr"]).default("en");
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
-function daysDiff(a: string, b: string) {
-  const ms = new Date(b).getTime() - new Date(a).getTime();
-  return Math.round(ms / (1000 * 60 * 60 * 24));
-}
-
-const LEAGUES: LeagueTier[] = ["bronze", "silver", "sapphire", "ruby", "diamond"];
 
 export type ProgressSnapshot = {
   xp: number;
@@ -124,11 +125,49 @@ export const fetchProgress = createServerFn({ method: "GET" })
     };
   });
 
+const lessonIdSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9]+$/, "invalid lesson id");
+
+/**
+ * Issues a signed token proving this user actually opened this lesson,
+ * before they can claim it complete. Called once when the lesson player
+ * mounts; completeLessonRemote below requires and verifies it.
+ */
+export const startLessonSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ lessonId: lessonIdSchema, course: courseSchema }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const found = getCourse(data.course).findLesson(data.lessonId);
+    if (!found) throw new Error("Lesson not found");
+    const { issueLessonSessionToken } = await import("./lesson-session.server");
+    return {
+      token: issueLessonSessionToken({
+        userId: context.userId,
+        lessonId: data.lessonId,
+        course: data.course,
+      }),
+    };
+  });
+
 const completeLessonSchema = z.object({
-  lessonId: z.string().min(1).max(100),
-  correct: z.number().int().min(0).max(50),
+  lessonId: lessonIdSchema,
   total: z.number().int().min(1).max(50),
+  // The question ids (not "<lessonId>:<questionId>" item keys -- just the
+  // bare question id) the client says it got wrong, so the server derives
+  // `correct` from real question membership instead of trusting a raw
+  // count. Doesn't cryptographically prove an answer was checked, but it
+  // does mean a forged claim needs to name real question ids for this
+  // exact lesson rather than an arbitrary number.
+  missedQuestionIds: z.array(z.string().regex(/^[a-z0-9]+$/)).max(50),
   course: courseSchema,
+  // Proves startLessonSession was called for this exact user/lesson/course
+  // combination before this claim -- see lesson-session.server.ts.
+  sessionToken: z.string().min(1).max(2000),
 });
 
 export const completeLessonRemote = createServerFn({ method: "POST" })
@@ -136,9 +175,30 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { lessonId, correct, total, course } = data;
+    const { lessonId, total, missedQuestionIds, course, sessionToken } = data;
+
+    // Trust boundary: the client reports its own score, so verify the
+    // lesson exists, that `total` matches its real question count, that
+    // every claimed-missed question id actually belongs to this lesson
+    // (deduped), and that a real lesson session was started, before
+    // paying out XP for it.
+    const found = getCourse(course).findLesson(lessonId);
+    if (!found || total !== found.lesson.questions.length) {
+      throw new Error("Invalid lesson completion payload");
+    }
+    const { verifyLessonSessionToken } = await import("./lesson-session.server");
+    if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
+      throw new Error("Invalid or expired lesson session");
+    }
+    const realQuestionIds = new Set(found.lesson.questions.map((q) => q.id));
+    const missedSet = new Set(missedQuestionIds);
+    if (missedSet.size > total || [...missedSet].some((id) => !realQuestionIds.has(id))) {
+      throw new Error("Invalid lesson completion payload");
+    }
+    const correct = total - missedSet.size;
+
     const today = todayStr();
-    const xpGain = correct * 10 + (correct === total ? 20 : 0);
+    const xpGain = computeXpGain(correct, total);
 
     // account-wide state: streak, hearts, freezes (unaffected by course)
     const { data: pRow } = await supabase
@@ -155,25 +215,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       streak_freezes: 0,
     };
 
-    // streak
-    let streak = cur.streak;
-    let freezes = cur.streak_freezes;
-    if (cur.last_active_date === today) {
-      // same day, no change
-    } else if (!cur.last_active_date) {
-      streak = 1;
-    } else {
-      const diff = daysDiff(cur.last_active_date, today);
-      if (diff === 1) streak = cur.streak + 1;
-      else if (diff === 2 && freezes > 0) {
-        streak = cur.streak + 1;
-        freezes -= 1;
-      } else streak = 1;
-    }
-    const longest = Math.max(cur.longest_streak, streak);
-
-    // freeze reward every 10 streak days (award once per milestone by only bumping when %10==0 and crossed today)
-    if (streak > cur.streak && streak % 10 === 0) freezes += 1;
+    const {
+      streak,
+      longestStreak: longest,
+      freezes,
+    } = computeStreakUpdate({
+      lastActiveDate: cur.last_active_date,
+      today,
+      streak: cur.streak,
+      longestStreak: cur.longest_streak,
+      freezes: cur.streak_freezes,
+    });
 
     // per-course state: xp and league live in language_progress
     const { data: lpRow } = await supabase
@@ -185,17 +237,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
     const xp = curLp.xp + xpGain;
 
-    // league promotion
     const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
-    const thresholds = [0, 300, 1000, 3000, 8000];
-    let newIdx = oldIdx;
-    for (let i = LEAGUES.length - 1; i >= 0; i--) {
-      if (xp >= thresholds[i]) {
-        newIdx = Math.max(oldIdx, i);
-        break;
-      }
-    }
-    const leagueTier = LEAGUES[newIdx];
+    const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
     // upsert account-wide progress
     await supabase.from("user_progress").upsert({
@@ -330,29 +373,19 @@ export const loseHeartRemote = createServerFn({ method: "POST" })
     return { hearts: next };
   });
 
-export const useStreakFreeze = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("streak_freezes")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const cur = p?.streak_freezes ?? 0;
-    if (cur <= 0) return { streakFreezes: 0, used: false };
-    await supabase
-      .from("user_progress")
-      .update({ streak_freezes: cur - 1 })
-      .eq("user_id", userId);
-    return { streakFreezes: cur - 1, used: true };
-  });
-
 const mergeSchema = z.object({
   xp: z.number().int().min(0).max(1_000_000).default(0),
   streak: z.number().int().min(0).max(10_000).default(0),
   longestStreak: z.number().int().min(0).max(10_000).default(0),
-  completedLessons: z.array(z.string().max(100)).max(500).default([]),
+  completedLessons: z
+    .array(
+      z
+        .string()
+        .max(100)
+        .regex(/^[a-z0-9]+$/),
+    )
+    .max(500)
+    .default([]),
   answersByLesson: z
     .record(z.string(), z.object({ correct: z.number().int(), total: z.number().int() }))
     .default({}),

@@ -10,22 +10,11 @@ export type FriendEntry = {
   weekXp: number;
 };
 
-type FriendRow = {
-  user_id: string;
-  display_name: string | null;
-  avatar_seed: string | null;
-  streak: number | null;
-  week_xp: number | null;
-};
-
 /** Friends' account-wide streak + this-week XP, for the Friends tab. */
 export const getFriends = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<FriendEntry[]> => {
-    const rpc = context.supabase.rpc as unknown as (
-      fn: string,
-    ) => Promise<{ data: FriendRow[] | null; error: unknown }>;
-    const { data } = await rpc("get_friends_progress");
+    const { data } = await context.supabase.rpc("get_friends_progress");
     return (data ?? []).map((r) => ({
       userId: r.user_id,
       displayName: r.display_name ?? "Learner",
@@ -48,11 +37,9 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
     if (data.inviterId === context.userId) {
       return { ok: false, message: "cannot invite yourself" };
     }
-    const rpc = context.supabase.rpc as unknown as (
-      fn: string,
-      args: Record<string, string>,
-    ) => Promise<{ data: { ok: boolean; message: string }[] | null; error: unknown }>;
-    const { data: rows } = await rpc("accept_friend_invite", { _inviter_id: data.inviterId });
+    const { data: rows } = await context.supabase.rpc("accept_friend_invite", {
+      _inviter_id: data.inviterId,
+    });
     const row = rows?.[0];
     return row ?? { ok: false, message: "unknown error" };
   });

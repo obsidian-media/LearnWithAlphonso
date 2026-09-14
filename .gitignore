@@ -28,6 +28,12 @@ dist-ssr
 # Agent working notes — deferred/postponed work items, local-only scratch
 DEFERRED-WORDS.md
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

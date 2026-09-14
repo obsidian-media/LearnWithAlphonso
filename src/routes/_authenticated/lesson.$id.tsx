@@ -1,12 +1,16 @@
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { getCourse } from "../../data/courses";
 import { reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { useProgress } from "../../lib/progress";
-import { completeLessonRemote, loseHeartRemote } from "../../lib/sync.functions";
+import {
+  completeLessonRemote,
+  loseHeartRemote,
+  startLessonSession,
+} from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
@@ -63,6 +67,20 @@ function LessonPage() {
     [maybeLesson, attemptSeed],
   );
 
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  useEffect(() => {
+    if (!maybeLesson) return;
+    let alive = true;
+    void startLessonSession({ data: { lessonId: maybeLesson.id, course } })
+      .then((res) => {
+        if (alive) setSessionToken(res.token);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [maybeLesson, course]);
+
   if (!maybeLesson) {
     return (
       <LessonFrame>
@@ -109,7 +127,13 @@ function LessonPage() {
     }
     try {
       const res = await completeLessonRemote({
-        data: { lessonId: lesson.id, correct, total, course },
+        data: {
+          lessonId: lesson.id,
+          total,
+          missedQuestionIds: missedQs.map(({ q }) => q.id),
+          course,
+          sessionToken: sessionToken ?? "",
+        },
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons
@@ -275,6 +299,8 @@ function LessonPage() {
 
           {checked && (
             <div
+              role="status"
+              aria-live="polite"
               className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
                 answered
                   ? "border-moss/40 bg-moss/10 text-ink"

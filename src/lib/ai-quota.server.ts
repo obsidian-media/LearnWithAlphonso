@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 
 export type QuotaKind = "chat" | "stt" | "tts";
 
@@ -15,8 +16,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
 };
 
 export type QuotaResult =
-  | { ok: true; used: number; limit: number }
-  | { ok: false; status: number; message: string };
+  { ok: true; used: number; limit: number } | { ok: false; status: number; message: string };
 
 function bearer(request: Request): string | null {
   const h = request.headers.get("Authorization") ?? request.headers.get("authorization");
@@ -42,18 +42,28 @@ export async function consumeQuota(request: Request, kind: QuotaKind): Promise<Q
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers: { Authorization: `Bearer ${token}` },
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        headers.set("apikey", key);
-        headers.set("Authorization", `Bearer ${token}`);
-        return fetch(input, { ...init, headers });
-      },
+      fetch: createSupabaseFetch(key),
     },
   });
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData.user) {
     return { ok: false, status: 401, message: "Session expired — sign in again." };
+  }
+
+  // Per-minute burst limit, on top of the daily cap below — checked first
+  // so a rejected burst doesn't also eat into the day's quota.
+  const { data: rlData, error: rlError } = await supabase.rpc("consume_ai_rate_limit", {
+    _kind: kind,
+  });
+  if (rlError) return { ok: false, status: 500, message: "Could not verify your usage." };
+  const rlRow = Array.isArray(rlData) ? rlData[0] : rlData;
+  if (!rlRow || !rlRow.allowed) {
+    return {
+      ok: false,
+      status: 429,
+      message: "Too many requests — slow down and try again in a minute.",
+    };
   }
 
   const limit = DAILY_LIMITS[kind];

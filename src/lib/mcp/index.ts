@@ -4,7 +4,7 @@ import getDueReviews from "./tools/get-due-reviews";
 import listLessons from "./tools/list-lessons";
 import getLeaderboard from "./tools/get-leaderboard";
 
-const projectRef = import.meta.env['VITE_SUPABASE_PROJECT_ID'] ?? "project-ref-unset";
+const projectRef = import.meta.env["VITE_SUPABASE_PROJECT_ID"] ?? "project-ref-unset";
 
 export default defineMcp({
   name: "english-buddy-app",
