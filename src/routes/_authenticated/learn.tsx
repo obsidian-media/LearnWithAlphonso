@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { SegmentedControl } from "../../components/SegmentedControl";
+import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
@@ -28,11 +30,15 @@ function LessonNode({
   index,
   lessonId,
   title,
+  blocked,
+  onBlockedClick,
 }: {
   state: "done" | "active" | "locked";
   index: number;
   lessonId: string;
   title: string;
+  blocked: boolean;
+  onBlockedClick: () => void;
 }) {
   const offset = index % 4;
   const translateX = offset === 0 ? "0" : offset === 1 ? "56px" : offset === 2 ? "0" : "-56px";
@@ -77,6 +83,13 @@ function LessonNode({
     </motion.div>
   );
   if (state === "locked") return <div>{button}</div>;
+  if (blocked) {
+    return (
+      <button type="button" onClick={onBlockedClick} aria-label={`Start ${title} (out of hearts)`}>
+        {button}
+      </button>
+    );
+  }
   return (
     <Link to="/lesson/$id" params={{ id: lessonId }} aria-label={`Start ${title}`}>
       {button}
@@ -94,10 +107,14 @@ function LearnPage() {
   const setCourse = useProgress((s) => s.setCourse);
   const hydrate = useProgress((s) => s.hydrate);
   const setLoading = useProgress((s) => s.setLoading);
+  const hearts = useProgress((s) => s.hearts);
+  const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const saveLevel = useServerFn(setCefrLevel);
   const loadProgress = useServerFn(fetchProgress);
   const placed = !hydrated || Boolean(placementTakenAt);
   const curriculum = getCourse(course).curriculum;
+  const outOfHearts = hydrated && hearts <= 0;
+  const [showHeartsModal, setShowHeartsModal] = useState(false);
 
   function pick(next: Level) {
     setCefrLevelLocal(next);
@@ -253,6 +270,8 @@ function LearnPage() {
                       index={ui * 100 + li}
                       lessonId={lesson.id}
                       title={lesson.title}
+                      blocked={outOfHearts}
+                      onBlockedClick={() => setShowHeartsModal(true)}
                     />
                   );
                 })}
@@ -272,6 +291,11 @@ function LearnPage() {
           );
         })}
       </div>
+      <HeartsModal
+        open={showHeartsModal}
+        refillAt={heartsRefillAt}
+        onClose={() => setShowHeartsModal(false)}
+      />
     </MobileFrame>
   );
 }
