@@ -125,12 +125,37 @@ export const fetchProgress = createServerFn({ method: "GET" })
     };
   });
 
+const lessonIdSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9]+$/, "invalid lesson id");
+
+/**
+ * Issues a signed token proving this user actually opened this lesson,
+ * before they can claim it complete. Called once when the lesson player
+ * mounts; completeLessonRemote below requires and verifies it.
+ */
+export const startLessonSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ lessonId: lessonIdSchema, course: courseSchema }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const found = getCourse(data.course).findLesson(data.lessonId);
+    if (!found) throw new Error("Lesson not found");
+    const { issueLessonSessionToken } = await import("./lesson-session.server");
+    return {
+      token: issueLessonSessionToken({
+        userId: context.userId,
+        lessonId: data.lessonId,
+        course: data.course,
+      }),
+    };
+  });
+
 const completeLessonSchema = z.object({
-  lessonId: z
-    .string()
-    .min(1)
-    .max(100)
-    .regex(/^[a-z0-9]+$/, "invalid lesson id"),
+  lessonId: lessonIdSchema,
   total: z.number().int().min(1).max(50),
   // The question ids (not "<lessonId>:<questionId>" item keys -- just the
   // bare question id) the client says it got wrong, so the server derives
@@ -140,6 +165,9 @@ const completeLessonSchema = z.object({
   // exact lesson rather than an arbitrary number.
   missedQuestionIds: z.array(z.string().regex(/^[a-z0-9]+$/)).max(50),
   course: courseSchema,
+  // Proves startLessonSession was called for this exact user/lesson/course
+  // combination before this claim -- see lesson-session.server.ts.
+  sessionToken: z.string().min(1).max(2000),
 });
 
 export const completeLessonRemote = createServerFn({ method: "POST" })
@@ -147,15 +175,20 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { lessonId, total, missedQuestionIds, course } = data;
+    const { lessonId, total, missedQuestionIds, course, sessionToken } = data;
 
     // Trust boundary: the client reports its own score, so verify the
-    // lesson exists, that `total` matches its real question count, and
-    // that every claimed-missed question id actually belongs to this
-    // lesson (deduped) before paying out XP for it.
+    // lesson exists, that `total` matches its real question count, that
+    // every claimed-missed question id actually belongs to this lesson
+    // (deduped), and that a real lesson session was started, before
+    // paying out XP for it.
     const found = getCourse(course).findLesson(lessonId);
     if (!found || total !== found.lesson.questions.length) {
       throw new Error("Invalid lesson completion payload");
+    }
+    const { verifyLessonSessionToken } = await import("./lesson-session.server");
+    if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
+      throw new Error("Invalid or expired lesson session");
     }
     const realQuestionIds = new Set(found.lesson.questions.map((q) => q.id));
     const missedSet = new Set(missedQuestionIds);
