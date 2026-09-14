@@ -131,8 +131,14 @@ const completeLessonSchema = z.object({
     .min(1)
     .max(100)
     .regex(/^[a-z0-9]+$/, "invalid lesson id"),
-  correct: z.number().int().min(0).max(50),
   total: z.number().int().min(1).max(50),
+  // The question ids (not "<lessonId>:<questionId>" item keys -- just the
+  // bare question id) the client says it got wrong, so the server derives
+  // `correct` from real question membership instead of trusting a raw
+  // count. Doesn't cryptographically prove an answer was checked, but it
+  // does mean a forged claim needs to name real question ids for this
+  // exact lesson rather than an arbitrary number.
+  missedQuestionIds: z.array(z.string().regex(/^[a-z0-9]+$/)).max(50),
   course: courseSchema,
 });
 
@@ -141,16 +147,22 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { lessonId, correct, total, course } = data;
+    const { lessonId, total, missedQuestionIds, course } = data;
 
     // Trust boundary: the client reports its own score, so verify the
-    // lesson exists and that `total` matches its real question count
-    // before paying out XP for it — otherwise a crafted request could
-    // claim a perfect score on a lesson with more questions than it has.
+    // lesson exists, that `total` matches its real question count, and
+    // that every claimed-missed question id actually belongs to this
+    // lesson (deduped) before paying out XP for it.
     const found = getCourse(course).findLesson(lessonId);
     if (!found || total !== found.lesson.questions.length) {
       throw new Error("Invalid lesson completion payload");
     }
+    const realQuestionIds = new Set(found.lesson.questions.map((q) => q.id));
+    const missedSet = new Set(missedQuestionIds);
+    if (missedSet.size > total || [...missedSet].some((id) => !realQuestionIds.has(id))) {
+      throw new Error("Invalid lesson completion payload");
+    }
+    const correct = total - missedSet.size;
 
     const today = todayStr();
     const xpGain = computeXpGain(correct, total);

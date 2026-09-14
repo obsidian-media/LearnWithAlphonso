@@ -109,7 +109,12 @@ function LessonPage() {
     }
     try {
       const res = await completeLessonRemote({
-        data: { lessonId: lesson.id, correct, total, course },
+        data: {
+          lessonId: lesson.id,
+          total,
+          missedQuestionIds: missedQs.map(({ q }) => q.id),
+          course,
+        },
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons
