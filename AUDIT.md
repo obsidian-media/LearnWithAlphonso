@@ -1,5 +1,67 @@
 # English Buddy App — Codebase Audit Report (Refresh)
 
+> **Update (2026-09-14):** a second, independent deep-dive audit ran across
+> four angles in parallel (security, architecture/code-quality,
+> performance/dependencies, accessibility/testing), each re-verifying this
+> document's claims from scratch against current code rather than trusting
+> it, plus a live check of the actual production Supabase project (this
+> repo's `config.toml` had been pointing at the wrong project ref until
+> fixed this session — see below). **Two migrations that had been merged to
+> `main` for a day were never applied to production** (`ai_rate_limits`
+> table, anon-execute revoke on friend RPCs) — both are now applied live.
+> New findings not in the original report below are marked **(2026-09-14)**.
+>
+> **Security: clean bill.** No new exploitable vulnerability found;
+> everything the original report called "fixed" was re-verified as
+> genuinely fixed (rate limiting fires before every AI call, session-token
+> HMAC verification is timing-safe and fails closed, RLS/SECURITY DEFINER
+> grants are correct, no injection/XSS vectors, no leaked secrets).
+>
+> **Real gaps found this pass:**
+> - **(2026-09-14, HIGH)** Auth form (`auth.tsx`) has no `<label>` elements
+>   at all — email/password/display-name rely solely on `placeholder` text.
+>   Fails WCAG 1.3.1/4.1.2.
+> - **(2026-09-14, HIGH)** Locked lesson nodes in `learn.tsx` render as
+>   unlabeled, non-focusable `<div>`s — invisible to screen-reader users,
+>   unlike active/blocked nodes which use `Link`/`button` + `aria-label`.
+> - **(2026-09-14, HIGH)** `SegmentedControl` uses `role="tablist"`/`"tab"`
+>   with no arrow-key navigation — non-conformant to the WCAG APG tab
+>   pattern it claims. The `learn.tsx` course switcher (English/French
+>   toggle) has no ARIA state at all (`aria-pressed`/`aria-selected`
+>   missing).
+> - **(2026-09-14, MEDIUM)** `HeartsModal` has `role="dialog"`/
+>   `aria-modal="true"` but no real focus trap, no focus-on-open, no
+>   return-focus-on-close, no Escape handler.
+> - **(2026-09-14, MEDIUM)** `completeLessonRemote` — the exact function
+>   this document credits with fixing the trust-boundary bug — has **zero**
+>   test coverage, as does `gradeReview` (SM-2 grading) in
+>   `review.functions.ts`. Only the pure helper (`srs.ts`) is tested, not
+>   the server functions that call it.
+> - **(2026-09-14, MEDIUM)** `src/routes/api/{chat,tts,stt}.ts` forward the
+>   raw upstream NVIDIA/Deepgram error body straight to the client on
+>   failure, with inconsistent response shapes across the three routes.
+> - **(2026-09-14, MEDIUM)** Live Supabase performance advisor: **20 RLS
+>   policies across every table** re-evaluate `auth.uid()` per row instead
+>   of once per query (fix: wrap as `(select auth.uid())`) — mechanical,
+>   safe, not yet applied. One FK (`user_achievements.achievement_id`) has
+>   no covering index.
+> - **(2026-09-14, MEDIUM)** `courses.ts` eagerly bundles both full lesson
+>   banks (English ~3,439 lines, French) into one chunk regardless of
+>   active course — no code-splitting by course. `learn.tsx` also runs
+>   unmemoized `O(units × completions)` filtering on every render.
+> - **(2026-09-14, LOW)** `get_leaderboard()` uses a correlated subquery per
+>   pooled user instead of a `JOIN`/`GROUP BY` — fine at today's row counts,
+>   a rewrite candidate before real scale.
+> - **(2026-09-14, LOW)** Duplicated `isNewSupabaseApiKey`/
+>   `createSupabaseFetch` in 3 auto-generated files remains (acceptable —
+>   those files are marked do-not-edit); duplicated `courseSchema`
+>   `z.enum(["en","fr"])` in two files.
+> - Dependencies, images, DB query patterns (no N+1), and TypeScript
+>   strictness all re-verified clean. `bun audit`'s 16 vulnerabilities
+>   (11 high/3 moderate/2 low) are unchanged and confirmed build-tooling-only
+>   (`js-yaml` via eslint, `esbuild` via vite dev server, `browserslist`/
+>   babel) — none reachable from a deployed request path.
+
 **Date:** 2026-09-13
 **Auditor:** Claude Code (full codebase index + manual review, not a doc-only pass)
 **Supersedes:** the 2026-08-31 audit below is stale on several facts (AI provider
