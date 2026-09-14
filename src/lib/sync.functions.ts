@@ -9,6 +9,7 @@ import {
   computeLeaguePromotion,
   computeStreakUpdate,
   computeXpGain,
+  deriveLessonCompletion,
 } from "./progress-math";
 
 /**
@@ -181,21 +182,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // lesson exists, that `total` matches its real question count, that
     // every claimed-missed question id actually belongs to this lesson
     // (deduped), and that a real lesson session was started, before
-    // paying out XP for it.
+    // paying out XP for it. See deriveLessonCompletion for the pure,
+    // unit-tested membership check.
     const found = getCourse(course).findLesson(lessonId);
-    if (!found || total !== found.lesson.questions.length) {
+    if (!found) {
       throw new Error("Invalid lesson completion payload");
     }
     const { verifyLessonSessionToken } = await import("./lesson-session.server");
     if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
       throw new Error("Invalid or expired lesson session");
     }
-    const realQuestionIds = new Set(found.lesson.questions.map((q) => q.id));
-    const missedSet = new Set(missedQuestionIds);
-    if (missedSet.size > total || [...missedSet].some((id) => !realQuestionIds.has(id))) {
-      throw new Error("Invalid lesson completion payload");
-    }
-    const correct = total - missedSet.size;
+    const { correct } = deriveLessonCompletion(found.lesson, total, missedQuestionIds);
 
     const today = todayStr();
     const xpGain = computeXpGain(correct, total);

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { computeReviewGrade } from "./srs";
+import { computeReviewOutcome } from "./srs";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr"]).default("en");
@@ -131,37 +131,40 @@ export const gradeReview = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!row) return { retired: false, dueOn: today() };
 
-    const grade = computeReviewGrade({
-      correct: data.correct,
-      ease: row.ease,
-      intervalDays: row.interval_days,
-      repetitions: row.repetitions,
-      lapses: row.lapses,
-    });
+    const outcome = computeReviewOutcome(
+      {
+        correct: data.correct,
+        ease: row.ease,
+        intervalDays: row.interval_days,
+        repetitions: row.repetitions,
+        lapses: row.lapses,
+      },
+      today(),
+      addDays,
+    );
 
-    if (grade.retired) {
+    if (outcome.retired) {
       await supabase
         .from("review_items")
         .delete()
         .eq("user_id", userId)
         .eq("item_key", data.itemKey)
         .eq("language", course);
-      return { retired: true, dueOn: today() };
+      return { retired: true, dueOn: outcome.dueOn };
     }
 
-    const dueOn = data.correct ? addDays(grade.intervalDays) : today();
     await supabase
       .from("review_items")
       .update({
-        ease: grade.ease,
-        interval_days: grade.intervalDays,
-        repetitions: grade.repetitions,
-        lapses: grade.lapses,
-        due_on: dueOn,
+        ease: outcome.ease,
+        interval_days: outcome.intervalDays,
+        repetitions: outcome.repetitions,
+        lapses: outcome.lapses,
+        due_on: outcome.dueOn,
         last_reviewed_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
       .eq("item_key", data.itemKey)
       .eq("language", course);
-    return { retired: false, dueOn };
+    return { retired: false, dueOn: outcome.dueOn };
   });

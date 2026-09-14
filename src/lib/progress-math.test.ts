@@ -3,6 +3,7 @@ import {
   computeLeaguePromotion,
   computeStreakUpdate,
   computeXpGain,
+  deriveLessonCompletion,
   LEAGUES,
 } from "./progress-math";
 
@@ -111,5 +112,44 @@ describe("computeLeaguePromotion", () => {
       leagueTier: "diamond",
       newIdx: diamondIdx,
     });
+  });
+});
+
+describe("deriveLessonCompletion", () => {
+  const lesson = { questions: [{ id: "q1" }, { id: "q2" }, { id: "q3" }] };
+
+  it("derives correct as total minus the real missed questions", () => {
+    expect(deriveLessonCompletion(lesson, 3, ["q2"])).toEqual({ correct: 2 });
+  });
+
+  it("dedupes repeated missed-question ids before deriving correct", () => {
+    expect(deriveLessonCompletion(lesson, 3, ["q2", "q2", "q2"])).toEqual({ correct: 2 });
+  });
+
+  it("treats zero misses as a perfect score", () => {
+    expect(deriveLessonCompletion(lesson, 3, [])).toEqual({ correct: 3 });
+  });
+
+  it("treats every question missed as a zero score", () => {
+    expect(deriveLessonCompletion(lesson, 3, ["q1", "q2", "q3"])).toEqual({ correct: 0 });
+  });
+
+  it("rejects a total that doesn't match the lesson's real question count", () => {
+    expect(() => deriveLessonCompletion(lesson, 5, [])).toThrow(
+      "Invalid lesson completion payload",
+    );
+  });
+
+  it("rejects a missed-question id that doesn't belong to this lesson", () => {
+    expect(() => deriveLessonCompletion(lesson, 3, ["not-a-real-question"])).toThrow(
+      "Invalid lesson completion payload",
+    );
+  });
+
+  it("rejects more distinct missed ids than the lesson has questions", () => {
+    const tiny = { questions: [{ id: "q1" }] };
+    expect(() => deriveLessonCompletion(tiny, 1, ["q1", "not-a-real-question"])).toThrow(
+      "Invalid lesson completion payload",
+    );
   });
 });

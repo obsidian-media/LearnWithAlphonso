@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { getScenario } from "../../data/scenarios";
 import { authHeaders } from "../../lib/auth-headers";
+import { readApiError } from "../../lib/read-api-error";
 
 export const Route = createFileRoute("/_authenticated/converse/$scenarioId")({
   component: ConverseChatPage,
@@ -104,7 +105,7 @@ function ConverseChatPage() {
           }),
         });
         if (!resp.ok) {
-          const t = await resp.text().catch(() => "");
+          const t = await readApiError(resp);
           throw new Error(
             resp.status === 429
               ? t || "Daily limit reached — try again tomorrow."
@@ -160,7 +161,7 @@ function ConverseChatPage() {
             headers: await authHeaders(),
             body: fd,
           });
-          if (!resp.ok) throw new Error(await resp.text().catch(() => "Transcription failed"));
+          if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
           const data = (await resp.json()) as { text?: string };
           const text = (data.text ?? "").trim();
           if (!text) {

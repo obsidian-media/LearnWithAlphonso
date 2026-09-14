@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeReviewGrade } from "./srs";
+import { computeReviewGrade, computeReviewOutcome } from "./srs";
 
 describe("computeReviewGrade", () => {
   it("resets interval and repetitions on a wrong answer, and records a lapse", () => {
@@ -101,5 +101,50 @@ describe("computeReviewGrade", () => {
     });
     // repetitions becomes 3, interval_days input is 0 -> round(0 * ease) || 6
     expect(result.intervalDays).toBe(6);
+  });
+});
+
+describe("computeReviewOutcome", () => {
+  const today = "2026-09-14";
+  const addDays = (days: number) => `2026-09-${String(14 + days).padStart(2, "0")}`;
+
+  it("schedules a correct-but-not-yet-retired answer using the grown interval", () => {
+    const outcome = computeReviewOutcome(
+      { correct: true, ease: 2.3, intervalDays: 0, repetitions: 0, lapses: 0 },
+      today,
+      addDays,
+    );
+    expect(outcome).toEqual({
+      retired: false,
+      dueOn: "2026-09-15",
+      ease: expect.closeTo(2.45),
+      intervalDays: 1,
+      repetitions: 1,
+      lapses: 0,
+    });
+  });
+
+  it("reschedules a wrong answer for today, not a future date", () => {
+    const outcome = computeReviewOutcome(
+      { correct: false, ease: 2.3, intervalDays: 6, repetitions: 2, lapses: 1 },
+      today,
+      addDays,
+    );
+    expect(outcome.retired).toBe(false);
+    if (!outcome.retired) {
+      expect(outcome.dueOn).toBe(today);
+      expect(outcome.repetitions).toBe(0);
+    }
+  });
+
+  it("retires the item and sets dueOn to today, ignoring addDays", () => {
+    const outcome = computeReviewOutcome(
+      { correct: true, ease: 2.75, intervalDays: 8, repetitions: 3, lapses: 0 },
+      today,
+      () => {
+        throw new Error("addDays should not be called for a retired item");
+      },
+    );
+    expect(outcome).toEqual({ retired: true, dueOn: today });
   });
 });

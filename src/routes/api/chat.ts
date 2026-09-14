@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { upstreamErrorResponse } from "@/lib/api-response.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -7,18 +8,19 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const key = process.env.NVIDIA_API_KEY;
-        if (!key) return new Response("Missing NVIDIA_API_KEY", { status: 500 });
+        if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "chat");
-        if (!quota.ok) return new Response(quota.message, { status: quota.status });
+        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
         let body: { messages?: ChatMessage[]; systemPrompt?: string };
         try {
           body = await request.json();
         } catch {
-          return new Response("Invalid JSON", { status: 400 });
+          return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
         const messages = Array.isArray(body.messages) ? body.messages : [];
-        if (messages.length === 0) return new Response("messages required", { status: 400 });
+        if (messages.length === 0)
+          return Response.json({ error: "messages required" }, { status: 400 });
         const finalMessages: ChatMessage[] = body.systemPrompt
           ? [{ role: "system", content: body.systemPrompt }, ...messages]
           : messages;
@@ -44,7 +46,7 @@ export const Route = createFileRoute("/api/chat")({
         });
         if (!resp.ok) {
           const text = await resp.text().catch(() => "");
-          return new Response(text || "Chat failed", { status: resp.status });
+          return upstreamErrorResponse("NVIDIA", resp.status, text);
         }
         const data = (await resp.json()) as {
           choices?: { message?: { content?: string } }[];

@@ -18,6 +18,7 @@
 > grants are correct, no injection/XSS vectors, no leaked secrets).
 >
 > **Real gaps found this pass:**
+>
 > - **(2026-09-14, HIGH)** Auth form (`auth.tsx`) has no `<label>` elements
 >   at all — email/password/display-name rely solely on `placeholder` text.
 >   Fails WCAG 1.3.1/4.1.2.

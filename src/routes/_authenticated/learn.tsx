@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { SegmentedControl } from "../../components/SegmentedControl";
@@ -83,7 +83,12 @@ function LessonNode({
       )}
     </motion.div>
   );
-  if (state === "locked") return <div>{button}</div>;
+  if (state === "locked")
+    return (
+      <div role="img" aria-label={`${title} (locked)`}>
+        {button}
+      </div>
+    );
   if (blocked) {
     return (
       <button type="button" onClick={onBlockedClick} aria-label={`Start ${title} (out of hearts)`}>
@@ -149,12 +154,26 @@ function LearnPage() {
     }
   }
 
-  const units = curriculum.filter((u) => u.level === level);
-  const levelLessons = units.flatMap((u) => u.lessons);
-  const levelDone = hydrated ? levelLessons.filter((l) => completed.includes(l.id)).length : 0;
+  const completedSet = useMemo(() => new Set(completed), [completed]);
+  const units = useMemo(() => curriculum.filter((u) => u.level === level), [curriculum, level]);
+  const levelLessons = useMemo(() => units.flatMap((u) => u.lessons), [units]);
+  const levelDone = hydrated ? levelLessons.filter((l) => completedSet.has(l.id)).length : 0;
   const pct = levelLessons.length ? Math.round((levelDone / levelLessons.length) * 100) : 0;
   const meta = LEVELS.find((l) => l.id === level)!;
-  const firstUndone = levelLessons.find((l) => !completed.includes(l.id));
+  const firstUndone = levelLessons.find((l) => !completedSet.has(l.id));
+  const levelCompletion = useMemo(() => {
+    const map = new Map<Level, boolean>();
+    for (const l of LEVELS) {
+      map.set(
+        l.id,
+        curriculum
+          .filter((u) => u.level === l.id)
+          .flatMap((u) => u.lessons)
+          .every((ls) => completedSet.has(ls.id)),
+      );
+    }
+    return map;
+  }, [curriculum, completedSet]);
 
   return (
     <MobileFrame>
@@ -164,6 +183,7 @@ function LearnPage() {
             <button
               key={c.id}
               type="button"
+              aria-pressed={c.id === course}
               onClick={() => void switchCourse(c.id)}
               className={`flex-1 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
                 c.id === course
@@ -228,12 +248,7 @@ function LearnPage() {
             value={level}
             onChange={pick}
             options={LEVELS.map((l) => {
-              const done = hydrated
-                ? curriculum
-                    .filter((u) => u.level === l.id)
-                    .flatMap((u) => u.lessons)
-                    .every((ls) => completed.includes(ls.id))
-                : false;
+              const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
               return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
             })}
           />
@@ -258,7 +273,7 @@ function LearnPage() {
         </div>
 
         {units.map((unit, ui) => {
-          const allDone = hydrated && unit.lessons.every((l) => completed.includes(l.id));
+          const allDone = hydrated && unit.lessons.every((l) => completedSet.has(l.id));
           return (
             <section key={unit.id} className="mb-14 last:mb-4">
               <header className="mb-8 flex items-end justify-between">
@@ -274,13 +289,13 @@ function LearnPage() {
                   </p>
                 </div>
                 <div className="tnum shrink-0 rounded-full border border-hairline bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                  {hydrated ? unit.lessons.filter((l) => completed.includes(l.id)).length : 0}/
+                  {hydrated ? unit.lessons.filter((l) => completedSet.has(l.id)).length : 0}/
                   {unit.lessons.length}
                 </div>
               </header>
               <div className="relative flex flex-col items-center gap-7">
                 {unit.lessons.map((lesson, li) => {
-                  const isDone = hydrated && completed.includes(lesson.id);
+                  const isDone = hydrated && completedSet.has(lesson.id);
                   const isActive = hydrated && !isDone && firstUndone?.id === lesson.id;
                   const state = isDone
                     ? "done"

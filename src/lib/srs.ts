@@ -56,3 +56,37 @@ export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
     repetitions === 1 ? 1 : repetitions === 2 ? 3 : Math.round(input.intervalDays * ease) || 6;
   return { retired: false, ease, repetitions, intervalDays, lapses: input.lapses };
 }
+
+export type ReviewOutcome =
+  | { retired: true; dueOn: string }
+  | {
+      retired: false;
+      dueOn: string;
+      ease: number;
+      intervalDays: number;
+      repetitions: number;
+      lapses: number;
+    };
+
+/**
+ * gradeReview's full decision (grade + due-date), extracted so the branch
+ * between "retire" and "reschedule" is testable without a database. `today`
+ * and `addDays` are injected rather than read from Date.now() directly.
+ */
+export function computeReviewOutcome(
+  input: ReviewGradeInput,
+  today: string,
+  addDays: (days: number) => string,
+): ReviewOutcome {
+  const grade = computeReviewGrade(input);
+  if (grade.retired) return { retired: true, dueOn: today };
+  const dueOn = input.correct ? addDays(grade.intervalDays) : today;
+  return {
+    retired: false,
+    dueOn,
+    ease: grade.ease,
+    intervalDays: grade.intervalDays,
+    repetitions: grade.repetitions,
+    lapses: grade.lapses,
+  };
+}

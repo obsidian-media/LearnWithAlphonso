@@ -170,33 +170,53 @@ function AuthPage() {
 
           <form onSubmit={submit} className="space-y-3">
             {mode === "signup" && (
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Display name"
-                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
-                maxLength={40}
-              />
+              <div>
+                <label htmlFor="auth-display-name" className="sr-only">
+                  Display name
+                </label>
+                <input
+                  id="auth-display-name"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Display name"
+                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
+                  maxLength={40}
+                />
+              </div>
             )}
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
-            />
-            {mode !== "forgot" && (
+            <div>
+              <label htmlFor="auth-email" className="sr-only">
+                Email
+              </label>
               <input
-                type="password"
+                id="auth-email"
+                type="email"
                 required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
                 className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
               />
+            </div>
+            {mode !== "forgot" && (
+              <div>
+                <label htmlFor="auth-password" className="sr-only">
+                  Password
+                </label>
+                <input
+                  id="auth-password"
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
+                />
+              </div>
             )}
             {error && (
               <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>

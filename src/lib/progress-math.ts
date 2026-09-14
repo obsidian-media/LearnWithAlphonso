@@ -73,3 +73,26 @@ export function computeLeaguePromotion(
   }
   return { leagueTier: LEAGUES[newIdx], newIdx };
 }
+
+/**
+ * The trust-boundary check for completeLessonRemote, extracted so it's
+ * testable without a database: `total` must match the lesson's real
+ * question count, and every claimed-missed question id must actually
+ * belong to this lesson. `correct` is derived, never trusted directly.
+ * Throws on any mismatch -- the caller should let that reject the request.
+ */
+export function deriveLessonCompletion(
+  lesson: { questions: { id: string }[] },
+  total: number,
+  missedQuestionIds: string[],
+): { correct: number } {
+  if (total !== lesson.questions.length) {
+    throw new Error("Invalid lesson completion payload");
+  }
+  const realQuestionIds = new Set(lesson.questions.map((q) => q.id));
+  const missedSet = new Set(missedQuestionIds);
+  if (missedSet.size > total || [...missedSet].some((id) => !realQuestionIds.has(id))) {
+    throw new Error("Invalid lesson completion payload");
+  }
+  return { correct: total - missedSet.size };
+}
