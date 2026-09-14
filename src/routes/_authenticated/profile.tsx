@@ -119,19 +119,27 @@ function ProfilePage() {
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
         <div className="mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4">
-          <label className="block text-[11px] uppercase tracking-wider text-ink-soft">
+          <label
+            htmlFor="profile-display-name"
+            className="block text-[11px] uppercase tracking-wider text-ink-soft"
+          >
             Display name
           </label>
           <input
+            id="profile-display-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
             className="w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
           />
-          <label className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft">
+          <label
+            htmlFor="profile-country"
+            className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft"
+          >
             Country (ISO code, e.g. US, GB)
           </label>
           <input
+            id="profile-country"
             value={country}
             onChange={(e) => setCountry(e.target.value.toUpperCase())}
             maxLength={2}
