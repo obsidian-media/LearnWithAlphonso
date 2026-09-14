@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 
 export type QuotaKind = "chat" | "stt" | "tts";
 
@@ -42,12 +43,7 @@ export async function consumeQuota(request: Request, kind: QuotaKind): Promise<Q
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers: { Authorization: `Bearer ${token}` },
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        headers.set("apikey", key);
-        headers.set("Authorization", `Bearer ${token}`);
-        return fetch(input, { ...init, headers });
-      },
+      fetch: createSupabaseFetch(key),
     },
   });
 
