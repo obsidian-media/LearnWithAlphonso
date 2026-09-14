@@ -361,6 +361,23 @@ export type Database = {
           per_minute_limit: number;
         }[];
       };
+      accept_friend_invite: {
+        Args: { _inviter_id: string };
+        Returns: {
+          ok: boolean;
+          message: string;
+        }[];
+      };
+      get_friends_progress: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          user_id: string;
+          display_name: string;
+          avatar_seed: string;
+          streak: number;
+          week_xp: number;
+        }[];
+      };
       get_leaderboard: {
         Args: { _period: string; _scope: string };
         Returns: {

@@ -16,25 +16,12 @@ const schema = z.object({
   period: z.enum(["weekly", "all-time"]),
 });
 
-type Row = {
-  user_id: string;
-  display_name: string | null;
-  country: string | null;
-  avatar_seed: string | null;
-  xp: number | null;
-};
-
 export const getLeaderboard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => schema.parse(d))
   .handler(async ({ data, context }): Promise<LeaderboardEntry[]> => {
     const { supabase, userId } = context;
-    const rpc = supabase.rpc as unknown as (
-      fn: string,
-      args: Record<string, string>,
-    ) => Promise<{ data: Row[] | null; error: unknown }>;
-
-    const { data: rows } = await rpc("get_leaderboard", {
+    const { data: rows } = await supabase.rpc("get_leaderboard", {
       _scope: data.scope,
       _period: data.period,
     });
