@@ -29,9 +29,21 @@ export const recordMisses = createServerFn({ method: "POST" })
   .inputValidator((d: { lessonId: string; level: string; itemKeys: string[]; course?: string }) =>
     z
       .object({
-        lessonId: z.string().min(1).max(80),
+        lessonId: z
+          .string()
+          .min(1)
+          .max(80)
+          .regex(/^[a-z0-9]+$/, "invalid lesson id"),
         level: z.string().min(2).max(4),
-        itemKeys: z.array(z.string().min(1).max(120)).max(40),
+        itemKeys: z
+          .array(
+            z
+              .string()
+              .min(1)
+              .max(120)
+              .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
+          )
+          .max(40),
         course: courseSchema,
       })
       .parse(d),
@@ -96,7 +108,15 @@ export const gradeReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { itemKey: string; correct: boolean; course?: string }) =>
     z
-      .object({ itemKey: z.string().min(1).max(120), correct: z.boolean(), course: courseSchema })
+      .object({
+        itemKey: z
+          .string()
+          .min(1)
+          .max(120)
+          .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
+        correct: z.boolean(),
+        course: courseSchema,
+      })
       .parse(d),
   )
   .handler(async ({ data, context }) => {

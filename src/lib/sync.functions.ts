@@ -126,7 +126,11 @@ export const fetchProgress = createServerFn({ method: "GET" })
   });
 
 const completeLessonSchema = z.object({
-  lessonId: z.string().min(1).max(100),
+  lessonId: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9]+$/, "invalid lesson id"),
   correct: z.number().int().min(0).max(50),
   total: z.number().int().min(1).max(50),
   course: courseSchema,
@@ -346,7 +350,15 @@ const mergeSchema = z.object({
   xp: z.number().int().min(0).max(1_000_000).default(0),
   streak: z.number().int().min(0).max(10_000).default(0),
   longestStreak: z.number().int().min(0).max(10_000).default(0),
-  completedLessons: z.array(z.string().max(100)).max(500).default([]),
+  completedLessons: z
+    .array(
+      z
+        .string()
+        .max(100)
+        .regex(/^[a-z0-9]+$/),
+    )
+    .max(500)
+    .default([]),
   answersByLesson: z
     .record(z.string(), z.object({ correct: z.number().int(), total: z.number().int() }))
     .default({}),
