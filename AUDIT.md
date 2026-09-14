@@ -170,14 +170,21 @@ section for the authoritative counts.
 - **Content integrity (English + French): no structural corruption** — 0
   malformed answer options, 0 answers pointing outside their own
   choices/bank, across all 3,343 questions in both courses.
-- **Content quality (English only): heavy template reuse.** 73 instances of
-  the exact same question prompt appearing twice within the same lesson,
-  and 8 distinct prompts (e.g. `"This animal is a… ___"`, `"Point to
-your… ___"`) each repeated 12-13 times across the whole course — a
-  templated vocab-drill generator reusing the same sentence frame for many
-  different words. Not a bug, but confirms the earlier "generic templated
-  questions, no teaching, only testing" content note. French did not show
-  this pattern (0 same-lesson duplicates, 0 prompts repeated >5x).
+- **Content quality (English only): was a real bug, not just repetition —
+  fixed.** The "73 same-lesson duplicate prompts / 8 prompts repeated
+  12-13x" finding traced back to 4 of 35 "pair"-kind packs in
+  `lesson-bank.ts` (Animals, Shapes & Sizes, Parts of the Body, Hobbies)
+  whose fixed prompt string had no `%s` placeholder, so the generator's
+  `.replace("%s", clue)` silently no-op'd — every question in those packs
+  showed the exact same generic prompt (`"This animal is a… ___"`) with
+  the actual distinguishing clue never appearing anywhere except in the
+  post-answer explanation. That's not cosmetic repetition, it's a
+  functionally-unanswerable-except-by-guessing question. Fixed to
+  interpolate the clue like the other 30 packs already did; same-lesson
+  duplicates dropped 73 → 13 (the remainder are legitimate themed
+  collocation-drill packs sharing a prompt on purpose), and course-wide
+  repeats dropped 8 → 0. French's `lesson-bank-fr.ts` was already fully
+  correct (all 12 packs template properly).
 
 ### 3.1 Recommendations
 
@@ -346,8 +353,10 @@ Open product/content decisions, not made unilaterally:
 
 8. Decide whether to label French "in progress" in the course-switcher UI,
    or prioritize closing the content-depth gap with English (§3).
-9. Diversify template-prompt variety in the English lesson bank if
-   pedagogical repetition matters (§3, 73 same-lesson duplicate prompts).
+9. ~~Diversify template-prompt variety in the English lesson bank~~ — turned
+   out to be a real bug (4 packs missing `%s` clue interpolation, making
+   those questions guessable-only), not a diversity nice-to-have. Fixed
+   (§3).
 10. Decide whether `@lovable.dev/mcp-js`'s MCP surface (`/mcp`) is an
     intentional, supported feature or leftover scaffolding — shapes
     whether it gets documented/promoted or trimmed.
