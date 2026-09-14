@@ -133,17 +133,17 @@ Extras:     An MCP server (src/lib/mcp) exposing get_my_progress,
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | **RESOLVED** | ~~`generatedUnits()` never called~~                                                                                                                                          | Now called from `curriculum.ts:259` (and the French equivalent from `curriculum-fr.ts`) — the bank is live.                                 |
 | **RESOLVED** | ~~No spaced repetition system~~                                                                                                                                              | `review_items` table + SM-2-style grading in `review.functions.ts`, surfaced at `/review`, wired into lesson completion via `recordMisses`. |
-| **MEDIUM**   | Duplicate Supabase client bootstrap code across 4 files                                                                                                                      | See §1.2                                                                                                                                    |
-| **MEDIUM**   | `recharts`, `cmdk`, `vaul`, `embla-carousel-react` still in `package.json` with zero usage outside their own unused `src/components/ui/*` wrapper files (confirmed via grep) | Bundle bloat, no functional benefit                                                                                                         |
-| **LOW**      | `useStreakFreeze` server function has no UI trigger (button) anywhere in the routes                                                                                          | `src/lib/sync.functions.ts`                                                                                                                 |
-| **LOW**      | Hearts decrement and set a refill timer, but no blocking "out of hearts" screen exists                                                                                       | UX/architecture overlap, see §7                                                                                                             |
+| **RESOLVED** | ~~Duplicate Supabase client bootstrap code across 4 files~~                                                                                                                  | Consolidated the one safe-to-edit copy (`ai-quota.server.ts`) into `src/integrations/supabase/fetch.ts`; the other 3 are auto-generated files left alone on purpose, see that file's comment. |
+| **RESOLVED** | ~~`recharts`, `cmdk`, `vaul`, `embla-carousel-react` unused~~                                                                                                                | Removed, along with discovering the entire `src/components/ui/` directory (42 files) was *also* unused — zero imports outside itself. Gone too, plus every dependency that only existed for it. |
+| **CORRECTED**| ~~`useStreakFreeze` server function has no UI trigger~~ — turned out not to be "missing UI," it's a design gap: the function only decrements `streak_freezes` and does nothing else. `completeLessonRemote`'s own streak math already auto-consumes a freeze on a 2-day gap independent of whether this was ever called, so a button calling it would let users burn a freeze for zero benefit. Not wired up; needs a product decision on intended semantics first. | `src/lib/sync.functions.ts` |
+| **RESOLVED** | ~~Hearts decrement and set a refill timer, but no blocking "out of hearts" screen exists~~                                                                                   | `HeartsModal` + `useCountdown`, wired into `learn.tsx`'s lesson nodes. |
 | **INFO**     | File-based routing via TanStack Router remains clean; the en/fr course abstraction (`getCourse`) is a good pattern for adding more languages later.                          |                                                                                                                                             |
 
 ### 2.3 Recommendations
 
-1. Remove the four confirmed-unused dependencies and their wrapper components.
-2. Add the hearts-blocking modal and a streak-freeze trigger (both server-side logic already exists, only UI is missing).
-3. Consider whether `review_items`/SRS integration should also feed the `/learn` due-count badge (verify current wiring before assuming it's complete).
+1. ~~Remove the four confirmed-unused dependencies and their wrapper components~~ — done, and expanded once the whole `ui/` directory turned out to be dead too.
+2. ~~Add the hearts-blocking modal~~ — done. The streak-freeze trigger was deliberately *not* added — see the CORRECTED row above.
+3. ~~Consider whether `review_items`/SRS integration should also feed the `/learn` due-count badge~~ — verified `recordMisses` wiring is correct and added the badge.
 
 ---
 
@@ -250,7 +250,8 @@ Remove the four dependencies and their dead wrapper components; re-measure bundl
 Largely unchanged from the prior audit except:
 
 - **RESOLVED**: friend add/search UI now exists (`profile.friends.tsx`, `invite.$inviterId.tsx`) backed by the `accept_friend_invite` RPC.
-- Hearts-blocking UI and streak-freeze UI trigger are still missing (server logic complete, no UI — same finding as before, re-verified).
+- **RESOLVED**: hearts-blocking UI now exists (`HeartsModal`).
+- Streak-freeze UI trigger deliberately not added — see §2.2's CORRECTED row: `useStreakFreeze` doesn't currently do anything beneficial to wire a button to.
 
 ---
 
@@ -293,16 +294,27 @@ mostly cosmetic issues: 3 `no-explicit-any`, a missing `useEffect` dep, some
 
 ### Next up
 
-1. Add CI (lint + typecheck on PRs) — cheapest structural fix with the highest leverage.
-2. Add rate limiting to the three AI API routes.
-3. Reuse `SegmentedControl` for the `learn.tsx` level switcher; add skip link + `<main>` landmark.
-4. Remove `recharts`/`cmdk`/`vaul`/`embla-carousel-react` and their dead wrapper components.
-5. Stand up Vitest for SRS/XP/streak/achievement logic.
-6. Update `AGENTS.md`'s AI-provider description to match `.env.example`.
-7. Verify (don't assume) the `/learn` due-review badge and `recordMisses` integration are fully wired.
-8. Scope per-question answer submission if leaderboard/league score integrity matters (closes the remaining, smaller trust-boundary gap noted in §1.4).
-9. Hand-count actual lesson/question totals per CEFR level; don't rely on the aspirational "300 lessons" figure in `AGENTS.md`.
-10. Add the hearts-blocking modal and streak-freeze UI trigger.
+**Update (2026-09-13, later the same day): all 10 items below are done.**
+See the individual git commits from this session for what changed in each.
+
+1. ~~Add CI (lint + typecheck on PRs)~~ — done, plus a `test` step once Vitest landed (#5).
+2. ~~Add rate limiting to the three AI API routes~~ — done (`ai_rate_limits` table + RPC).
+3. ~~Reuse `SegmentedControl` for the `learn.tsx` level switcher; add skip link + `<main>` landmark~~ — done, plus `aria-live` feedback and `MotionConfig reducedMotion="user"`.
+4. ~~Remove `recharts`/`cmdk`/`vaul`/`embla-carousel-react` and their dead wrapper components~~ — done, expanded to the entire `ui/` directory once it turned out to be fully unused (see §2.2).
+5. ~~Stand up Vitest for SRS/XP/streak/achievement logic~~ — done (`src/lib/srs.ts`, `src/lib/progress-math.ts`, 24+ tests).
+6. ~~Update `AGENTS.md`'s AI-provider description to match `.env.example`~~ — done.
+7. ~~Verify the `/learn` due-review badge and `recordMisses` integration are fully wired~~ — verified `recordMisses` was already correct; the due-count badge was missing and is now added.
+8. ~~Scope per-question answer submission if leaderboard/league score integrity matters~~ — done: `completeLessonRemote` now derives `correct` from claimed-missed question ids instead of trusting a raw number.
+9. ~~Hand-count actual lesson/question totals per CEFR level~~ — done (English 534, French 125 — see §3).
+10. ~~Add the hearts-blocking modal and streak-freeze UI trigger~~ — hearts modal done; streak-freeze trigger deliberately withheld, see §2.2's CORRECTED row.
+
+### Still open, discovered along the way
+
+1. Decide `useStreakFreeze`'s intended semantics (§2.2) — right now calling it has no benefit, so no UI was built on top of it.
+2. Decide whether to label French "in progress" in the course-switcher UI, or prioritize closing the content-depth gap with English (§3).
+3. Diversify template-prompt variety in the English lesson bank if pedagogical repetition matters (§3, 73 same-lesson duplicate prompts).
+4. Add Playwright E2E coverage and a jsdom-based test setup (`@testing-library/react`) — neither exists yet; a hearts-modal countdown hook test was skipped this session for exactly this reason.
+5. Add a static accessibility lint pass (e.g. `eslint-plugin-jsx-a11y`) now that the worst gaps are closed, to prevent regressions — real axe-core needs a running, authenticated app this environment can't reach.
 
 ---
 
