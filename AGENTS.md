@@ -10,7 +10,7 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | ------------------------------------------ | --------------------------------------------------------------- |
 | `src/data/curriculum.ts`                   | Lesson content types + foundation units (A1)                    |
 | `src/data/levels.ts`                       | Level definitions + advanced units (A2-C1)                      |
-| `src/data/lesson-bank.ts`                  | Generated lesson packs (SM-2 compatible, 150 potential lessons) |
+| `src/data/lesson-bank.ts`                  | Generated lesson packs (see Content Structure below for actual counts) |
 | `src/lib/progress.ts`                      | Zustand progress store (client-side state)                      |
 | `src/lib/sync.functions.ts`                | Server functions (progress sync, lesson completion, SRS)        |
 | `src/routes/_authenticated/learn.tsx`      | Learning path UI (units, lessons, progress)                     |
@@ -48,19 +48,32 @@ AUDIT.md's action plan).
 
 ## Testing
 
-Vitest covers the pure logic (SRS grading, XP/streak/league math) in
-`src/lib/*.test.ts`; no component or E2E tests exist yet (no Playwright).
-Both lint and tests are wired into CI (`.github/workflows/ci.yml`) on every
-PR and push to `main`:
+Vitest covers the pure logic (SRS grading, XP/streak/league math, lesson-
+completion trust-boundary checks) in `src/lib/*.test.ts`; Playwright covers
+E2E + accessibility (axe-core) smoke tests in `e2e/*.spec.ts`, scoped to
+unauthenticated routes (no seeded test account exists for CI to sign in
+with). Lint, typecheck, Vitest, and Playwright are all wired into CI
+(`.github/workflows/ci.yml`) on every PR and push to `main`:
 
 ```sh
-npm run lint        # ESLint
-npm run test        # Vitest (src/lib/*.test.ts)
+bun run lint         # ESLint
+bunx tsc --noEmit    # TypeScript
+bun run test         # Vitest (src/lib/*.test.ts)
+bun run test:e2e     # Playwright (e2e/*.spec.ts)
 ```
 
 ## Assets
 
 See `LESSON_ASSETS.md` for the complete list of assets needed for all 300 lessons (audio, images, icons, animations).
+
+## Deployment
+
+`LESSON_SESSION_SECRET` (server-only, see `src/lib/lesson-session.server.ts`)
+and `ai_rate_limits`/`ai_usage` quota tables must exist in the linked
+Supabase project *and* `LESSON_SESSION_SECRET` must be set in the
+deployment host's env vars, or lesson completion fails closed for every
+user. See `.env.example` for the full required-env list and `AUDIT.md` for
+what's currently verified live in production vs. still pending.
 
 ## Audit
 

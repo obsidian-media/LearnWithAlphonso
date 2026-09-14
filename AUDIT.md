@@ -388,13 +388,22 @@ See the individual git commits from this session for what changed in each.
 Genuinely blocked in this environment (missing credentials/access, or
 needs your explicit sign-off before an agent should do it unprompted):
 
-1. **Apply the pending Supabase migrations to the real linked project**
-   (`project_id = "bsymmgscbvvlkcwhfmqy"` in `supabase/config.toml`) — no
-   CI/deploy step runs `supabase db push`, so every migration in this repo
-   is just a file until someone applies it by hand. **This blocks more than
-   before**: on top of `ai_rate_limits`, the AI routes will now also 500
-   without `LESSON_SESSION_SECRET` set in the deployment environment (see
-   §1.4 #1). Neither is optional before this ships.
+1. ~~Apply the pending Supabase migrations to the real linked project~~ —
+   **RESOLVED 2026-09-14.** `config.toml` had a stale/wrong project ref
+   (`bsymmgscbvvlkcwhfmqy`); the real linked project is
+   `qhcjpfbxfcltjbiuknyt` (found by name via the Supabase API, not the
+   file). Fixed the ref, and applied the two migrations that had been
+   sitting unapplied for a day (`ai_rate_limits` table,
+   `revoke_public_on_friend_functions`) directly to production. **Also
+   resolved the same session:** `LESSON_SESSION_SECRET` was confirmed
+   missing from the Vercel project's env vars (verified via the Vercel
+   API) — meaning every lesson completion was silently 500ing in
+   production despite CI being green. Generated a secret, added it to
+   Vercel (production/preview/development), and triggered + verified a
+   fresh production deployment (`dpl_F6A3vbC42Yk53n1QpgDvVim2fV1S`,
+   aliased to `english-buddy-app-33.vercel.app`) with it in place. No
+   runtime errors observed in the following 2 hours via Vercel's error/log
+   API. Neither gap is open anymore.
 2. **Verify the `e2e` CI job actually goes green on its first real run** —
    couldn't be locally verified; this Windows sandbox's `bun run dev` never
    reached Vite's own startup logging across three attempts. Requires
