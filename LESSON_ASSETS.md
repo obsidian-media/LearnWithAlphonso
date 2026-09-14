@@ -1,6 +1,32 @@
 # English Buddy App — Complete Lesson Asset List
 
-This file lists ALL assets needed for the expanded 300-lesson curriculum (60 lessons × 5 CEFR levels). Generate these assets and provide file paths for integration.
+> **Status (2026-09-13):** this file's premise — a uniform 300-lesson
+> curriculum (60/level) — is stale. Actual counts, hand-counted from the
+> real curriculum bundles: **English 534 lessons across uneven per-level
+> counts (122/104/104/102/102), French 125 lessons (25/level)**. See
+> `AGENTS.md`'s Content Structure table for the authoritative numbers.
+>
+> **The IMAGE ASSETS section below (§2) is superseded.** It describes a
+> planned category-based approach (`public/images/a1/greetings/`, stock
+> photos per topic) that was never built. What's actually implemented is
+> a completely different, working pipeline: `scripts/fetch-vocab-images.ts`
+> fetches a real image **per vocabulary term** (not per category) from
+> Pexels/Pixabay, and the results live in `src/data/vocab-images.ts`
+> (thousands of real URLs already in the codebase). Treat §2 as
+> historical context for the original plan, not a live checklist.
+>
+> **Audio (§1), Animations (§3), Icons (§4), Textures (§5), and Sound FX
+> (§6) all remain aspirational** — none of these have been built as of
+> this writing (no `public/audio/`, `public/animations/`, or per-topic
+> icon files exist in the repo; the app's only audio is live Deepgram TTS
+> for conversation practice, not pre-generated pronunciation files). The
+> detailed per-lesson word lists below were written against the original
+> 60-lessons-per-level plan and have **not** been reconciled against the
+> real generated lesson content (`src/data/lesson-bank.ts`) — treat them
+> as illustrative of the intended format, not a verified list of what
+> today's actual lessons need.
+
+This file lists ALL assets needed for the expanded lesson curriculum. Generate these assets and provide file paths for integration.
 
 ---
 
