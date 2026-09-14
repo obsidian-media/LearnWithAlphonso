@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { SegmentedControl } from "../../components/SegmentedControl";
@@ -10,6 +10,7 @@ import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useServerFn } from "@tanstack/react-start";
 import { setCefrLevel, fetchProgress } from "../../lib/sync.functions";
+import { fetchDueReviews } from "../../lib/review.functions";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -111,10 +112,25 @@ function LearnPage() {
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const saveLevel = useServerFn(setCefrLevel);
   const loadProgress = useServerFn(fetchProgress);
+  const loadDueReviews = useServerFn(fetchDueReviews);
   const placed = !hydrated || Boolean(placementTakenAt);
   const curriculum = getCourse(course).curriculum;
   const outOfHearts = hydrated && hearts <= 0;
   const [showHeartsModal, setShowHeartsModal] = useState(false);
+  const [dueCount, setDueCount] = useState(0);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let alive = true;
+    void loadDueReviews({ data: { course } })
+      .then((res) => {
+        if (alive) setDueCount(res.due.length);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [hydrated, course, loadDueReviews]);
 
   function pick(next: Level) {
     setCefrLevelLocal(next);
@@ -186,8 +202,18 @@ function LearnPage() {
           className="mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
         >
           <span>
-            <span className="block font-display text-base font-semibold text-ink">
-              Review missed items
+            <span className="flex items-center gap-2">
+              <span className="block font-display text-base font-semibold text-ink">
+                Review missed items
+              </span>
+              {dueCount > 0 && (
+                <span
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-surface"
+                  aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
+                >
+                  {dueCount}
+                </span>
+              )}
             </span>
             <span className="block text-xs text-ink-soft/80">
               Spaced repetition brings back what you got wrong.
