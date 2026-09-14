@@ -414,7 +414,7 @@ delivers babies|midwife`,
     title: "Animals",
     subtitle: "Pets and wild animals",
     kind: "pair",
-    prompt: "This animal is a…",
+    prompt: 'An animal that "%s" is a…',
     note: "Common animals, from pets to farm and wild species.",
     data: `barks and wags its tail|dog
 says meow|cat
@@ -479,7 +479,7 @@ The day after Thursday is ___.|Friday`,
     title: "Shapes & Sizes",
     subtitle: "Describing objects",
     kind: "pair",
-    prompt: "This shape or size word is…",
+    prompt: 'Something that "%s" is…',
     note: "Basic shapes and size adjectives.",
     data: `has three sides|triangle
 has four equal sides|square
@@ -673,7 +673,7 @@ The ___ takes you underground across the city.|subway`,
     title: "Parts of the Body",
     subtitle: "Naming body parts",
     kind: "pair",
-    prompt: "Point to your…",
+    prompt: 'The body part "%s" is your…',
     note: "Basic body part vocabulary.",
     data: `you see with these|eyes
 you hear with these|ears
@@ -706,7 +706,7 @@ this is the largest bone in your face|jaw`,
     title: "Hobbies & Free Time",
     subtitle: "What people enjoy doing",
     kind: "pair",
-    prompt: "This hobby involves…",
+    prompt: 'This hobby involves "%s"…',
     note: "Common free-time activities.",
     data: `reading|books
 watching|films
