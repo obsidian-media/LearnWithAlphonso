@@ -48,7 +48,9 @@ export function SegmentedControl<T extends string>({
         return (
           <button
             key={o.value}
-            ref={(el) => (tabRefs.current[index] = el)}
+            ref={(el) => {
+              tabRefs.current[index] = el;
+            }}
             role="tab"
             type="button"
             aria-selected={active}
