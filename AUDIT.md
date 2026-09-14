@@ -43,20 +43,26 @@ What's newly notable:
 - **Lint had silently drifted to 949 problems** (mostly Prettier formatting),
   with no CI to catch it. **Fixed in this session** via `npm run format`
   — down to 12 pre-existing, mostly cosmetic issues.
-- **Still zero tests and no CI pipeline** — this is the single biggest
-  structural risk in the repo today.
+- **RESOLVED, same day:** all 10 priority-action-plan items below were
+  implemented in follow-up commits, including CI, a Vitest suite, and a
+  Playwright + axe-core E2E suite. See the "Update" note further down and
+  §10 for what changed and what's still genuinely open.
 
-| Category          | Score (1-10) | Verdict                                                                    |
-| ----------------- | ------------ | -------------------------------------------------------------------------- |
-| **Security**      | 7/10         | Quota bypass and score-forgery bug now fixed; still no rate limiting       |
-| **Architecture**  | 7/10         | Lesson bank activated, real SRS, clean multi-course (en/fr) abstraction    |
-| **Accessibility** | 4/10         | Semantic buttons + `lang` attr shipped; still no ARIA landmarks/focus mgmt |
-| **Content**       | 6/10         | Bank generator makes ~300 lessons structurally reachable; depth unverified |
-| **Performance**   | 6/10         | Unused deps (recharts, cmdk, vaul, embla) still dead weight                |
-| **UX**            | 6/10         | Friends UI shipped; hearts-blocking / streak-freeze UI still missing       |
-| **Testing**       | 0/10         | Zero tests of any kind, no test runner installed                           |
-| **Tooling/CI**    | 3/10         | No `.github/workflows` at all; lint had drifted uncaught                   |
-| **Documentation** | 6/10         | `AGENTS.md`/old `AUDIT.md` now corrected; keep re-verifying vs. code       |
+**Superseded by the same-day follow-up work — this table describes the
+state at first read, before any fix in this doc was applied.** Kept as a
+point-in-time record; see §10 for what's true now.
+
+| Category          | Score (1-10) at first read | Verdict at first read                                                      |
+| ----------------- | -------------------------- | -------------------------------------------------------------------------- |
+| **Security**      | 7/10                       | Quota bypass and score-forgery bug now fixed; still no rate limiting       |
+| **Architecture**  | 7/10                       | Lesson bank activated, real SRS, clean multi-course (en/fr) abstraction    |
+| **Accessibility** | 4/10                       | Semantic buttons + `lang` attr shipped; still no ARIA landmarks/focus mgmt |
+| **Content**       | 6/10                       | Bank generator makes ~300 lessons structurally reachable; depth unverified |
+| **Performance**   | 6/10                       | Unused deps (recharts, cmdk, vaul, embla) still dead weight                |
+| **UX**            | 6/10                       | Friends UI shipped; hearts-blocking / streak-freeze UI still missing       |
+| **Testing**       | 0/10                       | Zero tests of any kind, no test runner installed                           |
+| **Tooling/CI**    | 3/10                       | No `.github/workflows` at all; lint had drifted uncaught                   |
+| **Documentation** | 6/10                       | `AGENTS.md`/old `AUDIT.md` now corrected; keep re-verifying vs. code       |
 
 ---
 
@@ -313,8 +319,9 @@ See the individual git commits from this session for what changed in each.
 1. Decide `useStreakFreeze`'s intended semantics (§2.2) — right now calling it has no benefit, so no UI was built on top of it.
 2. Decide whether to label French "in progress" in the course-switcher UI, or prioritize closing the content-depth gap with English (§3).
 3. Diversify template-prompt variety in the English lesson bank if pedagogical repetition matters (§3, 73 same-lesson duplicate prompts).
-4. Add Playwright E2E coverage and a jsdom-based test setup (`@testing-library/react`) — neither exists yet; a hearts-modal countdown hook test was skipped this session for exactly this reason.
-5. Add a static accessibility lint pass (e.g. `eslint-plugin-jsx-a11y`) now that the worst gaps are closed, to prevent regressions — real axe-core needs a running, authenticated app this environment can't reach.
+4. **Verify the new `e2e` CI job (Playwright + axe-core, `playwright.config.ts` / `e2e/*.spec.ts`) actually goes green on its first real run** — it could not be locally verified: this Windows sandbox's `bun run dev` never reached Vite's own startup logging across three attempts, consistent with (or compounding) the already-documented Windows-only build bug. If it's red, that's the first thing to look at, not a regression in the app.
+5. Extend E2E/accessibility coverage to the `_authenticated` routes (learn, lesson, review, profile, league, converse) once a seeded test Supabase project + account exists for CI to sign in with — the current suite deliberately only covers the 5 routes that render without one.
+6. A jsdom + `@testing-library/react` setup still doesn't exist for component/hook-level unit tests (only pure-function Vitest tests and now browser-level Playwright tests) — not clearly worth adding on top of Playwright unless a specific hook/component needs isolated testing Playwright can't reach.
 
 ---
 
