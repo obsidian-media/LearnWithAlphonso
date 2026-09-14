@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 
 import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
@@ -124,6 +125,12 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-surface"
+        >
+          Skip to content
+        </a>
         {children}
         <Scripts />
       </body>
@@ -136,9 +143,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthSync />
-      <Outlet />
-      <CookieConsent />
+      {/* Makes every framer-motion component in the app respect the OS
+          "reduce motion" setting automatically, with no per-component work. */}
+      <MotionConfig reducedMotion="user">
+        <AuthSync />
+        <Outlet />
+        <CookieConsent />
+      </MotionConfig>
     </QueryClientProvider>
   );
 }

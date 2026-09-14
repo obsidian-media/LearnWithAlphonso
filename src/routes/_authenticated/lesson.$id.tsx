@@ -275,6 +275,8 @@ function LessonPage() {
 
           {checked && (
             <div
+              role="status"
+              aria-live="polite"
               className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
                 answered
                   ? "border-moss/40 bg-moss/10 text-ink"

@@ -158,7 +158,9 @@ export function MobileFrame({ children }: { children: ReactNode }) {
     <div className="grain min-h-dvh bg-surface text-ink">
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60">
         <TopBar />
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">
+          {children}
+        </main>
         <BottomTabs />
       </div>
     </div>
@@ -168,7 +170,12 @@ export function MobileFrame({ children }: { children: ReactNode }) {
 export function LessonFrame({ children }: { children: ReactNode }) {
   return (
     <div className="grain min-h-dvh bg-surface text-ink">
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60">{children}</div>
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60"
+      >
+        {children}
+      </main>
     </div>
   );
 }
