@@ -58,6 +58,15 @@ RPCs worth knowing (all `SECURITY DEFINER`, all in `supabase/migrations/`):
 `get_leaderboard`, `get_friends_progress`, `accept_friend_invite`,
 `consume_ai_quota`, `consume_ai_rate_limit`.
 
+**Applying migrations:** there is no CI/deploy step that runs these
+automatically (see "Known rough edges" below). After merging a PR that adds
+a file under `supabase/migrations/`, someone needs to run
+`supabase db push` against the linked project (`project_id` in
+`supabase/config.toml`) -- or apply the SQL by hand in the Supabase SQL
+editor -- before the corresponding code path will work in the real app. A
+new RPC or table referenced by app code but not yet pushed fails at
+request time (typically a 500), not at build time.
+
 ## Content model
 
 `src/data/courses.ts`'s `getCourse(course)` is the single entry point for
@@ -103,12 +112,20 @@ client is used anywhere in the MCP layer.
   consolidating them risks a future regeneration reverting the change (see
   `src/integrations/supabase/fetch.ts`'s comment for the one file that was
   safe to consolidate).
-- `useStreakFreeze` (`src/lib/sync.functions.ts`) decrements the streak-freeze
-  counter but doesn't otherwise affect streak state — the streak math in
-  `completeLessonRemote` already auto-consumes a freeze on a 2-day gap
-  independent of whether this was ever called. Calling it currently has no
-  beneficial effect; needs a product decision before wiring up a UI trigger
-  for it, not just a button.
 - `bun run build` fails on Windows on a pre-existing upstream path bug in
   `@lovable.dev/mcp-js`'s Vite plugin — documented in `vite.config.ts`,
-  confirmed not to reproduce on Vercel's Linux build environment.
+  confirmed not to reproduce on Vercel's Linux build environment. The same
+  environment couldn't get `bun run dev` to boot either (see `AUDIT.md`),
+  so nothing UI-level has been visually verified in this sandbox.
+- **No CI/deploy step applies Supabase migrations to the real project**
+  (`project_id` in `supabase/config.toml`) — every file in
+  `supabase/migrations/` needs a manual `supabase db push` (or dashboard
+  SQL) before it's live. Easy to forget after a session like this one that
+  added several; check this first if a feature seems to work in code but
+  500s in the real app.
+- `USER_ID_TABLES` in `account.functions.ts` (GDPR export/delete) previously
+  had three real bugs — wrong table name, wrong filter column for
+  `profiles`, and two missing tables — all silent because neither
+  handler checked query errors. Fixed, but it's evidence this list needs
+  to be updated by hand whenever a new user-scoped table is added; nothing
+  enforces it stays in sync.
