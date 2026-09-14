@@ -83,6 +83,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      ai_rate_limits: {
+        Row: {
+          count: number;
+          kind: string;
+          minute_bucket: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          count?: number;
+          kind: string;
+          minute_bucket: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          count?: number;
+          kind?: string;
+          minute_bucket?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       friendships: {
         Row: {
           created_at: string;
