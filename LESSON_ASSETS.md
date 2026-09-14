@@ -60,20 +60,20 @@ Each lesson needs pronunciation audio for key vocabulary. Generate using the exi
 
 **Path pattern: `public/audio/a2/{unit}/{lesson}/{word}.mp3`**
 
-| Unit | Lesson Topics          | Key Words Examples                                                   |
+| Unit | Lesson Topics | Key Words Examples |
 | ---- | ---------------------- | -------------------------------------------------------------------- | ----------------------------------- |
-| u1   | Past Tense Mastery     | went, ate, bought, brought, thought, didn't, yesterday, ago          |
-| u2   | Storytelling           | first, then, suddenly, while, finally, however, because, started     |
-| u3   | Comparisons            | bigger, smaller, better, worse, most, least, than, as                |
-| u4   | Future Plans           | will, going, tomorrow, next, shall, perhaps, probably, promise       |
-| u5   | Modals of Ability      | can, could, may, might, must, should, able, permission               |
-| u6   | Describing Places      | town, building, corner, opposite, next, between, bridge, market      |
-| u7   | Shopping & Services    | price, cheap, expensive, size, colour, receipt, refund, exchange     |
-| u8   | Travel & Transport     | ticket, platform, departure, delay, gate, terminal, customs, visa    |
-| u9   | Work & Study           | job, interview, skill, experience, degree, salary, apply, resume     |
-| u10  | Health & Wellness      | doctor, headache, fever, medicine, appointment, exercise, diet, rest |
-| u11  | Entertainment          | movie, cinema, concert, novel, album, favourite, genre, recommend    |
-| u12  | Review & Consolidation | _(mixed from above)_                                                 | `public/audio/a2/review/{word}.mp3` |
+| u1 | Past Tense Mastery | went, ate, bought, brought, thought, didn't, yesterday, ago |
+| u2 | Storytelling | first, then, suddenly, while, finally, however, because, started |
+| u3 | Comparisons | bigger, smaller, better, worse, most, least, than, as |
+| u4 | Future Plans | will, going, tomorrow, next, shall, perhaps, probably, promise |
+| u5 | Modals of Ability | can, could, may, might, must, should, able, permission |
+| u6 | Describing Places | town, building, corner, opposite, next, between, bridge, market |
+| u7 | Shopping & Services | price, cheap, expensive, size, colour, receipt, refund, exchange |
+| u8 | Travel & Transport | ticket, platform, departure, delay, gate, terminal, customs, visa |
+| u9 | Work & Study | job, interview, skill, experience, degree, salary, apply, resume |
+| u10 | Health & Wellness | doctor, headache, fever, medicine, appointment, exercise, diet, rest |
+| u11 | Entertainment | movie, cinema, concert, novel, album, favourite, genre, recommend |
+| u12 | Review & Consolidation | _(mixed from above)_ | `public/audio/a2/review/{word}.mp3` |
 
 **Total A2 audio: ~480 files**
 
@@ -81,20 +81,20 @@ Each lesson needs pronunciation audio for key vocabulary. Generate using the exi
 
 **Path pattern: `public/audio/b1/{unit}/{lesson}/{word}.mp3`**
 
-| Unit | Lesson Topics          | Key Words Examples                                                               |
+| Unit | Lesson Topics | Key Words Examples |
 | ---- | ---------------------- | -------------------------------------------------------------------------------- | ----------------------------------- |
-| u1   | Opinions & Debate      | agree, disagree, argue, convinced, however, although, perhaps, personally        |
-| u2   | Conditionals           | if, would, could, might, unless, provided, hypothetical, imaginary               |
-| u3   | Email & Writing        | dear, attached, following, regards, apology, proposal, clarify, appreciate       |
-| u4   | Meetings & Calls       | elaborate, summarize, interrupt, clarify, agenda, action, parking, lead          |
-| u5   | Phrasal Verbs          | give up, look after, put off, run out, turn down, find out, carry on, break down |
-| u6   | Relative Clauses       | who, which, that, whose, where, when, whom, wherever                             |
-| u7   | Passive Voice          | was built, is being, will be, has been, were made, been, getting, got            |
-| u8   | Reported Speech        | said, told, asked, admitted, refused, promised, warned, suggested                |
-| u9   | News & Media           | headline, article, reporter, source, bias, claim, evidence, interview            |
-| u10  | Environment            | climate, pollution, recycling, sustainable, carbon, renewable, ecosystem         |
-| u11  | Technology & Society   | algorithm, privacy, digital, innovation, artificial, automation, cybersecurity   |
-| u12  | Review & Consolidation | _(mixed)_                                                                        | `public/audio/b1/review/{word}.mp3` |
+| u1 | Opinions & Debate | agree, disagree, argue, convinced, however, although, perhaps, personally |
+| u2 | Conditionals | if, would, could, might, unless, provided, hypothetical, imaginary |
+| u3 | Email & Writing | dear, attached, following, regards, apology, proposal, clarify, appreciate |
+| u4 | Meetings & Calls | elaborate, summarize, interrupt, clarify, agenda, action, parking, lead |
+| u5 | Phrasal Verbs | give up, look after, put off, run out, turn down, find out, carry on, break down |
+| u6 | Relative Clauses | who, which, that, whose, where, when, whom, wherever |
+| u7 | Passive Voice | was built, is being, will be, has been, were made, been, getting, got |
+| u8 | Reported Speech | said, told, asked, admitted, refused, promised, warned, suggested |
+| u9 | News & Media | headline, article, reporter, source, bias, claim, evidence, interview |
+| u10 | Environment | climate, pollution, recycling, sustainable, carbon, renewable, ecosystem |
+| u11 | Technology & Society | algorithm, privacy, digital, innovation, artificial, automation, cybersecurity |
+| u12 | Review & Consolidation | _(mixed)_ | `public/audio/b1/review/{word}.mp3` |
 
 **Total B1 audio: ~480 files**
 
@@ -102,20 +102,20 @@ Each lesson needs pronunciation audio for key vocabulary. Generate using the exi
 
 **Path pattern: `public/audio/b2/{unit}/{lesson}/{word}.mp3`**
 
-| Unit | Lesson Topics          | Key Words Examples                                                              |
+| Unit | Lesson Topics | Key Words Examples |
 | ---- | ---------------------- | ------------------------------------------------------------------------------- | ----------------------------------- |
-| u1   | Nuance & Precision     | arguably, virtually, marginally, broadly, ostensibly, inherently, ostensibly    |
-| u2   | Advanced Linking       | nevertheless, furthermore, consequently, albeit, notwithstanding, hence         |
-| u3   | Word Formation         | analysis, achievement, behaviour, conclusion, departure, knowledge, maintenance |
-| u4   | Essay Structure        | thesis, argument, evidence, paragraph, coherence, cohesion, conclusion          |
-| u5   | Debate & Argument      | claim, rebuttal, fallacy, rhetoric, premise, inference, conclusion              |
-| u6   | Business English       | negotiation, stakeholder, revenue, leverage, portfolio, benchmark, synergy      |
-| u7   | Science & Research     | hypothesis, methodology, variables, correlation, sample, peer, journal          |
-| u8   | Culture & Society      | heritage, diversity, tradition, globalization, identity, diaspora, migration    |
-| u9   | Advanced Grammar       | inversion, cleft, subjunctive, ellipsis, fronting, emphasis, structure          |
-| u10  | Idiomatic Language     | idiom, proverb, collocation, expression, metaphor, simile, irony                |
-| u11  | Creative Writing       | narrative, descriptive, dialogue, imagery, tone, mood, perspective              |
-| u12  | Review & Consolidation | _(mixed)_                                                                       | `public/audio/b2/review/{word}.mp3` |
+| u1 | Nuance & Precision | arguably, virtually, marginally, broadly, ostensibly, inherently, ostensibly |
+| u2 | Advanced Linking | nevertheless, furthermore, consequently, albeit, notwithstanding, hence |
+| u3 | Word Formation | analysis, achievement, behaviour, conclusion, departure, knowledge, maintenance |
+| u4 | Essay Structure | thesis, argument, evidence, paragraph, coherence, cohesion, conclusion |
+| u5 | Debate & Argument | claim, rebuttal, fallacy, rhetoric, premise, inference, conclusion |
+| u6 | Business English | negotiation, stakeholder, revenue, leverage, portfolio, benchmark, synergy |
+| u7 | Science & Research | hypothesis, methodology, variables, correlation, sample, peer, journal |
+| u8 | Culture & Society | heritage, diversity, tradition, globalization, identity, diaspora, migration |
+| u9 | Advanced Grammar | inversion, cleft, subjunctive, ellipsis, fronting, emphasis, structure |
+| u10 | Idiomatic Language | idiom, proverb, collocation, expression, metaphor, simile, irony |
+| u11 | Creative Writing | narrative, descriptive, dialogue, imagery, tone, mood, perspective |
+| u12 | Review & Consolidation | _(mixed)_ | `public/audio/b2/review/{word}.mp3` |
 
 **Total B2 audio: ~480 files**
 
@@ -123,20 +123,20 @@ Each lesson needs pronunciation audio for key vocabulary. Generate using the exi
 
 **Path pattern: `public/audio/c1/{unit}/{lesson}/{word}.mp3`**
 
-| Unit | Lesson Topics              | Key Words Examples                                                      |
+| Unit | Lesson Topics | Key Words Examples |
 | ---- | -------------------------- | ----------------------------------------------------------------------- | ----------------------------------- |
-| u1   | Academic Register          | ascertain, substantiate, corroborate, delineate, synthesise, scrutinise |
-| u2   | Complex Structures         | inversion, cleft, emphatic, fronted, subordinate, elliptical, variation |
-| u3   | Precise Vocabulary         | synonym, antonym, connotation, denotation, nuance, precision, register  |
-| u4   | Discourse Management       | signpost, transition, frame, pivot, foreground, background, scaffold    |
-| u5   | Professional Communication | boardroom, litigation, prognosis, specification, protocol, compliance   |
-| u6   | Literature & Style         | metaphor, allegory, motif, irony, satire, allusion, rhetoric            |
-| u7   | Current Affairs            | geopolitics, inflation, sovereignty, legislation, referendum, diplomacy |
-| u8   | Advanced Idioms            | phrasal, idiomatic, colloquial, vernacular, jargon, argot, cant         |
-| u9   | Research Writing           | abstract, methodology, longitudinal, qualitative, quantitative, peer    |
-| u10  | Presentation Skills        | discourse, delivery, projection, emphasis, cadence, rhetorical          |
-| u11  | Critical Thinking          | analysis, evaluation, synthesis, inference, deduction, induction        |
-| u12  | Review & Consolidation     | _(mixed)_                                                               | `public/audio/c1/review/{word}.mp3` |
+| u1 | Academic Register | ascertain, substantiate, corroborate, delineate, synthesise, scrutinise |
+| u2 | Complex Structures | inversion, cleft, emphatic, fronted, subordinate, elliptical, variation |
+| u3 | Precise Vocabulary | synonym, antonym, connotation, denotation, nuance, precision, register |
+| u4 | Discourse Management | signpost, transition, frame, pivot, foreground, background, scaffold |
+| u5 | Professional Communication | boardroom, litigation, prognosis, specification, protocol, compliance |
+| u6 | Literature & Style | metaphor, allegory, motif, irony, satire, allusion, rhetoric |
+| u7 | Current Affairs | geopolitics, inflation, sovereignty, legislation, referendum, diplomacy |
+| u8 | Advanced Idioms | phrasal, idiomatic, colloquial, vernacular, jargon, argot, cant |
+| u9 | Research Writing | abstract, methodology, longitudinal, qualitative, quantitative, peer |
+| u10 | Presentation Skills | discourse, delivery, projection, emphasis, cadence, rhetorical |
+| u11 | Critical Thinking | analysis, evaluation, synthesis, inference, deduction, induction |
+| u12 | Review & Consolidation | _(mixed)_ | `public/audio/c1/review/{word}.mp3` |
 
 **Total C1 audio: ~480 files**
 

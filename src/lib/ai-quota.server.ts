@@ -16,8 +16,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
 };
 
 export type QuotaResult =
-  | { ok: true; used: number; limit: number }
-  | { ok: false; status: number; message: string };
+  { ok: true; used: number; limit: number } | { ok: false; status: number; message: string };
 
 function bearer(request: Request): string | null {
   const h = request.headers.get("Authorization") ?? request.headers.get("authorization");
