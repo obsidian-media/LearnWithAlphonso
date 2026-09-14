@@ -99,14 +99,13 @@ point-in-time record; see §10 for what's true now.
 
 `completeLessonRemote` now looks up the lesson via `getCourse(course).findLesson(lessonId)`
 and rejects the request unless the lesson exists and `total` equals its real
-question count, before computing XP or touching any table. This closes the
-score-forgery gap without requiring a full redesign of the answer-submission
-flow (which would need per-question answer submission to fully close the
-"claim all correct" case — see Recommendation 1 below for that follow-up).
+question count, before computing XP or touching any table. **Update, later
+the same session:** the remaining gap (a truthfully-shaped but unearned
+`correct = total` claim) is also closed now — see §1.4 Recommendation 1.
 
 ### 1.4 Recommendations
 
-1. Follow-up: today's fix stops fabricated lesson IDs/lengths, but a client can still report `correct = total` truthfully-shaped for a real lesson without having answered it. Closing that fully requires submitting per-question answers to the server (or at minimum a signed session token issued at lesson-start) — worth scoping as a follow-on if score integrity matters for leaderboards/leagues.
+1. ~~Follow-up: today's fix stops fabricated lesson IDs/lengths, but a client can still report `correct = total` truthfully-shaped for a real lesson without having answered it.~~ — done in two steps: `completeLessonRemote` now derives `correct` from claimed-missed question ids (real question membership required), and `startLessonSession` (`src/lib/lesson-session.server.ts`) issues a signed, 3-hour HMAC token when the lesson player mounts that `completeLessonRemote` now requires and verifies — proving a real session was opened, not just that the claimed question ids are real. **Needs `LESSON_SESSION_SECRET` set in the real deployment environment before this ships** (same category of gap as the pending-migrations issue).
 2. Add per-minute rate limiting (e.g. a small token-bucket keyed by user id) in front of the three `/api/*` AI routes.
 3. Consolidate the four copies of `isNewSupabaseApiKey`/`createSupabaseFetch` into one shared `src/integrations/supabase/fetch.ts`.
 4. Add a regex allow-list to `lessonId`/`item_key` schemas.
@@ -316,13 +315,52 @@ See the individual git commits from this session for what changed in each.
 
 ### Still open, discovered along the way
 
-1. Decide whether to label French "in progress" in the course-switcher UI, or prioritize closing the content-depth gap with English (§3).
-2. Diversify template-prompt variety in the English lesson bank if pedagogical repetition matters (§3, 73 same-lesson duplicate prompts).
-3. **Verify the new `e2e` CI job (Playwright + axe-core, `playwright.config.ts` / `e2e/*.spec.ts`) actually goes green on its first real run** — it could not be locally verified: this Windows sandbox's `bun run dev` never reached Vite's own startup logging across three attempts, consistent with (or compounding) the already-documented Windows-only build bug. If it's red, that's the first thing to look at, not a regression in the app.
-4. Extend E2E/accessibility coverage to the `_authenticated` routes (learn, lesson, review, profile, league, converse) once a seeded test Supabase project + account exists for CI to sign in with — the current suite deliberately only covers the 5 routes that render without one.
-5. A jsdom + `@testing-library/react` setup still doesn't exist for component/hook-level unit tests (only pure-function Vitest tests and now browser-level Playwright tests) — not clearly worth adding on top of Playwright unless a specific hook/component needs isolated testing Playwright can't reach.
-6. **Apply the pending Supabase migrations to the real linked project** (`project_id = "bsymmgscbvvlkcwhfmqy"` in `supabase/config.toml`) — no CI/deploy step runs `supabase db push`, so every migration in this repo (including this session's `ai_rate_limits`, GDPR fixes, and RPC-grant fixes) is just a file until someone applies it. Until then, `consumeQuota()` will 500 on every chat/TTS/STT call once this code ships.
-7. Rewrite `README.md` and reconcile `LESSON_ASSETS.md` — both still describe the pre-session state (shadcn/ui, old lesson counts, npm-based setup).
+Genuinely blocked in this environment (missing credentials/access, or
+needs your explicit sign-off before an agent should do it unprompted):
+
+1. **Apply the pending Supabase migrations to the real linked project**
+   (`project_id = "bsymmgscbvvlkcwhfmqy"` in `supabase/config.toml`) — no
+   CI/deploy step runs `supabase db push`, so every migration in this repo
+   is just a file until someone applies it by hand. **This blocks more than
+   before**: on top of `ai_rate_limits`, the AI routes will now also 500
+   without `LESSON_SESSION_SECRET` set in the deployment environment (see
+   §1.4 #1). Neither is optional before this ships.
+2. **Verify the `e2e` CI job actually goes green on its first real run** —
+   couldn't be locally verified; this Windows sandbox's `bun run dev` never
+   reached Vite's own startup logging across three attempts. Requires
+   pushing the branch to trigger CI, which wasn't done without asking first.
+3. Extend E2E/accessibility coverage to the `_authenticated` routes once a
+   seeded test Supabase project + account exists for CI to sign in with.
+4. Confirm whether the Boardroom repo's `TASK-078` (Lovable decoupling) is
+   actually closed — `README.md`'s note was softened to only assert what
+   this repo's code can confirm, rather than guess at that repo's state.
+5. Set up branch protection requiring CI to pass / CODEOWNERS review —
+   `.github/CODEOWNERS` and a PR template were added, but turning on
+   enforcement is a repo-settings change affecting every future
+   contributor, not made without asking.
+6. Re-measure bundle size after the shadcn/deps removal — needs a working
+   build, blocked by the same Windows path bug as `bun run dev`.
+7. Uptime/cost alerting on the AI routes — needs hosting-platform access.
+
+Open product/content decisions, not made unilaterally:
+
+8. Decide whether to label French "in progress" in the course-switcher UI,
+   or prioritize closing the content-depth gap with English (§3).
+9. Diversify template-prompt variety in the English lesson bank if
+   pedagogical repetition matters (§3, 73 same-lesson duplicate prompts).
+10. Decide whether `@lovable.dev/mcp-js`'s MCP surface (`/mcp`) is an
+    intentional, supported feature or leftover scaffolding — shapes
+    whether it gets documented/promoted or trimmed.
+11. Rename the `.lovable` OAuth consent route/path — only after confirming
+    nothing external (Supabase project settings, MCP client configs)
+    hardcodes the current path.
+
+Lower priority, not clearly worth it yet:
+
+12. A jsdom + `@testing-library/react` setup for component/hook-level unit
+    tests — only pure-function Vitest tests and browser-level Playwright
+    tests exist today; add this only if a specific hook/component needs
+    isolated testing Playwright can't reach.
 
 ---
 
