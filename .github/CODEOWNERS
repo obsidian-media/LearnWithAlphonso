@@ -1,0 +1,3 @@
+# Default owner for everything not matched below.
+# Edit this to add more reviewers/teams as the project grows.
+*       @thatisshayan
