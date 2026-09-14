@@ -21,6 +21,14 @@ test("sign-in page loads", async ({ page }) => {
   await expect(page).toHaveTitle(/Sign in — Alphonso/);
 });
 
+test("reset-password page loads without a recovery token", async ({ page }) => {
+  // No beforeLoad redirect guard on this route -- it renders regardless
+  // and gates the form on client-side auth-event state, so a plain visit
+  // (no PASSWORD_RECOVERY session) should still render, not error out.
+  await page.goto("/reset-password");
+  await expect(page).toHaveTitle(/Set a new password — Alphonso/);
+});
+
 for (const [path, titlePattern] of [
   ["/privacy", /Privacy Policy — Alphonso/],
   ["/terms", /Terms of Service — Alphonso/],

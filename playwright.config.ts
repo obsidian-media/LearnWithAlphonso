@@ -2,7 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Scoped to routes that render without a real Supabase backend: none of
- * `/`, `/auth`, `/privacy`, `/terms`, `/cookies` require an authenticated
+ * `/`, `/auth`, `/privacy`, `/terms`, `/cookies`, `/reset-password` require
+ * an authenticated
  * session, and Supabase's client-side `getSession()` resolves from local
  * storage without a network call when there's no stored session -- so
  * these render fine even against placeholder credentials. Anything behind

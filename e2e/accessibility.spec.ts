@@ -8,7 +8,7 @@ import AxeBuilder from "@axe-core/playwright";
  * unauthenticated routes as smoke.spec.ts; extend once authenticated
  * pages are reachable in CI.
  */
-for (const path of ["/", "/auth", "/privacy", "/terms", "/cookies"]) {
+for (const path of ["/", "/auth", "/privacy", "/terms", "/cookies", "/reset-password"]) {
   test(`${path} has no serious/critical accessibility violations`, async ({ page }) => {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
