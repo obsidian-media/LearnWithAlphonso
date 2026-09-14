@@ -340,24 +340,6 @@ export const loseHeartRemote = createServerFn({ method: "POST" })
     return { hearts: next };
   });
 
-export const useStreakFreeze = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("streak_freezes")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const cur = p?.streak_freezes ?? 0;
-    if (cur <= 0) return { streakFreezes: 0, used: false };
-    await supabase
-      .from("user_progress")
-      .update({ streak_freezes: cur - 1 })
-      .eq("user_id", userId);
-    return { streakFreezes: cur - 1, used: true };
-  });
-
 const mergeSchema = z.object({
   xp: z.number().int().min(0).max(1_000_000).default(0),
   streak: z.number().int().min(0).max(10_000).default(0),
