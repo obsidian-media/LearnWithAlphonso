@@ -14,6 +14,14 @@
 #     create a required .build\debug symlink without either admin rights
 #     or Developer Mode's relaxed symlink privilege.
 #
+# TROUBLESHOOTING: if you hit the exact same Code=4551 error again even
+# with Developer Mode on, and "Build complete!" reports a suspiciously
+# fast time (well under a second) for what should be a real compile, the
+# cause is a STALE GLOBAL SwiftPM MANIFEST CACHE, not the symlink issue --
+# a leftover lock file from an interrupted earlier run can corrupt it.
+# Clear it (safe, just a cache) and retry:
+#   rm -rf "$env:TEMP\org.swift.swiftpm" "$env:TEMP\*.swiftpm.lock" "$env:TEMP\*manifest.db.lock"
+#
 # Usage: powershell -File swift-test.ps1 [swift subcommand and args, default: test]
 
 $swiftArgs = if ($args.Count -gt 0) { $args -join " " } else { "test" }
