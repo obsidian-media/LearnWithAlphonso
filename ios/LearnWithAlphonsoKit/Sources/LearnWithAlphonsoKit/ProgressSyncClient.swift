@@ -101,13 +101,37 @@ public final class ProgressSyncClient: Sendable {
         ])
     }
 
+    /// Calls the start-lesson-session Edge Function -- POST
+    /// {supabaseURL}/functions/v1/start-lesson-session with the user's own
+    /// JWT. Returns the HMAC session token `completeLesson` requires as
+    /// proof this lesson was actually opened. The web app gets this token
+    /// from startLessonSession, a TanStack Start server function reachable
+    /// only via the web app's own RPC layer -- start-lesson-session is the
+    /// same issuance exposed over plain HTTP so this native client can
+    /// call it too (see supabase/functions/start-lesson-session/index.ts).
+    public func startLessonSession(lessonID: String, course: String) async throws -> String {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/start-lesson-session"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = ["lessonId": lessonID, "course": course]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let token = object["token"] as? String else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return token
+    }
+
     /// Calls the complete-lesson Edge Function -- POST
     /// {supabaseURL}/functions/v1/complete-lesson with the user's own JWT
     /// (same auth pattern as the PostgREST calls above, just a different
     /// endpoint). `sessionToken` must come from a prior startLessonSession
-    /// call (the TanStack Start server function -- still web-only, since
-    /// it just issues a short-lived HMAC token and has no client-trust
-    /// concern of its own).
+    /// call above.
     public func completeLesson(
         lessonID: String,
         total: Int,

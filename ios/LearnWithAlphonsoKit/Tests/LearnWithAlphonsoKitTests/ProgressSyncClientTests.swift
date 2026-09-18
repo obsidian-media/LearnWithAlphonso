@@ -126,6 +126,44 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertNotNil(payload["placement_taken_at"])
     }
 
+    // MARK: - startLessonSession
+
+    func testStartLessonSessionPostsToTheEdgeFunctionAndReturnsTheToken() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: ["token": "payload.sig"])
+        }
+
+        let token = try await client.startLessonSession(lessonID: "u1l1", course: "en")
+
+        XCTAssertEqual(token, "payload.sig")
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/start-lesson-session"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
+        XCTAssertEqual(payload["course"] as? String, "en")
+    }
+
+    func testStartLessonSessionSurfacesTheEdgeFunctionsErrorShape() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "Lesson not found"])
+            let response = HTTPURLResponse(url: request.url!, statusCode: 404, httpVersion: nil, headerFields: nil)!
+            return (body, response)
+        }
+
+        do {
+            _ = try await client.startLessonSession(lessonID: "missing", course: "en")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .server(status: 404, message: "Lesson not found"))
+        }
+    }
+
     // MARK: - completeLesson
 
     func testCompleteLessonPostsToTheEdgeFunctionAndDecodesTheResult() async throws {
