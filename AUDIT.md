@@ -190,9 +190,6 @@ AI voice:   Deepgram directly — Aura-2 for TTS, Nova-3 for STT
 Content:    Two-course model (en/fr) via src/data/courses.ts, each course
             pairing hand-written units (curriculum.ts / curriculum-fr.ts)
             with a generator-produced bank (lesson-bank.ts / lesson-bank-fr.ts)
-Extras:     An MCP server (src/lib/mcp) exposing get_my_progress,
-            get_due_reviews, list_lessons, get_leaderboard over OAuth,
-            forwarding the caller's token so RLS applies — well-scoped.
 ```
 
 ### 2.2 Issues Found
@@ -417,8 +414,9 @@ needs your explicit sign-off before an agent should do it unprompted):
    `.github/CODEOWNERS` and a PR template were added, but turning on
    enforcement is a repo-settings change affecting every future
    contributor, not made without asking.
-6. Re-measure bundle size after the shadcn/deps removal — needs a working
-   build, blocked by the same Windows path bug as `bun run dev`.
+6. ~~Re-measure bundle size after the shadcn/deps removal~~ — the build
+   now works (the MCP removal below fixed the Windows path bug);
+   re-measuring is still a real follow-up, just no longer blocked.
 7. Uptime/cost alerting on the AI routes — needs hosting-platform access.
 
 Open product/content decisions, not made unilaterally:
@@ -429,12 +427,16 @@ Open product/content decisions, not made unilaterally:
    out to be a real bug (4 packs missing `%s` clue interpolation, making
    those questions guessable-only), not a diversity nice-to-have. Fixed
    (§3).
-10. Decide whether `@lovable.dev/mcp-js`'s MCP surface (`/mcp`) is an
-    intentional, supported feature or leftover scaffolding — shapes
-    whether it gets documented/promoted or trimmed.
-11. Rename the `.lovable` OAuth consent route/path — only after confirming
-    nothing external (Supabase project settings, MCP client configs)
-    hardcodes the current path.
+10. ~~Decide whether `@lovable.dev/mcp-js`'s MCP surface (`/mcp`) is an
+    intentional, supported feature or leftover scaffolding~~ — decided:
+    removed. Not judged by anything in the Shipaton submission, it was the
+    one remaining functional dependency on `@lovable.dev/mcp-js`, and it
+    was real live-app attack surface (an OAuth resource server exposing
+    user progress data) for a feature with no end users. `bun run build`
+    also now succeeds on Windows as a result — the path-separator bug
+    tracked below was in that plugin.
+11. ~~Rename the `.lovable` OAuth consent route/path~~ — moot, removed
+    along with the rest of the MCP surface (item 10).
 
 Lower priority, not clearly worth it yet:
 
@@ -457,5 +459,4 @@ Lower priority, not clearly worth it yet:
 | `src/routes/api/tts.ts`, `stt.ts`              | Deepgram calls; same rate-limit gap                                                                                            |
 | `src/integrations/supabase/auth-middleware.ts` | Good — proper JWT verification, rejects malformed/missing tokens                                                               |
 | `src/integrations/supabase/client.server.ts`   | Good — service-role key lazily loaded, server-only by convention and comment                                                   |
-| `src/lib/mcp/*`                                | OAuth-gated MCP tools that forward the caller's token so RLS applies — no admin client used, well-scoped                       |
 | `src/data/curriculum.ts`, `courses.ts`         | Hardcoded/generated content, no injection risk; now the source of truth used to validate lesson completions server-side        |

@@ -5,7 +5,7 @@ import { getScenario } from "../../data/scenarios";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 
-export const Route = createFileRoute("/_authenticated/converse/$scenarioId")({
+export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   component: ConverseChatPage,
   loader: ({ params }) => {
     const scenario = getScenario(params.scenarioId);

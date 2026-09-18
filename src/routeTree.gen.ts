@@ -9,53 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as CookiesRouteImport } from './routes/cookies'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiTtsRouteImport } from './routes/api/tts'
-import { Route as ApiSttRouteImport } from './routes/api/stt'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
-import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
-import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile.friends'
-import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
-import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
+import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
+import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
+import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
+import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
+import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile.friends'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CookiesRoute = CookiesRouteImport.update({
-  id: '/cookies',
-  path: '/cookies',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -63,48 +44,29 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTtsRoute = ApiTtsRouteImport.update({
-  id: '/api/tts',
-  path: '/api/tts',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSttRoute = ApiSttRouteImport.update({
-  id: '/api/stt',
-  path: '/api/stt',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
-  id: '/placement',
-  path: '/placement',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
-  id: '/learn',
-  path: '/learn',
+const AuthenticatedConverseRoute = AuthenticatedConverseRouteImport.update({
+  id: '/converse',
+  path: '/converse',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
@@ -112,55 +74,72 @@ const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
   path: '/league',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConverseRoute = AuthenticatedConverseRouteImport.update({
-  id: '/converse',
-  path: '/converse',
+const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedProfileFriendsRoute =
-  AuthenticatedProfileFriendsRouteImport.update({
-    id: '/friends',
-    path: '/friends',
-    getParentRoute: () => AuthenticatedProfileRoute,
-  } as any)
-const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
-  id: '/lesson/$id',
-  path: '/lesson/$id',
+const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
+  id: '/placement',
+  path: '/placement',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSttRoute = ApiSttRouteImport.update({
+  id: '/api/stt',
+  path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedConverseScenarioIdRoute =
+  AuthenticatedConverseScenarioIdRouteImport.update({
+    id: '/converse_/$scenarioId',
+    path: '/converse/$scenarioId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInviteInviterIdRoute =
   AuthenticatedInviteInviterIdRouteImport.update({
     id: '/invite/$inviterId',
     path: '/invite/$inviterId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedConverseScenarioIdRoute =
-  AuthenticatedConverseScenarioIdRouteImport.update({
-    id: '/converse/$scenarioId',
-    path: '/converse/$scenarioId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
+  id: '/lesson/$id',
+  path: '/lesson/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileFriendsRoute =
+  AuthenticatedProfileFriendsRouteImport.update({
+    id: '/friends',
+    path: '/friends',
+    getParentRoute: () => AuthenticatedProfileRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
@@ -170,7 +149,6 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
@@ -180,11 +158,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
@@ -194,7 +170,6 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
@@ -206,11 +181,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
-  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
@@ -220,8 +193,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/_authenticated/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
+  '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/_authenticated/profile/friends': typeof AuthenticatedProfileFriendsRoute
@@ -232,11 +204,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cookies'
-    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/.well-known/oauth-protected-resource'
     | '/converse'
     | '/league'
     | '/learn'
@@ -246,7 +216,6 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
-    | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
@@ -256,11 +225,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cookies'
-    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/.well-known/oauth-protected-resource'
     | '/converse'
     | '/league'
     | '/learn'
@@ -270,7 +237,6 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
-    | '/.lovable/oauth/consent'
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
@@ -281,11 +247,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/cookies'
-    | '/mcp'
     | '/privacy'
     | '/reset-password'
     | '/terms'
-    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/converse'
     | '/_authenticated/league'
     | '/_authenticated/learn'
@@ -295,8 +259,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
-    | '/.lovable/oauth/consent'
-    | '/_authenticated/converse/$scenarioId'
+    | '/_authenticated/converse_/$scenarioId'
     | '/_authenticated/invite/$inviterId'
     | '/_authenticated/lesson/$id'
     | '/_authenticated/profile/friends'
@@ -307,59 +270,21 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
-  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cookies': {
-      id: '/cookies'
-      path: '/cookies'
-      fullPath: '/cookies'
-      preLoaderRoute: typeof CookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -369,60 +294,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tts': {
-      id: '/api/tts'
-      path: '/api/tts'
-      fullPath: '/api/tts'
-      preLoaderRoute: typeof ApiTtsRouteImport
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/stt': {
-      id: '/api/stt'
-      path: '/api/stt'
-      fullPath: '/api/stt'
-      preLoaderRoute: typeof ApiSttRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/review': {
-      id: '/_authenticated/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof AuthenticatedReviewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/placement': {
-      id: '/_authenticated/placement'
-      path: '/placement'
-      fullPath: '/placement'
-      preLoaderRoute: typeof AuthenticatedPlacementRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/learn': {
-      id: '/_authenticated/learn'
-      path: '/learn'
-      fullPath: '/learn'
-      preLoaderRoute: typeof AuthenticatedLearnRouteImport
+    '/_authenticated/converse': {
+      id: '/_authenticated/converse'
+      path: '/converse'
+      fullPath: '/converse'
+      preLoaderRoute: typeof AuthenticatedConverseRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/league': {
@@ -432,32 +343,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeagueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/converse': {
-      id: '/_authenticated/converse'
-      path: '/converse'
-      fullPath: '/converse'
-      preLoaderRoute: typeof AuthenticatedConverseRouteImport
+    '/_authenticated/learn': {
+      id: '/_authenticated/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof AuthenticatedLearnRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/_authenticated/placement': {
+      id: '/_authenticated/placement'
+      path: '/placement'
+      fullPath: '/placement'
+      preLoaderRoute: typeof AuthenticatedPlacementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/review': {
+      id: '/_authenticated/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof AuthenticatedReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/profile/friends': {
-      id: '/_authenticated/profile/friends'
-      path: '/friends'
-      fullPath: '/profile/friends'
-      preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
-      parentRoute: typeof AuthenticatedProfileRoute
+    '/api/stt': {
+      id: '/api/stt'
+      path: '/api/stt'
+      fullPath: '/api/stt'
+      preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/lesson/$id': {
-      id: '/_authenticated/lesson/$id'
-      path: '/lesson/$id'
-      fullPath: '/lesson/$id'
-      preLoaderRoute: typeof AuthenticatedLessonIdRouteImport
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/converse_/$scenarioId': {
+      id: '/_authenticated/converse_/$scenarioId'
+      path: '/converse/$scenarioId'
+      fullPath: '/converse/$scenarioId'
+      preLoaderRoute: typeof AuthenticatedConverseScenarioIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invite/$inviterId': {
@@ -467,19 +406,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInviteInviterIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/converse/$scenarioId': {
-      id: '/_authenticated/converse/$scenarioId'
-      path: '/converse/$scenarioId'
-      fullPath: '/converse/$scenarioId'
-      preLoaderRoute: typeof AuthenticatedConverseScenarioIdRouteImport
+    '/_authenticated/lesson/$id': {
+      id: '/_authenticated/lesson/$id'
+      path: '/lesson/$id'
+      fullPath: '/lesson/$id'
+      preLoaderRoute: typeof AuthenticatedLessonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/profile/friends': {
+      id: '/_authenticated/profile/friends'
+      path: '/friends'
+      fullPath: '/profile/friends'
+      preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
+      parentRoute: typeof AuthenticatedProfileRoute
     }
   }
 }
@@ -527,16 +466,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
-  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
