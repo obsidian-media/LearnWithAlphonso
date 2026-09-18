@@ -388,6 +388,29 @@ export type Database = {
           per_minute_limit: number;
         }[];
       };
+      restore_hearts_if_due: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          hearts: number;
+          hearts_refill_at: string | null;
+        }[];
+      };
+      buy_heart_with_xp: {
+        Args: { _course: string; _cost?: number };
+        Returns: {
+          ok: boolean;
+          reason: string | null;
+          hearts: number | null;
+          xp: number | null;
+        }[];
+      };
+      claim_review_clear_bonus: {
+        Args: { _course: string };
+        Returns: {
+          granted: boolean;
+          hearts: number | null;
+        }[];
+      };
       accept_friend_invite: {
         Args: { _inviter_id: string };
         Returns: {

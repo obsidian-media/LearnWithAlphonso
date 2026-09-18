@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { computeReviewOutcome } from "./srs";
-import { MAX_HEARTS, gainHearts, resolveHeartsRefill } from "./hearts";
+import { computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
+import { getCourse } from "../data/courses";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr"]).default("en");
@@ -104,10 +104,20 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
     return { due, total: totalRes.count ?? 0 };
   });
 
-/** SM-2 style grading. correct=false resets the item; three clean reps retires it. */
+/**
+ * SM-2 style grading. `correct` used to be a raw client-supplied boolean
+ * -- trivially fakeable (grade anything "correct" without answering it at
+ * all), which combined with the review-clear heart bonus let a user
+ * fabricate a review item via recordMisses and instantly "clear" the
+ * queue for free. Now the client sends its submitted `answer`, and
+ * correctness is re-derived server-side against the real question, the
+ * same derive-don't-trust pattern completeLessonRemote already uses. Also
+ * rejects grading an item that isn't actually due yet (due_on > today),
+ * closing the other half of the same exploit path.
+ */
 export const gradeReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { itemKey: string; correct: boolean; course?: string }) =>
+  .inputValidator((d: { itemKey: string; answer: string; course?: string }) =>
     z
       .object({
         itemKey: z
@@ -115,7 +125,7 @@ export const gradeReview = createServerFn({ method: "POST" })
           .min(1)
           .max(120)
           .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
-        correct: z.boolean(),
+        answer: z.string().max(200),
         course: courseSchema,
       })
       .parse(d),
@@ -131,10 +141,17 @@ export const gradeReview = createServerFn({ method: "POST" })
       .eq("language", course)
       .maybeSingle();
     if (!row) return { retired: false, dueOn: today() };
+    if (row.due_on > today()) {
+      throw new Error("This item isn't due yet");
+    }
+
+    const ref = getCourse(course).questionIndex[data.itemKey];
+    if (!ref) throw new Error("Unknown review item");
+    const correct = deriveAnswerCorrectness(ref.question, data.answer);
 
     const outcome = computeReviewOutcome(
       {
-        correct: data.correct,
+        correct,
         ease: row.ease,
         intervalDays: row.interval_days,
         repetitions: row.repetitions,
@@ -172,44 +189,21 @@ export const gradeReview = createServerFn({ method: "POST" })
 
 /**
  * Awards a heart the first time a user clears their entire due-review
- * queue in a day. Guarded by `last_review_bonus_date` (once per calendar
- * day) and by re-checking the due count server-side -- the client can't
- * claim this by simply asserting the queue is empty.
+ * queue in a day. Calls a SECURITY DEFINER RPC
+ * (supabase/migrations/20260918141500_hearts_economy_rpcs.sql) that
+ * re-checks the due count and the once-per-day guard atomically under a
+ * row lock, rather than this handler's previous select-then-upsert (which
+ * raced under concurrent calls).
  */
 export const claimReviewClearBonusRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { count } = await supabase
-      .from("review_items")
-      .select("item_key", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("language", data.course)
-      .lte("due_on", today());
-    if ((count ?? 0) > 0) return { granted: false, hearts: null };
-
-    const todayStr = today();
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("hearts,hearts_refill_at,last_review_bonus_date")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (p?.last_review_bonus_date === todayStr) {
-      return { granted: false, hearts: p.hearts };
-    }
-
-    const resolved = resolveHeartsRefill(
-      p?.hearts ?? MAX_HEARTS,
-      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
-      Date.now(),
-    );
-    const next = gainHearts(resolved.hearts, 1);
-    await supabase.from("user_progress").upsert({
-      user_id: userId,
-      hearts: next.hearts,
-      hearts_refill_at: null,
-      last_review_bonus_date: todayStr,
+    const { supabase } = context;
+    const { data: rpcData, error } = await supabase.rpc("claim_review_clear_bonus", {
+      _course: data.course,
     });
-    return { granted: next.hearts > resolved.hearts, hearts: next.hearts };
+    if (error) throw new Error("Could not check review-clear bonus");
+    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    return { granted: row?.granted ?? false, hearts: row?.hearts ?? null };
   });

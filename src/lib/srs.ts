@@ -2,6 +2,24 @@
  * unit tested without a database. The handler still owns reading/writing
  * rows and computing the actual due date from `intervalDays`. */
 
+import type { Question } from "../data/curriculum";
+
+/**
+ * gradeReview used to trust a raw `correct: boolean` from the client --
+ * trivially fakeable, and combined with the review-clear heart bonus let
+ * a user fabricate an item via recordMisses and instantly grade it
+ * "correct" for free. This re-derives correctness server-side against the
+ * real question, the same derive-don't-trust pattern
+ * deriveLessonCompletion already uses for lesson completions. Mirrors the
+ * comparison logic already duplicated client-side in review.tsx and
+ * lesson.$id.tsx.
+ */
+export function deriveAnswerCorrectness(question: Question, answer: string): boolean {
+  return question.type === "mc"
+    ? question.choices[question.answer] === answer
+    : answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
+}
+
 export type ReviewGradeInput = {
   correct: boolean;
   ease: number;

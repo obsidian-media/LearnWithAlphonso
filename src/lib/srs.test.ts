@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeReviewGrade, computeReviewOutcome } from "./srs";
+import { computeReviewGrade, computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
+import type { Question } from "../data/curriculum";
 
 describe("computeReviewGrade", () => {
   it("resets interval and repetitions on a wrong answer, and records a lapse", () => {
@@ -146,5 +147,44 @@ describe("computeReviewOutcome", () => {
       },
     );
     expect(outcome).toEqual({ retired: true, dueOn: today });
+  });
+});
+
+describe("deriveAnswerCorrectness", () => {
+  const mc: Question = {
+    id: "q1",
+    type: "mc",
+    prompt: "Pick the right one",
+    choices: ["cat", "dog", "bird"],
+    answer: 1,
+    explanation: "",
+  };
+  const fill: Question = {
+    id: "q2",
+    type: "fill",
+    prompt: "The ___ barks",
+    bank: ["dog", "cat"],
+    answer: "dog",
+    explanation: "",
+  };
+
+  it("checks an mc answer by choice text, not index", () => {
+    expect(deriveAnswerCorrectness(mc, "dog")).toBe(true);
+    expect(deriveAnswerCorrectness(mc, "cat")).toBe(false);
+  });
+
+  it("rejects an mc answer that isn't even one of the real choices", () => {
+    expect(deriveAnswerCorrectness(mc, "elephant")).toBe(false);
+  });
+
+  it("checks a fill answer case-insensitively and trims whitespace", () => {
+    expect(deriveAnswerCorrectness(fill, "Dog")).toBe(true);
+    expect(deriveAnswerCorrectness(fill, "  dog  ")).toBe(true);
+    expect(deriveAnswerCorrectness(fill, "cat")).toBe(false);
+  });
+
+  it("rejects an empty answer", () => {
+    expect(deriveAnswerCorrectness(mc, "")).toBe(false);
+    expect(deriveAnswerCorrectness(fill, "")).toBe(false);
   });
 });

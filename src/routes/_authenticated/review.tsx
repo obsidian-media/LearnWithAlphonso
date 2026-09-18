@@ -106,7 +106,7 @@ function ReviewPage() {
     setChecked(true);
     const ok = isCorrect;
     setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-    void grade({ data: { itemKey: card.itemKey, correct: ok, course } })
+    void grade({ data: { itemKey: card.itemKey, answer: picked, course } })
       .then((r) => {
         if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
       })
