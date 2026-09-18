@@ -8,6 +8,7 @@ import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { useServerFn } from "@tanstack/react-start";
 import { setCefrLevel, fetchProgress } from "../../lib/sync.functions";
 import { fetchDueReviews } from "../../lib/review.functions";
@@ -104,6 +105,7 @@ function LessonNode({
 }
 
 function LearnPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
   const level = useProgress((s) => s.cefrLevel) as Level;
@@ -196,30 +198,54 @@ function LearnPage() {
           ))}
         </div>
 
-        {!placed && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
-          >
-            <p className="font-display text-base font-semibold text-ink">
-              Not sure where to start?
-            </p>
-            <p className="mt-1 text-xs text-ink-soft/80">
-              Take a 15-question placement test and we&apos;ll set your CEFR level for you.
-            </p>
-            <Link
-              to="/placement"
-              className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
+        {!placed &&
+          (isStudioInk ? (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 border-b border-hairline pb-5"
             >
-              Take the placement test
-            </Link>
-          </motion.div>
-        )}
+              <p className="font-display text-base font-semibold text-ink">
+                Not sure where to start?
+              </p>
+              <p className="mt-1 text-xs text-ink-soft/80">
+                Take a 15-question placement test and we&apos;ll set your CEFR level for you.
+              </p>
+              <Link
+                to="/placement"
+                className="mt-3 inline-block text-[12px] font-semibold text-moss underline underline-offset-4"
+              >
+                Take the placement test →
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 rounded-2xl border border-ember/30 bg-ember/10 p-4"
+            >
+              <p className="font-display text-base font-semibold text-ink">
+                Not sure where to start?
+              </p>
+              <p className="mt-1 text-xs text-ink-soft/80">
+                Take a 15-question placement test and we&apos;ll set your CEFR level for you.
+              </p>
+              <Link
+                to="/placement"
+                className="mt-3 inline-block rounded-full bg-ink px-4 py-2 text-[12px] font-semibold text-surface"
+              >
+                Take the placement test
+              </Link>
+            </motion.div>
+          ))}
 
         <Link
           to="/review"
-          className="mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+          className={
+            isStudioInk
+              ? "mb-6 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
+              : "mb-6 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+          }
         >
           <span>
             <span className="flex items-center gap-2">
@@ -254,7 +280,13 @@ function LearnPage() {
           />
         </div>
 
-        <div className="mb-8 rounded-2xl border border-hairline bg-parchment p-4">
+        <div
+          className={
+            isStudioInk
+              ? "mb-8 border-b border-hairline pb-4"
+              : "mb-8 rounded-2xl border border-hairline bg-parchment p-4"
+          }
+        >
           <div className="flex items-baseline justify-between">
             <p className="font-display text-lg font-semibold text-ink">
               {meta.id} · {meta.name}
@@ -277,14 +309,22 @@ function LearnPage() {
           return (
             <section key={unit.id} className="mb-14 last:mb-4">
               <header className="mb-8 flex items-end justify-between">
-                <div>
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+                <div className="relative">
+                  {isStudioInk && (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -left-1 -top-3 font-display text-[64px] font-semibold leading-none text-ink/5"
+                    >
+                      {String(ui + 1).padStart(2, "0")}
+                    </span>
+                  )}
+                  <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
                     {unit.eyebrow}
                   </p>
-                  <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
+                  <h1 className="relative text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
                     {unit.title}
                   </h1>
-                  <p className="mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
+                  <p className="relative mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
                     {unit.description}
                   </p>
                 </div>
@@ -316,17 +356,28 @@ function LearnPage() {
                     />
                   );
                 })}
-                {allDone && (
-                  <div className="mt-4 w-full rounded-2xl border border-hairline bg-parchment p-5 text-center">
-                    <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
-                      <StarIcon className="size-5" />
+                {allDone &&
+                  (isStudioInk ? (
+                    <div className="mt-4 w-full border-t border-hairline pt-5 text-center">
+                      <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
+                        <StarIcon className="size-5" />
+                      </div>
+                      <p className="font-display text-base font-semibold">Unit complete</p>
+                      <p className="text-xs text-ink-soft">
+                        You mastered {unit.title.toLowerCase()}.
+                      </p>
                     </div>
-                    <p className="font-display text-base font-semibold">Unit complete</p>
-                    <p className="text-xs text-ink-soft">
-                      You mastered {unit.title.toLowerCase()}.
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="mt-4 w-full rounded-2xl border border-hairline bg-parchment p-5 text-center">
+                      <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-moss text-surface">
+                        <StarIcon className="size-5" />
+                      </div>
+                      <p className="font-display text-base font-semibold">Unit complete</p>
+                      <p className="text-xs text-ink-soft">
+                        You mastered {unit.title.toLowerCase()}.
+                      </p>
+                    </div>
+                  ))}
               </div>
             </section>
           );
