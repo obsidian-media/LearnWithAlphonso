@@ -27,7 +27,7 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile.friends'
+import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
@@ -125,9 +125,9 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   } as any)
 const AuthenticatedProfileFriendsRoute =
   AuthenticatedProfileFriendsRouteImport.update({
-    id: '/friends',
-    path: '/friends',
-    getParentRoute: () => AuthenticatedProfileRoute,
+    id: '/profile/friends',
+    path: '/profile/friends',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
   id: '/lesson/$id',
@@ -165,7 +165,7 @@ export interface FileRoutesByFullPath {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
-  '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -189,7 +189,7 @@ export interface FileRoutesByTo {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
-  '/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -215,7 +215,7 @@ export interface FileRoutesById {
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRouteWithChildren
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -448,10 +448,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/profile/friends': {
       id: '/_authenticated/profile/friends'
-      path: '/friends'
+      path: '/profile/friends'
       fullPath: '/profile/friends'
       preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
-      parentRoute: typeof AuthenticatedProfileRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lesson/$id': {
       id: '/_authenticated/lesson/$id'
@@ -484,25 +484,15 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedProfileRouteChildren {
-  AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
-}
-
-const AuthenticatedProfileRouteChildren: AuthenticatedProfileRouteChildren = {
-  AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
-}
-
-const AuthenticatedProfileRouteWithChildren =
-  AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
+  AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
   AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
 }
@@ -512,9 +502,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
+  AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
   AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
 }
