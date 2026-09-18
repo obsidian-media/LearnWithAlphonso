@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { updateProfile } from "./leaderboard.functions";
 
-export const THEME_NAMES = ["meadow", "studio-ink"] as const;
+export const THEME_NAMES = ["meadow", "studio-ink", "manuscript"] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
 
 export function isThemeName(value: unknown): value is ThemeName {
