@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv, mergeConfig, type UserConfig } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import viteReact from "@vitejs/plugin-react";
@@ -38,28 +37,6 @@ export default defineConfig(async ({ command, mode }) => {
       server: { entry: "server" },
     }),
     viteReact(),
-    // NOTE: @lovable.dev/mcp-js's vite plugin has a Windows-only path-
-    // separator bug — it mixes Vite's forward-slash `config.root` with
-    // `node:path`'s native-separator `resolve()` output, so
-    // `assertContains()` fails a build run from a Windows shell (`npm run
-    // build` errors with "routesDir ... must resolve under ..., got ...").
-    // Pre-existing upstream bug (present before the Lovable decoupling too),
-    // not introduced here. Confirmed 2026-09-10: does NOT reproduce on
-    // Vercel's Linux build environment — both the pre-merge and post-merge
-    // deploys of this branch built successfully there.
-    //
-    // trustForwardedHost/trustForwardedProto: the plugin defaults both to
-    // `true` because Lovable's own proxy authoritatively overwrites those
-    // headers before they reach the app, so trusting them there is safe.
-    // Vercel does not make that same guarantee for a plain project (no
-    // "Verified Proxy" configured) — a client can set its own
-    // X-Forwarded-Host/-Proto and Vercel's docs don't promise to strip it.
-    // Trusting these by default would let a client spoof the OAuth
-    // protected-resource metadata's advertised host/scheme. Disabled here;
-    // re-enable only if Vercel's Verified Proxy (or an equivalent
-    // authoritatively-overwriting front proxy) is ever put in front of this
-    // app. See ledger/tasks/078 (Boardroom repo) for the research trail.
-    mcpPlugin({ trustForwardedHost: false, trustForwardedProto: false }),
   ];
 
   if (isBuild) {

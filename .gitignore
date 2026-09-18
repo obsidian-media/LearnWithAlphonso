@@ -24,6 +24,9 @@ dist-ssr
 supabase/.branches/
 supabase/.temp/
 
+# Serena MCP server's local project state
+.serena/
+
 # Environment variables — never commit real secrets/keys
 .env
 .env.local
@@ -51,6 +54,11 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 
 # Swift Package Manager build artifacts (ios/LearnWithAlphonsoKit)
 .build/
+
+# ios/LearnWithAlphonso's .xcodeproj is XcodeGen-generated from project.yml
+# (`xcodegen generate`) -- never hand-edited or committed, so it can't
+# drift from the source of truth or cause merge conflicts.
+ios/LearnWithAlphonso/*.xcodeproj/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 

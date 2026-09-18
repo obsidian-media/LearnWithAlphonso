@@ -5,7 +5,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 
-export const Route = createFileRoute("/_authenticated/profile/friends")({
+export const Route = createFileRoute("/_authenticated/profile_/friends")({
   component: FriendsPage,
   head: () => ({
     meta: [

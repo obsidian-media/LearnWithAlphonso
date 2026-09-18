@@ -4,11 +4,7 @@ A full-stack mobile-first English (and French) learning app with gamification, A
 
 > Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
 > code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
-> gateway), and deploy targets Vercel. `@lovable.dev/mcp-js` is still used
-> as a library for the `/mcp` route's MCP server scaffolding, which is
-> unrelated to Lovable hosting. Whether the broader decoupling task
-> (`docs/DESIGN-english-buddy-33-decoupling.md` in the Boardroom repo) is
-> fully closed is tracked there, not here.
+> gateway), and deploy targets Vercel.
 
 ## Tech Stack
 
@@ -35,7 +31,6 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Gamification**: XP, streaks, streak freezes, hearts (with a blocking modal + refill countdown), leagues (Bronze → Diamond), achievements
 - **Friends**: invite-link based, with a friends leaderboard scope
 - **Leaderboards**: global, friends, and country rankings
-- **MCP server** at `/mcp`: OAuth-gated tools (`get_my_progress`, `get_due_reviews`, `list_lessons`, `get_leaderboard`) for external MCP clients
 
 ## Content
 
@@ -111,10 +106,9 @@ src/
 ├── data/                # Curriculum, levels, lesson bank, achievements, courses
 ├── hooks/                # Custom React hooks
 ├── integrations/         # Supabase clients (client.ts, client.server.ts, auth-middleware.ts)
-├── lib/                  # Progress store, server functions (*.functions.ts), SRS/XP pure-math modules, MCP tools
+├── lib/                  # Progress store, server functions (*.functions.ts), SRS/XP pure-math modules
 └── routes/                # File-based routes (TanStack Router)
     ├── api/               # AI endpoints (chat, TTS, STT)
-    ├── mcp.ts              # MCP server route (auto-generated)
     └── _authenticated/    # Protected routes (learn, lesson, review, profile, league, converse, friends)
 e2e/                      # Playwright + axe-core E2E/accessibility tests
 supabase/migrations/      # SQL migrations (not auto-applied — see ARCHITECTURE.md)
