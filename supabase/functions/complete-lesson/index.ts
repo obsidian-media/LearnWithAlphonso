@@ -183,7 +183,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   // completeLessonRemote: a repeat completion only pays the XP delta over
   // its previous best score.
   const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
-    existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
+    existingComp
+      ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned }
+      : null,
     correct,
     total,
   );
