@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeLeaguePromotion,
+  computeLessonReplayXp,
   computeStreakUpdate,
   computeXpGain,
   deriveLessonCompletion,
@@ -151,5 +152,51 @@ describe("deriveLessonCompletion", () => {
     expect(() => deriveLessonCompletion(tiny, 1, ["q1", "not-a-real-question"])).toThrow(
       "Invalid lesson completion payload",
     );
+  });
+});
+
+describe("computeLessonReplayXp", () => {
+  it("awards full XP for a genuine first completion", () => {
+    // 5/5 correct: computeXpGain(5,5) = 5*10 + 20 = 70
+    expect(computeLessonReplayXp(null, 5, 5)).toEqual({
+      bestCorrect: 5,
+      bestXp: 70,
+      xpGain: 70,
+    });
+  });
+
+  it("awards zero XP on an exact repeat of the same score -- the replay-farming fix", () => {
+    // Previously completeLessonRemote had no dedup check at all, so a
+    // scripted loop of the same completion farmed 70 XP every call.
+    expect(computeLessonReplayXp({ correct: 5, xpEarned: 70 }, 5, 5)).toEqual({
+      bestCorrect: 5,
+      bestXp: 70,
+      xpGain: 0,
+    });
+  });
+
+  it("awards zero XP on a worse repeat, and keeps the previous best score", () => {
+    expect(computeLessonReplayXp({ correct: 5, xpEarned: 70 }, 2, 5)).toEqual({
+      bestCorrect: 5,
+      bestXp: 70,
+      xpGain: 0,
+    });
+  });
+
+  it("awards only the delta when a repeat improves on the previous best", () => {
+    // First attempt 2/5 = 20xp; this attempt 5/5 = 70xp -- only +50 owed.
+    expect(computeLessonReplayXp({ correct: 2, xpEarned: 20 }, 5, 5)).toEqual({
+      bestCorrect: 5,
+      bestXp: 70,
+      xpGain: 50,
+    });
+  });
+
+  it("never awards negative XP even if xpEarned somehow exceeds the recomputed best", () => {
+    expect(computeLessonReplayXp({ correct: 5, xpEarned: 999 }, 5, 5)).toEqual({
+      bestCorrect: 5,
+      bestXp: 70,
+      xpGain: 0,
+    });
   });
 });

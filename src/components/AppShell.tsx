@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../lib/progress";
 import { FlameIcon, BoltIcon, HeartIcon } from "./icons";
 import { LeagueTierBadge } from "./LeagueTierBadge";
@@ -25,8 +26,34 @@ function StatPill({
 
 export function TopBar() {
   const { xp, streak, hearts, hydrated, leagueTier } = useProgress();
+
+  // Announce meaningful stat changes to screen readers -- but never on
+  // first hydration (every page load), only on genuine later changes.
+  const [announcement, setAnnouncement] = useState("");
+  const prevStats = useRef<{ xp: number; streak: number; hearts: number } | null>(null);
+  useEffect(() => {
+    if (!hydrated) return;
+    const prev = prevStats.current;
+    if (prev === null) {
+      prevStats.current = { xp, streak, hearts };
+      return;
+    }
+    const changes: string[] = [];
+    if (hearts !== prev.hearts) {
+      const diff = hearts - prev.hearts;
+      changes.push(diff > 0 ? `+${diff} heart${diff === 1 ? "" : "s"}` : `Hearts: ${hearts}`);
+    }
+    if (xp > prev.xp) changes.push(`+${xp - prev.xp} XP`);
+    if (streak !== prev.streak) changes.push(`Streak: ${streak}`);
+    if (changes.length) setAnnouncement(changes.join(", "));
+    prevStats.current = { xp, streak, hearts };
+  }, [hydrated, xp, streak, hearts]);
+
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-surface/85 backdrop-blur-md">
+      <span className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </span>
       <div className="mx-auto flex max-w-[430px] items-center justify-between px-5 py-3.5">
         <Link to="/learn" className="flex items-center gap-2">
           <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
@@ -101,7 +128,7 @@ export function BottomTabs() {
     <nav className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-[430px] items-stretch px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-1">
         <TabItem to="/learn" label="Learn" active={pathname === "/learn"}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none">
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
               d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-8z"
               stroke="currentColor"
@@ -111,7 +138,7 @@ export function BottomTabs() {
           </svg>
         </TabItem>
         <TabItem to="/converse" label="Chat" active={pathname.startsWith("/converse")}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none">
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
               d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-4 4v-4H6a2 2 0 0 1-2-2V6z"
               stroke="currentColor"
@@ -122,7 +149,7 @@ export function BottomTabs() {
           </svg>
         </TabItem>
         <TabItem to="/league" label="League" active={pathname.startsWith("/league")}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none">
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
               d="M8 4h8v3a4 4 0 0 1-8 0V4z"
               stroke="currentColor"
@@ -138,7 +165,7 @@ export function BottomTabs() {
           </svg>
         </TabItem>
         <TabItem to="/profile" label="Profile" active={pathname.startsWith("/profile")}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none">
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <circle cx="12" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.6" />
             <path
               d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"

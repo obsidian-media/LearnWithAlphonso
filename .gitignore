@@ -24,6 +24,9 @@ dist-ssr
 supabase/.branches/
 supabase/.temp/
 
+# Serena MCP server's local project state
+.serena/
+
 # Environment variables — never commit real secrets/keys
 .env
 .env.local
@@ -32,11 +35,22 @@ supabase/.temp/
 # Agent working notes — deferred/postponed work items, local-only scratch
 DEFERRED-WORDS.md
 
+# Audit reports — local-only working documents (2026-09-18): these go
+# stale within weeks and repeatedly needed re-verification against code
+# on every prior pass, so they're kept out of shared history rather than
+# calcifying into false "documentation" future readers trust instead of
+# re-checking the actual code.
+AUDIT.md
+ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
+
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Vitest coverage reports
+/coverage/
 
 # Swift Package Manager build artifacts (ios/LearnWithAlphonsoKit)
 .build/

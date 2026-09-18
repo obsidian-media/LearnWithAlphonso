@@ -64,7 +64,7 @@ export function AchievementBadge({
       className="grid size-12 place-items-center rounded-full"
       style={{ backgroundColor: unlocked ? color : "#c8c1b3" }}
     >
-      <svg viewBox="0 0 24 24" className="size-6">
+      <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
         <GlyphSvg icon={achievement.icon} />
       </svg>
     </span>

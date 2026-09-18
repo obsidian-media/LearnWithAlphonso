@@ -19,8 +19,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import {
   computeLeaguePromotion,
+  computeLessonReplayXp,
   computeStreakUpdate,
-  computeXpGain,
   deriveLessonCompletion,
   LEAGUES,
   type LeagueTier,
@@ -149,13 +149,47 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
 
   const today = todayStr();
-  const xpGain = computeXpGain(correct, total);
 
-  const { data: pRow } = await admin
-    .from("user_progress")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+  // Batch every read that doesn't depend on another read's result.
+  const [
+    { data: pRow },
+    { data: lpRow },
+    { data: existingComp },
+    { data: existingDay },
+  ] = await Promise.all([
+    admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
+    admin
+      .from("language_progress")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .maybeSingle(),
+    admin
+      .from("lesson_completions")
+      .select("correct,xp_earned")
+      .eq("user_id", userId)
+      .eq("lesson_id", lessonId)
+      .eq("language", course)
+      .maybeSingle(),
+    admin
+      .from("activity_days")
+      .select("xp_earned")
+      .eq("user_id", userId)
+      .eq("day", today)
+      .maybeSingle(),
+  ]);
+
+  // Replay-farming fix, mirrors src/lib/sync.functions.ts's
+  // completeLessonRemote: a repeat completion only pays the XP delta over
+  // its previous best score.
+  const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
+    existingComp
+      ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned }
+      : null,
+    correct,
+    total,
+  );
+
   const cur = pRow ?? {
     user_id: userId,
     streak: 0,
@@ -193,83 +227,72 @@ export async function handleRequest(req: Request): Promise<Response> {
     heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
     heartsBonus = "streak";
   } else if (
-    perfectLessonBonusEarned(correct, total) && regen.hearts < MAX_HEARTS
+    perfectLessonBonusEarned(correct, total) &&
+    xpGain > 0 &&
+    regen.hearts < MAX_HEARTS
   ) {
     heartsResult = gainHearts(regen.hearts, 1);
     heartsBonus = "perfect";
   }
 
-  const { data: lpRow } = await admin
-    .from("language_progress")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("language", course)
-    .maybeSingle();
   const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
   const xp = curLp.xp + xpGain;
 
   const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
   const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
-  await admin.from("user_progress").upsert({
-    user_id: userId,
-    streak,
-    longest_streak: longest,
-    last_active_date: today,
-    hearts: heartsResult.hearts,
-    hearts_refill_at: heartsResult.heartsRefillAt
-      ? new Date(heartsResult.heartsRefillAt).toISOString()
-      : null,
-    streak_freezes: freezes,
-  });
-
-  await admin
-    .from("language_progress")
-    .upsert(
-      { user_id: userId, language: course, xp, league_tier: leagueTier },
-      { onConflict: "user_id,language" },
-    );
-
-  await admin.from("lesson_completions").upsert(
-    {
+  await Promise.all([
+    admin.from("user_progress").upsert({
       user_id: userId,
-      lesson_id: lessonId,
-      correct,
-      total,
-      xp_earned: xpGain,
-      language: course,
-    },
-    { onConflict: "user_id,lesson_id" },
-  );
+      streak,
+      longest_streak: longest,
+      last_active_date: today,
+      hearts: heartsResult.hearts,
+      hearts_refill_at: heartsResult.heartsRefillAt
+        ? new Date(heartsResult.heartsRefillAt).toISOString()
+        : null,
+      streak_freezes: freezes,
+    }),
+    admin
+      .from("language_progress")
+      .upsert(
+        { user_id: userId, language: course, xp, league_tier: leagueTier },
+        { onConflict: "user_id,language" },
+      ),
+    admin.from("lesson_completions").upsert(
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        correct: bestCorrect,
+        total,
+        xp_earned: bestXp,
+        language: course,
+      },
+      { onConflict: "user_id,lesson_id" },
+    ),
+    admin.from("activity_days").upsert({
+      user_id: userId,
+      day: today,
+      xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
+    }),
+  ]);
 
-  const { data: existingDay } = await admin
-    .from("activity_days")
-    .select("xp_earned")
-    .eq("user_id", userId)
-    .eq("day", today)
-    .maybeSingle();
-  await admin.from("activity_days").upsert({
-    user_id: userId,
-    day: today,
-    xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
-  });
-
-  const { data: allComps } = await admin
-    .from("lesson_completions")
-    .select("correct,total")
-    .eq("user_id", userId);
+  const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] =
+    await Promise.all([
+      admin.from("lesson_completions").select("correct,total").eq(
+        "user_id",
+        userId,
+      ),
+      admin.from("achievements").select("id, category, threshold"),
+      admin.from("user_achievements").select("achievement_id,progress").eq(
+        "user_id",
+        userId,
+      ),
+    ]);
   const totalLessons = allComps?.length ?? 0;
   const perfectLessons =
     (allComps ?? []).filter((c) => c.correct === c.total).length;
 
-  const { data: achievements } = await admin
-    .from("achievements")
-    .select("id, category, threshold");
-
-  const { data: prevUnlocks } = await admin
-    .from("user_achievements")
-    .select("achievement_id,progress")
-    .eq("user_id", userId);
   const prevMap = new Map(
     (prevUnlocks ?? []).map((u) => [u.achievement_id, u.progress]),
   );

@@ -96,3 +96,34 @@ export function deriveLessonCompletion(
   }
   return { correct: total - missedSet.size };
 }
+
+export type LessonReplayXp = {
+  /** Best `correct` count ever recorded for this lesson, across all attempts. */
+  bestCorrect: number;
+  /** XP value of that best attempt, as if it were a first completion. */
+  bestXp: number;
+  /** XP to actually award for *this* attempt -- 0 if it doesn't improve on the previous best. */
+  xpGain: number;
+};
+
+/**
+ * completeLessonRemote previously awarded computeXpGain(correct, total)
+ * unconditionally on every call, with no check the lesson wasn't already
+ * completed -- a scripted loop of startLessonSession + completeLessonRemote
+ * against any lesson farmed unlimited XP (and, once hearts bonuses
+ * existed, hearts too). This derives what should actually be paid out: an
+ * attempt only pays the delta over the best score ever recorded for this
+ * lesson, and the stored completion always reflects that best score
+ * ("best score kept," which the `lesson_completions` upsert comment
+ * already claimed but never actually enforced before this).
+ */
+export function computeLessonReplayXp(
+  existingBest: { correct: number; xpEarned: number } | null,
+  correct: number,
+  total: number,
+): LessonReplayXp {
+  const bestCorrect = Math.max(existingBest?.correct ?? 0, correct);
+  const bestXp = computeXpGain(bestCorrect, total);
+  const xpGain = Math.max(0, bestXp - (existingBest?.xpEarned ?? 0));
+  return { bestCorrect, bestXp, xpGain };
+}
