@@ -4,8 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { AchievementBadge } from "../../components/AchievementBadge";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
+import { SegmentedControl } from "../../components/SegmentedControl";
 import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +33,8 @@ function ProfilePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const p = useProgress();
+  const theme = useTheme((s) => s.theme);
+  const setTheme = useTheme((s) => s.setTheme);
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -116,6 +120,19 @@ function ProfilePage() {
           </span>
           <span className="text-ink-soft">→</span>
         </Link>
+
+        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
+        <div className="mt-3 rounded-2xl border border-hairline bg-surface p-4">
+          <SegmentedControl
+            ariaLabel="Choose a theme"
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: "meadow", label: "Meadow" },
+              { value: "studio-ink", label: "Studio Ink" },
+            ]}
+          />
+        </div>
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
         <div className="mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4">
