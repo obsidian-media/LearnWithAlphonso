@@ -109,6 +109,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Source+Sans+3:wght@400;500;600;700&display=swap",
+      },
+      {
+        rel: "stylesheet",
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
@@ -132,7 +136,7 @@ function RootShell({ children }: { children: ReactNode }) {
           // Runs before first paint to avoid a flash of the wrong theme.
           // Kept inline (not an external file) so it blocks nothing.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="studio-ink")document.documentElement.dataset.theme=t;}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="studio-ink"||t==="manuscript")document.documentElement.dataset.theme=t;}catch(e){}})();`,
           }}
         />
         <HeadContent />
