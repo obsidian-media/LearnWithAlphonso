@@ -13,6 +13,31 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
+/// Matches the complete-lesson Edge Function's response shape exactly
+/// (supabase/functions/complete-lesson/index.ts's final jsonResponse call).
+public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
+    public let xp: Int
+    public let streak: Int
+    public let longestStreak: Int
+    public let lastActiveDate: String
+    public let hearts: Int
+    /// Epoch milliseconds a pending heart refill completes at, or nil if
+    /// hearts are full / a bonus just cleared the timer.
+    public let heartsRefillAt: Double?
+    public let streakFreezes: Int
+    public let leagueTier: String
+}
+
+public struct LessonCompletionResult: Sendable, Decodable, Equatable {
+    public let xpGain: Int
+    public let newlyUnlocked: [String]
+    /// "streak" | "perfect" | nil -- which heart bonus (if any) this
+    /// completion earned. See hearts.ts's streakHeartMilestoneReached /
+    /// perfectLessonBonusEarned for the rules.
+    public let heartsBonus: String?
+    public let progress: LessonCompletionProgress
+}
+
 /// Direct PostgREST calls for the RLS-safe subset of src/lib/sync.functions.ts
 /// -- operations where a user legitimately controls their own data with no
 /// adversarial trust concern (spending their own heart, setting their own
@@ -20,10 +45,12 @@ public struct HeartsResult: Sendable, Equatable {
 /// policies (`auth.uid() = user_id`) enforce the "own row only" boundary
 /// server-side regardless of what this client sends.
 ///
-/// completeLessonRemote is deliberately NOT here -- see this file's test
-/// file for why, and the follow-up plan doc
-/// (docs/superpowers/plans/2026-09-17-native-ios-progress-sync-edge-function.md)
-/// for the real design of what that needs instead.
+/// completeLesson is the one exception -- it calls the complete-lesson
+/// Supabase Edge Function (supabase/functions/complete-lesson/index.ts)
+/// rather than PostgREST directly, since granting XP needs a server-only
+/// secret (LESSON_SESSION_SECRET) that can never ship in this binary. See
+/// docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md
+/// for the full design.
 public final class ProgressSyncClient: Sendable {
     public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
@@ -72,6 +99,43 @@ public final class ProgressSyncClient: Sendable {
             "placement_score": score,
             "placement_taken_at": ISO8601DateFormatter().string(from: Date()),
         ])
+    }
+
+    /// Calls the complete-lesson Edge Function -- POST
+    /// {supabaseURL}/functions/v1/complete-lesson with the user's own JWT
+    /// (same auth pattern as the PostgREST calls above, just a different
+    /// endpoint). `sessionToken` must come from a prior startLessonSession
+    /// call (the TanStack Start server function -- still web-only, since
+    /// it just issues a short-lived HMAC token and has no client-trust
+    /// concern of its own).
+    public func completeLesson(
+        lessonID: String,
+        total: Int,
+        missedQuestionIDs: [String],
+        course: String,
+        sessionToken: String
+    ) async throws -> LessonCompletionResult {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/complete-lesson"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = [
+            "lessonId": lessonID,
+            "total": total,
+            "missedQuestionIds": missedQuestionIDs,
+            "course": course,
+            "sessionToken": sessionToken,
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        do {
+            return try JSONDecoder().decode(LessonCompletionResult.self, from: data)
+        } catch {
+            throw ProgressSyncError.invalidPayload
+        }
     }
 
     private func currentHearts(userID: String) async throws -> Int {
@@ -124,7 +188,10 @@ public final class ProgressSyncClient: Sendable {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
-        let message = (object["message"] as? String) ?? (object["msg"] as? String) ?? (object["hint"] as? String)
+        // "message"/"msg"/"hint" are PostgREST's error shape; "error" is the
+        // complete-lesson Edge Function's ({ error: "..." }, see index.ts).
+        let message = (object["message"] as? String) ?? (object["msg"] as? String)
+            ?? (object["hint"] as? String) ?? (object["error"] as? String)
         guard let message, !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return nil
         }

@@ -5,18 +5,13 @@ import FoundationNetworking
 import XCTest
 @testable import LearnWithAlphonsoKit
 
-/// Covers only the RLS-safe, non-adversarial operations -- direct
-/// authenticated PostgREST calls a user can legitimately make about their
-/// own row (auth.uid() = user_id enforced server-side by RLS; see
+/// Covers the RLS-safe, non-adversarial PostgREST operations (a user's own
+/// row, auth.uid() = user_id enforced server-side; see
 /// supabase/migrations/20260725012934_..._progress.sql's
-/// "user_progress_write_own"/"user_progress_update_own" policies).
-///
-/// completeLessonRemote is deliberately NOT ported here -- it grants XP
-/// based on a client-reported score, gated by an HMAC session token signed
-/// with a server-only secret (LESSON_SESSION_SECRET, see
-/// lesson-session.server.ts). That secret can never ship in a distributed
-/// app binary, so this needs a real Supabase Edge Function, not a Swift
-/// client method -- see the follow-up plan doc for the design.
+/// "user_progress_write_own"/"user_progress_update_own" policies), plus
+/// completeLesson, which calls the complete-lesson Edge Function instead
+/// of PostgREST directly (see that method's doc comment and
+/// supabase/functions/complete-lesson/index.ts for why).
 final class ProgressSyncClientTests: XCTestCase {
     private let supabaseURL = URL(string: "https://example.supabase.co")!
     private let userID = "11111111-1111-1111-1111-111111111111"
@@ -129,6 +124,74 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["placement_level"] as? String, "A2")
         XCTAssertEqual(payload["placement_score"] as? Int, 73)
         XCTAssertNotNil(payload["placement_taken_at"])
+    }
+
+    // MARK: - completeLesson
+
+    func testCompleteLessonPostsToTheEdgeFunctionAndDecodesTheResult() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                "xpGain": 100,
+                "newlyUnlocked": ["xp_100", "perfect_1"],
+                "heartsBonus": "perfect",
+                "progress": [
+                    "xp": 100,
+                    "streak": 1,
+                    "longestStreak": 1,
+                    "lastActiveDate": "2026-09-18",
+                    "hearts": 4,
+                    "heartsRefillAt": NSNull(),
+                    "streakFreezes": 0,
+                    "leagueTier": "bronze",
+                ],
+            ])
+        }
+
+        let result = try await client.completeLesson(
+            lessonID: "u1l1",
+            total: 8,
+            missedQuestionIDs: [],
+            course: "en",
+            sessionToken: "a.b"
+        )
+
+        XCTAssertEqual(result.xpGain, 100)
+        XCTAssertEqual(result.newlyUnlocked, ["xp_100", "perfect_1"])
+        XCTAssertEqual(result.heartsBonus, "perfect")
+        XCTAssertEqual(result.progress, LessonCompletionProgress(
+            xp: 100, streak: 1, longestStreak: 1, lastActiveDate: "2026-09-18",
+            hearts: 4, heartsRefillAt: nil, streakFreezes: 0, leagueTier: "bronze"
+        ))
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/complete-lesson"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
+        XCTAssertEqual(payload["total"] as? Int, 8)
+        XCTAssertEqual(payload["missedQuestionIds"] as? [String], [])
+        XCTAssertEqual(payload["course"] as? String, "en")
+        XCTAssertEqual(payload["sessionToken"] as? String, "a.b")
+    }
+
+    func testCompleteLessonSurfacesTheEdgeFunctionsErrorShape() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "Invalid or expired lesson session"])
+            let response = HTTPURLResponse(url: request.url!, statusCode: 403, httpVersion: nil, headerFields: nil)!
+            return (body, response)
+        }
+
+        do {
+            _ = try await client.completeLesson(lessonID: "u1l1", total: 8, missedQuestionIDs: [], course: "en", sessionToken: "bad")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .server(status: 403, message: "Invalid or expired lesson session"))
+        }
     }
 
     // MARK: - error handling

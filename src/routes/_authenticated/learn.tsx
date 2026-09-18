@@ -10,8 +10,14 @@ import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { useServerFn } from "@tanstack/react-start";
-import { setCefrLevel, fetchProgress } from "../../lib/sync.functions";
+import {
+  setCefrLevel,
+  fetchProgress,
+  restoreHeartsRemote,
+  buyHeartWithXpRemote,
+} from "../../lib/sync.functions";
 import { fetchDueReviews } from "../../lib/review.functions";
+import { XP_HEART_COST } from "../../lib/hearts";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -117,9 +123,14 @@ function LearnPage() {
   const setLoading = useProgress((s) => s.setLoading);
   const hearts = useProgress((s) => s.hearts);
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
+  const xp = useProgress((s) => s.xp);
+  const restoreHeartsLocal = useProgress((s) => s.restoreHeartsLocal);
+  const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
   const saveLevel = useServerFn(setCefrLevel);
   const loadProgress = useServerFn(fetchProgress);
   const loadDueReviews = useServerFn(fetchDueReviews);
+  const restoreHearts = useServerFn(restoreHeartsRemote);
+  const buyHeartWithXp = useServerFn(buyHeartWithXpRemote);
   const placed = !hydrated || Boolean(placementTakenAt);
   const curriculum = getCourse(course).curriculum;
   const outOfHearts = hydrated && hearts <= 0;
@@ -142,6 +153,22 @@ function LearnPage() {
   function pick(next: Level) {
     setCefrLevelLocal(next);
     void saveLevel({ data: { level: next, course } }).catch(() => {});
+  }
+
+  function handleRefillDue() {
+    restoreHeartsLocal();
+    void restoreHearts().catch(() => {});
+  }
+
+  function handleBuyWithXp() {
+    spendXpForHeartLocal(XP_HEART_COST);
+    void buyHeartWithXp({ data: { course } }).catch(() => {
+      // Optimistic apply failed server-side (e.g. race with another tab) --
+      // resync from the server rather than leave the client out of sync.
+      void loadProgress({ data: { course } })
+        .then(hydrate)
+        .catch(() => {});
+    });
   }
 
   async function switchCourse(next: typeof course) {
@@ -386,7 +413,10 @@ function LearnPage() {
       <HeartsModal
         open={showHeartsModal}
         refillAt={heartsRefillAt}
+        xp={xp}
         onClose={() => setShowHeartsModal(false)}
+        onRefillDue={handleRefillDue}
+        onBuyWithXp={handleBuyWithXp}
       />
     </MobileFrame>
   );

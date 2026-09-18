@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { LeagueTier } from "../data/achievements";
 import type { Course } from "../data/courses";
+import { MAX_HEARTS } from "./hearts";
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -43,6 +44,7 @@ export type ProgressState = {
     streak: number;
     longestStreak: number;
     hearts: number;
+    heartsRefillAt?: number | null;
     streakFreezes: number;
     leagueTier: LeagueTier;
     lastActiveDate: string;
@@ -52,6 +54,9 @@ export type ProgressState = {
     unlockedAchievements: string[];
   }) => void;
   loseHeartLocal: () => void;
+  restoreHeartsLocal: () => void;
+  gainHeartsLocal: (amount: number) => void;
+  spendXpForHeartLocal: (cost: number) => void;
   reset: () => void;
 };
 
@@ -89,6 +94,15 @@ export const useProgress = create<ProgressState>()((set) => ({
     set((s) => ({
       hearts: Math.max(0, s.hearts - 1),
       heartsRefillAt: s.hearts - 1 <= 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
+    })),
+  restoreHeartsLocal: () => set({ hearts: MAX_HEARTS, heartsRefillAt: null }),
+  gainHeartsLocal: (amount) =>
+    set((s) => ({ hearts: Math.min(MAX_HEARTS, s.hearts + amount), heartsRefillAt: null })),
+  spendXpForHeartLocal: (cost) =>
+    set((s) => ({
+      hearts: Math.min(MAX_HEARTS, s.hearts + 1),
+      heartsRefillAt: null,
+      xp: Math.max(0, s.xp - cost),
     })),
   reset: () => set({ ...initial, hydrated: true }),
 }));

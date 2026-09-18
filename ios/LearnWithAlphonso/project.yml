@@ -1,0 +1,43 @@
+# XcodeGen project spec -- generates LearnWithAlphonso.xcodeproj
+# deterministically (`xcodegen generate`), so the actual .xcodeproj is
+# never hand-edited or committed (see .gitignore). This is what lets the
+# app project exist without ever opening Xcode's GUI -- see
+# docs/superpowers/specs/2026-09-17-native-ios-app-design.md.
+#
+# PRODUCT_BUNDLE_IDENTIFIER below is a placeholder pending a real decision
+# (see that doc's "Open questions" #3) -- cheap to change before an App ID
+# is registered in App Store Connect, so not blocking scaffold work.
+name: LearnWithAlphonso
+options:
+  bundleIdPrefix: com.obsidianmedia
+  deploymentTarget:
+    iOS: "17.0"
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_MACCATALYST: false
+packages:
+  LearnWithAlphonsoKit:
+    path: ../LearnWithAlphonsoKit
+targets:
+  LearnWithAlphonso:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Sources
+    dependencies:
+      - package: LearnWithAlphonsoKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"

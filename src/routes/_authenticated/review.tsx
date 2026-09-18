@@ -7,9 +7,14 @@ import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { getCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
-import { fetchDueReviews, gradeReview } from "../../lib/review.functions";
+import {
+  fetchDueReviews,
+  gradeReview,
+  claimReviewClearBonusRemote,
+} from "../../lib/review.functions";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
+import { HeartIcon } from "../../components/icons";
 
 export const Route = createFileRoute("/_authenticated/review")({
   component: ReviewPage,
@@ -37,13 +42,16 @@ function ReviewPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const load = useServerFn(fetchDueReviews);
   const grade = useServerFn(gradeReview);
+  const claimBonus = useServerFn(claimReviewClearBonusRemote);
   const course = useProgress((s) => s.course);
+  const gainHeartsLocal = useProgress((s) => s.gainHeartsLocal);
   const [cards, setCards] = useState<Card[] | null>(null);
   const [total, setTotal] = useState(0);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [stats, setStats] = useState({ right: 0, wrong: 0, retired: 0 });
+  const [heartBonusGranted, setHeartBonusGranted] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -67,6 +75,28 @@ function ReviewPage() {
   }, [load, course]);
 
   const card = cards && idx < cards.length ? cards[idx] : null;
+  const queueCleared = cards !== null && cards.length > 0 && idx >= cards.length;
+
+  useEffect(() => {
+    if (!queueCleared) return;
+    let alive = true;
+    void claimBonus({ data: { course } })
+      .then((res) => {
+        if (alive && res.granted) setHeartBonusGranted(true);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+    // Only depends on the transition into "cleared" -- claimBonus/course
+    // are stable for the life of one review session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueCleared]);
+
+  useEffect(() => {
+    if (heartBonusGranted) gainHeartsLocal(1);
+  }, [heartBonusGranted, gainHeartsLocal]);
+
   const q = card?.question;
   const isCorrect = useMemo(() => {
     if (!q || picked === null) return false;
@@ -126,6 +156,7 @@ function ReviewPage() {
           body={`${stats.right} correct · ${stats.wrong} to revisit${
             stats.retired ? ` · ${stats.retired} mastered and retired` : ""
           }.`}
+          bonus={heartBonusGranted ? "Queue cleared: +1 heart" : undefined}
         />
       </LessonFrame>
     );
@@ -230,7 +261,7 @@ function ReviewPage() {
   );
 }
 
-function Empty({ title, body }: { title: string; body: string }) {
+function Empty({ title, body, bonus }: { title: string; body: string; bonus?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -250,6 +281,12 @@ function Empty({ title, body }: { title: string; body: string }) {
       </div>
       <h1 className="font-display text-[22px] font-semibold text-ink">{title}</h1>
       <p className="mt-2 max-w-[280px] text-sm text-ink-soft/80">{body}</p>
+      {bonus && (
+        <p className="mt-3 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
+          <HeartIcon className="size-3.5" />
+          {bonus}
+        </p>
+      )}
       <Link
         to="/learn"
         className="mt-8 w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface"

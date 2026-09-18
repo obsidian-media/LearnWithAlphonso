@@ -322,6 +322,7 @@ export type Database = {
           hearts: number;
           hearts_refill_at: string | null;
           last_active_date: string | null;
+          last_review_bonus_date: string | null;
           league_tier: string;
           longest_streak: number;
           placement_level: string | null;
@@ -338,6 +339,7 @@ export type Database = {
           hearts?: number;
           hearts_refill_at?: string | null;
           last_active_date?: string | null;
+          last_review_bonus_date?: string | null;
           league_tier?: string;
           longest_streak?: number;
           placement_level?: string | null;
@@ -354,6 +356,7 @@ export type Database = {
           hearts?: number;
           hearts_refill_at?: string | null;
           last_active_date?: string | null;
+          last_review_bonus_date?: string | null;
           league_tier?: string;
           longest_streak?: number;
           placement_level?: string | null;

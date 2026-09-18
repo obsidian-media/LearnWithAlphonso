@@ -11,6 +11,16 @@ import {
   computeXpGain,
   deriveLessonCompletion,
 } from "./progress-math";
+import {
+  HEART_REFILL_MS,
+  MAX_HEARTS,
+  XP_HEART_COST,
+  buyHeartWithXp,
+  gainHearts,
+  perfectLessonBonusEarned,
+  resolveHeartsRefill,
+  streakHeartMilestoneReached,
+} from "./hearts";
 
 /**
  * Course-specific progress (xp, cefr level, placement, league) lives in
@@ -106,13 +116,34 @@ export const fetchProgress = createServerFn({ method: "GET" })
       completedLessons.push(c.lesson_id);
       answers[c.lesson_id] = { correct: c.correct, total: c.total };
     }
+
+    // A pending "out of hearts" timer may have already elapsed since this
+    // row was last written -- resolve it now (full refill) and persist,
+    // rather than leaving the client to display a countdown that never
+    // actually restores anything.
+    const rawHeartsRefillAt = p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null;
+    const resolvedHearts = resolveHeartsRefill(
+      p?.hearts ?? MAX_HEARTS,
+      rawHeartsRefillAt,
+      Date.now(),
+    );
+    if (
+      resolvedHearts.hearts !== (p?.hearts ?? MAX_HEARTS) ||
+      resolvedHearts.heartsRefillAt !== rawHeartsRefillAt
+    ) {
+      await supabase
+        .from("user_progress")
+        .update({ hearts: resolvedHearts.hearts, hearts_refill_at: null })
+        .eq("user_id", userId);
+    }
+
     return {
       xp: lp?.xp ?? 0,
       streak: p?.streak ?? 0,
       longestStreak: p?.longest_streak ?? 0,
       lastActiveDate: p?.last_active_date ?? null,
-      hearts: p?.hearts ?? 5,
-      heartsRefillAt: p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
+      hearts: resolvedHearts.hearts,
+      heartsRefillAt: resolvedHearts.heartsRefillAt,
       streakFreezes: p?.streak_freezes ?? 0,
       leagueTier: ((lp?.league_tier as LeagueTier) ?? "bronze") as LeagueTier,
       completedLessons,
@@ -208,7 +239,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       streak: 0,
       longest_streak: 0,
       last_active_date: null as string | null,
-      hearts: 5,
+      hearts: MAX_HEARTS,
+      hearts_refill_at: null as string | null,
       streak_freezes: 0,
     };
 
@@ -223,6 +255,24 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       longestStreak: cur.longest_streak,
       freezes: cur.streak_freezes,
     });
+
+    // Resolve any pending passive regen first, then layer bonuses on top:
+    // a streak milestone grants a full refill (takes priority), otherwise
+    // a perfect lesson (zero misses) grants a single heart back.
+    const regen = resolveHeartsRefill(
+      cur.hearts,
+      cur.hearts_refill_at ? new Date(cur.hearts_refill_at).getTime() : null,
+      Date.now(),
+    );
+    let heartsResult = regen;
+    let heartsBonus: "streak" | "perfect" | null = null;
+    if (streakHeartMilestoneReached(cur.streak, streak)) {
+      heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
+      heartsBonus = "streak";
+    } else if (perfectLessonBonusEarned(correct, total) && regen.hearts < MAX_HEARTS) {
+      heartsResult = gainHearts(regen.hearts, 1);
+      heartsBonus = "perfect";
+    }
 
     // per-course state: xp and league live in language_progress
     const { data: lpRow } = await supabase
@@ -243,7 +293,10 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       streak,
       longest_streak: longest,
       last_active_date: today,
-      hearts: cur.hearts,
+      hearts: heartsResult.hearts,
+      hearts_refill_at: heartsResult.heartsRefillAt
+        ? new Date(heartsResult.heartsRefillAt).toISOString()
+        : null,
       streak_freezes: freezes,
     });
 
@@ -338,12 +391,14 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     return {
       xpGain,
       newlyUnlocked,
+      heartsBonus,
       progress: {
         xp,
         streak,
         longestStreak: longest,
         lastActiveDate: today,
-        hearts: cur.hearts,
+        hearts: heartsResult.hearts,
+        heartsRefillAt: heartsResult.heartsRefillAt,
         streakFreezes: freezes,
         leagueTier,
       },
@@ -356,18 +411,93 @@ export const loseHeartRemote = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: p } = await supabase
       .from("user_progress")
-      .select("hearts")
+      .select("hearts,hearts_refill_at")
       .eq("user_id", userId)
       .maybeSingle();
-    const next = Math.max(0, (p?.hearts ?? 5) - 1);
+    // Resolve any refill that already completed before applying the loss,
+    // in case this client's local state is stale.
+    const regen = resolveHeartsRefill(
+      p?.hearts ?? MAX_HEARTS,
+      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
+      Date.now(),
+    );
+    const next = Math.max(0, regen.hearts - 1);
     await supabase
       .from("user_progress")
       .update({
         hearts: next,
-        hearts_refill_at: next === 0 ? new Date(Date.now() + 30 * 60 * 1000).toISOString() : null,
+        hearts_refill_at: next === 0 ? new Date(Date.now() + HEART_REFILL_MS).toISOString() : null,
       })
       .eq("user_id", userId);
     return { hearts: next };
+  });
+
+/**
+ * Called by the client the moment its countdown reaches zero, so hearts
+ * come back immediately instead of waiting for the next page load to
+ * hydrate. Also safe to call speculatively -- it's a no-op if no refill
+ * is actually due yet.
+ */
+export const restoreHeartsRemote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: p } = await supabase
+      .from("user_progress")
+      .select("hearts,hearts_refill_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const resolved = resolveHeartsRefill(
+      p?.hearts ?? MAX_HEARTS,
+      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
+      Date.now(),
+    );
+    if (resolved.hearts !== (p?.hearts ?? MAX_HEARTS) || p?.hearts_refill_at) {
+      await supabase
+        .from("user_progress")
+        .update({ hearts: resolved.hearts, hearts_refill_at: null })
+        .eq("user_id", userId);
+    }
+    return resolved;
+  });
+
+/** Spend XP from the active course to buy back a heart -- gives impatient
+ * users a way to unblock themselves besides waiting out the timer. */
+export const buyHeartWithXpRemote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: p } = await supabase
+      .from("user_progress")
+      .select("hearts,hearts_refill_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const regen = resolveHeartsRefill(
+      p?.hearts ?? MAX_HEARTS,
+      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
+      Date.now(),
+    );
+    const { data: lp } = await supabase
+      .from("language_progress")
+      .select("xp")
+      .eq("user_id", userId)
+      .eq("language", data.course)
+      .maybeSingle();
+    const purchase = buyHeartWithXp(regen.hearts, lp?.xp ?? 0);
+    if (!purchase.ok) {
+      throw new Error(purchase.reason === "hearts-full" ? "Hearts already full" : "Not enough XP");
+    }
+    await supabase
+      .from("user_progress")
+      .update({ hearts: purchase.hearts, hearts_refill_at: null })
+      .eq("user_id", userId);
+    await supabase
+      .from("language_progress")
+      .update({ xp: purchase.xp })
+      .eq("user_id", userId)
+      .eq("language", data.course);
+    return { hearts: purchase.hearts, xp: purchase.xp, cost: XP_HEART_COST };
   });
 
 const mergeSchema = z.object({

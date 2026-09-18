@@ -5,7 +5,7 @@ import { getScenario } from "../../data/scenarios";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 
-export const Route = createFileRoute("/_authenticated/converse/$scenarioId")({
+export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   component: ConverseChatPage,
   loader: ({ params }) => {
     const scenario = getScenario(params.scenarioId);
@@ -45,6 +45,12 @@ function ConverseChatPage() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  // getUserMedia is async, so a release (mouseup/touchend/keyup) can land
+  // before the MediaRecorder even exists -- stopRecording() would then be
+  // a no-op and the mic would stay hot with no way to stop it. This flag
+  // records "the user already asked to stop" so startRecording can honor
+  // it the moment the recorder is actually created.
+  const stopRequestedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -129,8 +135,15 @@ function ConverseChatPage() {
 
   const startRecording = useCallback(async () => {
     setError(null);
+    stopRequestedRef.current = false;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // The user already released/cancelled while permission was pending --
+      // don't start recording at all, just release the mic immediately.
+      if (stopRequestedRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       streamRef.current = stream;
       const mime = MediaRecorder.isTypeSupported("audio/webm")
         ? "audio/webm"
@@ -185,6 +198,7 @@ function ConverseChatPage() {
   }, [send]);
 
   const stopRecording = useCallback(() => {
+    stopRequestedRef.current = true;
     const rec = recorderRef.current;
     if (rec && rec.state !== "inactive") rec.stop();
     setRecording(false);
@@ -270,7 +284,13 @@ function ConverseChatPage() {
         </button>
       </header>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-6">
+      <div
+        ref={scrollRef}
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation"
+        className="flex-1 overflow-y-auto px-5 py-6"
+      >
         <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -286,16 +306,20 @@ function ConverseChatPage() {
             </div>
           ))}
           {(sending || transcribing) && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" role="status">
               <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
                 <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
                 <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
                 <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
               </div>
+              <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
             </div>
           )}
           {error && (
-            <div className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700">
+            <div
+              role="alert"
+              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            >
               {error}
             </div>
           )}
@@ -317,9 +341,7 @@ function ConverseChatPage() {
               void startRecording();
             }}
             onMouseUp={stopRecording}
-            onMouseLeave={() => {
-              if (recording) stopRecording();
-            }}
+            onMouseLeave={stopRecording}
             onTouchStart={(e) => {
               e.preventDefault();
               void startRecording();
@@ -328,7 +350,21 @@ function ConverseChatPage() {
               e.preventDefault();
               stopRecording();
             }}
+            onTouchCancel={stopRecording}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || e.key === " ") && !e.repeat) {
+                e.preventDefault();
+                void startRecording();
+              }
+            }}
+            onKeyUp={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                stopRecording();
+              }
+            }}
             aria-label={recording ? "Release to send" : "Hold to speak"}
+            aria-pressed={recording}
             disabled={sending || transcribing}
             className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
               recording

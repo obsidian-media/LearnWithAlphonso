@@ -5,6 +5,7 @@ import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { useTheme } from "../../lib/theme";
+import { HeartIcon } from "../../components/icons";
 import { getCourse } from "../../data/courses";
 import { reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
@@ -57,7 +58,11 @@ function LessonPage() {
   const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
-  const [done, setDone] = useState<{ xp: number; unlocked: string[] } | null>(null);
+  const [done, setDone] = useState<{
+    xp: number;
+    unlocked: string[];
+    heartsBonus: "streak" | "perfect" | null;
+  } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id), [id]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
   // Fresh per-mount seed so replaying the same lesson shuffles answer
@@ -159,9 +164,9 @@ function LessonPage() {
           ...res.newlyUnlocked.filter((a) => !state.unlockedAchievements.includes(a)),
         ],
       });
-      setDone({ xp: res.xpGain, unlocked: res.newlyUnlocked });
+      setDone({ xp: res.xpGain, unlocked: res.newlyUnlocked, heartsBonus: res.heartsBonus });
     } catch {
-      setDone({ xp: 0, unlocked: [] });
+      setDone({ xp: 0, unlocked: [], heartsBonus: null });
     }
   }
 
@@ -222,6 +227,7 @@ function LessonPage() {
         <FinishScreen
           xp={done.xp}
           unlocked={done.unlocked}
+          heartsBonus={done.heartsBonus}
           lessonTitle={lesson.title}
           correct={correct}
           total={total}
@@ -470,6 +476,7 @@ function OverviewScreen({
 function FinishScreen({
   xp,
   unlocked,
+  heartsBonus,
   lessonTitle,
   correct,
   total,
@@ -477,6 +484,7 @@ function FinishScreen({
 }: {
   xp: number;
   unlocked: string[];
+  heartsBonus: "streak" | "perfect" | null;
   lessonTitle: string;
   correct: number;
   total: number;
@@ -509,6 +517,14 @@ function FinishScreen({
       <p className="tnum mt-1 text-xs text-ink-soft">
         {correct}/{total} correct
       </p>
+      {heartsBonus && (
+        <p className="mt-2 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
+          <HeartIcon className="size-3.5" />
+          {heartsBonus === "streak"
+            ? "Streak milestone: hearts fully refilled"
+            : "Perfect lesson: +1 heart"}
+        </p>
+      )}
 
       {missedQs.length > 0 && (
         <div
