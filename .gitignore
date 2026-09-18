@@ -34,6 +34,11 @@ DEFERRED-WORDS.md
 /blob-report/
 /playwright/.cache/
 
+# Swift Package Manager build artifacts (ios/LearnWithAlphonsoKit)
+.build/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
