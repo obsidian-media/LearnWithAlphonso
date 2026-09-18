@@ -65,7 +65,12 @@ function ConversePage() {
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-soft/80">{s.blurb}</p>
                 </div>
-                <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-ink-soft/50" fill="none">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-5 shrink-0 text-ink-soft/50"
+                  fill="none"
+                  aria-hidden="true"
+                >
                   <path
                     d="M9 6l6 6-6 6"
                     stroke="currentColor"

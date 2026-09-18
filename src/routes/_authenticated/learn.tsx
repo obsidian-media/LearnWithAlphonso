@@ -91,7 +91,7 @@ function LessonNode({
   );
   if (state === "locked")
     return (
-      <div role="img" aria-label={`${title} (locked)`}>
+      <div role="note" aria-label={`${title} (locked)`}>
         {button}
       </div>
     );
@@ -216,6 +216,7 @@ function LearnPage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
+        <h1 className="sr-only">Learn</h1>
         <div className="mb-6 flex gap-2">
           {COURSES.map((c) => (
             <button
@@ -319,9 +320,9 @@ function LearnPage() {
                   <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
                     {unit.eyebrow}
                   </p>
-                  <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
+                  <h2 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
                     {unit.title}
-                  </h1>
+                  </h2>
                   <p className="mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
                     {unit.description}
                   </p>

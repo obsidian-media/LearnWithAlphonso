@@ -219,7 +219,7 @@ function ConverseChatPage() {
           aria-label="Back"
           className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none">
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
             <path
               d="M15 6l-6 6 6 6"
               stroke="currentColor"
@@ -248,7 +248,7 @@ function ConverseChatPage() {
               : "border-hairline bg-surface text-ink-soft/60"
           }`}
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none">
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
             {ttsOn ? (
               <>
                 <path
@@ -336,34 +336,14 @@ function ConverseChatPage() {
         >
           <button
             type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              void startRecording();
-            }}
-            onMouseUp={stopRecording}
-            onMouseLeave={stopRecording}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              void startRecording();
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              stopRecording();
-            }}
-            onTouchCancel={stopRecording}
-            onKeyDown={(e) => {
-              if ((e.key === "Enter" || e.key === " ") && !e.repeat) {
-                e.preventDefault();
+            onClick={() => {
+              if (recording) {
+                stopRecording();
+              } else {
                 void startRecording();
               }
             }}
-            onKeyUp={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                stopRecording();
-              }
-            }}
-            aria-label={recording ? "Release to send" : "Hold to speak"}
+            aria-label={recording ? "Stop recording and send" : "Record a voice message"}
             aria-pressed={recording}
             disabled={sending || transcribing}
             className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
@@ -372,7 +352,7 @@ function ConverseChatPage() {
                 : "bg-moss text-surface hard-shadow"
             } disabled:opacity-50`}
           >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none">
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
               <rect
                 x="9"
                 y="3"
@@ -401,7 +381,7 @@ function ConverseChatPage() {
                 }
               }}
               rows={1}
-              placeholder={recording ? "Listening…" : "Type or hold the mic"}
+              placeholder={recording ? "Listening…" : "Type or tap the mic"}
               disabled={sending || transcribing || recording}
               className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
             />
@@ -412,7 +392,7 @@ function ConverseChatPage() {
             aria-label="Send"
             className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
           >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none">
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
               <path
                 d="M5 12l14-7-4 7 4 7-14-7z"
                 stroke="currentColor"

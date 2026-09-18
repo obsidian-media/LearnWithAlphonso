@@ -87,7 +87,7 @@ function Landing() {
               className="flex items-start gap-3 rounded-2xl border border-hairline bg-parchment p-3.5"
             >
               <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-moss text-surface">
-                <svg viewBox="0 0 24 24" className="size-4" fill="none">
+                <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
                   <path
                     d="m6 12 4 4 8-9"
                     stroke="white"

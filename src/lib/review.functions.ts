@@ -24,34 +24,72 @@ function addDays(days: number) {
   return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 }
 
-/** Record questions answered incorrectly during a lesson. */
+/**
+ * Record questions answered incorrectly during a lesson. Previously
+ * accepted arbitrary itemKeys with no proof the caller actually opened
+ * this lesson -- a user could seed a review_items row (and, downstream,
+ * farm the review-clear heart bonus) for any real lesson/question without
+ * ever taking it. Now requires and verifies the same signed session token
+ * completeLessonRemote does, and rejects any itemKey that doesn't
+ * actually belong to this lesson's real question set.
+ */
 export const recordMisses = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { lessonId: string; level: string; itemKeys: string[]; course?: string }) =>
-    z
-      .object({
-        lessonId: z
-          .string()
-          .min(1)
-          .max(80)
-          .regex(/^[a-z0-9]+$/, "invalid lesson id"),
-        level: z.string().min(2).max(4),
-        itemKeys: z
-          .array(
-            z
-              .string()
-              .min(1)
-              .max(120)
-              .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
-          )
-          .max(40),
-        course: courseSchema,
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      lessonId: string;
+      level: string;
+      itemKeys: string[];
+      course?: string;
+      sessionToken: string;
+    }) =>
+      z
+        .object({
+          lessonId: z
+            .string()
+            .min(1)
+            .max(80)
+            .regex(/^[a-z0-9]+$/, "invalid lesson id"),
+          level: z.string().min(2).max(4),
+          itemKeys: z
+            .array(
+              z
+                .string()
+                .min(1)
+                .max(120)
+                .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
+            )
+            .max(40),
+          course: courseSchema,
+          sessionToken: z.string().min(1).max(2000),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (data.itemKeys.length === 0) return { added: 0 };
+
+    const { verifyLessonSessionToken } = await import("./lesson-session.server");
+    if (
+      !verifyLessonSessionToken(data.sessionToken, {
+        userId,
+        lessonId: data.lessonId,
+        course: data.course,
+      })
+    ) {
+      throw new Error("Invalid or expired lesson session");
+    }
+
+    const found = getCourse(data.course).findLesson(data.lessonId);
+    if (!found) throw new Error("Invalid lesson");
+    const realQuestionIds = new Set(found.lesson.questions.map((q) => q.id));
+    for (const key of data.itemKeys) {
+      const [lessonId, questionId] = key.split(":");
+      if (lessonId !== data.lessonId || !realQuestionIds.has(questionId)) {
+        throw new Error("Invalid item key for this lesson");
+      }
+    }
+
     const rows = data.itemKeys.map((key) => ({
       user_id: userId,
       item_key: key,
