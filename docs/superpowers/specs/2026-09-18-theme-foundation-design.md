@@ -56,7 +56,7 @@ colors:
 ```css
 [data-theme="studio-ink"] {
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: oklch(0.16 0.01 260);        /* graphite, not pure black */
   --color-parchment: oklch(0.2 0.012 260);      /* secondary surface, one step up from background */
@@ -104,12 +104,17 @@ currently triggers the `.dark` class. It gets deleted as part of this work;
 removed or migrated to theme-based selectors if any exist (grep found none
 using it meaningfully as of this writing).
 
-Studio Ink's font imports (Instrument Serif, Switzer) are added to
-`__root.tsx`'s `links` array alongside the existing Google Fonts
-`<link>` for Fraunces/Geist. Switzer isn't on Google Fonts (it's a
-Fontshare font) -- it will be self-hosted: `.woff2` files checked into
-`public/fonts/switzer/` and referenced via `@font-face` in `styles.css`,
-per Fontshare's free license terms.
+**Correction found while writing the implementation plan:** Switzer is a
+Fontshare-only font with no Google Fonts CDN listing, and self-hosting it
+means downloading its `.woff2` binaries -- something no tool available in
+this session/session-type can fetch (binary font assets, not text/markdown).
+Rather than leave a plan task no one can execute, the sans pairing is
+**Instrument Sans** instead -- same foundry and type family as Instrument
+Serif (they're designed as a pair), equally distinctive versus
+Inter/Roboto-generic defaults, and Google Fonts-hosted, so it loads exactly
+the way Fraunces/Geist already do today: a `<link>` tag, no binary assets
+to manage. Both fonts are added to `__root.tsx`'s `links` array alongside
+the existing Fraunces/Geist `<link>`.
 
 ## iOS portability
 
@@ -126,7 +131,7 @@ web-only) are also written to `src/design-tokens/studio-ink.json`:
     "muted": "#33363f",
     "border": "#ffffff1a"
   },
-  "fonts": { "display": "Instrument Serif", "sans": "Switzer" },
+  "fonts": { "display": "Instrument Serif", "sans": "Instrument Sans" },
   "radii": { "sm": 4, "md": 8, "lg": 12 }
 }
 ```
@@ -145,17 +150,37 @@ New file `src/lib/theme.ts`, following the existing `useProgress` store's
 shape and conventions (`src/lib/progress.ts`):
 
 ```ts
-export type ThemeName = "meadow" | "studio-ink";
+export const THEME_NAMES = ["meadow", "studio-ink"] as const;
+export type ThemeName = (typeof THEME_NAMES)[number];
+
+export function isThemeName(value: unknown): value is ThemeName {
+  return typeof value === "string" && (THEME_NAMES as readonly string[]).includes(value);
+}
+
+// Server value wins when present and valid; otherwise fall back to
+// whatever's in localStorage; otherwise the default. Pure function so it's
+// unit-testable without a DOM or a browser's localStorage.
+export function resolveInitialTheme(
+  localStorageValue: unknown,
+  serverValue: unknown,
+): ThemeName {
+  if (isThemeName(serverValue)) return serverValue;
+  if (isThemeName(localStorageValue)) return localStorageValue;
+  return "meadow";
+}
 
 type ThemeState = {
   theme: ThemeName;
   hydrated: boolean;
   setTheme: (theme: ThemeName) => void;
-  hydrateFromServer: (theme: ThemeName | null) => void;
+  hydrateFromServer: (serverValue: unknown) => void;
 };
 
-export const useTheme = create<ThemeState>()((set) => ({
-  theme: readLocalTheme(), // localStorage, falls back to "meadow"
+export const useTheme = create<ThemeState>()((set, get) => ({
+  theme: resolveInitialTheme(
+    typeof localStorage !== "undefined" ? localStorage.getItem("theme") : null,
+    null,
+  ),
   hydrated: false,
   setTheme: (theme) => {
     document.documentElement.dataset.theme = theme;
@@ -163,19 +188,16 @@ export const useTheme = create<ThemeState>()((set) => ({
     set({ theme });
     void updateProfile({ data: { theme } }); // fire-and-forget; profile.tsx already does this for name/country
   },
-  hydrateFromServer: (theme) => {
-    if (theme && theme !== useTheme.getState().theme) {
-      document.documentElement.dataset.theme = theme;
-      localStorage.setItem("theme", theme);
+  hydrateFromServer: (serverValue) => {
+    const resolved = resolveInitialTheme(localStorage.getItem("theme"), serverValue);
+    if (resolved !== get().theme) {
+      document.documentElement.dataset.theme = resolved;
+      localStorage.setItem("theme", resolved);
     }
-    set({ theme: theme ?? useTheme.getState().theme, hydrated: true });
+    set({ theme: resolved, hydrated: true });
   },
 }));
 ```
-
-`readLocalTheme()` reads `localStorage.getItem("theme")`, validates it's a
-known `ThemeName`, defaults to `"meadow"` otherwise (covers first visit,
-corrupted storage, and old values from a removed theme).
 
 **Load sequence** (avoids flash of wrong theme):
 1. A tiny inline `<script>` in `RootShell`, before any stylesheet,
@@ -241,14 +263,36 @@ stay as-is; only the new theme control is instant-apply).
 
 ## Testing
 
-- **Vitest** (`src/lib/theme.test.ts`): `readLocalTheme` fallback behavior
-  (missing key, invalid value, valid value); `setTheme` writes
-  `data-theme` + localStorage; `hydrateFromServer` only overrides when
-  the server value differs and is valid.
-- **Playwright** (extends existing e2e suite): visit Profile, toggle the
-  theme control, assert `document.documentElement.dataset.theme` updates
-  and a Studio Ink-only CSS custom property (e.g. `--font-display`)
-  resolves to `"Instrument Serif"` via `getComputedStyle`.
+**Correction found while writing the implementation plan:** the Profile
+page is behind `_authenticated`, and `playwright.config.ts`'s own header
+comment states authenticated routes have no e2e coverage today (no seeded
+test account exists yet -- a known, pre-existing gap, not something this
+phase needs to fix). There's also no jsdom/React Testing Library in this
+repo (`vitest.config.ts` runs plain Node, per the existing
+`progress-math.test.ts`-style pure-function tests) -- adding a DOM test
+environment just for this feature would be new test infra, not "using
+existing patterns." Testing is corrected to fit what's actually there:
+
+- **Vitest** (`src/lib/theme.ts` + `src/lib/theme.test.ts`): the theme
+  store's *decision logic* is written as plain, DOM-free functions --
+  `isThemeName(value): value is ThemeName` and
+  `resolveInitialTheme(localStorageValue, serverValue): ThemeName` -- and
+  those are what's unit tested (unknown/missing/valid values for each
+  input independently, and server-vs-local precedence). This mirrors how
+  `progress.ts` (the Zustand store, untested directly) relies on
+  `progress-math.ts` (pure functions, tested) -- the store itself is thin
+  wiring around tested logic, not tested itself.
+- **Playwright** (extends existing e2e suite, public routes only): visit
+  `/` with no `theme` key in localStorage and assert
+  `document.documentElement.dataset.theme` is `"meadow"` (the default);
+  separately, set `localStorage.theme = "studio-ink"` before navigation
+  (`page.addInitScript`) and assert it's `"studio-ink"` after load and
+  that `getComputedStyle(document.documentElement).getPropertyValue("--font-display")`
+  contains `"Instrument Serif"`. This exercises the anti-FOUC inline
+  script and the CSS token block end-to-end without needing an
+  authenticated session -- the actual Profile-page toggle UI itself
+  isn't e2e-covered, consistent with every other `_authenticated` screen
+  in this repo today.
 - No visual regression tooling is introduced (see Non-goals).
 
 ## Files touched
@@ -263,5 +307,9 @@ stay as-is; only the new theme control is instant-apply).
   `getMyProfile` return type with `theme`
 - `src/routes/_authenticated/profile.tsx` -- theme `SegmentedControl`
 - `src/design-tokens/studio-ink.json` -- new, iOS-portable token source
-- `public/fonts/switzer/*.woff2` -- new, self-hosted font files
 - `supabase/migrations/<timestamp>_add_profile_theme.sql` -- new
+- `src/integrations/supabase/types.ts` -- hand-add `theme: string` to the
+  `profiles` table's `Row`/`Insert`/`Update` types (this repo hand-maintains
+  this file alongside migrations rather than generating it from a live
+  project; no other migration in `supabase/migrations/` has a matching
+  automated regen step either)
