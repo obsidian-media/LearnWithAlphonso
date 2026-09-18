@@ -73,3 +73,32 @@ jobs:
 
       - name: Run LearnWithAlphonsoKit test suite
         run: swift test --package-path ios/LearnWithAlphonsoKit
+
+  ios-app-build:
+    # Real build verification for the LearnWithAlphonso app target itself
+    # (not just the LearnWithAlphonsoKit package ios-swift-tests covers
+    # above) -- this repo has been developed without any local macOS/Xcode
+    # access, so this CI job is the *first* real compile of the app target
+    # against an actual Xcode toolchain. project.yml is the source of
+    # truth (XcodeGen-generated .xcodeproj is never committed -- see
+    # ios/LearnWithAlphonso/project.yml's own comment and .gitignore).
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios/LearnWithAlphonso
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          xcodebuild build \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
