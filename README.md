@@ -28,9 +28,11 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page
 - **Placement test**: 15-question adaptive test to set starting level
 - **AI conversation**: voice-enabled chat with 6 scenarios
-- **Gamification**: XP, streaks, streak freezes, hearts (with a blocking modal + refill countdown), leagues (Bronze → Diamond), achievements
+- **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements
 - **Friends**: invite-link based, with a friends leaderboard scope
 - **Leaderboards**: global, friends, and country rankings
+- **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
+- **Native iOS app** (`ios/`, in progress): "Learn with Alphonso" — see `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`; shares this backend, not a separate account system
 
 ## Content
 
@@ -95,8 +97,9 @@ bun run test         # Vitest (src/lib/*.test.ts)
 bun run test:e2e    # Playwright + axe-core (e2e/*.spec.ts) — needs a running dev server
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint, typecheck, `test`, and `test:e2e`
-on every PR and push to `main`.
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, `test`, `test:e2e`,
+and (on a macOS runner) the `ios/LearnWithAlphonsoKit` Swift package's own
+test suite, on every PR and push to `main`.
 
 ## Project Structure
 
@@ -111,15 +114,29 @@ src/
     ├── api/               # AI endpoints (chat, TTS, STT)
     └── _authenticated/    # Protected routes (learn, lesson, review, profile, league, converse, friends)
 e2e/                      # Playwright + axe-core E2E/accessibility tests
-supabase/migrations/      # SQL migrations (not auto-applied — see ARCHITECTURE.md)
+supabase/
+├── migrations/            # SQL migrations (not auto-applied — see ARCHITECTURE.md)
+└── functions/             # Deno Edge Functions (complete-lesson: the one
+                            # trust-sensitive write path a native client can't
+                            # run as a TanStack Start server function)
+ios/
+├── LearnWithAlphonsoKit/   # Swift package: content models, SRS/XP math ports,
+                            # network clients -- no UI, builds on any platform
+└── LearnWithAlphonso/      # SwiftUI app target (XcodeGen `project.yml`, no
+                            # committed .xcodeproj) -- in progress
 ```
 
 ## Documentation
 
 - `ARCHITECTURE.md` — stack, request flow, database schema, content model, known rough edges
-- `AUDIT.md` — full codebase audit (security, architecture, accessibility, content, performance, UX, testing) with a running log of what's been fixed
 - `AGENTS.md` — conventions and key-file map for agents/contributors working in this repo
 - `LESSON_ASSETS.md` — asset plan for lesson content (audio, images, icons, animations); its status banner explains what's actually built vs. still aspirational
+- `docs/superpowers/specs/` and `docs/superpowers/plans/` — design docs and implementation plans for major features (curriculum DB schema, the `complete-lesson` Edge Function, the native iOS app, theme foundation)
+
+A full-codebase audit is kept locally (gitignored, not in this repo) rather
+than committed — it goes stale within weeks of any real development and a
+committed copy calcifies into documentation people trust instead of
+re-checking against the code.
 
 ## License
 
