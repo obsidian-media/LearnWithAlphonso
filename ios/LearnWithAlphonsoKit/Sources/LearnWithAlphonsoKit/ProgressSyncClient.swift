@@ -21,6 +21,9 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
     public let longestStreak: Int
     public let lastActiveDate: String
     public let hearts: Int
+    /// Epoch milliseconds a pending heart refill completes at, or nil if
+    /// hearts are full / a bonus just cleared the timer.
+    public let heartsRefillAt: Double?
     public let streakFreezes: Int
     public let leagueTier: String
 }
@@ -28,6 +31,10 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
 public struct LessonCompletionResult: Sendable, Decodable, Equatable {
     public let xpGain: Int
     public let newlyUnlocked: [String]
+    /// "streak" | "perfect" | nil -- which heart bonus (if any) this
+    /// completion earned. See hearts.ts's streakHeartMilestoneReached /
+    /// perfectLessonBonusEarned for the rules.
+    public let heartsBonus: String?
     public let progress: LessonCompletionProgress
 }
 

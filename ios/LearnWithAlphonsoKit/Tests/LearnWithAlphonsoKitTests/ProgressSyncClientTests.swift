@@ -135,12 +135,14 @@ final class ProgressSyncClientTests: XCTestCase {
             return self.jsonResponse(for: request.url!, body: [
                 "xpGain": 100,
                 "newlyUnlocked": ["xp_100", "perfect_1"],
+                "heartsBonus": "perfect",
                 "progress": [
                     "xp": 100,
                     "streak": 1,
                     "longestStreak": 1,
                     "lastActiveDate": "2026-09-18",
-                    "hearts": 5,
+                    "hearts": 4,
+                    "heartsRefillAt": NSNull(),
                     "streakFreezes": 0,
                     "leagueTier": "bronze",
                 ],
@@ -157,9 +159,10 @@ final class ProgressSyncClientTests: XCTestCase {
 
         XCTAssertEqual(result.xpGain, 100)
         XCTAssertEqual(result.newlyUnlocked, ["xp_100", "perfect_1"])
+        XCTAssertEqual(result.heartsBonus, "perfect")
         XCTAssertEqual(result.progress, LessonCompletionProgress(
             xp: 100, streak: 1, longestStreak: 1, lastActiveDate: "2026-09-18",
-            hearts: 5, streakFreezes: 0, leagueTier: "bronze"
+            hearts: 4, heartsRefillAt: nil, streakFreezes: 0, leagueTier: "bronze"
         ))
 
         let request = try XCTUnwrap(captured)

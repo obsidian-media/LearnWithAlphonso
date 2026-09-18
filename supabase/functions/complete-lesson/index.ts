@@ -26,6 +26,13 @@ import {
   type LeagueTier,
 } from "./progress-math.ts";
 import { verifyLessonSessionToken } from "./lesson-session.ts";
+import {
+  gainHearts,
+  MAX_HEARTS,
+  perfectLessonBonusEarned,
+  resolveHeartsRefill,
+  streakHeartMilestoneReached,
+} from "./hearts.ts";
 
 const courseSchema = z.enum(["en", "fr"]);
 const lessonIdSchema = z
@@ -154,7 +161,8 @@ export async function handleRequest(req: Request): Promise<Response> {
     streak: 0,
     longest_streak: 0,
     last_active_date: null as string | null,
-    hearts: 5,
+    hearts: MAX_HEARTS,
+    hearts_refill_at: null as string | null,
     streak_freezes: 0,
   };
 
@@ -169,6 +177,27 @@ export async function handleRequest(req: Request): Promise<Response> {
     longestStreak: cur.longest_streak,
     freezes: cur.streak_freezes,
   });
+
+  // Resolve any pending passive regen first, then layer bonuses on top:
+  // a streak milestone grants a full refill (takes priority), otherwise
+  // a perfect lesson (zero misses) grants a single heart back. Matches
+  // completeLessonRemote (src/lib/sync.functions.ts) exactly.
+  const regen = resolveHeartsRefill(
+    cur.hearts,
+    cur.hearts_refill_at ? new Date(cur.hearts_refill_at).getTime() : null,
+    Date.now(),
+  );
+  let heartsResult = regen;
+  let heartsBonus: "streak" | "perfect" | null = null;
+  if (streakHeartMilestoneReached(cur.streak, streak)) {
+    heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
+    heartsBonus = "streak";
+  } else if (
+    perfectLessonBonusEarned(correct, total) && regen.hearts < MAX_HEARTS
+  ) {
+    heartsResult = gainHearts(regen.hearts, 1);
+    heartsBonus = "perfect";
+  }
 
   const { data: lpRow } = await admin
     .from("language_progress")
@@ -187,7 +216,10 @@ export async function handleRequest(req: Request): Promise<Response> {
     streak,
     longest_streak: longest,
     last_active_date: today,
-    hearts: cur.hearts,
+    hearts: heartsResult.hearts,
+    hearts_refill_at: heartsResult.heartsRefillAt
+      ? new Date(heartsResult.heartsRefillAt).toISOString()
+      : null,
     streak_freezes: freezes,
   });
 
@@ -278,12 +310,14 @@ export async function handleRequest(req: Request): Promise<Response> {
     {
       xpGain,
       newlyUnlocked,
+      heartsBonus,
       progress: {
         xp,
         streak,
         longestStreak: longest,
         lastActiveDate: today,
-        hearts: cur.hearts,
+        hearts: heartsResult.hearts,
+        heartsRefillAt: heartsResult.heartsRefillAt,
         streakFreezes: freezes,
         leagueTier,
       },
