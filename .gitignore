@@ -40,6 +40,11 @@ DEFERRED-WORDS.md
 
 # Swift Package Manager build artifacts (ios/LearnWithAlphonsoKit)
 .build/
+
+# ios/LearnWithAlphonso's .xcodeproj is XcodeGen-generated from project.yml
+# (`xcodegen generate`) -- never hand-edited or committed, so it can't
+# drift from the source of truth or cause merge conflicts.
+ios/LearnWithAlphonso/*.xcodeproj/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 
