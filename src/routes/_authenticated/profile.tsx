@@ -141,6 +141,7 @@ function ProfilePage() {
             options={[
               { value: "meadow", label: "Meadow" },
               { value: "studio-ink", label: "Studio Ink" },
+              { value: "manuscript", label: "Manuscript" },
             ]}
           />
         </div>

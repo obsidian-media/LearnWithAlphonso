@@ -1,0 +1,12 @@
+{
+  "name": "manuscript",
+  "colors": {
+    "background": "#f6f5f4",
+    "foreground": "#25242b",
+    "primary": "#7a2733",
+    "muted": "#eae8e6",
+    "border": "#25242b1f"
+  },
+  "fonts": { "display": "Newsreader", "sans": "Source Sans 3" },
+  "radii": { "sm": 4, "md": 8, "lg": 12 }
+}
