@@ -1,25 +1,37 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HeartIcon } from "./icons";
 import { useCountdown } from "../hooks/use-countdown";
+import { XP_HEART_COST } from "../lib/hearts";
 
 export function HeartsModal({
   open,
   refillAt,
+  xp,
   onClose,
+  onRefillDue,
+  onBuyWithXp,
 }: {
   open: boolean;
   refillAt: number | null;
+  /** Current course XP, so the "buy with XP" option only shows when affordable. */
+  xp?: number;
   onClose: () => void;
+  /** Fired once when the countdown reaches zero while the modal is mounted. */
+  onRefillDue?: () => void;
+  /** Fired when the user chooses to spend XP for an immediate heart. */
+  onBuyWithXp?: () => void;
 }) {
   const countdown = useCountdown(refillAt);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const [buying, setBuying] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     closeButtonRef.current?.focus();
+    setBuying(false);
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -32,6 +44,31 @@ export function HeartsModal({
       previouslyFocused.current?.focus();
     };
   }, [open, onClose]);
+
+  // The countdown hook returns null both when there's nothing to wait for
+  // and once time is up -- fire onRefillDue only on the actual transition
+  // from "counting down" to "done", not on initial mount.
+  const wasCounting = useRef(false);
+  useEffect(() => {
+    if (!open || !refillAt) {
+      wasCounting.current = false;
+      return;
+    }
+    if (countdown !== null) {
+      wasCounting.current = true;
+    } else if (wasCounting.current) {
+      wasCounting.current = false;
+      onRefillDue?.();
+    }
+  }, [open, refillAt, countdown, onRefillDue]);
+
+  const canBuyWithXp = onBuyWithXp !== undefined && xp !== undefined && xp >= XP_HEART_COST;
+
+  function handleBuy() {
+    if (buying) return;
+    setBuying(true);
+    onBuyWithXp?.();
+  }
 
   return (
     <AnimatePresence>
@@ -65,11 +102,21 @@ export function HeartsModal({
                 ? `They refill automatically in ${countdown}.`
                 : "They'll refill again shortly."}
             </p>
+            {canBuyWithXp && (
+              <button
+                type="button"
+                onClick={handleBuy}
+                disabled={buying}
+                className="mt-5 w-full rounded-full border border-moss bg-moss/10 px-4 py-3 text-sm font-semibold text-moss transition hover:bg-moss/15 disabled:opacity-60"
+              >
+                Use {XP_HEART_COST} XP for a heart
+              </button>
+            )}
             <button
               type="button"
               ref={closeButtonRef}
               onClick={onClose}
-              className="mt-5 w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90"
+              className={`w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 ${canBuyWithXp ? "mt-2.5" : "mt-5"}`}
             >
               Got it
             </button>
