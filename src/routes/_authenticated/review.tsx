@@ -106,7 +106,7 @@ function ReviewPage() {
     setChecked(true);
     const ok = isCorrect;
     setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-    void grade({ data: { itemKey: card.itemKey, correct: ok, course } })
+    void grade({ data: { itemKey: card.itemKey, answer: picked, course } })
       .then((r) => {
         if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
       })
@@ -281,7 +281,7 @@ function Empty({ title, body, bonus }: { title: string; body: string; bonus?: st
       className="flex flex-1 flex-col items-center justify-center px-8 text-center"
     >
       <div className="mb-5 grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
-        <svg viewBox="0 0 24 24" className="size-8" fill="none">
+        <svg viewBox="0 0 24 24" className="size-8" fill="none" aria-hidden="true">
           <path
             d="m6 12 4 4 8-9"
             stroke="white"

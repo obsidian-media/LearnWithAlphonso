@@ -279,7 +279,11 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
             </div>
           </div>
         )}
-        {error && <p className="text-xs text-rose-700">{error}</p>}
+        {error && (
+          <p role="alert" className="text-xs text-rose-700">
+            {error}
+          </p>
+        )}
       </div>
     </>
   );

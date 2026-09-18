@@ -1,5 +1,5 @@
-import { curriculum, type Lesson, type Question } from "./curriculum";
-import { curriculumFr } from "./curriculum-fr";
+import type { Lesson, Question } from "./curriculum";
+import { getCourse, type Course } from "./courses";
 import { VOCAB_IMAGES } from "./vocab-images";
 
 export type VocabItem = {
@@ -46,14 +46,18 @@ export function deriveVocab(lesson: Lesson): VocabItem[] {
   return items;
 }
 
-const cache: Record<string, VocabItem[]> = (() => {
-  const map: Record<string, VocabItem[]> = {};
-  for (const unit of [...curriculum, ...curriculumFr])
-    for (const lesson of unit.lessons) map[lesson.id] = deriveVocab(lesson);
-  return map;
-})();
+// Lazy, per-lesson memoization -- deriveVocab() only ever runs for a
+// lesson that's actually been opened, not for the other 658+ lessons
+// across both courses that a given page view never touches.
+const cache = new Map<string, VocabItem[]>();
 
 /** Every lesson in the curriculum has a vocabulary module. */
-export function vocabForLesson(lessonId: string): VocabItem[] {
-  return cache[lessonId] ?? [];
+export function vocabForLesson(lessonId: string, course: Course): VocabItem[] {
+  const cacheKey = `${course}:${lessonId}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+  const found = getCourse(course).findLesson(lessonId);
+  const items = found ? deriveVocab(found.lesson) : [];
+  cache.set(cacheKey, items);
+  return items;
 }

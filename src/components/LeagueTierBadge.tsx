@@ -15,7 +15,7 @@ export function LeagueTierBadge({
       style={{ width: px, height: px, backgroundColor: `${meta.hex}18` }}
       aria-label={`${meta.label} league`}
     >
-      <svg viewBox="0 0 24 24" width={px * 0.55} height={px * 0.55} fill="none">
+      <svg viewBox="0 0 24 24" width={px * 0.55} height={px * 0.55} fill="none" aria-hidden="true">
         <path
           d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3z"
           fill={meta.hex}

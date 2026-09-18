@@ -91,7 +91,7 @@ function LessonNode({
   );
   if (state === "locked")
     return (
-      <div role="img" aria-label={`${title} (locked)`}>
+      <div role="note" aria-label={`${title} (locked)`}>
         {button}
       </div>
     );
@@ -134,6 +134,7 @@ function LearnPage() {
   const outOfHearts = hydrated && hearts <= 0;
   const [showHeartsModal, setShowHeartsModal] = useState(false);
   const [dueCount, setDueCount] = useState(0);
+  const [buyHeartError, setBuyHeartError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -159,14 +160,24 @@ function LearnPage() {
   }
 
   function handleBuyWithXp() {
-    spendXpForHeartLocal(XP_HEART_COST);
-    void buyHeartWithXp({ data: { course } }).catch(() => {
-      // Optimistic apply failed server-side (e.g. race with another tab) --
-      // resync from the server rather than leave the client out of sync.
-      void loadProgress({ data: { course } })
-        .then(hydrate)
-        .catch(() => {});
-    });
+    // Applied only after the server confirms the purchase (not
+    // optimistically) so a failed purchase -- hearts already full, not
+    // enough XP -- shows a real reason instead of a silent flicker-then-
+    // revert.
+    setBuyHeartError(null);
+    void buyHeartWithXp({ data: { course } })
+      .then((res) => {
+        if (res.ok) {
+          spendXpForHeartLocal(res.cost);
+        } else {
+          setBuyHeartError(
+            res.reason === "hearts-full" ? "Hearts already full." : "Not enough XP for a heart.",
+          );
+        }
+      })
+      .catch(() => {
+        setBuyHeartError("Something went wrong — try again.");
+      });
   }
 
   async function switchCourse(next: typeof course) {
@@ -205,6 +216,7 @@ function LearnPage() {
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
+        <h1 className="sr-only">Learn</h1>
         <div className="mb-6 flex gap-2">
           {COURSES.map((c) => (
             <button
@@ -308,9 +320,9 @@ function LearnPage() {
                   <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
                     {unit.eyebrow}
                   </p>
-                  <h1 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
+                  <h2 className="text-balance font-display text-[28px] font-semibold leading-[1.05] text-ink">
                     {unit.title}
-                  </h1>
+                  </h2>
                   <p className="mt-1.5 max-w-[260px] text-sm text-ink-soft/80">
                     {unit.description}
                   </p>
@@ -363,7 +375,11 @@ function LearnPage() {
         open={showHeartsModal}
         refillAt={heartsRefillAt}
         xp={xp}
-        onClose={() => setShowHeartsModal(false)}
+        buyError={buyHeartError}
+        onClose={() => {
+          setShowHeartsModal(false);
+          setBuyHeartError(null);
+        }}
         onRefillDue={handleRefillDue}
         onBuyWithXp={handleBuyWithXp}
       />

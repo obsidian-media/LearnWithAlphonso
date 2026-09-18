@@ -7,15 +7,14 @@ import { getCourse } from "../data/courses";
 import {
   LEAGUES,
   computeLeaguePromotion,
+  computeLessonReplayXp,
   computeStreakUpdate,
-  computeXpGain,
   deriveLessonCompletion,
 } from "./progress-math";
 import {
   HEART_REFILL_MS,
   MAX_HEARTS,
   XP_HEART_COST,
-  buyHeartWithXp,
   gainHearts,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
@@ -226,14 +225,45 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const { correct } = deriveLessonCompletion(found.lesson, total, missedQuestionIds);
 
     const today = todayStr();
-    const xpGain = computeXpGain(correct, total);
 
-    // account-wide state: streak, hearts, freezes (unaffected by course)
-    const { data: pRow } = await supabase
-      .from("user_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // Batch every read this handler needs that doesn't depend on another
+    // read's result -- was 3+ sequential round trips, now 1.
+    const [{ data: pRow }, { data: lpRow }, { data: existingComp }, { data: existingDay }] =
+      await Promise.all([
+        supabase.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
+        supabase
+          .from("language_progress")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("language", course)
+          .maybeSingle(),
+        supabase
+          .from("lesson_completions")
+          .select("correct,xp_earned")
+          .eq("user_id", userId)
+          .eq("lesson_id", lessonId)
+          .eq("language", course)
+          .maybeSingle(),
+        supabase
+          .from("activity_days")
+          .select("xp_earned")
+          .eq("user_id", userId)
+          .eq("day", today)
+          .maybeSingle(),
+      ]);
+
+    // Replay-farming fix: a repeat completion of an already-completed
+    // lesson only pays out the XP delta over its previous best score (0 if
+    // this attempt doesn't improve on it), instead of the full amount
+    // every time -- previously completeLessonRemote had no dedup check at
+    // all, so a scripted loop of startLessonSession+completeLessonRemote
+    // against any lesson farmed unlimited XP and hearts.
+    const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
+      existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
+      correct,
+      total,
+    );
+
     const cur = pRow ?? {
       user_id: userId,
       streak: 0,
@@ -269,76 +299,73 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     if (streakHeartMilestoneReached(cur.streak, streak)) {
       heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
       heartsBonus = "streak";
-    } else if (perfectLessonBonusEarned(correct, total) && regen.hearts < MAX_HEARTS) {
+      // Gated on xpGain > 0 (a genuine improvement, not a replay) so the
+      // same replay-farming loop this session's XP fix closes can't still
+      // farm free hearts by repeatedly "completing" an already-perfect
+      // lesson with no new XP.
+    } else if (
+      perfectLessonBonusEarned(correct, total) &&
+      xpGain > 0 &&
+      regen.hearts < MAX_HEARTS
+    ) {
       heartsResult = gainHearts(regen.hearts, 1);
       heartsBonus = "perfect";
     }
 
     // per-course state: xp and league live in language_progress
-    const { data: lpRow } = await supabase
-      .from("language_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("language", course)
-      .maybeSingle();
     const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
     const xp = curLp.xp + xpGain;
 
     const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
     const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
-    // upsert account-wide progress
-    await supabase.from("user_progress").upsert({
-      user_id: userId,
-      streak,
-      longest_streak: longest,
-      last_active_date: today,
-      hearts: heartsResult.hearts,
-      hearts_refill_at: heartsResult.heartsRefillAt
-        ? new Date(heartsResult.heartsRefillAt).toISOString()
-        : null,
-      streak_freezes: freezes,
-    });
-
-    // upsert per-course progress
-    await supabase
-      .from("language_progress")
-      .upsert(
-        { user_id: userId, language: course, xp, league_tier: leagueTier },
-        { onConflict: "user_id,language" },
-      );
-
-    // upsert lesson completion (best score kept)
-    await supabase.from("lesson_completions").upsert(
-      {
+    // Four independent writes -- none reads another's result -- batched
+    // into one round trip instead of four sequential ones.
+    await Promise.all([
+      supabase.from("user_progress").upsert({
         user_id: userId,
-        lesson_id: lessonId,
-        correct,
-        total,
-        xp_earned: xpGain,
-        language: course,
-      },
-      { onConflict: "user_id,lesson_id" },
-    );
+        streak,
+        longest_streak: longest,
+        last_active_date: today,
+        hearts: heartsResult.hearts,
+        hearts_refill_at: heartsResult.heartsRefillAt
+          ? new Date(heartsResult.heartsRefillAt).toISOString()
+          : null,
+        streak_freezes: freezes,
+      }),
+      supabase
+        .from("language_progress")
+        .upsert(
+          { user_id: userId, language: course, xp, league_tier: leagueTier },
+          { onConflict: "user_id,language" },
+        ),
+      // Best score kept: correct/xp_earned reflect the best attempt ever
+      // recorded for this lesson, not just this attempt.
+      supabase.from("lesson_completions").upsert(
+        {
+          user_id: userId,
+          lesson_id: lessonId,
+          correct: bestCorrect,
+          total,
+          xp_earned: bestXp,
+          language: course,
+        },
+        { onConflict: "user_id,lesson_id" },
+      ),
+      supabase.from("activity_days").upsert({
+        user_id: userId,
+        day: today,
+        xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
+      }),
+    ]);
 
-    // activity day: add XP
-    const { data: existingDay } = await supabase
-      .from("activity_days")
-      .select("xp_earned")
-      .eq("user_id", userId)
-      .eq("day", today)
-      .maybeSingle();
-    await supabase.from("activity_days").upsert({
-      user_id: userId,
-      day: today,
-      xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
-    });
-
-    // count perfect lessons
-    const { data: allComps } = await supabase
-      .from("lesson_completions")
-      .select("correct,total")
-      .eq("user_id", userId);
+    // Both reads below depend on the writes above having landed (lesson
+    // count/perfect count must include this attempt), but not on each
+    // other -- batched together.
+    const [{ data: allComps }, { data: prevUnlocks }] = await Promise.all([
+      supabase.from("lesson_completions").select("correct,total").eq("user_id", userId),
+      supabase.from("user_achievements").select("achievement_id,progress").eq("user_id", userId),
+    ]);
     const totalLessons = allComps?.length ?? 0;
     const perfectLessons = (allComps ?? []).filter((c) => c.correct === c.total).length;
 
@@ -352,10 +379,6 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       freeze: freezes,
     };
 
-    const { data: prevUnlocks } = await supabase
-      .from("user_achievements")
-      .select("achievement_id,progress")
-      .eq("user_id", userId);
     const prevMap = new Map((prevUnlocks ?? []).map((u) => [u.achievement_id, u.progress]));
     const newlyUnlocked: string[] = [];
 
@@ -438,66 +461,52 @@ export const loseHeartRemote = createServerFn({ method: "POST" })
  * hydrate. Also safe to call speculatively -- it's a no-op if no refill
  * is actually due yet.
  */
+/**
+ * These two hearts endpoints call SECURITY DEFINER RPCs
+ * (supabase/migrations/20260918141500_hearts_economy_rpcs.sql) rather than
+ * doing a manual read-then-write under RLS: the RPCs take a row lock for
+ * the duration of the check-then-write, which the previous
+ * select-compute-update implementation didn't, and closes a real race
+ * window under concurrent calls (see that migration's own comment).
+ */
 export const restoreHeartsRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("hearts,hearts_refill_at")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const resolved = resolveHeartsRefill(
-      p?.hearts ?? MAX_HEARTS,
-      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
-      Date.now(),
-    );
-    if (resolved.hearts !== (p?.hearts ?? MAX_HEARTS) || p?.hearts_refill_at) {
-      await supabase
-        .from("user_progress")
-        .update({ hearts: resolved.hearts, hearts_refill_at: null })
-        .eq("user_id", userId);
-    }
-    return resolved;
+    const { supabase } = context;
+    const { data, error } = await supabase.rpc("restore_hearts_if_due");
+    if (error) throw new Error("Could not check hearts refill");
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      hearts: row?.hearts ?? MAX_HEARTS,
+      heartsRefillAt: row?.hearts_refill_at ? new Date(row.hearts_refill_at).getTime() : null,
+    };
   });
+
+export type BuyHeartResult =
+  | { ok: true; hearts: number; xp: number; cost: number }
+  | { ok: false; reason: "hearts-full" | "insufficient-xp"; hearts: number | null };
 
 /** Spend XP from the active course to buy back a heart -- gives impatient
  * users a way to unblock themselves besides waiting out the timer. */
 export const buyHeartWithXpRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("hearts,hearts_refill_at")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const regen = resolveHeartsRefill(
-      p?.hearts ?? MAX_HEARTS,
-      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
-      Date.now(),
-    );
-    const { data: lp } = await supabase
-      .from("language_progress")
-      .select("xp")
-      .eq("user_id", userId)
-      .eq("language", data.course)
-      .maybeSingle();
-    const purchase = buyHeartWithXp(regen.hearts, lp?.xp ?? 0);
-    if (!purchase.ok) {
-      throw new Error(purchase.reason === "hearts-full" ? "Hearts already full" : "Not enough XP");
+  .handler(async ({ data, context }): Promise<BuyHeartResult> => {
+    const { supabase } = context;
+    const { data: rpcData, error } = await supabase.rpc("buy_heart_with_xp", {
+      _course: data.course,
+      _cost: XP_HEART_COST,
+    });
+    if (error) throw new Error("Could not process heart purchase");
+    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    if (!row?.ok) {
+      return {
+        ok: false,
+        reason: row?.reason === "hearts-full" ? "hearts-full" : "insufficient-xp",
+        hearts: row?.hearts ?? null,
+      };
     }
-    await supabase
-      .from("user_progress")
-      .update({ hearts: purchase.hearts, hearts_refill_at: null })
-      .eq("user_id", userId);
-    await supabase
-      .from("language_progress")
-      .update({ xp: purchase.xp })
-      .eq("user_id", userId)
-      .eq("language", data.course);
-    return { hearts: purchase.hearts, xp: purchase.xp, cost: XP_HEART_COST };
+    return { ok: true, hearts: row.hearts ?? 0, xp: row.xp ?? 0, cost: XP_HEART_COST };
   });
 
 const mergeSchema = z.object({

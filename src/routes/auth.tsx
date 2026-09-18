@@ -116,7 +116,10 @@ function AuthPage() {
 
   return (
     <div className="grain min-h-dvh bg-surface text-ink">
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-10 pt-10">
+      <main
+        id="main-content"
+        className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-10 pt-10"
+      >
         <Link to="/" className="mb-8 inline-flex items-center gap-2 text-ink-soft/70">
           <span className="text-lg">←</span>
           <span className="text-sm">Back</span>
@@ -287,7 +290,7 @@ function AuthPage() {
             .
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

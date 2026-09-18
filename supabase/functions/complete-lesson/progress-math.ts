@@ -103,3 +103,20 @@ export function deriveLessonCompletion(
   }
   return { correct: total - missedSet.size };
 }
+
+export type LessonReplayXp = {
+  bestCorrect: number;
+  bestXp: number;
+  xpGain: number;
+};
+
+export function computeLessonReplayXp(
+  existingBest: { correct: number; xpEarned: number } | null,
+  correct: number,
+  total: number,
+): LessonReplayXp {
+  const bestCorrect = Math.max(existingBest?.correct ?? 0, correct);
+  const bestXp = computeXpGain(bestCorrect, total);
+  const xpGain = Math.max(0, bestXp - (existingBest?.xpEarned ?? 0));
+  return { bestCorrect, bestXp, xpGain };
+}

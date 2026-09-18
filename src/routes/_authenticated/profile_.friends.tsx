@@ -5,7 +5,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 
-export const Route = createFileRoute("/_authenticated/profile/friends")({
+export const Route = createFileRoute("/_authenticated/profile_/friends")({
   component: FriendsPage,
   head: () => ({
     meta: [
@@ -62,6 +62,9 @@ function FriendsPage() {
           >
             {copied ? "Link copied!" : "Copy invite link"}
           </button>
+          <span role="status" aria-live="polite" className="sr-only">
+            {copied ? "Link copied to clipboard" : ""}
+          </span>
         </div>
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">

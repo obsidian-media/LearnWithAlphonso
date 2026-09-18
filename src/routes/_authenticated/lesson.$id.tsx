@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
+    links: [{ rel: "preconnect", href: "https://images.pexels.com" }],
   }),
 });
 
@@ -59,7 +60,7 @@ function LessonPage() {
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
   } | null>(null);
-  const vocab = useMemo(() => vocabForLesson(id), [id]);
+  const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
   // Fresh per-mount seed so replaying the same lesson shuffles answer
   // order differently each time, instead of always looking identical.
@@ -127,7 +128,13 @@ function LessonPage() {
     }
     if (missed.length) {
       void recordMisses({
-        data: { lessonId: lesson.id, level: lessonLevel, itemKeys: missed, course },
+        data: {
+          lessonId: lesson.id,
+          level: lessonLevel,
+          itemKeys: missed,
+          course,
+          sessionToken: sessionToken ?? "",
+        },
       }).catch(() => {});
     }
     try {
@@ -378,6 +385,11 @@ function VocabScreen({
                 alt={v.image.alt}
                 loading="lazy"
                 className="h-32 w-full object-cover"
+                // A dead/rate-limited image URL degrades to no image
+                // rather than a broken-image icon with no retry.
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
               />
             )}
             <div className="px-4 py-3.5">
@@ -482,7 +494,7 @@ function FinishScreen({
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
         className="mb-6 grid size-24 place-items-center rounded-full bg-moss text-surface hard-shadow"
       >
-        <svg viewBox="0 0 24 24" className="size-12" fill="none">
+        <svg viewBox="0 0 24 24" className="size-12" fill="none" aria-hidden="true">
           <path
             d="m6 12 4 4 8-9"
             stroke="white"

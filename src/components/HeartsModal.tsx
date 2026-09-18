@@ -8,6 +8,7 @@ export function HeartsModal({
   open,
   refillAt,
   xp,
+  buyError,
   onClose,
   onRefillDue,
   onBuyWithXp,
@@ -16,6 +17,8 @@ export function HeartsModal({
   refillAt: number | null;
   /** Current course XP, so the "buy with XP" option only shows when affordable. */
   xp?: number;
+  /** Message to show if the last purchase attempt failed (e.g. "Not enough XP"). */
+  buyError?: string | null;
   onClose: () => void;
   /** Fired once when the countdown reaches zero while the modal is mounted. */
   onRefillDue?: () => void;
@@ -24,6 +27,7 @@ export function HeartsModal({
 }) {
   const countdown = useCountdown(refillAt);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const buyButtonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const [buying, setBuying] = useState(false);
 
@@ -36,6 +40,24 @@ export function HeartsModal({
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         onClose();
+        return;
+      }
+      // Focus trap: this dialog isn't in a portal, so without this, Tab
+      // could escape into the bottom-tab nav behind the (still visible)
+      // backdrop.
+      if (e.key === "Tab") {
+        const focusables = [buyButtonRef.current, closeButtonRef.current].filter(
+          (el): el is HTMLButtonElement => el !== null,
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        const atEdge = e.shiftKey ? active === first : active === last;
+        if (atEdge || !focusables.includes(active as HTMLButtonElement)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        }
       }
     }
     document.addEventListener("keydown", onKeyDown);
@@ -61,6 +83,13 @@ export function HeartsModal({
       onRefillDue?.();
     }
   }, [open, refillAt, countdown, onRefillDue]);
+
+  // Re-enable the buy button once the attempt resolves either way: xp
+  // changing means it succeeded (cost was deducted), buyError appearing
+  // means it failed.
+  useEffect(() => {
+    setBuying(false);
+  }, [xp, buyError]);
 
   const canBuyWithXp = onBuyWithXp !== undefined && xp !== undefined && xp >= XP_HEART_COST;
 
@@ -105,12 +134,18 @@ export function HeartsModal({
             {canBuyWithXp && (
               <button
                 type="button"
+                ref={buyButtonRef}
                 onClick={handleBuy}
                 disabled={buying}
                 className="mt-5 w-full rounded-full border border-moss bg-moss/10 px-4 py-3 text-sm font-semibold text-moss transition hover:bg-moss/15 disabled:opacity-60"
               >
                 Use {XP_HEART_COST} XP for a heart
               </button>
+            )}
+            {buyError && (
+              <p role="alert" className="mt-2 text-xs font-medium text-rose-600">
+                {buyError}
+              </p>
             )}
             <button
               type="button"
