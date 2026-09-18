@@ -40,7 +40,9 @@ function ConversePage() {
           back.
         </p>
 
-        <div className={isStudioInk ? "mt-7 divide-y divide-hairline" : "mt-7 grid grid-cols-1 gap-3"}>
+        <div
+          className={isStudioInk ? "mt-7 divide-y divide-hairline" : "mt-7 grid grid-cols-1 gap-3"}
+        >
           {SCENARIOS.map((s, i) => (
             <motion.div
               key={s.id}

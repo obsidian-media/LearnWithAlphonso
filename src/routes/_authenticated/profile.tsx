@@ -129,7 +129,9 @@ function ProfilePage() {
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
         <div
           className={
-            isStudioInk ? "mt-3 border-b border-hairline pb-4" : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
+            isStudioInk
+              ? "mt-3 border-b border-hairline pb-4"
+              : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
           }
         >
           <SegmentedControl
@@ -224,13 +226,7 @@ function ProfilePage() {
   );
 }
 
-function YourData({
-  isStudioInk,
-  onSignedOut,
-}: {
-  isStudioInk: boolean;
-  onSignedOut: () => void;
-}) {
+function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSignedOut: () => void }) {
   const [busy, setBusy] = useState<null | "export" | "delete">(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState("");
