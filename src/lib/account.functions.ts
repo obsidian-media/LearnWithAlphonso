@@ -26,17 +26,26 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
+    // The 9 tables are independent selects -- batched instead of a
+    // sequential loop, cutting a GDPR export from ~9 round trips to 1.
+    const [rows, { data: profile }] = await Promise.all([
+      Promise.all(
+        USER_ID_TABLES.map((table) =>
+          // Table name is a union of literals from a heterogeneous table
+          // list; the generated per-table query builder types don't unify
+          // across the loop, so this cast is the pragmatic escape hatch
+          // rather than a type-safety gap (each name is still a real,
+          // known table).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase.from(table) as any).select("*").eq("user_id", userId),
+        ),
+      ),
+      supabase.from("profiles").select("*").eq("id", userId),
+    ]);
     const tables: Record<string, unknown[]> = {};
-    for (const table of USER_ID_TABLES) {
-      // Table name is a union of literals from a heterogeneous table list;
-      // the generated per-table query builder types don't unify across the
-      // loop, so this cast is the pragmatic escape hatch rather than a
-      // type-safety gap (each name is still a real, known table).
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase.from(table) as any).select("*").eq("user_id", userId);
-      tables[table] = (data as unknown[]) ?? [];
-    }
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId);
+    USER_ID_TABLES.forEach((table, i) => {
+      tables[table] = (rows[i].data as unknown[]) ?? [];
+    });
     tables.profiles = profile ?? [];
     return {
       exported_at: new Date().toISOString(),
@@ -57,11 +66,13 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // auth.users is ON DELETE CASCADE, and "authenticated" only has
     // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
-    for (const table of USER_ID_TABLES) {
-      // See the matching cast + comment in exportMyData above.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from(table) as any).delete().eq("user_id", userId);
-    }
+    await Promise.all(
+      USER_ID_TABLES.map((table) =>
+        // See the matching cast + comment in exportMyData above.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from(table) as any).delete().eq("user_id", userId),
+      ),
+    );
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Friend rows pointing at this user are not owned by them.

@@ -59,7 +59,7 @@ function LessonPage() {
     unlocked: string[];
     heartsBonus: "streak" | "perfect" | null;
   } | null>(null);
-  const vocab = useMemo(() => vocabForLesson(id), [id]);
+  const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
   // Fresh per-mount seed so replaying the same lesson shuffles answer
   // order differently each time, instead of always looking identical.
