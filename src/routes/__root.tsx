@@ -16,7 +16,9 @@ import { CookieConsent } from "../components/CookieConsent";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
+import { useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
+import { getMyProfile } from "../lib/leaderboard.functions";
 
 function NotFoundComponent() {
   return (
@@ -103,6 +105,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap",
+      },
+      {
+        rel: "stylesheet",
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
@@ -122,6 +128,13 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script
+          // Runs before first paint to avoid a flash of the wrong theme.
+          // Kept inline (not an external file) so it blocks nothing.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="studio-ink")document.documentElement.dataset.theme=t;}catch(e){}})();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>
@@ -157,6 +170,7 @@ function RootComponent() {
 function AuthSync() {
   const hydrate = useProgress((s) => s.hydrate);
   const reset = useProgress((s) => s.reset);
+  const hydrateTheme = useTheme((s) => s.hydrateFromServer);
   const router = useRouter();
   const qc = useQueryClient();
   useEffect(() => {
@@ -171,6 +185,8 @@ function AuthSync() {
       try {
         const snap = await fetchProgress();
         if (!cancelled) hydrate(snap);
+        const profile = await getMyProfile();
+        if (!cancelled) hydrateTheme(profile?.theme ?? null);
       } catch {
         /* ignore */
       }
@@ -190,6 +206,6 @@ function AuthSync() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [hydrate, reset, router, qc]);
+  }, [hydrate, reset, hydrateTheme, router, qc]);
   return null;
 }

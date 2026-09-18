@@ -46,3 +46,21 @@ test("unknown route shows the 404 page", async ({ page }) => {
   await page.getByRole("link", { name: "Go home" }).click();
   await expect(page).toHaveURL("/");
 });
+
+test("defaults to the meadow theme with no stored preference", async ({ page }) => {
+  await page.goto("/");
+  const theme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(theme).toBeUndefined();
+});
+
+test("applies the studio-ink theme from localStorage before first paint", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("theme", "studio-ink");
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "studio-ink");
+  const fontDisplay = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--font-display"),
+  );
+  expect(fontDisplay).toContain("Instrument Serif");
+});

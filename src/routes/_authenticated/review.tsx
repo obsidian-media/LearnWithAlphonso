@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
+import { AnswerOption } from "../../components/AnswerOption";
+import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { getCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import {
@@ -11,6 +13,7 @@ import {
   claimReviewClearBonusRemote,
 } from "../../lib/review.functions";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 
 export const Route = createFileRoute("/_authenticated/review")({
@@ -36,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/review")({
 type Card = { itemKey: string; question: Question };
 
 function ReviewPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const load = useServerFn(fetchDueReviews);
   const grade = useServerFn(gradeReview);
   const claimBonus = useServerFn(claimReviewClearBonusRemote);
@@ -187,30 +191,19 @@ function ReviewPage() {
           {q.prompt}
         </h2>
 
-        <div className="mt-6 space-y-2.5">
+        <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
           {q.type === "mc" ? (
-            q.choices.map((c) => {
-              const isPicked = picked === c;
-              const right = q.choices[q.answer] === c;
-              return (
-                <button
-                  key={c}
-                  disabled={checked}
-                  onClick={() => setPicked(c)}
-                  className={`w-full rounded-2xl border px-4 py-3.5 text-left text-sm transition ${
-                    checked && right
-                      ? "border-moss bg-moss/10 text-ink"
-                      : checked && isPicked
-                        ? "border-rose-400 bg-rose-50 text-ink"
-                        : isPicked
-                          ? "border-ink bg-parchment text-ink"
-                          : "border-hairline bg-surface text-ink hover:border-ink/30"
-                  }`}
-                >
-                  {c}
-                </button>
-              );
-            })
+            q.choices.map((c) => (
+              <AnswerOption
+                key={c}
+                label={c}
+                checked={checked}
+                isPicked={picked === c}
+                isRight={q.choices[q.answer] === c}
+                disabled={checked}
+                onClick={() => setPicked(c)}
+              />
+            ))
           ) : (
             <div>
               <input
@@ -238,16 +231,11 @@ function ReviewPage() {
         </div>
 
         {checked && (
-          <div
-            className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
-              isCorrect
-                ? "border-moss/40 bg-moss/10 text-ink"
-                : "border-rose-300 bg-rose-50 text-ink"
-            }`}
-          >
-            <p className="font-semibold">{isCorrect ? "Still got it." : "Back in the queue."}</p>
-            <p className="mt-0.5 text-ink-soft">{q.explanation}</p>
-          </div>
+          <AnswerFeedback
+            correct={isCorrect}
+            headline={isCorrect ? "Still got it." : "Back in the queue."}
+            explanation={q.explanation}
+          />
         )}
 
         <div className="mt-auto pt-6">

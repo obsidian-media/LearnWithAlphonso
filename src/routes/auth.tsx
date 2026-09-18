@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "../lib/theme";
+import { TextField } from "../components/TextField";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const afterAuth = useCallback(() => {
@@ -177,13 +180,12 @@ function AuthPage() {
                 <label htmlFor="auth-display-name" className="sr-only">
                   Display name
                 </label>
-                <input
+                <TextField
                   id="auth-display-name"
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Display name"
-                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
                   maxLength={40}
                 />
               </div>
@@ -192,7 +194,7 @@ function AuthPage() {
               <label htmlFor="auth-email" className="sr-only">
                 Email
               </label>
-              <input
+              <TextField
                 id="auth-email"
                 type="email"
                 required
@@ -200,7 +202,6 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
-                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
               />
             </div>
             {mode !== "forgot" && (
@@ -208,7 +209,7 @@ function AuthPage() {
                 <label htmlFor="auth-password" className="sr-only">
                   Password
                 </label>
-                <input
+                <TextField
                   id="auth-password"
                   type="password"
                   required
@@ -217,15 +218,28 @@ function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss"
                 />
               </div>
             )}
             {error && (
-              <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+              <p
+                className={
+                  isStudioInk
+                    ? "border-l-[3px] border-l-rose-400 py-1 pl-3 text-xs text-rose-500"
+                    : "rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"
+                }
+              >
+                {error}
+              </p>
             )}
             {notice && (
-              <p className="rounded-xl border border-hairline bg-parchment px-3 py-2 text-xs leading-relaxed text-ink">
+              <p
+                className={
+                  isStudioInk
+                    ? "border-l-[3px] border-l-hairline py-1 pl-3 text-xs leading-relaxed text-ink-soft"
+                    : "rounded-xl border border-hairline bg-parchment px-3 py-2 text-xs leading-relaxed text-ink"
+                }
+              >
                 {notice}
               </p>
             )}

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "../lib/theme";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -74,7 +76,7 @@ function Landing() {
             hidden: {},
             show: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
           }}
-          className="mt-10 space-y-3"
+          className={isStudioInk ? "mt-10 divide-y divide-hairline" : "mt-10 space-y-3"}
         >
           {[
             { t: "Bite-size lessons", d: "5-minute reps designed to build real fluency." },
@@ -84,7 +86,11 @@ function Landing() {
             <motion.li
               key={f.t}
               variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
-              className="flex items-start gap-3 rounded-2xl border border-hairline bg-parchment p-3.5"
+              className={
+                isStudioInk
+                  ? "flex items-start gap-3 py-3.5"
+                  : "flex items-start gap-3 rounded-2xl border border-hairline bg-parchment p-3.5"
+              }
             >
               <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-moss text-surface">
                 <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">

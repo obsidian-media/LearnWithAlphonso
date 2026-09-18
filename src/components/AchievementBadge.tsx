@@ -1,4 +1,5 @@
 import type { Achievement } from "../data/achievements";
+import { useTheme } from "../lib/theme";
 
 const TIER_COLORS: Record<string, string> = {
   bronze: "#b07242",
@@ -56,21 +57,36 @@ export function AchievementBadge({
   achievement: Achievement;
   unlocked: boolean;
 }) {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const color = TIER_COLORS[achievement.tier] ?? "#888";
+  const badgeIcon = (
+    <span
+      className="grid size-12 place-items-center rounded-full"
+      style={{ backgroundColor: unlocked ? color : "#c8c1b3" }}
+    >
+      <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
+        <GlyphSvg icon={achievement.icon} />
+      </svg>
+    </span>
+  );
+  if (isStudioInk) {
+    return (
+      <div
+        className={`flex flex-col items-center gap-1.5 text-center transition ${unlocked ? "" : "opacity-55"}`}
+      >
+        {badgeIcon}
+        <p className="text-[11px] font-semibold leading-tight text-ink">{achievement.title}</p>
+        <p className="text-[10px] leading-tight text-ink-soft/70">{achievement.description}</p>
+      </div>
+    );
+  }
   return (
     <div
       className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center transition ${
         unlocked ? "border-hairline bg-surface" : "border-hairline bg-parchment opacity-55"
       }`}
     >
-      <span
-        className="grid size-12 place-items-center rounded-full"
-        style={{ backgroundColor: unlocked ? color : "#c8c1b3" }}
-      >
-        <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
-          <GlyphSvg icon={achievement.icon} />
-        </svg>
-      </span>
+      {badgeIcon}
       <p className="text-[11px] font-semibold leading-tight text-ink">{achievement.title}</p>
       <p className="text-[10px] leading-tight text-ink-soft/70">{achievement.description}</p>
     </div>

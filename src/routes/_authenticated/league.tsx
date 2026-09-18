@@ -6,6 +6,7 @@ import { SegmentedControl } from "../../components/SegmentedControl";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { LEAGUE_TIER_META, LEAGUE_TIERS, type LeagueTier } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { getLeaderboard } from "../../lib/leaderboard.functions";
 
 export const Route = createFileRoute("/_authenticated/league")({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/league")({
 });
 
 function LeaguePage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const [scope, setScope] = useState<"global" | "friends" | "country">("global");
   const [period, setPeriod] = useState<"weekly" | "all-time">("weekly");
   const tier = useProgress((s) => s.leagueTier);
@@ -45,7 +47,13 @@ function LeaguePage() {
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
           Your league
         </p>
-        <div className="flex items-center gap-4 rounded-3xl border border-hairline bg-parchment p-4">
+        <div
+          className={
+            isStudioInk
+              ? "flex items-center gap-4 border-b border-hairline pb-4"
+              : "flex items-center gap-4 rounded-3xl border border-hairline bg-parchment p-4"
+          }
+        >
           <LeagueTierBadge tier={tier} size="lg" />
           <div className="flex-1">
             <h1 className="font-display text-[22px] font-semibold text-ink">{meta.label}</h1>
@@ -83,19 +91,38 @@ function LeaguePage() {
 
         <div className="mt-5">
           {isLoading && <p className="py-8 text-center text-xs text-ink-soft">Loading…</p>}
-          {!isLoading && (data?.length ?? 0) === 0 && (
-            <div className="rounded-2xl border border-hairline bg-parchment p-6 text-center">
-              <p className="text-sm font-semibold text-ink">Nothing here yet</p>
-              <p className="mt-1 text-xs text-ink-soft">
-                {scope === "friends"
-                  ? "Add friends to compete side by side."
-                  : scope === "country"
-                    ? "Set your country on your profile to see this board."
-                    : "Finish a lesson to appear on the board."}
-              </p>
-            </div>
-          )}
-          <ol className="divide-y divide-hairline overflow-hidden rounded-2xl border border-hairline bg-surface">
+          {!isLoading &&
+            (data?.length ?? 0) === 0 &&
+            (isStudioInk ? (
+              <div className="border-y border-hairline py-6 text-center">
+                <p className="text-sm font-semibold text-ink">Nothing here yet</p>
+                <p className="mt-1 text-xs text-ink-soft">
+                  {scope === "friends"
+                    ? "Add friends to compete side by side."
+                    : scope === "country"
+                      ? "Set your country on your profile to see this board."
+                      : "Finish a lesson to appear on the board."}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-hairline bg-parchment p-6 text-center">
+                <p className="text-sm font-semibold text-ink">Nothing here yet</p>
+                <p className="mt-1 text-xs text-ink-soft">
+                  {scope === "friends"
+                    ? "Add friends to compete side by side."
+                    : scope === "country"
+                      ? "Set your country on your profile to see this board."
+                      : "Finish a lesson to appear on the board."}
+                </p>
+              </div>
+            ))}
+          <ol
+            className={
+              isStudioInk
+                ? "divide-y divide-hairline"
+                : "divide-y divide-hairline overflow-hidden rounded-2xl border border-hairline bg-surface"
+            }
+          >
             {(data ?? []).map((row, i) => (
               <li
                 key={row.user_id}

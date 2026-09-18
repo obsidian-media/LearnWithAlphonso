@@ -4,8 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { AchievementBadge } from "../../components/AchievementBadge";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
+import { SegmentedControl } from "../../components/SegmentedControl";
 import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,9 +30,12 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const qc = useQueryClient();
   const p = useProgress();
+  const theme = useTheme((s) => s.theme);
+  const setTheme = useTheme((s) => s.setTheme);
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
@@ -87,12 +92,12 @@ function ProfilePage() {
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-2">
-          <Stat label="XP" value={p.xp} />
-          <Stat label="Streak" value={p.streak} />
-          <Stat label="Freezes" value={p.streakFreezes} />
+          <Stat label="XP" value={p.xp} isStudioInk={isStudioInk} />
+          <Stat label="Streak" value={p.streak} isStudioInk={isStudioInk} />
+          <Stat label="Freezes" value={p.streakFreezes} isStudioInk={isStudioInk} />
         </div>
 
-        <ActivityHeatmap dates={p.activityDates} />
+        <ActivityHeatmap dates={p.activityDates} isStudioInk={isStudioInk} />
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Achievements</h2>
         <p className="text-xs text-ink-soft">
@@ -106,7 +111,11 @@ function ProfilePage() {
 
         <Link
           to="/profile/friends"
-          className="mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+          className={
+            isStudioInk
+              ? "mt-8 flex items-center justify-between border-b border-hairline pb-4 transition hover:opacity-80"
+              : "mt-8 flex items-center justify-between rounded-2xl border border-hairline bg-surface px-4 py-3.5 transition hover:border-ink/30"
+          }
         >
           <span>
             <span className="block font-display text-base font-semibold text-ink">Friends</span>
@@ -117,8 +126,33 @@ function ProfilePage() {
           <span className="text-ink-soft">→</span>
         </Link>
 
+        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Theme</h2>
+        <div
+          className={
+            isStudioInk
+              ? "mt-3 border-b border-hairline pb-4"
+              : "mt-3 rounded-2xl border border-hairline bg-surface p-4"
+          }
+        >
+          <SegmentedControl
+            ariaLabel="Choose a theme"
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: "meadow", label: "Meadow" },
+              { value: "studio-ink", label: "Studio Ink" },
+            ]}
+          />
+        </div>
+
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
-        <div className="mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4">
+        <div
+          className={
+            isStudioInk
+              ? "mt-3 space-y-2 border-b border-hairline pb-4"
+              : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
+          }
+        >
           <label
             htmlFor="profile-display-name"
             className="block text-[11px] uppercase tracking-wider text-ink-soft"
@@ -130,7 +164,11 @@ function ProfilePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
-            className="w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
+            className={
+              isStudioInk
+                ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm outline-none focus:border-moss"
+                : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
+            }
           />
           <label
             htmlFor="profile-country"
@@ -143,7 +181,11 @@ function ProfilePage() {
             value={country}
             onChange={(e) => setCountry(e.target.value.toUpperCase())}
             maxLength={2}
-            className="w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm uppercase outline-none focus:border-moss"
+            className={
+              isStudioInk
+                ? "w-full border-b border-hairline bg-transparent px-0 py-2 text-sm uppercase outline-none focus:border-moss"
+                : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm uppercase outline-none focus:border-moss"
+            }
           />
           <button
             onClick={save}
@@ -154,7 +196,10 @@ function ProfilePage() {
           </button>
         </div>
 
-        <YourData onSignedOut={() => navigate({ to: "/auth", replace: true })} />
+        <YourData
+          isStudioInk={isStudioInk}
+          onSignedOut={() => navigate({ to: "/auth", replace: true })}
+        />
 
         <button
           onClick={signOut}
@@ -181,7 +226,7 @@ function ProfilePage() {
   );
 }
 
-function YourData({ onSignedOut }: { onSignedOut: () => void }) {
+function YourData({ isStudioInk, onSignedOut }: { isStudioInk: boolean; onSignedOut: () => void }) {
   const [busy, setBusy] = useState<null | "export" | "delete">(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -227,26 +272,77 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
   return (
     <>
       <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Your data</h2>
-      <div className="mt-3 space-y-3 rounded-2xl border border-hairline bg-surface p-4">
+      <div
+        className={
+          isStudioInk
+            ? "mt-3 space-y-3 border-b border-hairline pb-4"
+            : "mt-3 space-y-3 rounded-2xl border border-hairline bg-surface p-4"
+        }
+      >
         <p className="text-xs leading-relaxed text-ink-soft">
           Download everything we hold about you, or permanently erase your account.
         </p>
-        <button
-          onClick={download}
-          disabled={busy !== null}
-          className="w-full rounded-full border border-hairline bg-parchment px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
-        >
-          {busy === "export" ? "Preparing…" : "Download my data"}
-        </button>
+        {isStudioInk ? (
+          <button
+            onClick={download}
+            disabled={busy !== null}
+            className="text-sm font-medium text-moss underline underline-offset-4 disabled:opacity-50"
+          >
+            {busy === "export" ? "Preparing…" : "Download my data"}
+          </button>
+        ) : (
+          <button
+            onClick={download}
+            disabled={busy !== null}
+            className="w-full rounded-full border border-hairline bg-parchment px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
+          >
+            {busy === "export" ? "Preparing…" : "Download my data"}
+          </button>
+        )}
 
         {!confirming ? (
           <button
             onClick={() => setConfirming(true)}
             disabled={busy !== null}
-            className="w-full rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 disabled:opacity-50"
+            className={
+              isStudioInk
+                ? "block text-sm font-medium text-rose-500 underline underline-offset-4 disabled:opacity-50"
+                : "w-full rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 disabled:opacity-50"
+            }
           >
             Delete my account
           </button>
+        ) : isStudioInk ? (
+          <div className="space-y-2 border-l-[3px] border-l-rose-400 py-1 pl-4">
+            <p className="text-xs leading-relaxed text-rose-500">
+              This permanently deletes your account, progress, streaks, achievements and review
+              history. It cannot be undone. Type DELETE to confirm.
+            </p>
+            <input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+              placeholder="DELETE"
+              className="w-full border-b border-rose-300 bg-transparent px-0 py-2 text-sm outline-none"
+            />
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setConfirming(false);
+                  setConfirmText("");
+                }}
+                className="text-sm text-ink-soft underline underline-offset-4"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={remove}
+                disabled={confirmText !== "DELETE" || busy !== null}
+                className="text-sm font-semibold text-rose-500 underline underline-offset-4 disabled:opacity-50"
+              >
+                {busy === "delete" ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-3">
             <p className="text-xs leading-relaxed text-rose-800">
@@ -289,7 +385,23 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({
+  label,
+  value,
+  isStudioInk,
+}: {
+  label: string;
+  value: number;
+  isStudioInk: boolean;
+}) {
+  if (isStudioInk) {
+    return (
+      <div className="border-b border-hairline pb-2 text-center">
+        <p className="tnum font-display text-[20px] font-semibold text-ink">{value}</p>
+        <p className="text-[10px] uppercase tracking-wider text-ink-soft">{label}</p>
+      </div>
+    );
+  }
   return (
     <div className="rounded-2xl border border-hairline bg-surface px-3 py-3 text-center">
       <p className="tnum font-display text-[20px] font-semibold text-ink">{value}</p>
@@ -298,7 +410,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function ActivityHeatmap({ dates }: { dates: string[] }) {
+function ActivityHeatmap({ dates, isStudioInk }: { dates: string[]; isStudioInk: boolean }) {
   const set = new Set(dates);
   const cells: { date: string; active: boolean }[] = [];
   for (let i = 29; i >= 0; i--) {
@@ -308,7 +420,13 @@ function ActivityHeatmap({ dates }: { dates: string[] }) {
     cells.push({ date: iso, active: set.has(iso) });
   }
   return (
-    <div className="mt-5 rounded-2xl border border-hairline bg-parchment p-4">
+    <div
+      className={
+        isStudioInk
+          ? "mt-5 border-b border-hairline pb-4"
+          : "mt-5 rounded-2xl border border-hairline bg-parchment p-4"
+      }
+    >
       <p className="mb-2 text-[10px] uppercase tracking-wider text-ink-soft">Last 30 days</p>
       <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(15, 1fr)" }}>
         {cells.map((c) => (

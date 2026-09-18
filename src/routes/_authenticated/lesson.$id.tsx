@@ -2,6 +2,9 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
+import { AnswerOption } from "../../components/AnswerOption";
+import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 import { getCourse } from "../../data/courses";
 import { reshuffleQuestion } from "../../data/bank-engine";
@@ -32,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
 });
 
 function LessonPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
   const course = useProgress((s) => s.course);
@@ -260,30 +264,19 @@ function LessonPage() {
             {q.prompt}
           </h2>
 
-          <div className="mt-6 space-y-2.5">
+          <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
             {q.type === "mc" ? (
-              q.choices.map((c) => {
-                const isPicked = picked === c;
-                const isRight = q.choices[q.answer] === c;
-                return (
-                  <button
-                    key={c}
-                    disabled={checked}
-                    onClick={() => setPicked(c)}
-                    className={`w-full rounded-2xl border px-4 py-3.5 text-left text-sm transition ${
-                      checked && isRight
-                        ? "border-moss bg-moss/10 text-ink"
-                        : checked && isPicked
-                          ? "border-rose-400 bg-rose-50 text-ink"
-                          : isPicked
-                            ? "border-ink bg-parchment text-ink"
-                            : "border-hairline bg-surface text-ink hover:border-ink/30"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })
+              q.choices.map((c) => (
+                <AnswerOption
+                  key={c}
+                  label={c}
+                  checked={checked}
+                  isPicked={picked === c}
+                  isRight={q.choices[q.answer] === c}
+                  disabled={checked}
+                  onClick={() => setPicked(c)}
+                />
+              ))
             ) : (
               <div>
                 <input
@@ -311,18 +304,11 @@ function LessonPage() {
           </div>
 
           {checked && (
-            <div
-              role="status"
-              aria-live="polite"
-              className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
-                answered
-                  ? "border-moss/40 bg-moss/10 text-ink"
-                  : "border-rose-300 bg-rose-50 text-ink"
-              }`}
-            >
-              <p className="font-semibold">{answered ? "Nice." : "Not quite."}</p>
-              <p className="mt-0.5 text-ink-soft">{q.explanation}</p>
-            </div>
+            <AnswerFeedback
+              correct={answered}
+              headline={answered ? "Nice." : "Not quite."}
+              explanation={q.explanation}
+            />
           )}
 
           <div className="mt-auto pt-6">
@@ -360,6 +346,7 @@ function VocabScreen({
   subtitle: string;
   onStart: () => void;
 }) {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   return (
     <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
       <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
@@ -370,37 +357,66 @@ function VocabScreen({
         {items.length} word{items.length === 1 ? "" : "s"} to learn before you practise.
       </p>
 
-      <div className="mt-6 space-y-2.5">
-        {items.map((v, i) => (
-          <motion.div
-            key={`${v.term}-${i}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden rounded-2xl border border-hairline bg-surface"
-          >
-            {v.image && (
-              <img
-                src={v.image.url}
-                alt={v.image.alt}
-                loading="lazy"
-                className="h-32 w-full object-cover"
-                // A dead/rate-limited image URL degrades to no image
-                // rather than a broken-image icon with no retry.
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
-            <div className="px-4 py-3.5">
+      <div className={isStudioInk ? "mt-6 divide-y divide-hairline" : "mt-6 space-y-2.5"}>
+        {items.map((v, i) =>
+          isStudioInk ? (
+            <motion.div
+              key={`${v.term}-${i}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="py-3.5"
+            >
+              {v.image && (
+                <img
+                  src={v.image.url}
+                  alt={v.image.alt}
+                  loading="lazy"
+                  className="mb-3 h-32 w-full object-cover"
+                  // A dead/rate-limited image URL degrades to no image
+                  // rather than a broken-image icon with no retry.
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
               <p className="font-display text-base font-semibold text-ink">{v.term}</p>
               <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
-              <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
+              <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
                 {v.example}
               </p>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`${v.term}-${i}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden rounded-2xl border border-hairline bg-surface"
+            >
+              {v.image && (
+                <img
+                  src={v.image.url}
+                  alt={v.image.alt}
+                  loading="lazy"
+                  className="h-32 w-full object-cover"
+                  // A dead/rate-limited image URL degrades to no image
+                  // rather than a broken-image icon with no retry.
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
+              <div className="px-4 py-3.5">
+                <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+                <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
+                <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
+                  {v.example}
+                </p>
+              </div>
+            </motion.div>
+          ),
+        )}
       </div>
 
       <div className="mt-auto pt-6">
@@ -428,6 +444,7 @@ function OverviewScreen({
   questions: number;
   onStart: () => void;
 }) {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const steps = [
     { label: "Vocabulary", detail: `${words} word${words === 1 ? "" : "s"} with examples` },
     { label: "Practice", detail: `${questions} questions` },
@@ -441,11 +458,15 @@ function OverviewScreen({
       <h2 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
         {title}
       </h2>
-      <div className="mt-6 space-y-2.5">
+      <div className={isStudioInk ? "mt-6 divide-y divide-hairline" : "mt-6 space-y-2.5"}>
         {steps.map((s, i) => (
           <div
             key={s.label}
-            className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+            className={
+              isStudioInk
+                ? "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-3.5"
+                : "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-hairline bg-surface px-4 py-3.5"
+            }
           >
             <span className="tnum grid size-8 shrink-0 place-items-center rounded-full bg-parchment text-xs font-semibold text-ink">
               {i + 1}
@@ -486,6 +507,7 @@ function FinishScreen({
   total: number;
   missedQs: { q: Question; yours: string }[];
 }) {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
       <motion.div
@@ -522,14 +544,22 @@ function FinishScreen({
       )}
 
       {missedQs.length > 0 && (
-        <div className="mt-6 w-full space-y-2 text-left">
+        <div
+          className={
+            isStudioInk
+              ? "mt-6 w-full divide-y divide-hairline text-left"
+              : "mt-6 w-full space-y-2 text-left"
+          }
+        >
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
             Review · {missedQs.length} to practise again
           </p>
           {missedQs.map(({ q, yours }, i) => (
             <div
               key={`${q.id}-${i}`}
-              className="rounded-2xl border border-hairline bg-parchment px-4 py-3"
+              className={
+                isStudioInk ? "py-3" : "rounded-2xl border border-hairline bg-parchment px-4 py-3"
+              }
             >
               <p className="text-sm font-medium text-ink">{q.prompt}</p>
               <p className="mt-1 text-xs text-ink-soft/80">
@@ -548,7 +578,9 @@ function FinishScreen({
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 w-full space-y-2"
+            className={
+              isStudioInk ? "mt-6 w-full divide-y divide-hairline" : "mt-6 w-full space-y-2"
+            }
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
               Achievements unlocked
@@ -559,7 +591,11 @@ function FinishScreen({
               return (
                 <div
                   key={id}
-                  className="flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
+                  className={
+                    isStudioInk
+                      ? "flex items-center gap-3 py-2 text-left"
+                      : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
+                  }
                 >
                   <span className="grid size-8 place-items-center rounded-full bg-ember text-surface text-xs">
                     ★

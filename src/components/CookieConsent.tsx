@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTheme } from "../lib/theme";
 
 const KEY = "lingua.cookie-consent.v1";
 
@@ -12,6 +13,7 @@ export function getConsent(): ConsentValue | null {
 }
 
 export function CookieConsent() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -31,7 +33,13 @@ export function CookieConsent() {
       aria-label="Cookie choices"
       className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4"
     >
-      <div className="mx-auto max-w-[430px] rounded-2xl border border-hairline bg-surface p-4 shadow-lg">
+      <div
+        className={
+          isStudioInk
+            ? "mx-auto max-w-[430px] border-t border-hairline bg-surface p-4"
+            : "mx-auto max-w-[430px] rounded-2xl border border-hairline bg-surface p-4 shadow-lg"
+        }
+      >
         <p className="text-[13px] leading-relaxed text-ink-soft">
           We use essential storage to keep you signed in and remember your progress. Optional
           analytics storage helps us improve lessons. You choose.{" "}

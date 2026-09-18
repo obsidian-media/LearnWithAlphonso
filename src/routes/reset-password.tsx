@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "../lib/theme";
+import { TextField } from "../components/TextField";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -20,6 +22,7 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 function ResetPasswordPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -75,12 +78,18 @@ function ResetPasswordPage() {
         </p>
 
         {done ? (
-          <p className="mt-8 rounded-2xl border border-hairline bg-parchment px-4 py-3 text-sm text-ink">
+          <p
+            className={
+              isStudioInk
+                ? "mt-8 border-l-[3px] border-l-moss py-2 pl-4 text-sm text-ink"
+                : "mt-8 rounded-2xl border border-hairline bg-parchment px-4 py-3 text-sm text-ink"
+            }
+          >
             Password updated. Taking you to your lessons…
           </p>
         ) : (
           <form onSubmit={submit} className="mt-8 space-y-3">
-            <input
+            <TextField
               type="password"
               required
               minLength={6}
@@ -88,9 +97,9 @@ function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="New password"
               disabled={!ready}
-              className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss disabled:opacity-50"
+              className="disabled:opacity-50"
             />
-            <input
+            <TextField
               type="password"
               required
               minLength={6}
@@ -98,10 +107,18 @@ function ResetPasswordPage() {
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Confirm new password"
               disabled={!ready}
-              className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3 text-sm outline-none focus:border-moss disabled:opacity-50"
+              className="disabled:opacity-50"
             />
             {error && (
-              <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>
+              <p
+                className={
+                  isStudioInk
+                    ? "border-l-[3px] border-l-rose-400 py-1 pl-3 text-xs text-rose-500"
+                    : "rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"
+                }
+              >
+                {error}
+              </p>
             )}
             <button
               type="submit"

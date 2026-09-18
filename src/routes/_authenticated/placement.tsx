@@ -8,6 +8,7 @@ import { scorePlacement } from "../../data/placement";
 import { getCourse } from "../../data/courses";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
+import { useTheme } from "../../lib/theme";
 import { LEVELS, type Level } from "../../data/levels";
 
 export const Route = createFileRoute("/_authenticated/placement")({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/placement")({
 });
 
 function PlacementPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
@@ -172,21 +174,34 @@ function PlacementPage() {
             <h1 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
               {q.prompt}
             </h1>
-            <div className="mt-7 flex flex-col gap-2.5">
-              {q.choices.map((c, i) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setPicked(i)}
-                  className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
-                    picked === i
-                      ? "border-ink bg-ink text-surface"
-                      : "border-hairline bg-surface text-ink hover:bg-parchment"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+            <div className={isStudioInk ? "mt-7" : "mt-7 flex flex-col gap-2.5"}>
+              {q.choices.map((c, i) =>
+                isStudioInk ? (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setPicked(i)}
+                    className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-[15px] font-medium text-ink transition ${
+                      picked === i ? "border-l-ink" : "border-l-transparent"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ) : (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setPicked(i)}
+                    className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
+                      picked === i
+                        ? "border-ink bg-ink text-surface"
+                        : "border-hairline bg-surface text-ink hover:bg-parchment"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ),
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
