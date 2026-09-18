@@ -33,46 +33,65 @@ so the source of truth for a theme's values can't live only as CSS.
 
 ## Token architecture
 
-`src/styles.css` already defines Theme 1 ("Meadow") entirely through CSS
-custom properties consumed by Tailwind's `@theme inline` mapping
-(`--background`, `--foreground`, `--primary`, `--font-display`,
-`--font-sans`, etc.) -- see lines 7-18 and 119-153 of the current file.
-Because every component reads these tokens via Tailwind utility classes
-(`bg-background`, `text-primary`, `font-display`, ...) rather than
-hardcoded values, a second theme can be added purely by redefining the same
-token set under a different selector:
+**Correction found while writing the implementation plan:** `styles.css`
+actually defines *two* separate, mostly-unrelated token systems, and only
+one of them is real. The first `@theme` block (lines 7-18) defines
+`--color-surface`, `--color-parchment`, `--color-ink`, `--color-ink-soft`,
+`--color-moss`, `--color-moss-deep`, `--color-ember`, `--color-ember-soft`,
+`--color-hairline`, `--font-display`, `--font-sans` -- and a grep across
+`src/` confirms these (`bg-surface`, `bg-parchment`, `text-ink`,
+`border-hairline`, etc.) are what 20 of the app's real component/route
+files actually use. The second block -- the shadcn-style `@theme inline` +
+`:root`/`.dark` (`--background`, `--foreground`, `--primary`, `--card`,
+etc.) -- is only consumed in two places, both in `__root.tsx`
+(`NotFoundComponent`/`ErrorComponent`), and is otherwise scaffold
+boilerplate nothing else reads. The original draft of this section
+targeted the wrong (shadcn) token set. Corrected below.
+
+A second theme is added by redefining the **first** (real) token set under
+a `[data-theme="studio-ink"]` selector, plus the handful of shadcn tokens
+that `__root.tsx` needs so the 404/error pages aren't left in Theme 1's
+colors:
 
 ```css
 [data-theme="studio-ink"] {
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-sans: "Switzer", ui-sans-serif, system-ui, sans-serif;
 
-  --background: oklch(0.16 0.01 260);       /* graphite, not pure black */
-  --foreground: oklch(0.96 0.01 80);        /* warm bone white */
-  --card: oklch(0.16 0.01 260);             /* same as background: Phase 1 keeps card markup, but flattens it visually since card == canvas until Phase 2's real layout rework */
-  --card-foreground: oklch(0.96 0.01 80);
-  --popover: oklch(0.2 0.012 260);
-  --popover-foreground: oklch(0.96 0.01 80);
-  --primary: oklch(0.55 0.18 250);          /* cobalt accent */
+  --color-surface: oklch(0.16 0.01 260);        /* graphite, not pure black */
+  --color-parchment: oklch(0.2 0.012 260);      /* secondary surface, one step up from background */
+  --color-ink: oklch(0.96 0.01 80);             /* warm bone white */
+  --color-ink-soft: oklch(0.72 0.015 80);
+  --color-moss: oklch(0.55 0.18 250);           /* cobalt accent -- reuses the "moss" slot (primary accent) */
+  --color-moss-deep: oklch(0.4 0.16 250);
+  --color-ember: oklch(0.55 0.18 250);          /* Studio Ink uses one accent, not two -- ember reuses moss's cobalt rather than introducing a second hue */
+  --color-ember-soft: oklch(0.3 0.1 250);
+  --color-hairline: oklch(1 0 0 / 0.1);
+
+  /* shadcn tokens __root.tsx's 404/error pages read directly */
+  --background: var(--color-surface);
+  --foreground: var(--color-ink);
+  --primary: var(--color-moss);
   --primary-foreground: oklch(0.98 0.01 80);
-  --secondary: oklch(0.24 0.015 260);
-  --secondary-foreground: oklch(0.96 0.01 80);
-  --muted: oklch(0.24 0.015 260);
-  --muted-foreground: oklch(0.72 0.015 80);
-  --accent: oklch(0.55 0.18 250);
-  --accent-foreground: oklch(0.98 0.01 80);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.55 0.18 250);
+  --muted-foreground: var(--color-ink-soft);
+  --input: var(--color-hairline);
 }
 ```
 
+Reusing the existing variable *names* (`--color-moss`, `--color-ember`)
+for Studio Ink's completely different hues looks odd in isolation, but
+renaming them would mean touching all 20 consuming files just to relabel,
+not re-theme -- out of scope for Phase 1. A future cleanup could rename
+`moss`/`ember` to theme-neutral names like `accent-primary`/`accent-secondary`
+across the codebase, but that's a refactor independent of shipping a second
+theme and isn't required for this phase to work correctly.
+
 `destructive`/`destructive-foreground`, the `chart-*` series, and the
-`sidebar-*` series are intentionally left undefined here and fall through
-to Theme 1's `:root` values via the cascade (same specificity, later
-declared properties win only where actually redeclared) -- none of those
-surfaces are prominent enough in the current app to need Studio Ink-specific
-treatment yet; a Phase 2 screen can add overrides here if that changes.
+`sidebar-*` series (shadcn set) are intentionally left undefined here and
+fall through to Theme 1's `:root` values via the cascade (same
+specificity; a property not redeclared in a later rule keeps the earlier
+rule's value) -- none of those surfaces are used by any real component
+today.
 
 `data-theme` is set on `<html>` (in `RootShell`, `src/routes/__root.tsx`),
 not on `<body>`, so it's available before hydration and covers the whole
