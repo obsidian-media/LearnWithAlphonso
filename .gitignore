@@ -46,6 +46,9 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 /blob-report/
 /playwright/.cache/
 
+# Vitest coverage reports
+/coverage/
+
 # Swift Package Manager build artifacts (ios/LearnWithAlphonsoKit)
 .build/
 *.xcodeproj/xcuserdata/
