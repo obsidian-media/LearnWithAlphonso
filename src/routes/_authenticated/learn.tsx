@@ -134,6 +134,7 @@ function LearnPage() {
   const outOfHearts = hydrated && hearts <= 0;
   const [showHeartsModal, setShowHeartsModal] = useState(false);
   const [dueCount, setDueCount] = useState(0);
+  const [buyHeartError, setBuyHeartError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -159,14 +160,24 @@ function LearnPage() {
   }
 
   function handleBuyWithXp() {
-    spendXpForHeartLocal(XP_HEART_COST);
-    void buyHeartWithXp({ data: { course } }).catch(() => {
-      // Optimistic apply failed server-side (e.g. race with another tab) --
-      // resync from the server rather than leave the client out of sync.
-      void loadProgress({ data: { course } })
-        .then(hydrate)
-        .catch(() => {});
-    });
+    // Applied only after the server confirms the purchase (not
+    // optimistically) so a failed purchase -- hearts already full, not
+    // enough XP -- shows a real reason instead of a silent flicker-then-
+    // revert.
+    setBuyHeartError(null);
+    void buyHeartWithXp({ data: { course } })
+      .then((res) => {
+        if (res.ok) {
+          spendXpForHeartLocal(res.cost);
+        } else {
+          setBuyHeartError(
+            res.reason === "hearts-full" ? "Hearts already full." : "Not enough XP for a heart.",
+          );
+        }
+      })
+      .catch(() => {
+        setBuyHeartError("Something went wrong — try again.");
+      });
   }
 
   async function switchCourse(next: typeof course) {
@@ -363,7 +374,11 @@ function LearnPage() {
         open={showHeartsModal}
         refillAt={heartsRefillAt}
         xp={xp}
-        onClose={() => setShowHeartsModal(false)}
+        buyError={buyHeartError}
+        onClose={() => {
+          setShowHeartsModal(false);
+          setBuyHeartError(null);
+        }}
         onRefillDue={handleRefillDue}
         onBuyWithXp={handleBuyWithXp}
       />

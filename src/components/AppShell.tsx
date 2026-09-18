@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../lib/progress";
 import { FlameIcon, BoltIcon, HeartIcon } from "./icons";
 import { LeagueTierBadge } from "./LeagueTierBadge";
@@ -25,8 +26,34 @@ function StatPill({
 
 export function TopBar() {
   const { xp, streak, hearts, hydrated, leagueTier } = useProgress();
+
+  // Announce meaningful stat changes to screen readers -- but never on
+  // first hydration (every page load), only on genuine later changes.
+  const [announcement, setAnnouncement] = useState("");
+  const prevStats = useRef<{ xp: number; streak: number; hearts: number } | null>(null);
+  useEffect(() => {
+    if (!hydrated) return;
+    const prev = prevStats.current;
+    if (prev === null) {
+      prevStats.current = { xp, streak, hearts };
+      return;
+    }
+    const changes: string[] = [];
+    if (hearts !== prev.hearts) {
+      const diff = hearts - prev.hearts;
+      changes.push(diff > 0 ? `+${diff} heart${diff === 1 ? "" : "s"}` : `Hearts: ${hearts}`);
+    }
+    if (xp > prev.xp) changes.push(`+${xp - prev.xp} XP`);
+    if (streak !== prev.streak) changes.push(`Streak: ${streak}`);
+    if (changes.length) setAnnouncement(changes.join(", "));
+    prevStats.current = { xp, streak, hearts };
+  }, [hydrated, xp, streak, hearts]);
+
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-surface/85 backdrop-blur-md">
+      <span className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </span>
       <div className="mx-auto flex max-w-[430px] items-center justify-between px-5 py-3.5">
         <Link to="/learn" className="flex items-center gap-2">
           <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
