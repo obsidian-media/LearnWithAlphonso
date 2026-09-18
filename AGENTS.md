@@ -24,6 +24,7 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `supabase/functions/complete-lesson/`      | Deno Edge Function: 1:1 port of `completeLessonRemote` for the native iOS client (no TanStack server layer on iOS)                      |
 | `supabase/functions/start-lesson-session/` | Deno Edge Function: issues the HMAC session token `complete-lesson` requires — the iOS equivalent of `startLessonSession` (a web-only TanStack server function iOS can't call) |
 | `ios/LearnWithAlphonso/Sources/LessonPlayerView.swift` | SwiftUI lesson player (quiz only, V1 scope): calls `start-lesson-session` then `complete-lesson` on finish                              |
+| `.github/workflows/ios-release.yml`        | Manual (`workflow_dispatch`) signed archive + `.ipa` export via an App Store Connect API key — see that file's header comment for the required repo secrets |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
 

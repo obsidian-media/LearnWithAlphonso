@@ -20,6 +20,11 @@ settings:
     SWIFT_VERSION: "5.10"
     TARGETED_DEVICE_FAMILY: "1"
     SUPPORTS_MACCATALYST: false
+    # Automatic signing + no hardcoded team: the ios-app-build CI job
+    # overrides CODE_SIGNING_ALLOWED=NO (debug/simulator, no team needed);
+    # the release archive job passes DEVELOPMENT_TEAM on the command line
+    # instead of committing it here (see .github/workflows/ios-release.yml).
+    CODE_SIGN_STYLE: Automatic
 packages:
   LearnWithAlphonsoKit:
     path: ../LearnWithAlphonsoKit
