@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "../lib/theme";
 
 type OAuthDetails = {
   client?: { name?: string } | null;
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
 });
 
 function Consent() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const details = Route.useLoaderData();
   const { authorization_id } = Route.useSearch();
   const [busy, setBusy] = useState(false);
@@ -93,7 +95,11 @@ function Consent() {
         {error && (
           <p
             role="alert"
-            className="mt-4 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm"
+            className={
+              isStudioInk
+                ? "mt-4 border-l-[3px] border-l-rose-400 py-2 pl-4 text-sm text-rose-500"
+                : "mt-4 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm"
+            }
           >
             {error}
           </p>

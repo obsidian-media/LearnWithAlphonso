@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { HeartIcon } from "./icons";
 import { useCountdown } from "../hooks/use-countdown";
+import { useTheme } from "../lib/theme";
 
 export function HeartsModal({
   open,
@@ -12,6 +13,7 @@ export function HeartsModal({
   refillAt: number | null;
   onClose: () => void;
 }) {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const countdown = useCountdown(refillAt);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
@@ -50,7 +52,11 @@ export function HeartsModal({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
-            className="w-full max-w-[380px] rounded-3xl border border-hairline bg-surface p-6 text-center"
+            className={
+              isStudioInk
+                ? "w-full max-w-[380px] border-t border-hairline bg-surface p-6 pt-7 text-center"
+                : "w-full max-w-[380px] rounded-3xl border border-hairline bg-surface p-6 text-center"
+            }
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-rose-50 text-rose-500">

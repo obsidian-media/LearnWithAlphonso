@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
+import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/profile/friends")({
   component: FriendsPage,
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/profile/friends")({
 });
 
 function FriendsPage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
   const { data: friends, isLoading } = useQuery({
     queryKey: ["friends"],
@@ -49,19 +51,36 @@ function FriendsPage() {
           <h1 className="font-display text-[22px] font-semibold text-ink">Friends</h1>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-hairline bg-parchment p-4">
+        <div
+          className={
+            isStudioInk
+              ? "mt-6 border-b border-hairline pb-5"
+              : "mt-6 rounded-2xl border border-hairline bg-parchment p-4"
+          }
+        >
           <p className="font-display text-base font-semibold text-ink">Invite a friend</p>
           <p className="mt-1 text-xs text-ink-soft/80">
             Share your link — when they open it, you're automatically friends.
           </p>
-          <button
-            type="button"
-            onClick={copyInvite}
-            disabled={!inviteLink}
-            className="mt-3 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
-          >
-            {copied ? "Link copied!" : "Copy invite link"}
-          </button>
+          {isStudioInk ? (
+            <button
+              type="button"
+              onClick={copyInvite}
+              disabled={!inviteLink}
+              className="mt-3 text-sm font-semibold text-moss underline underline-offset-4 disabled:opacity-50"
+            >
+              {copied ? "Link copied!" : "Copy invite link →"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={copyInvite}
+              disabled={!inviteLink}
+              className="mt-3 w-full rounded-full bg-ink px-4 py-2.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
+            >
+              {copied ? "Link copied!" : "Copy invite link"}
+            </button>
+          )}
         </div>
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
@@ -73,17 +92,27 @@ function FriendsPage() {
         {isLoading ? (
           <p className="mt-3 text-sm text-ink-soft">Loading…</p>
         ) : !friends || friends.length === 0 ? (
-          <div className="mt-3 rounded-2xl border border-hairline bg-surface p-4 text-center">
+          <div
+            className={
+              isStudioInk
+                ? "mt-3 border-y border-hairline py-4 text-center"
+                : "mt-3 rounded-2xl border border-hairline bg-surface p-4 text-center"
+            }
+          >
             <p className="text-sm text-ink-soft">
               No friends yet. Share your invite link to get started.
             </p>
           </div>
         ) : (
-          <div className="mt-3 space-y-2">
+          <div className={isStudioInk ? "mt-3 divide-y divide-hairline" : "mt-3 space-y-2"}>
             {friends.map((f) => (
               <div
                 key={f.userId}
-                className="flex items-center gap-3 rounded-2xl border border-hairline bg-surface p-3.5"
+                className={
+                  isStudioInk
+                    ? "flex items-center gap-3 py-3.5"
+                    : "flex items-center gap-3 rounded-2xl border border-hairline bg-surface p-3.5"
+                }
               >
                 <span
                   className="grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold text-surface"

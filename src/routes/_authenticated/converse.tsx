@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
 import { SCENARIOS } from "../../data/scenarios";
+import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/converse")({
   component: ConversePage,
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/converse")({
 });
 
 function ConversePage() {
+  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
@@ -38,7 +40,7 @@ function ConversePage() {
           back.
         </p>
 
-        <div className="mt-7 grid grid-cols-1 gap-3">
+        <div className={isStudioInk ? "mt-7 divide-y divide-hairline" : "mt-7 grid grid-cols-1 gap-3"}>
           {SCENARIOS.map((s, i) => (
             <motion.div
               key={s.id}
@@ -49,9 +51,19 @@ function ConversePage() {
               <Link
                 to="/converse/$scenarioId"
                 params={{ scenarioId: s.id }}
-                className="hard-shadow flex items-center gap-4 rounded-2xl border border-hairline bg-surface p-4 transition-transform active:scale-[0.99]"
+                className={
+                  isStudioInk
+                    ? "flex items-center gap-4 py-4 transition-opacity hover:opacity-80"
+                    : "hard-shadow flex items-center gap-4 rounded-2xl border border-hairline bg-surface p-4 transition-transform active:scale-[0.99]"
+                }
               >
-                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-parchment text-2xl">
+                <div
+                  className={
+                    isStudioInk
+                      ? "grid size-12 shrink-0 place-items-center text-2xl"
+                      : "grid size-12 shrink-0 place-items-center rounded-xl bg-parchment text-2xl"
+                  }
+                >
                   {s.emoji}
                 </div>
                 <div className="min-w-0 flex-1">
