@@ -30,7 +30,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile.friends'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
-import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse.$scenarioId'
+import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const TermsRoute = TermsRouteImport.update({
@@ -142,9 +142,9 @@ const AuthenticatedInviteInviterIdRoute =
   } as any)
 const AuthenticatedConverseScenarioIdRoute =
   AuthenticatedConverseScenarioIdRouteImport.update({
-    id: '/$scenarioId',
-    path: '/$scenarioId',
-    getParentRoute: () => AuthenticatedConverseRoute,
+    id: '/converse/$scenarioId',
+    path: '/converse/$scenarioId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
@@ -161,7 +161,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/converse': typeof AuthenticatedConverseRouteWithChildren
+  '/converse': typeof AuthenticatedConverseRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
@@ -185,7 +185,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/converse': typeof AuthenticatedConverseRouteWithChildren
+  '/converse': typeof AuthenticatedConverseRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
@@ -211,7 +211,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/_authenticated/converse': typeof AuthenticatedConverseRouteWithChildren
+  '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
@@ -469,10 +469,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/converse/$scenarioId': {
       id: '/_authenticated/converse/$scenarioId'
-      path: '/$scenarioId'
+      path: '/converse/$scenarioId'
       fullPath: '/converse/$scenarioId'
       preLoaderRoute: typeof AuthenticatedConverseScenarioIdRouteImport
-      parentRoute: typeof AuthenticatedConverseRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
@@ -483,19 +483,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AuthenticatedConverseRouteChildren {
-  AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
-}
-
-const AuthenticatedConverseRouteChildren: AuthenticatedConverseRouteChildren = {
-  AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
-}
-
-const AuthenticatedConverseRouteWithChildren =
-  AuthenticatedConverseRoute._addFileChildren(
-    AuthenticatedConverseRouteChildren,
-  )
 
 interface AuthenticatedProfileRouteChildren {
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
@@ -509,23 +496,25 @@ const AuthenticatedProfileRouteWithChildren =
   AuthenticatedProfileRoute._addFileChildren(AuthenticatedProfileRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedConverseRoute: typeof AuthenticatedConverseRouteWithChildren
+  AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRouteWithChildren
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
   AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedConverseRoute: AuthenticatedConverseRouteWithChildren,
+  AuthenticatedConverseRoute: AuthenticatedConverseRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRouteWithChildren,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
   AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
 }
