@@ -7,7 +7,11 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  // supabase/functions/** is Deno code (Deno.serve, node:/npm: specifiers,
+  // no Node/browser globals) -- not part of this project's Node/Vite
+  // TypeScript setup, so tsconfig.json excludes it too. `deno lint`/`deno
+  // check` are the right tools for it, not this eslint config.
+  { ignores: ["dist", ".output", ".vinxi", "supabase/functions/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

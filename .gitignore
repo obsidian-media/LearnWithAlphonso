@@ -20,6 +20,10 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Supabase CLI local dev state (branches, temp connection info)
+supabase/.branches/
+supabase/.temp/
+
 # Environment variables — never commit real secrets/keys
 .env
 .env.local
