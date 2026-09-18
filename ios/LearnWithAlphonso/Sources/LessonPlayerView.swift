@@ -1,0 +1,242 @@
+import SwiftUI
+import LearnWithAlphonsoKit
+
+/// V1's lesson player: quiz only, no overview/vocab phases (see the web
+/// app's lesson.$id.tsx for those -- deferred, not dropped, since this
+/// slice's goal is getting the trust-boundary round trip (startLessonSession
+/// -> answer questions -> completeLesson) working end-to-end first).
+/// Scoring uses ProgressMath.deriveLessonCompletion's same logic the server
+/// re-derives independently -- this client-side pass is only for the
+/// optimistic "correct/total" the finish screen shows, never trusted as the
+/// source of truth for XP.
+struct LessonPlayerView: View {
+    let lesson: Lesson
+    let course: Course
+    let session: Session
+
+    @State private var idx = 0
+    @State private var correctCount = 0
+    @State private var missedQuestionIDs: [String] = []
+    @State private var picked: String?
+    @State private var checked = false
+    @State private var isSubmitting = false
+    @State private var result: LessonCompletionResult?
+    @State private var errorMessage: String?
+
+    private var total: Int { lesson.questions.count }
+
+    var body: some View {
+        Group {
+            if let result {
+                FinishView(result: result, correct: correctCount, total: total)
+            } else if let errorMessage {
+                ContentUnavailableView {
+                    Label("Couldn't save your progress", systemImage: "wifi.slash")
+                } description: {
+                    Text(errorMessage)
+                }
+            } else if total == 0 {
+                ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
+            } else {
+                quizBody
+            }
+        }
+        .navigationTitle(lesson.title)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var quizBody: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ProgressView(value: Double(idx), total: Double(total))
+            Text("\(idx + 1)/\(total)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            QuestionCard(question: lesson.questions[idx], checked: checked, picked: $picked)
+
+            Spacer()
+
+            if isSubmitting {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if !checked {
+                Button("Check") { checked = true; recordAnswer() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(picked == nil)
+                    .frame(maxWidth: .infinity)
+            } else {
+                Button(idx < total - 1 ? "Continue" : "Finish") {
+                    if idx < total - 1 {
+                        idx += 1
+                        picked = nil
+                        checked = false
+                    } else {
+                        Task { await finish() }
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding()
+    }
+
+    private func recordAnswer() {
+        let question = lesson.questions[idx]
+        if isAnswerCorrect(question, picked: picked) {
+            correctCount += 1
+        } else {
+            missedQuestionIDs.append(questionID(question))
+        }
+    }
+
+    private func finish() async {
+        isSubmitting = true
+        defer { isSubmitting = false }
+        do {
+            guard let accessToken = session.accessToken else {
+                errorMessage = "You've been signed out. Please sign in again."
+                return
+            }
+            let client = ProgressSyncClient(
+                supabaseURL: AppConfig.supabaseURL,
+                anonKey: AppConfig.supabasePublishableKey,
+                accessToken: accessToken
+            )
+            let sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.code)
+            result = try await client.completeLesson(
+                lessonID: lesson.id,
+                total: total,
+                missedQuestionIDs: missedQuestionIDs,
+                course: course.code,
+                sessionToken: sessionToken
+            )
+        } catch {
+            errorMessage = "Check your connection and try again."
+        }
+    }
+}
+
+private func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
+    guard let picked else { return false }
+    switch question {
+    case .multipleChoice(let q):
+        return q.choices[q.answer] == picked
+    case .fillInBlank(let q):
+        return picked.trimmingCharacters(in: .whitespaces).lowercased()
+            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+    }
+}
+
+private func questionID(_ question: Question) -> String {
+    switch question {
+    case .multipleChoice(let q): return q.id
+    case .fillInBlank(let q): return q.id
+    }
+}
+
+private extension Course {
+    var code: String {
+        switch self {
+        case .english: return "en"
+        case .french: return "fr"
+        }
+    }
+}
+
+private struct QuestionCard: View {
+    let question: Question
+    let checked: Bool
+    @Binding var picked: String?
+
+    var body: some View {
+        switch question {
+        case .multipleChoice(let q):
+            VStack(alignment: .leading, spacing: 12) {
+                Text(q.prompt).font(.title3.weight(.semibold))
+                ForEach(q.choices, id: \.self) { choice in
+                    choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
+                }
+                if checked {
+                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        case .fillInBlank(let q):
+            VStack(alignment: .leading, spacing: 12) {
+                Text(q.prompt).font(.title3.weight(.semibold))
+                TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(checked)
+                if !q.bank.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(q.bank, id: \.self) { word in
+                                Button(word) { picked = word }
+                                    .buttonStyle(.bordered)
+                                    .disabled(checked)
+                            }
+                        }
+                    }
+                }
+                if checked {
+                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func choiceButton(_ choice: String, isCorrectChoice: Bool) -> some View {
+        Button {
+            picked = choice
+        } label: {
+            HStack {
+                Text(choice)
+                Spacer()
+                if checked && isCorrectChoice {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                } else if checked && picked == choice {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                }
+            }
+            .padding()
+            .background(picked == choice ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .disabled(checked)
+        .foregroundStyle(.primary)
+    }
+}
+
+private struct FinishView: View {
+    let result: LessonCompletionResult
+    let correct: Int
+    let total: Int
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(.green)
+            Text("Lesson complete")
+                .font(.title2.weight(.semibold))
+            Text("+\(result.xpGain) XP")
+                .font(.title.weight(.bold))
+                .foregroundStyle(.green)
+            Text("\(correct)/\(total) correct")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            if let bonus = result.heartsBonus {
+                Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.pink)
+            }
+            if !result.newlyUnlocked.isEmpty {
+                Text("Achievements unlocked: \(result.newlyUnlocked.joined(separator: ", "))")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+}

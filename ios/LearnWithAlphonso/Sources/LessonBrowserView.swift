@@ -3,9 +3,8 @@ import LearnWithAlphonsoKit
 
 /// V1's lesson browser: pick a course, see every unit and its lessons.
 /// Reads entirely from the bundled ContentStore (see that type's doc
-/// comment) -- no network call, works offline. Tapping a lesson is wired
-/// up to LessonPlayerView in a follow-up slice; this one focuses on
-/// getting real content on screen end-to-end.
+/// comment) -- no network call, works offline. Tapping a lesson opens
+/// LessonPlayerView, which does hit the network on finish.
 struct LessonBrowserView: View {
     let contentStore: ContentStore
     let session: Session
@@ -48,9 +47,7 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
-                    Text(found.lesson.title)
-                        .navigationTitle(found.lesson.title)
-                    // LessonPlayerView lands in a follow-up slice.
+                    LessonPlayerView(lesson: found.lesson, course: course, session: session)
                 } else {
                     Text("Lesson not found")
                 }

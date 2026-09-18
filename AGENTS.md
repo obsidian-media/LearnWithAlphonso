@@ -22,6 +22,8 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `src/lib/hearts.ts`                        | Hearts-economy pure math (regen, bonuses, XP purchase) — also ported to Deno (`supabase/functions/complete-lesson/hearts.ts`) and Swift |
 | `src/lib/theme.ts`                         | Theme Zustand store (`meadow` / `studio-ink` / `manuscript`)                                                                            |
 | `supabase/functions/complete-lesson/`      | Deno Edge Function: 1:1 port of `completeLessonRemote` for the native iOS client (no TanStack server layer on iOS)                      |
+| `supabase/functions/start-lesson-session/` | Deno Edge Function: issues the HMAC session token `complete-lesson` requires — the iOS equivalent of `startLessonSession` (a web-only TanStack server function iOS can't call) |
+| `ios/LearnWithAlphonso/Sources/LessonPlayerView.swift` | SwiftUI lesson player (quiz only, V1 scope): calls `start-lesson-session` then `complete-lesson` on finish                              |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
 
@@ -80,9 +82,10 @@ See `LESSON_ASSETS.md` for the complete list of assets needed for all 300 lesson
 `LESSON_SESSION_SECRET` (server-only, see `src/lib/lesson-session.server.ts`)
 and `ai_rate_limits`/`ai_usage` quota tables must exist in the linked
 Supabase project _and_ `LESSON_SESSION_SECRET` must be set in **both** the
-deployment host's env vars _and_ as a `supabase secrets set` value for the
-`complete-lesson` Edge Function (same value on both sides), or lesson
-completion fails closed for web and/or iOS respectively. See
+deployment host's env vars _and_ as a `supabase secrets set` value for
+**both** the `complete-lesson` and `start-lesson-session` Edge Functions
+(same value across all three), or lesson completion fails closed for web
+and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
 ARCHITECTURE.md's "Known rough edges" section.
