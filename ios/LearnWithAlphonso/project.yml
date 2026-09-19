@@ -44,7 +44,13 @@ targets:
         GENERATE_INFOPLIST_FILE: true
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        # App Store Connect's upload validation (error 90474) requires all
+        # four orientations declared even for a TARGETED_DEVICE_FAMILY=1
+        # (iPhone-only) app, to support iPad multitasking metadata -- found
+        # via a real failed `xcrun altool --upload-app` run, not a guess.
+        # Multiple INFOPLIST_KEY_* values for an array-typed key are
+        # space-separated (Xcode 13+ synthesized Info.plist convention).
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
