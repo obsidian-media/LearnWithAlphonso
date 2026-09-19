@@ -32,7 +32,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Friends**: invite-link based, with a friends leaderboard scope
 - **Leaderboards**: global, friends, and country rankings
 - **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
-- **Native iOS app** (`ios/`, in progress): "Learn with Alphonso" — see `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`; shares this backend, not a separate account system
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
 
 ## Content
 
@@ -98,8 +98,35 @@ bun run test:e2e    # Playwright + axe-core (e2e/*.spec.ts) — needs a running 
 ```
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, `test`, `test:e2e`,
-and (on a macOS runner) the `ios/LearnWithAlphonsoKit` Swift package's own
-test suite, on every PR and push to `main`.
+and (on a macOS runner) both the `ios/LearnWithAlphonsoKit` Swift
+package's test suite and a real `xcodebuild` of the `LearnWithAlphonso`
+app target itself, on every PR and push to `main`.
+
+## Native iOS app
+
+"Learn with Alphonso" (`ios/`) shares this repo's Supabase project for
+auth/lessons/progress — one account, not a separate system. Built and
+CI-verified compiling (a real `xcodebuild` on a macOS GitHub Actions
+runner, `ios-app-build` in `.github/workflows/ci.yml` — there is no local
+Xcode/macOS in this development environment, so that CI job is the only
+compile verification that exists):
+
+- Auth (email/OTP), lesson browser, lesson player (multiple-choice +
+  fill-in-blank), SM-2 review queue, progress sync (XP/streaks/hearts)
+- **Free** AI conversation: 6 roleplay scenarios against this repo's own
+  `/api/chat`/`/api/tts`/`/api/stt` (same backend the web app uses)
+- **Pro** ($9.99/month, via RevenueCat): "Hector" — a second AI
+  conversation mode using AlphonsoCompanion's Cloud Voice backend, which
+  needs its own separate sign-in (a different Supabase project from this
+  app's own account system)
+- Code signing via an App Store Connect API key (`.github/workflows/ios-release.yml`,
+  manual trigger) — no interactive Apple ID login needed anywhere in the
+  pipeline. App Store Connect app record exists ("Learn With Alphonso",
+  bundle `com.obsidianmedia.learnwithalphonso`)
+
+See `AGENTS.md`'s Key Files table for the full file-by-file breakdown,
+and `ARCHITECTURE.md`'s "Native iOS app" section for how it's wired to
+the backend(s).
 
 ## Project Structure
 
@@ -116,14 +143,17 @@ src/
 e2e/                      # Playwright + axe-core E2E/accessibility tests
 supabase/
 ├── migrations/            # SQL migrations (not auto-applied — see ARCHITECTURE.md)
-└── functions/             # Deno Edge Functions (complete-lesson: the one
-                            # trust-sensitive write path a native client can't
-                            # run as a TanStack Start server function)
+└── functions/             # Deno Edge Functions: the trust-sensitive write
+                            # paths a native client can't run as a TanStack
+                            # Start server function (complete-lesson,
+                            # start-lesson-session, grade-review)
 ios/
 ├── LearnWithAlphonsoKit/   # Swift package: content models, SRS/XP math ports,
                             # network clients -- no UI, builds on any platform
 └── LearnWithAlphonso/      # SwiftUI app target (XcodeGen `project.yml`, no
-                            # committed .xcodeproj) -- in progress
+                            # committed .xcodeproj) -- lesson player, review
+                            # queue, AI conversation (free + Pro/Hector),
+                            # RevenueCat paywall
 ```
 
 ## Documentation
