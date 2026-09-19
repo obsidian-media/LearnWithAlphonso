@@ -67,3 +67,17 @@ public struct ContentBundle: Decodable, Sendable {
     public let course: String
     public let units: [Unit]
 }
+
+/// Mirrors src/data/scenarios.ts's `Scenario` type exactly -- one of the 6
+/// AI-conversation roleplay scenarios. `systemPrompt` is sent as-is to
+/// /api/chat; `opener` is shown as the assistant's first message without a
+/// round trip, matching the web app's converse.$scenarioId.tsx.
+public struct Scenario: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let emoji: String
+    public let blurb: String
+    public let level: String
+    public let systemPrompt: String
+    public let opener: String
+}

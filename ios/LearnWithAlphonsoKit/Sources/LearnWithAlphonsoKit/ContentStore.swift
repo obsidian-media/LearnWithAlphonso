@@ -28,10 +28,12 @@ public enum ContentStoreError: Error {
 public final class ContentStore {
     public let english: ContentBundle
     public let french: ContentBundle
+    public let scenarios: [Scenario]
 
     public init() throws {
         english = try Self.loadBundle(for: .english)
         french = try Self.loadBundle(for: .french)
+        scenarios = try Self.loadScenarios()
     }
 
     public func bundle(for course: Course) -> ContentBundle {
@@ -56,5 +58,13 @@ public final class ContentStore {
         }
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(ContentBundle.self, from: data)
+    }
+
+    private static func loadScenarios() throws -> [Scenario] {
+        guard let url = Bundle.module.url(forResource: "scenarios", withExtension: "json") else {
+            throw ContentStoreError.resourceNotFound("scenarios")
+        }
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([Scenario].self, from: data)
     }
 }
