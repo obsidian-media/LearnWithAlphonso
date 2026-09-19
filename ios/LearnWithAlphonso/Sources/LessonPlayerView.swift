@@ -272,15 +272,7 @@ private struct OverviewScreen: View {
                 if !previewImages.isEmpty {
                     HStack(spacing: 8) {
                         ForEach(previewImages, id: \.url) { image in
-                            AsyncImage(url: URL(string: image.url)) { phase in
-                                if case .success(let loadedImage) = phase {
-                                    loadedImage.resizable().aspectRatio(contentMode: .fill)
-                                } else {
-                                    Color(.secondarySystemBackground)
-                                }
-                            }
-                            .frame(width: 44, height: 44)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            VocabImageView(image: image, thumbnailSize: 44)
                         }
                     }
                     .padding(.leading, 40)
@@ -359,35 +351,36 @@ private struct VocabScreen: View {
 }
 
 /// Mirrors the web's `<img src=... onError=...>` handling: a loading
-/// placeholder while the Pexels CDN fetch is in flight, and -- on failure
-/// -- silently collapse to nothing rather than show a broken-image icon.
-/// No caching beyond what URLSession/AsyncImage already do by default;
-/// see docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
+/// spinner while the Pexels CDN fetch is in flight, and -- on failure --
+/// a plain neutral panel rather than a broken-image icon. Shared by
+/// VocabScreen's full-width card image and OverviewScreen's small preview
+/// thumbnails (pass `thumbnailSize` for the latter) so the AsyncImage
+/// phase-handling exists once rather than twice. No caching beyond what
+/// URLSession/AsyncImage already do by default; see
+/// docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
 /// feature 1" for why that's an accepted tradeoff for V2, not an oversight.
 private struct VocabImageView: View {
     let image: VocabImageRef
+    /// A fixed square size for a small teaser thumbnail, or nil for a
+    /// full-width card image at `cardHeight`.
+    var thumbnailSize: CGFloat?
+    var cardHeight: CGFloat = 120
 
     var body: some View {
         AsyncImage(url: URL(string: image.url)) { phase in
             switch phase {
             case .success(let loadedImage):
-                loadedImage
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .clipped()
-            case .failure:
-                EmptyView()
+                loadedImage.resizable().aspectRatio(contentMode: .fill)
             case .empty:
                 ProgressView()
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity)
-            @unknown default:
-                EmptyView()
+            default:
+                Color(.secondarySystemBackground)
             }
         }
+        .frame(width: thumbnailSize, height: thumbnailSize ?? cardHeight)
+        .frame(maxWidth: thumbnailSize == nil ? .infinity : nil)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipped()
         .accessibilityLabel(image.alt)
     }
 }
