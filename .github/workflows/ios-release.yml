@@ -15,6 +15,11 @@ name: iOS Release Archive
 #                                        `base64 -w0 AuthKey_XXXX.p8` on Linux)
 on:
   workflow_dispatch:
+    inputs:
+      upload_to_testflight:
+        description: "Upload the signed .ipa to App Store Connect (TestFlight) after exporting it"
+        type: boolean
+        default: false
 
 jobs:
   archive:
@@ -92,6 +97,20 @@ jobs:
             -authenticationKeyPath "$(pwd)/private_keys/AuthKey_${KEY_ID}.p8" \
             -authenticationKeyID "$KEY_ID" \
             -authenticationKeyIssuerID "$ISSUER_ID"
+
+      - name: Upload to TestFlight (App Store Connect)
+        if: ${{ inputs.upload_to_testflight }}
+        working-directory: ios/LearnWithAlphonso
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          IPA=$(ls build/export/*.ipa | head -1)
+          xcrun altool --upload-app \
+            --type ios \
+            -f "$IPA" \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
 
       - name: Clean up API key
         if: always()
