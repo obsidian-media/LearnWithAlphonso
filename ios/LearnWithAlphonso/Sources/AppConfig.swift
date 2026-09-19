@@ -15,4 +15,27 @@ enum AppConfig {
     /// comment for why: same backend the web app already uses, no second
     /// account system).
     static let apiBaseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
+
+    /// AlphonsoCompanion's Cloud Voice backend -- a genuinely separate
+    /// account system (its own Supabase project, its own email-OTP
+    /// sign-in) that only the Pro "Hector" mode uses. Values read directly
+    /// from AlphonsoCompanion's own working Info.plist
+    /// (AlphonsoEcosystem/ios/AlphonsoCompanion/AlphonsoCompanion/Info.plist)
+    /// -- same publishable-key-is-safe-to-embed reasoning as supabaseURL
+    /// above, just a different project.
+    static let cloudVoiceSupabaseURL = URL(string: "https://ywavjlmjbxuslbxactsx.supabase.co")!
+    static let cloudVoiceSupabasePublishableKey = "sb_publishable__PzRloOOxtW8nQjfysRm0w_5oHkuERj"
+    static let cloudVoiceRespondEndpoint = URL(string: "https://voice.obsidianmedia.online/v1/voice/respond")!
+
+    /// RevenueCat's *public* SDK key -- meant to ship inside client apps
+    /// (same publishable-key model as Supabase's, not a secret; RevenueCat's
+    /// secret/server API key is a different, sk_-prefixed value that must
+    /// never appear here). This is currently a Test Store key -- swap for
+    /// the production key once a real App Store Connect subscription
+    /// product exists and is connected in the RevenueCat dashboard.
+    static let revenueCatAPIKey = "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
+
+    /// The RevenueCat Entitlement identifier (RevenueCat dashboard ->
+    /// Entitlements) that gates Hector -- see EntitlementStore.swift.
+    static let proEntitlementID = "pro"
 }

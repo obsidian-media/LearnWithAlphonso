@@ -29,6 +29,11 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `ios/LearnWithAlphonso/Sources/ConversationView.swift` | Scenario picker + hold-to-talk conversation screen (record → `/api/stt` → `/api/chat` → `/api/tts` → play) |
 | `supabase/functions/grade-review/`         | Deno Edge Function: 1:1 port of `gradeReview` (re-derives review-answer correctness server-side) for iOS |
 | `ios/LearnWithAlphonso/Sources/ReviewQueueView.swift` | SM-2 review queue screen — due items one at a time, grading via `grade-review` |
+| `ios/LearnWithAlphonso/Sources/HectorView.swift` | **Pro-only** ($9.99/mo): AlphonsoCompanion's Hector tutor persona via Cloud Voice — a genuinely separate account/sign-in (different Supabase project). Additional mode alongside, not a replacement for, `ConversationView`'s free standalone scenarios. Gated by `EntitlementStore.isPro` (RevenueCat SDK, currently a Test Store key — see the "RevenueCat" note below) |
+| `ios/LearnWithAlphonso/Sources/EntitlementStore.swift` | Wraps the RevenueCat SDK — sole source of truth for `isPro`, purchase, and restore. See the "RevenueCat" note below |
+| `ios/LearnWithAlphonso/Sources/PaywallView.swift`  | Subscribe/restore UI for any Pro-gated feature (currently just Hector) |
+| `ios/LearnWithAlphonso/Sources/HectorSession.swift` | Cloud Voice sign-in (email OTP) + device enrollment state, mirrors `Session.swift` |
+| `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/DeviceEnrollmentClient.swift` | Registers this device with Cloud Voice (`POST /v1/voice/devices/enroll`) — required once per `HectorSession` before `TutorConversationClient` will accept requests |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
 
@@ -94,6 +99,19 @@ completion fails closed for web and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
 ARCHITECTURE.md's "Known rough edges" section.
+
+**RevenueCat (Pro/"Hector" gating):** `EntitlementStore` (`ios/LearnWithAlphonso/Sources/EntitlementStore.swift`)
+wraps the RevenueCat SDK (`Purchases.configure` in `LearnWithAlphonsoApp.init`);
+every Pro-gated view reads only `EntitlementStore.isPro`/`.packages`, never
+touches `Purchases` directly. Currently configured with a **Test Store**
+API key (`AppConfig.revenueCatAPIKey`) and no offering created yet in the
+RevenueCat dashboard, so `PaywallView` shows a "not available yet" state
+rather than a real purchase button — expected, not a bug. Before a real
+launch: create the App Store Connect subscription product ("Alphonso
+Pro", $9.99/month), connect it in RevenueCat, create an Offering there
+with a Package, and swap `AppConfig.revenueCatAPIKey` for the production
+(non-`test_`-prefixed) public key. The entitlement identifier gating
+Hector is `AppConfig.proEntitlementID` ("pro").
 
 ## Audit
 
