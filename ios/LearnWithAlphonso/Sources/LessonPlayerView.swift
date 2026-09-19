@@ -1,19 +1,21 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// V1's lesson player: quiz only, no overview/vocab phases (see the web
-/// app's lesson.$id.tsx for those -- deferred, not dropped, since this
-/// slice's goal is getting the trust-boundary round trip (startLessonSession
-/// -> answer questions -> completeLesson) working end-to-end first).
-/// Scoring uses ProgressMath.deriveLessonCompletion's same logic the server
-/// re-derives independently -- this client-side pass is only for the
-/// optimistic "correct/total" the finish screen shows, never trusted as the
-/// source of truth for XP.
+/// Lesson player: overview -> vocab (when the lesson has any derivable
+/// vocab -- see VocabDerivation.swift) -> quiz -> finish, matching the web
+/// app's lesson.$id.tsx phase flow. Scoring uses
+/// ProgressMath.deriveLessonCompletion's same logic the server re-derives
+/// independently -- this client-side pass is only for the optimistic
+/// "correct/total" the finish screen shows, never trusted as the source of
+/// truth for XP.
 struct LessonPlayerView: View {
     let lesson: Lesson
     let course: Course
     let session: Session
 
+    private enum Phase { case overview, vocab, quiz }
+
+    @State private var phase: Phase = .overview
     @State private var idx = 0
     @State private var correctCount = 0
     @State private var missedQuestionIDs: [String] = []
@@ -24,6 +26,7 @@ struct LessonPlayerView: View {
     @State private var errorMessage: String?
 
     private var total: Int { lesson.questions.count }
+    private var vocab: [VocabItem] { deriveVocab(lesson: lesson) }
 
     var body: some View {
         Group {
@@ -38,7 +41,16 @@ struct LessonPlayerView: View {
             } else if total == 0 {
                 ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
             } else {
-                quizBody
+                switch phase {
+                case .overview:
+                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total) {
+                        phase = vocab.isEmpty ? .quiz : .vocab
+                    }
+                case .vocab:
+                    VocabScreen(lesson: lesson, items: vocab) { phase = .quiz }
+                case .quiz:
+                    quizBody
+                }
             }
         }
         .navigationTitle(lesson.title)
@@ -204,6 +216,92 @@ private struct QuestionCard: View {
         }
         .disabled(checked)
         .foregroundStyle(.primary)
+    }
+}
+
+private struct OverviewScreen: View {
+    let lesson: Lesson
+    let wordCount: Int
+    let questionCount: Int
+    let onStart: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(lesson.subtitle)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
+            Text(lesson.title)
+                .font(.title.weight(.bold))
+
+            VStack(alignment: .leading, spacing: 12) {
+                overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
+                overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
+            }
+
+            Spacer()
+
+            Button("Begin lesson", action: onStart)
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+        }
+        .padding()
+    }
+
+    private func overviewStep(number: Int, label: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            Text("\(number)")
+                .font(.caption.weight(.semibold))
+                .frame(width: 28, height: 28)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.subheadline.weight(.semibold))
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+private struct VocabScreen: View {
+    let lesson: Lesson
+    let items: [VocabItem]
+    let onStart: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Vocabulary · \(lesson.subtitle)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
+            Text(lesson.title)
+                .font(.title2.weight(.bold))
+            Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practise.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(items, id: \.term) { item in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.term).font(.headline)
+                            Text(item.meaning).font(.caption).foregroundStyle(.secondary)
+                            Text(item.example)
+                                .font(.caption.italic())
+                                .padding(.top, 2)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+            }
+
+            Button("Start practice", action: onStart)
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+        }
+        .padding()
     }
 }
 
