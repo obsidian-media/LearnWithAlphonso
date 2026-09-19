@@ -9,6 +9,7 @@ import LearnWithAlphonsoKit
 struct ReviewQueueView: View {
     let contentStore: ContentStore
     let session: Session
+    let notificationScheduler: NotificationScheduler
 
     @State private var course: Course = .english
     @State private var queue: [ReviewItem] = []
@@ -118,6 +119,7 @@ struct ReviewQueueView: View {
             let result = try await client.fetchDueReviews(course: course.code)
             queue = result.due
             total = result.total
+            notificationScheduler.scheduleDueReviewNudge(due: result.due)
         } catch {
             errorMessage = "Check your connection and try again."
         }

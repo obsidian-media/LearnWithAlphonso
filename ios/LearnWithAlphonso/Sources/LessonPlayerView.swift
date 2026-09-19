@@ -12,6 +12,7 @@ struct LessonPlayerView: View {
     let lesson: Lesson
     let course: Course
     let session: Session
+    let notificationScheduler: NotificationScheduler
 
     private enum Phase { case overview, vocab, quiz }
 
@@ -116,16 +117,30 @@ struct LessonPlayerView: View {
                 accessToken: accessToken
             )
             let sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.code)
-            result = try await client.completeLesson(
+            let completion = try await client.completeLesson(
                 lessonID: lesson.id,
                 total: total,
                 missedQuestionIDs: missedQuestionIDs,
                 course: course.code,
                 sessionToken: sessionToken
             )
+            result = completion
+            await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
         } catch {
             errorMessage = "Check your connection and try again."
         }
+    }
+
+    /// Asks for notification permission at the "first engaged moment" (a
+    /// completed lesson), not cold app launch -- only when authorization is
+    /// still undetermined, so a prior decline is never re-prompted. Then
+    /// reschedules today's streak reminder either way, since completing a
+    /// lesson changes whether one is still needed today.
+    private func scheduleStreakReminderAfterCompletion(lastActiveDate: String?) async {
+        if await notificationScheduler.currentAuthorizationStatus() == .notDetermined {
+            _ = await notificationScheduler.requestAuthorization()
+        }
+        notificationScheduler.scheduleStreakReminder(lastActiveDate: lastActiveDate)
     }
 }
 
