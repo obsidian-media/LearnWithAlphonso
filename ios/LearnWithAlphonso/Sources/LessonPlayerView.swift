@@ -372,7 +372,8 @@ private struct FinishView: View {
                             .foregroundStyle(.secondary)
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
                             ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
-                                AchievementUnlockCard(achievement: achievement, delay: Double(index) * 0.15)
+                                AchievementBadgeView(achievement: achievement, unlocked: true)
+                                    .springEntrance(delay: Double(index) * 0.15)
                             }
                         }
                     }
@@ -390,25 +391,35 @@ private struct FinishView: View {
     }
 }
 
-/// A single unlocked-achievement badge with a staggered spring entrance --
-/// SwiftUI's equivalent of the web's Framer Motion spring entrance for the
-/// same moment (lesson.$id.tsx's FinishScreen), per-index `.delay()` since
-/// SwiftUI has no direct stagger primitive.
-private struct AchievementUnlockCard: View {
-    let achievement: Achievement
-    let delay: Double
+/// Scale+opacity entrance driven by a spring, triggered on first appear --
+/// SwiftUI's equivalent of the web's Framer Motion spring entrance for
+/// celebration moments (lesson.$id.tsx's FinishScreen). Shared by the
+/// achievement-unlock cards (staggered via `delay`) and the league-
+/// promotion overlay's badge (its own, punchier spring tuning) below, so
+/// the appear-state/onAppear/withAnimation boilerplate exists once.
+private struct SpringEntrance: ViewModifier {
+    var response: Double = 0.5
+    var dampingFraction: Double = 0.65
+    var delay: Double = 0
+    var minScale: Double = 0.6
 
     @State private var appeared = false
 
-    var body: some View {
-        AchievementBadgeView(achievement: achievement, unlocked: true)
-            .scaleEffect(appeared ? 1 : 0.6)
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(appeared ? 1 : minScale)
             .opacity(appeared ? 1 : 0)
             .onAppear {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay)) {
+                withAnimation(.spring(response: response, dampingFraction: dampingFraction).delay(delay)) {
                     appeared = true
                 }
             }
+    }
+}
+
+private extension View {
+    func springEntrance(response: Double = 0.5, dampingFraction: Double = 0.65, delay: Double = 0, minScale: Double = 0.6) -> some View {
+        modifier(SpringEntrance(response: response, dampingFraction: dampingFraction, delay: delay, minScale: minScale))
     }
 }
 
@@ -419,8 +430,6 @@ private struct LeaguePromotionOverlay: View {
     let tier: String
     let onContinue: () -> Void
 
-    @State private var appeared = false
-
     var body: some View {
         ZStack {
             LeagueTierPalette.color(for: tier).opacity(0.15).ignoresSafeArea()
@@ -429,8 +438,7 @@ private struct LeaguePromotionOverlay: View {
                 Image(systemName: "shield.fill")
                     .font(.system(size: 96))
                     .foregroundStyle(LeagueTierPalette.color(for: tier))
-                    .scaleEffect(appeared ? 1 : 0.4)
-                    .opacity(appeared ? 1 : 0)
+                    .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
                 Text("League up!")
                     .font(.largeTitle.weight(.bold))
                 Text("You've been promoted to \(LeagueTierPalette.label(for: tier))")
@@ -443,11 +451,6 @@ private struct LeaguePromotionOverlay: View {
                     .buttonStyle(.borderedProminent)
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
-            }
-        }
-        .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                appeared = true
             }
         }
     }
