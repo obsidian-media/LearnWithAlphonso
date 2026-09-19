@@ -27,6 +27,8 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `.github/workflows/ios-release.yml`        | Manual (`workflow_dispatch`) signed archive + `.ipa` export via an App Store Connect API key — see that file's header comment for the required repo secrets |
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AIConversationClient.swift` | Calls this repo's own `/api/chat`, `/api/tts`, `/api/stt` (same backend the web app uses, same Supabase access token) — not AlphonsoEcosystem's Cloud Voice backend; see the type's doc comment |
 | `ios/LearnWithAlphonso/Sources/ConversationView.swift` | Scenario picker + hold-to-talk conversation screen (record → `/api/stt` → `/api/chat` → `/api/tts` → play) |
+| `supabase/functions/grade-review/`         | Deno Edge Function: 1:1 port of `gradeReview` (re-derives review-answer correctness server-side) for iOS |
+| `ios/LearnWithAlphonso/Sources/ReviewQueueView.swift` | SM-2 review queue screen — due items one at a time, grading via `grade-review` |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
 
@@ -86,9 +88,9 @@ See `LESSON_ASSETS.md` for the complete list of assets needed for all 300 lesson
 and `ai_rate_limits`/`ai_usage` quota tables must exist in the linked
 Supabase project _and_ `LESSON_SESSION_SECRET` must be set in **both** the
 deployment host's env vars _and_ as a `supabase secrets set` value for
-**both** the `complete-lesson` and `start-lesson-session` Edge Functions
-(same value across all three), or lesson completion fails closed for web
-and/or iOS respectively. See
+`complete-lesson` and `start-lesson-session` (same value across all
+three; `grade-review` does not need `LESSON_SESSION_SECRET`), or lesson
+completion fails closed for web and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
 ARCHITECTURE.md's "Known rough edges" section.

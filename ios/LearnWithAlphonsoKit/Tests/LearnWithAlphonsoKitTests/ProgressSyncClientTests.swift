@@ -232,6 +232,95 @@ final class ProgressSyncClientTests: XCTestCase {
         }
     }
 
+    // MARK: - fetchDueReviews
+
+    func testFetchDueReviewsReadsDueRowsThenTheExactCount() async throws {
+        var requests: [URLRequest] = []
+        let client = makeClient { request in
+            requests.append(request)
+            if request.httpMethod == "HEAD" {
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: 200, httpVersion: nil,
+                    headerFields: ["Content-Range": "0-1/7"]
+                )!
+                return (Data(), response)
+            }
+            let rows: [[String: Any]] = [[
+                "item_key": "u1l1:q1", "lesson_id": "u1l1", "level": "A1",
+                "ease": 2.3, "interval_days": 1, "repetitions": 1, "due_on": "2026-09-19",
+            ]]
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+
+        let result = try await client.fetchDueReviews(course: "en")
+
+        XCTAssertEqual(result.due, [
+            ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19"),
+        ])
+        XCTAssertEqual(result.total, 7)
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(requests[0].httpMethod, "GET")
+        XCTAssertTrue(requests[0].url!.absoluteString.contains("/rest/v1/review_items"))
+        XCTAssertTrue(requests[0].url!.query!.contains("due_on=lte."))
+        XCTAssertEqual(requests[1].httpMethod, "HEAD")
+    }
+
+    // MARK: - gradeReview
+
+    func testGradeReviewPostsToTheEdgeFunctionAndReturnsTheOutcome() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-22"])
+        }
+
+        let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en")
+
+        XCTAssertEqual(result, ReviewGradeOutcome(retired: false, dueOn: "2026-09-22"))
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/grade-review"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["itemKey"] as? String, "u1l1:q1")
+        XCTAssertEqual(payload["answer"] as? String, "cat")
+        XCTAssertEqual(payload["course"] as? String, "en")
+    }
+
+    func testGradeReviewSurfacesANotDueError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "This item isn't due yet"])
+            let response = HTTPURLResponse(url: request.url!, statusCode: 400, httpVersion: nil, headerFields: nil)!
+            return (body, response)
+        }
+
+        do {
+            _ = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .server(status: 400, message: "This item isn't due yet"))
+        }
+    }
+
+    // MARK: - claimReviewClearBonus
+
+    func testClaimReviewClearBonusPostsToTheRpcAndReturnsTheResult() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["granted": true, "hearts": 5]])
+        }
+
+        let result = try await client.claimReviewClearBonus(course: "en")
+
+        XCTAssertEqual(result, ReviewClearBonus(granted: true, hearts: 5))
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/claim_review_clear_bonus"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_course"] as? String, "en")
+    }
+
     // MARK: - error handling
 
     func testThrowsAReadableErrorWhenSupabaseRejectsAWrite() async {

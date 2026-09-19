@@ -13,6 +13,8 @@ struct RootView: View {
             TabView {
                 LessonBrowserView(contentStore: contentStore, session: session)
                     .tabItem { Label("Learn", systemImage: "book.fill") }
+                ReviewQueueView(contentStore: contentStore, session: session)
+                    .tabItem { Label("Review", systemImage: "arrow.clockwise") }
                 ConversationView(contentStore: contentStore, session: session)
                     .tabItem { Label("Practice", systemImage: "mic.fill") }
             }
