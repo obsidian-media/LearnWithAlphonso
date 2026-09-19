@@ -29,11 +29,13 @@ public final class ContentStore {
     public let english: ContentBundle
     public let french: ContentBundle
     public let scenarios: [Scenario]
+    public let achievements: [Achievement]
 
     public init() throws {
         english = try Self.loadBundle(for: .english)
         french = try Self.loadBundle(for: .french)
         scenarios = try Self.loadScenarios()
+        achievements = try Self.loadJSON([Achievement].self, resource: "achievements")
     }
 
     public func bundle(for course: Course) -> ContentBundle {
@@ -61,10 +63,14 @@ public final class ContentStore {
     }
 
     private static func loadScenarios() throws -> [Scenario] {
-        guard let url = Bundle.module.url(forResource: "scenarios", withExtension: "json") else {
-            throw ContentStoreError.resourceNotFound("scenarios")
+        try loadJSON([Scenario].self, resource: "scenarios")
+    }
+
+    private static func loadJSON<T: Decodable>(_ type: T.Type, resource: String) throws -> T {
+        guard let url = Bundle.module.url(forResource: resource, withExtension: "json") else {
+            throw ContentStoreError.resourceNotFound(resource)
         }
         let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode([Scenario].self, from: data)
+        return try JSONDecoder().decode(T.self, from: data)
     }
 }

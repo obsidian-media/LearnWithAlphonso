@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import LearnWithAlphonsoKit
 
 /// Lesson player: overview -> vocab (when the lesson has any derivable
@@ -13,6 +14,7 @@ struct LessonPlayerView: View {
     let course: Course
     let session: Session
     let notificationScheduler: NotificationScheduler
+    let contentStore: ContentStore
 
     private enum Phase { case overview, vocab, quiz }
 
@@ -24,6 +26,7 @@ struct LessonPlayerView: View {
     @State private var checked = false
     @State private var isSubmitting = false
     @State private var result: LessonCompletionResult?
+    @State private var isLeaguePromotion = false
     @State private var errorMessage: String?
 
     private var total: Int { lesson.questions.count }
@@ -32,7 +35,7 @@ struct LessonPlayerView: View {
     var body: some View {
         Group {
             if let result {
-                FinishView(result: result, correct: correctCount, total: total)
+                FinishView(result: result, correct: correctCount, total: total, contentStore: contentStore, isLeaguePromotion: isLeaguePromotion)
             } else if let errorMessage {
                 ContentUnavailableView {
                     Label("Couldn't save your progress", systemImage: "wifi.slash")
@@ -124,8 +127,18 @@ struct LessonPlayerView: View {
                 course: course.code,
                 sessionToken: sessionToken
             )
+            // nil previousTier means this is the first completion this
+            // cache has ever seen (fresh install, or cleared) -- there's no
+            // real "before" to compare against, so that case is never
+            // treated as a promotion.
+            let previousTier = LeagueTierCache.lastKnownTier
+            LeagueTierCache.lastKnownTier = completion.progress.leagueTier
+            isLeaguePromotion = previousTier != nil && previousTier != completion.progress.leagueTier
             result = completion
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
+            if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
         } catch {
             errorMessage = "Check your connection and try again."
         }
@@ -324,32 +337,139 @@ private struct FinishView: View {
     let result: LessonCompletionResult
     let correct: Int
     let total: Int
+    let contentStore: ContentStore
+    let isLeaguePromotion: Bool
+
+    @State private var showPromotionOverlay = false
+
+    private var unlockedAchievements: [Achievement] {
+        result.newlyUnlocked.compactMap { id in contentStore.achievements.first { $0.id == id } }
+    }
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.green)
-            Text("Lesson complete")
-                .font(.title2.weight(.semibold))
-            Text("+\(result.xpGain) XP")
-                .font(.title.weight(.bold))
-                .foregroundStyle(.green)
-            Text("\(correct)/\(total) correct")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            if let bonus = result.heartsBonus {
-                Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.pink)
-            }
-            if !result.newlyUnlocked.isEmpty {
-                Text("Achievements unlocked: \(result.newlyUnlocked.joined(separator: ", "))")
-                    .font(.footnote)
+        ScrollView {
+            VStack(spacing: 16) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(.green)
+                Text("Lesson complete")
+                    .font(.title2.weight(.semibold))
+                Text("+\(result.xpGain) XP")
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(.green)
+                Text("\(correct)/\(total) correct")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                if let bonus = result.heartsBonus {
+                    Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.pink)
+                }
+                if !unlockedAchievements.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                            ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
+                                AchievementUnlockCard(achievement: achievement, delay: Double(index) * 0.15)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            }
+            .padding()
+        }
+        .onAppear { showPromotionOverlay = isLeaguePromotion }
+        .fullScreenCover(isPresented: $showPromotionOverlay) {
+            LeaguePromotionOverlay(tier: result.progress.leagueTier) {
+                showPromotionOverlay = false
             }
         }
-        .padding()
+    }
+}
+
+/// A single unlocked-achievement badge with a staggered spring entrance --
+/// SwiftUI's equivalent of the web's Framer Motion spring entrance for the
+/// same moment (lesson.$id.tsx's FinishScreen), per-index `.delay()` since
+/// SwiftUI has no direct stagger primitive.
+private struct AchievementUnlockCard: View {
+    let achievement: Achievement
+    let delay: Double
+
+    @State private var appeared = false
+
+    var body: some View {
+        AchievementBadgeView(achievement: achievement, unlocked: true)
+            .scaleEffect(appeared ? 1 : 0.6)
+            .opacity(appeared ? 1 : 0)
+            .onAppear {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay)) {
+                    appeared = true
+                }
+            }
+    }
+}
+
+/// A distinct, bigger celebration for a league promotion -- rarer and more
+/// significant than a typical achievement unlock, so it gets a full-screen
+/// takeover rather than another card in the achievement grid above.
+private struct LeaguePromotionOverlay: View {
+    let tier: String
+    let onContinue: () -> Void
+
+    @State private var appeared = false
+
+    var body: some View {
+        ZStack {
+            LeagueTierPalette.color(for: tier).opacity(0.15).ignoresSafeArea()
+            VStack(spacing: 20) {
+                Spacer()
+                Image(systemName: "shield.fill")
+                    .font(.system(size: 96))
+                    .foregroundStyle(LeagueTierPalette.color(for: tier))
+                    .scaleEffect(appeared ? 1 : 0.4)
+                    .opacity(appeared ? 1 : 0)
+                Text("League up!")
+                    .font(.largeTitle.weight(.bold))
+                Text("You've been promoted to \(LeagueTierPalette.label(for: tier))")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                Spacer()
+                Button("Continue", action: onContinue)
+                    .buttonStyle(.borderedProminent)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+            }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                appeared = true
+            }
+        }
+    }
+}
+
+/// Ports src/data/achievements.ts's LEAGUE_TIER_META hex values exactly --
+/// a different, 5-tier palette (bronze/silver/sapphire/ruby/diamond) from
+/// AchievementBadgeView's 4-tier achievement-tier palette, so kept separate
+/// rather than merged.
+enum LeagueTierPalette {
+    static func color(for tier: String) -> Color {
+        switch tier {
+        case "bronze": return Color(hex: 0xB07242)
+        case "silver": return Color(hex: 0x8A9099)
+        case "sapphire": return Color(hex: 0x4A6B8A)
+        case "ruby": return Color(hex: 0x9A4A4A)
+        case "diamond": return Color(hex: 0x4A7F7A)
+        default: return Color(white: 0.53)
+        }
+    }
+
+    static func label(for tier: String) -> String {
+        tier.prefix(1).uppercased() + tier.dropFirst()
     }
 }
