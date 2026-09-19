@@ -34,9 +34,7 @@ describe("Landing route", () => {
     getSession.mockResolvedValue({ data: { session: null } });
     const Landing = Route.options.component!;
     render(<Landing />);
-    expect(
-      screen.getByText("Learn English with lessons that actually stick."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Learn English with lessons that actually stick.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/auth");
     await waitFor(() => expect(getSession).toHaveBeenCalled());
     expect(navigate).not.toHaveBeenCalled();
@@ -46,9 +44,7 @@ describe("Landing route", () => {
     getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
     const Landing = Route.options.component!;
     render(<Landing />);
-    await waitFor(() =>
-      expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }),
-    );
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
   });
 
   it("links to the legal pages", () => {

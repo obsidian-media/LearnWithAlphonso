@@ -91,9 +91,7 @@ describe("Reset password route", () => {
     expect(await screen.findByText(/Password updated/)).toBeInTheDocument();
 
     vi.advanceTimersByTime(1200);
-    await waitFor(() =>
-      expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }),
-    );
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
     vi.useRealTimers();
   });
 
