@@ -34,6 +34,14 @@ final class Session {
         return nil
     }
 
+    /// The signed-in user's own id -- for anything that needs to reference
+    /// "me" client-side (building an invite link, comparing a leaderboard
+    /// row to "is this me"). See SupabaseSession.userID's doc comment.
+    var userID: String? {
+        if case .signedIn(let session) = state { return session.userID }
+        return nil
+    }
+
     func requestCode(email: String) async {
         errorMessage = nil
         isBusy = true
