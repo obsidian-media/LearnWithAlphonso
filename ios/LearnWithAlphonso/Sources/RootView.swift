@@ -16,6 +16,8 @@ struct RootView: View {
                     .tabItem { Label("Learn", systemImage: "book.fill") }
                 ReviewQueueView(contentStore: contentStore, session: session)
                     .tabItem { Label("Review", systemImage: "arrow.clockwise") }
+                LeaderboardView(session: session)
+                    .tabItem { Label("League", systemImage: "trophy.fill") }
                 ConversationView(contentStore: contentStore, session: session)
                     .tabItem { Label("Practice", systemImage: "mic.fill") }
                 HectorView(session: session, entitlementStore: entitlementStore)

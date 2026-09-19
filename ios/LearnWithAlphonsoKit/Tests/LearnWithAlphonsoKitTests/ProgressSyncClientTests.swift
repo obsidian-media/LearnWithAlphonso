@@ -321,6 +321,43 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["_course"] as? String, "en")
     }
 
+    // MARK: - fetchLeaderboard
+
+    func testFetchLeaderboardPostsScopeAndPeriodAndDecodesTheRows() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["user_id": "u1", "display_name": "Ada", "country": "US", "avatar_seed": "ada", "xp": 300],
+                ["user_id": "u2", "display_name": "Grace", "country": NSNull(), "avatar_seed": "grace", "xp": 150],
+            ])
+        }
+
+        let rows = try await client.fetchLeaderboard(scope: "friends", period: "weekly")
+
+        XCTAssertEqual(rows, [
+            LeaderboardRow(userID: "u1", displayName: "Ada", country: "US", avatarSeed: "ada", xp: 300),
+            LeaderboardRow(userID: "u2", displayName: "Grace", country: nil, avatarSeed: "grace", xp: 150),
+        ])
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_leaderboard"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_scope"] as? String, "friends")
+        XCTAssertEqual(payload["_period"] as? String, "weekly")
+    }
+
+    func testFetchLeaderboardReturnsAnEmptyArrayForAnUnauthenticatedCaller() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+
+        let rows = try await client.fetchLeaderboard(scope: "global", period: "all-time")
+
+        XCTAssertEqual(rows, [])
+    }
+
     // MARK: - error handling
 
     func testThrowsAReadableErrorWhenSupabaseRejectsAWrite() async {

@@ -39,6 +39,17 @@ public struct ReviewClearBonus: Sendable, Equatable {
     public let hearts: Int?
 }
 
+/// Matches `get_leaderboard`'s row shape exactly (supabase/migrations/
+/// 20260822065513_*.sql) -- no `isYou` flag from the server, same as the
+/// web app: the caller compares `userID` against `Session.userID` itself.
+public struct LeaderboardRow: Sendable, Equatable {
+    public let userID: String
+    public let displayName: String
+    public let country: String?
+    public let avatarSeed: String
+    public let xp: Int
+}
+
 /// Matches the complete-lesson Edge Function's response shape exactly
 /// (supabase/functions/complete-lesson/index.ts's final jsonResponse call).
 public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
@@ -281,6 +292,33 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         return ReviewClearBonus(granted: granted, hearts: row["hearts"] as? Int)
+    }
+
+    /// Calls the `get_leaderboard` SECURITY DEFINER RPC directly -- same
+    /// direct-RPC-via-PostgREST pattern as claimReviewClearBonus above.
+    /// `scope` is "global" | "friends" | "country", `period` is "weekly" |
+    /// "all-time"; the RPC itself fails closed to an empty result for an
+    /// unauthenticated caller rather than throwing.
+    public func fetchLeaderboard(scope: String, period: String) async throws -> [LeaderboardRow] {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_leaderboard"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_scope": scope, "_period": period])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> LeaderboardRow? in
+            guard let userID = row["user_id"] as? String,
+                  let displayName = row["display_name"] as? String,
+                  let avatarSeed = row["avatar_seed"] as? String,
+                  let xp = row["xp"] as? Int else { return nil }
+            return LeaderboardRow(userID: userID, displayName: displayName, country: row["country"] as? String, avatarSeed: avatarSeed, xp: xp)
+        }
     }
 
     private func currentHearts(userID: String) async throws -> Int {
