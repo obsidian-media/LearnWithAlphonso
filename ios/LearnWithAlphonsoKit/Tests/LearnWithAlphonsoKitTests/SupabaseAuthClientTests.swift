@@ -63,6 +63,7 @@ final class SupabaseAuthClientTests: XCTestCase {
             captured = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-1", "refresh_token": "rt-1", "expires_in": 3600,
+                "user": ["id": "user-1"],
             ])
         }
 
@@ -78,6 +79,7 @@ final class SupabaseAuthClientTests: XCTestCase {
 
         XCTAssertEqual(session.accessToken, "at-1")
         XCTAssertEqual(session.refreshToken, "rt-1")
+        XCTAssertEqual(session.userID, "user-1")
         XCTAssertGreaterThan(session.expiresAt.timeIntervalSinceNow, 3500)
     }
 
@@ -102,10 +104,11 @@ final class SupabaseAuthClientTests: XCTestCase {
             captured = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-2", "refresh_token": "rt-2", "expires_in": 3600,
+                "user": ["id": "user-1"],
             ])
         }
 
-        let oldSession = SupabaseSession(accessToken: "at-1", refreshToken: "rt-1", expiresAt: Date())
+        let oldSession = SupabaseSession(accessToken: "at-1", refreshToken: "rt-1", expiresAt: Date(), userID: "user-1")
         let newSession = try await client.refresh(oldSession)
 
         let request = try XCTUnwrap(captured)
@@ -116,13 +119,14 @@ final class SupabaseAuthClientTests: XCTestCase {
 
         XCTAssertEqual(newSession.accessToken, "at-2")
         XCTAssertEqual(newSession.refreshToken, "rt-2")
+        XCTAssertEqual(newSession.userID, "user-1")
     }
 
     func testRefreshThrowsWhenTheRefreshTokenIsRejected() async {
         let client = makeClient { request in
             self.response(for: request.url!, body: ["msg": "Invalid Refresh Token"], status: 401)
         }
-        let oldSession = SupabaseSession(accessToken: "at-1", refreshToken: "rt-1", expiresAt: Date())
+        let oldSession = SupabaseSession(accessToken: "at-1", refreshToken: "rt-1", expiresAt: Date(), userID: "user-1")
 
         do {
             _ = try await client.refresh(oldSession)

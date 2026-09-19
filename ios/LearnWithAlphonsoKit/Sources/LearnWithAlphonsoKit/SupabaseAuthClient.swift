@@ -14,11 +14,16 @@ public struct SupabaseSession: Sendable, Equatable {
     public let accessToken: String
     public let refreshToken: String
     public let expiresAt: Date
+    /// The signed-in user's own id (GoTrue's `user.id`) -- needed for
+    /// anything that must reference "me" client-side (e.g. building an
+    /// invite link, comparing a leaderboard row to "is this me").
+    public let userID: String
 
-    public init(accessToken: String, refreshToken: String, expiresAt: Date) {
+    public init(accessToken: String, refreshToken: String, expiresAt: Date, userID: String) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
         self.expiresAt = expiresAt
+        self.userID = userID
     }
 }
 
@@ -109,7 +114,9 @@ public final class SupabaseAuthClient: Sendable {
     private static func decodeSession(from data: Data) throws -> SupabaseSession {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let accessToken = object["access_token"] as? String,
-              let refreshToken = object["refresh_token"] as? String else {
+              let refreshToken = object["refresh_token"] as? String,
+              let user = object["user"] as? [String: Any],
+              let userID = user["id"] as? String else {
             throw SupabaseAuthError.invalidPayload
         }
         let expiresAt: Date
@@ -120,7 +127,7 @@ public final class SupabaseAuthClient: Sendable {
         } else {
             expiresAt = Date().addingTimeInterval(3600)
         }
-        return SupabaseSession(accessToken: accessToken, refreshToken: refreshToken, expiresAt: expiresAt)
+        return SupabaseSession(accessToken: accessToken, refreshToken: refreshToken, expiresAt: expiresAt, userID: userID)
     }
 
     private static func errorMessage(from data: Data) -> String? {
