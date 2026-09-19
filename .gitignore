@@ -43,6 +43,15 @@ DEFERRED-WORDS.md
 AUDIT.md
 ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 
+# V2 kickoff docs — local-only briefing documents (2026-09-19) for
+# handing off individual V2 feature work to fresh Claude Code sessions/
+# subagents without burning their context on this session's full
+# history. Not committed: they're working handoff notes, not
+# documentation of the shipped app (see docs/superpowers/specs/ for
+# that) -- verify against current code before trusting one if it's been
+# a while.
+/docs/v2-kickoffs/
+
 # Playwright
 /test-results/
 /playwright-report/
