@@ -1,0 +1,117 @@
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
+/// Calls THIS repo's own already-deployed AI endpoints
+/// (src/routes/api/chat.ts, api/tts.ts, api/stt.ts -- NVIDIA NIM chat +
+/// Deepgram TTS/STT, direct) rather than a separate backend. Same auth as
+/// every other authenticated call this app makes: the user's own Supabase
+/// access token as a Bearer header -- these routes verify it via
+/// ai-quota.server.ts's consumeQuota, which also enforces the same daily/
+/// per-minute AI-usage caps the web app is subject to.
+public struct ChatMessage: Sendable, Encodable, Equatable {
+    public let role: String
+    public let content: String
+
+    public init(role: String, content: String) {
+        self.role = role
+        self.content = content
+    }
+}
+
+public enum AIConversationError: Error, Equatable {
+    case badResponse
+    case server(status: Int, message: String?)
+    case invalidPayload
+}
+
+public final class AIConversationClient: Sendable {
+    public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)
+
+    private let baseURL: URL
+    private let accessToken: @Sendable () -> String
+    private let requester: Requester
+
+    public init(
+        baseURL: URL,
+        accessToken: @escaping @Sendable () -> String,
+        requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
+    ) {
+        self.baseURL = baseURL
+        self.accessToken = accessToken
+        self.requester = requester
+    }
+
+    /// POST /api/chat -- returns the assistant's reply text.
+    public func chat(messages: [ChatMessage], systemPrompt: String?) async throws -> String {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        var payload: [String: Any] = ["messages": messages.map { ["role": $0.role, "content": $0.content] }]
+        if let systemPrompt { payload["systemPrompt"] = systemPrompt }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let content = object["content"] as? String else {
+            throw AIConversationError.invalidPayload
+        }
+        return content
+    }
+
+    /// POST /api/tts -- returns raw MP3 audio bytes for `text`.
+    public func synthesizeSpeech(text: String, voice: String? = nil) async throws -> Data {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/tts"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        var payload: [String: Any] = ["text": text]
+        if let voice { payload["voice"] = voice }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        return data
+    }
+
+    /// POST /api/stt -- `audio` is the raw recorded bytes (e.g. m4a/wav),
+    /// sent as the request body with its real mime type, matching
+    /// api/stt.ts's expectation (Deepgram detects the format from
+    /// Content-Type, no multipart wrapper).
+    public func transcribe(audio: Data, mimeType: String) async throws -> String {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
+        request.httpMethod = "POST"
+        request.setValue(mimeType, forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        request.httpBody = audio
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let text = object["text"] as? String else {
+            throw AIConversationError.invalidPayload
+        }
+        return text
+    }
+
+    private static func requireSuccess(data: Data, response: URLResponse) throws {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AIConversationError.badResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw AIConversationError.server(status: httpResponse.statusCode, message: errorMessage(from: data))
+        }
+    }
+
+    private static func errorMessage(from data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let message = object["error"] as? String,
+              !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+        return message
+    }
+}

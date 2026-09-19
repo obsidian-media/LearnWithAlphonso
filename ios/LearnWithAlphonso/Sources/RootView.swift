@@ -10,7 +10,12 @@ struct RootView: View {
         case .signedOut, .awaitingCode:
             AuthView(session: session)
         case .signedIn:
-            LessonBrowserView(contentStore: contentStore, session: session)
+            TabView {
+                LessonBrowserView(contentStore: contentStore, session: session)
+                    .tabItem { Label("Learn", systemImage: "book.fill") }
+                ConversationView(contentStore: contentStore, session: session)
+                    .tabItem { Label("Practice", systemImage: "mic.fill") }
+            }
         }
     }
 }

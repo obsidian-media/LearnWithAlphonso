@@ -9,4 +9,10 @@ import Foundation
 enum AppConfig {
     static let supabaseURL = URL(string: "https://qhcjpfbxfcltjbiuknyt.supabase.co")!
     static let supabasePublishableKey = "sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9"
+
+    /// This repo's own deployed web app -- AIConversationClient calls its
+    /// /api/chat, /api/tts, /api/stt routes directly (see that type's doc
+    /// comment for why: same backend the web app already uses, no second
+    /// account system).
+    static let apiBaseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
 }
