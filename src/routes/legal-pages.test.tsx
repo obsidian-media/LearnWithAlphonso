@@ -26,9 +26,11 @@ describe("Cookies route", () => {
     expect(screen.getByText("Strictly necessary")).toBeInTheDocument();
   });
 
-  it("sets a page title in head()", () => {
-    const meta = CookiesRoute.options.head?.({} as never)?.meta;
-    expect(meta?.some((m) => "title" in m && m.title === "Cookie Policy — Alphonso")).toBe(true);
+  it("sets a page title in head()", async () => {
+    const meta = (await CookiesRoute.options.head?.({} as never))?.meta;
+    expect(meta?.some((m) => m && "title" in m && m.title === "Cookie Policy — Alphonso")).toBe(
+      true,
+    );
   });
 });
 

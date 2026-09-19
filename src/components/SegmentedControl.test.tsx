@@ -4,11 +4,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SegmentedControl } from "./SegmentedControl";
 
-const options = [
+const options: { value: "a" | "b" | "c"; label: string }[] = [
   { value: "a", label: "Alpha" },
   { value: "b", label: "Beta" },
   { value: "c", label: "Gamma" },
-] as const;
+];
 
 describe("SegmentedControl", () => {
   it("renders a tab per option and marks the active one selected", () => {
