@@ -30,7 +30,7 @@ struct LessonPlayerView: View {
     @State private var errorMessage: String?
 
     private var total: Int { lesson.questions.count }
-    private var vocab: [VocabItem] { deriveVocab(lesson: lesson) }
+    private var vocab: [VocabItem] { deriveVocab(lesson: lesson, images: contentStore.vocabImages) }
 
     var body: some View {
         Group {
@@ -47,7 +47,7 @@ struct LessonPlayerView: View {
             } else {
                 switch phase {
                 case .overview:
-                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total) {
+                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total, previewImages: vocab.prefix(3).compactMap(\.image)) {
                         phase = vocab.isEmpty ? .quiz : .vocab
                     }
                 case .vocab:
@@ -251,6 +251,12 @@ private struct OverviewScreen: View {
     let lesson: Lesson
     let wordCount: Int
     let questionCount: Int
+    /// Up to 3 of this lesson's vocab images, shown as a small teaser
+    /// before the user commits to starting -- genuinely optional polish
+    /// (docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
+    /// feature 2"), not core functionality; an empty array just means no
+    /// thumbnails render, same as today.
+    let previewImages: [VocabImageRef]
     let onStart: () -> Void
 
     var body: some View {
@@ -263,6 +269,22 @@ private struct OverviewScreen: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                if !previewImages.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(previewImages, id: \.url) { image in
+                            AsyncImage(url: URL(string: image.url)) { phase in
+                                if case .success(let loadedImage) = phase {
+                                    loadedImage.resizable().aspectRatio(contentMode: .fill)
+                                } else {
+                                    Color(.secondarySystemBackground)
+                                }
+                            }
+                            .frame(width: 44, height: 44)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                    }
+                    .padding(.leading, 40)
+                }
                 overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
                 overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
             }
@@ -311,6 +333,9 @@ private struct VocabScreen: View {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(items, id: \.term) { item in
                         VStack(alignment: .leading, spacing: 4) {
+                            if let image = item.image {
+                                VocabImageView(image: image)
+                            }
                             Text(item.term).font(.headline)
                             Text(item.meaning).font(.caption).foregroundStyle(.secondary)
                             Text(item.example)
@@ -330,6 +355,40 @@ private struct VocabScreen: View {
                 .frame(maxWidth: .infinity)
         }
         .padding()
+    }
+}
+
+/// Mirrors the web's `<img src=... onError=...>` handling: a loading
+/// placeholder while the Pexels CDN fetch is in flight, and -- on failure
+/// -- silently collapse to nothing rather than show a broken-image icon.
+/// No caching beyond what URLSession/AsyncImage already do by default;
+/// see docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
+/// feature 1" for why that's an accepted tradeoff for V2, not an oversight.
+private struct VocabImageView: View {
+    let image: VocabImageRef
+
+    var body: some View {
+        AsyncImage(url: URL(string: image.url)) { phase in
+            switch phase {
+            case .success(let loadedImage):
+                loadedImage
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 120)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipped()
+            case .failure:
+                EmptyView()
+            case .empty:
+                ProgressView()
+                    .frame(height: 120)
+                    .frame(maxWidth: .infinity)
+            @unknown default:
+                EmptyView()
+            }
+        }
+        .accessibilityLabel(image.alt)
     }
 }
 

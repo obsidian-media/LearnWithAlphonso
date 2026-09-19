@@ -15,9 +15,9 @@ final class VocabDerivationTests: XCTestCase {
             mc(id: "q1", prompt: "Choose the correct word:", choices: ["cat", "dog"], answer: 0, explanation: "A small pet."),
         ])
 
-        let vocab = deriveVocab(lesson: lesson)
+        let vocab = deriveVocab(lesson: lesson, images: [:])
 
-        XCTAssertEqual(vocab, [VocabItem(term: "cat", meaning: "A small pet.", example: "Choose the correct word \u{2192} cat")])
+        XCTAssertEqual(vocab, [VocabItem(term: "cat", meaning: "A small pet.", example: "Choose the correct word \u{2192} cat", image: nil)])
     }
 
     func testDerivesAFilledInSentenceFromAFillInBlankQuestion() {
@@ -25,9 +25,9 @@ final class VocabDerivationTests: XCTestCase {
             fill(id: "q1", prompt: "I ___ to the store.", bank: ["go", "went"], answer: "went", explanation: "Past tense."),
         ])
 
-        let vocab = deriveVocab(lesson: lesson)
+        let vocab = deriveVocab(lesson: lesson, images: [:])
 
-        XCTAssertEqual(vocab, [VocabItem(term: "went", meaning: "Past tense.", example: "I went to the store.")])
+        XCTAssertEqual(vocab, [VocabItem(term: "went", meaning: "Past tense.", example: "I went to the store.", image: nil)])
     }
 
     func testFallsBackToAppendingTheAnswerWhenThePromptHasNoBlank() {
@@ -35,7 +35,7 @@ final class VocabDerivationTests: XCTestCase {
             fill(id: "q1", prompt: "Translate hello", bank: [], answer: "hola", explanation: "Greeting."),
         ])
 
-        let vocab = deriveVocab(lesson: lesson)
+        let vocab = deriveVocab(lesson: lesson, images: [:])
 
         XCTAssertEqual(vocab.first?.example, "Translate hello hola")
     }
@@ -46,7 +46,7 @@ final class VocabDerivationTests: XCTestCase {
             mc(id: "q2", prompt: "p2", choices: ["dog"], answer: 0, explanation: "second"),
         ])
 
-        let vocab = deriveVocab(lesson: lesson)
+        let vocab = deriveVocab(lesson: lesson, images: [:])
 
         XCTAssertEqual(vocab.count, 1)
         XCTAssertEqual(vocab.first?.meaning, "first")
@@ -57,7 +57,7 @@ final class VocabDerivationTests: XCTestCase {
             fill(id: "q1", prompt: "p", bank: [], answer: "   ", explanation: "e"),
         ])
 
-        XCTAssertTrue(deriveVocab(lesson: lesson).isEmpty)
+        XCTAssertTrue(deriveVocab(lesson: lesson, images: [:]).isEmpty)
     }
 
     func testHandlesAnOutOfBoundsMultipleChoiceAnswerIndexGracefully() {
@@ -65,6 +65,29 @@ final class VocabDerivationTests: XCTestCase {
             mc(id: "q1", prompt: "p", choices: ["a"], answer: 5, explanation: "e"),
         ])
 
-        XCTAssertTrue(deriveVocab(lesson: lesson).isEmpty)
+        XCTAssertTrue(deriveVocab(lesson: lesson, images: [:]).isEmpty)
+    }
+
+    // MARK: - image lookup
+
+    func testAttachesAnImageWhenTheLowercasedTermMatchesTheImagesDictionary() {
+        let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
+            mc(id: "q1", prompt: "p", choices: ["Dog"], answer: 0, explanation: "e"),
+        ])
+        let image = VocabImageRef(url: "https://images.pexels.com/dog.jpg", alt: "A dog", credit: "Someone")
+
+        let vocab = deriveVocab(lesson: lesson, images: ["dog": image])
+
+        XCTAssertEqual(vocab.first?.image, image)
+    }
+
+    func testLeavesImageNilWhenNoMatchingKeyExistsInTheImagesDictionary() {
+        let lesson = Lesson(id: "u1l1", title: "t", subtitle: "s", questions: [
+            mc(id: "q1", prompt: "p", choices: ["Dog"], answer: 0, explanation: "e"),
+        ])
+
+        let vocab = deriveVocab(lesson: lesson, images: ["cat": VocabImageRef(url: "u", alt: "a", credit: "c")])
+
+        XCTAssertNil(vocab.first?.image)
     }
 }

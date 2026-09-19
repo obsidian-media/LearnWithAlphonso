@@ -19,6 +19,7 @@ import {
   buildIOSContentBundle,
   buildIOSScenariosBundle,
   buildIOSAchievementsBundle,
+  buildIOSVocabImagesBundle,
 } from "../src/lib/ios-content-export";
 
 const OUT_DIRS = [
@@ -43,3 +44,4 @@ writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
 writeJSON("scenarios.json", buildIOSScenariosBundle());
 writeJSON("achievements.json", buildIOSAchievementsBundle());
+writeJSON("vocab-images.json", buildIOSVocabImagesBundle());

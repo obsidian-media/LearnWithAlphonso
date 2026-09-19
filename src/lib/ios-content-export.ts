@@ -2,6 +2,7 @@ import { getCourse, type Course } from "@/data/courses";
 import { SCENARIOS } from "@/data/scenarios";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
+import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
 
 export type IOSContentBundle = {
   course: Course;
@@ -41,4 +42,9 @@ export function buildIOSScenariosBundle(): IOSScenario[] {
 /** Same pass-through reasoning as buildIOSContentBundle, for ACHIEVEMENTS. */
 export function buildIOSAchievementsBundle(): Achievement[] {
   return ACHIEVEMENTS;
+}
+
+/** Same pass-through reasoning as buildIOSContentBundle, for VOCAB_IMAGES. */
+export function buildIOSVocabImagesBundle(): Record<string, VocabImage> {
+  return VOCAB_IMAGES;
 }

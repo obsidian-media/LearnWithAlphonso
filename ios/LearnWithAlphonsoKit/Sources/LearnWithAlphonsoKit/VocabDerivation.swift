@@ -1,17 +1,27 @@
 import Foundation
 
-/// Direct port of src/lib/vocab.ts's `deriveVocab` -- vocabulary isn't
+/// Direct port of src/data/vocab.ts's `deriveVocab` -- vocabulary isn't
 /// separate content, it's derived from a lesson's own questions (the
 /// answer + explanation + a model sentence), so no new bundled JSON is
-/// needed: the existing curriculum-en.json/curriculum-fr.json already
-/// carry everything this needs. Stock-photo lookup (VOCAB_IMAGES on the
-/// web) is deliberately not ported yet -- `image` is always nil here;
-/// see the V2 offline-first/vocab-images follow-up note in
-/// ARCHITECTURE.md before assuming this needs porting too.
+/// needed for the term/meaning/example fields: the existing
+/// curriculum-en.json/curriculum-fr.json already carry everything those
+/// need. `image` is the one field that does need separate bundled data --
+/// see VocabImageRef below.
 public struct VocabItem: Sendable, Equatable {
     public let term: String
     public let meaning: String
     public let example: String
+    public let image: VocabImageRef?
+}
+
+/// Mirrors src/data/vocab-images.ts's `VocabImage` type exactly -- a
+/// Pexels stock-photo reference (URL/alt-text/credit, no image bytes
+/// bundled). Images themselves load from Pexels' CDN at runtime via
+/// AsyncImage, same as the web's `<img src=...>`.
+public struct VocabImageRef: Decodable, Sendable, Equatable {
+    public let url: String
+    public let alt: String
+    public let credit: String
 }
 
 private func answerOf(_ question: Question) -> String {
@@ -48,8 +58,11 @@ private func exampleOf(_ question: Question) -> String {
 }
 
 /// Builds the vocabulary module for a lesson from its own questions,
-/// deduping by term (case-insensitive) in question order.
-public func deriveVocab(lesson: Lesson) -> [VocabItem] {
+/// deduping by term (case-insensitive) in question order. `images` is
+/// keyed the same way (`term.lowercased()`, matching the web's
+/// `titleCaseKey` despite its name) -- pass `ContentStore.vocabImages`,
+/// or `[:]` where no image lookup is needed/available.
+public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [VocabItem] {
     var seen: Set<String> = []
     var items: [VocabItem] = []
     for question in lesson.questions {
@@ -63,7 +76,7 @@ public func deriveVocab(lesson: Lesson) -> [VocabItem] {
         case .multipleChoice(let q): explanation = q.explanation
         case .fillInBlank(let q): explanation = q.explanation
         }
-        items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question)))
+        items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question), image: images[key]))
     }
     return items
 }

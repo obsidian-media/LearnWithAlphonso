@@ -30,12 +30,17 @@ public final class ContentStore {
     public let french: ContentBundle
     public let scenarios: [Scenario]
     public let achievements: [Achievement]
+    /// Vocab-term (lowercased) -> stock-photo lookup, same keying
+    /// deriveVocab(lesson:images:) expects. Empty entries just mean no
+    /// image exists for that term -- not an error.
+    public let vocabImages: [String: VocabImageRef]
 
     public init() throws {
         english = try Self.loadBundle(for: .english)
         french = try Self.loadBundle(for: .french)
         scenarios = try Self.loadScenarios()
         achievements = try Self.loadJSON([Achievement].self, resource: "achievements")
+        vocabImages = try Self.loadJSON([String: VocabImageRef].self, resource: "vocab-images")
     }
 
     public func bundle(for course: Course) -> ContentBundle {
