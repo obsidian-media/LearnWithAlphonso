@@ -6,6 +6,7 @@ import RevenueCat
 struct LearnWithAlphonsoApp: App {
     @State private var session = Session()
     @State private var entitlementStore = EntitlementStore()
+    @State private var notificationScheduler = NotificationScheduler()
     private let contentStore: ContentStore?
 
     init() {
@@ -21,7 +22,7 @@ struct LearnWithAlphonsoApp: App {
     var body: some Scene {
         WindowGroup {
             if let contentStore {
-                RootView(session: session, contentStore: contentStore, entitlementStore: entitlementStore)
+                RootView(session: session, contentStore: contentStore, entitlementStore: entitlementStore, notificationScheduler: notificationScheduler)
                     .task { await entitlementStore.refresh() }
             } else {
                 ContentUnavailableView(

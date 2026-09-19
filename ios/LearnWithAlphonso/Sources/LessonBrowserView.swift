@@ -8,6 +8,7 @@ import LearnWithAlphonsoKit
 struct LessonBrowserView: View {
     let contentStore: ContentStore
     let session: Session
+    let notificationScheduler: NotificationScheduler
 
     @State private var course: Course = .english
 
@@ -47,7 +48,7 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
-                    LessonPlayerView(lesson: found.lesson, course: course, session: session)
+                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler)
                 } else {
                     Text("Lesson not found")
                 }
