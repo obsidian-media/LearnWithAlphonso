@@ -90,20 +90,26 @@ async function authenticate(
  * Looks up a lesson + its questions, scoped to the claimed course (a
  * lesson id belonging to the other course's units correctly returns null
  * here, matching getCourse(course).findLesson(lessonId)'s semantics).
+ * Also returns the unit's level_id -- needed for the review_items rows
+ * this function upserts below, same as recordMisses' client-supplied
+ * `level` on the web (here derived server-side instead, one less field
+ * to trust from the caller).
  */
 async function findLesson(
   admin: SupabaseClient,
   course: string,
   lessonId: string,
-): Promise<{ questions: { id: string }[] } | null> {
+): Promise<{ questions: { id: string }[]; level: string } | null> {
   const { data, error } = await admin
     .from("lessons")
-    .select("id, units!inner(course), questions(id)")
+    .select("id, units!inner(course, level_id), questions(id)")
     .eq("id", lessonId)
     .eq("units.course", course)
     .maybeSingle();
   if (error || !data) return null;
-  return { questions: (data.questions ?? []) as { id: string }[] };
+  const units = data.units as unknown as { level_id: string } | { level_id: string }[];
+  const level = Array.isArray(units) ? units[0]?.level_id : units.level_id;
+  return { questions: (data.questions ?? []) as { id: string }[], level: level ?? "A1" };
 }
 
 export async function handleRequest(req: Request): Promise<Response> {
@@ -275,6 +281,28 @@ export async function handleRequest(req: Request): Promise<Response> {
       day: today,
       xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
     }),
+    // Feeds the review queue -- mirrors recordMisses (src/lib/review.functions.ts)
+    // exactly, folded in here since this function already has the
+    // validated lesson/question data recordMisses would otherwise need a
+    // second session-token round trip to re-verify.
+    ...(missedQuestionIds.length > 0
+      ? [
+        admin.from("review_items").upsert(
+          missedQuestionIds.map((questionId) => ({
+            user_id: userId,
+            item_key: `${lessonId}:${questionId}`,
+            lesson_id: lessonId,
+            level: lesson.level,
+            language: course,
+            ease: 2.3,
+            interval_days: 0,
+            repetitions: 0,
+            due_on: today,
+          })),
+          { onConflict: "user_id,item_key,language" },
+        ),
+      ]
+      : []),
   ]);
 
   const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] =

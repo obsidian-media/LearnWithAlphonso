@@ -13,6 +13,32 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
+/// Matches review.functions.ts's `ReviewItem` shape exactly.
+public struct ReviewItem: Sendable, Equatable {
+    public let itemKey: String
+    public let lessonId: String
+    public let level: String
+    public let ease: Double
+    public let intervalDays: Int
+    public let repetitions: Int
+    public let dueOn: String
+}
+
+public struct DueReviews: Sendable, Equatable {
+    public let due: [ReviewItem]
+    public let total: Int
+}
+
+public struct ReviewGradeOutcome: Sendable, Equatable {
+    public let retired: Bool
+    public let dueOn: String
+}
+
+public struct ReviewClearBonus: Sendable, Equatable {
+    public let granted: Bool
+    public let hearts: Int?
+}
+
 /// Matches the complete-lesson Edge Function's response shape exactly
 /// (supabase/functions/complete-lesson/index.ts's final jsonResponse call).
 public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
@@ -160,6 +186,101 @@ public final class ProgressSyncClient: Sendable {
         } catch {
             throw ProgressSyncError.invalidPayload
         }
+    }
+
+    /// Items due today (plus overdue), oldest first -- direct PostgREST
+    /// reads under RLS (`ri_own_all`: auth.uid() = user_id), same as
+    /// loseHeart/setCefrLevel above. No trust-sensitive derivation here
+    /// (unlike gradeReview), so no Edge Function needed.
+    public func fetchDueReviews(course: String) async throws -> DueReviews {
+        let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
+        var dueRequest = restRequest(path: "review_items", query: [
+            URLQueryItem(name: "select", value: "item_key,lesson_id,level,ease,interval_days,repetitions,due_on"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+            URLQueryItem(name: "due_on", value: "lte.\(today)"),
+            URLQueryItem(name: "order", value: "due_on.asc"),
+            URLQueryItem(name: "limit", value: "20"),
+        ])
+        dueRequest.httpMethod = "GET"
+        let (dueData, dueResponse) = try await requester(dueRequest)
+        try Self.requireSuccess(data: dueData, response: dueResponse)
+        guard let rows = try? JSONSerialization.jsonObject(with: dueData) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        let due = rows.compactMap { row -> ReviewItem? in
+            guard let itemKey = row["item_key"] as? String,
+                  let lessonId = row["lesson_id"] as? String,
+                  let level = row["level"] as? String,
+                  let ease = row["ease"] as? Double,
+                  let intervalDays = row["interval_days"] as? Int,
+                  let repetitions = row["repetitions"] as? Int,
+                  let dueOn = row["due_on"] as? String else { return nil }
+            return ReviewItem(itemKey: itemKey, lessonId: lessonId, level: level, ease: ease, intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn)
+        }
+
+        var countRequest = restRequest(path: "review_items", query: [
+            URLQueryItem(name: "select", value: "item_key"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+        ])
+        countRequest.httpMethod = "HEAD"
+        countRequest.setValue("count=exact", forHTTPHeaderField: "Prefer")
+        let (_, countResponse) = try await requester(countRequest)
+        let total: Int
+        if let httpResponse = countResponse as? HTTPURLResponse,
+           let contentRange = httpResponse.value(forHTTPHeaderField: "Content-Range"),
+           let countStr = contentRange.split(separator: "/").last,
+           let parsed = Int(countStr) {
+            total = parsed
+        } else {
+            total = due.count
+        }
+        return DueReviews(due: due, total: total)
+    }
+
+    /// Calls the grade-review Edge Function -- re-derives correctness
+    /// server-side against the real question, same trust-boundary
+    /// reasoning as completeLesson. See
+    /// supabase/functions/grade-review/index.ts.
+    public func gradeReview(itemKey: String, answer: String, course: String) async throws -> ReviewGradeOutcome {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/grade-review"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = ["itemKey": itemKey, "answer": answer, "course": course]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let retired = object["retired"] as? Bool,
+              let dueOn = object["dueOn"] as? String else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return ReviewGradeOutcome(retired: retired, dueOn: dueOn)
+    }
+
+    /// Calls the `claim_review_clear_bonus` SECURITY DEFINER RPC directly
+    /// -- safe for a client to call as-is (it re-checks the due count and
+    /// the once-per-day guard atomically under a row lock server-side,
+    /// using auth.uid() internally; see
+    /// supabase/migrations/20260918141500_hearts_economy_rpcs.sql).
+    public func claimReviewClearBonus(course: String) async throws -> ReviewClearBonus {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/claim_review_clear_bonus"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_course": course])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let granted = row["granted"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return ReviewClearBonus(granted: granted, hearts: row["hearts"] as? Int)
     }
 
     private func currentHearts(userID: String) async throws -> Int {
