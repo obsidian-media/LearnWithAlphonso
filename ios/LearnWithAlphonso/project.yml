@@ -28,6 +28,9 @@ settings:
 packages:
   LearnWithAlphonsoKit:
     path: ../LearnWithAlphonsoKit
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios.git
+    from: 5.90.2
 targets:
   LearnWithAlphonso:
     type: application
@@ -37,6 +40,7 @@ targets:
       - path: Sources
     dependencies:
       - package: LearnWithAlphonsoKit
+      - package: RevenueCat
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso

@@ -1,9 +1,11 @@
 import SwiftUI
 import LearnWithAlphonsoKit
+import RevenueCat
 
 @main
 struct LearnWithAlphonsoApp: App {
     @State private var session = Session()
+    @State private var entitlementStore = EntitlementStore()
     private let contentStore: ContentStore?
 
     init() {
@@ -13,12 +15,14 @@ struct LearnWithAlphonsoApp: App {
         // surfaced as a view rather than a crash, since a bad build should
         // fail visibly in TestFlight, not silently terminate on launch.
         contentStore = try? ContentStore()
+        Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     }
 
     var body: some Scene {
         WindowGroup {
             if let contentStore {
-                RootView(session: session, contentStore: contentStore)
+                RootView(session: session, contentStore: contentStore, entitlementStore: entitlementStore)
+                    .task { await entitlementStore.refresh() }
             } else {
                 ContentUnavailableView(
                     "Couldn't load lesson content",

@@ -13,13 +13,14 @@ import LearnWithAlphonsoKit
 /// sign-in/enrollment first.
 struct HectorView: View {
     let session: Session
+    let entitlementStore: EntitlementStore
     @State private var hectorSession = HectorSession()
 
     var body: some View {
         NavigationStack {
             Group {
-                if !ProEntitlement.isPro {
-                    paywallBody
+                if !entitlementStore.isPro {
+                    PaywallView(entitlementStore: entitlementStore)
                 } else {
                     switch hectorSession.state {
                     case .signedOut, .awaitingCode:
@@ -32,14 +33,6 @@ struct HectorView: View {
                 }
             }
             .navigationTitle("Hector")
-        }
-    }
-
-    private var paywallBody: some View {
-        ContentUnavailableView {
-            Label("Hector is a Pro feature", systemImage: "lock.fill")
-        } description: {
-            Text("Upgrade to Alphonso Pro ($9.99/month) to practice with Hector, your personal AI tutor.")
         }
     }
 
