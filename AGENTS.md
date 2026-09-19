@@ -72,8 +72,11 @@ exists for CI to sign in with). `ios/LearnWithAlphonsoKit` has its own
 XCTest suite (SRS/progress-math/hearts ports, network client tests via an
 injected requester closure — no real network in tests). Lint, typecheck,
 Vitest, Playwright, and the Swift package's tests are all wired into CI
-(`.github/workflows/ci.yml`) on every PR and push to `main` (the Swift job
-runs on a macOS runner):
+(`.github/workflows/ci.yml`) on every PR and push to `main` (both Swift
+jobs run on a macOS runner) — `ios-app-build` additionally runs a real
+`xcodebuild` of the `LearnWithAlphonso` app target itself, the only
+compile verification that exists for it (no local Xcode/macOS in this
+development environment):
 
 ```sh
 bun run lint         # ESLint
@@ -93,12 +96,15 @@ See `LESSON_ASSETS.md` for the complete list of assets needed for all 300 lesson
 and `ai_rate_limits`/`ai_usage` quota tables must exist in the linked
 Supabase project _and_ `LESSON_SESSION_SECRET` must be set in **both** the
 deployment host's env vars _and_ as a `supabase secrets set` value for
-`complete-lesson` and `start-lesson-session` (same value across all
-three; `grade-review` does not need `LESSON_SESSION_SECRET`), or lesson
+`complete-lesson` and `start-lesson-session` (same value on both sides;
+`grade-review` does not need `LESSON_SESSION_SECRET`), or lesson
 completion fails closed for web and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
-ARCHITECTURE.md's "Known rough edges" section.
+ARCHITECTURE.md's "Known rough edges" section. **Current state (2026-09-19,
+verify before trusting): all migrations applied, all three Edge Functions
+deployed and current (`complete-lesson` v5, `start-lesson-session` v1,
+`grade-review` v1).**
 
 **RevenueCat (Pro/"Hector" gating):** `EntitlementStore` (`ios/LearnWithAlphonso/Sources/EntitlementStore.swift`)
 wraps the RevenueCat SDK (`Purchases.configure` in `LearnWithAlphonsoApp.init`);

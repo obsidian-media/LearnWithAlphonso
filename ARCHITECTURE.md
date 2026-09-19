@@ -1,6 +1,6 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-09-18 — re-verify
+Written 2026-09-13, last substantially updated 2026-09-19 — re-verify
 against `supabase/migrations/*.sql` and `src/routes/` before trusting a
 detail here; this codebase's own audit history shows even a careful
 point-in-time doc goes stale within weeks. This doc favors "where to look"
@@ -102,23 +102,43 @@ questions does it have."
 
 ## Edge Functions (Deno, `supabase/functions/`)
 
-`complete-lesson` is the one trust-sensitive write path that isn't a
-TanStack Start server function — it's a Supabase Edge Function, because the
-native iOS client has no server layer of its own to run `completeLessonRemote`
-in. It's a **1:1 port** of `completeLessonRemote`
-(`src/lib/sync.functions.ts`) to Deno, reading curriculum data from the
-`lessons`/`units`/`questions` tables above instead of the in-process
-`curriculum.ts` the web app uses. Because Edge Functions bundle each
-function directory independently, `supabase/functions/complete-lesson/`
-carries its own Deno copies of the pure math it needs
-(`progress-math.ts`, `hearts.ts`, `lesson-session.ts`) rather than
-importing across the `supabase/functions/` boundary — **these must be kept
-byte-for-byte in sync with their TypeScript source of truth by hand**;
-nothing enforces that automatically. Deployed via
-`supabase functions deploy complete-lesson`; the `LESSON_SESSION_SECRET`
-Edge Function secret must match the web app's own env value exactly, or
-tokens issued by one side won't verify on the other. See
-`docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md`.
+Three trust-sensitive write/issue paths that aren't TanStack Start server
+functions, because the native iOS client has no server layer of its own
+to run them in. All three are deployed and live in production (project
+`qhcjpfbxfcltjbiuknyt`):
+
+- **`complete-lesson`** — 1:1 port of `completeLessonRemote`
+  (`src/lib/sync.functions.ts`) to Deno, reading curriculum data from the
+  `lessons`/`units`/`questions` tables above instead of the in-process
+  `curriculum.ts` the web app uses. Also upserts `review_items` rows for
+  any missed questions (folds in `recordMisses`' logic, since this
+  function already has the validated lesson/question data recordMisses
+  would otherwise need a second session-token round trip to re-verify).
+- **`start-lesson-session`** — issues the HMAC session token
+  `complete-lesson` requires as proof a lesson was actually opened. On
+  the web app this comes from `startLessonSession`, a TanStack Start
+  server function reachable only via the web app's own RPC layer — this
+  is that same issuance exposed over plain HTTP so iOS can call it too.
+- **`grade-review`** — 1:1 port of `gradeReview`
+  (`src/lib/review.functions.ts`): re-derives an SRS review answer's
+  correctness server-side against the real question (never trusts a
+  client-supplied `correct` boolean), rejects grading an item that isn't
+  due yet, updates/retires the item.
+
+Because Edge Functions bundle each function directory independently,
+each carries its own Deno copies of the pure math it needs
+(`complete-lesson/{progress-math,hearts,lesson-session}.ts`,
+`start-lesson-session/lesson-session.ts`, `grade-review/srs.ts`) rather
+than importing across the `supabase/functions/` boundary — **these must
+be kept byte-for-byte in sync with their TypeScript source of truth by
+hand**; nothing enforces that automatically. Deployed via `supabase
+functions deploy <name>` (or the Supabase MCP `deploy_edge_function`
+tool); `complete-lesson` and `start-lesson-session` both need the
+`LESSON_SESSION_SECRET` Edge Function secret to match the web app's own
+env value exactly, or tokens issued by one side won't verify on the
+other (`grade-review` doesn't use session tokens at all — the `due_on <=
+today` check is what prevents grading a never-actually-reviewed item).
+See `docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md`.
 
 ## Hearts economy
 
@@ -152,20 +172,69 @@ Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
 (see `supabase/migrations/20260918140000_add_manuscript_theme.sql` for the
 pattern: drop and re-add the constraint, since it isn't named per-value).
 
-## Native iOS app (`ios/`, in progress)
+## Native iOS app (`ios/`)
 
 Two pieces: `LearnWithAlphonsoKit` (a plain Swift Package — content
 models, `ContentStore` bundled-JSON loader, SRS/progress-math/hearts-economy
-ports, and network clients for Supabase auth, the AI conversation backend,
-and `ProgressSyncClient`'s direct PostgREST calls + the `complete-lesson`
-Edge Function) and `LearnWithAlphonso` (the actual SwiftUI app target,
-scaffolded via XcodeGen so the `.xcodeproj` is generated from
-`project.yml` rather than hand-clicked/committed). The Kit has zero
-UIKit/SwiftUI dependency and was written and tested on Windows (no
-Xcode/macOS in that environment) via `ios/LearnWithAlphonsoKit/swift-test.ps1`
-— the app target itself has not yet had a real Xcode build. CI
-(`ios-swift-tests` job) runs the Kit's test suite on a macOS runner on
-every PR. See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`.
+ports, and network clients: `SupabaseAuthClient`, `ProgressSyncClient`
+(PostgREST + the `complete-lesson`/`start-lesson-session`/`grade-review`
+Edge Functions), `AIConversationClient` (this repo's own
+`/api/chat`/`/api/tts`/`/api/stt`), `TutorConversationClient` +
+`DeviceEnrollmentClient` (AlphonsoCompanion's Cloud Voice, Pro-only — see
+below)) and `LearnWithAlphonso` (the SwiftUI app target, scaffolded via
+XcodeGen so the `.xcodeproj` is generated from `project.yml` rather than
+hand-clicked/committed).
+
+There is no local Xcode/macOS in this development environment. The Kit
+was written and tested on Windows via
+`ios/LearnWithAlphonsoKit/swift-test.ps1` (zero UIKit/SwiftUI
+dependency, so this works); the app target's *only* compile
+verification is CI — `.github/workflows/ci.yml`'s `ios-app-build` job
+runs a real `xcodebuild` on a macOS GitHub Actions runner on every PR,
+and `.github/workflows/ios-release.yml` (manual trigger) produces a
+real signed archive/`.ipa` and can optionally upload it to TestFlight,
+using an App Store Connect API key (`-allowProvisioningUpdates`) rather
+than any interactive Apple ID login. Empirically confirmed (two full
+runs) that this signing flow does not permanently accumulate
+certificates on the Apple account, despite each CI run starting from an
+empty keychain — no certificate-persistence (`.p12`/fastlane-match)
+infrastructure was needed.
+
+**Two separate AI-conversation modes, two separate backends:**
+- **Free** — `ConversationView.swift` / `AIConversationClient.swift`:
+  calls this repo's own already-deployed AI endpoints directly (same
+  backend, same Supabase account/session the rest of the app uses).
+- **Pro** ($9.99/month, RevenueCat-gated) — `HectorView.swift` /
+  `TutorConversationClient.swift`: AlphonsoCompanion's Cloud Voice
+  backend (`voice.obsidianmedia.online`), which requires its own
+  separate email-OTP sign-in and device enrollment
+  (`HectorSession.swift` / `DeviceEnrollmentClient.swift`) against a
+  **different Supabase project** (`ywavjlmjbxuslbxactsx`) — a second,
+  deliberate account system, not a bug. Speech-to-text for this mode
+  still goes through the app's own `/api/stt` (only the chat reply + its
+  TTS audio come from Cloud Voice). That Cloud Voice Supabase project
+  auto-paused (`INACTIVE`) once already during this project's
+  lifetime — if Hector stops working, check its status first.
+
+**RevenueCat**: `EntitlementStore.swift` wraps the SDK
+(`Purchases.configure` in `LearnWithAlphonsoApp.init`) — every
+Pro-gated view reads only `EntitlementStore.isPro`/`.packages`, never
+touches `Purchases` directly. Currently configured with a **Test Store**
+key; no real Offering/Package exists in the RevenueCat dashboard yet, so
+`PaywallView` shows a "not available yet" state rather than a working
+purchase button until a real App Store Connect subscription product is
+created and connected. See `AGENTS.md`'s RevenueCat note for the exact
+remaining steps.
+
+App Store Connect app record exists: "Learn With Alphonso", app id
+`6813969159`, bundle `com.obsidianmedia.learnwithalphonso`, Team ID
+`9Y6GYPM3K5`.
+
+See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
+original design (note: that doc's plan to reuse Cloud Voice for *all* AI
+conversation, and its V2 deferral of hearts/streak-freezes, were both
+superseded in practice — see this file's git history / session
+decisions rather than trusting that doc's roadmap section as current).
 
 ## AI integrations
 
@@ -207,3 +276,14 @@ note in README.md's Documentation section for why.)
   handler checked query errors. Fixed, but it's evidence this list needs
   to be updated by hand whenever a new user-scoped table is added; nothing
   enforces it stays in sync.
+- App Store upload validation (error 90474) rejects an archive whose
+  `UISupportedInterfaceOrientations` declares fewer than all four
+  orientations, even for an iPhone-only (`TARGETED_DEVICE_FAMILY=1`)
+  app — found via a real failed `ios-release.yml` upload, fixed in
+  `ios/LearnWithAlphonso/project.yml`. Worth knowing if a future Info.plist
+  change reintroduces a narrower orientation list.
+- Cloud Voice's Supabase project (`ywavjlmjbxuslbxactsx`, Hector's
+  separate account system) auto-paused once already this project's
+  lifetime — Supabase free-tier inactivity pausing. If Hector sign-in
+  fails with a connection error, check that project's status
+  (`mcp__claude_ai_Supabase__get_project`) before assuming a code bug.
