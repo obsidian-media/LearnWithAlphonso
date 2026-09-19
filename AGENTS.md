@@ -29,6 +29,9 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `ios/LearnWithAlphonso/Sources/ConversationView.swift` | Scenario picker + hold-to-talk conversation screen (record → `/api/stt` → `/api/chat` → `/api/tts` → play) |
 | `supabase/functions/grade-review/`         | Deno Edge Function: 1:1 port of `gradeReview` (re-derives review-answer correctness server-side) for iOS |
 | `ios/LearnWithAlphonso/Sources/ReviewQueueView.swift` | SM-2 review queue screen — due items one at a time, grading via `grade-review` |
+| `ios/LearnWithAlphonso/Sources/HectorView.swift` | **Pro-only** ($9.99/mo): AlphonsoCompanion's Hector tutor persona via Cloud Voice — a genuinely separate account/sign-in (different Supabase project). Additional mode alongside, not a replacement for, `ConversationView`'s free standalone scenarios. Gated by `ProEntitlement.isPro` (hardcoded `false` until RevenueCat is wired — see that file) |
+| `ios/LearnWithAlphonso/Sources/HectorSession.swift` | Cloud Voice sign-in (email OTP) + device enrollment state, mirrors `Session.swift` |
+| `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/DeviceEnrollmentClient.swift` | Registers this device with Cloud Voice (`POST /v1/voice/devices/enroll`) — required once per `HectorSession` before `TutorConversationClient` will accept requests |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
 
@@ -94,6 +97,15 @@ completion fails closed for web and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
 ARCHITECTURE.md's "Known rough edges" section.
+
+**RevenueCat (Pro/"Hector" gating):** `ProEntitlement.isPro` (`ios/LearnWithAlphonso/Sources/ProEntitlement.swift`)
+is hardcoded `false` pending a RevenueCat account — that needs its own
+sign-up (revenuecat.com), which can't be done via API/on someone's
+behalf. Once created: App Store Connect subscription group/product
+("Alphonso Pro", $9.99/month) + RevenueCat SDK integration + swapping
+`ProEntitlement.isPro`'s body for a real `Purchases.shared.customerInfo`
+check are the remaining steps — every Pro-gated view already reads only
+that one property, so nothing else should need to change.
 
 ## Audit
 

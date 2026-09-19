@@ -15,4 +15,15 @@ enum AppConfig {
     /// comment for why: same backend the web app already uses, no second
     /// account system).
     static let apiBaseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
+
+    /// AlphonsoCompanion's Cloud Voice backend -- a genuinely separate
+    /// account system (its own Supabase project, its own email-OTP
+    /// sign-in) that only the Pro "Hector" mode uses. Values read directly
+    /// from AlphonsoCompanion's own working Info.plist
+    /// (AlphonsoEcosystem/ios/AlphonsoCompanion/AlphonsoCompanion/Info.plist)
+    /// -- same publishable-key-is-safe-to-embed reasoning as supabaseURL
+    /// above, just a different project.
+    static let cloudVoiceSupabaseURL = URL(string: "https://ywavjlmjbxuslbxactsx.supabase.co")!
+    static let cloudVoiceSupabasePublishableKey = "sb_publishable__PzRloOOxtW8nQjfysRm0w_5oHkuERj"
+    static let cloudVoiceRespondEndpoint = URL(string: "https://voice.obsidianmedia.online/v1/voice/respond")!
 }
