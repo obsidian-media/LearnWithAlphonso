@@ -52,6 +52,11 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # a while.
 /docs/v2-kickoffs/
 
+# Hector weakness-detection design spec (2026-09-20) -- internal
+# decision doc for an unreleased feature, kept local rather than in
+# shared history until it ships.
+/docs/superpowers/specs/2026-09-20-hector-weakness-detection-design.md
+
 # Playwright
 /test-results/
 /playwright-report/
