@@ -14,4 +14,14 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertNotNil(found, "u1l1 (Saying Hello, from curriculum.ts's foundationUnits) should exist in the exported bundle")
         XCTAssertEqual(found?.lesson.title, "Saying Hello")
     }
+
+    func testLoadsTheAchievementsCatalog() throws {
+        let store = try ContentStore()
+        XCTAssertEqual(store.achievements.count, 18)
+        let first = try XCTUnwrap(store.achievements.first { $0.id == "streak_3" })
+        XCTAssertEqual(first.title, "Warming up")
+        XCTAssertEqual(first.tier, "bronze")
+        XCTAssertEqual(first.category, "streak")
+        XCTAssertEqual(first.threshold, 3)
+    }
 }

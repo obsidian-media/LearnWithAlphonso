@@ -265,6 +265,39 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(requests[1].httpMethod, "HEAD")
     }
 
+    // MARK: - fetchUnlockedAchievements
+
+    func testFetchUnlockedAchievementsGetsAndDecodesTheRows() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["achievement_id": "streak_3", "progress": 3],
+                ["achievement_id": "xp_100", "progress": 100],
+            ])
+        }
+
+        let rows = try await client.fetchUnlockedAchievements()
+
+        XCTAssertEqual(rows, [
+            UnlockedAchievement(achievementID: "streak_3", progress: 3),
+            UnlockedAchievement(achievementID: "xp_100", progress: 100),
+        ])
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/user_achievements"))
+    }
+
+    func testFetchUnlockedAchievementsReturnsAnEmptyArrayWhenNoneAreUnlockedYet() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+
+        let rows = try await client.fetchUnlockedAchievements()
+
+        XCTAssertEqual(rows, [])
+    }
+
     // MARK: - gradeReview
 
     func testGradeReviewPostsToTheEdgeFunctionAndReturnsTheOutcome() async throws {

@@ -60,6 +60,14 @@ public struct FriendProgress: Sendable, Equatable {
     public let weekXP: Int
 }
 
+/// One row of `user_achievements` -- an achievement this user has actually
+/// unlocked (or made progress toward), matched against the bundled
+/// `Achievement` catalog (`ContentStore.achievements`) by `achievementID`.
+public struct UnlockedAchievement: Sendable, Equatable {
+    public let achievementID: String
+    public let progress: Int
+}
+
 /// Matches the complete-lesson Edge Function's response shape exactly
 /// (supabase/functions/complete-lesson/index.ts's final jsonResponse call).
 public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
@@ -256,6 +264,26 @@ public final class ProgressSyncClient: Sendable {
             total = due.count
         }
         return DueReviews(due: due, total: total)
+    }
+
+    /// Direct PostgREST `GET` on `user_achievements`, RLS-scoped to
+    /// `auth.uid() = user_id` server-side -- no Edge Function needed, same
+    /// reasoning as fetchDueReviews' review_items read above.
+    public func fetchUnlockedAchievements() async throws -> [UnlockedAchievement] {
+        var request = restRequest(path: "user_achievements", query: [
+            URLQueryItem(name: "select", value: "achievement_id,progress"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> UnlockedAchievement? in
+            guard let achievementID = row["achievement_id"] as? String,
+                  let progress = row["progress"] as? Int else { return nil }
+            return UnlockedAchievement(achievementID: achievementID, progress: progress)
+        }
     }
 
     /// Calls the grade-review Edge Function -- re-derives correctness

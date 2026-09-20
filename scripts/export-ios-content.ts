@@ -15,7 +15,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { buildIOSContentBundle, buildIOSScenariosBundle } from "../src/lib/ios-content-export";
+import {
+  buildIOSContentBundle,
+  buildIOSScenariosBundle,
+  buildIOSAchievementsBundle,
+} from "../src/lib/ios-content-export";
 
 const OUT_DIRS = [
   path.resolve(import.meta.dirname, "../ios/LearnWithAlphonso/Resources"),
@@ -38,3 +42,4 @@ function writeJSON(filename: string, data: unknown) {
 writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
 writeJSON("scenarios.json", buildIOSScenariosBundle());
+writeJSON("achievements.json", buildIOSAchievementsBundle());

@@ -48,7 +48,7 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
-                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler)
+                    LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore)
                 } else {
                     Text("Lesson not found")
                 }

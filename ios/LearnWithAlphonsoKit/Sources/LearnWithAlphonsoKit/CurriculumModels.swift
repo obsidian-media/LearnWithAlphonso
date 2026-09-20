@@ -81,3 +81,18 @@ public struct Scenario: Decodable, Identifiable, Sendable {
     public let systemPrompt: String
     public let opener: String
 }
+
+/// Mirrors src/data/achievements.ts's `Achievement` type exactly. `tier` is
+/// "bronze" | "silver" | "gold" | "diamond"; `category` is "streak" | "xp" |
+/// "perfect" | "lessons" | "league" | "freeze" -- kept as plain strings
+/// rather than Swift enums so a new catalog value added web-side decodes
+/// here without a matching Swift case having to land first.
+public struct Achievement: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let description: String
+    public let icon: String
+    public let tier: String
+    public let category: String
+    public let threshold: Int
+}

@@ -1,6 +1,7 @@
 import { getCourse, type Course } from "@/data/courses";
 import { SCENARIOS } from "@/data/scenarios";
 import type { Unit } from "@/data/curriculum";
+import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 
 export type IOSContentBundle = {
   course: Course;
@@ -35,4 +36,9 @@ export type IOSScenario = {
 /** Same pass-through reasoning as buildIOSContentBundle, for SCENARIOS. */
 export function buildIOSScenariosBundle(): IOSScenario[] {
   return SCENARIOS;
+}
+
+/** Same pass-through reasoning as buildIOSContentBundle, for ACHIEVEMENTS. */
+export function buildIOSAchievementsBundle(): Achievement[] {
+  return ACHIEVEMENTS;
 }
