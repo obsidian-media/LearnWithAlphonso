@@ -10,9 +10,10 @@ A full-stack mobile-first English (and French) learning app with gamification, A
 > from a personal account to the `obsidian-media` org to fix a GitHub
 > Actions billing block; the codebase's internal project name is still
 > `english-buddy-app-33` in a few config/directory references — cosmetic
-> only, not worth a mass rename). **Vercel's own GitHub integration was
-> not carried over by that transfer** — see "Deployment" below before
-> assuming a merge to `main` auto-deploys.
+> only, not worth a mass rename). Vercel's own GitHub integration was
+> not carried over by that transfer, then reconnected the same day
+> (2026-09-20) — see "Deployment" below for what's confirmed vs. what
+> still needs a real push to verify.
 
 ## Tech Stack
 
@@ -114,18 +115,22 @@ app target itself, on every PR and push to `main`.
 ## Deployment
 
 Production is Vercel (`learn.alphonsoecosystem.app`, project
-`english-buddy-app-33` in the Vercel dashboard — name kept for
-continuity, doesn't need to match the repo). **As of 2026-09-20, Vercel's
-GitHub integration is not connected to this repo's current home
-(`obsidian-media/LearnWithAlphonso`)** — confirmed via the Vercel API
-(`incorrect_git_source_info`, repo not found), so merges to `main` do
-**not** auto-deploy until someone with org-owner access reconnects it
-(GitHub → Settings → Integrations → Applications → Vercel → Configure →
-add the repo). Until then, deploy manually: `vercel deploy --prod
---token=<token>` from a clean checkout of `main` (a `.vercelignore`
-keeps this scoped to the actual app, excluding `ios/`, `docs/`,
-`supabase/functions/`, and any local `.claude/worktrees/`). See
-`ARCHITECTURE.md`'s "Known rough edges" for the full story and
+`learnwithalphonso` in the Vercel dashboard — renamed from
+`english-buddy-app-33` on 2026-09-20 when the Git connection was fixed).
+Vercel's GitHub integration lost this repo in the org transfer, then
+was reconnected and confirmed working the same day (its project link
+now correctly shows `obsidian-media/LearnWithAlphonso`, and a real
+git-sourced deployment built successfully). **One thing not yet
+separately confirmed: that a plain `git push` to `main` triggers an
+automatic deploy on its own** — every deployment checked so far was
+manually triggered via the API/CLI, not by an actual webhook firing.
+Check `mcp__plugin_vercel_vercel__list_deployments` after the next real
+push before assuming auto-deploy is fully restored. If it isn't, deploy
+manually: `vercel deploy --prod --token=<token>` from a clean checkout
+of `main` (a `.vercelignore` keeps this scoped to the actual app,
+excluding `ios/`, `docs/`, `supabase/functions/`, and any local
+`.claude/worktrees/`). See `ARCHITECTURE.md`'s "Known rough edges" for
+the full story and
 `AGENTS.md`'s Deployment section for Supabase (migrations/Edge
 Functions, a separate manual step from this).
 

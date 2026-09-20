@@ -137,19 +137,26 @@ verify before trusting): all migrations applied, all three Edge Functions
 deployed and current (`complete-lesson` v6, `start-lesson-session` v1,
 `grade-review` v2).**
 
-**Web app (Vercel) — do not assume `main` is live.** As of 2026-09-20,
-Vercel's GitHub integration is not connected to this repo's current
-location (`obsidian-media/LearnWithAlphonso` — the connection was lost
-in the org transfer and needs an org-owner to reconnect it via GitHub's
-UI, not anything scriptable). Every merge to `main` since PR #49 went
-undeployed until a manual catch-up. Check `mcp__plugin_vercel_vercel__list_deployments`
-(project `english-buddy-app-33`, filter `branch: "main"`) and compare
-the latest `githubCommitSha` against `git rev-parse main` before
-assuming production is current. To deploy manually: install the Vercel
-CLI globally (`bun add -g vercel` — `bunx vercel` has hung
-unreliably in this environment, root cause not identified), then
-`vercel deploy --prod --token=<token>` from a clean `main` checkout.
-`.vercelignore` keeps the upload scoped to the actual app.
+**Web app (Vercel) — reconnected 2026-09-20, but re-verify before
+trusting it stayed that way.** Vercel's GitHub integration lost this
+repo in the org transfer (personal account → `obsidian-media`), went
+undeployed for every merge since PR #49, and was reconnected +
+confirmed the same day: `mcp__plugin_vercel_vercel__get_git_deployment_context`
+shows the `learnwithalphonso` project linked to
+`org: "obsidian-media", repo: "LearnWithAlphonso"`, and a manually-
+triggered git-sourced deployment (`create_deployment` with `gitSource`)
+built successfully. **Automatic deploy-on-push was never separately
+confirmed** — every deployment checked was manually triggered. Before
+trusting a plain `git push` to `main` auto-deploys, check
+`mcp__plugin_vercel_vercel__list_deployments` (project `learnwithalphonso`
+— renamed from `english-buddy-app-33` at the same time as the
+reconnect, filter `branch: "main"`) after a real push and confirm a new
+deployment appears without manual intervention. If it doesn't, fall
+back to manual deploy: install the Vercel CLI globally (`bun add -g
+vercel` — `bunx vercel` has hung unreliably in this environment, root
+cause not identified), then `vercel deploy --prod --token=<token>` from
+a clean `main` checkout. `.vercelignore` keeps the upload scoped to the
+actual app.
 
 **RevenueCat (Pro/"Hector" gating):** `EntitlementStore` (`ios/LearnWithAlphonso/Sources/EntitlementStore.swift`)
 wraps the RevenueCat SDK (`Purchases.configure` in `LearnWithAlphonsoApp.init`);

@@ -336,21 +336,28 @@ note in README.md's Documentation section for why.)
   solved by heavier machinery (vector clocks, a client-submitted-date
   trust exception) preemptively; revisit only if real usage shows either
   is a frequent complaint.
-- **Vercel's GitHub integration lost this repo across the org transfer**
-  (personal account → `obsidian-media`, done to fix a GitHub Actions
-  billing block). Confirmed 2026-09-20: the Vercel project can't see
-  `obsidian-media/LearnWithAlphonso` at all
-  (`mcp__plugin_vercel_vercel__create_deployment` with a `gitSource`
-  fails `incorrect_git_source_info`). Every merge to `main` since PR #49
-  (leaderboards base) went undeployed until a manual `vercel deploy
-  --prod` catch-up on 2026-09-20 — check this before assuming production
-  reflects `main`. Real fix needs org-owner action in GitHub (Settings →
-  Integrations → Applications → Vercel → Configure → add the repo), not
-  anything scriptable from here. `.vercelignore` (added the same day)
-  scopes what a manual CLI deploy uploads — without it, a deploy from
-  this local machine picks up unrelated `.claude/worktrees/` content
-  from other parallel sessions (hit a real mid-upload failure this way,
-  a file vanished from a live worktree during upload).
+- **Vercel's GitHub integration lost this repo across the org transfer,
+  then was reconnected the same day (2026-09-20)** — (personal account
+  → `obsidian-media`, transfer done to fix a GitHub Actions billing
+  block). Between the transfer and the reconnect, every merge to `main`
+  since PR #49 (leaderboards base) went undeployed until a manual
+  `vercel deploy --prod` catch-up. **Reconnected and confirmed working
+  same day**: the Vercel project's git link now shows
+  `org: "obsidian-media", repo: "LearnWithAlphonso"`
+  (`mcp__plugin_vercel_vercel__get_git_deployment_context`), and a real
+  git-sourced deployment (`create_deployment` with `gitSource`) built
+  and went `READY` successfully — confirms Vercel can now actually pull
+  from the repo, not just that the link's metadata updated. **Not yet
+  separately confirmed**: that a plain `git push` to `main` triggers an
+  automatic deploy on its own (the webhook firing), since every
+  deployment checked so far was manually triggered — the first real
+  push after 2026-09-20 should be checked against
+  `mcp__plugin_vercel_vercel__list_deployments` to close that last gap.
+  `.vercelignore` (added the same day, still relevant for any future
+  manual CLI deploy) scopes what gets uploaded — without it, a deploy
+  from this local machine picks up unrelated `.claude/worktrees/`
+  content from other parallel sessions (hit a real mid-upload failure
+  this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46** — now 502
   tests across 72 files, ~91% line / ~90% statement coverage (`bun run
   test:coverage`, see `AGENTS.md`'s Testing section for the full
