@@ -120,6 +120,40 @@ category is open. This closes out package 3b (tutor & weakness system);
 curriculum formats and generative/adaptive content (packages 4a/4b)
 remain.
 
+**Curriculum formats (in progress)** — two new question formats layered
+onto the existing `mc` type rather than new discriminated cases (`imageKey`
+shows a stock photo above the prompt for "image matching"; `audioText`
+speaks via on-device TTS -- `src/lib/speech.ts` on web, `AVSpeechSynthesizer`
+on iOS -- for "listening comprehension"; zero new grading/regrade logic
+either way, since both are still plain `mc` questions underneath), plus a
+genuinely new `reorder` type (tap a shuffled word pool into the correct
+sentence order) with its own grading branch mirrored across
+`srs.ts`/`bank-engine.ts`/`review.tsx`/`lesson.$id.tsx` and their iOS Kit
+equivalents (`CurriculumModels.Question.Reorder`, `QuestionGrading.swift`,
+`LessonPlayerView`/`ReviewQueueView`'s tap-to-assemble UI). A new migration
+widens the curriculum-data tables' `question_shape_matches_type` CHECK to
+accept `reorder` (same row shape as `fill`: `bank` holds the token pool,
+`answer_text` the correct sentence) -- `grade-review`'s Deno function
+needed no code change, since it already treats any non-`mc` row as a plain
+text comparison. Three example questions (one of each new format) added to
+the real `u1l2` lesson to exercise this live, both in tests and in prod.
+Also added a `deploy-supabase` CI step that runs `scripts/
+seed-curriculum-db.ts` automatically (no-ops until `SUPABASE_URL`/
+`SUPABASE_SERVICE_ROLE_KEY` repo secrets are added -- see that job's
+comment), closing the same class of "manual script, easy to forget" gap
+that already motivated the job's migration/function auto-deploy. Caught a
+real instance of exactly that gap while regenerating `scripts/
+export-ios-content.ts`'s bundled JSON for this work: package 2's
+18->24 achievement catalog expansion, *and* package 3a's 6 new
+conversation scenarios, had never been re-exported -- iOS had silently
+been stuck on 18 achievements and the original 6 scenarios (missing
+hotel/directions/apartment/returns/negotiation/debate entirely) since
+those packages shipped. Fixed, and documented in ARCHITECTURE.md's "Known
+rough edges" since `export-ios-content.ts` still has no equivalent
+automated step (its output is committed JSON, not a DB write, so it can't
+be a silent CI step the same way). Still open: closing the French
+course's lesson-count gap (125 -> ~500).
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

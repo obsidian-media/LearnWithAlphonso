@@ -40,7 +40,7 @@ export type LessonRow = {
 export type QuestionRow = {
   lesson_id: string;
   id: string;
-  type: "mc" | "fill";
+  type: "mc" | "fill" | "reorder";
   prompt: string;
   choices: string[] | null;
   bank: string[] | null;
@@ -117,6 +117,16 @@ function questionRow(lessonId: string, q: Question, sortOrder: number): Question
       bank: null,
       answer_index: q.answer,
       answer_text: null,
+    };
+  }
+  if (q.type === "reorder") {
+    return {
+      ...base,
+      type: "reorder",
+      choices: null,
+      bank: q.tokens,
+      answer_index: null,
+      answer_text: q.answer,
     };
   }
   return {

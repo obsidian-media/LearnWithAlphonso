@@ -11,6 +11,18 @@ export type Question =
       choices: string[];
       answer: number;
       explanation: string;
+      // V3 pkg 4a: optional formats layered onto ordinary mc questions
+      // rather than new discriminated types -- grading, review re-grading,
+      // and reshuffleQuestion all already work unchanged since these are
+      // still type "mc" under the hood.
+      /** Key into VOCAB_IMAGES (src/data/vocab-images.ts): shows a stock
+       * photo above the prompt, turning this into an "image matching"
+       * format question. */
+      imageKey?: string;
+      /** Text spoken via on-device TTS before the prompt is shown, turning
+       * this into a "listening comprehension" format question. `prompt`
+       * should ask about audioText's content rather than restate it. */
+      audioText?: string;
     }
   | {
       id: string;
@@ -18,6 +30,14 @@ export type Question =
       prompt: string; // uses ___ for blank
       bank: string[];
       answer: string;
+      explanation: string;
+    }
+  | {
+      id: string;
+      type: "reorder";
+      prompt: string; // e.g. "Put the words in order"
+      tokens: string[]; // shuffled pool of words to tap, in reshuffleQuestion
+      answer: string; // correct sentence, tokens joined by single spaces
       explanation: string;
     };
 
@@ -189,6 +209,35 @@ const foundationUnits: Unit[] = [
             choices: ["I'm Alex, nice to meet you.", "Me Alex.", "Alex here, bye.", "You Alex?"],
             answer: 0,
             explanation: 'Introduce yourself with "I\'m ___, nice to meet you".',
+          },
+          // V3 pkg 4a: image matching, listening comprehension, and
+          // sentence reordering -- see curriculum.ts's Question type doc
+          // comments for how each format is represented.
+          {
+            id: "q9",
+            type: "mc",
+            prompt: "What is shown in the picture?",
+            choices: ["Doctor", "Teacher", "Driver", "Chef"],
+            answer: 0,
+            explanation: "The picture shows a doctor.",
+            imageKey: "doctor",
+          },
+          {
+            id: "q10",
+            type: "mc",
+            prompt: "What is her job?",
+            choices: ["Teacher", "Doctor", "Driver", "Chef"],
+            answer: 1,
+            explanation: 'The audio says "She is a doctor."',
+            audioText: "She is a doctor. She works at the hospital every day.",
+          },
+          {
+            id: "q11",
+            type: "reorder",
+            prompt: "Put the words in order to make a sentence.",
+            tokens: ["is", "She", "a", "doctor"],
+            answer: "She is a doctor",
+            explanation: 'Subject + "is" + article "a" + noun: "She is a doctor."',
           },
         ],
       },

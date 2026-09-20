@@ -119,6 +119,23 @@ describe("reshuffleQuestion", () => {
     }
   });
 
+  it("reorders reorder-type tokens without changing the canonical answer", () => {
+    const q: Question = {
+      id: "q4",
+      type: "reorder",
+      prompt: "p",
+      tokens: ["I", "go", "to", "school"],
+      answer: "I go to school",
+      explanation: "e",
+    };
+    const reshuffled = reshuffleQuestion(q, "seed-3");
+    expect(reshuffled.type).toBe("reorder");
+    if (reshuffled.type === "reorder") {
+      expect(reshuffled.answer).toBe("I go to school");
+      expect([...reshuffled.tokens].sort()).toEqual(["I", "go", "school", "to"]);
+    }
+  });
+
   it("produces a different order for a different seed (usually)", () => {
     const q: Question = {
       id: "q3",

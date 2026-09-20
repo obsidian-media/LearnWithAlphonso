@@ -13,8 +13,14 @@ export type VocabItem = {
   image?: { url: string; alt: string; credit: string };
 };
 
+/** "reorder" questions are about sentence structure, not a single
+ * vocabulary term -- their (whole-sentence) answer would make a nonsense
+ * vocab card, so they contribute nothing here (the empty-term guard in
+ * deriveVocab below skips them). */
 function answerOf(q: Question): string {
-  return q.type === "mc" ? (q.choices[q.answer] ?? "") : q.answer;
+  if (q.type === "mc") return q.choices[q.answer] ?? "";
+  if (q.type === "fill") return q.answer;
+  return "";
 }
 
 function exampleOf(q: Question): string {

@@ -236,3 +236,111 @@ describe("Lesson page", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
   });
 });
+
+// Real curriculum lesson "u1l2" ("About Me") -- q9 is an mc question with
+// an imageKey (image matching), q10 an mc question with audioText
+// (listening comprehension), q11 a reorder question. See curriculum.ts's
+// V3 pkg 4a comment.
+describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
+  beforeEach(() => {
+    currentLessonId = "u1l2";
+  });
+
+  async function skipToQuestion(user: ReturnType<typeof userEvent.setup>, n: number) {
+    await skipToQuiz(user);
+    for (let i = 0; i < n; i++) {
+      // Each of u1l2's first 8 questions has a distinct, known-correct
+      // answer text -- reuse fill/mc answering to walk forward without
+      // duplicating grading logic here.
+      const correctByIndex = [
+        "is",
+        "am",
+        "Where are you from?",
+        "student",
+        "is",
+        "I am 22.",
+        "are",
+        "I'm Alex, nice to meet you.",
+        "Doctor", // q9, image matching
+        "Doctor", // q10, listening
+      ];
+      await user.click(await screen.findByRole("button", { name: correctByIndex[i] }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+    }
+  }
+
+  it("shows an image and grades an image-matching mc question normally", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuestion(user, 8); // land on q9
+
+    expect(await screen.findByText("What is shown in the picture?")).toBeInTheDocument();
+    expect(screen.getByRole("img")).toHaveAttribute("alt", expect.stringContaining("doctor"));
+
+    await user.click(screen.getByRole("button", { name: "Doctor" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("shows a play-audio button and grades a listening mc question normally", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuestion(user, 9); // land on q10
+
+    expect(await screen.findByText("What is her job?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Play audio/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Doctor" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("assembles and grades a reorder question by tapping tokens in order", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuestion(user, 10); // land on q11
+
+    expect(
+      await screen.findByText("Put the words in order to make a sentence."),
+    ).toBeInTheDocument();
+    const checkButton = screen.getByRole("button", { name: "Check" });
+    expect(checkButton).toBeDisabled();
+
+    for (const word of ["She", "is", "a", "doctor"]) {
+      await user.click(screen.getByRole("button", { name: word }));
+    }
+    expect(checkButton).toBeEnabled();
+    await user.click(checkButton);
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("marks a reorder question wrong when tapped out of order", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuestion(user, 10);
+    await screen.findByText("Put the words in order to make a sentence.");
+
+    for (const word of ["doctor", "a", "is", "She"]) {
+      await user.click(screen.getByRole("button", { name: word }));
+    }
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+  });
+
+  it("lets a tapped reorder token be removed and re-picked", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuestion(user, 10);
+    await screen.findByText("Put the words in order to make a sentence.");
+
+    await user.click(screen.getByRole("button", { name: "doctor" })); // wrong first tap
+    // Tapping the assembled chip removes it from the sentence area.
+    await user.click(screen.getByRole("button", { name: "doctor" }));
+    for (const word of ["She", "is", "a", "doctor"]) {
+      await user.click(screen.getByRole("button", { name: word }));
+    }
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+});

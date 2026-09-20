@@ -145,4 +145,73 @@ describe("Review page", () => {
     renderPage();
     expect(await screen.findByText("1/1")).toBeInTheDocument();
   });
+
+  // Real curriculum lesson "u1l2" ("About Me"): q9 is an image-matching mc
+  // question, q10 a listening mc question, q11 a reorder question -- see
+  // curriculum.ts's V3 pkg 4a comment. All three can resurface here after
+  // being missed in a lesson, same as any other review item.
+  it("shows an image and grades an image-matching mc review item normally", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l2:q9" }], total: 1 });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("What is shown in the picture?")).toBeInTheDocument();
+    expect(screen.getByRole("img")).toHaveAttribute("alt", expect.stringContaining("doctor"));
+
+    await user.click(screen.getByRole("button", { name: "Doctor" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "u1l2:q9", answer: "Doctor", course: "en" },
+    });
+  });
+
+  it("shows a play-audio button and grades a listening mc review item normally", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l2:q10" }], total: 1 });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("What is her job?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Play audio/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Doctor" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+  });
+
+  it("assembles and grades a reorder review item by tapping tokens in order", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l2:q11" }], total: 1 });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(
+      await screen.findByText("Put the words in order to make a sentence."),
+    ).toBeInTheDocument();
+    const checkButton = screen.getByRole("button", { name: "Check" });
+    expect(checkButton).toBeDisabled();
+
+    for (const word of ["She", "is", "a", "doctor"]) {
+      await user.click(screen.getByRole("button", { name: word }));
+    }
+    expect(checkButton).toBeEnabled();
+    await user.click(checkButton);
+
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "u1l2:q11", answer: "She is a doctor", course: "en" },
+    });
+  });
+
+  it("marks a reorder review item wrong when tapped out of order", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l2:q11" }], total: 1 });
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText("Put the words in order to make a sentence.");
+
+    for (const word of ["doctor", "a", "is", "She"]) {
+      await user.click(screen.getByRole("button", { name: word }));
+    }
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Back in the queue.")).toBeInTheDocument();
+  });
 });

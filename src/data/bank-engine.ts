@@ -97,6 +97,10 @@ export function reshuffleQuestion(q: Question, seed: string): Question {
     const choices = order.map((i) => q.choices[i]!);
     return { ...q, choices, answer: order.indexOf(q.answer) };
   }
+  if (q.type === "reorder") {
+    const tokens = [...q.tokens].sort((a, b) => hash(seed + a) - hash(seed + b));
+    return { ...q, tokens };
+  }
   const bank = [...q.bank].sort((a, b) => hash(seed + a) - hash(seed + b));
   return { ...q, bank };
 }

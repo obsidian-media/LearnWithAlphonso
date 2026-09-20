@@ -341,6 +341,24 @@ note in README.md's Documentation section for why.)
   dashboard SQL editor / Supabase MCP `apply_migration`) is still the
   fallback, and the same "feature works in code but 500s in prod" symptom
   is the tell that it has lapsed.
+- **`scripts/export-ios-content.ts` and `scripts/seed-curriculum-db.ts` are
+  both still manual** ("someone has to remember to run this," the exact
+  class of gap `deploy-supabase` was created to close for
+  migrations/functions above) — and this bit for real during V3 package
+  4a: package 2's expanded achievement catalog (18 -> 24) shipped to web
+  and prod's curriculum-data tables, but nobody re-ran
+  `export-ios-content.ts`, so the iOS-bundled `achievements.json` (and a
+  Kit test asserting its count) silently stayed at 18 until this was
+  caught while regenerating it for pkg 4a's new question formats. A CI
+  step for `seed-curriculum-db.ts` now exists (`deploy-supabase` job,
+  no-ops until `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` repo secrets are
+  added), but `export-ios-content.ts`'s output is *committed* JSON, not a
+  DB write, so it can't be a silent CI step the same way -- it still needs
+  a human to run it and commit the diff after any change to
+  `curriculum.ts`/`curriculum-fr.ts`/`scenarios.ts`/`achievements.ts`/
+  `vocab-images.ts`, and there's no test that fails loudly if it's
+  forgotten (only a symptom: iOS shows stale/missing content the web app
+  already has).
 - `USER_ID_TABLES` in `account.functions.ts` (GDPR export/delete) previously
   had three real bugs — wrong table name, wrong filter column for
   `profiles`, and two missing tables — all silent because neither

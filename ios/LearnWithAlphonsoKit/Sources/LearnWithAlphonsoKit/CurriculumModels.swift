@@ -8,6 +8,7 @@ import Foundation
 public enum Question: Decodable, Sendable {
     case multipleChoice(MultipleChoice)
     case fillInBlank(FillInBlank)
+    case reorder(Reorder)
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -15,13 +16,27 @@ public enum Question: Decodable, Sendable {
         public let choices: [String]
         public let answer: Int
         public let explanation: String
+        // V3 pkg 4a: optional formats layered onto ordinary mc questions --
+        // see curriculum.ts's Question type doc comment for why these
+        // aren't separate cases.
+        /// Key into ContentStore.vocabImages: shows a stock photo above the
+        /// prompt ("image matching" format).
+        public let imageKey: String?
+        /// Text spoken via on-device TTS before the prompt ("listening
+        /// comprehension" format).
+        public let audioText: String?
 
-        public init(id: String, prompt: String, choices: [String], answer: Int, explanation: String) {
+        public init(
+            id: String, prompt: String, choices: [String], answer: Int, explanation: String,
+            imageKey: String? = nil, audioText: String? = nil
+        ) {
             self.id = id
             self.prompt = prompt
             self.choices = choices
             self.answer = answer
             self.explanation = explanation
+            self.imageKey = imageKey
+            self.audioText = audioText
         }
     }
 
@@ -29,6 +44,18 @@ public enum Question: Decodable, Sendable {
         public let id: String
         public let prompt: String
         public let bank: [String]
+        public let answer: String
+        public let explanation: String
+    }
+
+    /// Mirrors curriculum.ts's "reorder" variant: `tokens` is the shuffled
+    /// word pool to tap, `answer` the correctly-ordered sentence (tokens
+    /// joined by single spaces) -- grading compares the tapped sequence's
+    /// joined string against `answer`, never `tokens`'s order.
+    public struct Reorder: Decodable, Sendable {
+        public let id: String
+        public let prompt: String
+        public let tokens: [String]
         public let answer: String
         public let explanation: String
     }
@@ -45,6 +72,8 @@ public enum Question: Decodable, Sendable {
             self = .multipleChoice(try MultipleChoice(from: decoder))
         case "fill":
             self = .fillInBlank(try FillInBlank(from: decoder))
+        case "reorder":
+            self = .reorder(try Reorder(from: decoder))
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type,

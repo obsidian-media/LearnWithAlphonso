@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 import LearnWithAlphonsoKit
 
 /// V1's review queue: due SM-2 items, one at a time. Grading happens
@@ -90,7 +91,11 @@ struct ReviewQueueView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    ReviewQuestionCard(question: question, checked: checked, picked: $picked)
+                    // .id() forces a fresh ReviewQuestionCard (and its
+                    // reorder @State) per item -- same reasoning as
+                    // LessonPlayerView's identical pattern.
+                    ReviewQuestionCard(question: question, course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
+                        .id(currentItem.itemKey)
 
                     Spacer()
 
@@ -250,7 +255,19 @@ private func questionID(_ question: Question) -> String {
     switch question {
     case .multipleChoice(let q): return q.id
     case .fillInBlank(let q): return q.id
+    case .reorder(let q): return q.id
     }
+}
+
+/// V3 pkg 4a: on-device TTS for "listening comprehension" format questions
+/// -- same instance/reasoning as LessonPlayerView's identical helper.
+private let reviewQuestionSpeechSynthesizer = AVSpeechSynthesizer()
+
+private func speak(_ text: String, languageCode: String) {
+    reviewQuestionSpeechSynthesizer.stopSpeaking(at: .immediate)
+    let utterance = AVSpeechUtterance(string: text)
+    utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+    reviewQuestionSpeechSynthesizer.speak(utterance)
 }
 
 private extension Course {
@@ -258,6 +275,13 @@ private extension Course {
         switch self {
         case .english: return "en"
         case .french: return "fr"
+        }
+    }
+
+    var speechLanguageCode: String {
+        switch self {
+        case .english: return "en-US"
+        case .french: return "fr-FR"
         }
     }
 }
@@ -289,13 +313,30 @@ private struct CachedQueueBanner: View {
 
 private struct ReviewQuestionCard: View {
     let question: Question
+    let course: Course
+    let vocabImages: [String: VocabImageRef]
     let checked: Bool
     @Binding var picked: String?
+
+    // Reset automatically per item via this view's .id() in reviewBody --
+    // same reasoning as LessonPlayerView's identical property.
+    @State private var orderPicks: [Int] = []
 
     var body: some View {
         switch question {
         case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: 12) {
+                if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
+                    VocabImageView(image: image, cardHeight: 160)
+                }
+                if let audioText = q.audioText {
+                    Button {
+                        speak(audioText, languageCode: course.speechLanguageCode)
+                    } label: {
+                        Label("Play audio", systemImage: "speaker.wave.2.fill")
+                    }
+                    .buttonStyle(.bordered)
+                }
                 Text(q.prompt).font(.title3.weight(.semibold))
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
@@ -323,6 +364,57 @@ private struct ReviewQuestionCard: View {
                 }
                 if checked {
                     Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        case .reorder(let q):
+            VStack(alignment: .leading, spacing: 12) {
+                Text(q.prompt).font(.title3.weight(.semibold))
+                assembledArea(tokens: q.tokens)
+                tokenPool(tokens: q.tokens)
+                if checked {
+                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .onChange(of: orderPicks) {
+                picked = orderPicks.count == q.tokens.count
+                    ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
+                    : nil
+            }
+        }
+    }
+
+    private func assembledArea(tokens: [String]) -> some View {
+        HStack {
+            if orderPicks.isEmpty {
+                Text("Tap the words below in order")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
+                    Button(tokens[tokenIdx]) {
+                        orderPicks.remove(at: position)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(checked)
+                }
+            }
+            Spacer()
+        }
+        .frame(minHeight: 44)
+        .padding(8)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func tokenPool(tokens: [String]) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
+                    if !orderPicks.contains(i) {
+                        Button(token) { orderPicks.append(i) }
+                            .buttonStyle(.bordered)
+                            .disabled(checked)
+                    }
                 }
             }
         }

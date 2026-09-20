@@ -9,6 +9,8 @@ import { HeartIcon } from "../../components/icons";
 import { getCourse } from "../../data/courses";
 import { reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
+import { VOCAB_IMAGES } from "../../data/vocab-images";
+import { speak } from "../../lib/speech";
 import { useProgress } from "../../lib/progress";
 import {
   completeLessonRemote,
@@ -58,6 +60,10 @@ function LessonPage() {
   const [missed, setMissed] = useState<string[]>([]);
   const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
+  // "reorder" questions accumulate a sequence of tapped token *indices*
+  // (not values, since a sentence can repeat a word) instead of using
+  // `picked` directly -- see submittedAnswer below for where these unify.
+  const [orderPicks, setOrderPicks] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
   const [done, setDone] = useState<{
     xp: number;
@@ -107,17 +113,20 @@ function LessonPage() {
   const q: Question = questions[idx];
   const total = questions.length;
 
+  const submittedAnswer =
+    q.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
+
   function checkAnswer() {
-    if (!picked) return;
+    if (!submittedAnswer) return;
     const isCorrect =
       q.type === "mc"
-        ? q.choices[q.answer] === picked
-        : picked.trim().toLowerCase() === q.answer.trim().toLowerCase();
+        ? q.choices[q.answer] === submittedAnswer
+        : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
     setChecked(true);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
-      setMissedQs((m) => [...m, { q, yours: picked }]);
+      setMissedQs((m) => [...m, { q, yours: submittedAnswer }]);
       loseHeartLocal();
       void loseHeartRemote();
     }
@@ -127,6 +136,7 @@ function LessonPage() {
     if (idx < total - 1) {
       setIdx((i) => i + 1);
       setPicked(null);
+      setOrderPicks([]);
       setChecked(false);
       return;
     }
@@ -180,7 +190,7 @@ function LessonPage() {
   const answered =
     q.type === "mc"
       ? picked === q.choices[q.answer]
-      : picked?.trim().toLowerCase() === q.answer.trim().toLowerCase();
+      : (submittedAnswer ?? "").trim().toLowerCase() === q.answer.trim().toLowerCase();
 
   return (
     <LessonFrame>
@@ -260,6 +270,28 @@ function LessonPage() {
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
             {lesson.subtitle}
           </p>
+          {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
+            <img
+              src={VOCAB_IMAGES[q.imageKey].url}
+              alt={VOCAB_IMAGES[q.imageKey].alt}
+              loading="lazy"
+              className="mb-4 h-40 w-full rounded-2xl object-cover"
+              // A dead/rate-limited image URL degrades to no image rather
+              // than a broken-image icon with no retry.
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )}
+          {q.type === "mc" && q.audioText && (
+            <button
+              type="button"
+              onClick={() => speak(q.audioText!, course === "fr" ? "fr-FR" : "en-US")}
+              className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+            >
+              🔊 Play audio
+            </button>
+          )}
           <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">
             {q.prompt}
           </h2>
@@ -277,6 +309,41 @@ function LessonPage() {
                   onClick={() => setPicked(c)}
                 />
               ))
+            ) : q.type === "reorder" ? (
+              <div>
+                <div className="mb-3 flex min-h-11 flex-wrap gap-2 rounded-2xl border border-dashed border-hairline bg-parchment p-3">
+                  {orderPicks.length === 0 ? (
+                    <span className="text-xs text-ink-soft/60">Tap the words below in order</span>
+                  ) : (
+                    orderPicks.map((tokenIdx, position) => (
+                      <button
+                        key={`${tokenIdx}-${position}`}
+                        type="button"
+                        disabled={checked}
+                        onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
+                        className="rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-surface"
+                      >
+                        {q.tokens[tokenIdx]}
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {q.tokens.map((t, i) =>
+                    orderPicks.includes(i) ? null : (
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={checked}
+                        onClick={() => setOrderPicks((arr) => [...arr, i])}
+                        className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                      >
+                        {t}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
             ) : (
               <div>
                 <input
@@ -314,7 +381,7 @@ function LessonPage() {
           <div className="mt-auto pt-6">
             {!checked ? (
               <button
-                disabled={!picked}
+                disabled={q.type === "reorder" ? orderPicks.length !== q.tokens.length : !picked}
                 onClick={checkAnswer}
                 className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
               >

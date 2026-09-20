@@ -24,12 +24,18 @@ public struct VocabImageRef: Decodable, Sendable, Equatable {
     public let credit: String
 }
 
+/// "reorder" questions are about sentence structure, not a single
+/// vocabulary term -- their (whole-sentence) answer would make a
+/// nonsense vocab card, so they contribute nothing here (the empty-term
+/// guard in deriveVocab below skips them), same as vocab.ts's web mirror.
 private func answerOf(_ question: Question) -> String {
     switch question {
     case .multipleChoice(let q):
         return q.choices.indices.contains(q.answer) ? q.choices[q.answer] : ""
     case .fillInBlank(let q):
         return q.answer
+    case .reorder:
+        return ""
     }
 }
 
@@ -54,6 +60,8 @@ private func exampleOf(_ question: Question) -> String {
         return filled == q.prompt ? "\(q.prompt) \(answer)" : filled
     case .multipleChoice(let q):
         return "\(stripTrailingColon(q.prompt)) \u{2192} \(answer)"
+    case .reorder:
+        return "" // unreachable in practice -- deriveVocab skips reorder via answerOf's empty term
     }
 }
 
@@ -75,6 +83,7 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
         switch question {
         case .multipleChoice(let q): explanation = q.explanation
         case .fillInBlank(let q): explanation = q.explanation
+        case .reorder(let q): explanation = q.explanation
         }
         items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question), image: images[key]))
     }

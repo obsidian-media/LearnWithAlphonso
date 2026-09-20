@@ -227,6 +227,47 @@
               ],
               "answer": 0,
               "explanation": "Introduce yourself with \"I'm ___, nice to meet you\"."
+            },
+            {
+              "id": "q9",
+              "type": "mc",
+              "prompt": "What is shown in the picture?",
+              "choices": [
+                "Doctor",
+                "Teacher",
+                "Driver",
+                "Chef"
+              ],
+              "answer": 0,
+              "explanation": "The picture shows a doctor.",
+              "imageKey": "doctor"
+            },
+            {
+              "id": "q10",
+              "type": "mc",
+              "prompt": "What is her job?",
+              "choices": [
+                "Teacher",
+                "Doctor",
+                "Driver",
+                "Chef"
+              ],
+              "answer": 1,
+              "explanation": "The audio says \"She is a doctor.\"",
+              "audioText": "She is a doctor. She works at the hospital every day."
+            },
+            {
+              "id": "q11",
+              "type": "reorder",
+              "prompt": "Put the words in order to make a sentence.",
+              "tokens": [
+                "is",
+                "She",
+                "a",
+                "doctor"
+              ],
+              "answer": "She is a doctor",
+              "explanation": "Subject + \"is\" + article \"a\" + noun: \"She is a doctor.\""
             }
           ]
         },

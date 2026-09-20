@@ -17,7 +17,7 @@ final class ContentStoreTests: XCTestCase {
 
     func testLoadsTheAchievementsCatalog() throws {
         let store = try ContentStore()
-        XCTAssertEqual(store.achievements.count, 18)
+        XCTAssertEqual(store.achievements.count, 24) // 18 original + 6 from V3 pkg 2's expanded catalog
         let first = try XCTUnwrap(store.achievements.first { $0.id == "streak_3" })
         XCTAssertEqual(first.title, "Warming up")
         XCTAssertEqual(first.tier, "bronze")

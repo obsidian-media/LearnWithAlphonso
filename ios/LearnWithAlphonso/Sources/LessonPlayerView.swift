@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import AVFoundation
 import LearnWithAlphonsoKit
 
 /// Lesson player: overview -> vocab (when the lesson has any derivable
@@ -73,7 +74,12 @@ struct LessonPlayerView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            QuestionCard(question: lesson.questions[idx], checked: checked, picked: $picked)
+            // .id() forces a fresh QuestionCard (and its reorder @State)
+            // per question -- without it, SwiftUI would keep reusing the
+            // same view identity across questions and a reorder question's
+            // tapped-token state would leak into the next question.
+            QuestionCard(question: lesson.questions[idx], course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
+                .id(questionID(lesson.questions[idx]))
 
             Spacer()
 
@@ -202,7 +208,18 @@ private func questionID(_ question: Question) -> String {
     switch question {
     case .multipleChoice(let q): return q.id
     case .fillInBlank(let q): return q.id
+    case .reorder(let q): return q.id
     }
+}
+
+/// V3 pkg 4a: on-device TTS for "listening comprehension" format questions
+/// (an mc question with `audioText` set) -- same reasoning as the web's
+/// speech.ts (a free platform capability, not a new vendor call).
+private func speak(_ text: String, languageCode: String) {
+    questionCardSpeechSynthesizer.stopSpeaking(at: .immediate)
+    let utterance = AVSpeechUtterance(string: text)
+    utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+    questionCardSpeechSynthesizer.speak(utterance)
 }
 
 private extension Course {
@@ -212,17 +229,45 @@ private extension Course {
         case .french: return "fr"
         }
     }
+
+    var speechLanguageCode: String {
+        switch self {
+        case .english: return "en-US"
+        case .french: return "fr-FR"
+        }
+    }
 }
+
+private let questionCardSpeechSynthesizer = AVSpeechSynthesizer()
 
 private struct QuestionCard: View {
     let question: Question
+    let course: Course
+    let vocabImages: [String: VocabImageRef]
     let checked: Bool
     @Binding var picked: String?
+
+    // "reorder" questions accumulate tapped token *indices* (not values,
+    // since a sentence can repeat a word) -- reset automatically per
+    // question via this view's .id() modifier in quizBody, same reasoning
+    // as the web's identical pattern in lesson.$id.tsx.
+    @State private var orderPicks: [Int] = []
 
     var body: some View {
         switch question {
         case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: 12) {
+                if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
+                    VocabImageView(image: image, cardHeight: 160)
+                }
+                if let audioText = q.audioText {
+                    Button {
+                        speak(audioText, languageCode: course.speechLanguageCode)
+                    } label: {
+                        Label("Play audio", systemImage: "speaker.wave.2.fill")
+                    }
+                    .buttonStyle(.bordered)
+                }
                 Text(q.prompt).font(.title3.weight(.semibold))
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
@@ -250,6 +295,64 @@ private struct QuestionCard: View {
                 }
                 if checked {
                     Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        case .reorder(let q):
+            VStack(alignment: .leading, spacing: 12) {
+                Text(q.prompt).font(.title3.weight(.semibold))
+                assembledArea(tokens: q.tokens)
+                tokenPool(tokens: q.tokens)
+                if checked {
+                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .onChange(of: orderPicks) {
+                // `picked` stays nil (Check disabled, same generic gate as
+                // mc/fill) until every token has been placed -- matches the
+                // web's `orderPicks.length !== q.tokens.length` gate.
+                picked = orderPicks.count == q.tokens.count
+                    ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
+                    : nil
+            }
+        }
+    }
+
+    private func assembledArea(tokens: [String]) -> some View {
+        HStack {
+            if orderPicks.isEmpty {
+                Text("Tap the words below in order")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
+                    Button(tokens[tokenIdx]) {
+                        orderPicks.remove(at: position)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(checked)
+                }
+            }
+            Spacer()
+        }
+        .frame(minHeight: 44)
+        .padding(8)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // Horizontal scroll rather than a wrapping layout -- same tradeoff
+    // this file already made for fill-in-blank's word bank just above,
+    // kept consistent rather than introducing a custom Layout for this
+    // one case.
+    private func tokenPool(tokens: [String]) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
+                    if !orderPicks.contains(i) {
+                        Button(token) { orderPicks.append(i) }
+                            .buttonStyle(.bordered)
+                            .disabled(checked)
+                    }
                 }
             }
         }
@@ -389,7 +492,9 @@ private struct VocabScreen: View {
 /// URLSession/AsyncImage already do by default; see
 /// docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
 /// feature 1" for why that's an accepted tradeoff for V2, not an oversight.
-private struct VocabImageView: View {
+/// Not private (V3 pkg 4a): ReviewQueueView's image-matching mc rendering
+/// reuses this rather than duplicating the AsyncImage phase-handling.
+struct VocabImageView: View {
     let image: VocabImageRef
     /// A fixed square size for a small teaser thumbnail, or nil for a
     /// full-width card image at `cardHeight`.

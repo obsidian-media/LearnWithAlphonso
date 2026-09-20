@@ -7,6 +7,8 @@ import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { getCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
+import { VOCAB_IMAGES } from "../../data/vocab-images";
+import { speak } from "../../lib/speech";
 import {
   fetchDueReviews,
   gradeReview,
@@ -49,6 +51,10 @@ function ReviewPage() {
   const [total, setTotal] = useState(0);
   const [idx, setIdx] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  // "reorder" questions accumulate tapped token *indices* -- see
+  // lesson.$id.tsx's identical pattern for why (a sentence can repeat a
+  // word, so selection must be by index, not value).
+  const [orderPicks, setOrderPicks] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
   const [stats, setStats] = useState({ right: 0, wrong: 0, retired: 0 });
   const [heartBonusGranted, setHeartBonusGranted] = useState(false);
@@ -114,19 +120,21 @@ function ReviewPage() {
   }, [heartBonusGranted, gainHeartsLocal]);
 
   const q = card?.question;
+  const submittedAnswer =
+    q?.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
   const isCorrect = useMemo(() => {
-    if (!q || picked === null) return false;
+    if (!q || !submittedAnswer) return false;
     return q.type === "mc"
-      ? q.choices[q.answer] === picked
-      : picked.trim().toLowerCase() === q.answer.trim().toLowerCase();
-  }, [q, picked]);
+      ? q.choices[q.answer] === submittedAnswer
+      : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+  }, [q, submittedAnswer]);
 
   function check() {
-    if (!card || !picked) return;
+    if (!card || !submittedAnswer) return;
     setChecked(true);
     const ok = isCorrect;
     setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-    void grade({ data: { itemKey: card.itemKey, answer: picked, course } })
+    void grade({ data: { itemKey: card.itemKey, answer: submittedAnswer, course } })
       .then((r) => {
         if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
       })
@@ -136,6 +144,7 @@ function ReviewPage() {
   function next() {
     setIdx((i) => i + 1);
     setPicked(null);
+    setOrderPicks([]);
     setChecked(false);
   }
 
@@ -203,6 +212,26 @@ function ReviewPage() {
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
           Spaced review
         </p>
+        {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
+          <img
+            src={VOCAB_IMAGES[q.imageKey].url}
+            alt={VOCAB_IMAGES[q.imageKey].alt}
+            loading="lazy"
+            className="mb-4 h-40 w-full rounded-2xl object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        )}
+        {q.type === "mc" && q.audioText && (
+          <button
+            type="button"
+            onClick={() => speak(q.audioText!, course === "fr" ? "fr-FR" : "en-US")}
+            className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+          >
+            🔊 Play audio
+          </button>
+        )}
         <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">
           {q.prompt}
         </h2>
@@ -220,6 +249,41 @@ function ReviewPage() {
                 onClick={() => setPicked(c)}
               />
             ))
+          ) : q.type === "reorder" ? (
+            <div>
+              <div className="mb-3 flex min-h-11 flex-wrap gap-2 rounded-2xl border border-dashed border-hairline bg-parchment p-3">
+                {orderPicks.length === 0 ? (
+                  <span className="text-xs text-ink-soft/60">Tap the words below in order</span>
+                ) : (
+                  orderPicks.map((tokenIdx, position) => (
+                    <button
+                      key={`${tokenIdx}-${position}`}
+                      type="button"
+                      disabled={checked}
+                      onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
+                      className="rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-surface"
+                    >
+                      {q.tokens[tokenIdx]}
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {q.tokens.map((t, i) =>
+                  orderPicks.includes(i) ? null : (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={checked}
+                      onClick={() => setOrderPicks((arr) => [...arr, i])}
+                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                    >
+                      {t}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
           ) : (
             <div>
               <input
@@ -257,7 +321,7 @@ function ReviewPage() {
         <div className="mt-auto pt-6">
           {!checked ? (
             <button
-              disabled={!picked}
+              disabled={q.type === "reorder" ? orderPicks.length !== q.tokens.length : !picked}
               onClick={check}
               className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
             >

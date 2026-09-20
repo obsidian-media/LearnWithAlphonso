@@ -10,6 +10,10 @@ final class QuestionGradingTests: XCTestCase {
         .fillInBlank(Question.FillInBlank(id: "q1", prompt: "p", bank: [], answer: answer, explanation: "e"))
     }
 
+    private func reorder(answer: String) -> Question {
+        .reorder(Question.Reorder(id: "q1", prompt: "p", tokens: [], answer: answer, explanation: "e"))
+    }
+
     func testMultipleChoiceRequiresAnExactChoiceMatch() {
         let question = mc(choices: ["cat", "dog"], answer: 1)
         XCTAssertTrue(isAnswerCorrect(question, picked: "dog"))
@@ -29,6 +33,12 @@ final class QuestionGradingTests: XCTestCase {
 
     func testReturnsFalseWhenNothingWasPicked() {
         XCTAssertFalse(isAnswerCorrect(mc(choices: ["cat"], answer: 0), picked: nil))
+    }
+
+    func testReorderIsCaseInsensitiveAndTrimsWhitespaceOnTheJoinedString() {
+        let question = reorder(answer: "She is a doctor")
+        XCTAssertTrue(isAnswerCorrect(question, picked: "  she IS a doctor  "))
+        XCTAssertFalse(isAnswerCorrect(question, picked: "a doctor is she"))
     }
 
     func testQuestionFromWeaknessItemBuildsAMultipleChoiceQuestion() {
