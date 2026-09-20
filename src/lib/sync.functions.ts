@@ -13,7 +13,6 @@ import {
   deriveLessonCompletion,
 } from "./progress-math";
 import {
-  HEART_REFILL_MS,
   MAX_HEARTS,
   XP_HEART_COST,
   gainHearts,
@@ -80,7 +79,15 @@ export const fetchProgress = createServerFn({ method: "GET" })
     ]);
     let p = prog.data;
     if (!p) {
-      const ins = await supabase
+      // user_progress/language_progress no longer grant direct INSERT/UPDATE
+      // to `authenticated` (see supabase/migrations/
+      // 20260920050000_revoke_direct_gamification_writes.sql) -- this
+      // handler already validated the request via requireSupabaseAuth, so
+      // supabaseAdmin (service-role, bypasses RLS) is the correct trust
+      // boundary for the actual write, same pattern the complete-lesson/
+      // grade-review Edge Functions already use.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const ins = await supabaseAdmin
         .from("user_progress")
         .insert({ user_id: userId })
         .select("*")
@@ -103,7 +110,8 @@ export const fetchProgress = createServerFn({ method: "GET" })
               league_tier: p?.league_tier ?? "bronze",
             }
           : { xp: 0, cefr_level: "A1", league_tier: "bronze" };
-      const ins = await supabase
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const ins = await supabaseAdmin
         .from("language_progress")
         .upsert({ user_id: userId, language: course, ...seed }, { onConflict: "user_id,language" })
         .select("*")
@@ -131,7 +139,8 @@ export const fetchProgress = createServerFn({ method: "GET" })
       resolvedHearts.hearts !== (p?.hearts ?? MAX_HEARTS) ||
       resolvedHearts.heartsRefillAt !== rawHeartsRefillAt
     ) {
-      await supabase
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
         .from("user_progress")
         .update({ hearts: resolvedHearts.hearts, hearts_refill_at: null })
         .eq("user_id", userId);
@@ -345,9 +354,18 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
 
     // Independent writes -- none reads another's result -- batched into
-    // one round trip instead of several sequential ones.
+    // one round trip instead of several sequential ones. user_progress/
+    // language_progress/lesson_completions/activity_days no longer grant
+    // direct INSERT/UPDATE to `authenticated` (see supabase/migrations/
+    // 20260920050000_revoke_direct_gamification_writes.sql) -- every value
+    // here is already server-computed above (trust boundary already
+    // crossed), so supabaseAdmin is the correct client for the actual
+    // persist, same as the complete-lesson Edge Function's own writes.
+    // friend_activity_events is unaffected (not one of the hardened
+    // tables) and stays on the RLS-scoped client.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await Promise.all([
-      supabase.from("user_progress").upsert({
+      supabaseAdmin.from("user_progress").upsert({
         user_id: userId,
         streak,
         longest_streak: longest,
@@ -358,7 +376,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           : null,
         streak_freezes: freezes,
       }),
-      supabase
+      supabaseAdmin
         .from("language_progress")
         .upsert(
           { user_id: userId, language: course, xp, league_tier: leagueTier },
@@ -366,7 +384,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         ),
       // Best score kept: correct/xp_earned reflect the best attempt ever
       // recorded for this lesson, not just this attempt.
-      supabase.from("lesson_completions").upsert(
+      supabaseAdmin.from("lesson_completions").upsert(
         {
           user_id: userId,
           lesson_id: lessonId,
@@ -377,7 +395,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         },
         { onConflict: "user_id,lesson_id" },
       ),
-      supabase.from("activity_days").upsert({
+      supabaseAdmin.from("activity_days").upsert({
         user_id: userId,
         day: today,
         xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
@@ -433,7 +451,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       }
     }
     if (rows.length) {
-      await supabase
+      // Same admin-write rationale as the batch above -- user_achievements
+      // is one of the hardened tables too.
+      await supabaseAdmin
         .from("user_achievements")
         .upsert(rows, { onConflict: "user_id,achievement_id" });
     }
@@ -456,31 +476,21 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     };
   });
 
+/**
+ * Calls the `lose_heart` SECURITY DEFINER RPC (supabase/migrations/
+ * 20260920050000_revoke_direct_gamification_writes.sql) rather than a
+ * manual read-then-write under RLS -- same row-locked atomicity reasoning
+ * as restoreHeartsRemote/buyHeartWithXpRemote below, and the same RPC the
+ * native iOS client calls directly.
+ */
 export const loseHeartRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("hearts,hearts_refill_at")
-      .eq("user_id", userId)
-      .maybeSingle();
-    // Resolve any refill that already completed before applying the loss,
-    // in case this client's local state is stale.
-    const regen = resolveHeartsRefill(
-      p?.hearts ?? MAX_HEARTS,
-      p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null,
-      Date.now(),
-    );
-    const next = Math.max(0, regen.hearts - 1);
-    await supabase
-      .from("user_progress")
-      .update({
-        hearts: next,
-        hearts_refill_at: next === 0 ? new Date(Date.now() + HEART_REFILL_MS).toISOString() : null,
-      })
-      .eq("user_id", userId);
-    return { hearts: next };
+    const { supabase } = context;
+    const { data, error } = await supabase.rpc("lose_heart");
+    if (error) throw new Error("Could not record heart loss");
+    const row = Array.isArray(data) ? data[0] : data;
+    return { hearts: row?.hearts ?? MAX_HEARTS };
   });
 
 /**
@@ -568,7 +578,11 @@ export const mergeGuestProgress = createServerFn({ method: "POST" })
       .maybeSingle();
     // only merge if server has zero progress (first sign-in)
     if (!p || (p.xp === 0 && p.streak === 0)) {
-      await supabase.from("user_progress").upsert({
+      // Same admin-write rationale as completeLessonRemote above -- all
+      // three tables are hardened (supabase/migrations/
+      // 20260920050000_revoke_direct_gamification_writes.sql).
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("user_progress").upsert({
         user_id: userId,
         xp: data.xp,
         streak: data.streak,
@@ -583,7 +597,7 @@ export const mergeGuestProgress = createServerFn({ method: "POST" })
         xp_earned: 0,
       }));
       if (comps.length)
-        await supabase
+        await supabaseAdmin
           .from("lesson_completions")
           .upsert(comps, { onConflict: "user_id,lesson_id" });
       const acts = data.activityDates.map((d) => ({
@@ -592,28 +606,38 @@ export const mergeGuestProgress = createServerFn({ method: "POST" })
         xp_earned: 0,
       }));
       if (acts.length)
-        await supabase.from("activity_days").upsert(acts, { onConflict: "user_id,day" });
+        await supabaseAdmin.from("activity_days").upsert(acts, { onConflict: "user_id,day" });
     }
     return { merged: true };
   });
 const LEVELS_ENUM = ["A1", "A2", "B1", "B2", "C1"] as const;
 
+/**
+ * Calls the `set_cefr_level` SECURITY DEFINER RPC (supabase/migrations/
+ * 20260920050000_revoke_direct_gamification_writes.sql) rather than a
+ * direct upsert -- language_progress no longer grants direct INSERT/UPDATE
+ * to `authenticated`. Same RPC the native iOS client calls directly.
+ */
 export const setCefrLevel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z.object({ level: z.enum(LEVELS_ENUM), course: courseSchema }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await supabase
-      .from("language_progress")
-      .upsert(
-        { user_id: userId, language: data.course, cefr_level: data.level },
-        { onConflict: "user_id,language" },
-      );
+    const { supabase } = context;
+    const { error } = await supabase.rpc("set_cefr_level", {
+      _language: data.course,
+      _level: data.level,
+    });
+    if (error) throw new Error("Could not set CEFR level");
     return { cefrLevel: data.level };
   });
 
+/**
+ * Calls the `save_placement_result` SECURITY DEFINER RPC (same migration
+ * as setCefrLevel above) rather than a direct upsert. Same RPC the native
+ * iOS client calls directly.
+ */
 export const savePlacementResult = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -626,23 +650,17 @@ export const savePlacementResult = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const takenAt = new Date().toISOString();
-    await supabase.from("language_progress").upsert(
-      {
-        user_id: userId,
-        language: data.course,
-        cefr_level: data.level,
-        placement_level: data.level,
-        placement_score: data.score,
-        placement_taken_at: takenAt,
-      },
-      { onConflict: "user_id,language" },
-    );
+    const { supabase } = context;
+    const { data: takenAt, error } = await supabase.rpc("save_placement_result", {
+      _language: data.course,
+      _level: data.level,
+      _score: data.score,
+    });
+    if (error) throw new Error("Could not save placement result");
     return {
       cefrLevel: data.level,
       placementLevel: data.level,
       placementScore: data.score,
-      placementTakenAt: takenAt,
+      placementTakenAt: takenAt as string,
     };
   });

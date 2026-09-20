@@ -88,7 +88,7 @@ smoke tests in `e2e/*.spec.ts`, scoped to unauthenticated routes (no
 seeded test account exists for CI to sign in with). `ios/LearnWithAlphonsoKit`
 has its own XCTest suite (SRS/progress-math/hearts/SyncEngine/weakness-
 detection-helper ports, network client tests via an injected requester
-closure — no real network in tests), 147 tests as of 2026-09-20. Lint,
+closure — no real network in tests), 146 tests as of 2026-09-20. Lint,
 typecheck, Vitest, Playwright, and the Swift package's tests are all
 wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 `main` (both Swift jobs run on a macOS runner; Vitest runs as a step

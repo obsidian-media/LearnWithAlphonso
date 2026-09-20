@@ -727,12 +727,27 @@ export type Database = {
           xp: number;
         }[];
       };
+      lose_heart: {
+        Args: never;
+        Returns: {
+          hearts: number;
+          hearts_refill_at: string;
+        }[];
+      };
       restore_hearts_if_due: {
         Args: never;
         Returns: {
           hearts: number;
           hearts_refill_at: string;
         }[];
+      };
+      save_placement_result: {
+        Args: { _language: string; _level: string; _score: number };
+        Returns: string;
+      };
+      set_cefr_level: {
+        Args: { _language: string; _level: string };
+        Returns: undefined;
       };
     };
     Enums: {

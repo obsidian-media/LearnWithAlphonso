@@ -62,18 +62,27 @@ RPCs worth knowing (all `SECURITY DEFINER`, all in `supabase/migrations/`):
 `get_leaderboard`, `get_friends_progress`, `accept_friend_invite`,
 `consume_ai_quota`, `consume_ai_rate_limit`, `restore_hearts_if_due`,
 `buy_heart_with_xp`, `claim_review_clear_bonus` (the last three: atomic,
-row-locked hearts-economy operations — see "Hearts economy" below).
+row-locked hearts-economy operations — see "Hearts economy" below), and
+`lose_heart`, `set_cefr_level`, `save_placement_result` (added
+2026-09-20 — the iOS client's remaining direct-write replacements, see
+"Known rough edges" below).
 
 `user_progress`, `language_progress`, `lesson_completions`,
 `user_achievements`, `activity_days`, and `review_items` all carry `CHECK`
-constraints on their numeric/enum columns (added 2026-09-18) — these tables
-still grant direct `INSERT`/`UPDATE` to `authenticated` under RLS (a client
-can PATCH its own row via PostgREST), so the constraints are the only thing
-stopping a client from writing an arbitrary/negative/invalid value. This is
-a deliberate stopgap, not the final design — see the migration's own
-comment for why direct writes weren't revoked outright (the iOS
-`ProgressSyncClient` still depends on them) and what the real fix looks
-like (route every write through a `SECURITY DEFINER` RPC).
+constraints on their numeric/enum columns (added 2026-09-18), **and, as of
+2026-09-20 (`supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql`),
+no longer grant direct `INSERT`/`UPDATE` to `authenticated` at all** — the
+real fix the 2026-09-18 migration's own comment deferred. Every write now
+goes through either `supabaseAdmin` (web server functions -- the value was
+already server-computed, so this is the same trust boundary the
+complete-lesson/grade-review Edge Functions' own writes already use) or one
+of three new `SECURITY DEFINER` RPCs (`lose_heart`, `set_cefr_level`,
+`save_placement_result`) that the native iOS client (`ProgressSyncClient.swift`)
+calls directly, replacing the three direct-write operations it used to
+depend on. SELECT and the existing DELETE grants (GDPR export/delete,
+`gradeReview`'s retire path) are unchanged. **A currently-shipped TestFlight
+build predates this change** and will see permission-denied errors on
+heart loss / CEFR level / placement save until a new build ships.
 
 **Applying migrations:** `.github/workflows/ci.yml`'s `deploy-supabase` job
 now runs `supabase db push` (and redeploys all three Edge Functions)

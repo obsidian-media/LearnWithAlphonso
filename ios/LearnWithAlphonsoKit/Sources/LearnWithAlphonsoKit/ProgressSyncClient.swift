@@ -174,14 +174,17 @@ public struct LessonCompletionResult: Sendable, Decodable, Equatable {
     public let progress: LessonCompletionProgress
 }
 
-/// Direct PostgREST calls for the RLS-safe subset of src/lib/sync.functions.ts
-/// -- operations where a user legitimately controls their own data with no
-/// adversarial trust concern (spending their own heart, setting their own
-/// declared CEFR level, recording their own placement-test result). RLS
-/// policies (`auth.uid() = user_id`) enforce the "own row only" boundary
-/// server-side regardless of what this client sends.
+/// Calls for the RLS-safe subset of src/lib/sync.functions.ts -- operations
+/// where a user legitimately controls their own data with no adversarial
+/// trust concern (spending their own heart, setting their own declared CEFR
+/// level, recording their own placement-test result). Reads use direct
+/// PostgREST (`auth.uid() = user_id` RLS policies enforce "own row only"
+/// server-side); writes to user_progress/language_progress go through the
+/// lose_heart/set_cefr_level/save_placement_result SECURITY DEFINER RPCs
+/// instead (supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql)
+/// -- those tables no longer grant direct INSERT/UPDATE to `authenticated`.
 ///
-/// completeLesson is the one exception -- it calls the complete-lesson
+/// completeLesson is the other exception -- it calls the complete-lesson
 /// Supabase Edge Function (supabase/functions/complete-lesson/index.ts)
 /// rather than PostgREST directly, since granting XP needs a server-only
 /// secret (LESSON_SESSION_SECRET) that can never ship in this binary. See
@@ -207,34 +210,56 @@ public final class ProgressSyncClient: Sendable {
         self.requester = requester
     }
 
-    public func loseHeart(userID: String) async throws -> HeartsResult {
-        let current = try await currentHearts(userID: userID)
-        let next = max(0, current - 1)
-        let refillAt: String? = next == 0 ? ISO8601DateFormatter().string(from: Date().addingTimeInterval(30 * 60)) : nil
-
-        var request = restRequest(path: "user_progress", query: [URLQueryItem(name: "user_id", value: "eq.\(userID)")])
-        request.httpMethod = "PATCH"
-        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
-        var body: [String: Any] = ["hearts": next]
-        body["hearts_refill_at"] = refillAt ?? NSNull()
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+    /// Calls the `lose_heart` SECURITY DEFINER RPC (supabase/migrations/
+    /// 20260920050000_revoke_direct_gamification_writes.sql) rather than a
+    /// direct user_progress read+PATCH -- that table no longer grants
+    /// direct INSERT/UPDATE to `authenticated`. The RPC resolves auth.uid()
+    /// server-side, so no userID parameter is needed any more.
+    public func loseHeart() async throws -> HeartsResult {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/lose_heart"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [String: String]())
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
-        return HeartsResult(hearts: next)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let hearts = rows.first?["hearts"] as? Int else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return HeartsResult(hearts: hearts)
     }
 
-    public func setCefrLevel(userID: String, course: String, level: String) async throws {
-        try await upsertLanguageProgress(userID: userID, course: course, fields: ["cefr_level": level])
+    /// Calls the `set_cefr_level` SECURITY DEFINER RPC (same migration as
+    /// loseHeart above) rather than a direct language_progress upsert.
+    public func setCefrLevel(course: String, level: String) async throws {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/set_cefr_level"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_language": course, "_level": level])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
     }
 
-    public func savePlacementResult(userID: String, course: String, level: String, score: Int) async throws {
-        try await upsertLanguageProgress(userID: userID, course: course, fields: [
-            "cefr_level": level,
-            "placement_level": level,
-            "placement_score": score,
-            "placement_taken_at": ISO8601DateFormatter().string(from: Date()),
+    /// Calls the `save_placement_result` SECURITY DEFINER RPC (same
+    /// migration as loseHeart above) rather than a direct upsert.
+    public func savePlacementResult(course: String, level: String, score: Int) async throws {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/save_placement_result"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "_language": course, "_level": level, "_score": score,
         ])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
     }
 
     /// Calls the start-lesson-session Edge Function -- POST
@@ -616,33 +641,6 @@ public final class ProgressSyncClient: Sendable {
             return date
         }
         return ISO8601DateFormatter().date(from: string)
-    }
-
-    private func currentHearts(userID: String) async throws -> Int {
-        var request = restRequest(path: "user_progress", query: [
-            URLQueryItem(name: "select", value: "hearts"),
-            URLQueryItem(name: "user_id", value: "eq.\(userID)"),
-        ])
-        request.httpMethod = "GET"
-
-        let (data, response) = try await requester(request)
-        try Self.requireSuccess(data: data, response: response)
-        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-            throw ProgressSyncError.invalidPayload
-        }
-        return (rows.first?["hearts"] as? Int) ?? 5
-    }
-
-    private func upsertLanguageProgress(userID: String, course: String, fields: [String: Any]) async throws {
-        var request = restRequest(path: "language_progress", query: [URLQueryItem(name: "on_conflict", value: "user_id,language")])
-        request.httpMethod = "POST"
-        request.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
-        var body: [String: Any] = ["user_id": userID, "language": course]
-        for (key, value) in fields { body[key] = value }
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await requester(request)
-        try Self.requireSuccess(data: data, response: response)
     }
 
     private func restRequest(path: String, query: [URLQueryItem]) -> URLRequest {

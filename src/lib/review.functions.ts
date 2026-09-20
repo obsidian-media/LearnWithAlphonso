@@ -107,7 +107,13 @@ export const recordMisses = createServerFn({ method: "POST" })
       repetitions: 0,
       due_on: today(),
     }));
-    const { error } = await supabase
+    // review_items no longer grants direct INSERT/UPDATE to `authenticated`
+    // (see supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql)
+    // -- every row here is already validated against the real lesson's
+    // question set above, so supabaseAdmin is the correct client for the
+    // actual persist.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("review_items")
       .upsert(rows, { onConflict: "user_id,item_key,language" });
     if (error) throw new Error(error.message);
@@ -229,7 +235,10 @@ export const gradeReview = createServerFn({ method: "POST" })
       return { retired: true, dueOn: outcome.dueOn };
     }
 
-    await supabase
+    // Same admin-write rationale as recordMisses above -- outcome is
+    // already server-derived from the real question, not client-trusted.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
       .from("review_items")
       .update({
         ease: outcome.ease,

@@ -26,6 +26,16 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
+// review_items no longer grants direct INSERT/UPDATE to `authenticated`
+// (supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql)
+// -- recordMisses/gradeReview write it via supabaseAdmin now (its DELETE
+// path in gradeReview's retire branch is unaffected and stays on the
+// RLS-scoped client).
+const supabaseAdminFrom = vi.fn();
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { from: supabaseAdminFrom },
+}));
+
 const { recordMisses, fetchDueReviews, gradeReview, claimReviewClearBonusRemote } = asTestFns(
   await import("./review.functions"),
 );
@@ -40,6 +50,8 @@ function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
 
 beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
+  supabaseAdminFrom.mockReset();
+  supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
 });
 
 afterEach(() => {
@@ -54,7 +66,7 @@ describe("recordMisses", () => {
   it("upserts a review_items row per claimed-missed real question", async () => {
     const supabase = createSupabaseMock();
     const upsertChain = chainable({ error: null });
-    supabase.from.mockReturnValueOnce(upsertChain);
+    supabaseAdminFrom.mockReturnValueOnce(upsertChain);
 
     const result = await recordMisses({
       context: ctx(supabase),

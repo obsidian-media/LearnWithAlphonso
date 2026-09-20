@@ -26,6 +26,16 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
+// user_progress/language_progress/lesson_completions/activity_days/
+// user_achievements/review_items no longer grant direct INSERT/UPDATE to
+// `authenticated` (supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql)
+// -- sync.functions.ts writes those via supabaseAdmin now, same pattern
+// account.functions.test.ts already established for deleteMyAccount.
+const supabaseAdminFrom = vi.fn();
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { from: supabaseAdminFrom },
+}));
+
 const {
   fetchProgress,
   startLessonSession,
@@ -48,6 +58,8 @@ function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
 
 beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
+  supabaseAdminFrom.mockReset();
+  supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
 });
 
 afterEach(() => {
@@ -92,12 +104,13 @@ describe("fetchProgress", () => {
       .mockReturnValueOnce(chainable({ data: null })) // language_progress select: nothing yet for "en"
       .mockReturnValueOnce(chainable({ data: [] }))
       .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(seedUpsert); // language_progress upsert().select().single()
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValueOnce(seedUpsert); // language_progress upsert().select().single() -- via admin now
 
     await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
 
-    expect(supabase.from).toHaveBeenNthCalledWith(6, "language_progress");
+    expect(supabase.from).toHaveBeenCalledTimes(5);
+    expect(supabaseAdminFrom).toHaveBeenNthCalledWith(1, "language_progress");
     const upsertPayload = seedUpsert.calls.find((c) => c.method === "upsert")?.args[0] as Record<
       string,
       unknown
@@ -119,8 +132,8 @@ describe("fetchProgress", () => {
       .mockReturnValueOnce(chainable({ data: null })) // language_progress select: nothing yet for "fr"
       .mockReturnValueOnce(chainable({ data: [] }))
       .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(seedUpsert);
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValueOnce(seedUpsert);
 
     await fetchProgress({ context: ctx(supabase), data: { course: "fr" } });
 
@@ -149,15 +162,15 @@ describe("fetchProgress", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, cefr_level: "A1", league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: [] }))
       .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(chainable({ data: [] }))
-      .mockReturnValueOnce(chainable({ data: null })); // 6th call: the hearts-refill update
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValueOnce(chainable({ data: null })); // the hearts-refill update, via admin now
 
     const result = await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
 
     expect(result.hearts).toBe(5);
     expect(result.heartsRefillAt).toBeNull();
-    expect(supabase.from).toHaveBeenCalledTimes(6);
-    expect(supabase.from).toHaveBeenNthCalledWith(6, "user_progress");
+    expect(supabase.from).toHaveBeenCalledTimes(5);
+    expect(supabaseAdminFrom).toHaveBeenNthCalledWith(1, "user_progress");
   });
 });
 
@@ -204,13 +217,17 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } })) // language_progress
       .mockReturnValueOnce(chainable({ data: null })) // existing lesson_completions row
       .mockReturnValueOnce(chainable({ data: null })) // existing activity_days row
+      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] })) // lesson_completions re-read
+      .mockReturnValueOnce(chainable({ data: [] })); // user_achievements re-read
+    // user_progress/language_progress/lesson_completions/activity_days
+    // upserts, plus the user_achievements upsert, all go via admin now.
+    supabaseAdminFrom
       .mockReturnValueOnce(chainable({})) // user_progress upsert
       .mockReturnValueOnce(chainable({})) // language_progress upsert
       .mockReturnValueOnce(chainable({})) // lesson_completions upsert
       .mockReturnValueOnce(chainable({})) // activity_days upsert
-      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
-      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] })) // lesson_completions re-read
-      .mockReturnValueOnce(chainable({ data: [] })); // user_achievements re-read
+      .mockReturnValueOnce(chainable({})); // user_achievements upsert
 
     const result = await completeLessonRemote({
       context: ctx(supabase),
@@ -248,12 +265,17 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 100, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: { correct: 8, total: 8, xp_earned: 100 } })) // already perfect before
       .mockReturnValueOnce(chainable({ data: { xp_earned: 100 } }))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
+      // no friend_activity_events insert (xpGain is 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
       .mockReturnValueOnce(chainable({ data: [{ achievement_id: "first_lesson" }] }));
+    // Already-unlocked "first_lesson" + no xp/league change -> no newly
+    // crossed threshold, so the user_achievements upsert is skipped
+    // entirely (rows.length === 0) -- only the 4 progress-table upserts run.
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}));
 
     const result = await completeLessonRemote({
       context: ctx(supabase),
@@ -295,13 +317,15 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: null }))
       .mockReturnValueOnce(chainable({ data: null }))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
       .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
       .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({})) // user_progress upsert
+      .mockReturnValueOnce(chainable({})) // language_progress upsert
+      .mockReturnValueOnce(chainable({})) // lesson_completions upsert
+      .mockReturnValueOnce(chainable({})) // activity_days upsert
+      .mockReturnValueOnce(chainable({})); // user_achievements upsert (first-ever perfect completion again)
 
     vi.useFakeTimers();
     vi.setSystemTime(new Date(`${today}T12:00:00Z`));
@@ -362,22 +386,23 @@ describe("completeLessonRemote", () => {
 });
 
 describe("loseHeartRemote", () => {
-  it("decrements hearts and starts the refill timer once at zero", async () => {
+  // Now calls the lose_heart RPC (supabase/migrations/
+  // 20260920050000_revoke_direct_gamification_writes.sql) instead of a
+  // direct user_progress read+update.
+  it("returns the RPC's resolved hearts count", async () => {
     const supabase = createSupabaseMock();
-    supabase.from
-      .mockReturnValueOnce(chainable({ data: { hearts: 1, hearts_refill_at: null } }))
-      .mockReturnValueOnce(chainable({}));
+    supabase.rpc.mockResolvedValue({ data: [{ hearts: 0, hearts_refill_at: null }], error: null });
     const result = await loseHeartRemote({ context: ctx(supabase) });
+    expect(supabase.rpc).toHaveBeenCalledWith("lose_heart");
     expect(result.hearts).toBe(0);
   });
 
-  it("never goes below zero", async () => {
+  it("throws when the RPC errors", async () => {
     const supabase = createSupabaseMock();
-    supabase.from
-      .mockReturnValueOnce(chainable({ data: { hearts: 0, hearts_refill_at: null } }))
-      .mockReturnValueOnce(chainable({}));
-    const result = await loseHeartRemote({ context: ctx(supabase) });
-    expect(result.hearts).toBe(0);
+    supabase.rpc.mockResolvedValue({ data: null, error: new Error("db down") });
+    await expect(loseHeartRemote({ context: ctx(supabase) })).rejects.toThrow(
+      "Could not record heart loss",
+    );
   });
 });
 
@@ -420,11 +445,13 @@ describe("buyHeartWithXpRemote", () => {
 describe("mergeGuestProgress", () => {
   it("merges guest progress into a fresh account with zero progress", async () => {
     const supabase = createSupabaseMock();
-    supabase.from
-      .mockReturnValueOnce(chainable({ data: { xp: 0, streak: 0 } })) // user_progress select
-      .mockReturnValueOnce(chainable({})) // user_progress upsert
-      .mockReturnValueOnce(chainable({})) // lesson_completions upsert
-      .mockReturnValueOnce(chainable({})); // activity_days upsert
+    supabase.from.mockReturnValueOnce(chainable({ data: { xp: 0, streak: 0 } })); // user_progress select (guard read)
+    // The three writes (user_progress/lesson_completions/activity_days
+    // upserts) all go via admin now.
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}));
 
     const result = await mergeGuestProgress({
       context: ctx(supabase),
@@ -439,7 +466,8 @@ describe("mergeGuestProgress", () => {
     });
 
     expect(result).toEqual({ merged: true });
-    expect(supabase.from).toHaveBeenCalledTimes(4);
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+    expect(supabaseAdminFrom).toHaveBeenCalledTimes(3);
   });
 
   it("does not merge over an account that already has progress", async () => {
@@ -464,27 +492,64 @@ describe("mergeGuestProgress", () => {
 });
 
 describe("setCefrLevel", () => {
-  it("upserts the requested level and echoes it back", async () => {
+  // Now calls the set_cefr_level RPC (supabase/migrations/
+  // 20260920050000_revoke_direct_gamification_writes.sql) instead of a
+  // direct language_progress upsert.
+  it("calls set_cefr_level and echoes the level back", async () => {
     const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({}));
+    supabase.rpc.mockResolvedValue({ data: null, error: null });
     const result = await setCefrLevel({
       context: ctx(supabase),
       data: { level: "B2", course: "en" },
     });
+    expect(supabase.rpc).toHaveBeenCalledWith("set_cefr_level", {
+      _language: "en",
+      _level: "B2",
+    });
     expect(result).toEqual({ cefrLevel: "B2" });
+  });
+
+  it("throws when the RPC errors", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: new Error("db down") });
+    await expect(
+      setCefrLevel({ context: ctx(supabase), data: { level: "B2", course: "en" } }),
+    ).rejects.toThrow("Could not set CEFR level");
   });
 });
 
 describe("savePlacementResult", () => {
-  it("stores and returns the placement result with a timestamp", async () => {
+  // Now calls the save_placement_result RPC (same migration as
+  // setCefrLevel above), which returns the server-set timestamp directly.
+  it("calls save_placement_result and returns its timestamp", async () => {
     const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({}));
+    const takenAt = "2026-09-20T12:00:00.000Z";
+    supabase.rpc.mockResolvedValue({ data: takenAt, error: null });
     const result = await savePlacementResult({
       context: ctx(supabase),
       data: { level: "A2", score: 73, course: "en" },
     });
-    expect(result.cefrLevel).toBe("A2");
-    expect(result.placementScore).toBe(73);
-    expect(typeof result.placementTakenAt).toBe("string");
+    expect(supabase.rpc).toHaveBeenCalledWith("save_placement_result", {
+      _language: "en",
+      _level: "A2",
+      _score: 73,
+    });
+    expect(result).toEqual({
+      cefrLevel: "A2",
+      placementLevel: "A2",
+      placementScore: 73,
+      placementTakenAt: takenAt,
+    });
+  });
+
+  it("throws when the RPC errors", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: new Error("db down") });
+    await expect(
+      savePlacementResult({
+        context: ctx(supabase),
+        data: { level: "A2", score: 73, course: "en" },
+      }),
+    ).rejects.toThrow("Could not save placement result");
   });
 });

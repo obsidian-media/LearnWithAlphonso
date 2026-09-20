@@ -30,100 +30,82 @@ final class ProgressSyncClientTests: XCTestCase {
 
     // MARK: - loseHeart
 
-    func testLoseHeartReadsCurrentHeartsThenPatchesTheDecrementedValue() async throws {
-        var requests: [URLRequest] = []
+    // Now calls the lose_heart RPC (supabase/migrations/
+    // 20260920050000_revoke_direct_gamification_writes.sql) instead of a
+    // direct user_progress read+PATCH -- that table no longer grants
+    // direct INSERT/UPDATE to `authenticated`.
+    func testLoseHeartPostsToTheRpcAndReturnsTheResolvedHearts() async throws {
+        var captured: URLRequest?
         let client = makeClient { request in
-            requests.append(request)
-            if request.httpMethod == "GET" {
-                return self.jsonResponse(for: request.url!, body: [["hearts": 3]])
-            }
-            return self.jsonResponse(for: request.url!, body: [] as [Int])
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["hearts": 2, "hearts_refill_at": NSNull()]])
         }
 
-        let result = try await client.loseHeart(userID: userID)
+        let result = try await client.loseHeart()
 
         XCTAssertEqual(result.hearts, 2)
-        XCTAssertEqual(requests.count, 2)
-        XCTAssertEqual(requests[0].httpMethod, "GET")
-        XCTAssertEqual(requests[1].httpMethod, "PATCH")
-        let body = try XCTUnwrap(requests[1].httpBody)
-        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertEqual(payload["hearts"] as? Int, 2)
-        XCTAssertNotNil(payload["hearts_refill_at"] as? NSNull)
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/lose_heart"))
     }
 
-    func testLoseHeartNeverGoesBelowZeroAndSchedulesARefill() async throws {
-        var requests: [URLRequest] = []
+    func testLoseHeartSurfacesTheServerResolvedZeroHearts() async throws {
         let client = makeClient { request in
-            requests.append(request)
-            if request.httpMethod == "GET" {
-                return self.jsonResponse(for: request.url!, body: [["hearts": 0]])
-            }
-            return self.jsonResponse(for: request.url!, body: [] as [Int])
+            self.jsonResponse(for: request.url!, body: [["hearts": 0, "hearts_refill_at": "2026-09-20T12:30:00+00:00"]])
         }
 
-        let result = try await client.loseHeart(userID: userID)
-
+        let result = try await client.loseHeart()
         XCTAssertEqual(result.hearts, 0)
-        let body = try XCTUnwrap(requests[1].httpBody)
-        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertFalse(payload["hearts_refill_at"] is NSNull)
-    }
-
-    func testLoseHeartDefaultsTo5HeartsWhenNoRowExistsYet() async throws {
-        var requests: [URLRequest] = []
-        let client = makeClient { request in
-            requests.append(request)
-            if request.httpMethod == "GET" {
-                return self.jsonResponse(for: request.url!, body: [] as [[String: Int]])
-            }
-            return self.jsonResponse(for: request.url!, body: [] as [Int])
-        }
-
-        let result = try await client.loseHeart(userID: userID)
-        XCTAssertEqual(result.hearts, 4)
     }
 
     // MARK: - setCefrLevel
 
-    func testSetCefrLevelUpsertsLanguageProgress() async throws {
+    // Now calls the set_cefr_level RPC (same migration as loseHeart above)
+    // instead of a direct language_progress upsert.
+    func testSetCefrLevelPostsToTheRpc() async throws {
         var captured: URLRequest?
         let client = makeClient { request in
             captured = request
-            return self.jsonResponse(for: request.url!, body: [] as [Int])
+            let http = HTTPURLResponse(url: request.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!
+            return (Data(), http)
         }
 
-        try await client.setCefrLevel(userID: userID, course: "en", level: "B1")
+        try await client.setCefrLevel(course: "en", level: "B1")
 
         let request = try XCTUnwrap(captured)
         XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/language_progress"))
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Prefer"), "resolution=merge-duplicates,return=minimal")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/set_cefr_level"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertEqual(payload["user_id"] as? String, userID)
-        XCTAssertEqual(payload["language"] as? String, "en")
-        XCTAssertEqual(payload["cefr_level"] as? String, "B1")
+        XCTAssertEqual(payload["_language"] as? String, "en")
+        XCTAssertEqual(payload["_level"] as? String, "B1")
     }
 
     // MARK: - savePlacementResult
 
-    func testSavePlacementResultUpsertsLevelScoreAndTimestamp() async throws {
+    // Now calls the save_placement_result RPC (same migration as loseHeart
+    // above) instead of a direct upsert.
+    func testSavePlacementResultPostsLevelAndScoreToTheRpc() async throws {
         var captured: URLRequest?
         let client = makeClient { request in
             captured = request
-            return self.jsonResponse(for: request.url!, body: [] as [Int])
+            // PostgREST returns a scalar-returning RPC's result as a bare
+            // JSON fragment (here, a quoted timestamptz string) -- this
+            // client doesn't decode it, so the exact body doesn't matter.
+            let http = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return ("\"2026-09-20T12:00:00+00:00\"".data(using: .utf8)!, http)
         }
 
-        try await client.savePlacementResult(userID: userID, course: "en", level: "A2", score: 73)
+        try await client.savePlacementResult(course: "en", level: "A2", score: 73)
 
         let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/save_placement_result"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertEqual(payload["cefr_level"] as? String, "A2")
-        XCTAssertEqual(payload["placement_level"] as? String, "A2")
-        XCTAssertEqual(payload["placement_score"] as? Int, 73)
-        XCTAssertNotNil(payload["placement_taken_at"])
+        XCTAssertEqual(payload["_language"] as? String, "en")
+        XCTAssertEqual(payload["_level"] as? String, "A2")
+        XCTAssertEqual(payload["_score"] as? Int, 73)
     }
 
     // MARK: - startLessonSession
@@ -628,7 +610,7 @@ final class ProgressSyncClientTests: XCTestCase {
         }
 
         do {
-            try await client.setCefrLevel(userID: userID, course: "en", level: "B1")
+            try await client.setCefrLevel(course: "en", level: "B1")
             XCTFail("Expected an error")
         } catch {
             XCTAssertEqual(error as? ProgressSyncError, .server(status: 403, message: "new row violates row-level security policy"))
