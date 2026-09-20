@@ -14,9 +14,12 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
   global.fetch = vi.fn().mockResolvedValue(
-    new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify([WEAKNESS]) } }] }), {
-      status: 200,
-    }),
+    new Response(
+      JSON.stringify({ choices: [{ message: { content: JSON.stringify([WEAKNESS]) } }] }),
+      {
+        status: 200,
+      },
+    ),
   );
 });
 

@@ -326,7 +326,11 @@ describe("gradeReview", () => {
     expect(result.retired).toBe(true);
     expect(supabaseAdminFrom).toHaveBeenCalledWith("weakness_events");
     const insertArgs = eventInsert.calls.find((c) => c.method === "insert")?.args[0];
-    expect(insertArgs).toEqual({ user_id: USER_ID, category: "past-tense", event_type: "resolved" });
+    expect(insertArgs).toEqual({
+      user_id: USER_ID,
+      category: "past-tense",
+      event_type: "resolved",
+    });
   });
 
   it("throws for an itemKey with no matching question in the course index", async () => {
