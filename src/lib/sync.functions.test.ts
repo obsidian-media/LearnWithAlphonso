@@ -237,7 +237,7 @@ describe("completeLessonRemote", () => {
           data: {
             streak: 1,
             longest_streak: 1,
-            last_active_date: "2026-09-19",
+            last_active_date: new Date().toISOString().slice(0, 10), // "today", so the streak stays unchanged
             hearts: 5,
             hearts_refill_at: null,
             streak_freezes: 0,
@@ -271,6 +271,12 @@ describe("completeLessonRemote", () => {
   });
 
   it("grants a full hearts refill on a streak milestone", async () => {
+    // Anchor "today" once, before freezing time, and derive "yesterday"
+    // from it -- a hardcoded pair of calendar-date literals only stays a
+    // 1-day gap on the one real-world date they were written for.
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(new Date(today).getTime() - 86400000).toISOString().slice(0, 10);
+
     const supabase = createSupabaseMock();
     supabase.from
       .mockReturnValueOnce(
@@ -278,7 +284,7 @@ describe("completeLessonRemote", () => {
           data: {
             streak: 6,
             longest_streak: 6,
-            last_active_date: "2026-09-18",
+            last_active_date: yesterday,
             hearts: 2,
             hearts_refill_at: null,
             streak_freezes: 0,
@@ -295,7 +301,6 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
       .mockReturnValueOnce(chainable({ data: [] }));
 
-    const today = new Date().toISOString().slice(0, 10);
     vi.useFakeTimers();
     vi.setSystemTime(new Date(`${today}T12:00:00Z`));
     try {
