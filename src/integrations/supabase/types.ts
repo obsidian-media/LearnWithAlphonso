@@ -421,9 +421,12 @@ export type Database = {
       };
       review_items: {
         Row: {
+          answer_index: number | null;
+          choices: Json | null;
           created_at: string;
           due_on: string;
           ease: number;
+          explanation: string | null;
           id: string;
           interval_days: number;
           item_key: string;
@@ -432,14 +435,21 @@ export type Database = {
           last_reviewed_at: string | null;
           lesson_id: string;
           level: string;
+          prompt: string | null;
           repetitions: number;
+          source: string;
           updated_at: string;
           user_id: string;
+          weakness_display: string | null;
+          weakness_label: string | null;
         };
         Insert: {
+          answer_index?: number | null;
+          choices?: Json | null;
           created_at?: string;
           due_on?: string;
           ease?: number;
+          explanation?: string | null;
           id?: string;
           interval_days?: number;
           item_key: string;
@@ -448,14 +458,21 @@ export type Database = {
           last_reviewed_at?: string | null;
           lesson_id: string;
           level?: string;
+          prompt?: string | null;
           repetitions?: number;
+          source?: string;
           updated_at?: string;
           user_id: string;
+          weakness_display?: string | null;
+          weakness_label?: string | null;
         };
         Update: {
+          answer_index?: number | null;
+          choices?: Json | null;
           created_at?: string;
           due_on?: string;
           ease?: number;
+          explanation?: string | null;
           id?: string;
           interval_days?: number;
           item_key?: string;
@@ -464,9 +481,13 @@ export type Database = {
           last_reviewed_at?: string | null;
           lesson_id?: string;
           level?: string;
+          prompt?: string | null;
           repetitions?: number;
+          source?: string;
           updated_at?: string;
           user_id?: string;
+          weakness_display?: string | null;
+          weakness_label?: string | null;
         };
         Relationships: [];
       };
