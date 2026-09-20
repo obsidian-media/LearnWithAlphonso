@@ -61,6 +61,7 @@ final class NotificationScheduler {
 
     private static let streakReminderIdentifier = "streak-reminder"
     private static let dueReviewNudgeIdentifier = "due-review-nudge"
+    private static let weeklyRecapIdentifier = "weekly-recap"
 
     /// Reschedules (or cancels, if the user already studied today) the daily
     /// streak reminder. Call on every app launch and every lesson
@@ -94,6 +95,22 @@ final class NotificationScheduler {
             identifier: Self.dueReviewNudgeIdentifier,
             title: "Reviews are waiting",
             body: count == 1 ? "1 item is due for review." : "\(count) items are due for review.",
+            fireDate: fireDate
+        ))
+    }
+
+    /// Reschedules the weekly leaderboard recap -- always fires on the
+    /// next upcoming Monday morning (see `nextWeeklyRecapDate`, docs/
+    /// v2-kickoffs/03-leaderboards.md's "Deepened feature 2"). Call on
+    /// every app launch and right after the recap fires, so it's always
+    /// pointing at the *next* occurrence -- there's no "cancel" case here
+    /// (unlike the other two kinds) since a weekly recap is always wanted.
+    func scheduleWeeklyRecap(now: Date = Date()) {
+        let fireDate = nextWeeklyRecapDate(now: now)
+        schedule(ScheduledNotification(
+            identifier: Self.weeklyRecapIdentifier,
+            title: "Your weekly recap is ready",
+            body: "See how you did on the leaderboard last week.",
             fireDate: fireDate
         ))
     }

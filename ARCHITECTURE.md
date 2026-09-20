@@ -302,3 +302,22 @@ note in README.md's Documentation section for why.)
   solved by heavier machinery (vector clocks, a client-submitted-date
   trust exception) preemptively; revisit only if real usage shows either
   is a frequent complaint.
+- **Nudge-a-friend (iOS) is deliberately the weaker V2 approach, not the
+  finished feature** — a `nudges` table (`supabase/migrations/
+  20260920020000_nudges.sql`) the recipient's app polls for on foreground/
+  screen-appear, not real push. A nudge only surfaces once the recipient
+  next opens the Friends tab, which the kickoff doc (`docs/v2-kickoffs/
+  04-friends-and-social.md`) flagged as largely defeating the point of a
+  "nudge" (reaching someone who *hasn't* opened the app). Built anyway per
+  explicit direction, with this note as the promised V3 follow-up marker.
+  A real V3 version needs: an APNs Auth Key (Apple Developer Console →
+  Keys), a `device_tokens` table (RLS-scoped to `auth.uid()`), device-token
+  registration on app launch requesting *remote* notification permission
+  (a materially different flow than this app's existing local-only
+  `NotificationScheduler`), and a server-side trigger — Supabase has no
+  built-in cron for Edge Functions as of this note; verify current
+  capabilities before assuming `pg_cron` + a `SECURITY DEFINER` function
+  is the only path. The same infrastructure would also serve
+  leaderboards' "you've been overtaken" feature (currently an in-app
+  toast, same reasoning) if that's ever upgraded to real push too — worth
+  building once for both rather than twice.

@@ -452,6 +452,122 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(rows, [])
     }
 
+    // MARK: - fetchFriendActivity
+
+    func testFetchFriendActivityGetsAndDecodesEveryEventTypesPayload() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["id": "e1", "user_id": "u1", "event_type": "lesson_completed", "payload": ["lessonId": "u1l1", "xpGain": 50], "created_at": "2026-09-20T01:23:45.678901+00:00"],
+                ["id": "e2", "user_id": "u2", "event_type": "streak_milestone", "payload": ["streak": 7], "created_at": "2026-09-19T00:00:00+00:00"],
+                ["id": "e3", "user_id": "u3", "event_type": "league_promotion", "payload": ["newTier": "silver"], "created_at": "2026-09-18T00:00:00Z"],
+            ])
+        }
+
+        let events = try await client.fetchFriendActivity()
+
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(events[0], FriendActivityEvent(id: "e1", userID: "u1", eventType: "lesson_completed", createdAt: events[0].createdAt, lessonID: "u1l1", xpGain: 50, streak: nil, newTier: nil))
+        XCTAssertEqual(events[1].streak, 7)
+        XCTAssertEqual(events[2].newTier, "silver")
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/friend_activity_events"))
+        XCTAssertTrue(request.url!.query!.contains("order=created_at.desc"))
+    }
+
+    // MARK: - nudges
+
+    func testSendNudgePostsOnlyTheRecipientId() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [] as [Int])
+        }
+
+        try await client.sendNudge(recipientID: "friend-1")
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/nudges"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["recipient_id"] as? String, "friend-1")
+        XCTAssertNil(payload["sender_id"], "sender_id defaults to auth.uid() server-side")
+    }
+
+    func testFetchUnreadNudgesFiltersToUnreadOnly() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["id": "n1", "sender_id": "friend-1", "created_at": "2026-09-20T01:00:00+00:00"],
+            ])
+        }
+
+        let nudges = try await client.fetchUnreadNudges()
+
+        XCTAssertEqual(nudges, [Nudge(id: "n1", senderID: "friend-1", createdAt: nudges[0].createdAt)])
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.query!.contains("read_at=is.null"))
+    }
+
+    func testMarkNudgesReadPatchesTheGivenIds() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [] as [Int])
+        }
+
+        try await client.markNudgesRead(ids: ["n1", "n2"])
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "PATCH")
+        XCTAssertTrue(request.url!.absoluteString.contains("id=in.(n1,n2)"))
+    }
+
+    func testMarkNudgesReadIsANoOpForAnEmptyList() async throws {
+        var callCount = 0
+        let client = makeClient { request in
+            callCount += 1
+            return self.jsonResponse(for: request.url!, body: [] as [Int])
+        }
+
+        try await client.markNudgesRead(ids: [])
+
+        XCTAssertEqual(callCount, 0)
+    }
+
+    // MARK: - fetchActivityXP
+
+    func testFetchActivityXPSumsXpEarnedOverTheDateRange() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["xp_earned": 40], ["xp_earned": 60],
+            ])
+        }
+
+        let total = try await client.fetchActivityXP(userID: "u1", from: "2026-09-08", to: "2026-09-15")
+
+        XCTAssertEqual(total, 100)
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.query!.contains("day=gte.2026-09-08"))
+        XCTAssertTrue(request.url!.query!.contains("day=lt.2026-09-15"))
+    }
+
+    func testFetchActivityXPReturnsZeroForNoActivity() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+
+        let total = try await client.fetchActivityXP(userID: "u1", from: "2026-09-08", to: "2026-09-15")
+
+        XCTAssertEqual(total, 0)
+    }
+
     // MARK: - error handling
 
     func testThrowsAReadableErrorWhenSupabaseRejectsAWrite() async {

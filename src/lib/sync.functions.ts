@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
 import { getCourse } from "../data/courses";
@@ -319,8 +320,32 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
     const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
-    // Four independent writes -- none reads another's result -- batched
-    // into one round trip instead of four sequential ones.
+    // Friends activity feed (supabase/migrations/20260920010000_friend_activity_events.sql).
+    // Kept in sync by hand with the same logic in
+    // supabase/functions/complete-lesson/index.ts (the native iOS path) --
+    // see that file's comment for why only xpGain > 0 completions are
+    // logged, not every replay.
+    const activityEvents: { user_id: string; event_type: string; payload: Json }[] = [];
+    if (xpGain > 0) {
+      activityEvents.push({
+        user_id: userId,
+        event_type: "lesson_completed",
+        payload: { lessonId, xpGain },
+      });
+    }
+    if (heartsBonus === "streak") {
+      activityEvents.push({ user_id: userId, event_type: "streak_milestone", payload: { streak } });
+    }
+    if (newIdx > oldIdx) {
+      activityEvents.push({
+        user_id: userId,
+        event_type: "league_promotion",
+        payload: { newTier: leagueTier },
+      });
+    }
+
+    // Independent writes -- none reads another's result -- batched into
+    // one round trip instead of several sequential ones.
     await Promise.all([
       supabase.from("user_progress").upsert({
         user_id: userId,
@@ -357,6 +382,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         day: today,
         xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
       }),
+      ...(activityEvents.length > 0
+        ? [supabase.from("friend_activity_events").insert(activityEvents)]
+        : []),
     ]);
 
     // Both reads below depend on the writes above having landed (lesson

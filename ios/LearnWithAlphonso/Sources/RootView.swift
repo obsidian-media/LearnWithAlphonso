@@ -32,7 +32,10 @@ struct RootView: View {
                 AchievementsView(session: session, contentStore: contentStore)
                     .tabItem { Label("Achievements", systemImage: "trophy.fill") }
             }
-            .task { await triggerSync() }
+            .task {
+                await triggerSync()
+                notificationScheduler.scheduleWeeklyRecap()
+            }
             .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                 if !wasConnected && isConnected {
                     Task { await triggerSync() }

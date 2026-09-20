@@ -5,6 +5,11 @@ import LearnWithAlphonsoKit
 /// (src/routes/_authenticated/profile_.friends.tsx): share your own invite
 /// link, see friends' streak/weekly-XP via get_friends_progress -- no
 /// backend changes, same direct-RPC-via-PostgREST pattern as leaderboards.
+/// Also the deepened V2 features (docs/v2-kickoffs/04-friends-and-social.md):
+/// an activity feed (friend_activity_events, written by complete-lesson)
+/// and nudge-a-friend (deliberately the weaker, polling-based V2 version --
+/// see NudgeCooldownCache's doc comment and ARCHITECTURE.md's note on what
+/// a real V3 push-based version needs).
 ///
 /// Accepting an invite someone sent *you* is out of scope for this slice:
 /// Universal Links are deliberately deferred (see
@@ -18,8 +23,12 @@ struct FriendsView: View {
     let session: Session
 
     @State private var friends: [FriendProgress] = []
+    @State private var activityEvents: [FriendActivityEvent] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var nudgeBannerMessage: String?
+
+    @Environment(\.scenePhase) private var scenePhase
 
     private var inviteLink: URL? {
         guard let userID = session.userID else { return nil }
@@ -28,48 +37,79 @@ struct FriendsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Invite a friend").font(.headline)
-                        Text("Share your link — when they open it, you're automatically friends.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        if let inviteLink {
-                            ShareLink(item: inviteLink) {
-                                Label("Share invite link", systemImage: "square.and.arrow.up")
+            ZStack(alignment: .top) {
+                List {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Invite a friend").font(.headline)
+                            Text("Share your link — when they open it, you're automatically friends.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            if let inviteLink {
+                                ShareLink(item: inviteLink) {
+                                    Label("Share invite link", systemImage: "square.and.arrow.up")
+                                }
+                                .buttonStyle(.borderedProminent)
                             }
-                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    Section(friendsCountTitle) {
+                        if isLoading {
+                            ProgressView()
+                        } else if let errorMessage {
+                            Text(errorMessage).foregroundStyle(.secondary)
+                        } else if friends.isEmpty {
+                            Text("No friends yet. Share your invite link to get started.")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(friends, id: \.userID) { friend in
+                                FriendRowView(friend: friend) {
+                                    await nudge(friend)
+                                }
+                            }
                         }
                     }
-                    .padding(.vertical, 4)
+
+                    if !activityEvents.isEmpty {
+                        Section("Activity") {
+                            ForEach(activityEvents) { event in
+                                ActivityEventRow(event: event, displayName: displayName(for: event.userID))
+                            }
+                        }
+                    }
                 }
 
-                Section(friendsCountTitle) {
-                    if isLoading {
-                        ProgressView()
-                    } else if let errorMessage {
-                        Text(errorMessage).foregroundStyle(.secondary)
-                    } else if friends.isEmpty {
-                        Text("No friends yet. Share your invite link to get started.")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(friends, id: \.userID) { friend in
-                            FriendRowView(friend: friend)
-                        }
-                    }
+                if let nudgeBannerMessage {
+                    ToastBanner(message: nudgeBannerMessage, iconName: "hand.wave.fill")
+                        .padding(.top, 4)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
             .navigationTitle("Friends")
         }
-        .task { await load() }
+        .task { await loadAll() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                Task { await checkForNudges() }
+            }
+        }
     }
 
     private var friendsCountTitle: String {
         friends.isEmpty ? "Your friends" : "\(friends.count) friend\(friends.count == 1 ? "" : "s")"
     }
 
-    private func load() async {
+    /// A nudge's sender is only ever an accepted friend (RLS enforces
+    /// this server-side too), so the already-fetched `friends` list is
+    /// enough to resolve a display name -- no extra query needed.
+    private func displayName(for userID: String) -> String {
+        if userID == session.userID { return "You" }
+        return friends.first { $0.userID == userID }?.displayName ?? "A friend"
+    }
+
+    private func loadAll() async {
         isLoading = true
         errorMessage = nil
         guard let accessToken = session.accessToken else {
@@ -83,12 +123,46 @@ struct FriendsView: View {
         } catch {
             errorMessage = "Check your connection and try again."
         }
+        activityEvents = (try? await client.fetchFriendActivity()) ?? []
         isLoading = false
+        await checkForNudges()
+    }
+
+    private func nudge(_ friend: FriendProgress) async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            try await client.sendNudge(recipientID: friend.userID)
+            NudgeCooldownCache.recordNudge(friendID: friend.userID)
+        } catch {
+            // Non-critical -- a nudge is a nice-to-have, not worth surfacing an error for.
+        }
+    }
+
+    /// Polling-based, deliberately the weaker V2 approach: checks for
+    /// unread nudges whenever this screen appears or the app returns to
+    /// foreground, not the instant one arrives. See this file's own doc
+    /// comment and ARCHITECTURE.md for the real V3 recommendation.
+    private func checkForNudges() async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        guard let unread = try? await client.fetchUnreadNudges(), !unread.isEmpty else { return }
+
+        let names = unread.map { displayName(for: $0.senderID) }
+        let message = names.count == 1
+            ? "\(names[0]) nudged you!"
+            : "\(names.count) friends nudged you!"
+        showToast(message, into: $nudgeBannerMessage)
+
+        try? await client.markNudgesRead(ids: unread.map(\.id))
     }
 }
 
 private struct FriendRowView: View {
     let friend: FriendProgress
+    let onNudge: () async -> Void
+
+    @State private var canNudge = true
 
     var body: some View {
         HStack(spacing: 12) {
@@ -114,7 +188,68 @@ private struct FriendRowView: View {
                 Text("\(friend.weekXP)").font(.subheadline.weight(.semibold))
                 Text("XP this week").font(.caption2).foregroundStyle(.secondary)
             }
+
+            Button {
+                canNudge = false
+                Task { await onNudge() }
+            } label: {
+                Image(systemName: "hand.wave")
+            }
+            .buttonStyle(.bordered)
+            .disabled(!canNudge)
         }
         .padding(.vertical, 4)
+        .onAppear { canNudge = NudgeCooldownCache.canNudge(friendID: friend.userID) }
+    }
+}
+
+private struct ActivityEventRow: View {
+    let event: FriendActivityEvent
+    let displayName: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: iconName)
+                .foregroundStyle(iconColor)
+                .frame(width: 24)
+            Text(copy)
+                .font(.subheadline)
+            Spacer()
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var copy: String {
+        switch event.eventType {
+        case "lesson_completed":
+            let xp = event.xpGain ?? 0
+            return "\(displayName) completed a lesson (+\(xp) XP)"
+        case "streak_milestone":
+            let streak = event.streak ?? 0
+            return "\(displayName) hit a \(streak)-day streak"
+        case "league_promotion":
+            let tier = (event.newTier ?? "a new league").capitalized
+            return "\(displayName) moved up to \(tier)"
+        default:
+            return "\(displayName) made progress"
+        }
+    }
+
+    private var iconName: String {
+        switch event.eventType {
+        case "lesson_completed": return "checkmark.circle.fill"
+        case "streak_milestone": return "flame.fill"
+        case "league_promotion": return "arrow.up.circle.fill"
+        default: return "circle.fill"
+        }
+    }
+
+    private var iconColor: Color {
+        switch event.eventType {
+        case "lesson_completed": return .green
+        case "streak_milestone": return .orange
+        case "league_promotion": return .purple
+        default: return .secondary
+        }
     }
 }

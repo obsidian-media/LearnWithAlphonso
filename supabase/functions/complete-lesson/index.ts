@@ -247,6 +247,33 @@ export async function handleRequest(req: Request): Promise<Response> {
   const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
   const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
 
+  // Friends activity feed (supabase/migrations/20260920010000_friend_activity_events.sql).
+  // Only meaningful completions (xpGain > 0) are logged, not every replay
+  // of an already-mastered lesson -- otherwise the feed would fill with
+  // noise from a single learner re-doing content for review.
+  const activityEvents: { user_id: string; event_type: string; payload: Record<string, unknown> }[] = [];
+  if (xpGain > 0) {
+    activityEvents.push({
+      user_id: userId,
+      event_type: "lesson_completed",
+      payload: { lessonId, xpGain },
+    });
+  }
+  if (heartsBonus === "streak") {
+    activityEvents.push({
+      user_id: userId,
+      event_type: "streak_milestone",
+      payload: { streak },
+    });
+  }
+  if (newIdx > oldIdx) {
+    activityEvents.push({
+      user_id: userId,
+      event_type: "league_promotion",
+      payload: { newTier: leagueTier },
+    });
+  }
+
   await Promise.all([
     admin.from("user_progress").upsert({
       user_id: userId,
@@ -302,6 +329,9 @@ export async function handleRequest(req: Request): Promise<Response> {
           { onConflict: "user_id,item_key,language" },
         ),
       ]
+      : []),
+    ...(activityEvents.length > 0
+      ? [admin.from("friend_activity_events").insert(activityEvents)]
       : []),
   ]);
 
