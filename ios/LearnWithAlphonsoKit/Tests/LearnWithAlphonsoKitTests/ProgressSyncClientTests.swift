@@ -386,6 +386,106 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["_course"] as? String, "en")
     }
 
+    // MARK: - buyStreakFreezeWithXp (V3 package 2)
+
+    func testBuyStreakFreezeWithXpReturnsTheSuccessfulPurchaseResult() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "streak_freezes": 3, "xp": 375]])
+        }
+
+        let result = try await client.buyStreakFreezeWithXp(course: "en")
+
+        XCTAssertEqual(result, .ok(streakFreezes: 3, xp: 375))
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/buy_streak_freeze_with_xp"))
+    }
+
+    func testBuyStreakFreezeWithXpSurfacesAnInsufficientXpRejection() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "streak_freezes": 2]])
+        }
+        let result = try await client.buyStreakFreezeWithXp(course: "en")
+        XCTAssertEqual(result, .insufficientXp(streakFreezes: 2))
+    }
+
+    // MARK: - duels (V3 package 2)
+
+    func testCreateDuelPostsTheOpponentAndCourse() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "duel_id": "d1"]])
+        }
+
+        let result = try await client.createDuel(opponentID: "friend-1", course: "en")
+
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.duelID, "d1")
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/create_duel"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_opponent_id"] as? String, "friend-1")
+        XCTAssertEqual(payload["_course"] as? String, "en")
+    }
+
+    func testRespondToDuelPostsTheAcceptFlag() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull()]])
+        }
+
+        let result = try await client.respondToDuel(duelID: "d1", accept: true)
+
+        XCTAssertTrue(result.ok)
+        let request = try XCTUnwrap(captured)
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_duel_id"] as? String, "d1")
+        XCTAssertEqual(payload["_accept"] as? Bool, true)
+    }
+
+    func testFetchMyDuelsDecodesTheRows() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [[
+                "duel_id": "d1", "challenger_id": "u1", "opponent_id": "u2", "course": "en",
+                "status": "active", "challenger_xp_start": 100, "opponent_xp_start": 50,
+                "challenger_xp_now": 150, "opponent_xp_now": 80, "winner_id": NSNull(), "ends_at": "2026-09-23T00:00:00Z",
+            ]])
+        }
+
+        let duels = try await client.fetchMyDuels()
+
+        XCTAssertEqual(duels, [Duel(
+            duelID: "d1", challengerID: "u1", opponentID: "u2", course: "en", status: "active",
+            challengerXPStart: 100, opponentXPStart: 50, challengerXPNow: 150, opponentXPNow: 80,
+            winnerID: nil, endsAt: "2026-09-23T00:00:00Z"
+        )])
+    }
+
+    // MARK: - claimWeeklyQuest (V3 package 2)
+
+    func testClaimWeeklyQuestPostsQuestIdCourseAndWeekStart() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "xp": 130]])
+        }
+
+        let result = try await client.claimWeeklyQuest(questID: "weekly_xp_150", course: "en", weekStart: "2026-09-14")
+
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.xp, 130)
+        let request = try XCTUnwrap(captured)
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_quest_id"] as? String, "weekly_xp_150")
+        XCTAssertEqual(payload["_week_start"] as? String, "2026-09-14")
+    }
+
     // MARK: - fetchLeaderboard
 
     func testFetchLeaderboardPostsScopeAndPeriodAndDecodesTheRows() async throws {

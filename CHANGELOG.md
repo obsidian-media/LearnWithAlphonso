@@ -28,6 +28,28 @@ spacing-effect finding from memory research. No schema change. Ported to
 `ios/LearnWithAlphonsoKit/.../SRSEngine.swift` (Swift) with matching
 parity tests in all three.
 
+**Engagement mechanics** — four independent additions, all RPC-first from
+day one (no direct-write debt like the original gamification tables had):
+expanded achievement catalog (6 new diamond/gold tiers on existing
+categories); `buy_streak_freeze_with_xp` RPC, mirroring the existing
+hearts-purchase RPC, no cap unlike hearts; friend duels (`duels` table +
+`create_duel`/`respond_to_duel`/`get_my_duels` RPCs, head-to-head XP
+competition over a friend-accepted window, lazily resolved on read rather
+than needing cron infrastructure this project doesn't have yet); weekly
+quests (`weekly_quests` catalog + `user_weekly_quest_claims` +
+`claim_weekly_quest` RPC, progress computed from already-durable
+activity_days/lesson_completions data rather than a new counter). Caught
+and fixed a real trust-boundary bug in review during this package's own
+build: an early draft of `claim_weekly_quest` took metric/target/xp_reward
+as caller-supplied RPC parameters, which would have let any caller invoke
+it directly via PostgREST with an arbitrary reward -- fixed before it
+shipped by moving the catalog server-side. Web server functions + Kit
+client methods shipped and tested on both platforms; new UI surfacing
+(making these reachable in the actual app, not just callable) is the
+immediate next fast-follow, same "backend/client-method complete, UI
+wiring follows" precedent this codebase already established for
+`acceptFriendInvite`.
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

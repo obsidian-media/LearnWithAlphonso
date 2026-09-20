@@ -547,6 +547,40 @@ export const buyHeartWithXpRemote = createServerFn({ method: "POST" })
     return { ok: true, hearts: row.hearts ?? 0, xp: row.xp ?? 0, cost: XP_HEART_COST };
   });
 
+const XP_STREAK_FREEZE_COST = 75;
+
+export type BuyStreakFreezeResult =
+  | { ok: true; streakFreezes: number; xp: number; cost: number }
+  | { ok: false; reason: "insufficient-xp"; streakFreezes: number | null };
+
+/**
+ * Spend XP from the active course to buy an extra streak freeze -- same
+ * RPC-first pattern as buyHeartWithXpRemote above
+ * (supabase/migrations/20260920060000_v3_engagement_mechanics.sql). No
+ * "full" rejection case: unlike hearts, streak_freezes has no cap.
+ */
+export const buyStreakFreezeWithXpRemote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<BuyStreakFreezeResult> => {
+    const { supabase } = context;
+    const { data: rpcData, error } = await supabase.rpc("buy_streak_freeze_with_xp", {
+      _course: data.course,
+      _cost: XP_STREAK_FREEZE_COST,
+    });
+    if (error) throw new Error("Could not process streak freeze purchase");
+    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    if (!row?.ok) {
+      return { ok: false, reason: "insufficient-xp", streakFreezes: row?.streak_freezes ?? null };
+    }
+    return {
+      ok: true,
+      streakFreezes: row.streak_freezes ?? 0,
+      xp: row.xp ?? 0,
+      cost: XP_STREAK_FREEZE_COST,
+    };
+  });
+
 const mergeSchema = z.object({
   xp: z.number().int().min(0).max(1_000_000).default(0),
   streak: z.number().int().min(0).max(10_000).default(0),

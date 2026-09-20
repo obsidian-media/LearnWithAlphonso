@@ -177,6 +177,62 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "freeze",
     threshold: 5,
   },
+  // V3 package 2 additions -- keep in sync with supabase/migrations/
+  // 20260920060000_v3_engagement_mechanics.sql's INSERT INTO achievements.
+  {
+    id: "streak_365",
+    title: "Unbreakable",
+    description: "Reach a 365-day streak",
+    icon: "flame",
+    tier: "diamond",
+    category: "streak",
+    threshold: 365,
+  },
+  {
+    id: "xp_25000",
+    title: "Grandmaster",
+    description: "Earn 25,000 XP",
+    icon: "bolt",
+    tier: "diamond",
+    category: "xp",
+    threshold: 25000,
+  },
+  {
+    id: "perfect_100",
+    title: "Perfectionist",
+    description: "Finish 100 perfect lessons",
+    icon: "star",
+    tier: "diamond",
+    category: "perfect",
+    threshold: 100,
+  },
+  {
+    id: "lessons_250",
+    title: "Marathoner",
+    description: "Complete 250 lessons",
+    icon: "check",
+    tier: "diamond",
+    category: "lessons",
+    threshold: 250,
+  },
+  {
+    id: "freeze_earn_10",
+    title: "Deep freeze",
+    description: "Bank 10 streak freezes",
+    icon: "snow",
+    tier: "gold",
+    category: "freeze",
+    threshold: 10,
+  },
+  {
+    id: "league_promote_5",
+    title: "Champion",
+    description: "Advance to a new league 5 times",
+    icon: "shield",
+    tier: "diamond",
+    category: "league",
+    threshold: 5,
+  },
 ];
 
 export const ACHIEVEMENTS_BY_ID: Record<string, Achievement> = Object.fromEntries(

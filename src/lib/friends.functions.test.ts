@@ -26,12 +26,12 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-const { getFriends, acceptFriendInvite, getInviterProfile } = asTestFns(
-  await import("./friends.functions"),
-);
+const { getFriends, acceptFriendInvite, getInviterProfile, createDuel, respondToDuel, getMyDuels } =
+  asTestFns(await import("./friends.functions"));
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const INVITER_ID = "11111111-1111-4111-8111-111111111111";
+const DUEL_ID = "33333333-3333-4333-8333-333333333333";
 
 function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
   return { supabase, userId: USER_ID };
@@ -121,5 +121,102 @@ describe("getInviterProfile", () => {
       data: { inviterId: INVITER_ID },
     });
     expect(result).toBeNull();
+  });
+});
+
+describe("createDuel", () => {
+  it("returns the RPC's created duel id", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: true, reason: null, duel_id: DUEL_ID }] });
+    const result = await createDuel({
+      context: ctx(supabase),
+      data: { opponentId: INVITER_ID, course: "en" },
+    });
+    expect(result).toEqual({ ok: true, reason: null, duelId: DUEL_ID });
+    expect(supabase.rpc).toHaveBeenCalledWith("create_duel", {
+      _opponent_id: INVITER_ID,
+      _course: "en",
+    });
+  });
+
+  it("surfaces a not-friends rejection from the RPC", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: false, reason: "not-friends", duel_id: null }] });
+    const result = await createDuel({
+      context: ctx(supabase),
+      data: { opponentId: INVITER_ID, course: "en" },
+    });
+    expect(result).toEqual({ ok: false, reason: "not-friends", duelId: null });
+  });
+
+  it("treats an RPC error as a server-error result rather than throwing", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: new Error("db down") });
+    const result = await createDuel({
+      context: ctx(supabase),
+      data: { opponentId: INVITER_ID, course: "en" },
+    });
+    expect(result).toEqual({ ok: false, reason: "server-error", duelId: null });
+  });
+});
+
+describe("respondToDuel", () => {
+  it("returns the RPC's success result on accept", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: true, reason: null }] });
+    const result = await respondToDuel({
+      context: ctx(supabase),
+      data: { duelId: DUEL_ID, accept: true },
+    });
+    expect(result).toEqual({ ok: true, reason: null });
+    expect(supabase.rpc).toHaveBeenCalledWith("respond_to_duel", {
+      _duel_id: DUEL_ID,
+      _accept: true,
+    });
+  });
+});
+
+describe("getMyDuels", () => {
+  it("maps RPC rows and fills in defaults for missing fields", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({
+      data: [
+        {
+          duel_id: DUEL_ID,
+          challenger_id: USER_ID,
+          opponent_id: INVITER_ID,
+          course: "en",
+          status: "active",
+          challenger_xp_start: 100,
+          opponent_xp_start: 50,
+          challenger_xp_now: 150,
+          opponent_xp_now: 80,
+          winner_id: null,
+          ends_at: "2026-09-23T00:00:00Z",
+        },
+      ],
+    });
+    const result = await getMyDuels({ context: ctx(supabase) });
+    expect(result).toEqual([
+      {
+        duelId: DUEL_ID,
+        challengerId: USER_ID,
+        opponentId: INVITER_ID,
+        course: "en",
+        status: "active",
+        challengerXpStart: 100,
+        opponentXpStart: 50,
+        challengerXpNow: 150,
+        opponentXpNow: 80,
+        winnerId: null,
+        endsAt: "2026-09-23T00:00:00Z",
+      },
+    ]);
+  });
+
+  it("returns an empty list when the RPC has no rows", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null });
+    expect(await getMyDuels({ context: ctx(supabase) })).toEqual([]);
   });
 });

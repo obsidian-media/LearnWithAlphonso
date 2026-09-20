@@ -43,6 +43,7 @@ const {
   loseHeartRemote,
   restoreHeartsRemote,
   buyHeartWithXpRemote,
+  buyStreakFreezeWithXpRemote,
   mergeGuestProgress,
   setCefrLevel,
   savePlacementResult,
@@ -439,6 +440,34 @@ describe("buyHeartWithXpRemote", () => {
     });
     const result = await buyHeartWithXpRemote({ context: ctx(supabase), data: { course: "en" } });
     expect(result).toEqual({ ok: false, reason: "insufficient-xp", hearts: 2 });
+  });
+});
+
+describe("buyStreakFreezeWithXpRemote", () => {
+  it("returns the successful purchase result", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({
+      data: [{ ok: true, streak_freezes: 3, xp: 375 }],
+      error: null,
+    });
+    const result = await buyStreakFreezeWithXpRemote({
+      context: ctx(supabase),
+      data: { course: "en" },
+    });
+    expect(result).toEqual({ ok: true, streakFreezes: 3, xp: 375, cost: 75 });
+  });
+
+  it("surfaces an insufficient-xp rejection from the RPC", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({
+      data: [{ ok: false, reason: "insufficient-xp", streak_freezes: 2 }],
+      error: null,
+    });
+    const result = await buyStreakFreezeWithXpRemote({
+      context: ctx(supabase),
+      data: { course: "en" },
+    });
+    expect(result).toEqual({ ok: false, reason: "insufficient-xp", streakFreezes: 2 });
   });
 });
 

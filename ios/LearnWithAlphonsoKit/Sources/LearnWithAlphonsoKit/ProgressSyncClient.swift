@@ -13,6 +13,30 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
+/// V3 package 2 -- mirrors sync.functions.ts's BuyStreakFreezeResult.
+public enum BuyStreakFreezeResult: Sendable, Equatable {
+    case ok(streakFreezes: Int, xp: Int)
+    case insufficientXp(streakFreezes: Int?)
+}
+
+/// V3 package 2 -- one row of `get_my_duels` (supabase/migrations/
+/// 20260920060000_v3_engagement_mechanics.sql). `status` is "pending" |
+/// "active" | "declined" | "completed".
+public struct Duel: Sendable, Equatable, Identifiable {
+    public var id: String { duelID }
+    public let duelID: String
+    public let challengerID: String
+    public let opponentID: String
+    public let course: String
+    public let status: String
+    public let challengerXPStart: Int
+    public let opponentXPStart: Int
+    public let challengerXPNow: Int
+    public let opponentXPNow: Int
+    public let winnerID: String?
+    public let endsAt: String?
+}
+
 /// Matches review.functions.ts's `ReviewItem` shape exactly. `source`
 /// discriminates a real lesson-question item ("lesson", the default)
 /// from a synthetic weakness-detection item ("weakness") that carries
@@ -606,6 +630,130 @@ public final class ProgressSyncClient: Sendable {
         request.httpBody = try JSONSerialization.data(withJSONObject: ["read_at": ISO8601DateFormatter().string(from: Date())])
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
+    }
+
+    /// Calls the `buy_streak_freeze_with_xp` SECURITY DEFINER RPC (V3
+    /// package 2, supabase/migrations/20260920060000_v3_engagement_mechanics.sql)
+    /// -- same direct-RPC pattern as claimReviewClearBonus above. No
+    /// "streak-freezes-full" case (unlike hearts, there's no cap).
+    public func buyStreakFreezeWithXp(course: String) async throws -> BuyStreakFreezeResult {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/buy_streak_freeze_with_xp"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_course": course])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        if !ok {
+            return .insufficientXp(streakFreezes: row["streak_freezes"] as? Int)
+        }
+        return .ok(streakFreezes: row["streak_freezes"] as? Int ?? 0, xp: row["xp"] as? Int ?? 0)
+    }
+
+    /// Calls the `create_duel` SECURITY DEFINER RPC (V3 package 2) --
+    /// friendship/self-challenge/duplicate-duel validation all happen
+    /// server-side, see that RPC's own comment.
+    public func createDuel(opponentID: String, course: String) async throws -> (ok: Bool, reason: String?, duelID: String?) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/create_duel"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_opponent_id": opponentID, "_course": course])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, row["reason"] as? String, row["duel_id"] as? String)
+    }
+
+    /// Calls the `respond_to_duel` SECURITY DEFINER RPC (V3 package 2).
+    public func respondToDuel(duelID: String, accept: Bool) async throws -> (ok: Bool, reason: String?) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/respond_to_duel"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_duel_id": duelID, "_accept": accept])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, row["reason"] as? String)
+    }
+
+    /// Calls the `get_my_duels` SECURITY DEFINER RPC (V3 package 2) --
+    /// also lazily resolves any of the caller's active duels whose window
+    /// has closed, as a side effect server-side (see that RPC's comment).
+    public func fetchMyDuels() async throws -> [Duel] {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_my_duels"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [String: String]())
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> Duel? in
+            guard let duelID = row["duel_id"] as? String,
+                  let challengerID = row["challenger_id"] as? String,
+                  let opponentID = row["opponent_id"] as? String,
+                  let course = row["course"] as? String,
+                  let status = row["status"] as? String else { return nil }
+            return Duel(
+                duelID: duelID, challengerID: challengerID, opponentID: opponentID, course: course,
+                status: status,
+                challengerXPStart: row["challenger_xp_start"] as? Int ?? 0,
+                opponentXPStart: row["opponent_xp_start"] as? Int ?? 0,
+                challengerXPNow: row["challenger_xp_now"] as? Int ?? 0,
+                opponentXPNow: row["opponent_xp_now"] as? Int ?? 0,
+                winnerID: row["winner_id"] as? String,
+                endsAt: row["ends_at"] as? String
+            )
+        }
+    }
+
+    /// Calls the `claim_weekly_quest` SECURITY DEFINER RPC (V3 package 2)
+    /// -- re-verifies the quest was actually completed server-side before
+    /// paying out its reward, see that RPC's own comment for why it
+    /// doesn't take metric/target/reward as caller-supplied parameters.
+    public func claimWeeklyQuest(questID: String, course: String, weekStart: String) async throws -> (ok: Bool, reason: String?, xp: Int?) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/claim_weekly_quest"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "_quest_id": questID, "_course": course, "_week_start": weekStart,
+        ])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, row["reason"] as? String, row["xp"] as? Int)
     }
 
     /// Sums `activity_days.xp_earned` over `[from, to)` -- used by the

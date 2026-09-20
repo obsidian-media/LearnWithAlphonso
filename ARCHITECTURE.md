@@ -62,10 +62,12 @@ RPCs worth knowing (all `SECURITY DEFINER`, all in `supabase/migrations/`):
 `get_leaderboard`, `get_friends_progress`, `accept_friend_invite`,
 `consume_ai_quota`, `consume_ai_rate_limit`, `restore_hearts_if_due`,
 `buy_heart_with_xp`, `claim_review_clear_bonus` (the last three: atomic,
-row-locked hearts-economy operations — see "Hearts economy" below), and
+row-locked hearts-economy operations — see "Hearts economy" below),
 `lose_heart`, `set_cefr_level`, `save_placement_result` (added
 2026-09-20 — the iOS client's remaining direct-write replacements, see
-"Known rough edges" below).
+"Known rough edges" below), and (V3 package 2, same day)
+`buy_streak_freeze_with_xp`, `create_duel`, `respond_to_duel`,
+`get_my_duels`, `claim_weekly_quest` — see CHANGELOG.md's V3 entry.
 
 `user_progress`, `language_progress`, `lesson_completions`,
 `user_achievements`, `activity_days`, and `review_items` all carry `CHECK`

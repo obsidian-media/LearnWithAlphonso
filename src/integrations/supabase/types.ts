@@ -107,6 +107,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      duels: {
+        Row: {
+          challenger_id: string;
+          challenger_xp_start: number | null;
+          course: string;
+          created_at: string;
+          ends_at: string | null;
+          id: string;
+          opponent_id: string;
+          opponent_xp_start: number | null;
+          status: string;
+          winner_id: string | null;
+        };
+        Insert: {
+          challenger_id: string;
+          challenger_xp_start?: number | null;
+          course?: string;
+          created_at?: string;
+          ends_at?: string | null;
+          id?: string;
+          opponent_id: string;
+          opponent_xp_start?: number | null;
+          status?: string;
+          winner_id?: string | null;
+        };
+        Update: {
+          challenger_id?: string;
+          challenger_xp_start?: number | null;
+          course?: string;
+          created_at?: string;
+          ends_at?: string | null;
+          id?: string;
+          opponent_id?: string;
+          opponent_xp_start?: number | null;
+          status?: string;
+          winner_id?: string | null;
+        };
+        Relationships: [];
+      };
       friend_activity_events: {
         Row: {
           created_at: string;
@@ -588,6 +627,27 @@ export type Database = {
           },
         ];
       };
+      user_weekly_quest_claims: {
+        Row: {
+          claimed_at: string;
+          quest_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Insert: {
+          claimed_at?: string;
+          quest_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Update: {
+          claimed_at?: string;
+          quest_id?: string;
+          user_id?: string;
+          week_start?: string;
+        };
+        Relationships: [];
+      };
       user_progress: {
         Row: {
           cefr_level: string;
@@ -663,6 +723,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      weekly_quests: {
+        Row: {
+          description: string;
+          icon: string;
+          id: string;
+          metric: string;
+          sort_order: number;
+          target: number;
+          title: string;
+          xp_reward: number;
+        };
+        Insert: {
+          description: string;
+          icon: string;
+          id: string;
+          metric: string;
+          sort_order?: number;
+          target: number;
+          title: string;
+          xp_reward: number;
+        };
+        Update: {
+          description?: string;
+          icon?: string;
+          id?: string;
+          metric?: string;
+          sort_order?: number;
+          target?: number;
+          title?: string;
+          xp_reward?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -684,11 +777,28 @@ export type Database = {
           xp: number;
         }[];
       };
+      buy_streak_freeze_with_xp: {
+        Args: { _cost?: number; _course: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
+          streak_freezes: number;
+          xp: number;
+        }[];
+      };
       claim_review_clear_bonus: {
         Args: { _course: string };
         Returns: {
           granted: boolean;
           hearts: number;
+        }[];
+      };
+      claim_weekly_quest: {
+        Args: { _course: string; _quest_id: string; _week_start: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
+          xp: number;
         }[];
       };
       consume_ai_quota: {
@@ -705,6 +815,14 @@ export type Database = {
           allowed: boolean;
           count: number;
           per_minute_limit: number;
+        }[];
+      };
+      create_duel: {
+        Args: { _course?: string; _opponent_id: string };
+        Returns: {
+          duel_id: string;
+          ok: boolean;
+          reason: string;
         }[];
       };
       get_friends_progress: {
@@ -727,11 +845,34 @@ export type Database = {
           xp: number;
         }[];
       };
+      get_my_duels: {
+        Args: never;
+        Returns: {
+          challenger_id: string;
+          challenger_xp_now: number;
+          challenger_xp_start: number;
+          course: string;
+          duel_id: string;
+          ends_at: string;
+          opponent_id: string;
+          opponent_xp_now: number;
+          opponent_xp_start: number;
+          status: string;
+          winner_id: string;
+        }[];
+      };
       lose_heart: {
         Args: never;
         Returns: {
           hearts: number;
           hearts_refill_at: string;
+        }[];
+      };
+      respond_to_duel: {
+        Args: { _accept: boolean; _duel_id: string; _duration_days?: number };
+        Returns: {
+          ok: boolean;
+          reason: string;
         }[];
       };
       restore_hearts_if_due: {
