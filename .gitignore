@@ -55,6 +55,11 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # a while.
 /docs/v2-kickoffs/
 
+# V3 kickoff docs — same pattern as the V2 ones above (2026-09-20):
+# local-only briefing docs for handing off individual V3 feature
+# candidates to fresh sessions. Not committed for the same reason.
+/docs/v3-kickoffs/
+
 # Hector weakness-detection design spec (2026-09-20) -- internal
 # decision doc for an unreleased feature, kept local rather than in
 # shared history until it ships.
