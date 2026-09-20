@@ -337,26 +337,24 @@ note in README.md's Documentation section for why.)
   trust exception) preemptively; revisit only if real usage shows either
   is a frequent complaint.
 - **Vercel's GitHub integration lost this repo across the org transfer,
-  then was reconnected the same day (2026-09-20)** — (personal account
-  → `obsidian-media`, transfer done to fix a GitHub Actions billing
-  block). Between the transfer and the reconnect, every merge to `main`
-  since PR #49 (leaderboards base) went undeployed until a manual
-  `vercel deploy --prod` catch-up. **Reconnected and confirmed working
-  same day**: the Vercel project's git link now shows
+  then was reconnected and fully confirmed the same day (2026-09-20)**
+  — (personal account → `obsidian-media`, transfer done to fix a GitHub
+  Actions billing block). Between the transfer and the reconnect, every
+  merge to `main` since PR #49 (leaderboards base) went undeployed
+  until a manual `vercel deploy --prod` catch-up. **Fully confirmed
+  working, both ways, same day**: the Vercel project's git link shows
   `org: "obsidian-media", repo: "LearnWithAlphonso"`
-  (`mcp__plugin_vercel_vercel__get_git_deployment_context`), and a real
-  git-sourced deployment (`create_deployment` with `gitSource`) built
-  and went `READY` successfully — confirms Vercel can now actually pull
-  from the repo, not just that the link's metadata updated. **Not yet
-  separately confirmed**: that a plain `git push` to `main` triggers an
-  automatic deploy on its own (the webhook firing), since every
-  deployment checked so far was manually triggered — the first real
-  push after 2026-09-20 should be checked against
-  `mcp__plugin_vercel_vercel__list_deployments` to close that last gap.
-  `.vercelignore` (added the same day, still relevant for any future
-  manual CLI deploy) scopes what gets uploaded — without it, a deploy
-  from this local machine picks up unrelated `.claude/worktrees/`
-  content from other parallel sessions (hit a real mid-upload failure
+  (`mcp__plugin_vercel_vercel__get_git_deployment_context`); a real
+  git-sourced deployment built and went `READY`; and — the real
+  end-to-end test — a plain `git push` to `main` (no manual trigger)
+  produced a new deployment with `source: "git"` on its own within
+  ~90 seconds, proving the webhook itself fires correctly, not just
+  that Vercel *can* pull from the repo when asked. Auto-deploy-on-push
+  is genuinely restored. `.vercelignore` (added the same day, still
+  relevant for any future manual CLI deploy as a fallback) scopes what
+  gets uploaded — without it, a deploy from this local machine picks
+  up unrelated `.claude/worktrees/` content from other parallel
+  sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46** — now 502
   tests across 72 files, ~91% line / ~90% statement coverage (`bun run

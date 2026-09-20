@@ -137,26 +137,23 @@ verify before trusting): all migrations applied, all three Edge Functions
 deployed and current (`complete-lesson` v6, `start-lesson-session` v1,
 `grade-review` v2).**
 
-**Web app (Vercel) — reconnected 2026-09-20, but re-verify before
-trusting it stayed that way.** Vercel's GitHub integration lost this
-repo in the org transfer (personal account → `obsidian-media`), went
-undeployed for every merge since PR #49, and was reconnected +
-confirmed the same day: `mcp__plugin_vercel_vercel__get_git_deployment_context`
-shows the `learnwithalphonso` project linked to
-`org: "obsidian-media", repo: "LearnWithAlphonso"`, and a manually-
-triggered git-sourced deployment (`create_deployment` with `gitSource`)
-built successfully. **Automatic deploy-on-push was never separately
-confirmed** — every deployment checked was manually triggered. Before
-trusting a plain `git push` to `main` auto-deploys, check
-`mcp__plugin_vercel_vercel__list_deployments` (project `learnwithalphonso`
-— renamed from `english-buddy-app-33` at the same time as the
-reconnect, filter `branch: "main"`) after a real push and confirm a new
-deployment appears without manual intervention. If it doesn't, fall
-back to manual deploy: install the Vercel CLI globally (`bun add -g
-vercel` — `bunx vercel` has hung unreliably in this environment, root
-cause not identified), then `vercel deploy --prod --token=<token>` from
-a clean `main` checkout. `.vercelignore` keeps the upload scoped to the
-actual app.
+**Web app (Vercel) — reconnected and fully confirmed 2026-09-20,
+re-verify anyway before assuming it stayed that way.** Vercel's GitHub
+integration lost this repo in the org transfer (personal account →
+`obsidian-media`), went undeployed for every merge since PR #49, and
+was reconnected the same day. Confirmed three ways, not just that the
+link's metadata updated: (1)
+`mcp__plugin_vercel_vercel__get_git_deployment_context` shows the
+`learnwithalphonso` project linked to `org: "obsidian-media", repo:
+"LearnWithAlphonso"`; (2) a manually-triggered git-sourced deployment
+built successfully; (3) — the real test — a plain `git push` to `main`
+with no manual trigger produced a new deployment (`source: "git"`) on
+its own within ~90 seconds. Auto-deploy-on-push is genuinely restored.
+If a future check shows it's stopped working again: install the Vercel
+CLI globally (`bun add -g vercel` — `bunx vercel` has hung unreliably
+in this environment, root cause not identified), then `vercel deploy
+--prod --token=<token>` from a clean `main` checkout as a fallback.
+`.vercelignore` keeps the upload scoped to the actual app.
 
 **RevenueCat (Pro/"Hector" gating):** `EntitlementStore` (`ios/LearnWithAlphonso/Sources/EntitlementStore.swift`)
 wraps the RevenueCat SDK (`Purchases.configure` in `LearnWithAlphonsoApp.init`);

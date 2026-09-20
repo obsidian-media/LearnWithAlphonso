@@ -118,17 +118,16 @@ Production is Vercel (`learn.alphonsoecosystem.app`, project
 `learnwithalphonso` in the Vercel dashboard — renamed from
 `english-buddy-app-33` on 2026-09-20 when the Git connection was fixed).
 Vercel's GitHub integration lost this repo in the org transfer, then
-was reconnected and confirmed working the same day (its project link
-now correctly shows `obsidian-media/LearnWithAlphonso`, and a real
-git-sourced deployment built successfully). **One thing not yet
-separately confirmed: that a plain `git push` to `main` triggers an
-automatic deploy on its own** — every deployment checked so far was
-manually triggered via the API/CLI, not by an actual webhook firing.
-Check `mcp__plugin_vercel_vercel__list_deployments` after the next real
-push before assuming auto-deploy is fully restored. If it isn't, deploy
-manually: `vercel deploy --prod --token=<token>` from a clean checkout
-of `main` (a `.vercelignore` keeps this scoped to the actual app,
-excluding `ios/`, `docs/`, `supabase/functions/`, and any local
+was reconnected and **fully confirmed working, both ways, the same
+day**: its project link shows `obsidian-media/LearnWithAlphonso`, a
+manually-triggered git-sourced deployment built successfully, and — the
+real proof — a plain `git push` to `main` with no manual trigger
+produced a new deployment (`source: "git"`) on its own within ~90
+seconds. Auto-deploy-on-push is genuinely restored. If a future check
+ever shows otherwise, deploy manually as a fallback: `vercel deploy
+--prod --token=<token>` from a clean checkout of `main` (a
+`.vercelignore` keeps this scoped to the actual app, excluding `ios/`,
+`docs/`, `supabase/functions/`, and any local
 `.claude/worktrees/`). See `ARCHITECTURE.md`'s "Known rough edges" for
 the full story and
 `AGENTS.md`'s Deployment section for Supabase (migrations/Edge
