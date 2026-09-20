@@ -15,3 +15,23 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
             == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
     }
 }
+
+/// Builds a `Question` directly from a weakness-sourced `ReviewItem`'s
+/// embedded content, bypassing the bundled-lesson lookup entirely --
+/// `nil` if `item` isn't a weakness item or is missing any required
+/// field (a malformed/inconsistent row fails safe rather than crashing
+/// the reviewer, matching ReviewQueueView's existing "skip on mismatch"
+/// behavior for lesson items).
+public func question(fromWeaknessItem item: ReviewItem) -> Question? {
+    guard item.source == "weakness",
+          let prompt = item.prompt,
+          let choices = item.choices,
+          let answerIndex = item.answerIndex,
+          let explanation = item.explanation else {
+        return nil
+    }
+    return .multipleChoice(Question.MultipleChoice(
+        id: item.itemKey, prompt: prompt, choices: choices,
+        answer: answerIndex, explanation: explanation
+    ))
+}

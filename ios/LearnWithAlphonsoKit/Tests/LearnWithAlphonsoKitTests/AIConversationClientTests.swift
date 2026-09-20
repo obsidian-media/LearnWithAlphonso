@@ -58,6 +58,52 @@ final class AIConversationClientTests: XCTestCase {
         }
     }
 
+    // MARK: - analyzeWeaknesses
+
+    func testAnalyzeWeaknessesPostsTheTranscriptAndReturnsTheCount() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["weaknessesDetected": 2])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let count = try await client.analyzeWeaknesses(transcript: [
+            ChatMessage(role: "assistant", content: "Hi! How was your weekend?"),
+            ChatMessage(role: "user", content: "I go to the park yesterday."),
+        ])
+
+        XCTAssertEqual(count, 2)
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/analyze-weaknesses"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        let messages = payload["messages"] as! [[String: String]]
+        XCTAssertEqual(messages, [
+            ["role": "assistant", "content": "Hi! How was your weekend?"],
+            ["role": "user", "content": "I go to the park yesterday."],
+        ])
+    }
+
+    func testAnalyzeWeaknessesSurfacesAQuotaError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "Daily CHAT limit reached (60/day). Try again tomorrow."])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            _ = try await client.analyzeWeaknesses(transcript: [ChatMessage(role: "user", content: "hi")])
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(
+                error as? AIConversationError,
+                .server(status: 429, message: "Daily CHAT limit reached (60/day). Try again tomorrow.")
+            )
+        }
+    }
+
     // MARK: - synthesizeSpeech
 
     func testSynthesizeSpeechPostsTextAndReturnsTheAudioBytes() async throws {
