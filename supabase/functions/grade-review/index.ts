@@ -170,6 +170,13 @@ export async function handleRequest(req: Request): Promise<Response> {
       .eq("user_id", userId)
       .eq("item_key", itemKey)
       .eq("language", course);
+    // V3 package 3b: same resolved-event logging as review.functions.ts's
+    // gradeReview -- see that file's comment.
+    if (row.source === "weakness" && row.weakness_label) {
+      await admin
+        .from("weakness_events")
+        .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
+    }
     return jsonResponse({ retired: true, dueOn: outcome.dueOn }, 200);
   }
 

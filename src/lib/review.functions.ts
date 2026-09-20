@@ -244,6 +244,18 @@ export const gradeReview = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .eq("item_key", data.itemKey)
         .eq("language", course);
+      // V3 package 3b: log a durable "resolved" event before the row (and
+      // its weakness_label) is gone for good -- review_items rows don't
+      // survive retirement, so this is the only history a trend dashboard
+      // can read later. Only weakness-sourced items count as a resolved
+      // *weakness*; a real lesson-question item retiring isn't part of
+      // that taxonomy at all.
+      if (row.source === "weakness" && row.weakness_label) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("weakness_events")
+          .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
+      }
       return { retired: true, dueOn: outcome.dueOn };
     }
 

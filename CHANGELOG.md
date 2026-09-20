@@ -66,6 +66,31 @@ way to read a user's own current CEFR level at all before this --
 `ProgressSyncClient.fetchCefrLevel` (a plain RLS-scoped read) is a small
 new addition specifically to unlock adaptive difficulty there too.
 
+**Tutor & weakness system (in progress)** — a weakness trend log
+(`weakness_events`: 'detected'/'resolved' rows, plain RLS insert/select-own
+since it's a non-value-bearing signal, not RPC-gated) now records every
+time `/api/analyze-weaknesses` classifies a gap and every time a
+weakness-sourced review item retires (mirrored in both
+`review.functions.ts`'s `gradeReview` and the `grade-review` Edge
+Function). The NVIDIA classification + parsing logic used by
+`analyze-weaknesses` was extracted into a shared
+`src/lib/weakness-detection.server.ts` module so a second call site could
+reuse it without duplicating the taxonomy/prompt/Zod-parsing; that second
+call site is new: `completeLessonRemote` now also runs weakness detection
+directly against a lesson's own missed questions (previously this only
+ran from free-conversation transcripts), so a learner gets weakness
+tracking from graded lesson mistakes even if they never use `/converse`.
+Best-effort and fully isolated behind a try/catch — a classification
+failure never fails the lesson-completion response. Caught and fixed a
+real, pre-existing production bug while exploring this area:
+`analyze-weaknesses.ts`'s insert into `review_items` never included
+`user_id` (a NOT NULL column with no default), meaning the route had
+likely never successfully written a row in production; it also had zero
+test coverage, which is how that went unnoticed. Fixed with proper
+`user_id` resolution + `supabaseAdmin`, and given 7 new tests. Still
+open: a weakness-trend read/dashboard endpoint, tutor persona memory
+(Hector recalling past sessions), and proactive tutor nudges.
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

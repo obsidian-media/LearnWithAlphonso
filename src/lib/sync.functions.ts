@@ -458,6 +458,80 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         .upsert(rows, { onConflict: "user_id,achievement_id" });
     }
 
+    // V3 package 3b: "unify weakness signals" -- lesson mistakes now feed
+    // the same taxonomy-constrained detection pipeline conversation
+    // transcripts do (src/lib/weakness-detection.server.ts), not a
+    // separate parallel system. Gated on a real miss on a real completion
+    // (xpGain > 0, not a zero-gain replay) so this doesn't fire on every
+    // completion. Awaited rather than fire-and-forget: this serverless
+    // environment has no safe background-task primitive to rely on, so
+    // the trade-off is accepted latency on the subset of completions that
+    // actually have a mistake to learn from, not silently-dropped work.
+    // Wrapped in try/catch -- a classification failure must never fail
+    // the lesson completion itself.
+    if (missedQuestionIds.length > 0 && xpGain > 0 && process.env.NVIDIA_API_KEY) {
+      try {
+        const missedQuestions = found.lesson.questions.filter((q) =>
+          missedQuestionIds.includes(q.id),
+        );
+        const transcriptMessages = missedQuestions.map((q) => ({
+          role: "user" as const,
+          content: `Question: ${q.prompt} — I answered incorrectly. The correct answer was: ${
+            q.type === "mc" ? q.choices[q.answer] : q.answer
+          }.`,
+        }));
+        if (transcriptMessages.length > 0) {
+          const { detectAndRecordWeaknesses } = await import("./weakness-detection.server");
+          await detectAndRecordWeaknesses({
+            userId,
+            sourceDescription: "set of English lesson questions the learner got wrong",
+            transcriptMessages,
+            nvidiaApiKey: process.env.NVIDIA_API_KEY,
+            nvidiaModel: process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct",
+            dedupCheck: async (label) => {
+              const { data: existing } = await supabase
+                .from("review_items")
+                .select("item_key")
+                .eq("user_id", userId)
+                .eq("source", "weakness")
+                .eq("weakness_label", label)
+                .maybeSingle();
+              return !!existing;
+            },
+            adminInsertReviewItem: async (weakness) => {
+              const weaknessItemKey = `weakness:${crypto.randomUUID().replace(/-/g, "")}`;
+              const { error } = await supabaseAdmin.from("review_items").insert({
+                user_id: userId,
+                item_key: weaknessItemKey,
+                lesson_id: "weakness",
+                level: "A1",
+                language: course,
+                ease: 2.5,
+                interval_days: 0,
+                repetitions: 0,
+                due_on: today,
+                source: "weakness",
+                weakness_label: weakness.label,
+                weakness_display: weakness.display,
+                prompt: weakness.prompt,
+                choices: weakness.choices,
+                answer_index: weakness.answerIndex,
+                explanation: weakness.explanation,
+              });
+              return !error;
+            },
+            adminInsertEvent: async (category) => {
+              await supabaseAdmin
+                .from("weakness_events")
+                .insert({ user_id: userId, category, event_type: "detected" });
+            },
+          });
+        }
+      } catch {
+        // best-effort -- never fail the lesson completion over this
+      }
+    }
+
     // return refreshed snapshot for optimistic apply
     return {
       xpGain,

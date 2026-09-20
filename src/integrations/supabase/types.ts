@@ -723,6 +723,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      weakness_events: {
+        Row: {
+          category: string;
+          created_at: string;
+          event_type: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          category: string;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       weekly_quests: {
         Row: {
           description: string;

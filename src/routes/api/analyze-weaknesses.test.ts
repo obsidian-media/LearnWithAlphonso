@@ -14,9 +14,14 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({ auth: { getClaims }, from: supabaseFrom }),
 }));
 
-const supabaseAdminInsert = vi.fn();
+const reviewItemsInsert = vi.fn();
+const weaknessEventsInsert = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: () => ({ insert: supabaseAdminInsert }) },
+  supabaseAdmin: {
+    from: (table: string) => ({
+      insert: table === "weakness_events" ? weaknessEventsInsert : reviewItemsInsert,
+    }),
+  },
 }));
 
 const { Route } = await import("./analyze-weaknesses");
@@ -55,8 +60,10 @@ beforeEach(() => {
   supabaseSelectChain.maybeSingle.mockReset();
   supabaseSelectChain.maybeSingle.mockResolvedValue({ data: null });
   supabaseFrom.mockClear();
-  supabaseAdminInsert.mockReset();
-  supabaseAdminInsert.mockResolvedValue({ error: null });
+  reviewItemsInsert.mockReset();
+  reviewItemsInsert.mockResolvedValue({ error: null });
+  weaknessEventsInsert.mockReset();
+  weaknessEventsInsert.mockResolvedValue({ error: null });
   process.env.NVIDIA_API_KEY = "test-key";
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
@@ -90,9 +97,14 @@ describe("POST /api/analyze-weaknesses", () => {
       request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),
     });
     expect(await res.json()).toEqual({ weaknessesDetected: 1 });
-    expect(supabaseAdminInsert).toHaveBeenCalledWith(
+    expect(reviewItemsInsert).toHaveBeenCalledWith(
       expect.objectContaining({ user_id: "user-1", weakness_label: "past-tense" }),
     );
+    expect(weaknessEventsInsert).toHaveBeenCalledWith({
+      user_id: "user-1",
+      category: "past-tense",
+      event_type: "detected",
+    });
   });
 
   it("rejects when the token doesn't resolve to a real user", async () => {
@@ -101,7 +113,7 @@ describe("POST /api/analyze-weaknesses", () => {
       request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),
     });
     expect(res.status).toBe(401);
-    expect(supabaseAdminInsert).not.toHaveBeenCalled();
+    expect(reviewItemsInsert).not.toHaveBeenCalled();
   });
 
   it("skips a category that's already an active weakness for this user", async () => {
@@ -110,7 +122,8 @@ describe("POST /api/analyze-weaknesses", () => {
       request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),
     });
     expect(await res.json()).toEqual({ weaknessesDetected: 0 });
-    expect(supabaseAdminInsert).not.toHaveBeenCalled();
+    expect(reviewItemsInsert).not.toHaveBeenCalled();
+    expect(weaknessEventsInsert).not.toHaveBeenCalled();
   });
 
   it("returns weaknessesDetected: 0 when the model finds nothing worth flagging", async () => {
@@ -123,7 +136,7 @@ describe("POST /api/analyze-weaknesses", () => {
       request: req({ messages: [{ role: "user", content: "Hello!" }] }),
     });
     expect(await res.json()).toEqual({ weaknessesDetected: 0 });
-    expect(supabaseAdminInsert).not.toHaveBeenCalled();
+    expect(reviewItemsInsert).not.toHaveBeenCalled();
   });
 
   it("returns weaknessesDetected: 0 when the model's response isn't valid JSON", async () => {

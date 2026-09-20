@@ -298,6 +298,37 @@ describe("gradeReview", () => {
     expect(deleteChain.calls.some((c) => c.method === "delete")).toBe(true);
   });
 
+  it("logs a resolved weakness_events row when a weakness-sourced item retires", async () => {
+    const supabase = createSupabaseMock();
+    const deleteChain = chainable({});
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            ...rowBase,
+            repetitions: 3,
+            source: "weakness",
+            weakness_label: "past-tense",
+            choices: ["went", "go", "goed", "gone"],
+            answer_index: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(deleteChain);
+    const eventInsert = chainable({});
+    supabaseAdminFrom.mockReturnValueOnce(eventInsert);
+
+    const result = await gradeReview({
+      context: ctx(supabase),
+      data: { itemKey: "weakness:abc123", answer: "went", course: "en" },
+    });
+
+    expect(result.retired).toBe(true);
+    expect(supabaseAdminFrom).toHaveBeenCalledWith("weakness_events");
+    const insertArgs = eventInsert.calls.find((c) => c.method === "insert")?.args[0];
+    expect(insertArgs).toEqual({ user_id: USER_ID, category: "past-tense", event_type: "resolved" });
+  });
+
   it("throws for an itemKey with no matching question in the course index", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));

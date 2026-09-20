@@ -384,6 +384,80 @@ describe("completeLessonRemote", () => {
       }),
     ).rejects.toThrow("Invalid lesson completion payload");
   });
+
+  it("unifies weakness signals: a real miss on a real completion triggers weakness detection", async () => {
+    const originalFetch = global.fetch;
+    const originalKey = process.env.NVIDIA_API_KEY;
+    process.env.NVIDIA_API_KEY = "test-key";
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify([
+                  {
+                    label: "past-tense",
+                    display: "Past-tense verbs",
+                    prompt: "She ___ to the store yesterday.",
+                    choices: ["go", "goes", "went", "gone"],
+                    answerIndex: 2,
+                    explanation: "Past tense of 'go' is 'went'.",
+                  },
+                ]),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    ) as typeof fetch;
+
+    try {
+      const supabase = createSupabaseMock();
+      supabase.from
+        .mockReturnValueOnce(
+          chainable({
+            data: {
+              streak: 0,
+              longest_streak: 0,
+              last_active_date: null,
+              hearts: 5,
+              hearts_refill_at: null,
+              streak_freezes: 0,
+            },
+          }),
+        ) // user_progress
+        .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } })) // language_progress
+        .mockReturnValueOnce(chainable({ data: null })) // existing lesson_completions row
+        .mockReturnValueOnce(chainable({ data: null })) // existing activity_days row
+        .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
+        .mockReturnValueOnce(chainable({ data: [{ correct: 7, total: 8 }] })) // lesson_completions re-read
+        .mockReturnValueOnce(chainable({ data: [] })) // user_achievements re-read
+        .mockReturnValueOnce(chainable({ data: null })); // weakness dedup check: no existing item
+
+      const result = await completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          missedQuestionIds: ["q1"], // a real miss
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+
+      expect(result.xpGain).toBeGreaterThan(0); // a real completion, not a zero-gain replay
+      expect(global.fetch).toHaveBeenCalled();
+      const adminTables = supabaseAdminFrom.mock.calls.map((c) => c[0]);
+      expect(adminTables).toContain("review_items");
+      expect(adminTables).toContain("weakness_events");
+    } finally {
+      global.fetch = originalFetch;
+      if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
+      else process.env.NVIDIA_API_KEY = originalKey;
+    }
+  });
 });
 
 describe("loseHeartRemote", () => {
