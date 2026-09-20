@@ -24,4 +24,11 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertEqual(first.category, "streak")
         XCTAssertEqual(first.threshold, 3)
     }
+
+    func testLoadsVocabImages() throws {
+        let store = try ContentStore()
+        XCTAssertGreaterThan(store.vocabImages.count, 1000, "src/data/vocab-images.ts has ~1,900 entries")
+        let children = try XCTUnwrap(store.vocabImages["children"], "vocab-images.ts's first entry should be keyed 'children'")
+        XCTAssertTrue(children.url.hasPrefix("https://images.pexels.com/"))
+    }
 }

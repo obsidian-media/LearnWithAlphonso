@@ -30,7 +30,7 @@ struct LessonPlayerView: View {
     @State private var errorMessage: String?
 
     private var total: Int { lesson.questions.count }
-    private var vocab: [VocabItem] { deriveVocab(lesson: lesson) }
+    private var vocab: [VocabItem] { deriveVocab(lesson: lesson, images: contentStore.vocabImages) }
 
     var body: some View {
         Group {
@@ -47,7 +47,7 @@ struct LessonPlayerView: View {
             } else {
                 switch phase {
                 case .overview:
-                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total) {
+                    OverviewScreen(lesson: lesson, wordCount: vocab.count, questionCount: total, previewImages: vocab.prefix(3).compactMap(\.image)) {
                         phase = vocab.isEmpty ? .quiz : .vocab
                     }
                 case .vocab:
@@ -251,6 +251,12 @@ private struct OverviewScreen: View {
     let lesson: Lesson
     let wordCount: Int
     let questionCount: Int
+    /// Up to 3 of this lesson's vocab images, shown as a small teaser
+    /// before the user commits to starting -- genuinely optional polish
+    /// (docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
+    /// feature 2"), not core functionality; an empty array just means no
+    /// thumbnails render, same as today.
+    let previewImages: [VocabImageRef]
     let onStart: () -> Void
 
     var body: some View {
@@ -263,6 +269,14 @@ private struct OverviewScreen: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                if !previewImages.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(previewImages, id: \.url) { image in
+                            VocabImageView(image: image, thumbnailSize: 44)
+                        }
+                    }
+                    .padding(.leading, 40)
+                }
                 overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
                 overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
             }
@@ -311,6 +325,9 @@ private struct VocabScreen: View {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(items, id: \.term) { item in
                         VStack(alignment: .leading, spacing: 4) {
+                            if let image = item.image {
+                                VocabImageView(image: image)
+                            }
                             Text(item.term).font(.headline)
                             Text(item.meaning).font(.caption).foregroundStyle(.secondary)
                             Text(item.example)
@@ -330,6 +347,41 @@ private struct VocabScreen: View {
                 .frame(maxWidth: .infinity)
         }
         .padding()
+    }
+}
+
+/// Mirrors the web's `<img src=... onError=...>` handling: a loading
+/// spinner while the Pexels CDN fetch is in flight, and -- on failure --
+/// a plain neutral panel rather than a broken-image icon. Shared by
+/// VocabScreen's full-width card image and OverviewScreen's small preview
+/// thumbnails (pass `thumbnailSize` for the latter) so the AsyncImage
+/// phase-handling exists once rather than twice. No caching beyond what
+/// URLSession/AsyncImage already do by default; see
+/// docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
+/// feature 1" for why that's an accepted tradeoff for V2, not an oversight.
+private struct VocabImageView: View {
+    let image: VocabImageRef
+    /// A fixed square size for a small teaser thumbnail, or nil for a
+    /// full-width card image at `cardHeight`.
+    var thumbnailSize: CGFloat?
+    var cardHeight: CGFloat = 120
+
+    var body: some View {
+        AsyncImage(url: URL(string: image.url)) { phase in
+            switch phase {
+            case .success(let loadedImage):
+                loadedImage.resizable().aspectRatio(contentMode: .fill)
+            case .empty:
+                ProgressView()
+            default:
+                Color(.secondarySystemBackground)
+            }
+        }
+        .frame(width: thumbnailSize, height: thumbnailSize ?? cardHeight)
+        .frame(maxWidth: thumbnailSize == nil ? .infinity : nil)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipped()
+        .accessibilityLabel(image.alt)
     }
 }
 
