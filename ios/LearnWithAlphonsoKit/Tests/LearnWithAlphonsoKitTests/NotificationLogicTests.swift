@@ -71,4 +71,37 @@ final class NotificationLogicTests: XCTestCase {
     func testReturnsZeroForAnEmptyQueue() {
         XCTAssertEqual(dueReviewCount(from: [], today: "2026-09-13"), 0)
     }
+
+    // MARK: - weaknessPracticeNudgeCopy
+
+    func testReturnsNilWhenThereAreNoOpenCategories() {
+        XCTAssertNil(weaknessPracticeNudgeCopy(openCategories: []))
+    }
+
+    func testNamesOnlyTheFirstOpenCategoryHumanized() {
+        let copy = weaknessPracticeNudgeCopy(openCategories: ["past-tense", "articles"])
+        XCTAssertEqual(copy?.title, "A quick practice moment")
+        XCTAssertTrue(copy!.body.contains("past tense"))
+        XCTAssertFalse(copy!.body.contains("articles"))
+    }
+
+    // MARK: - nextWeaknessPracticeNudgeDate
+
+    func testSchedulesLaterTodayAt10amWhenNowIsBeforeThat() {
+        let now = utcDate("2026-09-13T08:00:00+00:00")
+        let result = nextWeaknessPracticeNudgeDate(now: now, calendar: utcCalendar)
+        XCTAssertEqual(result, utcDate("2026-09-13T10:00:00+00:00"))
+    }
+
+    func testSchedulesTomorrowAt10amWhenNowIsAlreadyPast10amToday() {
+        let now = utcDate("2026-09-13T15:00:00+00:00")
+        let result = nextWeaknessPracticeNudgeDate(now: now, calendar: utcCalendar)
+        XCTAssertEqual(result, utcDate("2026-09-14T10:00:00+00:00"))
+    }
+
+    func testTreatsExactly10amAsAlreadyPastSoItSchedulesTomorrow() {
+        let now = utcDate("2026-09-13T10:00:00+00:00")
+        let result = nextWeaknessPracticeNudgeDate(now: now, calendar: utcCalendar)
+        XCTAssertEqual(result, utcDate("2026-09-14T10:00:00+00:00"))
+    }
 }

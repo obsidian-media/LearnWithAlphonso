@@ -60,3 +60,37 @@ public func dueReviewCount(from items: [ReviewItem], today: String) -> Int {
         }
     }
 }
+
+/// V3 package 3b -- "proactive tutor nudges." Copy for the weakness-
+/// practice nudge, or `nil` when there's nothing open to nudge about.
+/// Names only the single most-open category (callers pass
+/// `openCategories` already ordered most-relevant-first, same ordering
+/// ProgressSyncClient.fetchWeaknessTrend already returns) to keep the
+/// notification short and concrete rather than a generic "you have weak
+/// areas" nag.
+public func weaknessPracticeNudgeCopy(openCategories: [String]) -> (title: String, body: String)? {
+    guard let top = openCategories.first else { return nil }
+    let humanized = top.replacingOccurrences(of: "-", with: " ")
+    return (
+        title: "A quick practice moment",
+        body: "You've got a \(humanized) question waiting in your review queue."
+    )
+}
+
+/// Next occurrence of 10am -- tomorrow if `now` is already at or past
+/// 10am today, later today otherwise. A fixed time distinct from the
+/// streak reminder's 8pm and the due-review nudge's fixed hours-out, so
+/// the notification kinds don't compete for the same moment. Unlike
+/// `nextStreakReminderDate`, there's no "already done today" check here:
+/// a weakness stays open across days (it's cleared by resolving it in
+/// review, not by the passage of a day), so the only signal that matters
+/// is whether any category is still open right now.
+public func nextWeaknessPracticeNudgeDate(now: Date, calendar: Calendar = .current) -> Date {
+    guard let todayAt10am = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: now) else {
+        return now
+    }
+    if now < todayAt10am {
+        return todayAt10am
+    }
+    return calendar.date(byAdding: .day, value: 1, to: todayAt10am) ?? now
+}

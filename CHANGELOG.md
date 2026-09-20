@@ -105,7 +105,20 @@ conversation -- that transcript lives entirely on AlphonsoEcosystem's
 Cloud Voice backend, which this repo can't read (see the Hector
 weakness-detection design doc's "what this does NOT change" section);
 it's durable facts this repo already tracks, replayed as continuity each
-new session. Still open: proactive tutor nudges.
+new session. Proactive tutor nudges close out the package: a new
+`weakness-practice-nudge` local notification kind (`NotificationLogic.
+swift`'s `weaknessPracticeNudgeCopy`/`nextWeaknessPracticeNudgeDate`,
+same pure-logic-in-the-Kit split as the existing streak/due-review/
+weekly-recap nudges), scheduled from `AchievementsView.load()` reusing
+its existing weakness-trend fetch -- no second network round trip, same
+precedent as the due-review nudge reusing `ReviewQueueView`'s fetch.
+Fires at a fixed 10am (distinct from the streak reminder's 8pm and the
+due-review nudge's fixed hours-out, so the three kinds don't compete for
+the same moment), named for the single most-open category to stay
+concrete rather than a generic nag, and cancelled automatically once no
+category is open. This closes out package 3b (tutor & weakness system);
+curriculum formats and generative/adaptive content (packages 4a/4b)
+remain.
 
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 

@@ -19,6 +19,7 @@ import LearnWithAlphonsoKit
 struct AchievementsView: View {
     let session: Session
     let contentStore: ContentStore
+    let notificationScheduler: NotificationScheduler
 
     @State private var unlockedByID: [String: UnlockedAchievement] = [:]
     @State private var weaknessTrend: [WeaknessTrendEntry] = []
@@ -84,6 +85,9 @@ struct AchievementsView: View {
         // Best-effort: a weakness-trend failure shouldn't block the
         // achievements catalog itself from showing.
         weaknessTrend = (try? await client.fetchWeaknessTrend()) ?? []
+        notificationScheduler.scheduleWeaknessPracticeNudge(
+            openCategories: weaknessTrend.filter { $0.openCount > 0 }.map(\.category)
+        )
         isLoading = false
     }
 }

@@ -29,7 +29,7 @@ struct RootView: View {
                     .tabItem { Label("Practice", systemImage: "mic.fill") }
                 HectorView(session: session, entitlementStore: entitlementStore)
                     .tabItem { Label("Hector", systemImage: "sparkles") }
-                AchievementsView(session: session, contentStore: contentStore)
+                AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
                     .tabItem { Label("Achievements", systemImage: "trophy.fill") }
             }
             .task {

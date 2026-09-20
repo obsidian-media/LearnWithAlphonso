@@ -62,6 +62,7 @@ final class NotificationScheduler {
     private static let streakReminderIdentifier = "streak-reminder"
     private static let dueReviewNudgeIdentifier = "due-review-nudge"
     private static let weeklyRecapIdentifier = "weekly-recap"
+    private static let weaknessPracticeNudgeIdentifier = "weakness-practice-nudge"
 
     /// Reschedules (or cancels, if the user already studied today) the daily
     /// streak reminder. Call on every app launch and every lesson
@@ -112,6 +113,24 @@ final class NotificationScheduler {
             title: "Your weekly recap is ready",
             body: "See how you did on the leaderboard last week.",
             fireDate: fireDate
+        ))
+    }
+
+    /// V3 package 3b -- "proactive tutor nudges." Reschedules (or cancels,
+    /// once nothing's open) a nudge pointing the learner back at a
+    /// specific weak spot -- call whenever weakness trend data is
+    /// fetched (AchievementsView.load()), reusing that fetch, same "no
+    /// second network round trip" reasoning as scheduleDueReviewNudge.
+    func scheduleWeaknessPracticeNudge(openCategories: [String], now: Date = Date()) {
+        guard let copy = weaknessPracticeNudgeCopy(openCategories: openCategories) else {
+            cancel(identifier: Self.weaknessPracticeNudgeIdentifier)
+            return
+        }
+        schedule(ScheduledNotification(
+            identifier: Self.weaknessPracticeNudgeIdentifier,
+            title: copy.title,
+            body: copy.body,
+            fireDate: nextWeaknessPracticeNudgeDate(now: now)
         ))
     }
 }
