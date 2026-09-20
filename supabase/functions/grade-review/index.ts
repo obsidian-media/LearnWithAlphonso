@@ -129,17 +129,22 @@ export async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "This item isn't due yet" }, 400);
   }
 
-  const { data: question } = await admin
-    .from("questions")
-    .select("type, choices, answer_index, answer_text")
-    .eq("lesson_id", lessonId)
-    .eq("id", questionId)
-    .maybeSingle();
-  if (!question) {
-    return jsonResponse({ error: "Unknown review item" }, 400);
+  let correct: boolean;
+  if (row.source === "weakness") {
+    const choices = row.choices as string[] | null;
+    correct = choices?.[row.answer_index as number] === answer;
+  } else {
+    const { data: question } = await admin
+      .from("questions")
+      .select("type, choices, answer_index, answer_text")
+      .eq("lesson_id", lessonId)
+      .eq("id", questionId)
+      .maybeSingle();
+    if (!question) {
+      return jsonResponse({ error: "Unknown review item" }, 400);
+    }
+    correct = deriveAnswerCorrectness(question as QuestionRow, answer);
   }
-
-  const correct = deriveAnswerCorrectness(question as QuestionRow, answer);
 
   const outcome = computeReviewOutcome(
     {
