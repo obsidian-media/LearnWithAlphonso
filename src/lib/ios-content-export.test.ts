@@ -12,7 +12,7 @@ describe("buildIOSContentBundle", () => {
   it("exports the full French curriculum with the expected lesson count", () => {
     const bundle = buildIOSContentBundle("fr");
     const lessonCount = bundle.units.reduce((sum, u) => sum + u.lessons.length, 0);
-    expect(lessonCount).toBe(125);
+    expect(lessonCount).toBe(500); // V3 pkg 4a: closed the 125 -> ~500 French content gap
   });
 
   it("preserves question shape exactly (mc and fill variants both present)", () => {

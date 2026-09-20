@@ -176,6 +176,501 @@ winter|l'hiver
 today|aujourd'hui
 tomorrow|demain`,
   },
+  {
+    id: "fra1p6",
+    title: "Body Parts",
+    subtitle: "Talking about the human body",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common parts of the body.",
+    data: `head|la tête
+hair|les cheveux
+eye|l'œil
+eyes|les yeux
+ear|l'oreille
+nose|le nez
+mouth|la bouche
+tooth|la dent
+neck|le cou
+shoulder|l'épaule
+arm|le bras
+hand|la main
+finger|le doigt
+chest|la poitrine
+back|le dos
+stomach|le ventre
+leg|la jambe
+knee|le genou
+foot|le pied
+skin|la peau
+face|le visage
+heart|le cœur
+elbow|le coude
+wrist|le poignet
+chin|le menton`,
+  },
+  {
+    id: "fra1p7",
+    title: "House & Rooms",
+    subtitle: "Talking about where you live",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Rooms and household vocabulary.",
+    data: `house|la maison
+apartment|l'appartement
+kitchen|la cuisine
+bedroom|la chambre
+bathroom|la salle de bain
+living room|le salon
+dining room|la salle à manger
+garden|le jardin
+door|la porte
+window|la fenêtre
+wall|le mur
+floor|le sol
+ceiling|le plafond
+stairs|l'escalier
+roof|le toit
+garage|le garage
+table|la table
+chair|la chaise
+bed|le lit
+sofa|le canapé
+lamp|la lampe
+mirror|le miroir
+key|la clé
+shelf|l'étagère
+carpet|le tapis`,
+  },
+  {
+    id: "fra1p8",
+    title: "Common Verbs (infinitives)",
+    subtitle: "Everyday actions",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "High-frequency verbs in their infinitive form.",
+    data: `to eat|manger
+to drink|boire
+to speak|parler
+to listen|écouter
+to read|lire
+to write|écrire
+to sleep|dormir
+to work|travailler
+to study|étudier
+to play|jouer
+to walk|marcher
+to run|courir
+to swim|nager
+to cook|cuisiner
+to buy|acheter
+to sell|vendre
+to open|ouvrir
+to close|fermer
+to look|regarder
+to wait|attendre
+to help|aider
+to love|aimer
+to want|vouloir
+to need|avoir besoin de
+to live|vivre`,
+  },
+  {
+    id: "fra1p9",
+    title: "Animals",
+    subtitle: "Common animals",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Everyday animals, pets and wildlife.",
+    data: `dog|le chien
+cat|le chat
+bird|l'oiseau
+horse|le cheval
+cow|la vache
+pig|le cochon
+sheep|le mouton
+chicken|la poule
+duck|le canard
+rabbit|le lapin
+mouse|la souris
+fish|le poisson
+lion|le lion
+tiger|le tigre
+bear|l'ours
+elephant|l'éléphant
+monkey|le singe
+wolf|le loup
+fox|le renard
+frog|la grenouille
+snake|le serpent
+turtle|la tortue
+bee|l'abeille
+butterfly|le papillon
+spider|l'araignée`,
+  },
+  {
+    id: "fra1p10",
+    title: "Professions & Jobs",
+    subtitle: "Talking about work",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common jobs and professions.",
+    data: `doctor|le médecin
+nurse|l'infirmier
+teacher|le professeur
+engineer|l'ingénieur
+lawyer|l'avocat
+police officer|le policier
+firefighter|le pompier
+chef|le cuisinier
+waiter|le serveur
+farmer|l'agriculteur
+driver|le chauffeur
+pilot|le pilote
+artist|l'artiste
+musician|le musicien
+writer|l'écrivain
+scientist|le scientifique
+dentist|le dentiste
+accountant|le comptable
+electrician|l'électricien
+plumber|le plombier
+hairdresser|le coiffeur
+journalist|le journaliste
+architect|l'architecte
+soldier|le soldat
+secretary|le secrétaire`,
+  },
+  {
+    id: "fra1p11",
+    title: "Question Words",
+    subtitle: "Asking questions in French",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Core question words and phrases.",
+    data: `who|qui
+what|quoi
+where|où
+when|quand
+why|pourquoi
+how|comment
+how much|combien
+how many|combien de
+which|quel
+whose|à qui
+what (subject)|qu'est-ce qui
+what (object)|qu'est-ce que
+is it that…?|est-ce que
+how old|quel âge
+what time|quelle heure
+who is it|qui est-ce
+what is it|qu'est-ce que c'est
+where is|où est
+where are|où sont
+how are you (informal)|comment vas-tu
+what's your name (informal)|comment tu t'appelles
+which one|lequel
+which ones|lesquels
+why not|pourquoi pas
+how far|à quelle distance`,
+  },
+  {
+    id: "fra1p12",
+    title: "Prepositions of Place",
+    subtitle: "Describing where things are",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common prepositions used to locate things.",
+    data: `in|dans
+on|sur
+under|sous
+in front of|devant
+behind|derrière
+next to|à côté de
+between|entre
+above|au-dessus de
+below|en dessous de
+near|près de
+far from|loin de
+inside|à l'intérieur de
+outside|à l'extérieur de
+opposite|en face de
+around|autour de
+against|contre
+through|à travers
+along|le long de
+among|parmi
+towards|vers
+at (someone's place)|chez
+from|de
+to (a place)|à
+here|ici
+there|là`,
+  },
+  {
+    id: "fra1p13",
+    title: "Telling Time",
+    subtitle: "Talking about the clock",
+    kind: "pair",
+    prompt: 'The French for "%s" is…',
+    note: "Time expressions and everyday time vocabulary.",
+    data: `it's one o'clock|il est une heure
+it's two o'clock|il est deux heures
+it's noon|il est midi
+it's midnight|il est minuit
+half past two|deux heures et demie
+quarter past three|trois heures et quart
+quarter to four|quatre heures moins le quart
+in the morning|du matin
+in the afternoon|de l'après-midi
+in the evening|du soir
+at night|la nuit
+what time is it?|quelle heure est-il ?
+an hour|une heure
+a minute|une minute
+a second|une seconde
+early|tôt
+late|tard
+now|maintenant
+soon|bientôt
+later|plus tard
+always|toujours
+never|jamais
+sometimes|parfois
+often|souvent
+rarely|rarement`,
+  },
+  {
+    id: "fra1p14",
+    title: "Shopping & Money",
+    subtitle: "Buying things in French",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Everyday shopping and money vocabulary.",
+    data: `money|l'argent
+price|le prix
+expensive|cher
+cheap|bon marché
+to pay|payer
+cash|l'argent liquide
+credit card|la carte de crédit
+receipt|le reçu
+shop|le magasin
+supermarket|le supermarché
+market|le marché
+cashier|le caissier
+discount|la réduction
+sale|les soldes
+to buy|acheter
+to sell|vendre
+customer|le client
+bag|le sac
+wallet|le portefeuille
+coin|la pièce
+banknote|le billet
+free (no cost)|gratuit
+how much does it cost?|combien ça coûte ?
+change (money back)|la monnaie
+to cost|coûter`,
+  },
+  {
+    id: "fra1p15",
+    title: "At the Restaurant",
+    subtitle: "Ordering food in French",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Restaurant vocabulary and useful phrases.",
+    data: `menu|le menu
+waiter|le serveur
+waitress|la serveuse
+table|la table
+reservation|la réservation
+starter|l'entrée
+main course|le plat principal
+dessert|le dessert
+the bill|l'addition
+tip|le pourboire
+fork|la fourchette
+knife|le couteau
+spoon|la cuillère
+plate|l'assiette
+glass|le verre
+napkin|la serviette
+to order|commander
+delicious|délicieux
+I'm hungry|j'ai faim
+I'm thirsty|j'ai soif
+the check please|l'addition, s'il vous plaît
+a table for two|une table pour deux
+enjoy your meal|bon appétit
+vegetarian|végétarien
+allergy|l'allergie`,
+  },
+  {
+    id: "fra1p16",
+    title: "Classroom Objects",
+    subtitle: "School vocabulary",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Everyday classroom and school vocabulary.",
+    data: `book|le livre
+pen|le stylo
+pencil|le crayon
+notebook|le cahier
+eraser|la gomme
+ruler|la règle
+desk|le bureau
+chair|la chaise
+board|le tableau
+chalk|la craie
+school bag|le sac
+paper|le papier
+scissors|les ciseaux
+glue|la colle
+calculator|la calculatrice
+dictionary|le dictionnaire
+map|la carte
+clock|l'horloge
+classroom|la salle de classe
+homework|les devoirs
+exam|l'examen
+question|la question
+answer|la réponse
+lesson|la leçon
+schedule|l'emploi du temps`,
+  },
+  {
+    id: "fra1p17",
+    title: "Technology & Devices",
+    subtitle: "Everyday tech vocabulary",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common technology and device vocabulary.",
+    data: `computer|l'ordinateur
+phone|le téléphone
+smartphone|le smartphone
+screen|l'écran
+keyboard|le clavier
+mouse (device)|la souris
+internet|internet
+email|le courriel
+password|le mot de passe
+application|l'application
+website|le site web
+camera|l'appareil photo
+battery|la batterie
+charger|le chargeur
+headphones|les écouteurs
+printer|l'imprimante
+tablet|la tablette
+television|la télévision
+remote control|la télécommande
+wifi|le wifi
+message|le message
+phone call|l'appel
+to download|télécharger
+to send|envoyer
+to save (a file)|enregistrer`,
+  },
+  {
+    id: "fra1p18",
+    title: "Hobbies & Free Time",
+    subtitle: "Talking about what you like doing",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common hobbies and leisure vocabulary.",
+    data: `to read|lire
+to draw|dessiner
+to paint|peindre
+to sing|chanter
+to dance|danser
+to travel|voyager
+to cook|cuisiner
+to fish|pêcher
+to garden|jardiner
+to sew|coudre
+photography|la photographie
+music|la musique
+cinema|le cinéma
+theater|le théâtre
+video game|le jeu vidéo
+board game|le jeu de société
+to collect|collectionner
+to knit|tricoter
+hiking|la randonnée
+camping|le camping
+chess|les échecs
+puzzle|le puzzle
+free time|le temps libre
+hobby|le passe-temps
+weekend|le week-end`,
+  },
+  {
+    id: "fra1p19",
+    title: "Feelings & Emotions",
+    subtitle: "Describing how you feel",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common feelings and emotions.",
+    data: `happy|heureux
+sad|triste
+angry|en colère
+tired|fatigué
+excited|enthousiaste
+afraid|effrayé
+surprised|surpris
+bored|ennuyé
+nervous|nerveux
+calm|calme
+worried|inquiet
+proud|fier
+jealous|jaloux
+confused|confus
+embarrassed|gêné
+relaxed|détendu
+disappointed|déçu
+grateful|reconnaissant
+lonely|seul
+confident|confiant
+curious|curieux
+frustrated|frustré
+hopeful|plein d'espoir
+in love|amoureux
+comfortable|à l'aise`,
+  },
+  {
+    id: "fra1p20",
+    title: "Transportation",
+    subtitle: "Getting around",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Transport and travel vocabulary.",
+    data: `car|la voiture
+bus|le bus
+train|le train
+plane|l'avion
+bicycle|le vélo
+motorcycle|la moto
+boat|le bateau
+taxi|le taxi
+subway|le métro
+tram|le tramway
+truck|le camion
+ticket|le billet
+station|la gare
+airport|l'aéroport
+platform|le quai
+driver|le conducteur
+passenger|le passager
+to drive|conduire
+to fly|voler
+to travel|voyager
+road|la route
+traffic|la circulation
+traffic light|le feu
+parking|le stationnement
+speed|la vitesse`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -341,6 +836,491 @@ sec|mouillé
 tôt|tard
 neuf|usé`,
   },
+  {
+    id: "fra2p6",
+    title: "Reflexive Verbs & Daily Routine",
+    subtitle: "Talking about your day",
+    kind: "cloze",
+    note: "Present-tense reflexive verbs for daily routines.",
+    data: `Je ___ (se réveiller) à sept heures.|me réveille
+Tu ___ (se lever) tôt le matin.|te lèves
+Il ___ (se laver) avant le petit-déjeuner.|se lave
+Nous ___ (s'habiller) rapidement.|nous habillons
+Vous ___ (se brosser) les dents.|vous brossez
+Elles ___ (se coiffer) devant le miroir.|se coiffent
+Je ___ (se doucher) le matin.|me douche
+Tu ___ (se raser) tous les jours.|te rases
+Il ___ (se reposer) après le travail.|se repose
+Nous ___ (se promener) dans le parc.|nous promenons
+Vous ___ (se dépêcher) pour ne pas être en retard.|vous dépêchez
+Elles ___ (se coucher) tard le week-end.|se couchent
+Je ___ (s'habituer) à ce nouveau travail.|m'habitue
+Tu ___ (se souvenir) de son nom ?|te souviens
+Il ___ (s'appeler) Marc.|s'appelle
+Nous ___ (s'ennuyer) sans internet.|nous ennuyons
+Vous ___ (se sentir) mieux aujourd'hui ?|vous sentez
+Elles ___ (se disputer) souvent.|se disputent
+Je ___ (s'occuper) de mon petit frère.|m'occupe
+Tu ___ (se maquiller) avant de sortir.|te maquilles
+Il ___ (se plaindre) tout le temps.|se plaint
+Nous ___ (s'amuser) beaucoup ce soir.|nous amusons
+Vous ___ (s'inquiéter) pour rien.|vous inquiétez
+Elles ___ (s'endormir) devant la télé.|s'endorment
+Je ___ (se détendre) le dimanche.|me détends`,
+  },
+  {
+    id: "fra2p7",
+    title: "Aller + Infinitive (Near Future)",
+    subtitle: "Talking about what's about to happen",
+    kind: "cloze",
+    note: "Futur proche: aller + infinitive.",
+    data: `Je ___ (aller) manger bientôt.|vais
+Tu ___ (aller) partir demain.|vas
+Il ___ (aller) étudier ce soir.|va
+Nous ___ (aller) voyager cet été.|allons
+Vous ___ (aller) arriver à quelle heure ?|allez
+Elles ___ (aller) venir demain.|vont
+Je ___ (aller) acheter du pain.|vais
+Tu ___ (aller) regarder ce film.|vas
+Il ___ (aller) finir son travail.|va
+Nous ___ (aller) déjeuner ensemble.|allons
+Vous ___ (aller) prendre le train ?|allez
+Elles ___ (aller) rester chez elles.|vont
+Je ___ (aller) appeler mon ami.|vais
+Tu ___ (aller) faire les courses.|vas
+Il ___ (aller) dormir tôt ce soir.|va
+Nous ___ (aller) visiter le musée.|allons
+Vous ___ (aller) commencer bientôt ?|allez
+Elles ___ (aller) chanter au concert.|vont
+Je ___ (aller) écrire une lettre.|vais
+Tu ___ (aller) lire ce livre.|vas
+Il ___ (aller) jouer au foot.|va
+Nous ___ (aller) sortir ce soir.|allons
+Vous ___ (aller) répondre au message ?|allez
+Elles ___ (aller) apprendre le français.|vont
+Je ___ (aller) essayer une nouvelle recette.|vais`,
+  },
+  {
+    id: "fra2p8",
+    title: "Health & the Body",
+    subtitle: "At the doctor's",
+    kind: "cloze",
+    note: "Health, symptoms, and visiting the doctor.",
+    data: `J'ai mal à la ___.|tête
+J'ai mal au ___.|ventre
+Le médecin m'a donné une ___.|ordonnance
+Je dois prendre ce ___ trois fois par jour.|médicament
+J'ai de la ___ depuis hier.|fièvre
+Elle a un gros ___.|rhume
+Il tousse et a mal à la ___.|gorge
+Le docteur va m'___.|ausculter
+J'ai pris rendez-vous chez le ___.|dentiste
+L'infirmière m'a fait une ___.|piqûre
+Il s'est cassé le ___.|bras
+Elle s'est fait mal au ___.|dos
+J'ai besoin d'un ___ pour la douleur.|antidouleur
+Le patient attend dans la salle d'___.|attente
+Je me sens ___ aujourd'hui.|malade
+Il faut que tu ailles voir un ___.|spécialiste
+L'assurance ___ couvre les frais médicaux.|maladie
+Elle a pris sa ___ ce matin.|température
+Il a une allergie aux ___.|cacahuètes
+J'ai besoin de ___ après cette opération.|repos
+Le pharmacien m'a conseillé ce ___.|sirop
+J'ai des douleurs dans les ___.|articulations
+Elle doit porter des ___ pour voir clair.|lunettes
+Le médecin a recommandé plus d'___.|exercice
+Il faut se reposer pour guérir plus ___.|vite`,
+  },
+  {
+    id: "fra2p9",
+    title: "Shopping for Clothes",
+    subtitle: "Trying things on",
+    kind: "cloze",
+    note: "Shopping for clothes and asking for sizes.",
+    data: `Je cherche une ___ de ma taille.|robe
+Cette chemise est trop ___ pour moi.|grande
+Avez-vous cette veste en taille ___ ?|moyenne
+Je voudrais ___ ce pantalon.|essayer
+La cabine d'___ est là-bas.|essayage
+Ce pull est en ___.|solde
+Quelle est votre ___ de chaussures ?|pointure
+Ces chaussures sont trop ___.|petites
+Je préfère la couleur ___.|bleue
+Ce tissu est très ___.|doux
+Avez-vous la même chose en ___ ?|noir
+Cette jupe me va très ___.|bien
+Le vendeur m'a donné une ___.|réduction
+Je vais ___ cette écharpe.|acheter
+Ce manteau est parfait pour l'___.|hiver
+Puis-je ___ un remboursement ?|obtenir
+Le magasin ferme à quelle ___ ?|heure
+J'aime beaucoup ce ___ de robe.|style
+Cette matière est cent pour cent ___.|coton
+Le prix affiché est-il ___ ?|final
+Je porte généralement du ___.|noir
+Cette taille ne me va pas, avez-vous plus ___ ?|grand
+Le rayon femme est au premier ___.|étage
+Je voudrais échanger cet ___.|article
+Les soldes commencent la semaine ___.|prochaine`,
+  },
+  {
+    id: "fra2p10",
+    title: "Making Plans & Invitations",
+    subtitle: "Arranging to meet up",
+    kind: "cloze",
+    note: "Making plans, invitations, and arrangements.",
+    data: `Tu es ___ ce soir ?|libre
+On se ___ à quelle heure ?|voit
+Je t'___ à dîner vendredi.|invite
+Ça te ___ d'aller au cinéma ?|dit
+On pourrait se ___ au café.|retrouver
+J'aimerais t'___ à ma fête.|inviter
+Est-ce que tu es ___ samedi ?|disponible
+On se retrouve devant le ___.|cinéma
+Je propose qu'on se voie ___.|demain
+Malheureusement, je ne peux pas ___.|venir
+Je dois ___ mes plans.|annuler
+On remet ça à ___ ?|plus tard
+Ça marche pour ___ ?|toi
+D'accord, à ___ !|bientôt
+Je confirme notre ___ de demain.|rendez-vous
+Peux-tu ___ l'heure ?|confirmer
+On se donne ___ à midi.|rendez-vous
+J'ai déjà quelque chose de ___.|prévu
+Avec ___, je viendrai avec grand plaisir.|plaisir
+Je te ___ un message plus tard.|enverrai
+On peut se voir un autre ___ ?|jour
+Je suis ___ toute la semaine.|occupé
+Est-ce que ça te va comme ___ ?|horaire
+On se retrouve à la ___ du métro.|sortie
+Merci pour l'___ !|invitation`,
+  },
+  {
+    id: "fra2p11",
+    title: "At the Bank & Post Office",
+    subtitle: "Everyday errands",
+    kind: "cloze",
+    note: "Banking and postal errands.",
+    data: `Je voudrais ouvrir un ___ bancaire.|compte
+Je dois ___ de l'argent.|retirer
+Le ___ automatique est en panne.|distributeur
+J'aimerais ___ un chèque.|encaisser
+Quel est le ___ de mon compte ?|solde
+Je voudrais ___ cette lettre.|envoyer
+Combien coûte un ___ pour l'international ?|timbre
+Je voudrais envoyer ce ___ en recommandé.|colis
+Où est la ___ la plus proche ?|poste
+J'ai besoin d'une nouvelle carte ___.|bancaire
+Le ___ d'intérêt a augmenté.|taux
+Je voudrais faire un ___ bancaire.|virement
+Ma carte a été ___.|bloquée
+Il faut remplir ce ___.|formulaire
+Le guichet ___ à dix-sept heures.|ferme
+J'ai oublié mon code ___.|secret
+Je voudrais ___ un prêt.|demander
+Combien de temps prend la ___ ?|livraison
+Le facteur passe tous les ___.|matins
+J'ai reçu un ___ ce matin.|colis
+Il faut signer ce ___.|document
+Je voudrais changer de la ___ étrangère.|monnaie
+Ma carte de crédit a été ___.|refusée
+J'ai perdu mon ___ d'identité.|carte
+Le conseiller bancaire m'a bien ___.|conseillé`,
+  },
+  {
+    id: "fra2p12",
+    title: "Household Chores",
+    subtitle: "Cleaning and tidying up",
+    kind: "cloze",
+    note: "Everyday household chores.",
+    data: `Je dois ___ la vaisselle.|faire
+Il faut ___ le sol.|balayer
+Elle va ___ les vitres.|laver
+Nous devons ___ la poubelle.|sortir
+Tu peux ___ ton lit ?|faire
+Je vais ___ l'aspirateur.|passer
+Il faut ___ le linge.|laver
+Elle doit ___ les vêtements.|repasser
+Nous allons ___ la cuisine.|nettoyer
+Peux-tu ___ la table ?|débarrasser
+Je dois ___ les courses.|ranger
+Il faut ___ les meubles.|dépoussiérer
+Elle va ___ le jardin.|arroser
+Nous devons ___ la salle de bain.|nettoyer
+Tu peux ___ les draps ?|changer
+Je vais ___ le linge sale.|trier
+Il faut ___ la vaisselle propre.|ranger
+Elle doit ___ le frigo.|nettoyer
+Nous allons ___ les plantes.|arroser
+Peux-tu ___ le chat ?|nourrir
+Je dois ___ mes affaires.|ranger
+Il faut ___ la lessive.|faire
+Elle va ___ les toilettes.|nettoyer
+Nous devons ___ le tapis.|aspirer
+Tu peux m'aider à ___ le ménage ?|faire`,
+  },
+  {
+    id: "fra2p13",
+    title: "Prepositions of Time",
+    subtitle: "Talking about when things happen",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common prepositions used to talk about time.",
+    data: `before|avant
+after|après
+during|pendant
+since|depuis
+until|jusqu'à
+for (a duration)|pendant
+in (a month/year)|en
+on (a day)|le
+at (a time)|à
+from…to|de…à
+within|dans
+ago|il y a
+already|déjà
+still|encore
+not yet|pas encore
+soon|bientôt
+recently|récemment
+lately|dernièrement
+at the same time|en même temps
+at first|d'abord
+finally|enfin
+meanwhile|pendant ce temps
+throughout|tout au long de
+by (a deadline)|avant
+around (an approximate time)|vers`,
+  },
+  {
+    id: "fra2p14",
+    title: "Possessive Adjectives",
+    subtitle: "Saying what belongs to whom",
+    kind: "cloze",
+    note: "Possessive adjectives agreeing with the noun they modify.",
+    data: `C'est ___ livre (à moi).|mon
+C'est ___ voiture (à moi).|ma
+Ce sont ___ amis (à moi).|mes
+C'est ___ sac (à toi).|ton
+C'est ___ maison (à toi).|ta
+Ce sont ___ enfants (à toi).|tes
+C'est ___ téléphone (à lui/elle).|son
+C'est ___ chambre (à lui/elle).|sa
+Ce sont ___ affaires (à lui/elle).|ses
+C'est ___ appartement (à nous).|notre
+Ce sont ___ voisins (à nous).|nos
+C'est ___ jardin (à vous).|votre
+Ce sont ___ enfants (à vous).|vos
+C'est ___ bureau (à eux/elles).|leur
+Ce sont ___ voitures (à eux/elles).|leurs
+J'ai perdu ___ clés.|mes
+Elle adore ___ chat.|son
+Nous aimons ___ ville.|notre
+Ils ont vendu ___ maison.|leur
+Tu as oublié ___ parapluie.|ton
+Vous avez ___ propre bureau ?|votre
+Il a rangé ___ chambre.|sa
+Elles ont fini ___ devoirs.|leurs
+J'adore passer du temps avec ___ famille.|ma
+Nous invitons ___ amis ce soir.|nos`,
+  },
+  {
+    id: "fra2p15",
+    title: "Negation",
+    subtitle: "Saying what isn't so",
+    kind: "cloze",
+    note: "Common negative structures beyond ne...pas.",
+    data: `Je ne comprends ___.|pas
+Il ne mange ___ de viande.|jamais
+Elle ne travaille ___ ici.|plus
+Nous ne voyons ___.|rien
+Tu ne connais ___ ici.|personne
+Il n'a ___ d'argent.|plus
+Je n'ai ___ vu ce film.|jamais
+Elle ne veut ___ sortir.|pas
+Nous n'avons ___ le temps.|plus
+Ils ne font ___ le week-end.|rien
+Je ne vais ___ au cinéma.|jamais
+Tu ne dis ___ la vérité.|pas
+Il n'y a ___ dans la salle.|personne
+Elle n'aime ___ le café.|pas
+Nous ne mangeons ___ de sucre.|plus
+Vous ne savez ___.|rien
+Elles ne viennent ___ le lundi.|jamais
+Je ne fais ___ de sport.|pas
+Il n'a ___ compris.|rien
+Nous n'irons ___ là-bas.|jamais
+Tu n'as ___ raison.|pas
+Elle ne mange ___.|rien
+Ils n'ont ___ d'amis ici.|pas
+Je ne bois ___ d'alcool.|jamais
+Nous ne faisons ___ ça.|plus`,
+  },
+  {
+    id: "fra2p16",
+    title: "Question Formation",
+    subtitle: "Est-ce que and inversion",
+    kind: "cloze",
+    note: "Forming questions with est-ce que and inversion.",
+    data: `___-ce que tu aimes le café ?|Est
+Est-ce ___ vous êtes prêts ?|que
+Comment ___-vous ?|allez
+Où ___-il ?|va
+Que ___-vous faire ?|voulez
+Quand ___-elle arriver ?|va
+Pourquoi ___-tu triste ?|es
+Qui ___-ce ?|est
+Est-ce que tu ___ le film ?|as vu
+Avez-___ compris ?|vous
+Est-ce qu'il ___ ici ?|habite
+Puis-___ vous aider ?|je
+Voulez-___ un café ?|vous
+Est-ce que nous ___ en retard ?|sommes
+Sais-___ où il est ?|tu
+Est-ce qu'elles ___ demain ?|viennent
+Combien ___-ça ?|coûte
+Quelle heure ___-il ?|est
+Est-ce que je peux ___ maintenant ?|partir
+Avez-vous ___ ce livre ?|lu
+Est-ce que ça te ___ ?|plaît
+Où ___-vous né ?|êtes
+Que ___-t-il dit ?|a
+Est-ce que tu ___ prêt ?|es
+Aimez-___ voyager ?|vous`,
+  },
+  {
+    id: "fra2p17",
+    title: "Adverbs of Frequency",
+    subtitle: "Saying how often",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Adverbs and expressions of frequency.",
+    data: `always|toujours
+usually|généralement
+often|souvent
+sometimes|parfois
+occasionally|de temps en temps
+rarely|rarement
+never|jamais
+every day|tous les jours
+every week|toutes les semaines
+every month|tous les mois
+once|une fois
+twice|deux fois
+several times|plusieurs fois
+from time to time|de temps à autre
+constantly|constamment
+regularly|régulièrement
+frequently|fréquemment
+seldom|peu souvent
+every year|chaque année
+daily|quotidiennement
+weekly|chaque semaine
+monthly|chaque mois
+almost never|presque jamais
+almost always|presque toujours
+once a week|une fois par semaine`,
+  },
+  {
+    id: "fra2p18",
+    title: "Sports & Leisure Activities",
+    subtitle: "Talking about sport",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Common sports and leisure vocabulary.",
+    data: `football|le football
+basketball|le basketball
+tennis|le tennis
+swimming|la natation
+running|la course
+cycling|le cyclisme
+skiing|le ski
+golf|le golf
+volleyball|le volleyball
+boxing|la boxe
+gymnastics|la gymnastique
+yoga|le yoga
+climbing|l'escalade
+surfing|le surf
+rugby|le rugby
+handball|le handball
+athletics|l'athlétisme
+team|l'équipe
+match|le match
+coach|l'entraîneur
+stadium|le stade
+gym|la salle de sport
+to train|s'entraîner
+to win|gagner
+to lose|perdre`,
+  },
+  {
+    id: "fra2p19",
+    title: "At Work / Office Vocabulary",
+    subtitle: "Talking about your job",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Everyday office and workplace vocabulary.",
+    data: `office|le bureau
+meeting|la réunion
+colleague|le collègue
+boss|le patron
+employee|l'employé
+salary|le salaire
+schedule|l'horaire
+deadline|la date limite
+project|le projet
+email|le courriel
+report|le rapport
+contract|le contrat
+interview|l'entretien
+resume/CV|le CV
+promotion|la promotion
+vacation|les vacances
+break|la pause
+task|la tâche
+team|l'équipe
+client|le client
+presentation|la présentation
+computer|l'ordinateur
+printer|l'imprimante
+to hire|embaucher
+to resign|démissionner`,
+  },
+  {
+    id: "fra2p20",
+    title: "City & Public Transport",
+    subtitle: "Getting around town",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "City and public-transport vocabulary.",
+    data: `city|la ville
+street|la rue
+avenue|l'avenue
+square|la place
+bridge|le pont
+building|le bâtiment
+neighbourhood|le quartier
+sidewalk|le trottoir
+traffic light|le feu
+roundabout|le rond-point
+bus stop|l'arrêt de bus
+subway station|la station de métro
+ticket machine|le distributeur de billets
+map|le plan
+town hall|la mairie
+park|le parc
+library|la bibliothèque
+church|l'église
+market|le marché
+suburb|la banlieue
+downtown|le centre-ville
+traffic jam|l'embouteillage
+pedestrian|le piéton
+crosswalk|le passage piéton
+one-way street|le sens unique`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -505,6 +1485,493 @@ Elle ___ (rire) beaucoup à cette époque.|riait
 Ils ___ (connaître) bien le quartier.|connaissaient
 La vie ___ (sembler) plus simple à cette époque.|semblait`,
   },
+  {
+    id: "frb1p6",
+    title: "Conditionnel Présent",
+    subtitle: "Being polite and hypothetical",
+    kind: "cloze",
+    note: "Present conditional for polite requests and hypotheticals.",
+    data: `Je ___ (vouloir) un café, s'il vous plaît.|voudrais
+Tu ___ (aimer) venir avec nous ?|aimerais
+Il ___ (pouvoir) nous aider.|pourrait
+Nous ___ (devoir) partir maintenant.|devrions
+Vous ___ (savoir) où il est ?|sauriez
+Elles ___ (venir) si elles pouvaient.|viendraient
+Je ___ (prendre) bien un dessert.|prendrais
+Tu ___ (faire) quoi à ma place ?|ferais
+Il ___ (être) content de te voir.|serait
+Nous ___ (avoir) besoin d'aide.|aurions
+Vous ___ (pouvoir) répéter, s'il vous plaît ?|pourriez
+Elles ___ (vouloir) partir tôt.|voudraient
+Je ___ (aller) bien si j'avais le temps.|irais
+Tu ___ (dire) la même chose ?|dirais
+Il ___ (voir) les choses différemment.|verrait
+Nous ___ (venir) volontiers.|viendrions
+Vous ___ (aimer) essayer ce plat ?|aimeriez
+Elles ___ (savoir) quoi faire.|sauraient
+Je ___ (préférer) rester ici.|préférerais
+Tu ___ (devoir) te reposer.|devrais
+Il ___ (falloir) partir bientôt.|faudrait
+Nous ___ (souhaiter) vous remercier.|souhaiterions
+Vous ___ (être) intéressé par ce poste ?|seriez
+Elles ___ (adorer) visiter Paris.|adoreraient
+Je ___ (boire) volontiers un thé.|boirais`,
+  },
+  {
+    id: "frb1p7",
+    title: "Relative Pronouns",
+    subtitle: "Qui, que, où, dont",
+    kind: "cloze",
+    note: "Relative pronouns linking two ideas into one sentence.",
+    data: `Voici la femme ___ habite à côté.|qui
+C'est le livre ___ je lis en ce moment.|que
+C'est la ville ___ je suis né.|où
+Voici l'homme ___ je t'ai parlé.|dont
+La personne ___ m'a aidé est partie.|qui
+Le film ___ nous avons vu était génial.|que
+C'est le jour ___ tout a changé.|où
+C'est le sujet ___ elle a peur.|dont
+Le chien ___ aboie appartient au voisin.|qui
+La voiture ___ il a achetée est rouge.|qu'
+C'est la raison pour ___ il est parti.|laquelle
+Voici les amis ___ je passe mes vacances.|avec qui
+C'est le restaurant ___ nous avons dîné.|où
+Le livre ___ la couverture est bleue est à moi.|dont
+La fille ___ chante est ma sœur.|qui
+Les vacances ___ nous rêvons approchent.|dont
+C'est quelque chose ___ je ne comprends pas.|que
+Le quartier ___ j'habite est calme.|où
+La personne à ___ j'ai parlé était gentille.|qui
+C'est un projet ___ nous sommes fiers.|dont
+Voilà la maison ___ appartient à mes grands-parents.|qui
+Le sac ___ tu cherches est sous la table.|que
+C'est l'année ___ nous nous sommes rencontrés.|où
+Le collègue ___ le bureau est là-bas m'a aidé.|dont
+C'est une histoire ___ je me souviens bien.|dont`,
+  },
+  {
+    id: "frb1p8",
+    title: "Object Pronouns",
+    subtitle: "Le, la, les, lui, leur",
+    kind: "cloze",
+    note: "Direct and indirect object pronouns.",
+    data: `Je ___ vois tous les jours (mon frère).|le
+Je ___ vois tous les jours (ma sœur).|la
+Je ___ vois tous les jours (mes amis).|les
+Il ___ parle souvent (à moi).|me
+Il ___ parle souvent (à toi).|te
+Il ___ parle souvent (à lui/elle).|lui
+Il ___ parle souvent (à nous).|nous
+Il ___ parle souvent (à eux/elles).|leur
+Je ___ aime beaucoup (ce livre).|l'
+Je ___ ai vu hier (mes parents).|les
+Tu ___ as dit la vérité (à moi) ?|m'
+Nous ___ avons offert un cadeau (à elle).|lui
+Vous ___ avez appelé (nous) hier.|nous
+Elle ___ a envoyé une lettre (à eux).|leur
+Je vais ___ acheter (ce pull).|l'
+Il va ___ inviter (ses amis).|les
+Peux-tu ___ aider (moi) ?|m'
+Je ___ ai donné mon numéro (à toi).|t'
+Elle ___ a présenté son projet (à nous).|nous
+Ils ___ ont remercié (moi) chaleureusement.|m'
+Je ___ trouve intéressant (ce sujet).|le
+Nous ___ avons rencontrée hier (elle).|l'
+Vous ___ avez écrit (à eux) ?|leur
+Il ___ a expliqué la situation (à elle).|lui
+Je ne ___ connais pas (cet homme).|le`,
+  },
+  {
+    id: "frb1p9",
+    title: "Y and En",
+    subtitle: "Two small but essential pronouns",
+    kind: "cloze",
+    note: "The pronouns y (place/idea) and en (quantity/of it).",
+    data: `Tu vas à Paris ? Oui, j'___ vais demain.|y
+Il pense à son avenir ? Oui, il ___ pense souvent.|y
+Elle a des enfants ? Oui, elle ___ a deux.|en
+Tu veux du café ? Oui, j'___ veux bien.|en
+Vous allez à la fête ? Oui, nous ___ allons.|y
+Il parle de son travail ? Oui, il ___ parle beaucoup.|en
+Tu crois à cette histoire ? Oui, j'___ crois.|y
+Elle a besoin d'aide ? Oui, elle ___ a besoin.|en
+Nous répondons à la question ? Oui, nous ___ répondons.|y
+Ils ont peur des araignées ? Oui, ils ___ ont peur.|en
+Tu penses souvent à elle ? Oui, j'___ pense souvent.|y
+Vous voulez des fruits ? Oui, nous ___ voulons.|en
+Il habite à Lyon ? Oui, il ___ habite.|y
+Elle revient de vacances ? Oui, elle ___ revient.|en
+Nous nous intéressons à l'art ? Oui, nous ___ intéressons.|y
+Tu as combien de livres ? J'___ ai dix.|en
+Il va souvent au cinéma ? Oui, il ___ va souvent.|y
+Vous avez assez de temps ? Oui, nous ___ avons assez.|en
+Elle s'habitue à sa nouvelle vie ? Oui, elle ___ habitue.|s'y
+Tu te souviens de ce jour ? Oui, je m'___ souviens.|en
+Il tient à son travail ? Oui, il ___ tient beaucoup.|y
+Nous avons besoin de conseils ? Oui, nous ___ avons besoin.|en
+Elle réfléchit à la question ? Oui, elle ___ réfléchit.|y
+Tu manges des légumes ? Oui, j'___ mange tous les jours.|en
+Il croit encore au succès ? Oui, il ___ croit toujours.|y`,
+  },
+  {
+    id: "frb1p10",
+    title: "Environment & Nature",
+    subtitle: "Talking about the natural world",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Nature and environment vocabulary.",
+    data: `nature|la nature
+forest|la forêt
+mountain|la montagne
+river|la rivière
+lake|le lac
+sea|la mer
+ocean|l'océan
+sky|le ciel
+sun|le soleil
+moon|la lune
+star|l'étoile
+tree|l'arbre
+flower|la fleur
+grass|l'herbe
+stone|la pierre
+sand|le sable
+earth|la terre
+air|l'air
+pollution|la pollution
+recycling|le recyclage
+environment|l'environnement
+climate|le climat
+energy|l'énergie
+renewable|renouvelable
+sustainable|durable`,
+  },
+  {
+    id: "frb1p11",
+    title: "Technology & the Internet",
+    subtitle: "Talking about being online",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Internet and computing vocabulary.",
+    data: `network|le réseau
+connection|la connexion
+software|le logiciel
+hardware|le matériel
+file|le fichier
+folder|le dossier
+data|les données
+cloud (storage)|le nuage
+server|le serveur
+browser|le navigateur
+search engine|le moteur de recherche
+social media|les réseaux sociaux
+account|le compte
+profile|le profil
+update|la mise à jour
+notification|la notification
+link|le lien
+attachment|la pièce jointe
+computer virus|le virus
+security|la sécurité
+backup|la sauvegarde
+device|l'appareil
+screen|l'écran
+app|l'application
+setting|le paramètre`,
+  },
+  {
+    id: "frb1p12",
+    title: "Emotions & Feelings, In Depth",
+    subtitle: "Describing subtler feelings",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "More nuanced emotion vocabulary.",
+    data: `relief|le soulagement
+gratitude|la gratitude
+regret|le regret
+hope|l'espoir
+despair|le désespoir
+enthusiasm|l'enthousiasme
+anxiety|l'anxiété
+satisfaction|la satisfaction
+disappointment|la déception
+pride|la fierté
+shame|la honte
+guilt|la culpabilité
+compassion|la compassion
+envy|l'envie
+admiration|l'admiration
+trust|la confiance
+doubt|le doute
+courage|le courage
+patience|la patience
+tenderness|la tendresse
+nostalgia|la nostalgie
+serenity|la sérénité
+irritation|l'irritation
+melancholy|la mélancolie
+contentment|le contentement`,
+  },
+  {
+    id: "frb1p13",
+    title: "Media & News",
+    subtitle: "Talking about the press",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Media and journalism vocabulary.",
+    data: `news|les nouvelles
+newspaper|le journal
+magazine|le magazine
+article|l'article
+journalist|le journaliste
+headline|le titre
+report|le reportage
+interview|l'interview
+broadcast|la diffusion
+channel|la chaîne
+radio|la radio
+podcast|le podcast
+advertisement|la publicité
+subscription|l'abonnement
+audience|le public
+editor|le rédacteur
+press|la presse
+breaking news|les dernières nouvelles
+opinion|l'opinion
+censorship|la censure
+freedom of speech|la liberté d'expression
+source|la source
+rumor|la rumeur
+headline story|le gros titre
+live broadcast|le direct`,
+  },
+  {
+    id: "frb1p14",
+    title: "Education System",
+    subtitle: "Talking about school and university",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Education vocabulary from school to university.",
+    data: `school|l'école
+high school|le lycée
+university|l'université
+degree|le diplôme
+course|le cours
+subject|la matière
+grade|la note
+exam|l'examen
+homework|les devoirs
+teacher|l'enseignant
+student|l'étudiant
+classroom|la salle de classe
+scholarship|la bourse
+curriculum|le programme
+semester|le semestre
+lecture|le cours magistral
+tuition|les frais de scolarité
+graduation|la remise des diplômes
+library|la bibliothèque
+research|la recherche
+thesis|la thèse
+literacy|l'alphabétisation
+kindergarten|la maternelle
+principal|le directeur
+report card|le bulletin`,
+  },
+  {
+    id: "frb1p15",
+    title: "Health & Wellness",
+    subtitle: "Talking about staying healthy",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Health and wellness vocabulary.",
+    data: `health|la santé
+wellness|le bien-être
+exercise|l'exercice
+diet|le régime
+sleep|le sommeil
+stress|le stress
+relaxation|la relaxation
+nutrition|la nutrition
+vitamin|la vitamine
+immune system|le système immunitaire
+mental health|la santé mentale
+therapy|la thérapie
+meditation|la méditation
+fitness|la forme physique
+balanced diet|une alimentation équilibrée
+hydration|l'hydratation
+recovery|la guérison
+prevention|la prévention
+checkup|le bilan de santé
+symptom|le symptôme
+treatment|le traitement
+vaccine|le vaccin
+addiction|la dépendance
+habit|l'habitude
+lifestyle|le mode de vie`,
+  },
+  {
+    id: "frb1p16",
+    title: "Housing & Renting",
+    subtitle: "Finding a place to live",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Renting and housing vocabulary.",
+    data: `rent|le loyer
+lease|le bail
+landlord|le propriétaire
+tenant|le locataire
+deposit|la caution
+utilities|les charges
+furnished|meublé
+unfurnished|non meublé
+studio apartment|le studio
+roommate|le colocataire
+to move (relocate)|déménager
+neighbourhood|le quartier
+real estate agency|l'agence immobilière
+mortgage|le prêt immobilier
+insurance|l'assurance
+maintenance|l'entretien
+renovation|la rénovation
+balcony|le balcon
+elevator|l'ascenseur
+floor (level)|l'étage
+lease agreement|le contrat de location
+notice (to vacate)|le préavis
+property|la propriété
+square meter|le mètre carré
+storage|le rangement`,
+  },
+  {
+    id: "frb1p17",
+    title: "Verbs + Prepositions (à/de)",
+    subtitle: "Verbs that need à or de",
+    kind: "cloze",
+    note: "Common verbs requiring à or de before an infinitive or noun.",
+    data: `Je pense ___ mes vacances.|à
+J'ai besoin ___ ton aide.|de
+Il continue ___ travailler.|à
+Elle a décidé ___ partir.|de
+Nous commençons ___ comprendre.|à
+Vous avez oublié ___ fermer la porte.|de
+Ils réussissent ___ finir à temps.|à
+Je rêve ___ voyager un jour.|de
+Tu apprends ___ conduire.|à
+Elle a peur ___ échouer.|de
+Nous nous intéressons ___ l'art.|à
+Il vient ___ finir son travail.|de
+Je m'habitue ___ ce nouveau rythme.|à
+Elle essaie ___ comprendre la situation.|de
+Nous hésitons ___ accepter cette offre.|à
+Vous avez arrêté ___ fumer.|de
+Ils cherchent ___ résoudre le problème.|à
+Je te remercie ___ ton aide.|de
+Elle s'est mise ___ pleurer.|à
+Nous avons envie ___ sortir ce soir.|de
+Il refuse ___ répondre.|de
+Tu tiens ___ ce projet.|à
+Elle a choisi ___ rester.|de
+Nous invitons nos amis ___ dîner.|à
+Ils sont fiers ___ leur travail.|de`,
+  },
+  {
+    id: "frb1p18",
+    title: "Passive Voice",
+    subtitle: "Être + past participle",
+    kind: "cloze",
+    note: "The passive voice with être and a past participle.",
+    data: `La lettre ___ (écrire) par Marie.|est écrite
+Le livre ___ (publier) l'année dernière.|a été publié
+La maison ___ (construire) en 1990.|a été construite
+Les fenêtres ___ (nettoyer) hier.|ont été nettoyées
+Le film ___ (réaliser) par un jeune cinéaste.|a été réalisé
+Cette chanson ___ (chanter) par une star.|est chantée
+Le pont ___ (réparer) le mois dernier.|a été réparé
+Les documents ___ (signer) ce matin.|ont été signés
+La décision ___ (prendre) hier soir.|a été prise
+Le repas ___ (préparer) par le chef.|est préparé
+Les résultats ___ (annoncer) demain.|seront annoncés
+La ville ___ (fonder) au moyen âge.|a été fondée
+Le projet ___ (approuver) par le directeur.|a été approuvé
+Les invités ___ (accueillir) chaleureusement.|ont été accueillis
+Le tableau ___ (peindre) par un artiste célèbre.|a été peint
+La réunion ___ (annuler) à cause de la pluie.|a été annulée
+Ce roman ___ (traduire) en plusieurs langues.|a été traduit
+Les billets ___ (vendre) en une heure.|ont été vendus
+Le prix ___ (remettre) au gagnant.|a été remis
+Cette règle ___ (respecter) par tout le monde.|est respectée
+Le colis ___ (livrer) hier matin.|a été livré
+Les enfants ___ (surveiller) par leurs parents.|sont surveillés
+Le budget ___ (réduire) cette année.|a été réduit
+La nouvelle ___ (confirmer) ce matin.|a été confirmée
+Ce quartier ___ (rénover) récemment.|a été rénové`,
+  },
+  {
+    id: "frb1p19",
+    title: "Time Expressions",
+    subtitle: "Depuis, pendant, il y a",
+    kind: "cloze",
+    note: "Depuis, pendant, and il y a for talking about time.",
+    data: `J'habite ici ___ cinq ans.|depuis
+Nous avons voyagé ___ deux semaines.|pendant
+Il est parti ___ une heure.|il y a
+Elle étudie le français ___ 2020.|depuis
+J'ai attendu ___ une heure entière.|pendant
+Ils se sont mariés ___ dix ans.|il y a
+Je travaille ici ___ le mois de mars.|depuis
+Nous avons vécu à Paris ___ trois ans.|pendant
+Elle a déménagé ___ six mois.|il y a
+Tu apprends l'espagnol ___ combien de temps ?|depuis
+Il a plu ___ toute la journée.|pendant
+J'ai vu ce film ___ longtemps.|il y a
+Nous nous connaissons ___ l'université.|depuis
+Elle a dormi ___ dix heures.|pendant
+Ils ont déménagé ___ deux ans.|il y a
+Je fais du sport ___ un an maintenant.|depuis
+Nous avons discuté ___ des heures.|pendant
+Il a appelé ___ cinq minutes.|il y a
+Elle attend ce moment ___ toujours.|depuis
+Vous avez travaillé ___ tout l'été.|pendant
+J'ai fini mes études ___ deux ans.|il y a
+Nous habitons ici ___ notre mariage.|depuis
+Il a couru ___ une heure sans s'arrêter.|pendant
+Elle a quitté son emploi ___ un mois.|il y a
+Je le connais ___ mon enfance.|depuis`,
+  },
+  {
+    id: "frb1p20",
+    title: "Making Suggestions & Giving Advice",
+    subtitle: "Recommending and advising",
+    kind: "cloze",
+    note: "Common structures for suggestions and advice.",
+    data: `Tu ___ (devoir) te reposer un peu.|devrais
+Si j'étais toi, je ___ (partir) tôt.|partirais
+On ___ (pouvoir) aller au cinéma ce soir.|pourrait
+Pourquoi ne pas ___ (prendre) un peu de repos ?|prendre
+Il vaudrait mieux ___ (partir) maintenant.|partir
+Je te conseille de ___ (rester) prudent.|rester
+Tu devrais ___ (consulter) un médecin.|consulter
+Ça vaudrait la peine d'___ (essayer).|essayer
+À ta place, je ne ___ (dire) rien.|dirais
+Il serait sage de ___ (faire) des économies.|faire
+Tu ferais mieux de ___ (dormir) tôt ce soir.|dormir
+Je te suggère de ___ (prendre) une pause.|prendre
+Et si on ___ (essayer) autre chose ?|essayait
+Il faudrait ___ (être) plus attentif.|être
+Tu devrais vraiment ___ (lire) ce livre.|lire
+Pourquoi ne pas ___ (partir) un peu plus tôt ?|partir
+Je te recommande de ___ (essayer) ce restaurant.|essayer
+Il serait préférable de ___ (attendre) demain.|attendre
+On devrait ___ (prendre) une décision rapidement.|prendre
+Ça serait une bonne idée de ___ (faire) un plan.|faire
+Tu pourrais ___ (demander) à quelqu'un d'autre.|demander
+Si j'étais à ta place, je ___ (accepter) cette offre.|accepterais
+Il vaut mieux ___ (prévenir) que guérir.|prévenir
+Je te conseille vivement de ___ (suivre) ce cours.|suivre
+Tu devrais peut-être ___ (prendre) un peu de repos.|prendre`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -668,6 +2135,495 @@ Elle a dit qu'elle ne ___ (comprendre) pas.|comprenait
 Il a demandé combien cela ___ (coûter).|coûtait
 Elle a affirmé qu'elle ___ (avoir) toujours raison.|avait toujours
 Il a dit qu'il ___ (essayer) de son mieux.|essayait`,
+  },
+  {
+    id: "frb2p6",
+    title: "Plus-que-parfait",
+    subtitle: "The pluperfect",
+    kind: "cloze",
+    note: "Pluperfect: what had already happened before another past action.",
+    data: `Quand je suis arrivé, il ___ (partir) déjà.|était déjà parti
+Elle ___ (finir) son travail avant midi.|avait fini
+Nous ___ (manger) avant leur arrivée.|avions mangé
+Tu ___ (voir) ce film avant moi.|avais vu
+Ils ___ (arriver) déjà quand le film a commencé.|étaient déjà arrivés
+J'___ (oublier) mon parapluie chez moi.|avais oublié
+Elle ___ (perdre) ses clés avant de partir.|avait perdu
+Nous ___ (visiter) déjà ce musée.|avions déjà visité
+Vous ___ (terminer) vos études avant de déménager.|aviez terminé
+Il ___ (préparer) le dîner avant que nous arrivions.|avait préparé
+J'___ (lire) ce livre avant l'examen.|avais lu
+Elle ___ (partir) avant que je puisse la remercier.|était partie
+Nous ___ (voir) jamais une telle chose.|n'avions jamais vu
+Ils ___ (décider) déjà avant la réunion.|avaient déjà décidé
+Tu ___ (comprendre) la leçon avant le cours suivant.|avais compris
+Il ___ (écrire) la lettre avant de partir.|avait écrit
+Elle ___ (manger) déjà quand nous sommes arrivés.|avait déjà mangé
+Nous ___ (finir) nos devoirs avant le dîner.|avions fini
+J'___ (appeler) avant de venir.|avais appelé
+Ils ___ (vendre) la maison avant de déménager.|avaient vendu
+Vous ___ (faire) une erreur sans le savoir.|aviez fait
+Elle ___ (retourner) chez elle avant la tempête.|était retournée
+Nous ___ (choisir) ce restaurant avant de réserver.|avions choisi
+Il ___ (dire) la vérité depuis le début.|avait dit
+J'___ (finir) mon travail avant la pause.|avais fini`,
+  },
+  {
+    id: "frb2p7",
+    title: "Conditionnel Passé",
+    subtitle: "The past conditional",
+    kind: "cloze",
+    note: "Past conditional: what would have happened.",
+    data: `Si j'avais su, je ___ (venir) plus tôt.|serais venu
+Elle ___ (partir) si elle avait eu le temps.|serait partie
+Nous ___ (aider) si tu nous avais demandé.|aurions aidé
+Tu ___ (réussir) avec plus d'efforts.|aurais réussi
+Ils ___ (venir) s'ils avaient été invités.|seraient venus
+J'___ (aimer) le voir avant son départ.|aurais aimé
+Elle ___ (devoir) nous prévenir plus tôt.|aurait dû
+Nous ___ (pouvoir) faire mieux.|aurions pu
+Vous ___ (dire) la même chose à ma place.|auriez dit
+Il ___ (choisir) une autre solution.|aurait choisi
+J'___ (vouloir) t'aider davantage.|aurais voulu
+Elle ___ (rester) si elle avait pu.|serait restée
+Nous ___ (faire) un autre choix.|aurions fait
+Tu ___ (devoir) l'écouter attentivement.|aurais dû
+Ils ___ (arriver) à l'heure sans la panne.|seraient arrivés
+J'___ (préférer) rester à la maison.|aurais préféré
+Elle ___ (pouvoir) réussir avec un peu de chance.|aurait pu
+Nous ___ (aimer) participer à cet événement.|aurions aimé
+Vous ___ (accepter) cette offre, je pense.|auriez accepté
+Il ___ (partir) sans dire au revoir.|serait parti
+J'___ (faire) la même erreur.|aurais fait
+Elle ___ (vouloir) tout changer.|aurait voulu
+Nous ___ (devoir) réfléchir davantage.|aurions dû
+Ils ___ (pouvoir) éviter ce problème.|auraient pu
+Tu ___ (être) surpris par sa réaction.|aurais été`,
+  },
+  {
+    id: "frb2p8",
+    title: "Gerund & Present Participle",
+    subtitle: "En + -ant for simultaneous actions",
+    kind: "cloze",
+    note: "The gerund (en + present participle) for simultaneous actions.",
+    data: `Il mange ___ (regarder) la télévision.|en regardant
+Elle chante ___ (faire) la vaisselle.|en faisant
+J'ai appris le français ___ (voyager) en France.|en voyageant
+Nous parlons ___ (marcher) dans le parc.|en marchant
+Tu apprends beaucoup ___ (lire) chaque jour.|en lisant
+Il s'est blessé ___ (courir) dans la rue.|en courant
+Elle a trouvé du travail ___ (chercher) sur internet.|en cherchant
+Nous économisons de l'argent ___ (cuisiner) à la maison.|en cuisinant
+J'écoute de la musique ___ (travailler).|en travaillant
+Il a réussi ___ (persévérer).|en persévérant
+Elle s'est endormie ___ (regarder) un film.|en regardant
+Nous avons discuté ___ (attendre) le bus.|en attendant
+Tu peux apprendre beaucoup ___ (voyager).|en voyageant
+Il a perdu du poids ___ (faire) plus de sport.|en faisant
+Elle a amélioré son français ___ (pratiquer) tous les jours.|en pratiquant
+Nous avons économisé du temps ___ (planifier) à l'avance.|en planifiant
+J'ai rencontré mon ami ___ (étudier) à l'université.|en étudiant
+Il s'est amusé ___ (jouer) avec ses amis.|en jouant
+Elle a compris ___ (poser) des questions.|en posant
+Nous avons progressé ___ (s'entraîner) régulièrement.|en nous entraînant
+Tu réussiras ___ (essayer) encore une fois.|en essayant
+Il a tout perdu ___ (jouer) au casino.|en jouant
+Elle s'est fait des amis ___ (participer) au club.|en participant
+Nous avons économisé ___ (acheter) en gros.|en achetant
+J'ai découvert cette recette ___ (chercher) sur internet.|en cherchant`,
+  },
+  {
+    id: "frb2p9",
+    title: "Concession & Contrast Connectors",
+    subtitle: "Signalling contrast",
+    kind: "pair",
+    prompt: 'The connector "%s" is used to…',
+    note: "Connectors for concession and contrast.",
+    data: `but|mais
+however|cependant
+nevertheless|néanmoins
+although|bien que
+even though|même si
+despite|malgré
+on the other hand|en revanche
+whereas|alors que
+yet|pourtant
+in spite of|malgré
+on the contrary|au contraire
+while (contrast)|tandis que
+still (nonetheless)|quand même
+even so|tout de même
+regardless|peu importe
+conversely|inversement
+by contrast|par contraste
+notwithstanding|nonobstant
+all the same|tout de même
+in contrast to|contrairement à
+though|quoique
+despite the fact that|bien que
+however that may be|quoi qu'il en soit
+be that as it may|quoi qu'il en soit
+unlike|à la différence de`,
+  },
+  {
+    id: "frb2p10",
+    title: "Cause & Consequence Connectors",
+    subtitle: "Explaining why and what follows",
+    kind: "pair",
+    prompt: 'The connector "%s" is used to…',
+    note: "Connectors for cause and consequence.",
+    data: `because|parce que
+since (cause)|puisque
+as (cause)|comme
+so|donc
+thus|ainsi
+therefore|par conséquent
+so that|de sorte que
+because of|à cause de
+due to|en raison de
+thanks to|grâce à
+as a result|de ce fait
+consequently|par conséquent
+hence|d'où
+that's why|c'est pourquoi
+given that|étant donné que
+for this reason|pour cette raison
+as a consequence|en conséquence
+owing to|en raison de
+so much so that|si bien que
+in order to|afin de
+in order that|afin que
+leading to|menant à
+resulting in|entraînant
+which is why|raison pour laquelle
+accordingly|en conséquence`,
+  },
+  {
+    id: "frb2p11",
+    title: "Politics & Society",
+    subtitle: "Talking about current affairs",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Politics and society vocabulary.",
+    data: `government|le gouvernement
+president|le président
+election|l'élection
+vote|le vote
+citizen|le citoyen
+law|la loi
+democracy|la démocratie
+parliament|le parlement
+minister|le ministre
+policy|la politique
+constitution|la constitution
+rights|les droits
+justice|la justice
+equality|l'égalité
+freedom|la liberté
+society|la société
+immigration|l'immigration
+poverty|la pauvreté
+inequality|l'inégalité
+protest|la manifestation
+reform|la réforme
+tax|l'impôt
+public opinion|l'opinion publique
+diplomacy|la diplomatie
+sovereignty|la souveraineté`,
+  },
+  {
+    id: "frb2p12",
+    title: "Environment & Climate Change",
+    subtitle: "Talking about the planet",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Climate and environmental vocabulary.",
+    data: `climate change|le changement climatique
+global warming|le réchauffement climatique
+greenhouse gas|le gaz à effet de serre
+carbon footprint|l'empreinte carbone
+deforestation|la déforestation
+biodiversity|la biodiversité
+ecosystem|l'écosystème
+renewable energy|l'énergie renouvelable
+solar panel|le panneau solaire
+wind turbine|l'éolienne
+sustainability|la durabilité
+emissions|les émissions
+drought|la sécheresse
+flood|l'inondation
+extinction|l'extinction
+conservation|la conservation
+recycling|le recyclage
+plastic waste|les déchets plastiques
+endangered species|l'espèce en voie de disparition
+natural resource|la ressource naturelle
+pollution|la pollution
+ecology|l'écologie
+ozone layer|la couche d'ozone
+sea level|le niveau de la mer
+carbon neutral|neutre en carbone`,
+  },
+  {
+    id: "frb2p13",
+    title: "Law & Justice",
+    subtitle: "Talking about the legal system",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Law and justice vocabulary.",
+    data: `law|la loi
+court|le tribunal
+judge|le juge
+lawyer|l'avocat
+trial|le procès
+crime|le crime
+witness|le témoin
+jury|le jury
+evidence|la preuve
+sentence (verdict)|la peine
+prison|la prison
+verdict|le verdict
+lawsuit|le procès
+contract|le contrat
+rights|les droits
+justice|la justice
+guilty|coupable
+innocent|innocent
+appeal|l'appel
+fine (penalty)|l'amende
+police|la police
+arrest|l'arrestation
+suspect|le suspect
+victim|la victime
+legislation|la législation`,
+  },
+  {
+    id: "frb2p14",
+    title: "Economy & Finance",
+    subtitle: "Talking about money and markets",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Economics and finance vocabulary.",
+    data: `economy|l'économie
+inflation|l'inflation
+market|le marché
+investment|l'investissement
+stock|l'action
+budget|le budget
+debt|la dette
+income|le revenu
+tax|l'impôt
+growth|la croissance
+recession|la récession
+unemployment|le chômage
+currency|la devise
+trade|le commerce
+bank|la banque
+loan|le prêt
+interest rate|le taux d'intérêt
+profit|le profit
+salary|le salaire
+consumer|le consommateur
+supply and demand|l'offre et la demande
+shares (stocks)|les actions
+GDP|le PIB
+savings|l'épargne
+stock market|la bourse`,
+  },
+  {
+    id: "frb2p15",
+    title: "Arts & Culture",
+    subtitle: "Talking about the arts",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Arts and culture vocabulary.",
+    data: `art|l'art
+painting|la peinture
+sculpture|la sculpture
+museum|le musée
+exhibition|l'exposition
+artist|l'artiste
+masterpiece|le chef-d'œuvre
+literature|la littérature
+poetry|la poésie
+novel|le roman
+theater|le théâtre
+play (theater)|la pièce
+cinema|le cinéma
+film director|le réalisateur
+music|la musique
+composer|le compositeur
+dance|la danse
+architecture|l'architecture
+heritage|le patrimoine
+tradition|la tradition
+festival|le festival
+gallery|la galerie
+critic|le critique
+performance|la représentation
+creativity|la créativité`,
+  },
+  {
+    id: "frb2p16",
+    title: "Advanced Idioms II",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: 'The idiom "%s" means…',
+    note: "More common French idioms.",
+    data: `avoir le cœur sur la main|to be very generous
+mettre la clé sous la porte|to shut down (a business)
+avoir une araignée au plafond|to be a bit crazy
+chercher midi à quatorze heures|to overcomplicate things
+avoir un cœur d'artichaut|to fall in love easily
+avoir le nez creux|to have good instincts
+tomber des nues|to be utterly astonished
+avoir la frite|to feel great (informal)
+mettre les pieds dans le plat|to say something tactless
+avoir la main verte|to have a green thumb
+casser du sucre sur le dos de quelqu'un|to badmouth someone behind their back
+mettre quelqu'un au pied du mur|to corner someone into deciding
+avoir le trac|to have stage fright
+faire la tête|to sulk
+avoir des fourmis dans les jambes|to have restless legs
+mettre les bouchées doubles|to work twice as hard
+avoir le cœur gros|to feel heavy-hearted
+tomber à l'eau|to fall through (a plan)
+avoir la tête sur les épaules|to be level-headed
+faire le pont|to take a long weekend around a holiday
+mettre du sien|to make an effort, pitch in
+avoir la puce à l'oreille|to become suspicious
+être haut comme trois pommes|to be very small (a child)
+avoir un verre dans le nez|to be a bit tipsy
+mettre la puce à l'oreille de quelqu'un|to make someone suspicious`,
+  },
+  {
+    id: "frb2p17",
+    title: "Emphatic Structures",
+    subtitle: "C'est...qui/que",
+    kind: "cloze",
+    note: "Emphasizing part of a sentence with c'est...qui/que.",
+    data: `___ Marie qui a téléphoné.|C'est
+C'est ce livre ___ je cherche.|que
+Ce sont mes amis ___ sont arrivés.|qui
+___ toi que je pensais.|C'est
+C'est demain ___ nous partons.|que
+Ce sont eux ___ ont gagné.|qui
+C'est à Paris ___ j'habite.|que
+___ lui qui a raison.|C'est
+C'est ce film ___ j'ai préféré.|que
+Ce sont ces documents ___ manquent.|qui
+___ elle qui a organisé la fête.|C'est
+C'est cette maison ___ nous voulons acheter.|que
+Ce sont ses parents ___ l'ont aidé.|qui
+___ ce soir que je pars.|C'est
+C'est mon frère ___ conduit.|qui
+Ce sont ces mots ___ m'ont blessé.|qui
+___ pour cette raison que je suis venu.|C'est
+C'est ainsi ___ tout a commencé.|que
+Ce sont nos voisins ___ ont appelé.|qui
+___ toi qui décides.|C'est
+C'est cette idée ___ je préfère.|que
+Ce sont les enfants ___ jouent dehors.|qui
+___ maintenant que ça compte.|C'est
+C'est ce professeur ___ enseigne le mieux.|qui
+Ce sont ces raisons ___ expliquent son départ.|qui`,
+  },
+  {
+    id: "frb2p18",
+    title: "Double Object Pronouns",
+    subtitle: "Combining two pronouns",
+    kind: "cloze",
+    note: "Combining two object pronouns in one sentence.",
+    data: `Je te ___ donne (le livre).|le
+Il me ___ envoie (la lettre).|l'
+Nous vous ___ offrons (les fleurs).|les
+Elle nous ___ a montré (la photo).|l'
+Je le ___ ai déjà dit (à lui).|lui
+Tu me l'___ (dire) hier.|as dit
+Il nous les ___ (envoyer) hier.|a envoyés
+Je te la ___ (donner) demain.|donnerai
+Elle le leur ___ (expliquer) clairement.|a expliqué
+Nous vous l'___ (envoyer) ce matin.|avons envoyé
+Il me les ___ (rendre) hier soir.|a rendus
+Je vous la ___ (recommander) vivement.|recommande
+Tu nous l'___ (dire) trop tard.|as dit
+Elle te le ___ (prêter) volontiers.|prêtera
+Ils nous en ___ (parler) souvent.|parlent
+Je le lui ___ (rendre) demain.|rendrai
+Nous te la ___ (montrer) bientôt.|montrerons
+Il vous les ___ (apporter) ce soir.|apportera
+Elle me l'___ (offrir) pour mon anniversaire.|a offert
+Tu le leur ___ (expliquer) clairement.|expliques
+Je te l'___ (promettre).|ai promis
+Nous le lui ___ (souhaiter) sincèrement.|souhaitons
+Ils me la ___ (rendre) la semaine dernière.|ont rendue
+Elle nous les ___ (envoyer) chaque mois.|envoie
+Je vous le ___ (confirmer) par écrit.|confirme`,
+  },
+  {
+    id: "frb2p19",
+    title: "Faire Causatif",
+    subtitle: "Faire + infinitive",
+    kind: "cloze",
+    note: "The causative construction: faire + infinitive.",
+    data: `Je fais ___ (réparer) ma voiture.|réparer
+Elle fait ___ (construire) une maison.|construire
+Il fait ___ (nettoyer) son costume.|nettoyer
+Nous faisons ___ (livrer) les meubles.|livrer
+Vous faites ___ (couper) vos cheveux.|couper
+Ils font ___ (peindre) leur maison.|peindre
+Je me fais ___ (couper) les cheveux.|couper
+Elle se fait ___ (faire) une manucure.|faire
+Il fait ___ (installer) une nouvelle cuisine.|installer
+Nous faisons ___ (traduire) ce document.|traduire
+Vous faites ___ (réviser) votre voiture.|réviser
+Ils font ___ (livrer) le colis.|livrer
+Je fais ___ (faire) mes devoirs par mon frère.|faire
+Elle fait ___ (envoyer) un cadeau à sa mère.|envoyer
+Il fait ___ (savoir) la nouvelle à tout le monde.|savoir
+Nous faisons ___ (réparer) le toit.|réparer
+Vous faites ___ (imprimer) les documents.|imprimer
+Ils font ___ (agrandir) leur maison.|agrandir
+Je fais ___ (venir) le plombier.|venir
+Elle fait ___ (visiter) la ville à ses invités.|visiter
+Il fait ___ (rire) tout le monde.|rire
+Nous faisons ___ (comprendre) la situation.|comprendre
+Vous faites ___ (remarquer) le problème.|remarquer
+Ils font ___ (payer) la note à leur client.|payer
+Je fais ___ (attendre) mes amis.|attendre`,
+  },
+  {
+    id: "frb2p20",
+    title: "Formal Letter Writing Phrases",
+    subtitle: "Professional correspondence",
+    kind: "pair",
+    prompt: 'The French for "%s" is…',
+    note: "Set phrases for formal letters and emails.",
+    data: `Dear Sir or Madam|Madame, Monsieur
+Yours sincerely|Veuillez agréer mes salutations distinguées
+I am writing to inform you|Je vous écris pour vous informer
+please find attached|veuillez trouver ci-joint
+I look forward to hearing from you|dans l'attente de votre réponse
+best regards|cordialement
+with reference to|en référence à
+I would be grateful if|je vous serais reconnaissant de
+please do not hesitate to contact me|n'hésitez pas à me contacter
+I apologize for the inconvenience|je m'excuse pour la gêne occasionnée
+following our conversation|suite à notre conversation
+enclosed you will find|vous trouverez ci-joint
+thank you for your understanding|merci de votre compréhension
+I remain at your disposal|je reste à votre disposition
+kindly note that|veuillez noter que
+as per your request|conformément à votre demande
+in the meantime|dans l'intervalle
+should you have any questions|si vous avez des questions
+I would like to draw your attention to|je souhaite attirer votre attention sur
+respectfully|respectueusement
+subject (of a letter)|objet
+recipient|le destinataire
+sender|l'expéditeur
+attachment|la pièce jointe
+signature|la signature`,
   },
 ];
 
@@ -834,6 +2790,496 @@ Son raisonnement est ___ mais contestable.|cohérent
 Il faut ___ les faits avant de juger.|examiner
 Cette hypothèse reste à ___.|démontrer
 Il est essentiel de ___ un débat constructif.|favoriser`,
+  },
+  {
+    id: "frc1p6",
+    title: "Subjunctive Past",
+    subtitle: "Le subjonctif passé",
+    kind: "cloze",
+    note: "Past subjunctive after emotion, doubt, or judgment.",
+    data: `Je suis content qu'il ___ (réussir) son examen.|ait réussi
+Il est possible qu'elle ___ (partir) déjà.|soit déjà partie
+Je doute qu'ils ___ (finir) à temps.|aient fini
+Il est dommage que tu ne ___ (pas venir) hier.|sois pas venu
+Nous sommes surpris qu'elle ___ (accepter) cette offre.|ait accepté
+Bien qu'il ___ (essayer), il n'a pas réussi.|ait essayé
+Je regrette que vous ___ (ne pas pouvoir) venir.|n'ayez pas pu
+Il est étonnant qu'elles ___ (arriver) si tôt.|soient arrivées
+Je suis heureux que tu ___ (obtenir) ce poste.|aies obtenu
+Il se peut qu'il ___ (oublier) son rendez-vous.|ait oublié
+Nous sommes déçus qu'ils ___ (annuler) la réunion.|aient annulé
+C'est le meilleur film que j'___ (voir).|aie vu
+C'est la personne la plus gentille que je ___ (connaître).|connaisse
+Je suis surpris qu'elle n'___ (rien dire).|ait rien dit
+Il est possible que nous ___ (se tromper).|nous soyons trompés
+Je suis désolé que tu ___ (perdre) ton travail.|aies perdu
+Il est rare qu'il ___ (arriver) en retard.|soit arrivé
+Je ne pense pas qu'elle ___ (mentir).|ait menti
+C'est dommage qu'ils ne ___ (pas venir) à la fête.|soient pas venus
+Je suis ravi que vous ___ (réussir) votre projet.|ayez réussi
+Il est possible que je me ___ (tromper) de date.|sois trompé
+Nous sommes contents qu'elle ___ (guérir) rapidement.|ait guéri
+Il est peu probable qu'ils ___ (partir) sans nous prévenir.|soient partis
+Je suis étonné que tu ___ (finir) si vite.|aies fini
+C'est la première fois qu'il ___ (voyager) seul.|ait voyagé`,
+  },
+  {
+    id: "frc1p7",
+    title: "Literary Tenses",
+    subtitle: "Recognizing the passé simple",
+    kind: "pair",
+    prompt: 'The passé simple form "%s" means…',
+    note: "Passé simple recognition -- used in literature and formal narration, not spoken French.",
+    data: `il fut|he was
+il eut|he had
+il fit|he did/made
+il alla|he went
+il vint|he came
+il dit|he said
+il vit|he saw
+il prit|he took
+il put|he could
+il voulut|he wanted
+il sut|he knew
+il crut|he believed
+il naquit|he was born
+il mourut|he died
+il devint|he became
+il tint|he held
+il écrivit|he wrote
+il vécut|he lived
+il partit|he left
+il sortit|he went out
+il répondit|he answered
+il perdit|he lost
+il comprit|he understood
+il reçut|he received
+il connut|he knew/met`,
+  },
+  {
+    id: "frc1p8",
+    title: "Philosophy & Abstract Concepts",
+    subtitle: "Discussing abstract ideas",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Vocabulary for philosophical and abstract discussion.",
+    data: `truth|la vérité
+knowledge|la connaissance
+existence|l'existence
+consciousness|la conscience
+reality|la réalité
+ethics|l'éthique
+morality|la morale
+freedom (philosophical)|la liberté
+identity|l'identité
+meaning|le sens
+reason|la raison
+logic|la logique
+belief|la croyance
+doubt|le doute
+perception|la perception
+wisdom|la sagesse
+virtue|la vertu
+justice|la justice
+the absolute|l'absolu
+the relative|le relatif
+paradox|le paradoxe
+concept|le concept
+argument (reasoning)|l'argument
+hypothesis|l'hypothèse
+contradiction|la contradiction`,
+  },
+  {
+    id: "frc1p9",
+    title: "Science & Technology, Advanced",
+    subtitle: "Discussing research and innovation",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Advanced science and technology vocabulary.",
+    data: `artificial intelligence|l'intelligence artificielle
+algorithm|l'algorithme
+data|les données
+research|la recherche
+innovation|l'innovation
+experiment|l'expérience
+hypothesis|l'hypothèse
+molecule|la molécule
+gene|le gène
+laboratory|le laboratoire
+discovery|la découverte
+robotics|la robotique
+quantum|quantique
+biotechnology|la biotechnologie
+nanotechnology|la nanotechnologie
+sustainability|la durabilité
+innovation hub|le pôle d'innovation
+patent|le brevet
+prototype|le prototype
+simulation|la simulation
+automation|l'automatisation
+encryption|le chiffrement
+neural network|le réseau de neurones
+breakthrough|la percée
+scalability|l'évolutivité`,
+  },
+  {
+    id: "frc1p10",
+    title: "Legal & Administrative French",
+    subtitle: "Formal legal language",
+    kind: "cloze",
+    note: "Legal and administrative vocabulary in context.",
+    data: `Le demandeur a déposé une ___ auprès du tribunal.|plainte
+Le contrat entre en ___ dès sa signature.|vigueur
+Il incombe à l'accusé de ___ son innocence.|prouver
+Cette loi est en ___ depuis janvier.|vigueur
+Le tribunal a rendu son ___ hier.|jugement
+Les parties ont signé un ___ à l'amiable.|accord
+Le notaire a authentifié le ___.|document
+Il convient de respecter les ___ légales.|obligations
+Le dossier a été soumis à l'___ du juge.|examen
+La procédure ___ plusieurs mois.|dure
+Le prévenu a fait ___ de la décision.|appel
+Cette clause est ___ dans le contrat.|stipulée
+Le ministère public a requis une ___ sévère.|peine
+Le tribunal administratif a statué en ___ instance.|première
+Les héritiers doivent régler les droits de ___.|succession
+Le juge a prononcé un ___ de non-lieu.|non-lieu
+Cette loi ___ les droits des consommateurs.|protège
+L'avocat a plaidé la ___ de son client.|défense
+Le contrat doit être ___ par les deux parties.|signé
+La cour a annulé le ___ précédent.|jugement
+Le fonctionnaire a délivré le ___ requis.|certificat
+La demande a été ___ pour vice de forme.|rejetée
+Le litige a été réglé à l'___.|amiable
+Les témoins ont été ___ à comparaître.|convoqués
+Le texte de loi a été ___ au parlement.|adopté`,
+  },
+  {
+    id: "frc1p11",
+    title: "Diplomatic & Political Register",
+    subtitle: "International relations vocabulary",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Diplomacy and international relations vocabulary.",
+    data: `treaty|le traité
+negotiation|la négociation
+summit|le sommet
+ambassador|l'ambassadeur
+embassy|l'ambassade
+alliance|l'alliance
+sanctions|les sanctions
+ceasefire|le cessez-le-feu
+diplomacy|la diplomatie
+resolution|la résolution
+delegation|la délégation
+summit meeting|la réunion au sommet
+bilateral|bilatéral
+multilateral|multilatéral
+accord|l'accord
+mediation|la médiation
+sovereignty|la souveraineté
+territorial integrity|l'intégrité territoriale
+international law|le droit international
+diplomatic relations|les relations diplomatiques
+consensus|le consensus
+veto|le veto
+envoy|l'envoyé
+protocol|le protocole
+communiqué|le communiqué`,
+  },
+  {
+    id: "frc1p12",
+    title: "Rhetorical Devices & Style",
+    subtitle: "Analyzing how texts are written",
+    kind: "pair",
+    prompt: 'The French word for "%s" is…',
+    note: "Vocabulary for literary and rhetorical analysis.",
+    data: `metaphor|la métaphore
+simile|la comparaison
+irony|l'ironie
+hyperbole|l'hyperbole
+euphemism|l'euphémisme
+alliteration|l'allitération
+rhetorical question|la question rhétorique
+paradox|le paradoxe
+personification|la personnification
+antithesis|l'antithèse
+allegory|l'allégorie
+tone|le ton
+register (of speech)|le registre
+symbolism|le symbolisme
+repetition|la répétition
+understatement|la litote
+oxymoron|l'oxymore
+analogy|l'analogie
+imagery|les images
+narrative|le récit
+rhythm (of prose)|le rythme
+emphasis|l'emphase
+digression|la digression
+foreshadowing|l'annonce
+climax (of a story)|le point culminant`,
+  },
+  {
+    id: "frc1p13",
+    title: "Register Shifts",
+    subtitle: "Familiar vs formal French",
+    kind: "pair",
+    prompt: 'The formal equivalent of the familiar word "%s" is…',
+    note: "Everyday familiar register vs. its formal equivalent.",
+    data: `bagnole|voiture
+bouffer|manger
+fric|argent
+mec|homme
+bosser|travailler
+gosse|enfant
+bagarre|dispute
+flic|policier
+bouquin|livre
+piaule|chambre
+taf|travail
+gars|homme
+truc|chose
+sympa|agréable
+nul|médiocre
+paumé|perdu
+crevé|épuisé
+chouette|excellent
+foutre le camp|partir
+gueuler|crier
+rigoler|rire
+bête|stupide
+dingue|fou
+fauché|sans le sou
+la flemme|le manque d'énergie`,
+  },
+  {
+    id: "frc1p14",
+    title: "Advanced Collocations",
+    subtitle: "Natural word combinations",
+    kind: "pair",
+    prompt: 'The expression "%s" means…',
+    note: "Fixed verb-noun collocations common in formal French.",
+    data: `tenir compte de|to take into account
+porter atteinte à|to undermine/harm
+faire face à|to face up to
+mettre en œuvre|to implement
+prendre conscience de|to become aware of
+tirer parti de|to take advantage of
+donner lieu à|to give rise to
+avoir recours à|to resort to
+faire preuve de|to demonstrate/show
+rendre compte de|to account for
+porter ses fruits|to bear fruit
+jouer un rôle|to play a role
+susciter l'intérêt|to spark interest
+soulever une question|to raise a question
+remettre en cause|to call into question
+mettre l'accent sur|to emphasize
+prendre en compte|to take into account
+faire l'objet de|to be the subject of
+avoir tendance à|to tend to
+donner suite à|to follow up on
+tirer des conclusions|to draw conclusions
+exercer une influence|to exert an influence
+susciter la controverse|to spark controversy
+faire figure de|to be seen as
+laisser entendre|to imply`,
+  },
+  {
+    id: "frc1p15",
+    title: "False Friends",
+    subtitle: "Faux amis",
+    kind: "pair",
+    prompt: 'The French word "%s" (a false friend) actually means…',
+    note: "Common French/English false friends.",
+    data: `librairie|bookshop, not "library"
+attendre|to wait, not "to attend"
+actuellement|currently, not "actually"
+éventuellement|possibly, not "eventually"
+sensible|sensitive, not "sensible"
+rester|to stay, not "to rest"
+blesser|to injure, not "to bless"
+demander|to ask, not "to demand"
+assister à|to attend, not "to assist"
+ignorer|to not know, not "to ignore"
+prétendre|to claim, not "to pretend"
+introduire|to insert, not just "to introduce" a person
+large|wide, not "large" in general size
+journée|day, not "journey"
+figure|face, not "figure/number"
+monnaie|change/currency, not "money" in general
+préservatif|condom, not "preservative"
+crayon|pencil, not "crayon"
+raisin|grape, not "raisin"
+coin|corner, not "coin"
+location|rental, not "location/place"
+formidable|great/wonderful, not "formidable"
+apologie|defense of an idea, not "apology"
+déception|disappointment, not "deception"
+achever|to finish/complete, not "to achieve"`,
+  },
+  {
+    id: "frc1p16",
+    title: "Advanced Idioms III",
+    subtitle: "Meaning match",
+    kind: "pair",
+    prompt: 'The idiom "%s" means…',
+    note: "More C1-level idioms.",
+    data: `mettre les voiles|to leave abruptly
+avoir du pain sur la planche|to have a lot of work to do
+être sur des charbons ardents|to be on tenterhooks
+avoir un pépin|to have a small problem
+tourner la page|to move on from something
+avoir le compas dans l'œil|to have a good eye for judging distances
+mettre de l'eau dans son vin|to tone down one's demands
+avoir des vues sur quelque chose|to have designs on something
+tirer son épingle du jeu|to come out ahead skillfully
+avoir le champ libre|to have a clear field, free rein
+mettre à l'épreuve|to put to the test
+jouer à pile ou face|to leave something to chance
+avoir la main heureuse|to have a lucky touch
+mettre les pieds quelque part|to set foot somewhere
+avoir voix au chapitre|to have a say in the matter
+tomber sous le sens|to be obvious
+avoir le sens des affaires|to have a good business sense
+mettre en veilleuse|to put on the back burner
+avoir des hauts et des bas|to have ups and downs
+tenir le coup|to hold on, cope
+avoir la tête froide|to keep a cool head
+mettre en garde|to warn
+avoir un a priori|to have a preconception
+tirer le diable par la queue|to struggle to make ends meet
+avoir pignon sur rue|to be well-established (a business)`,
+  },
+  {
+    id: "frc1p17",
+    title: "Nuanced Modal Expressions",
+    subtitle: "Devoir and pouvoir beyond the basics",
+    kind: "cloze",
+    note: "Nuances of devoir, pouvoir, and other modal verbs.",
+    data: `Il ___ (devoir) être malade, il n'est pas venu.|doit
+Elle ___ (devoir) avoir environ trente ans.|doit
+Tu ___ (devoir) partir maintenant, sinon tu seras en retard.|dois
+Il ___ (pouvoir) pleuvoir plus tard.|peut
+Elle ___ (pouvoir) très bien réussir si elle essaie.|peut
+Ça ___ (pouvoir) attendre demain.|peut
+Il aurait ___ (devoir) nous prévenir.|dû
+Tu n'aurais pas ___ (devoir) faire ça.|dû
+Il se ___ (pouvoir) qu'il ait raison.|peut
+Elle ___ (devoir) sûrement le savoir déjà.|doit
+Vous ___ (devoir) avoir des questions.|devez
+Il ne ___ (pouvoir) pas avoir menti.|peut
+Elle ___ (devoir) partir tôt demain matin.|doit
+Nous ___ (devoir) respecter les règles.|devons
+Cela ___ (pouvoir) sembler étrange, mais c'est vrai.|peut
+Il ___ (falloir) qu'il vienne absolument.|faut
+Il se ___ (pouvoir) bien qu'il ait oublié.|peut
+Tu ___ (devoir) te tromper.|dois
+Elle n'aurait pas ___ (pouvoir) faire mieux.|pu
+Il ___ (devoir) avoir ses raisons.|doit
+Nous ___ (pouvoir) toujours essayer.|pouvons
+Cela n'aurait pas ___ (devoir) arriver.|dû
+Il ___ (devoir) être fatigué après ce voyage.|doit
+Elle ___ (pouvoir) avoir raison, après tout.|peut
+Vous n'auriez pas ___ (devoir) partir sans prévenir.|dû`,
+  },
+  {
+    id: "frc1p18",
+    title: "Etymology & Word Formation",
+    subtitle: "Prefixes and suffixes",
+    kind: "pair",
+    prompt: 'The prefix/suffix "%s" typically means…',
+    note: "Common French prefixes and suffixes and what they signal.",
+    data: `re-|again, back
+dé-/dés-|reversal, removal
+in-/im-|not, opposite of
+anti-|against
+pré-|before
+post-|after
+sur-|over, above
+sous-|under, below
+co-|together, jointly
+inter-|between
+trans-|across
+auto-|self
+bi-|two
+mono-|one, single
+multi-|many
+extra-|beyond, extremely
+-tion|forms a noun of action or result
+-ment|forms an adverb, or a noun of action
+-eur/-euse|forms a noun for a person who does something
+-able/-ible|capable of being
+-ique|relating to, forming an adjective
+-ité|forms an abstract noun of quality
+-if/-ive|forms an adjective
+-iser|forms a verb meaning "to make"
+-age|forms a noun of action or result`,
+  },
+  {
+    id: "frc1p19",
+    title: "Academic Writing Phrases",
+    subtitle: "Structuring an academic essay",
+    kind: "cloze",
+    note: "Set phrases for academic essays and structured argument.",
+    data: `Cet essai a pour ___ d'examiner ce phénomène.|objectif
+Il convient tout d'abord de ___ le contexte.|situer
+Dans un premier temps, nous allons ___ les causes.|analyser
+Cette étude s'appuie sur des ___ empiriques.|données
+Il est important de ___ ces résultats avec prudence.|interpréter
+Nous nous proposons d'___ cette question sous un nouvel angle.|aborder
+En ___ de cette analyse, plusieurs conclusions se dégagent.|conclusion
+Il convient de ___ que ces résultats restent limités.|noter
+Cette recherche vise à ___ un vide dans la littérature.|combler
+Les données ___ une tendance claire.|révèlent
+Il est essentiel de ___ ces variables séparément.|considérer
+Cette hypothèse reste à ___ empiriquement.|vérifier
+Le présent travail s'inscrit dans la ___ de recherches antérieures.|continuité
+Il convient de ___ les limites de cette étude.|souligner
+Ces résultats ___ largement avec la littérature existante.|corroborent
+Nous allons à présent ___ les implications pratiques.|examiner
+Cette section a pour but de ___ le cadre théorique.|présenter
+Il ressort de cette analyse que plusieurs facteurs ___ en jeu.|entrent
+Ces travaux ont grandement ___ à notre compréhension du sujet.|contribué
+En définitive, cette étude ___ que d'autres recherches sont nécessaires.|suggère
+Il convient de ___ ces résultats à un échantillon plus large.|généraliser
+Cette méthode présente plusieurs ___ par rapport aux approches précédentes.|avantages
+Les résultats obtenus ___ notre hypothèse de départ.|confirment
+Il est nécessaire de ___ ces conclusions dans un contexte plus large.|replacer
+Pour conclure, cette étude ___ un éclairage nouveau sur la question.|apporte`,
+  },
+  {
+    id: "frc1p20",
+    title: "Nuanced Time & Aspect Expressions",
+    subtitle: "Être en train de, venir de, être sur le point de",
+    kind: "cloze",
+    note: "Aspectual expressions for ongoing, just-finished, and about-to-happen actions.",
+    data: `Je ___ (être) en train de préparer le dîner.|suis
+Il ___ (venir) de partir.|vient
+Nous ___ (être) sur le point de commencer.|sommes
+Elle ___ (être) en train de lire.|est
+Ils ___ (venir) d'arriver.|viennent
+Tu ___ (être) sur le point de comprendre.|es
+Je ___ (venir) de finir mon travail.|viens
+Elle ___ (être) en train de se préparer.|est
+Nous ___ (venir) de recevoir la nouvelle.|venons
+Vous ___ (être) sur le point de partir ?|êtes
+Il ___ (être) en train de dormir.|est
+Elles ___ (venir) de sortir.|viennent
+Je ___ (être) sur le point de m'endormir.|suis
+Tu ___ (venir) de rater ton bus.|viens
+Nous ___ (être) en train de discuter.|sommes
+Il ___ (être) sur le point de pleuvoir.|est
+Elle ___ (venir) de terminer ses études.|vient
+Ils ___ (être) en train de manger.|sont
+Vous ___ (venir) de manquer une bonne occasion.|venez
+Je ___ (être) en train d'apprendre le français.|suis
+Nous ___ (être) sur le point de signer le contrat.|sommes
+Elle ___ (venir) de recevoir un appel.|vient
+Il ___ (être) en train de travailler dur.|est
+Tu ___ (être) sur le point de réussir.|es
+Ils ___ (venir) de gagner le match.|viennent`,
   },
 ];
 

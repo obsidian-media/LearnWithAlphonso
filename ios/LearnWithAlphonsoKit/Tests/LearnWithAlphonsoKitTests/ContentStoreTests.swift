@@ -5,7 +5,7 @@ final class ContentStoreTests: XCTestCase {
     func testLoadsEnglishAndFrenchBundles() throws {
         let store = try ContentStore()
         XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 534)
-        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 125)
+        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 500) // V3 pkg 4a: closed the 125 -> ~500 French content gap
     }
 
     func testFindsLessonById() throws {

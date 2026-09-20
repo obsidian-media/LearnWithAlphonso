@@ -120,7 +120,7 @@ category is open. This closes out package 3b (tutor & weakness system);
 curriculum formats and generative/adaptive content (packages 4a/4b)
 remain.
 
-**Curriculum formats (in progress)** — two new question formats layered
+**Curriculum formats** — two new question formats layered
 onto the existing `mc` type rather than new discriminated cases (`imageKey`
 shows a stock photo above the prompt for "image matching"; `audioText`
 speaks via on-device TTS -- `src/lib/speech.ts` on web, `AVSpeechSynthesizer`
@@ -151,8 +151,23 @@ hotel/directions/apartment/returns/negotiation/debate entirely) since
 those packages shipped. Fixed, and documented in ARCHITECTURE.md's "Known
 rough edges" since `export-ios-content.ts` still has no equivalent
 automated step (its output is committed JSON, not a DB write, so it can't
-be a silent CI step the same way). Still open: closing the French
-course's lesson-count gap (125 -> ~500).
+be a silent CI step the same way). Closes with the French course's
+lesson-count gap: 75 new content packs (15 per CEFR level, A1-C1) added to
+`lesson-bank-fr.ts` in the same compact pair/cloze format as the existing
+25, taking French from 125 to exactly 500 lessons -- matching English's
+534-lesson depth for the first time. New topics per level: A1 gets
+everyday-life vocabulary (body parts, house, jobs, food service, tech,
+transport, etc); A2 moves into applied grammar in context (reflexive
+verbs, near future, negation, question formation) alongside more
+vocabulary; B1-B2 add intermediate/upper-intermediate grammar (relative
+pronouns, object pronouns, y/en, passive voice, plus-que-parfait,
+conditionnel passé, the causative, double object pronouns) and register-
+specific vocabulary (politics, law, economy, arts); C1 adds literary and
+formal register (passé simple recognition, subjunctive past, false
+friends, register shifts, academic writing phrases, nuanced modal
+expressions). No new question types were needed -- all 75 packs reuse the
+existing pair/cloze pack engine, which already auto-generates mc/fill
+questions with distractors and shuffling. This closes out package 4a.
 
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
