@@ -104,5 +104,10 @@ export const useProgress = create<ProgressState>()((set) => ({
       heartsRefillAt: null,
       xp: Math.max(0, s.xp - cost),
     })),
-  reset: () => set({ ...initial, hydrated: true }),
+  // `course` is deliberately not part of `initial` -- hydrate() spreads
+  // `...initial` too, and must NOT reset course there (switchCourse calls
+  // setCourse() immediately before hydrate() with the just-fetched
+  // snapshot). reset() has no such constraint, so it restores course here
+  // explicitly instead.
+  reset: () => set({ ...initial, course: "en", hydrated: true }),
 }));

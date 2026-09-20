@@ -121,4 +121,15 @@ describe("useProgress store", () => {
     expect(s.xp).toBe(0);
     expect(s.hydrated).toBe(true);
   });
+
+  it("reset also restores the active course", () => {
+    // Regression test: `course` lives outside the `initial` object (it
+    // can't be part of it -- hydrate() also spreads `...initial` and must
+    // NOT reset course there), so reset() has to restore it explicitly.
+    // A prior version of reset() omitted this, and zustand's shallow-merge
+    // `set()` silently left a switched-to course in place after "reset".
+    useProgress.getState().setCourse("fr");
+    useProgress.getState().reset();
+    expect(useProgress.getState().course).toBe("en");
+  });
 });

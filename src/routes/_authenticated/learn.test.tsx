@@ -99,12 +99,6 @@ beforeEach(() => {
   fetchDueReviews.mockReset();
   fetchDueReviews.mockResolvedValue({ due: [], total: 0 });
   useProgress.getState().reset();
-  // reset() only restores the fields in progress.ts's `initial` object --
-  // `course` is set separately in the store's initializer and is a
-  // shallow-merge target zustand's `set` never touches on reset, so it
-  // silently survives across tests once anything changes it (e.g. the
-  // course-switch test below). Reset it here explicitly.
-  useProgress.setState({ course: "en" });
 });
 
 describe("Learn page", () => {
