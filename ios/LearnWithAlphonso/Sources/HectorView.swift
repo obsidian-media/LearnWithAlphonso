@@ -133,6 +133,12 @@ private struct HectorConversationView: View {
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
+    // V3 package 3b -- "tutor persona memory." Loaded once per session
+    // (this repo has no Hector transcript to recall, only durable facts
+    // about the learner -- see TutorMemoryContext's doc comment) and
+    // prepended to every respond() call's history, but never appended to
+    // `turns` itself so it never renders as a chat bubble.
+    @State private var memoryContext: TutorConversationMessage?
     private let sessionID = UUID().uuidString
 
     private enum Phase: Equatable {
@@ -161,12 +167,32 @@ private struct HectorConversationView: View {
 
             micButton.padding()
         }
+        .task { await loadMemoryContext() }
         .onDisappear {
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             let transcript = turns.map { ChatMessage(role: $0.role, content: $0.content) }
             Task { _ = try? await client.analyzeWeaknesses(transcript: transcript) }
         }
+    }
+
+    /// Best-effort: a failed fetch just means this session starts without
+    /// persona memory, same as a brand-new learner would -- never worth
+    /// surfacing an error over.
+    private func loadMemoryContext() async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(
+            supabaseURL: AppConfig.supabaseURL,
+            anonKey: AppConfig.supabasePublishableKey,
+            accessToken: accessToken
+        )
+        let cefrLevel = try? await client.fetchCefrLevel(course: "en")
+        let trend = (try? await client.fetchWeaknessTrend()) ?? []
+        let openCategories = trend.filter { $0.openCount > 0 }.map(\.category)
+        memoryContext = TutorMemoryContext.buildPrimingMessage(
+            cefrLevel: cefrLevel ?? nil,
+            openWeaknessCategories: openCategories
+        )
     }
 
     private func bubble(for turn: TutorConversationMessage) -> some View {
@@ -246,7 +272,8 @@ private struct HectorConversationView: View {
                 accessToken: { hectorAccessToken },
                 deviceID: UIDevice.current.identifierForVendor?.uuidString ?? sessionID
             )
-            let reply = try await tutorClient.respond(sessionID: sessionID, text: text, language: "en-US", history: turns)
+            let historyWithMemory = (memoryContext.map { [$0] } ?? []) + turns
+            let reply = try await tutorClient.respond(sessionID: sessionID, text: text, language: "en-US", history: historyWithMemory)
             turns.append(TutorConversationMessage(role: "assistant", content: reply.reply))
 
             phase = .speaking

@@ -6,7 +6,7 @@ import FoundationNetworking
 /// A conversation turn sent as history context. Matches the shape of
 /// AlphonsoEcosystem's voice/cloud-backend `ChatMessage`
 /// (app/contracts.py) -- role is "user" or "assistant".
-public struct TutorConversationMessage: Sendable, Encodable {
+public struct TutorConversationMessage: Sendable, Encodable, Equatable {
     public let role: String
     public let content: String
 

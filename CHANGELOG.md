@@ -95,8 +95,17 @@ mastered) and iOS's Achievements screen (`ProgressSyncClient.
 fetchWeaknessTrend`), with matching test coverage on both platforms. No
 `course` param anywhere in this pipeline: weakness detection itself is
 English-only today (`analyze-weaknesses.ts` hardcodes `language: "en"`),
-so there's nothing to filter by yet. Still open: tutor persona memory
-(Hector recalling past sessions) and proactive tutor nudges.
+so there's nothing to filter by yet. Tutor persona memory (Hector) is
+also live: `TutorMemoryContext.buildPrimingMessage` (Kit, pure/tested)
+turns a learner's current CEFR level + open weakness categories into one
+priming history entry, prepended to every `TutorConversationClient.
+respond()` call in `HectorView.swift` but never appended to the visible
+`turns` transcript itself. This is *not* Hector recalling actual past
+conversation -- that transcript lives entirely on AlphonsoEcosystem's
+Cloud Voice backend, which this repo can't read (see the Hector
+weakness-detection design doc's "what this does NOT change" section);
+it's durable facts this repo already tracks, replayed as continuity each
+new session. Still open: proactive tutor nudges.
 
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
