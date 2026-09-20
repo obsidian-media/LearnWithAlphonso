@@ -84,6 +84,43 @@ describe("POST /api/chat", () => {
     ]);
   });
 
+  it("appends a CEFR difficulty hint after the scenario's system prompt when cefrLevel is provided", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "hello!" } }] }), {
+        status: 200,
+      }),
+    );
+    await handler({
+      request: req({
+        systemPrompt: "You are Mia, a barista.",
+        cefrLevel: "A1",
+        messages: [{ role: "user", content: "hi" }],
+      }),
+    });
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const sentBody = JSON.parse(init.body as string);
+    expect(sentBody.messages[0].content).toContain("You are Mia, a barista.");
+    expect(sentBody.messages[0].content).toContain("CEFR A1");
+  });
+
+  it("ignores an unrecognized cefrLevel and sends the system prompt unchanged", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "hello!" } }] }), {
+        status: 200,
+      }),
+    );
+    await handler({
+      request: req({
+        systemPrompt: "Be nice",
+        cefrLevel: "not-a-real-level",
+        messages: [{ role: "user", content: "hi" }],
+      }),
+    });
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const sentBody = JSON.parse(init.body as string);
+    expect(sentBody.messages[0].content).toBe("Be nice");
+  });
+
   it("uses NVIDIA_CHAT_MODEL override when set", async () => {
     process.env.NVIDIA_CHAT_MODEL = "custom/model";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(

@@ -44,6 +44,9 @@ private struct ConversationSessionView: View {
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
+    // V3 package 3a: adaptive difficulty + pronunciation-clarity heuristic.
+    @State private var cefrLevel: String?
+    @State private var confidenceByTurnIndex: [Int: Double] = [:]
 
     private enum Phase: Equatable {
         case idle
@@ -58,7 +61,7 @@ private struct ConversationSessionView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
-                            bubble(for: turn).id(index)
+                            bubble(for: turn, confidence: confidenceByTurnIndex[index]).id(index)
                         }
                     }
                     .padding()
@@ -82,6 +85,12 @@ private struct ConversationSessionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             turns = [ChatMessage(role: "assistant", content: scenario.opener)]
+            // Best-effort -- if this fails, chat() just gets nil and skips
+            // the difficulty hint, same as before this feature existed.
+            if let accessToken = session.accessToken {
+                let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+                cefrLevel = try? await client.fetchCefrLevel(course: "en")
+            }
         }
         .onDisappear {
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
@@ -91,17 +100,34 @@ private struct ConversationSessionView: View {
         }
     }
 
-    private func bubble(for turn: ChatMessage) -> some View {
-        HStack {
-            if turn.role == "assistant" { Spacer(minLength: 40) }
-            Text(turn.content)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(turn.role == "user" ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            if turn.role == "user" { Spacer(minLength: 40) }
+    private func bubble(for turn: ChatMessage, confidence: Double?) -> some View {
+        VStack(alignment: turn.role == "user" ? .trailing : .leading, spacing: 2) {
+            HStack {
+                if turn.role == "assistant" { Spacer(minLength: 40) }
+                Text(turn.content)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(turn.role == "user" ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                if turn.role == "user" { Spacer(minLength: 40) }
+            }
+            // V3 package 3a: lightweight pronunciation-clarity heuristic
+            // from Deepgram's own utterance-level confidence, not real
+            // phoneme-level scoring -- see AIConversationClient.transcribe.
+            if let confidence {
+                Text(clarityLabel(confidence))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 6)
+            }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
+    }
+
+    private func clarityLabel(_ confidence: Double) -> String {
+        if confidence >= 0.85 { return "🟢 Clear" }
+        if confidence >= 0.6 { return "🟡 Okay" }
+        return "🔴 Unclear"
     }
 
     private var micButton: some View {
@@ -158,15 +184,18 @@ private struct ConversationSessionView: View {
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
         do {
             phase = .transcribing
-            let text = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
-            guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
+            guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
                 phase = .idle
                 return
             }
-            turns.append(ChatMessage(role: "user", content: text))
+            if let confidence = result.confidence {
+                confidenceByTurnIndex[turns.count] = confidence
+            }
+            turns.append(ChatMessage(role: "user", content: result.text))
 
             phase = .thinking
-            let reply = try await client.chat(messages: turns, systemPrompt: scenario.systemPrompt)
+            let reply = try await client.chat(messages: turns, systemPrompt: scenario.systemPrompt, cefrLevel: cefrLevel)
             turns.append(ChatMessage(role: "assistant", content: reply))
 
             phase = .speaking

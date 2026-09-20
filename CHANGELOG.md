@@ -50,6 +50,22 @@ immediate next fast-follow, same "backend/client-method complete, UI
 wiring follows" precedent this codebase already established for
 `acceptFriendInvite`.
 
+**Conversation experience** — three additions to the free-conversation
+roleplay feature (web `/converse` and iOS's free mode; Hector/Pro is
+untouched except a compile fix for a shared client method's changed
+signature): 6 new scenarios (12 total, added a couple of Advanced-level
+ones -- salary negotiation, friendly debate -- since all 6 originals were
+Beginner/Intermediate); adaptive difficulty (`/api/chat` now takes an
+optional `cefrLevel` and appends a vocabulary/complexity hint to the
+scenario's system prompt -- a prompt-shaping hint, not a trust boundary,
+so client-supplied without validation); pronunciation feedback via a
+heuristic, not real phoneme scoring (Deepgram's own utterance-level STT
+confidence, already present in the `/api/stt` response, surfaced as a
+clear/okay/unclear badge -- zero new vendor, zero new cost). iOS had no
+way to read a user's own current CEFR level at all before this --
+`ProgressSyncClient.fetchCefrLevel` (a plain RLS-scoped read) is a small
+new addition specifically to unlock adaptive difficulty there too.
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

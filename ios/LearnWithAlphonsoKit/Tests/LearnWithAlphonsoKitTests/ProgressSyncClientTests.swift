@@ -671,6 +671,31 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(callCount, 0)
     }
 
+    // MARK: - fetchCefrLevel (V3 package 3a)
+
+    func testFetchCefrLevelReturnsTheLevel() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["cefr_level": "B1"]])
+        }
+
+        let level = try await client.fetchCefrLevel(course: "en")
+
+        XCTAssertEqual(level, "B1")
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/language_progress"))
+        XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
+    }
+
+    func testFetchCefrLevelReturnsNilWhenNoRowExistsYet() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        let level = try await client.fetchCefrLevel(course: "en")
+        XCTAssertNil(level)
+    }
+
     // MARK: - fetchActivityXP
 
     func testFetchActivityXPSumsXpEarnedOverTheDateRange() async throws {

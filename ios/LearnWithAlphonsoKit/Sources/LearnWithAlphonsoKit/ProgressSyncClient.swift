@@ -778,6 +778,27 @@ public final class ProgressSyncClient: Sendable {
         return rows.reduce(0) { $0 + (($1["xp_earned"] as? Int) ?? 0) }
     }
 
+    /// V3 package 3a: direct PostgREST `GET` on `language_progress`,
+    /// RLS-scoped to `auth.uid() = user_id` -- a read, so the
+    /// 20260920050000 grant revocation (INSERT/UPDATE only) doesn't apply.
+    /// Used by ConversationSessionView to adapt AI conversation difficulty
+    /// to the learner's real level. Returns nil if the row doesn't exist
+    /// yet (e.g. this course was never opened) rather than throwing --
+    /// callers should treat that the same as "no adaptation available."
+    public func fetchCefrLevel(course: String) async throws -> String? {
+        var request = restRequest(path: "language_progress", query: [
+            URLQueryItem(name: "select", value: "cefr_level"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.first?["cefr_level"] as? String
+    }
+
     /// PostgREST returns `timestamptz` columns with fractional-second
     /// precision (e.g. "2026-09-20T01:23:45.678901+00:00"), which the
     /// default `ISO8601DateFormatter()` fails to parse -- try with

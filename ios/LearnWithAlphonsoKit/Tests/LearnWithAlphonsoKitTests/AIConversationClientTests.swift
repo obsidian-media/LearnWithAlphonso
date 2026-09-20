@@ -37,8 +37,29 @@ final class AIConversationClientTests: XCTestCase {
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
         XCTAssertEqual(payload["systemPrompt"] as? String, "You are Mia, a barista.")
+        XCTAssertNil(payload["cefrLevel"])
         let messages = payload["messages"] as! [[String: String]]
         XCTAssertEqual(messages, [["role": "user", "content": "hello"]])
+    }
+
+    func testChatIncludesCefrLevelWhenProvided() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi!"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        _ = try await client.chat(
+            messages: [ChatMessage(role: "user", content: "hello")],
+            systemPrompt: "Be nice",
+            cefrLevel: "A2"
+        )
+
+        let request = try XCTUnwrap(captured)
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["cefrLevel"] as? String, "A2")
     }
 
     func testChatSurfacesAQuotaError() async {
@@ -136,13 +157,26 @@ final class AIConversationClientTests: XCTestCase {
         }
 
         let audio = Data([0x01, 0x02, 0x03])
-        let text = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
+        let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
 
-        XCTAssertEqual(text, "hello there")
+        XCTAssertEqual(result.text, "hello there")
+        XCTAssertNil(result.confidence)
         let request = try XCTUnwrap(captured)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/stt"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "audio/m4a")
         XCTAssertEqual(request.httpBody, audio)
+    }
+
+    func testTranscribeReturnsTheConfidenceWhenDeepgramReportsOne() async throws {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["text": "good morning", "confidence": 0.93])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let result = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a")
+
+        XCTAssertEqual(result.text, "good morning")
+        XCTAssertEqual(result.confidence, 0.93)
     }
 
     func testTranscribeSurfacesAnEmptyAudioError() async {

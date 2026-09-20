@@ -20,6 +20,11 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: { auth: { getSession } },
 }));
 
+// V3 package 3a: adaptive difficulty fetches the user's CEFR level on
+// mount, same mocking pattern learn.test.tsx already established.
+const fetchProgress = vi.fn();
+vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
+
 const { Route } = await import("./converse_.$scenarioId");
 const { getScenario } = await import("../../data/scenarios");
 
@@ -88,6 +93,8 @@ beforeEach(() => {
   Element.prototype.scrollTo = vi.fn();
   getSession.mockReset();
   getSession.mockResolvedValue({ data: { session: null } });
+  fetchProgress.mockReset();
+  fetchProgress.mockResolvedValue({ cefrLevel: "B1" });
   getUserMedia.mockReset();
   getUserMedia.mockResolvedValue(fakeStream);
   fakeTrack.stop.mockClear();
@@ -139,6 +146,7 @@ describe("Converse chat page", () => {
     )!;
     const body = JSON.parse(init.body as string);
     expect(body.systemPrompt).toBe(scenario.systemPrompt);
+    expect(body.cefrLevel).toBe("B1");
     expect(body.messages).toEqual([
       { role: "assistant", content: scenario.opener },
       { role: "user", content: "A latte please" },
@@ -228,6 +236,25 @@ describe("Converse chat page", () => {
     expect(await screen.findByText("I'd like a latte")).toBeInTheDocument();
     expect(await screen.findByText("One latte coming up.")).toBeInTheDocument();
     expect(fakeTrack.stop).toHaveBeenCalled();
+  });
+
+  it("shows a pronunciation-clarity badge on a voice-transcribed message", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/stt")) return jsonResponse({ text: "good morning", confidence: 0.4 });
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Hi there!" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("button", { name: "Record a voice message" }));
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
+    lastRecorder!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
+    await user.click(screen.getByRole("button", { name: "Stop recording and send" }));
+
+    expect(await screen.findByText("good morning")).toBeInTheDocument();
+    expect(await screen.findByText("Unclear pronunciation")).toBeInTheDocument();
   });
 
   it("rejects a recording that's too short without calling the STT endpoint", async () => {

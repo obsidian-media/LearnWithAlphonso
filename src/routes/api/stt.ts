@@ -35,10 +35,19 @@ export const Route = createFileRoute("/api/stt")({
           return upstreamErrorResponse("Deepgram STT", resp.status, t);
         }
         const data = (await resp.json()) as {
-          results?: { channels?: { alternatives?: { transcript?: string }[] }[] };
+          results?: {
+            channels?: { alternatives?: { transcript?: string; confidence?: number }[] }[];
+          };
         };
-        const text = data.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? "";
-        return Response.json({ text });
+        const alt = data.results?.channels?.[0]?.alternatives?.[0];
+        const text = alt?.transcript ?? "";
+        // V3 package 3a: Deepgram's own utterance-level confidence (0-1),
+        // used as a lightweight pronunciation-clarity heuristic client-side
+        // -- not real phoneme-level pronunciation scoring (see the design
+        // decision in CHANGELOG.md's V3 entry for why: no new vendor, no
+        // new cost, ships with data already in this response).
+        const confidence = typeof alt?.confidence === "number" ? alt.confidence : null;
+        return Response.json({ text, confidence });
       },
     },
   },

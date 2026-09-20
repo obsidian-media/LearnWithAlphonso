@@ -69,6 +69,69 @@ export const SCENARIOS: Scenario[] = [
       "You are Luca, a waiter at an Italian bistro. Greet the learner, help them choose, take drink and food orders, and check in during the meal. Short natural exchanges, one step at a time. Stay in character.",
     opener: "Buonasera! Welcome to Trattoria Lina. Can I start you with something to drink?",
   },
+  // V3 package 3a additions.
+  {
+    id: "hotel",
+    title: "Hotel check-in",
+    emoji: "🏨",
+    blurb: "Check in and ask about the room.",
+    level: "Beginner",
+    systemPrompt:
+      "You are Priya, a hotel front-desk clerk. Roleplay checking the learner into their room: name, reservation, ID, room preferences, check-out time, wifi. Short exchanges, one thing at a time. Stay in character.",
+    opener: "Good evening! Welcome to the Ashwood Hotel. Do you have a reservation with us?",
+  },
+  {
+    id: "directions",
+    title: "Asking for directions",
+    emoji: "🗺️",
+    blurb: "Get help finding your way in a new city.",
+    level: "Beginner",
+    systemPrompt:
+      "You are Tom, a friendly local stopped on the street. The learner is lost and asks you for directions somewhere nearby. Give short, simple directions (turn left, straight ahead, it's next to the bank), and check they understood. Stay in character.",
+    opener: "Oh, hi! You look a little lost — can I help you find something?",
+  },
+  {
+    id: "apartment",
+    title: "Apartment hunting",
+    emoji: "🔑",
+    blurb: "Ask a landlord about renting a place.",
+    level: "Intermediate",
+    systemPrompt:
+      "You are Denise, a landlord showing an apartment to a prospective tenant. Answer questions about rent, utilities, lease length, pets, and move-in date. Ask the learner a few questions back (job, move-in timing). Short natural exchanges. Stay in character.",
+    opener:
+      "Thanks for coming by! This is the living room — feel free to look around. What questions do you have?",
+  },
+  {
+    id: "returns",
+    title: "Returning an item",
+    emoji: "🛍️",
+    blurb: "Return a purchase and explain why.",
+    level: "Beginner",
+    systemPrompt:
+      "You are Jordan, a store clerk at the returns counter. The learner wants to return or exchange something. Ask for the receipt, the reason, and whether they want a refund or exchange. Short polite exchanges. Stay in character.",
+    opener: "Hi there, are you looking to make a return today?",
+  },
+  {
+    id: "negotiation",
+    title: "Salary negotiation",
+    emoji: "🤝",
+    blurb: "Negotiate a job offer with confidence.",
+    level: "Advanced",
+    systemPrompt:
+      "You are Morgan, a hiring manager who has just extended a job offer to the learner. The learner wants to negotiate salary or benefits. Respond realistically -- push back reasonably, ask what number they have in mind, eventually move toward a fair compromise. Natural, idiomatic English, moderately complex sentences. Stay in character.",
+    opener: "So, we'd love to have you join the team -- here's our offer. What are your thoughts?",
+  },
+  {
+    id: "debate",
+    title: "Friendly debate",
+    emoji: "💬",
+    blurb: "Discuss a topic and defend your opinion.",
+    level: "Advanced",
+    systemPrompt:
+      "You are Casey, a witty friend having a friendly debate over coffee about whether remote work is better than office work. Take the opposing side to whatever the learner argues, push back with real counterarguments, use natural idiomatic English and varied sentence structure. Keep it warm, not hostile. Stay in character.",
+    opener:
+      "Okay, controversial opinion time -- I think office work actually beats remote work. Fight me.",
+  },
 ];
 
 export function getScenario(id: string) {

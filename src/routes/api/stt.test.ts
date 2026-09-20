@@ -80,11 +80,26 @@ describe("POST /api/stt", () => {
     const file = new Blob(["x".repeat(600)], { type: "audio/mp4" });
     const res = await handler({ request: reqWithFile(file) });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ text: "hello world" });
+    expect(await res.json()).toEqual({ text: "hello world", confidence: null });
 
     const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain("api.deepgram.com/v1/listen");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("audio/mp4");
+  });
+
+  it("returns Deepgram's utterance-level confidence as a pronunciation-clarity heuristic", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          results: {
+            channels: [{ alternatives: [{ transcript: "good morning", confidence: 0.93 }] }],
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+    const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+    expect(await res.json()).toEqual({ text: "good morning", confidence: 0.93 });
   });
 
   it("falls back to audio/webm when the blob's type is falsy", async () => {
@@ -112,7 +127,7 @@ describe("POST /api/stt", () => {
       new Response(JSON.stringify({ results: { channels: [] } }), { status: 200 }),
     );
     const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
-    expect(await res.json()).toEqual({ text: "" });
+    expect(await res.json()).toEqual({ text: "", confidence: null });
   });
 
   it("maps an upstream Deepgram failure to a generic error", async () => {

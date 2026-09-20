@@ -232,7 +232,8 @@ private struct HectorConversationView: View {
             // Transcription still goes through our own account's /api/stt.
             phase = .transcribing
             let sttClient = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-            let text = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
+            let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
+            let text = sttResult.text
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
                 phase = .idle
                 return

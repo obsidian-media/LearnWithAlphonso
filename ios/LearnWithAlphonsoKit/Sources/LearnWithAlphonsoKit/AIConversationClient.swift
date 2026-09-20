@@ -43,14 +43,19 @@ public final class AIConversationClient: Sendable {
         self.requester = requester
     }
 
-    /// POST /api/chat -- returns the assistant's reply text.
-    public func chat(messages: [ChatMessage], systemPrompt: String?) async throws -> String {
+    /// POST /api/chat -- returns the assistant's reply text. `cefrLevel`
+    /// (V3 package 3a, e.g. "A1".."C1") lets the server adjust vocabulary/
+    /// sentence complexity to the learner's level -- see api/chat.ts's
+    /// withDifficultyHint. Not a trust boundary (worst case: a wrong level
+    /// just makes the conversation too easy/hard), so no validation here.
+    public func chat(messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil) async throws -> String {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         var payload: [String: Any] = ["messages": messages.map { ["role": $0.role, "content": $0.content] }]
         if let systemPrompt { payload["systemPrompt"] = systemPrompt }
+        if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await requester(request)
@@ -102,8 +107,11 @@ public final class AIConversationClient: Sendable {
     /// POST /api/stt -- `audio` is the raw recorded bytes (e.g. m4a/wav),
     /// sent as the request body with its real mime type, matching
     /// api/stt.ts's expectation (Deepgram detects the format from
-    /// Content-Type, no multipart wrapper).
-    public func transcribe(audio: Data, mimeType: String) async throws -> String {
+    /// Content-Type, no multipart wrapper). `confidence` (V3 package 3a)
+    /// is Deepgram's own utterance-level confidence (0-1), used as a
+    /// lightweight pronunciation-clarity heuristic -- nil if Deepgram
+    /// didn't report one.
+    public func transcribe(audio: Data, mimeType: String) async throws -> (text: String, confidence: Double?) {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
         request.httpMethod = "POST"
         request.setValue(mimeType, forHTTPHeaderField: "Content-Type")
@@ -116,7 +124,7 @@ public final class AIConversationClient: Sendable {
               let text = object["text"] as? String else {
             throw AIConversationError.invalidPayload
         }
-        return text
+        return (text, object["confidence"] as? Double)
     }
 
     private static func requireSuccess(data: Data, response: URLResponse) throws {

@@ -3,6 +3,27 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
+const CEFR_DIFFICULTY_HINTS: Record<string, string> = {
+  A1: "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",
+  A2: "The learner's level is CEFR A2 (elementary). Use simple vocabulary and short, clear sentences. Avoid idioms and rare phrasal verbs; keep tenses mostly present/simple past.",
+  B1: "The learner's level is CEFR B1 (intermediate). Use everyday vocabulary and moderately complex sentences. Common idioms are fine if used naturally.",
+  B2: "The learner's level is CEFR B2 (upper-intermediate). Use natural, varied vocabulary and sentence structure, similar to talking with a competent English speaker.",
+  C1: "The learner's level is CEFR C1 (advanced). Use natural, idiomatic English with varied sentence structure -- don't simplify for them.",
+};
+
+/**
+ * V3 package 3a: this is a prompt-shaping hint, not a trust boundary --
+ * there's no exploit value in a client claiming a level it doesn't have
+ * (worst case, the conversation partner is too easy or too hard for
+ * them), so this is trusted client input, same as `systemPrompt` itself
+ * already was. Appended after the scenario's own systemPrompt so it
+ * doesn't override the scenario's persona/character instructions.
+ */
+function withDifficultyHint(systemPrompt: string, cefrLevel?: string): string {
+  const hint = cefrLevel ? CEFR_DIFFICULTY_HINTS[cefrLevel] : undefined;
+  return hint ? `${systemPrompt}\n\n${hint}` : systemPrompt;
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -12,7 +33,7 @@ export const Route = createFileRoute("/api/chat")({
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "chat");
         if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
-        let body: { messages?: ChatMessage[]; systemPrompt?: string };
+        let body: { messages?: ChatMessage[]; systemPrompt?: string; cefrLevel?: string };
         try {
           body = await request.json();
         } catch {
@@ -22,7 +43,10 @@ export const Route = createFileRoute("/api/chat")({
         if (messages.length === 0)
           return Response.json({ error: "messages required" }, { status: 400 });
         const finalMessages: ChatMessage[] = body.systemPrompt
-          ? [{ role: "system", content: body.systemPrompt }, ...messages]
+          ? [
+              { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
+              ...messages,
+            ]
           : messages;
 
         // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
