@@ -15,6 +15,8 @@ struct LessonPlayerView: View {
     let session: Session
     let notificationScheduler: NotificationScheduler
     let contentStore: ContentStore
+    let networkMonitor: NetworkMonitor
+    let syncQueueStore: SyncQueueStore
 
     private enum Phase { case overview, vocab, quiz }
 
@@ -27,6 +29,7 @@ struct LessonPlayerView: View {
     @State private var isSubmitting = false
     @State private var result: LessonCompletionResult?
     @State private var isLeaguePromotion = false
+    @State private var queuedOffline: PendingLessonCompletion?
     @State private var errorMessage: String?
 
     private var total: Int { lesson.questions.count }
@@ -36,6 +39,8 @@ struct LessonPlayerView: View {
         Group {
             if let result {
                 FinishView(result: result, correct: correctCount, total: total, contentStore: contentStore, isLeaguePromotion: isLeaguePromotion)
+            } else if let queuedOffline {
+                OfflineFinishView(pending: queuedOffline, correct: correctCount, total: total)
             } else if let errorMessage {
                 ContentUnavailableView {
                     Label("Couldn't save your progress", systemImage: "wifi.slash")
@@ -109,16 +114,29 @@ struct LessonPlayerView: View {
     private func finish() async {
         isSubmitting = true
         defer { isSubmitting = false }
+        guard let accessToken = session.accessToken else {
+            errorMessage = "You've been signed out. Please sign in again."
+            return
+        }
+
+        // Never attempt startLessonSession/completeLesson while offline --
+        // both calls are deferred to sync time, called fresh, exactly like
+        // this online path. This sidesteps any concern about a pre-fetched
+        // session token going stale during a long offline period
+        // (start-lesson-session's MAX_AGE_MS is 3 hours): there's no
+        // pre-fetched token to go stale, because none is fetched until
+        // sync. See docs/v2-kickoffs/01-offline-first.md.
+        guard networkMonitor.isConnected else {
+            queueOffline()
+            return
+        }
+
+        let client = ProgressSyncClient(
+            supabaseURL: AppConfig.supabaseURL,
+            anonKey: AppConfig.supabasePublishableKey,
+            accessToken: accessToken
+        )
         do {
-            guard let accessToken = session.accessToken else {
-                errorMessage = "You've been signed out. Please sign in again."
-                return
-            }
-            let client = ProgressSyncClient(
-                supabaseURL: AppConfig.supabaseURL,
-                anonKey: AppConfig.supabasePublishableKey,
-                accessToken: accessToken
-            )
             let sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.code)
             let completion = try await client.completeLesson(
                 lessonID: lesson.id,
@@ -135,13 +153,36 @@ struct LessonPlayerView: View {
             LeagueTierCache.lastKnownTier = completion.progress.leagueTier
             isLeaguePromotion = previousTier != nil && previousTier != completion.progress.leagueTier
             result = completion
+            syncQueueStore.updateLastKnownProgress(completion.progress)
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
             if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
         } catch {
-            errorMessage = "Check your connection and try again."
+            // The monitor thought we were online but the call still failed
+            // (a monitor can be momentarily wrong) -- queue rather than
+            // lose the attempt, same as the explicitly-offline path above.
+            queueOffline()
         }
+    }
+
+    /// Queues this attempt for a later sync instead of losing it -- the
+    /// worst possible moment for a network failure is after the user just
+    /// played an entire lesson. `optimisticXpEstimate` is a naive guess
+    /// (see PendingLessonCompletion's doc comment); the real XP is shown
+    /// once sync confirms it.
+    private func queueOffline() {
+        let correct = total - missedQuestionIDs.count
+        let pending = PendingLessonCompletion(
+            lessonID: lesson.id,
+            total: total,
+            missedQuestionIDs: missedQuestionIDs,
+            course: course.code,
+            queuedAt: Date(),
+            optimisticXpEstimate: computeXpGain(correct: correct, total: total)
+        )
+        syncQueueStore.appendLessonCompletion(pending)
+        queuedOffline = pending
     }
 
     /// Asks for notification permission at the "first engaged moment" (a
@@ -154,17 +195,6 @@ struct LessonPlayerView: View {
             _ = await notificationScheduler.requestAuthorization()
         }
         notificationScheduler.scheduleStreakReminder(lastActiveDate: lastActiveDate)
-    }
-}
-
-private func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
-    guard let picked else { return false }
-    switch question {
-    case .multipleChoice(let q):
-        return q.choices[q.answer] == picked
-    case .fillInBlank(let q):
-        return picked.trimmingCharacters(in: .whitespaces).lowercased()
-            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
     }
 }
 
@@ -440,6 +470,36 @@ private struct FinishView: View {
                 showPromotionOverlay = false
             }
         }
+    }
+}
+
+/// Shown instead of `FinishView` when the completion was queued for later
+/// sync rather than confirmed -- deliberately distinguishable at a glance
+/// (cloud-upload icon, orange rather than green, "estimated" language), so
+/// a user never mistakes a provisional result for a confirmed one. No
+/// achievement/league-promotion celebration here -- those need the real
+/// server result, which doesn't exist yet.
+private struct OfflineFinishView: View {
+    let pending: PendingLessonCompletion
+    let correct: Int
+    let total: Int
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "icloud.and.arrow.up.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(.orange)
+            Text("Saved -- will sync when you're back online")
+                .font(.title3.weight(.semibold))
+                .multilineTextAlignment(.center)
+            Text("~+\(pending.optimisticXpEstimate) XP (estimated)")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.orange)
+            Text("\(correct)/\(total) correct")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
     }
 }
 

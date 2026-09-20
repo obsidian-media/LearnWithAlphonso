@@ -10,6 +10,8 @@ struct ReviewQueueView: View {
     let contentStore: ContentStore
     let session: Session
     let notificationScheduler: NotificationScheduler
+    let networkMonitor: NetworkMonitor
+    let syncQueueStore: SyncQueueStore
 
     @State private var course: Course = .english
     @State private var queue: [ReviewItem] = []
@@ -21,6 +23,10 @@ struct ReviewQueueView: View {
     @State private var isSubmitting = false
     @State private var errorMessage: String?
     @State private var clearedBonusMessage: String?
+    /// Set only when this queue is showing SyncQueueStore's cached
+    /// snapshot rather than a fresh fetch -- see loadQueue()'s offline
+    /// fallback.
+    @State private var showingCachedQueueSince: Date?
 
     var body: some View {
         NavigationStack {
@@ -36,7 +42,12 @@ struct ReviewQueueView: View {
                         Text(clearedBonusMessage ?? "Nothing due for review right now.")
                     }
                 } else if idx < queue.count {
-                    reviewBody
+                    VStack(spacing: 0) {
+                        if let showingCachedQueueSince {
+                            CachedQueueBanner(since: showingCachedQueueSince)
+                        }
+                        reviewBody
+                    }
                 } else {
                     ContentUnavailableView {
                         Label("Queue cleared", systemImage: "checkmark.circle.fill")
@@ -102,10 +113,16 @@ struct ReviewQueueView: View {
         }
     }
 
+    /// Fetches the due queue online, falling back to SyncQueueStore's
+    /// cached snapshot (rather than an error screen) when offline or the
+    /// fetch fails -- read-only staleness, a much smaller UX problem than
+    /// lesson completion's write-loss problem. See docs/v2-kickoffs/
+    /// 01-offline-first.md's "Review queue: cache-then-optimistic-grade".
     private func loadQueue() async {
         isLoading = true
         errorMessage = nil
         clearedBonusMessage = nil
+        showingCachedQueueSince = nil
         idx = 0
         picked = nil
         checked = false
@@ -114,32 +131,81 @@ struct ReviewQueueView: View {
             isLoading = false
             return
         }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        do {
-            let result = try await client.fetchDueReviews(course: course.code)
-            queue = result.due
-            total = result.total
-            notificationScheduler.scheduleDueReviewNudge(due: result.due)
-        } catch {
-            errorMessage = "Check your connection and try again."
+
+        if networkMonitor.isConnected {
+            let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+            do {
+                let result = try await client.fetchDueReviews(course: course.code)
+                queue = result.due
+                total = result.total
+                notificationScheduler.scheduleDueReviewNudge(due: result.due)
+                syncQueueStore.replaceLastKnownDueReviews(result.due)
+                isLoading = false
+                return
+            } catch {
+                // fall through to the cached fallback below
+            }
         }
+
+        let cached = syncQueueStore.lastKnownDueReviews()
+        queue = cached
+        total = cached.count
+        showingCachedQueueSince = syncQueueStore.lastSyncedAt
         isLoading = false
     }
 
     private func submitAndAdvance(question: Question) async {
-        guard let accessToken = session.accessToken, let picked else { return }
+        guard let picked else { return }
         isSubmitting = true
         defer { isSubmitting = false }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        do {
-            _ = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.code)
-        } catch {
-            // Grading failure shouldn't strand the user mid-queue -- move on,
-            // the item just stays due and will be re-offered next time.
+
+        if networkMonitor.isConnected, let accessToken = session.accessToken {
+            let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+            do {
+                _ = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.code)
+                advance()
+                if idx >= queue.count {
+                    await claimBonusIfCleared(client: client)
+                }
+                return
+            } catch {
+                // fall through to the offline-queue path below
+            }
         }
+        queueGradeOffline(item: currentItem, question: question, answer: picked)
         advance()
-        if idx >= queue.count {
-            await claimBonusIfCleared(client: client)
+    }
+
+    /// Optimistic local grading (Option A in the design doc): compute the
+    /// SM-2 update via SRSEngine (already pure/tested), queue the real
+    /// grade for sync, and update the cached due-list so a relaunch while
+    /// still offline doesn't show an already-graded item as due again.
+    /// `lapses: 0` below is a deliberate placeholder, not a bug -- see the
+    /// inline note.
+    private func queueGradeOffline(item: ReviewItem, question: Question, answer: String) {
+        let today = todayDateString()
+        let correct = isAnswerCorrect(question, picked: answer)
+        // ReviewItem never carries `lapses` (fetchDueReviews doesn't select
+        // it), but none of computeReviewOutcome's ease/intervalDays/
+        // repetitions/dueOn outputs actually depend on the *input* lapses
+        // value -- only the *returned* lapses count does, which this view
+        // never displays. Safe to pass 0.
+        let input = ReviewGradeInput(correct: correct, ease: item.ease, intervalDays: item.intervalDays, repetitions: item.repetitions, lapses: 0)
+        let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
+
+        syncQueueStore.appendReviewGrade(PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.code, queuedAt: Date()))
+
+        switch outcome {
+        case .retired:
+            syncQueueStore.removeCachedDueReview(itemKey: item.itemKey)
+        case .rescheduled(let scheduled):
+            // A wrong answer keeps dueOn == today (real SM-2 behavior, see
+            // grade-review's port) -- leave it cached as still-due, same as
+            // the online path, which doesn't re-insert a missed item into
+            // the current session's queue either.
+            if scheduled.dueOn > today {
+                syncQueueStore.removeCachedDueReview(itemKey: item.itemKey)
+            }
         }
     }
 
@@ -161,6 +227,17 @@ struct ReviewQueueView: View {
     }
 }
 
+/// Matches ProgressSyncClient.fetchDueReviews' own "yyyy-MM-dd" convention
+/// (ISO8601DateFormatter().string(from:).prefix(10)).
+private func todayDateString() -> String {
+    String(ISO8601DateFormatter().string(from: Date()).prefix(10))
+}
+
+private func addDaysDateString(_ days: Int) -> String {
+    let date = Calendar(identifier: .gregorian).date(byAdding: .day, value: days, to: Date()) ?? Date()
+    return String(ISO8601DateFormatter().string(from: date).prefix(10))
+}
+
 private func questionID(_ question: Question) -> String {
     switch question {
     case .multipleChoice(let q): return q.id
@@ -174,6 +251,31 @@ private extension Course {
         case .english: return "en"
         case .french: return "fr"
         }
+    }
+}
+
+/// Shown above the queue when it's SyncQueueStore's cached snapshot rather
+/// than a fresh fetch -- a relative-time indicator instead of the error
+/// screen an offline/failed fetch used to show.
+private struct CachedQueueBanner: View {
+    let since: Date?
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "wifi.slash")
+            Text(label)
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .background(Color(.secondarySystemBackground))
+    }
+
+    private var label: String {
+        guard let since else { return "Offline -- showing your last synced queue" }
+        let relative = RelativeDateTimeFormatter().localizedString(for: since, relativeTo: Date())
+        return "Offline -- last synced \(relative)"
     }
 }
 
