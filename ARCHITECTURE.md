@@ -1,6 +1,6 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-09-19 — re-verify
+Written 2026-09-13, last substantially updated 2026-09-20 — re-verify
 against `supabase/migrations/*.sql` and `src/routes/` before trusting a
 detail here; this codebase's own audit history shows even a careful
 point-in-time doc goes stale within weeks. This doc favors "where to look"
@@ -50,7 +50,9 @@ over "what the answer currently is," since the latter goes stale fast.
 | `activity_days`                                      | XP earned per calendar day, powers the activity heatmap and weekly-XP leaderboard scope                                                                                                                                                                                                                                                                                                                                                                     |
 | `achievements` / `user_achievements`                 | Achievement catalogue + unlocks                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `friendships`                                        | `(user_id, friend_id, status)`, written both directions atomically by `accept_friend_invite`                                                                                                                                                                                                                                                                                                                                                                |
-| `review_items`                                       | SRS queue: `(user_id, item_key, language)` unique, `ease`/`interval_days`/`repetitions`/`due_on`/`lapses`                                                                                                                                                                                                                                                                                                                                                   |
+| `friend_activity_events`                             | Feed rows (`lesson_completed`/`streak_milestone`/`league_promotion`) written by `complete-lesson`/`completeLessonRemote` when something feed-worthy happens; read scoped to friends via `friendships`                                                                                                                                                                                                                                                     |
+| `nudges`                                              | `(sender_id, recipient_id, read_at)` — the weaker, polling-based nudge-a-friend feature (see "Native iOS app" below); recipient's app checks for unread rows on foreground, not real push                                                                                                                                                                                                                                                                 |
+| `review_items`                                       | SRS queue: `(user_id, item_key, language)` unique, `ease`/`interval_days`/`repetitions`/`due_on`/`lapses`. `source` (`"lesson"` default / `"weakness"`) discriminates a real lesson-question item from a synthetic weakness-detection item (`weakness_label`/`weakness_display`/`prompt`/`choices`/`answer_index`/`explanation` — embedded gradable content, no `lessons`/`questions` row to point at). See "AI integrations" below.                    |
 | `ai_usage`                                           | Daily per-kind (chat/stt/tts) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                   |
 | `ai_rate_limits`                                     | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                        |
 | `levels` / `units` / `lessons` / `questions`         | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`. |
@@ -123,7 +125,21 @@ to run them in. All three are deployed and live in production (project
   (`src/lib/review.functions.ts`): re-derives an SRS review answer's
   correctness server-side against the real question (never trusts a
   client-supplied `correct` boolean), rejects grading an item that isn't
-  due yet, updates/retires the item.
+  due yet, updates/retires the item. Branches on `review_items.source`:
+  a `"weakness"` row derives correctness from its own embedded
+  `choices`/`answer_index` instead of looking up a `questions` row.
+
+**Not an Edge Function, deliberately**: `/api/analyze-weaknesses`
+(weakness detection, see "AI integrations" below) is a plain TanStack
+Start API route (`createFileRoute`, same shape as `api/chat.ts`), not a
+fourth Edge Function — it needs both NVIDIA NIM access and
+`ai-quota.server.ts`'s quota enforcement, both of which only exist in
+the TanStack Start runtime, and nothing on the web side calls it (only
+iOS does), so there's no portability reason to duplicate it in Deno. It
+writes `review_items` using the caller's own RLS-scoped client (anon
+key + bearer token), **not** service-role — the trust boundary it
+protects is "the LLM decides the question content, not the caller,"
+which holds regardless of which key signs the request.
 
 Because Edge Functions bundle each function directory independently,
 each carries its own Deno copies of the pure math it needs
@@ -242,8 +258,26 @@ decisions rather than trusting that doc's roadmap section as current).
   model configurable via `NVIDIA_CHAT_MODEL` — `src/routes/api/chat.ts`
 - **TTS/STT:** Deepgram directly (Aura-2 / Nova-3) —
   `src/routes/api/tts.ts`, `src/routes/api/stt.ts`
-- All three are gated by `consumeQuota` (`src/lib/ai-quota.server.ts`):
-  per-minute rate limit checked first, then the daily quota RPC.
+- **Weakness detection:** `src/routes/api/analyze-weaknesses.ts`
+  (iOS-only caller — see "Native iOS app" below) sends a Hector/free
+  conversation transcript to NVIDIA NIM with a prompt constrained to a
+  fixed 15-category taxonomy (`past-tense`, `articles`, `prepositions`,
+  `subject-verb-agreement`, `plurals`, `question-formation`,
+  `modal-verbs`, `word-order`, `pronouns`, `comparatives`,
+  `conditionals`, `phrasal-verbs`, `negation`, `vocabulary-choice`,
+  `spelling`), defensively parses the response (no structured-output
+  mode assumed — strip code fences, `JSON.parse`, zod-validate, empty
+  array on any failure), dedupes against the caller's existing
+  not-yet-retired weakness items by category, and inserts survivors
+  into `review_items`. No dedicated unit tests exist for this route (7%
+  coverage — see `AGENTS.md`'s Testing section) or the two web routes it
+  parallels (`api/chat.ts`/Edge Functions) — verified via
+  `lint-and-typecheck`/`e2e` CI plus manual smoke-testing, same as
+  those.
+- All three chat/tts/stt endpoints (weakness-detection reuses the
+  `"chat"` quota bucket rather than adding a fourth) are gated by
+  `consumeQuota` (`src/lib/ai-quota.server.ts`): per-minute rate limit
+  checked first, then the daily quota RPC.
 
 ## Known rough edges
 
@@ -302,6 +336,28 @@ note in README.md's Documentation section for why.)
   solved by heavier machinery (vector clocks, a client-submitted-date
   trust exception) preemptively; revisit only if real usage shows either
   is a frequent complaint.
+- **Vercel's GitHub integration lost this repo across the org transfer**
+  (personal account → `obsidian-media`, done to fix a GitHub Actions
+  billing block). Confirmed 2026-09-20: the Vercel project can't see
+  `obsidian-media/LearnWithAlphonso` at all
+  (`mcp__plugin_vercel_vercel__create_deployment` with a `gitSource`
+  fails `incorrect_git_source_info`). Every merge to `main` since PR #49
+  (leaderboards base) went undeployed until a manual `vercel deploy
+  --prod` catch-up on 2026-09-20 — check this before assuming production
+  reflects `main`. Real fix needs org-owner action in GitHub (Settings →
+  Integrations → Applications → Vercel → Configure → add the repo), not
+  anything scriptable from here. `.vercelignore` (added the same day)
+  scopes what a manual CLI deploy uploads — without it, a deploy from
+  this local machine picks up unrelated `.claude/worktrees/` content
+  from other parallel sessions (hit a real mid-upload failure this way,
+  a file vanished from a live worktree during upload).
+- **Test coverage was near-zero before 2026-09-20's PR #46** — now 502
+  tests across 72 files, ~91% line / ~90% statement coverage (`bun run
+  test:coverage`, see `AGENTS.md`'s Testing section for the full
+  per-file breakdown and what's still thin: `HeartsModal.tsx` ~70%,
+  `__root.tsx` ~18%, `analyze-weaknesses.ts` ~8% — server routes this
+  codebase doesn't unit-test as a matter of established pattern, not an
+  oversight).
 - **Nudge-a-friend (iOS) is deliberately the weaker V2 approach, not the
   finished feature** — a `nudges` table (`supabase/migrations/
   20260920020000_nudges.sql`) the recipient's app polls for on foreground/

@@ -1,10 +1,18 @@
-# English Buddy App
+# Learn with Alphonso
 
-A full-stack mobile-first English (and French) learning app with gamification, AI-powered conversation practice, and a spaced repetition review system.
+A full-stack mobile-first English (and French) learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus a native iOS app sharing the same backend/account.
 
 > Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
 > code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
 > gateway), and deploy targets Vercel.
+>
+> Repo lives at `github.com/obsidian-media/LearnWithAlphonso` (transferred
+> from a personal account to the `obsidian-media` org to fix a GitHub
+> Actions billing block; the codebase's internal project name is still
+> `english-buddy-app-33` in a few config/directory references — cosmetic
+> only, not worth a mass rename). **Vercel's own GitHub integration was
+> not carried over by that transfer** — see "Deployment" below before
+> assuming a merge to `main` auto-deploys.
 
 ## Tech Stack
 
@@ -29,10 +37,10 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Placement test**: 15-question adaptive test to set starting level
 - **AI conversation**: voice-enabled chat with 6 scenarios
 - **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements
-- **Friends**: invite-link based, with a friends leaderboard scope
-- **Leaderboards**: global, friends, and country rankings
+- **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
+- **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
 - **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
-- **Native iOS app** (`ios/`): "Learn with Alphonso" — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). See the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
 
 ## Content
 
@@ -93,7 +101,8 @@ bun run build       # Production build
 bun run preview     # Preview a production build
 bun run lint         # ESLint (includes eslint-plugin-jsx-a11y)
 bun run format      # Prettier --write
-bun run test         # Vitest (src/lib/*.test.ts)
+bun run test         # Vitest (data/lib/components/hooks/routes/supabase integration)
+bun run test:coverage  # Same, with v8 coverage report — see AGENTS.md's Testing section for the current %
 bun run test:e2e    # Playwright + axe-core (e2e/*.spec.ts) — needs a running dev server
 ```
 
@@ -101,6 +110,24 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, `test`, `test:e2e`,
 and (on a macOS runner) both the `ios/LearnWithAlphonsoKit` Swift
 package's test suite and a real `xcodebuild` of the `LearnWithAlphonso`
 app target itself, on every PR and push to `main`.
+
+## Deployment
+
+Production is Vercel (`learn.alphonsoecosystem.app`, project
+`english-buddy-app-33` in the Vercel dashboard — name kept for
+continuity, doesn't need to match the repo). **As of 2026-09-20, Vercel's
+GitHub integration is not connected to this repo's current home
+(`obsidian-media/LearnWithAlphonso`)** — confirmed via the Vercel API
+(`incorrect_git_source_info`, repo not found), so merges to `main` do
+**not** auto-deploy until someone with org-owner access reconnects it
+(GitHub → Settings → Integrations → Applications → Vercel → Configure →
+add the repo). Until then, deploy manually: `vercel deploy --prod
+--token=<token>` from a clean checkout of `main` (a `.vercelignore`
+keeps this scoped to the actual app, excluding `ios/`, `docs/`,
+`supabase/functions/`, and any local `.claude/worktrees/`). See
+`ARCHITECTURE.md`'s "Known rough edges" for the full story and
+`AGENTS.md`'s Deployment section for Supabase (migrations/Edge
+Functions, a separate manual step from this).
 
 ## Native iOS app
 
@@ -119,10 +146,27 @@ compile verification that exists):
   conversation mode using AlphonsoCompanion's Cloud Voice backend, which
   needs its own separate sign-in (a different Supabase project from this
   app's own account system)
+- **Weakness detection**: after either conversation mode ends (4+ turns),
+  NVIDIA NIM identifies up to 3 grammar/vocabulary weaknesses and adds
+  them as gradable multiple-choice items to the same SM-2 review queue —
+  the same `review_items` table, discriminated by a new `source` column
+  (`"lesson"` vs `"weakness"`) rather than a separate table
+- **Leaderboards** (global/friends/country, weekly/all-time): overtake
+  detection (in-app toast) and a weekly recap sheet
+- **Friends**: invite-link based, an activity feed, and nudge-a-friend
+  (deliberately the weaker polling-based V2 version, not real push — see
+  `ARCHITECTURE.md`)
+- **Achievements/leagues**: browse screen + unlock celebrations
+- **Offline-first**: lesson completion and review grading both queue
+  locally (SwiftData) and sync when connectivity returns, with two
+  known, deliberately-unsolved edge cases documented in `ARCHITECTURE.md`
+- Local (not push) notification scheduling: streak reminder, due-review
+  nudge, weekly leaderboard recap
 - Code signing via an App Store Connect API key (`.github/workflows/ios-release.yml`,
   manual trigger) — no interactive Apple ID login needed anywhere in the
   pipeline. App Store Connect app record exists ("Learn With Alphonso",
-  bundle `com.obsidianmedia.learnwithalphonso`)
+  bundle `com.obsidianmedia.learnwithalphonso`), no TestFlight build has
+  shipped this V2 work yet
 
 See `AGENTS.md`'s Key Files table for the full file-by-file breakdown,
 and `ARCHITECTURE.md`'s "Native iOS app" section for how it's wired to
@@ -160,8 +204,12 @@ ios/
 
 - `ARCHITECTURE.md` — stack, request flow, database schema, content model, known rough edges
 - `AGENTS.md` — conventions and key-file map for agents/contributors working in this repo
+- `CHANGELOG.md` — versioned history (V1 web app, V2 native iOS batches)
+- `DEFERRED-WORDS.md` — granular postponed items too small for their own tracked task (gitignored, local-only)
 - `LESSON_ASSETS.md` — asset plan for lesson content (audio, images, icons, animations); its status banner explains what's actually built vs. still aspirational
-- `docs/superpowers/specs/` and `docs/superpowers/plans/` — design docs and implementation plans for major features (curriculum DB schema, the `complete-lesson` Edge Function, the native iOS app, theme foundation)
+- `docs/superpowers/specs/` and `docs/superpowers/plans/` — design docs and implementation plans for major features (curriculum DB schema, the `complete-lesson` Edge Function, the native iOS app, theme foundation, every V2 iOS feature)
+- `docs/v2-kickoffs/` — gitignored, local-only briefing docs used to hand off individual V2 feature slices to fresh sessions; kept as a reference for the pattern, verify against current code before trusting one
+- `docs/v3-kickoffs/` — same pattern, for whatever's next after V2 (gitignored, local-only)
 
 A full-codebase audit is kept locally (gitignored, not in this repo) rather
 than committed — it goes stale within weeks of any real development and a

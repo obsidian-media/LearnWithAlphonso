@@ -1,4 +1,4 @@
-# English Buddy App — Complete Lesson Asset List
+# Learn with Alphonso — Complete Lesson Asset List
 
 > **Status (2026-09-13):** this file's premise — a uniform 300-lesson
 > curriculum (60/level) — is stale. Actual counts, hand-counted from the

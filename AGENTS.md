@@ -1,8 +1,15 @@
-# AGENTS.md — English Buddy App
+# AGENTS.md — Learn with Alphonso
 
 ## Project Overview
 
-English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI conversation practice, and gamification. Also ships a much thinner French course (see Content Structure below).
+Learn with Alphonso (repo internal name `english-buddy-app-33`, now at
+`github.com/obsidian-media/LearnWithAlphonso`) is a mobile-first English
+learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI
+conversation practice, and gamification. Also ships a much thinner
+French course (see Content Structure below). A native iOS app (`ios/`)
+shares the same Supabase backend/account and has grown a substantial
+V2 feature set of its own — see the Key Files table and
+`ARCHITECTURE.md`'s "Native iOS app" section.
 
 ## Key Files
 
@@ -37,6 +44,13 @@ English Buddy is a mobile-first English learning app with 5 CEFR levels (A1-C1),
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/DeviceEnrollmentClient.swift` | Registers this device with Cloud Voice (`POST /v1/voice/devices/enroll`) — required once per `HectorSession` before `TutorConversationClient` will accept requests |
 | `scripts/seed-curriculum-db.ts`            | Upserts curriculum tables (`levels`/`units`/`lessons`/`questions`/etc.) from `curriculum.ts` — idempotent, safe to re-run               |
 | `ios/LearnWithAlphonsoKit/`                | Swift package: content models, SRS/progress-math/hearts ports, network clients — builds without Xcode (`swift-test.ps1` on Windows)     |
+| `ios/LearnWithAlphonso/Sources/SyncQueueStore.swift` | SwiftData models + store for offline-first: queued lesson completions, queued review grades, cached due-review list, last-known account progress |
+| `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/SyncEngine.swift` | Pure drain logic for the offline queue (Kit-level, not app-target, specifically so it stays Windows-testable) — lesson completions drain independently, review grades drain strictly oldest-first |
+| `src/routes/api/analyze-weaknesses.ts`     | TanStack Start route (not an Edge Function — see `ARCHITECTURE.md`): NVIDIA NIM weakness detection after a Hector/free conversation, taxonomy-constrained, inserts synthetic `review_items` rows |
+| `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/QuestionGrading.swift` | `isAnswerCorrect` (client-side optimistic grading) + `question(fromWeaknessItem:)` — builds a `Question` from a weakness-sourced `ReviewItem`'s embedded content instead of a bundled-lesson lookup |
+| `ios/LearnWithAlphonso/Sources/ToastBanner.swift` | Shared in-app toast (overtake detection, nudge banner) — extracted after the two call sites were near-identical |
+| `ios/LearnWithAlphonso/Sources/NotificationScheduler.swift` | Local (not push) notification scheduling: streak reminder, due-review nudge, weekly leaderboard recap |
+| `vitest.setup.ts`                          | React Testing Library cleanup + DOM matchers for the Vitest suite (added with PR #46's coverage expansion — see Testing below) |
 
 ## Content Structure
 
@@ -65,27 +79,43 @@ as explicitly "in progress" in the UI, or prioritize closing the gap.
 
 ## Testing
 
-Vitest covers the pure logic (SRS grading, XP/streak/league math, hearts
-economy, lesson-completion trust-boundary checks) in `src/lib/*.test.ts`;
-Playwright covers E2E + accessibility (axe-core) smoke tests in
-`e2e/*.spec.ts`, scoped to unauthenticated routes (no seeded test account
-exists for CI to sign in with). `ios/LearnWithAlphonsoKit` has its own
-XCTest suite (SRS/progress-math/hearts ports, network client tests via an
-injected requester closure — no real network in tests). Lint, typecheck,
-Vitest, Playwright, and the Swift package's tests are all wired into CI
-(`.github/workflows/ci.yml`) on every PR and push to `main` (both Swift
-jobs run on a macOS runner) — `ios-app-build` additionally runs a real
-`xcodebuild` of the `LearnWithAlphonso` app target itself, the only
-compile verification that exists for it (no local Xcode/macOS in this
-development environment):
+Vitest covers pure logic (SRS grading, XP/streak/league math, hearts
+economy, lesson-completion trust-boundary checks) **and**, since PR #46
+(2026-09-20), a real behavioral suite for components, hooks, routes, and
+Supabase integration — React Testing Library + `jsdom`
+(`vitest.setup.ts`). Playwright covers E2E + accessibility (axe-core)
+smoke tests in `e2e/*.spec.ts`, scoped to unauthenticated routes (no
+seeded test account exists for CI to sign in with). `ios/LearnWithAlphonsoKit`
+has its own XCTest suite (SRS/progress-math/hearts/SyncEngine/weakness-
+detection-helper ports, network client tests via an injected requester
+closure — no real network in tests), 147 tests as of 2026-09-20. Lint,
+typecheck, Vitest, Playwright, and the Swift package's tests are all
+wired into CI (`.github/workflows/ci.yml`) on every PR and push to
+`main` (both Swift jobs run on a macOS runner; Vitest runs as a step
+inside the `lint-and-typecheck` job, not its own named check — easy to
+miss when reading `gh pr checks` output) — `ios-app-build` additionally
+runs a real `xcodebuild` of the `LearnWithAlphonso` app target itself,
+the only compile verification that exists for it (no local Xcode/macOS
+in this development environment):
 
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (src/lib/*.test.ts)
+bun run test         # Vitest (502 tests, 72 files)
+bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
 ```
+
+**Coverage as of 2026-09-20** (`bun run test:coverage`, don't trust this
+without re-running — re-run rather than assuming it holds after further
+changes): 90.55% statements / 79.24% branches / 89.02% functions /
+91.56% lines overall. Notably thinner spots: `HeartsModal.tsx` (~70%),
+`src/routes/__root.tsx` (~18% — mostly error-boundary paths), and
+`src/routes/api/analyze-weaknesses.ts` (~8% — no dedicated unit tests,
+matching the established pattern that server routes adjacent to Edge
+Functions in this codebase are verified via CI + manual smoke-testing,
+not unit tests; `api/chat.ts`/`stt.ts`/`tts.ts` are in the same boat).
 
 ## Assets
 
@@ -102,10 +132,24 @@ deployment host's env vars _and_ as a `supabase secrets set` value for
 completion fails closed for web and/or iOS respectively. See
 `.env.example` for the full required-env list. No migration or Edge
 Function change is live until it's explicitly pushed/deployed — see
-ARCHITECTURE.md's "Known rough edges" section. **Current state (2026-09-19,
+ARCHITECTURE.md's "Known rough edges" section. **Current state (2026-09-20,
 verify before trusting): all migrations applied, all three Edge Functions
-deployed and current (`complete-lesson` v5, `start-lesson-session` v1,
-`grade-review` v1).**
+deployed and current (`complete-lesson` v6, `start-lesson-session` v1,
+`grade-review` v2).**
+
+**Web app (Vercel) — do not assume `main` is live.** As of 2026-09-20,
+Vercel's GitHub integration is not connected to this repo's current
+location (`obsidian-media/LearnWithAlphonso` — the connection was lost
+in the org transfer and needs an org-owner to reconnect it via GitHub's
+UI, not anything scriptable). Every merge to `main` since PR #49 went
+undeployed until a manual catch-up. Check `mcp__plugin_vercel_vercel__list_deployments`
+(project `english-buddy-app-33`, filter `branch: "main"`) and compare
+the latest `githubCommitSha` against `git rev-parse main` before
+assuming production is current. To deploy manually: install the Vercel
+CLI globally (`bun add -g vercel` — `bunx vercel` has hung
+unreliably in this environment, root cause not identified), then
+`vercel deploy --prod --token=<token>` from a clean `main` checkout.
+`.vercelignore` keeps the upload scoped to the actual app.
 
 **RevenueCat (Pro/"Hector" gating):** `EntitlementStore` (`ios/LearnWithAlphonso/Sources/EntitlementStore.swift`)
 wraps the RevenueCat SDK (`Purchases.configure` in `LearnWithAlphonsoApp.init`);
