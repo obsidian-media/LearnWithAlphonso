@@ -13,6 +13,17 @@ name: iOS Release Archive
 #   APP_STORE_CONNECT_KEY_P8_BASE64  -- the key's .p8 file, base64-encoded
 #                                        (e.g. `base64 -i AuthKey_XXXX.p8 | pbcopy` on macOS,
 #                                        `base64 -w0 AuthKey_XXXX.p8` on Linux)
+#   REVENUECAT_API_KEY               -- RevenueCat dashboard's production
+#                                        (non-test_-prefixed) public SDK key.
+#                                        Left unset/empty, the archive still
+#                                        builds and launches fine -- Pro
+#                                        purchases are just unavailable that
+#                                        build (see AppConfig.swift/
+#                                        EntitlementStore.swift) -- but never
+#                                        leave this pointed at a test_ key,
+#                                        which crashes on launch in a
+#                                        TestFlight/App Store build (see
+#                                        project.yml's Release config comment).
 on:
   workflow_dispatch:
     inputs:
@@ -71,6 +82,7 @@ jobs:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
         run: |
           xcodebuild archive \
             -project LearnWithAlphonso.xcodeproj \
@@ -81,7 +93,8 @@ jobs:
             -authenticationKeyPath "$(pwd)/private_keys/AuthKey_${KEY_ID}.p8" \
             -authenticationKeyID "$KEY_ID" \
             -authenticationKeyIssuerID "$ISSUER_ID" \
-            DEVELOPMENT_TEAM="$TEAM_ID"
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            REVENUECAT_API_KEY="$REVENUECAT_API_KEY"
 
       - name: Export signed .ipa
         working-directory: ios/LearnWithAlphonso

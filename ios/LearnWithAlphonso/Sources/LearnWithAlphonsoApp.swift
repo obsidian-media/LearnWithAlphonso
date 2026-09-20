@@ -19,7 +19,13 @@ struct LearnWithAlphonsoApp: App {
         // surfaced as a view rather than a crash, since a bad build should
         // fail visibly in TestFlight, not silently terminate on launch.
         contentStore = try? ContentStore()
-        Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
+        // Skip configure entirely when no key resolved (see
+        // AppConfig.revenueCatAPIKey's doc comment) -- EntitlementStore
+        // checks the same condition before ever touching `Purchases.shared`,
+        // which fatalErrors if accessed pre-configure.
+        if let revenueCatAPIKey = AppConfig.revenueCatAPIKey {
+            Purchases.configure(withAPIKey: revenueCatAPIKey)
+        }
 
         let schema = Schema([
             PendingLessonCompletionRecord.self,

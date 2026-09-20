@@ -58,3 +58,20 @@ targets:
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
+      configs:
+        Debug:
+          # RevenueCat Test Store key -- local/simulator builds only. Safe
+          # to commit (RevenueCat's public-key model, same as the Supabase
+          # keys above) and deliberately never used for a Release archive.
+          INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
+        Release:
+          # Resolved from the REVENUECAT_API_KEY repo secret at archive time
+          # (ios-release.yml passes it as an xcodebuild command-line
+          # setting, same pattern as DEVELOPMENT_TEAM). Empty until that
+          # secret is set -- AppConfig.revenueCatAPIKey/EntitlementStore
+          # both treat empty as "Pro purchases unavailable this launch," not
+          # a crash. Never default this to the Debug key: a Test Store key
+          # in a TestFlight/App-Store-distributed build is exactly what
+          # crashed every tester's launch on 2026-09-19 (RevenueCat's SDK
+          # asserts on it deliberately).
+          INFOPLIST_KEY_RCApiKey: "$(REVENUECAT_API_KEY)"

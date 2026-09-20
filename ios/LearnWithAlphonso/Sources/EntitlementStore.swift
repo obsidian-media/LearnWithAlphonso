@@ -21,7 +21,17 @@ final class EntitlementStore {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
+    /// False when RevenueCat wasn't configured this launch (no API key
+    /// resolved -- see AppConfig.revenueCatAPIKey). Every method below must
+    /// check this before touching `Purchases.shared`, which fatalErrors if
+    /// accessed before `Purchases.configure` ran.
+    private let isConfigured = AppConfig.revenueCatAPIKey != nil
+
     func refresh() async {
+        guard isConfigured else {
+            isPro = false
+            return
+        }
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             isPro = customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
@@ -33,6 +43,11 @@ final class EntitlementStore {
     }
 
     func loadOffering() async {
+        guard isConfigured else {
+            packages = []
+            errorMessage = "Subscriptions aren't available in this build yet."
+            return
+        }
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -46,6 +61,10 @@ final class EntitlementStore {
     }
 
     func purchase(_ package: Package) async {
+        guard isConfigured else {
+            errorMessage = "Subscriptions aren't available in this build yet."
+            return
+        }
         errorMessage = nil
         do {
             let result = try await Purchases.shared.purchase(package: package)
@@ -56,6 +75,10 @@ final class EntitlementStore {
     }
 
     func restorePurchases() async {
+        guard isConfigured else {
+            errorMessage = "Subscriptions aren't available in this build yet."
+            return
+        }
         errorMessage = nil
         do {
             let customerInfo = try await Purchases.shared.restorePurchases()

@@ -30,10 +30,24 @@ enum AppConfig {
     /// RevenueCat's *public* SDK key -- meant to ship inside client apps
     /// (same publishable-key model as Supabase's, not a secret; RevenueCat's
     /// secret/server API key is a different, sk_-prefixed value that must
-    /// never appear here). This is currently a Test Store key -- swap for
-    /// the production key once a real App Store Connect subscription
-    /// product exists and is connected in the RevenueCat dashboard.
-    static let revenueCatAPIKey = "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
+    /// never appear here). Read from the generated Info.plist's `RCApiKey`
+    /// entry rather than a Swift literal, so swapping test -> production is
+    /// a build-setting change (project.yml's per-config `INFOPLIST_KEY_RCApiKey`,
+    /// or the REVENUECAT_API_KEY repo secret ios-release.yml's archive step
+    /// injects for Release) instead of an app-code edit. nil when unset --
+    /// e.g. a Release archive built before a real production key secret
+    /// exists -- which every `Purchases.shared` call site must treat as
+    /// "Pro purchases unavailable this launch," not a crash: RevenueCat's
+    /// SDK itself hard-crashes on launch if a Test Store key reaches a
+    /// TestFlight/App-Store-distributed build (a real crash this exact
+    /// setup caused, see the 2026-09-19 TestFlight crash report), so this
+    /// must never fall back to the Debug/Test Store key when unset.
+    static let revenueCatAPIKey: String? = {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "RCApiKey") as? String,
+            !value.isEmpty
+        else { return nil }
+        return value
+    }()
 
     /// The RevenueCat Entitlement identifier (RevenueCat dashboard ->
     /// Entitlements) that gates Hector -- see EntitlementStore.swift.
