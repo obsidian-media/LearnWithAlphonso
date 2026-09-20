@@ -62,6 +62,27 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
+  deno-tests:
+    # Guards the hand-synced Deno ports of src/lib/srs.ts and hearts.ts
+    # (supabase/functions/{grade-review,complete-lesson}/*.ts) against
+    # silently drifting from the TypeScript source of truth -- see
+    # ARCHITECTURE.md's "Known rough edges" for why these are duplicated
+    # rather than imported ("nothing enforces that automatically" until
+    # this job). *.test.ts files mirror src/lib's own test vectors exactly.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test grade-review's srs.ts port
+        run: deno test supabase/functions/grade-review/srs.test.ts
+
+      - name: Test complete-lesson's hearts.ts port
+        run: deno test supabase/functions/complete-lesson/hearts.test.ts
+
   deploy-supabase:
     # Applies pending supabase/migrations/*.sql and redeploys the three
     # Edge Functions to the linked project (qhcjpfbxfcltjbiuknyt) whenever

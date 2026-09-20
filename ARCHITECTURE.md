@@ -87,6 +87,20 @@ but not yet pushed fails at request time (typically a 500), not at build
 time. The manual path is still the fallback if the CI job's credentials
 ever lapse.
 
+`supabase/migrations/` doesn't fully reconstruct the live schema from
+scratch: a 2026-09-20 repair found the remote migration-tracking table
+carried 23 entries (`harden_function_search_paths`,
+`tighten_rls_and_leaderboard`, `fix_fr_delete_own_predicate_regression`,
+etc.) with no corresponding local file at all, applied at some point via
+the Supabase MCP `apply_migration` tool directly against the live project
+rather than through a committed `.sql` file. Live schema was verified
+consistent with every local file's expected end state before repairing the
+tracking table (`list_tables`/`pg_proc` against the full local migration
+set), so this was safe to resolve as pure bookkeeping -- but it means a
+handful of early hardening changes exist in prod with no SQL file to
+reproduce them from a fresh project. Not solved here; if a from-scratch
+rebuild is ever needed, `supabase db pull` against the live project first.
+
 ## Content model
 
 `src/data/courses.ts`'s `getCourse(course)` is the single entry point for
@@ -150,7 +164,12 @@ each carries its own Deno copies of the pure math it needs
 `start-lesson-session/lesson-session.ts`, `grade-review/srs.ts`) rather
 than importing across the `supabase/functions/` boundary — **these must
 be kept byte-for-byte in sync with their TypeScript source of truth by
-hand**; nothing enforces that automatically. Deployed via `supabase
+hand**. `srs.ts`/`hearts.ts` now have a parity guard (`deno-tests` in
+`.github/workflows/ci.yml`, running `grade-review/srs.test.ts` and
+`complete-lesson/hearts.test.ts`, which mirror `src/lib/srs.test.ts`/
+`hearts.test.ts`'s exact vectors) so a future drift fails CI instead of
+surfacing as a silent behavior mismatch between web and iOS; `progress-math.ts`
+and `lesson-session.ts` don't have this yet. Deployed via `supabase
 functions deploy <name>` (or the Supabase MCP `deploy_edge_function`
 tool); `complete-lesson` and `start-lesson-session` both need the
 `LESSON_SESSION_SECRET` Edge Function secret to match the web app's own
