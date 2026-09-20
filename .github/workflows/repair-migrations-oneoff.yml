@@ -1,0 +1,63 @@
+name: One-off migration history repair
+
+# Temporary, run-once workflow: aligns the linked Supabase project's
+# migration tracking table (supabase_migrations.schema_migrations) with
+# this repo's supabase/migrations/*.sql filenames. 23 versions currently
+# tracked remotely (applied via the Supabase MCP apply_migration tool,
+# which auto-timestamps) don't match any local filename, even though their
+# content is already live -- see ARCHITECTURE.md's "Known rough edges" for
+# the deploy-supabase job this unblocks. Live schema was verified via
+# list_tables/pg_proc against every local migration file's expected end
+# state before this was written -- this only edits tracking metadata via
+# `supabase migration repair`, never runs any DDL.
+#
+# Delete this file after a successful run -- it's not meant to stay in CI.
+on:
+  workflow_dispatch:
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref qhcjpfbxfcltjbiuknyt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Mark stray remote-only versions reverted
+        run: |
+          supabase migration repair --status reverted \
+            20260910052955 20260910052959 20260910053008 20260910053108 \
+            20260910053115 20260910053124 20260912080642 20260912081212 \
+            20260914064400 20260914064421 20260914071333 20260914071413 \
+            20260918093546 20260918094455 20260918130006 20260918130012 \
+            20260918130023 20260918130041 20260918130053 20260920012704 \
+            20260920012712 20260920012731 20260920022453
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Mark every local migration file applied
+        run: |
+          supabase migration repair --status applied \
+            20260725012934 20260725012945 20260822065513 20260829205211 \
+            20260901212057 20260908020628 20260910000000 20260912040533 \
+            20260912041500 20260913000000 20260913010000 20260918120000 \
+            20260918130000 20260918130001 20260918140000 20260918140001 \
+            20260918141500 20260918150000 20260920010000 20260920020000 \
+            20260920030000 20260920040000
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Verify -- db push should now report nothing pending
+        run: supabase db push --password "$SUPABASE_DB_PASSWORD" --dry-run
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
