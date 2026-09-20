@@ -287,3 +287,18 @@ note in README.md's Documentation section for why.)
   lifetime — Supabase free-tier inactivity pausing. If Hector sign-in
   fails with a connection error, check that project's status
   (`mcp__claude_ai_Supabase__get_project`) before assuming a code bug.
+- **Offline-first (iOS) has two known, deliberately-unsolved edge cases**
+  (see `docs/v2-kickoffs/01-offline-first.md` for the full design):
+  concurrent-device review grading, and streak continuity across an
+  offline gap. If a queued-offline review grade is replayed against
+  `grade-review` after the same item was already graded on another
+  device (online) in the meantime, it applies on top of stale SM-2 state
+  — single-device usage (the overwhelming common case, since there's only
+  ever one local queue) has no such issue. Separately, `complete-lesson`
+  derives the completion date from the sync's *execution* time, not when
+  the lesson was actually played offline — a lesson played on day N but
+  synced on day N+1 records as completed on day N+1, which can break a
+  streak the user was relying on that lesson to keep alive. Neither is
+  solved by heavier machinery (vector clocks, a client-submitted-date
+  trust exception) preemptively; revisit only if real usage shows either
+  is a frequent complaint.

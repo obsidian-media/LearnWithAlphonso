@@ -22,6 +22,16 @@ public struct ReviewItem: Sendable, Equatable {
     public let intervalDays: Int
     public let repetitions: Int
     public let dueOn: String
+
+    public init(itemKey: String, lessonId: String, level: String, ease: Double, intervalDays: Int, repetitions: Int, dueOn: String) {
+        self.itemKey = itemKey
+        self.lessonId = lessonId
+        self.level = level
+        self.ease = ease
+        self.intervalDays = intervalDays
+        self.repetitions = repetitions
+        self.dueOn = dueOn
+    }
 }
 
 public struct DueReviews: Sendable, Equatable {
@@ -81,6 +91,17 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
     public let heartsRefillAt: Double?
     public let streakFreezes: Int
     public let leagueTier: String
+
+    public init(xp: Int, streak: Int, longestStreak: Int, lastActiveDate: String, hearts: Int, heartsRefillAt: Double?, streakFreezes: Int, leagueTier: String) {
+        self.xp = xp
+        self.streak = streak
+        self.longestStreak = longestStreak
+        self.lastActiveDate = lastActiveDate
+        self.hearts = hearts
+        self.heartsRefillAt = heartsRefillAt
+        self.streakFreezes = streakFreezes
+        self.leagueTier = leagueTier
+    }
 }
 
 public struct LessonCompletionResult: Sendable, Decodable, Equatable {
