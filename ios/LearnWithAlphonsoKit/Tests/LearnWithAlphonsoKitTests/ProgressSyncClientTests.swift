@@ -358,6 +358,67 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(rows, [])
     }
 
+    // MARK: - acceptFriendInvite
+
+    func testAcceptFriendInvitePostsTheInviterIdAndReturnsTheResult() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "friends now"]])
+        }
+
+        let result = try await client.acceptFriendInvite(inviterID: "u1")
+
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.message, "friends now")
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/accept_friend_invite"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_inviter_id"] as? String, "u1")
+    }
+
+    func testAcceptFriendInviteSurfacesAServerRejectionAsAFalseOkNotAThrow() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "message": "cannot invite yourself"]])
+        }
+
+        let result = try await client.acceptFriendInvite(inviterID: "u1")
+
+        XCTAssertFalse(result.ok)
+        XCTAssertEqual(result.message, "cannot invite yourself")
+    }
+
+    // MARK: - fetchFriendsProgress
+
+    func testFetchFriendsProgressPostsToTheRpcAndDecodesTheRows() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["user_id": "u1", "display_name": "Ada", "avatar_seed": "ada", "streak": 12, "week_xp": 300],
+            ])
+        }
+
+        let rows = try await client.fetchFriendsProgress()
+
+        XCTAssertEqual(rows, [FriendProgress(userID: "u1", displayName: "Ada", avatarSeed: "ada", streak: 12, weekXP: 300)])
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_friends_progress"))
+    }
+
+    func testFetchFriendsProgressReturnsAnEmptyArrayWhenTheUserHasNoFriendsYet() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+
+        let rows = try await client.fetchFriendsProgress()
+
+        XCTAssertEqual(rows, [])
+    }
+
     // MARK: - error handling
 
     func testThrowsAReadableErrorWhenSupabaseRejectsAWrite() async {

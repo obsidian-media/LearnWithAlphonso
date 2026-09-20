@@ -50,6 +50,16 @@ public struct LeaderboardRow: Sendable, Equatable {
     public let xp: Int
 }
 
+/// Matches `get_friends_progress`'s row shape exactly (supabase/migrations/
+/// 20260912041500_accept_friend_invite.sql).
+public struct FriendProgress: Sendable, Equatable {
+    public let userID: String
+    public let displayName: String
+    public let avatarSeed: String
+    public let streak: Int
+    public let weekXP: Int
+}
+
 /// Matches the complete-lesson Edge Function's response shape exactly
 /// (supabase/functions/complete-lesson/index.ts's final jsonResponse call).
 public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
@@ -318,6 +328,58 @@ public final class ProgressSyncClient: Sendable {
                   let avatarSeed = row["avatar_seed"] as? String,
                   let xp = row["xp"] as? Int else { return nil }
             return LeaderboardRow(userID: userID, displayName: displayName, country: row["country"] as? String, avatarSeed: avatarSeed, xp: xp)
+        }
+    }
+
+    /// Calls the `accept_friend_invite` SECURITY DEFINER RPC -- self-invite
+    /// and unknown-inviter are handled server-side (`ok: false` + a
+    /// message), not client-side validation. Not currently wired into any
+    /// UI in this slice (invite acceptance happens via the existing web
+    /// route -- see FriendsView.swift's doc comment); provided so a future
+    /// in-app accept flow (Universal Links, or a manual id-entry fallback)
+    /// doesn't need to add this call from scratch.
+    public func acceptFriendInvite(inviterID: String) async throws -> (ok: Bool, message: String) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/accept_friend_invite"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_inviter_id": inviterID])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool,
+              let message = row["message"] as? String else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, message)
+    }
+
+    /// Calls the `get_friends_progress` SECURITY DEFINER RPC -- the
+    /// logged-in user's own friends list with stats, ordered by `week_xp
+    /// DESC` server-side.
+    public func fetchFriendsProgress() async throws -> [FriendProgress] {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_friends_progress"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [String: String]())
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> FriendProgress? in
+            guard let userID = row["user_id"] as? String,
+                  let displayName = row["display_name"] as? String,
+                  let avatarSeed = row["avatar_seed"] as? String,
+                  let streak = row["streak"] as? Int,
+                  let weekXP = row["week_xp"] as? Int else { return nil }
+            return FriendProgress(userID: userID, displayName: displayName, avatarSeed: avatarSeed, streak: streak, weekXP: weekXP)
         }
     }
 
