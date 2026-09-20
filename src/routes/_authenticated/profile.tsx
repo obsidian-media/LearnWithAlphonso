@@ -10,6 +10,7 @@ import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
+import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -37,6 +38,10 @@ function ProfilePage() {
   const theme = useTheme((s) => s.theme);
   const setTheme = useTheme((s) => s.setTheme);
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
+  const { data: weaknessTrend } = useQuery({
+    queryKey: ["weakness-trend"],
+    queryFn: () => getWeaknessTrend(),
+  });
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [saving, setSaving] = useState(false);
@@ -108,6 +113,37 @@ function ProfilePage() {
             <AchievementBadge key={a.id} achievement={a} unlocked={unlockedSet.has(a.id)} />
           ))}
         </div>
+
+        {weaknessTrend && weaknessTrend.categories.length > 0 && (
+          <>
+            <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Weakness trend</h2>
+            <p className="text-xs text-ink-soft">
+              Grammar gaps we've spotted, and how they're going
+            </p>
+            <div
+              className={
+                isStudioInk
+                  ? "mt-3 space-y-3 border-b border-hairline pb-4"
+                  : "mt-3 space-y-2 rounded-2xl border border-hairline bg-surface p-4"
+              }
+            >
+              {weaknessTrend.categories.slice(0, 8).map((c) => (
+                <div key={c.category} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="capitalize text-ink">{c.category.replace(/-/g, " ")}</span>
+                  {c.openCount > 0 ? (
+                    <span className="whitespace-nowrap text-xs font-medium text-ember">
+                      Still working on it
+                    </span>
+                  ) : (
+                    <span className="whitespace-nowrap text-xs font-medium text-moss">
+                      Mastered ({c.resolvedCount}×)
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <Link
           to="/profile/friends"

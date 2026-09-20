@@ -21,6 +21,7 @@ struct AchievementsView: View {
     let contentStore: ContentStore
 
     @State private var unlockedByID: [String: UnlockedAchievement] = [:]
+    @State private var weaknessTrend: [WeaknessTrendEntry] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
 
@@ -51,6 +52,12 @@ struct AchievementsView: View {
                             }
                         }
                         .padding()
+
+                        if !weaknessTrend.isEmpty {
+                            WeaknessTrendSection(entries: weaknessTrend)
+                                .padding(.horizontal)
+                                .padding(.bottom)
+                        }
                     }
                 }
             }
@@ -74,7 +81,49 @@ struct AchievementsView: View {
         } catch {
             errorMessage = "Couldn't load your unlock status -- showing the full catalog."
         }
+        // Best-effort: a weakness-trend failure shouldn't block the
+        // achievements catalog itself from showing.
+        weaknessTrend = (try? await client.fetchWeaknessTrend()) ?? []
         isLoading = false
+    }
+}
+
+/// V3 package 3b -- mirrors profile.tsx's "Weakness trend" section exactly:
+/// per-category detected/resolved history from `weakness_events`, "Still
+/// working on it" while more categories are open than resolved, "Mastered"
+/// once they even out.
+struct WeaknessTrendSection: View {
+    let entries: [WeaknessTrendEntry]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Weakness trend")
+                .font(.headline)
+            Text("Grammar gaps we've spotted, and how they're going")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                ForEach(entries.prefix(8), id: \.category) { entry in
+                    HStack {
+                        Text(entry.category.replacingOccurrences(of: "-", with: " ").capitalized)
+                            .font(.subheadline)
+                        Spacer()
+                        if entry.openCount > 0 {
+                            Text("Still working on it")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.orange)
+                        } else {
+                            Text("Mastered (\(entry.resolvedCount)\u{00D7})")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+            }
+            .padding(12)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
     }
 }
 

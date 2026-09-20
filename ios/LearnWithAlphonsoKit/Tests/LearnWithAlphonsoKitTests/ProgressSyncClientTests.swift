@@ -696,6 +696,39 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertNil(level)
     }
 
+    // MARK: - fetchWeaknessTrend (V3 package 3b)
+
+    func testFetchWeaknessTrendAggregatesPerCategory() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["category": "past-tense", "event_type": "detected", "created_at": "2026-09-01T00:00:00Z"],
+                ["category": "past-tense", "event_type": "detected", "created_at": "2026-09-05T00:00:00Z"],
+                ["category": "past-tense", "event_type": "resolved", "created_at": "2026-09-10T00:00:00Z"],
+                ["category": "articles", "event_type": "detected", "created_at": "2026-09-02T00:00:00Z"],
+                ["category": "articles", "event_type": "resolved", "created_at": "2026-09-03T00:00:00Z"],
+            ])
+        }
+
+        let trend = try await client.fetchWeaknessTrend()
+
+        XCTAssertEqual(trend, [
+            WeaknessTrendEntry(category: "past-tense", detectedCount: 2, resolvedCount: 1, openCount: 1, lastEventAt: "2026-09-10T00:00:00Z"),
+            WeaknessTrendEntry(category: "articles", detectedCount: 1, resolvedCount: 1, openCount: 0, lastEventAt: "2026-09-03T00:00:00Z"),
+        ])
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/weakness_events"))
+    }
+
+    func testFetchWeaknessTrendReturnsEmptyWhenNoEvents() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        let trend = try await client.fetchWeaknessTrend()
+        XCTAssertEqual(trend, [])
+    }
+
     // MARK: - fetchActivityXP
 
     func testFetchActivityXPSumsXpEarnedOverTheDateRange() async throws {

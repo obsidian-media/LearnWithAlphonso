@@ -87,9 +87,16 @@ real, pre-existing production bug while exploring this area:
 `user_id` (a NOT NULL column with no default), meaning the route had
 likely never successfully written a row in production; it also had zero
 test coverage, which is how that went unnoticed. Fixed with proper
-`user_id` resolution + `supabaseAdmin`, and given 7 new tests. Still
-open: a weakness-trend read/dashboard endpoint, tutor persona memory
-(Hector recalling past sessions), and proactive tutor nudges.
+`user_id` resolution + `supabaseAdmin`, and given 7 new tests. A
+weakness-trend read now surfaces that log: `getWeaknessTrend` aggregates
+`weakness_events` into per-category detected/resolved counts, shown as a
+"Weakness trend" section on web's `/profile` (still-working-on-it vs.
+mastered) and iOS's Achievements screen (`ProgressSyncClient.
+fetchWeaknessTrend`), with matching test coverage on both platforms. No
+`course` param anywhere in this pipeline: weakness detection itself is
+English-only today (`analyze-weaknesses.ts` hardcodes `language: "en"`),
+so there's nothing to filter by yet. Still open: tutor persona memory
+(Hector recalling past sessions) and proactive tutor nudges.
 
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 

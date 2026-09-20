@@ -13,6 +13,17 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
+/// V3 package 3b -- one aggregated row from `weakness_events`
+/// (supabase/migrations/20260921000000_v3_weakness_trend_log.sql), mirrors
+/// weakness-trend.functions.ts's WeaknessTrendEntry.
+public struct WeaknessTrendEntry: Sendable, Equatable {
+    public let category: String
+    public let detectedCount: Int
+    public let resolvedCount: Int
+    public let openCount: Int
+    public let lastEventAt: String
+}
+
 /// V3 package 2 -- mirrors sync.functions.ts's BuyStreakFreezeResult.
 public enum BuyStreakFreezeResult: Sendable, Equatable {
     case ok(streakFreezes: Int, xp: Int)
@@ -797,6 +808,54 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         return rows.first?["cefr_level"] as? String
+    }
+
+    /// Mirrors weakness-trend.functions.ts's getWeaknessTrend exactly: reads
+    /// the full `weakness_events` history for this user and aggregates it
+    /// into per-category detected/resolved counts client-side (a few
+    /// hundred rows at most, no need for a DB view). See that file's doc
+    /// comment for why `openCount` is `max(0, detected - resolved)` rather
+    /// than a simple "not yet resolved" flag.
+    public func fetchWeaknessTrend() async throws -> [WeaknessTrendEntry] {
+        var request = restRequest(path: "weakness_events", query: [
+            URLQueryItem(name: "select", value: "category,event_type,created_at"),
+            URLQueryItem(name: "order", value: "created_at.asc"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+
+        var order: [String] = []
+        var byCategory: [String: (detected: Int, resolved: Int, lastEventAt: String)] = [:]
+        for row in rows {
+            guard let category = row["category"] as? String,
+                  let eventType = row["event_type"] as? String,
+                  let createdAt = row["created_at"] as? String else { continue }
+            var entry = byCategory[category] ?? (detected: 0, resolved: 0, lastEventAt: createdAt)
+            if eventType == "detected" { entry.detected += 1 } else { entry.resolved += 1 }
+            entry.lastEventAt = createdAt
+            if byCategory[category] == nil { order.append(category) }
+            byCategory[category] = entry
+        }
+
+        return order
+            .map { category -> WeaknessTrendEntry in
+                let v = byCategory[category]!
+                return WeaknessTrendEntry(
+                    category: category,
+                    detectedCount: v.detected,
+                    resolvedCount: v.resolved,
+                    openCount: max(0, v.detected - v.resolved),
+                    lastEventAt: v.lastEventAt
+                )
+            }
+            .sorted { a, b in
+                if a.openCount != b.openCount { return a.openCount > b.openCount }
+                return a.lastEventAt > b.lastEventAt
+            }
     }
 
     /// PostgREST returns `timestamptz` columns with fractional-second

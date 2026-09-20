@@ -28,6 +28,9 @@ const exportMyData = vi.fn();
 const deleteMyAccount = vi.fn();
 vi.mock("../../lib/account.functions", () => ({ exportMyData, deleteMyAccount }));
 
+const getWeaknessTrend = vi.fn();
+vi.mock("../../lib/weakness-trend.functions", () => ({ getWeaknessTrend }));
+
 const signOut = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut } } }));
 
@@ -54,6 +57,8 @@ beforeEach(() => {
   updateProfile.mockResolvedValue({ ok: true });
   exportMyData.mockReset();
   deleteMyAccount.mockReset();
+  getWeaknessTrend.mockReset();
+  getWeaknessTrend.mockResolvedValue({ categories: [] });
   signOut.mockReset();
   signOut.mockResolvedValue({ error: null });
   useProgress.getState().reset();
@@ -233,6 +238,40 @@ describe("Profile page", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("still has active subscription");
     expect(navigate).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Delete forever" })).toBeEnabled();
+  });
+
+  it("shows nothing for weakness trend when there are no events yet", async () => {
+    renderPage();
+    await screen.findByLabelText("Display name");
+    expect(screen.queryByText("Weakness trend")).not.toBeInTheDocument();
+  });
+
+  it("shows still-working-on-it and mastered categories from the weakness trend", async () => {
+    getWeaknessTrend.mockResolvedValue({
+      categories: [
+        {
+          category: "past-tense",
+          detectedCount: 2,
+          resolvedCount: 1,
+          openCount: 1,
+          lastEventAt: "2026-09-10T00:00:00Z",
+        },
+        {
+          category: "articles",
+          detectedCount: 1,
+          resolvedCount: 1,
+          openCount: 0,
+          lastEventAt: "2026-09-03T00:00:00Z",
+        },
+      ],
+    });
+    renderPage();
+
+    expect(await screen.findByText("Weakness trend")).toBeInTheDocument();
+    expect(screen.getByText("past tense")).toBeInTheDocument();
+    expect(screen.getByText("Still working on it")).toBeInTheDocument();
+    expect(screen.getByText("articles")).toBeInTheDocument();
+    expect(screen.getByText("Mastered (1×)")).toBeInTheDocument();
   });
 
   it("lets the user cancel the delete confirmation", async () => {
