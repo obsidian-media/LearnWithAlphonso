@@ -208,6 +208,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({})) // language_progress upsert
       .mockReturnValueOnce(chainable({})) // lesson_completions upsert
       .mockReturnValueOnce(chainable({})) // activity_days upsert
+      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] })) // lesson_completions re-read
       .mockReturnValueOnce(chainable({ data: [] })); // user_achievements re-read
 
@@ -298,6 +299,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({}))
       .mockReturnValueOnce(chainable({}))
       .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
       .mockReturnValueOnce(chainable({ data: [] }));
 
