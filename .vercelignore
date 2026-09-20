@@ -1,0 +1,9 @@
+.claude
+ios
+supabase/functions
+docs
+.git
+*.log
+coverage
+playwright-report
+test-results

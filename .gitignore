@@ -18,6 +18,9 @@ dist-ssr
 
 # Wrangler / Cloudflare
 .wrangler/
+
+# Vercel CLI local project link (machine-specific)
+.vercel
 .dev.vars
 
 # Supabase CLI local dev state (branches, temp connection info)
