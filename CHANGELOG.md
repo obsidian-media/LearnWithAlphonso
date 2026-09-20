@@ -8,6 +8,26 @@ file itself won't be kept perfectly current — treat entries as a guide
 to *when* something shipped, and re-check the actual code for *how it
 works now*.
 
+## V3 — Feature depth expansion (2026-09-20 – in progress)
+
+Six-package initiative adding depth to existing features rather than new
+surface area, sequenced by risk (self-contained/algorithmic first, the
+largest product initiative in the middle, the most exploratory pieces
+last): SRS scheduling, gamification engagement mechanics, conversation
+experience, tutor/weakness system, curriculum formats, generative/adaptive
+content.
+
+**Smarter SRS scheduling** — two targeted, low-risk improvements to the
+existing SM-2-style algorithm (not a full replacement — see
+`src/lib/srs.ts`'s doc comments for why a novel stability-based model was
+considered and deliberately not chosen): a lapse now halves repetitions
+instead of resetting to zero, and a successful review well past its due
+date grows the interval further (capped 1.5x), rewarding the real
+spacing-effect finding from memory research. No schema change. Ported to
+`supabase/functions/grade-review/srs.ts` (Deno) and
+`ios/LearnWithAlphonsoKit/.../SRSEngine.swift` (Swift) with matching
+parity tests in all three.
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

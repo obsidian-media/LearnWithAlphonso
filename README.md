@@ -59,10 +59,18 @@ not a stub or placeholder.
 
 ## Spaced Repetition System
 
-The app uses an SM-2-style algorithm to schedule review of missed items:
+The app uses an SM-2-style algorithm (with two deliberate departures from
+vanilla SM-2, added 2026-09-20 — see `src/lib/srs.ts`'s doc comments) to
+schedule review of missed items:
 
-- **Wrong answer**: item resets to the start, ease decreases, a lapse is recorded
-- **Correct answer**: interval grows (1 day → 3 days → interval × ease), item retires after 4 clean repetitions in a row
+- **Wrong answer**: repetitions *halve* (not reset to zero), ease
+  decreases, a lapse is recorded — one slip no longer erases arbitrarily
+  much earned progress, a well-known real weakness of vanilla SM-2
+- **Correct answer**: interval grows (1 day → 3 days → interval × ease ×
+  an overdue-growth bonus), item retires after 4 clean repetitions in a
+  row. The overdue-growth bonus rewards successfully recalling an item
+  well past its due date (the "spacing effect") — capped at 1.5x so one
+  very-overdue review can't cause a wild interval swing
 - **Review queue** (`/review`): due items shown oldest-first; the learn page shows a live due-count badge
 
 ## Development

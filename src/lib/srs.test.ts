@@ -3,19 +3,33 @@ import { computeReviewGrade, computeReviewOutcome, deriveAnswerCorrectness } fro
 import type { Question } from "../data/curriculum";
 
 describe("computeReviewGrade", () => {
-  it("resets interval and repetitions on a wrong answer, and records a lapse", () => {
+  it("halves (rather than zeros) repetitions on a wrong answer, and records a lapse", () => {
     const result = computeReviewGrade({
       correct: false,
       ease: 2.3,
       intervalDays: 6,
       repetitions: 2,
       lapses: 1,
+      elapsedDays: 6,
     });
     expect(result.retired).toBe(false);
     expect(result.ease).toBeCloseTo(2.1);
-    expect(result.intervalDays).toBe(0);
-    expect(result.repetitions).toBe(0);
+    expect(result.repetitions).toBe(1); // floor(2 * 0.5)
+    expect(result.intervalDays).toBe(3); // the repetitions===1 fixed step
     expect(result.lapses).toBe(2);
+  });
+
+  it("drops all the way to a fresh restart when repetitions halves to zero", () => {
+    const result = computeReviewGrade({
+      correct: false,
+      ease: 2.3,
+      intervalDays: 1,
+      repetitions: 1,
+      lapses: 0,
+      elapsedDays: 1,
+    });
+    expect(result.repetitions).toBe(0); // floor(1 * 0.5)
+    expect(result.intervalDays).toBe(1); // the repetitions===0 fixed step
   });
 
   it("floors ease at 1.3 so it never goes negative on repeated misses", () => {
@@ -25,6 +39,7 @@ describe("computeReviewGrade", () => {
       intervalDays: 0,
       repetitions: 0,
       lapses: 0,
+      elapsedDays: 0,
     });
     expect(result.ease).toBe(1.3);
   });
@@ -36,6 +51,7 @@ describe("computeReviewGrade", () => {
       intervalDays: 0,
       repetitions: 0,
       lapses: 0,
+      elapsedDays: 0,
     });
     expect(result.retired).toBe(false);
     expect(result.ease).toBeCloseTo(2.45);
@@ -51,22 +67,46 @@ describe("computeReviewGrade", () => {
       intervalDays: 1,
       repetitions: 1,
       lapses: 0,
+      elapsedDays: 1,
     });
     expect(result.intervalDays).toBe(3);
     expect(result.repetitions).toBe(2);
   });
 
-  it("grows the interval by ease on the third correct repetition", () => {
+  it("grows the interval by ease on the third correct repetition when reviewed on schedule", () => {
     const result = computeReviewGrade({
       correct: true,
       ease: 2.6,
       intervalDays: 3,
       repetitions: 2,
       lapses: 0,
+      elapsedDays: 3, // exactly on schedule -> overdue bonus is a no-op (1x)
     });
     // repetitions becomes 3, ease becomes min(2.8, 2.6+0.15) = 2.75
     expect(result.repetitions).toBe(3);
     expect(result.intervalDays).toBe(Math.round(3 * 2.75));
+  });
+
+  it("grows the interval further when the review happens well past its due date", () => {
+    const onTime = computeReviewGrade({
+      correct: true,
+      ease: 2.6,
+      intervalDays: 3,
+      repetitions: 2,
+      lapses: 0,
+      elapsedDays: 3,
+    });
+    const wayOverdue = computeReviewGrade({
+      correct: true,
+      ease: 2.6,
+      intervalDays: 3,
+      repetitions: 2,
+      lapses: 0,
+      elapsedDays: 30, // 10x overdue
+    });
+    // Capped at the 1.5x max bonus, not the full 10x overdue ratio.
+    expect(wayOverdue.intervalDays).toBe(Math.round(3 * 2.75 * 1.5));
+    expect(wayOverdue.intervalDays).toBeGreaterThan(onTime.intervalDays);
   });
 
   it("retires the item after 4 clean repetitions in a row", () => {
@@ -76,6 +116,7 @@ describe("computeReviewGrade", () => {
       intervalDays: 8,
       repetitions: 3,
       lapses: 0,
+      elapsedDays: 8,
     });
     expect(result.retired).toBe(true);
     expect(result.repetitions).toBe(4);
@@ -88,6 +129,7 @@ describe("computeReviewGrade", () => {
       intervalDays: 10,
       repetitions: 1,
       lapses: 0,
+      elapsedDays: 10,
     });
     expect(result.ease).toBe(2.8);
   });
@@ -99,8 +141,10 @@ describe("computeReviewGrade", () => {
       intervalDays: 0,
       repetitions: 2,
       lapses: 0,
+      elapsedDays: 0,
     });
-    // repetitions becomes 3, interval_days input is 0 -> round(0 * ease) || 6
+    // repetitions becomes 3, interval_days input is 0 -> overdue bonus is a
+    // no-op (can't divide by a zero interval) -> round(0 * ease) || 6
     expect(result.intervalDays).toBe(6);
   });
 });
@@ -111,7 +155,7 @@ describe("computeReviewOutcome", () => {
 
   it("schedules a correct-but-not-yet-retired answer using the grown interval", () => {
     const outcome = computeReviewOutcome(
-      { correct: true, ease: 2.3, intervalDays: 0, repetitions: 0, lapses: 0 },
+      { correct: true, ease: 2.3, intervalDays: 0, repetitions: 0, lapses: 0, elapsedDays: 0 },
       today,
       addDays,
     );
@@ -127,20 +171,20 @@ describe("computeReviewOutcome", () => {
 
   it("reschedules a wrong answer for today, not a future date", () => {
     const outcome = computeReviewOutcome(
-      { correct: false, ease: 2.3, intervalDays: 6, repetitions: 2, lapses: 1 },
+      { correct: false, ease: 2.3, intervalDays: 6, repetitions: 2, lapses: 1, elapsedDays: 6 },
       today,
       addDays,
     );
     expect(outcome.retired).toBe(false);
     if (!outcome.retired) {
       expect(outcome.dueOn).toBe(today);
-      expect(outcome.repetitions).toBe(0);
+      expect(outcome.repetitions).toBe(1); // halved from 2, not reset to 0
     }
   });
 
   it("retires the item and sets dueOn to today, ignoring addDays", () => {
     const outcome = computeReviewOutcome(
-      { correct: true, ease: 2.75, intervalDays: 8, repetitions: 3, lapses: 0 },
+      { correct: true, ease: 2.75, intervalDays: 8, repetitions: 3, lapses: 0, elapsedDays: 8 },
       today,
       () => {
         throw new Error("addDays should not be called for a retired item");

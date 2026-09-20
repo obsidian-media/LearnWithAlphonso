@@ -206,6 +206,8 @@ describe("gradeReview", () => {
     repetitions: 0,
     lapses: 0,
     due_on: new Date().toISOString().slice(0, 10),
+    created_at: new Date().toISOString(),
+    last_reviewed_at: null,
   };
 
   it("returns retired: false with today's date when the item no longer exists", async () => {
@@ -240,6 +242,46 @@ describe("gradeReview", () => {
     });
     // Correct answer on repetitions 0->1: not yet retired, interval grows to 1 day.
     expect(result.retired).toBe(false);
+  });
+
+  it("grows the interval further for a review that's well overdue", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(
+      chainable({
+        data: {
+          ...rowBase,
+          interval_days: 3,
+          repetitions: 2,
+          last_reviewed_at: new Date(Date.now() - 3 * 86400000).toISOString(), // reviewed exactly on schedule
+        },
+      }),
+    );
+    const onTime = await gradeReview({
+      context: ctx(supabase),
+      data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+    });
+
+    const supabaseOverdue = createSupabaseMock();
+    supabaseOverdue.from.mockReturnValueOnce(
+      chainable({
+        data: {
+          ...rowBase,
+          interval_days: 3,
+          repetitions: 2,
+          last_reviewed_at: new Date(Date.now() - 30 * 86400000).toISOString(), // 10x overdue
+        },
+      }),
+    );
+    const overdue = await gradeReview({
+      context: ctx(supabaseOverdue),
+      data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+    });
+
+    expect(onTime.retired).toBe(false);
+    expect(overdue.retired).toBe(false);
+    if (!onTime.retired && !overdue.retired) {
+      expect(new Date(overdue.dueOn).getTime()).toBeGreaterThan(new Date(onTime.dueOn).getTime());
+    }
   });
 
   it("retires the item after enough correct repetitions and deletes the row", async () => {

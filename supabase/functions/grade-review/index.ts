@@ -146,6 +146,10 @@ export async function handleRequest(req: Request): Promise<Response> {
     correct = deriveAnswerCorrectness(question as QuestionRow, answer);
   }
 
+  // Same overdue-growth-bonus reasoning as review.functions.ts's gradeReview.
+  const sinceIso = row.last_reviewed_at ?? row.created_at;
+  const elapsedDays = Math.max(0, Math.round((Date.now() - new Date(sinceIso).getTime()) / 86_400_000));
+
   const outcome = computeReviewOutcome(
     {
       correct,
@@ -153,6 +157,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       intervalDays: row.interval_days,
       repetitions: row.repetitions,
       lapses: row.lapses,
+      elapsedDays,
     },
     today,
     addDays,

@@ -13,13 +13,17 @@ public struct ReviewGradeInput: Sendable {
     public let intervalDays: Int
     public let repetitions: Int
     public let lapses: Int
+    /// See src/lib/srs.ts's ReviewGradeInput.elapsedDays doc comment -- keep
+    /// this Swift port in sync with that file.
+    public let elapsedDays: Int
 
-    public init(correct: Bool, ease: Double, intervalDays: Int, repetitions: Int, lapses: Int) {
+    public init(correct: Bool, ease: Double, intervalDays: Int, repetitions: Int, lapses: Int, elapsedDays: Int) {
         self.correct = correct
         self.ease = ease
         self.intervalDays = intervalDays
         self.repetitions = repetitions
         self.lapses = lapses
+        self.elapsedDays = elapsedDays
     }
 }
 
@@ -36,36 +40,52 @@ private let maxEase = 2.8
 private let easeStepDown = 0.2
 private let easeStepUp = 0.15
 private let retireAfterRepetitions = 4
+private let maxOverdueGrowthBonus = 1.5
+private let lapseRepetitionsRetention = 0.5
 
-/// Wrong answer: reset the item to the start and record a lapse. Correct
-/// answer: grow the interval (1 day, then 3, then interval * ease), and
-/// retire the item once it's been answered correctly 4 times running.
+/// Wrong answer: halve (rather than zero out) repetitions and record a
+/// lapse. Correct answer: grow the interval (1 day, then 3, then interval
+/// * ease * overdue-bonus), and retire the item once it's been answered
+/// correctly 4 times running.
 public func computeReviewGrade(_ input: ReviewGradeInput) -> ReviewGradeResult {
+    let ease = input.correct
+        ? min(maxEase, input.ease + easeStepUp)
+        : max(minEase, input.ease - easeStepDown)
+
     if !input.correct {
-        return ReviewGradeResult(
-            retired: false,
-            ease: max(minEase, input.ease - easeStepDown),
-            intervalDays: 0,
-            repetitions: 0,
-            lapses: input.lapses + 1
-        )
+        let repetitions = Int(Double(input.repetitions) * lapseRepetitionsRetention)
+        let intervalDays: Int
+        if repetitions == 0 {
+            intervalDays = 1
+        } else if repetitions == 1 {
+            intervalDays = 3
+        } else {
+            let grown = Int((Double(input.intervalDays) * ease).rounded())
+            intervalDays = grown != 0 ? grown : 6
+        }
+        return ReviewGradeResult(retired: false, ease: ease, intervalDays: intervalDays, repetitions: repetitions, lapses: input.lapses + 1)
     }
 
     let repetitions = input.repetitions + 1
-    let ease = min(maxEase, input.ease + easeStepUp)
     if repetitions >= retireAfterRepetitions {
         return ReviewGradeResult(retired: true, ease: ease, intervalDays: input.intervalDays, repetitions: repetitions, lapses: input.lapses)
     }
 
-    let intervalDays: Int
     if repetitions == 1 {
-        intervalDays = 1
-    } else if repetitions == 2 {
-        intervalDays = 3
-    } else {
-        let grown = Int((Double(input.intervalDays) * ease).rounded())
-        intervalDays = grown != 0 ? grown : 6
+        return ReviewGradeResult(retired: false, ease: ease, intervalDays: 1, repetitions: repetitions, lapses: input.lapses)
     }
+    if repetitions == 2 {
+        return ReviewGradeResult(retired: false, ease: ease, intervalDays: 3, repetitions: repetitions, lapses: input.lapses)
+    }
+
+    let overdueBonus: Double
+    if input.intervalDays > 0 {
+        overdueBonus = min(maxOverdueGrowthBonus, max(1, Double(input.elapsedDays) / Double(input.intervalDays)))
+    } else {
+        overdueBonus = 1
+    }
+    let grown = Int((Double(input.intervalDays) * ease * overdueBonus).rounded())
+    let intervalDays = grown != 0 ? grown : 6
     return ReviewGradeResult(retired: false, ease: ease, intervalDays: intervalDays, repetitions: repetitions, lapses: input.lapses)
 }
 

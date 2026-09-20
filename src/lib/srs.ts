@@ -26,6 +26,18 @@ export type ReviewGradeInput = {
   intervalDays: number;
   repetitions: number;
   lapses: number;
+  /**
+   * Real calendar days elapsed since this item was last reviewed (or since
+   * it was created, for a never-yet-reviewed item). Ignored when
+   * repetitions is 0 or 1 (those use fixed 1-day/3-day steps regardless of
+   * how overdue the review was) -- only feeds the overdue-growth-bonus
+   * below. Callers compute this from last_reviewed_at/created_at vs. the
+   * actual review date, not from due_on -- a review can legitimately
+   * happen later than scheduled (gradeReview only rejects *early* grading,
+   * see review.functions.ts), and this is specifically about rewarding
+   * that "recalled it despite being overdue" case accurately.
+   */
+  elapsedDays: number;
 };
 
 export type ReviewGradeResult = {
@@ -41,25 +53,44 @@ const MAX_EASE = 2.8;
 const EASE_STEP_DOWN = 0.2;
 const EASE_STEP_UP = 0.15;
 const RETIRE_AFTER_REPETITIONS = 4;
+/**
+ * Reviewing an item successfully well past its due date is real evidence
+ * of a more durable memory than reviewing it right on schedule -- the
+ * "spacing effect," well-established in memory research independent of
+ * any specific SRS algorithm's tuning. Capped at 1.5x so one very-overdue
+ * review can't cause a wild interval swing.
+ */
+const MAX_OVERDUE_GROWTH_BONUS = 1.5;
+/**
+ * A lapse used to reset repetitions to 0 outright, forcing the item back
+ * through the full 1-day -> 3-day -> grown-interval ladder from scratch
+ * even if it had built up a long interval first. That's the single most
+ * criticized property of vanilla SM-2 -- one slip erases arbitrarily much
+ * earned progress. Halving instead keeps a lapse meaningful (still a real
+ * setback) without being maximally punishing.
+ */
+const LAPSE_REPETITIONS_RETENTION = 0.5;
 
 /**
- * Wrong answer: reset the item to the start and record a lapse. Correct
- * answer: grow the interval (1 day, then 3, then interval * ease), and
- * retire the item once it's been answered correctly 4 times running.
+ * Wrong answer: halve (rather than zero out) repetitions and record a
+ * lapse -- softer than a full reset, still a real setback. Correct
+ * answer: grow the interval (1 day, then 3, then interval * ease *
+ * overdue-bonus), and retire the item once it's been answered correctly 4
+ * times running.
  */
 export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
+  const ease = input.correct
+    ? Math.min(MAX_EASE, input.ease + EASE_STEP_UP)
+    : Math.max(MIN_EASE, input.ease - EASE_STEP_DOWN);
+
   if (!input.correct) {
-    return {
-      retired: false,
-      ease: Math.max(MIN_EASE, input.ease - EASE_STEP_DOWN),
-      intervalDays: 0,
-      repetitions: 0,
-      lapses: input.lapses + 1,
-    };
+    const repetitions = Math.floor(input.repetitions * LAPSE_REPETITIONS_RETENTION);
+    const intervalDays =
+      repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.round(input.intervalDays * ease) || 6;
+    return { retired: false, ease, intervalDays, repetitions, lapses: input.lapses + 1 };
   }
 
   const repetitions = input.repetitions + 1;
-  const ease = Math.min(MAX_EASE, input.ease + EASE_STEP_UP);
   if (repetitions >= RETIRE_AFTER_REPETITIONS) {
     return {
       retired: true,
@@ -70,8 +101,16 @@ export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
     };
   }
 
-  const intervalDays =
-    repetitions === 1 ? 1 : repetitions === 2 ? 3 : Math.round(input.intervalDays * ease) || 6;
+  if (repetitions === 1)
+    return { retired: false, ease, repetitions, intervalDays: 1, lapses: input.lapses };
+  if (repetitions === 2)
+    return { retired: false, ease, repetitions, intervalDays: 3, lapses: input.lapses };
+
+  const overdueBonus =
+    input.intervalDays > 0
+      ? Math.min(MAX_OVERDUE_GROWTH_BONUS, Math.max(1, input.elapsedDays / input.intervalDays))
+      : 1;
+  const intervalDays = Math.round(input.intervalDays * ease * overdueBonus) || 6;
   return { retired: false, ease, repetitions, intervalDays, lapses: input.lapses };
 }
 

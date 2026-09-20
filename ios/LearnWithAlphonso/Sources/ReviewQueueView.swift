@@ -192,8 +192,13 @@ struct ReviewQueueView: View {
         // it), but none of computeReviewOutcome's ease/intervalDays/
         // repetitions/dueOn outputs actually depend on the *input* lapses
         // value -- only the *returned* lapses count does, which this view
-        // never displays. Safe to pass 0.
-        let input = ReviewGradeInput(correct: correct, ease: item.ease, intervalDays: item.intervalDays, repetitions: item.repetitions, lapses: 0)
+        // never displays. Safe to pass 0. Same reasoning for `elapsedDays`:
+        // ReviewItem doesn't carry last_reviewed_at either, so this assumes
+        // an on-schedule review (overdue bonus becomes a no-op) -- purely
+        // an offline optimistic-cache prediction; the real grade (and its
+        // real elapsed-time-aware interval) gets recomputed correctly
+        // server-side by grade-review once this queued grade syncs.
+        let input = ReviewGradeInput(correct: correct, ease: item.ease, intervalDays: item.intervalDays, repetitions: item.repetitions, lapses: 0, elapsedDays: item.intervalDays)
         let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
 
         syncQueueStore.appendReviewGrade(PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.code, queuedAt: Date()))

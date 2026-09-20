@@ -213,6 +213,17 @@ export const gradeReview = createServerFn({ method: "POST" })
       correct = deriveAnswerCorrectness(ref.question, data.answer);
     }
 
+    // Real elapsed time since the item was last actually reviewed (falling
+    // back to its creation time for a never-yet-reviewed item) -- feeds
+    // computeReviewGrade's overdue-growth bonus. See that function's doc
+    // comment for why this must be measured against the real review date,
+    // not due_on.
+    const sinceIso = row.last_reviewed_at ?? row.created_at;
+    const elapsedDays = Math.max(
+      0,
+      Math.round((Date.now() - new Date(sinceIso).getTime()) / 86400000),
+    );
+
     const outcome = computeReviewOutcome(
       {
         correct,
@@ -220,6 +231,7 @@ export const gradeReview = createServerFn({ method: "POST" })
         intervalDays: row.interval_days,
         repetitions: row.repetitions,
         lapses: row.lapses,
+        elapsedDays,
       },
       today(),
       addDays,
