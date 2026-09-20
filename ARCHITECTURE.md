@@ -75,14 +75,17 @@ comment for why direct writes weren't revoked outright (the iOS
 `ProgressSyncClient` still depends on them) and what the real fix looks
 like (route every write through a `SECURITY DEFINER` RPC).
 
-**Applying migrations:** there is no CI/deploy step that runs these
-automatically (see "Known rough edges" below). After merging a PR that adds
-a file under `supabase/migrations/`, someone needs to run
-`supabase db push` against the linked project (`project_id` in
-`supabase/config.toml`) -- or apply the SQL by hand in the Supabase SQL
-editor -- before the corresponding code path will work in the real app. A
-new RPC or table referenced by app code but not yet pushed fails at
-request time (typically a 500), not at build time.
+**Applying migrations:** `.github/workflows/ci.yml`'s `deploy-supabase` job
+now runs `supabase db push` (and redeploys all three Edge Functions)
+automatically on every push to `main`, gated on `lint-and-typecheck`/`e2e`
+passing first (see "Known rough edges" below for the incident history that
+motivated this, and the job's own comment for the required repo secrets).
+Before this existed, every file under `supabase/migrations/` needed a
+manual `supabase db push` or hand-applied SQL before the corresponding code
+path worked in the real app -- a new RPC or table referenced by app code
+but not yet pushed fails at request time (typically a 500), not at build
+time. The manual path is still the fallback if the CI job's credentials
+ever lapse.
 
 ## Content model
 
@@ -295,15 +298,19 @@ note in README.md's Documentation section for why.)
   `bun run build` does work now, though (the Windows path-separator bug
   was in `@lovable.dev/mcp-js`'s Vite plugin, removed along with the MCP
   feature this repo used to expose at `/mcp`).
-- **No CI/deploy step applies Supabase migrations to the real project**
-  (`project_id` in `supabase/config.toml`) — every file in
-  `supabase/migrations/` needs a manual `supabase db push`, the dashboard
-  SQL editor, or a Supabase MCP tool's `apply_migration` call before it's
-  live. Easy to forget after a session like this one that added several;
-  check this first if a feature seems to work in code but 500s in the real
-  app. Same applies to the Edge Function in `supabase/functions/` — a code
-  change there needs its own `supabase functions deploy` separately from a
-  migration push.
+- **Fixed 2026-09-20: Supabase migrations and Edge Functions now auto-deploy
+  on push to `main`** via the `deploy-supabase` job in
+  `.github/workflows/ci.yml` — previously every file in
+  `supabase/migrations/` needed a manual `supabase db push`, and every
+  `supabase/functions/` change needed its own manual `supabase functions
+  deploy`, both easy to forget (this bit a real session that added several
+  migrations in one sitting). The CI job needs `SUPABASE_ACCESS_TOKEN`,
+  `SUPABASE_DB_PASSWORD`, and `LESSON_SESSION_SECRET` set as repo secrets
+  (see the job's own comment) — if those lapse or the job is disabled, the
+  manual `supabase db push`/`supabase functions deploy` path (or the
+  dashboard SQL editor / Supabase MCP `apply_migration`) is still the
+  fallback, and the same "feature works in code but 500s in prod" symptom
+  is the tell that it has lapsed.
 - `USER_ID_TABLES` in `account.functions.ts` (GDPR export/delete) previously
   had three real bugs — wrong table name, wrong filter column for
   `profiles`, and two missing tables — all silent because neither

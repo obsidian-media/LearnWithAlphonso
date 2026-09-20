@@ -130,12 +130,14 @@ deployment host's env vars _and_ as a `supabase secrets set` value for
 `complete-lesson` and `start-lesson-session` (same value on both sides;
 `grade-review` does not need `LESSON_SESSION_SECRET`), or lesson
 completion fails closed for web and/or iOS respectively. See
-`.env.example` for the full required-env list. No migration or Edge
-Function change is live until it's explicitly pushed/deployed — see
-ARCHITECTURE.md's "Known rough edges" section. **Current state (2026-09-20,
-verify before trusting): all migrations applied, all three Edge Functions
-deployed and current (`complete-lesson` v6, `start-lesson-session` v1,
-`grade-review` v2).**
+`.env.example` for the full required-env list. Migrations and Edge
+Function deploys are now automated by `.github/workflows/ci.yml`'s
+`deploy-supabase` job on every push to `main` (added 2026-09-20 — see
+ARCHITECTURE.md's "Known rough edges" section for the required repo
+secrets and the manual fallback if that job's credentials ever lapse).
+**Current state (2026-09-20, verify before trusting): all migrations
+applied, all three Edge Functions deployed and current (`complete-lesson`
+v6, `start-lesson-session` v1, `grade-review` v2).**
 
 **Web app (Vercel) — reconnected and fully confirmed 2026-09-20,
 re-verify anyway before assuming it stayed that way.** Vercel's GitHub
