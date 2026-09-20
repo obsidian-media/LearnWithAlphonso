@@ -54,7 +54,10 @@ final class PendingReviewGradeRecord {
 
 /// One cached `ReviewItem` from the last successful `fetchDueReviews` --
 /// shown instead of an error screen when a later fetch fails or the device
-/// is offline.
+/// is offline. Mirrors ReviewItem's weakness-embedded-content fields too,
+/// so an offline-cached weakness item renders and grades correctly
+/// without a network round trip -- see QuestionGrading.swift's
+/// question(fromWeaknessItem:).
 @Model
 final class CachedDueReviewRecord {
     @Attribute(.unique) var itemKey: String
@@ -64,6 +67,12 @@ final class CachedDueReviewRecord {
     var intervalDays: Int
     var repetitions: Int
     var dueOn: String
+    var source: String
+    var weaknessDisplay: String?
+    var prompt: String?
+    var choices: [String]?
+    var answerIndex: Int?
+    var explanation: String?
 
     init(_ item: ReviewItem) {
         itemKey = item.itemKey
@@ -73,10 +82,21 @@ final class CachedDueReviewRecord {
         intervalDays = item.intervalDays
         repetitions = item.repetitions
         dueOn = item.dueOn
+        source = item.source
+        weaknessDisplay = item.weaknessDisplay
+        prompt = item.prompt
+        choices = item.choices
+        answerIndex = item.answerIndex
+        explanation = item.explanation
     }
 
     var asReviewItem: ReviewItem {
-        ReviewItem(itemKey: itemKey, lessonId: lessonId, level: level, ease: ease, intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn)
+        ReviewItem(
+            itemKey: itemKey, lessonId: lessonId, level: level, ease: ease,
+            intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn,
+            source: source, weaknessDisplay: weaknessDisplay, prompt: prompt,
+            choices: choices, answerIndex: answerIndex, explanation: explanation
+        )
     }
 }
 

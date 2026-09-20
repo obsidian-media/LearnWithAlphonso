@@ -74,6 +74,9 @@ struct ReviewQueueView: View {
     private var currentItem: ReviewItem { queue[idx] }
 
     private var currentQuestion: Question? {
+        if currentItem.source == "weakness" {
+            return question(fromWeaknessItem: currentItem)
+        }
         guard let found = contentStore.findLesson(id: currentItem.lessonId, course: course) else { return nil }
         let questionId = String(currentItem.itemKey.split(separator: ":").last ?? "")
         return found.lesson.questions.first { questionID($0) == questionId }

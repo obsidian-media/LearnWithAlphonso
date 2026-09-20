@@ -161,6 +161,12 @@ private struct HectorConversationView: View {
 
             micButton.padding()
         }
+        .onDisappear {
+            guard turns.count >= 4, let accessToken = session.accessToken else { return }
+            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            let transcript = turns.map { ChatMessage(role: $0.role, content: $0.content) }
+            Task { _ = try? await client.analyzeWeaknesses(transcript: transcript) }
+        }
     }
 
     private func bubble(for turn: TutorConversationMessage) -> some View {
