@@ -62,6 +62,22 @@ function ReviewPage() {
         if (!alive) return;
         const built: Card[] = [];
         for (const item of res.due) {
+          if (item.source === "weakness") {
+            if (item.prompt && item.choices && item.answerIndex !== null) {
+              built.push({
+                itemKey: item.itemKey,
+                question: {
+                  id: item.itemKey,
+                  type: "mc",
+                  prompt: item.prompt,
+                  choices: item.choices,
+                  answer: item.answerIndex,
+                  explanation: item.explanation ?? "",
+                },
+              });
+            }
+            continue;
+          }
           const ref = questionIndex[item.itemKey];
           if (ref) built.push({ itemKey: item.itemKey, question: ref.question });
         }

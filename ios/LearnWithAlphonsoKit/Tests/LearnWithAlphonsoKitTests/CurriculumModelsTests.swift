@@ -44,4 +44,16 @@ final class CurriculumModelsTests: XCTestCase {
         XCTAssertEqual(fill.bank, ["meet", "meat", "met", "meeting"])
         XCTAssertEqual(fill.answer, "meet")
     }
+
+    func testMultipleChoiceCanBeConstructedDirectlyNotJustDecoded() {
+        let mc = Question.MultipleChoice(
+            id: "weakness:abc123",
+            prompt: "She ___ to the store yesterday.",
+            choices: ["go", "goes", "went", "gone"],
+            answer: 2,
+            explanation: "Past tense of 'go' is 'went'."
+        )
+        XCTAssertEqual(mc.id, "weakness:abc123")
+        XCTAssertEqual(mc.choices[mc.answer], "went")
+    }
 }

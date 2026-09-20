@@ -15,6 +15,14 @@ public enum Question: Decodable, Sendable {
         public let choices: [String]
         public let answer: Int
         public let explanation: String
+
+        public init(id: String, prompt: String, choices: [String], answer: Int, explanation: String) {
+            self.id = id
+            self.prompt = prompt
+            self.choices = choices
+            self.answer = answer
+            self.explanation = explanation
+        }
     }
 
     public struct FillInBlank: Decodable, Sendable {

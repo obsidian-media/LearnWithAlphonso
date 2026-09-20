@@ -83,6 +83,12 @@ private struct ConversationSessionView: View {
         .task {
             turns = [ChatMessage(role: "assistant", content: scenario.opener)]
         }
+        .onDisappear {
+            guard turns.count >= 4, let accessToken = session.accessToken else { return }
+            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            let transcript = turns
+            Task { _ = try? await client.analyzeWeaknesses(transcript: transcript) }
+        }
     }
 
     private func bubble(for turn: ChatMessage) -> some View {

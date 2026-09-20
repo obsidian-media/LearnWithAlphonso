@@ -15,6 +15,12 @@ export type ReviewItem = {
   intervalDays: number;
   repetitions: number;
   dueOn: string;
+  source: string;
+  weaknessDisplay: string | null;
+  prompt: string | null;
+  choices: string[] | null;
+  answerIndex: number | null;
+  explanation: string | null;
 };
 
 function today() {
@@ -118,7 +124,9 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
     const [dueRes, totalRes] = await Promise.all([
       supabase
         .from("review_items")
-        .select("item_key,lesson_id,level,ease,interval_days,repetitions,due_on")
+        .select(
+          "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,source,weakness_display,prompt,choices,answer_index,explanation",
+        )
         .eq("user_id", userId)
         .eq("language", course)
         .lte("due_on", today())
@@ -138,6 +146,12 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
       intervalDays: r.interval_days,
       repetitions: r.repetitions,
       dueOn: r.due_on,
+      source: r.source,
+      weaknessDisplay: r.weakness_display,
+      prompt: r.prompt,
+      choices: r.choices as string[] | null,
+      answerIndex: r.answer_index,
+      explanation: r.explanation,
     }));
     return { due, total: totalRes.count ?? 0 };
   });
@@ -183,9 +197,15 @@ export const gradeReview = createServerFn({ method: "POST" })
       throw new Error("This item isn't due yet");
     }
 
-    const ref = getCourse(course).questionIndex[data.itemKey];
-    if (!ref) throw new Error("Unknown review item");
-    const correct = deriveAnswerCorrectness(ref.question, data.answer);
+    let correct: boolean;
+    if (row.source === "weakness") {
+      const choices = row.choices as string[] | null;
+      correct = choices?.[row.answer_index as number] === data.answer;
+    } else {
+      const ref = getCourse(course).questionIndex[data.itemKey];
+      if (!ref) throw new Error("Unknown review item");
+      correct = deriveAnswerCorrectness(ref.question, data.answer);
+    }
 
     const outcome = computeReviewOutcome(
       {

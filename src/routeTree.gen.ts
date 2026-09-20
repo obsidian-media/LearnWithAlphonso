@@ -22,6 +22,7 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
@@ -94,6 +95,11 @@ const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
+  id: '/api/analyze-weaknesses',
+  path: '/api/analyze-weaknesses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
+  '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
+  '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
+  '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/profile'
     | '/review'
+    | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/profile'
     | '/review'
+    | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
@@ -256,6 +267,7 @@ export interface FileRouteTypes {
     | '/_authenticated/placement'
     | '/_authenticated/profile'
     | '/_authenticated/review'
+    | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/analyze-weaknesses': {
+      id: '/api/analyze-weaknesses'
+      path: '/api/analyze-weaknesses'
+      fullPath: '/api/analyze-weaknesses'
+      preLoaderRoute: typeof ApiAnalyzeWeaknessesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -460,6 +480,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,

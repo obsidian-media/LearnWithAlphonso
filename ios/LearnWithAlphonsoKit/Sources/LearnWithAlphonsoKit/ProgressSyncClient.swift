@@ -13,7 +13,12 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
-/// Matches review.functions.ts's `ReviewItem` shape exactly.
+/// Matches review.functions.ts's `ReviewItem` shape exactly. `source`
+/// discriminates a real lesson-question item ("lesson", the default)
+/// from a synthetic weakness-detection item ("weakness") that carries
+/// its own embedded gradable content instead of pointing at a real
+/// lessons/questions row -- see docs/superpowers/specs/
+/// 2026-09-20-hector-weakness-detection-design.md.
 public struct ReviewItem: Sendable, Equatable {
     public let itemKey: String
     public let lessonId: String
@@ -22,8 +27,20 @@ public struct ReviewItem: Sendable, Equatable {
     public let intervalDays: Int
     public let repetitions: Int
     public let dueOn: String
+    public let source: String
+    public let weaknessDisplay: String?
+    public let prompt: String?
+    public let choices: [String]?
+    public let answerIndex: Int?
+    public let explanation: String?
 
-    public init(itemKey: String, lessonId: String, level: String, ease: Double, intervalDays: Int, repetitions: Int, dueOn: String) {
+    public init(
+        itemKey: String, lessonId: String, level: String, ease: Double,
+        intervalDays: Int, repetitions: Int, dueOn: String,
+        source: String = "lesson", weaknessDisplay: String? = nil,
+        prompt: String? = nil, choices: [String]? = nil,
+        answerIndex: Int? = nil, explanation: String? = nil
+    ) {
         self.itemKey = itemKey
         self.lessonId = lessonId
         self.level = level
@@ -31,6 +48,12 @@ public struct ReviewItem: Sendable, Equatable {
         self.intervalDays = intervalDays
         self.repetitions = repetitions
         self.dueOn = dueOn
+        self.source = source
+        self.weaknessDisplay = weaknessDisplay
+        self.prompt = prompt
+        self.choices = choices
+        self.answerIndex = answerIndex
+        self.explanation = explanation
     }
 }
 
@@ -282,7 +305,7 @@ public final class ProgressSyncClient: Sendable {
     public func fetchDueReviews(course: String) async throws -> DueReviews {
         let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
         var dueRequest = restRequest(path: "review_items", query: [
-            URLQueryItem(name: "select", value: "item_key,lesson_id,level,ease,interval_days,repetitions,due_on"),
+            URLQueryItem(name: "select", value: "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,source,weakness_display,prompt,choices,answer_index,explanation"),
             URLQueryItem(name: "language", value: "eq.\(course)"),
             URLQueryItem(name: "due_on", value: "lte.\(today)"),
             URLQueryItem(name: "order", value: "due_on.asc"),
@@ -302,7 +325,16 @@ public final class ProgressSyncClient: Sendable {
                   let intervalDays = row["interval_days"] as? Int,
                   let repetitions = row["repetitions"] as? Int,
                   let dueOn = row["due_on"] as? String else { return nil }
-            return ReviewItem(itemKey: itemKey, lessonId: lessonId, level: level, ease: ease, intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn)
+            return ReviewItem(
+                itemKey: itemKey, lessonId: lessonId, level: level, ease: ease,
+                intervalDays: intervalDays, repetitions: repetitions, dueOn: dueOn,
+                source: row["source"] as? String ?? "lesson",
+                weaknessDisplay: row["weakness_display"] as? String,
+                prompt: row["prompt"] as? String,
+                choices: row["choices"] as? [String],
+                answerIndex: row["answer_index"] as? Int,
+                explanation: row["explanation"] as? String
+            )
         }
 
         var countRequest = restRequest(path: "review_items", query: [

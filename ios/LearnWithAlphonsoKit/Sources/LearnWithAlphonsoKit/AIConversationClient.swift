@@ -62,6 +62,28 @@ public final class AIConversationClient: Sendable {
         return content
     }
 
+    /// POST /api/analyze-weaknesses -- best-effort, fire-and-forget from
+    /// the caller's perspective (see ConversationSessionView/
+    /// HectorConversationView's onDisappear wiring, which swallows any
+    /// error from this call). Returns how many weakness-derived
+    /// review_items rows the server actually inserted (post-dedup).
+    public func analyzeWeaknesses(transcript: [ChatMessage]) async throws -> Int {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/analyze-weaknesses"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = ["messages": transcript.map { ["role": $0.role, "content": $0.content] }]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let count = object["weaknessesDetected"] as? Int else {
+            throw AIConversationError.invalidPayload
+        }
+        return count
+    }
+
     /// POST /api/tts -- returns raw MP3 audio bytes for `text`.
     public func synthesizeSpeech(text: String, voice: String? = nil) async throws -> Data {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/tts"))

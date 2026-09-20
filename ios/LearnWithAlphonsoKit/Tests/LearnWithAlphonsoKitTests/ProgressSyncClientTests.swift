@@ -265,6 +265,56 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(requests[1].httpMethod, "HEAD")
     }
 
+    func testFetchDueReviewsDecodesWeaknessSourcedRows() async throws {
+        let client = makeClient { request in
+            if request.httpMethod == "HEAD" {
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: 200, httpVersion: nil,
+                    headerFields: ["Content-Range": "0-0/1"]
+                )!
+                return (Data(), response)
+            }
+            let rows: [[String: Any]] = [[
+                "item_key": "weakness:abc123", "lesson_id": "weakness", "level": "A1",
+                "ease": 2.5, "interval_days": 0, "repetitions": 0, "due_on": "2026-09-20",
+                "source": "weakness", "weakness_display": "Past-tense verbs",
+                "prompt": "She ___ to the store yesterday.",
+                "choices": ["go", "goes", "went", "gone"], "answer_index": 2,
+                "explanation": "Past tense of 'go' is 'went'.",
+            ]]
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+
+        let result = try await client.fetchDueReviews(course: "en")
+
+        let item = try XCTUnwrap(result.due.first)
+        XCTAssertEqual(item.source, "weakness")
+        XCTAssertEqual(item.weaknessDisplay, "Past-tense verbs")
+        XCTAssertEqual(item.choices, ["go", "goes", "went", "gone"])
+        XCTAssertEqual(item.answerIndex, 2)
+    }
+
+    func testFetchDueReviewsDefaultsSourceToLessonWhenColumnIsAbsent() async throws {
+        let client = makeClient { request in
+            if request.httpMethod == "HEAD" {
+                let response = HTTPURLResponse(
+                    url: request.url!, statusCode: 200, httpVersion: nil,
+                    headerFields: ["Content-Range": "0-0/1"]
+                )!
+                return (Data(), response)
+            }
+            let rows: [[String: Any]] = [[
+                "item_key": "lesson1:q1", "lesson_id": "lesson1", "level": "A1",
+                "ease": 2.5, "interval_days": 0, "repetitions": 0, "due_on": "2026-09-20",
+            ]]
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+
+        let result = try await client.fetchDueReviews(course: "en")
+
+        XCTAssertEqual(result.due.first?.source, "lesson")
+    }
+
     // MARK: - fetchUnlockedAchievements
 
     func testFetchUnlockedAchievementsGetsAndDecodesTheRows() async throws {
