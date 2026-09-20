@@ -70,6 +70,43 @@ public struct FriendProgress: Sendable, Equatable {
     public let weekXP: Int
 }
 
+/// One row of `friend_activity_events` (supabase/migrations/
+/// 20260920010000_friend_activity_events.sql), readable for the caller's
+/// own events and their accepted friends' (RLS-enforced server-side, not
+/// filtered client-side). `eventType` is "lesson_completed" |
+/// "streak_milestone" | "league_promotion" -- the payload fields below are
+/// a flattened union of every event type's shape (only the ones relevant
+/// to `eventType` are non-nil) rather than a nested `[String: Any]`, so
+/// this stays a plain Equatable value type.
+public struct FriendActivityEvent: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let userID: String
+    public let eventType: String
+    public let createdAt: Date
+    /// "lesson_completed" only -- resolve to a title via
+    /// ContentStore.findLesson(id:course:), same bundled-content pattern
+    /// used everywhere else in this app, rather than the Edge Function
+    /// looking up and shipping a title itself.
+    public let lessonID: String?
+    /// "lesson_completed" only.
+    public let xpGain: Int?
+    /// "streak_milestone" only.
+    public let streak: Int?
+    /// "league_promotion" only.
+    public let newTier: String?
+}
+
+/// One row of `nudges` (supabase/migrations/20260920020000_nudges.sql) --
+/// a lightweight "hey, come back" ping between accepted friends. See
+/// FriendsView.swift's doc comment for why this is deliberately the
+/// weaker, polling-based V2 approach (no real push), and
+/// ARCHITECTURE.md's note on what a real V3 version needs.
+public struct Nudge: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let senderID: String
+    public let createdAt: Date
+}
+
 /// One row of `user_achievements` -- an achievement this user has actually
 /// unlocked (or made progress toward), matched against the bundled
 /// `Achievement` catalog (`ContentStore.achievements`) by `achievementID`.
@@ -430,6 +467,123 @@ public final class ProgressSyncClient: Sendable {
                   let weekXP = row["week_xp"] as? Int else { return nil }
             return FriendProgress(userID: userID, displayName: displayName, avatarSeed: avatarSeed, streak: streak, weekXP: weekXP)
         }
+    }
+
+    /// Direct PostgREST `GET` on `friend_activity_events`, RLS-scoped to
+    /// the caller's own events + their accepted friends' -- no Edge
+    /// Function needed for this read side (only the write side, in
+    /// complete-lesson, needed touching).
+    public func fetchFriendActivity() async throws -> [FriendActivityEvent] {
+        var request = restRequest(path: "friend_activity_events", query: [
+            URLQueryItem(name: "select", value: "id,user_id,event_type,payload,created_at"),
+            URLQueryItem(name: "order", value: "created_at.desc"),
+            URLQueryItem(name: "limit", value: "50"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> FriendActivityEvent? in
+            guard let id = row["id"] as? String,
+                  let userID = row["user_id"] as? String,
+                  let eventType = row["event_type"] as? String,
+                  let createdAtString = row["created_at"] as? String,
+                  let createdAt = Self.parsePostgresTimestamp(createdAtString) else { return nil }
+            let payload = row["payload"] as? [String: Any] ?? [:]
+            return FriendActivityEvent(
+                id: id, userID: userID, eventType: eventType, createdAt: createdAt,
+                lessonID: payload["lessonId"] as? String,
+                xpGain: payload["xpGain"] as? Int,
+                streak: payload["streak"] as? Int,
+                newTier: payload["newTier"] as? String
+            )
+        }
+    }
+
+    /// Sender is implicit server-side (`sender_id DEFAULT auth.uid()`, see
+    /// the migration) -- this body only ever needs the recipient. RLS's
+    /// `WITH CHECK` additionally requires the recipient be an accepted
+    /// friend, so this throws (a 403) for anyone else.
+    public func sendNudge(recipientID: String) async throws {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/nudges"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["recipient_id": recipientID])
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
+    public func fetchUnreadNudges() async throws -> [Nudge] {
+        var request = restRequest(path: "nudges", query: [
+            URLQueryItem(name: "select", value: "id,sender_id,created_at"),
+            URLQueryItem(name: "read_at", value: "is.null"),
+            URLQueryItem(name: "order", value: "created_at.desc"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { row -> Nudge? in
+            guard let id = row["id"] as? String,
+                  let senderID = row["sender_id"] as? String,
+                  let createdAtString = row["created_at"] as? String,
+                  let createdAt = Self.parsePostgresTimestamp(createdAtString) else { return nil }
+            return Nudge(id: id, senderID: senderID, createdAt: createdAt)
+        }
+    }
+
+    public func markNudgesRead(ids: [String]) async throws {
+        guard !ids.isEmpty else { return }
+        var request = restRequest(path: "nudges", query: [
+            URLQueryItem(name: "id", value: "in.(\(ids.joined(separator: ",")))"),
+        ])
+        request.httpMethod = "PATCH"
+        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["read_at": ISO8601DateFormatter().string(from: Date())])
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
+    /// Sums `activity_days.xp_earned` over `[from, to)` -- used by the
+    /// weekly recap (docs/v2-kickoffs/03-leaderboards.md's "Deepened
+    /// feature 2") to show a past week's total without a new RPC;
+    /// `get_leaderboard`'s own weekly-XP subquery reads the same table,
+    /// just for the *current* week's date range instead of an arbitrary
+    /// past one.
+    public func fetchActivityXP(userID: String, from: String, to: String) async throws -> Int {
+        var request = restRequest(path: "activity_days", query: [
+            URLQueryItem(name: "select", value: "xp_earned"),
+            URLQueryItem(name: "user_id", value: "eq.\(userID)"),
+            URLQueryItem(name: "day", value: "gte.\(from)"),
+            URLQueryItem(name: "day", value: "lt.\(to)"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.reduce(0) { $0 + (($1["xp_earned"] as? Int) ?? 0) }
+    }
+
+    /// PostgREST returns `timestamptz` columns with fractional-second
+    /// precision (e.g. "2026-09-20T01:23:45.678901+00:00"), which the
+    /// default `ISO8601DateFormatter()` fails to parse -- try with
+    /// fractional seconds first, fall back to without.
+    private static func parsePostgresTimestamp(_ string: String) -> Date? {
+        let withFractionalSeconds = ISO8601DateFormatter()
+        withFractionalSeconds.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = withFractionalSeconds.date(from: string) {
+            return date
+        }
+        return ISO8601DateFormatter().date(from: string)
     }
 
     private func currentHearts(userID: String) async throws -> Int {
