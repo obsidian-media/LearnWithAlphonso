@@ -109,7 +109,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         const authHeader = request.headers.get("authorization")!; // consumeQuota already required this
         const url = process.env.SUPABASE_URL;
         const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
-        if (!url || !anonKey) return Response.json({ error: "Server not configured." }, { status: 500 });
+        if (!url || !anonKey)
+          return Response.json({ error: "Server not configured." }, { status: 500 });
 
         const supabase = createClient(url, anonKey, {
           auth: { persistSession: false, autoRefreshToken: false },
