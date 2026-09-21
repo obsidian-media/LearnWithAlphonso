@@ -48,7 +48,12 @@ struct LessonPlayerView: View {
     private var isReinforcing: Bool { activeReinforcement != nil }
     private var currentQuestion: Question { activeReinforcement ?? lesson.questions[idx] }
 
-    private var unit: Unit? { contentStore.findLesson(id: lesson.id, course: course)?.unit }
+    // `Unit` alone is ambiguous once both LearnWithAlphonsoKit and
+    // Foundation are visible (Foundation.Unit is the Measurement API's
+    // base class) -- fully qualified to disambiguate.
+    private var unit: LearnWithAlphonsoKit.Unit? {
+        contentStore.findLesson(id: lesson.id, course: course)?.unit
+    }
     private var siblingQuestions: [Question] {
         (unit?.lessons ?? []).filter { $0.id != lesson.id }.flatMap(\.questions)
     }
