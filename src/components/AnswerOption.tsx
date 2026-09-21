@@ -55,7 +55,7 @@ export function AnswerOption({
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-sm text-ink transition ${barColor}`}
+        className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-base text-ink transition ${barColor}`}
       >
         {label}
       </button>
@@ -75,7 +75,7 @@ export function AnswerOption({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`w-full rounded-2xl border px-4 py-3.5 text-left text-sm transition ${boxClasses}`}
+      className={`w-full rounded-2xl border px-4 py-3.5 text-left text-base transition ${boxClasses}`}
     >
       {label}
     </button>

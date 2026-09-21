@@ -87,3 +87,10 @@ export function getCourse(course: Course): CourseBundle {
 export function isCourse(value: string): value is Course {
   return value === "en" || value === "fr" || value === "es";
 }
+
+const LOCALES: Record<Course, string> = { en: "en-US", fr: "fr-FR", es: "es-ES" };
+
+/** BCP-47 locale for the Web Speech API / AVSpeechSynthesisVoice, per course. */
+export function localeForCourse(course: Course): string {
+  return LOCALES[course];
+}

@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
-import { getCourse } from "../../data/courses";
+import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { speak } from "../../lib/speech";
@@ -226,15 +226,13 @@ function ReviewPage() {
         {q.type === "mc" && q.audioText && (
           <button
             type="button"
-            onClick={() =>
-              speak(q.audioText!, course === "fr" ? "fr-FR" : course === "es" ? "es-ES" : "en-US")
-            }
+            onClick={() => speak(q.audioText!, localeForCourse(course))}
             className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
           >
             🔊 Play audio
           </button>
         )}
-        <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">
+        <h2 className="font-display text-[25px] font-semibold leading-tight text-ink">
           {q.prompt}
         </h2>
 
@@ -263,7 +261,7 @@ function ReviewPage() {
                       type="button"
                       disabled={checked}
                       onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
-                      className="rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-surface"
+                      className="rounded-full bg-ink px-3 py-1.5 text-sm font-medium text-surface"
                     >
                       {q.tokens[tokenIdx]}
                     </button>
@@ -278,7 +276,7 @@ function ReviewPage() {
                       type="button"
                       disabled={checked}
                       onClick={() => setOrderPicks((arr) => [...arr, i])}
-                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
                     >
                       {t}
                     </button>
@@ -294,7 +292,7 @@ function ReviewPage() {
                 value={picked ?? ""}
                 onChange={(e) => setPicked(e.target.value)}
                 placeholder="Type your answer"
-                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-sm outline-none focus:border-moss"
+                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
               />
               <div className="mt-2 flex flex-wrap gap-2">
                 {q.bank.map((w) => (
@@ -302,7 +300,7 @@ function ReviewPage() {
                     key={w}
                     disabled={checked}
                     onClick={() => setPicked(w)}
-                    className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                    className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
                   >
                     {w}
                   </button>

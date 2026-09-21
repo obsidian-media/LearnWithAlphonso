@@ -6,7 +6,7 @@ import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
-import { getCourse } from "../../data/courses";
+import { getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
@@ -328,6 +328,7 @@ function LessonPage() {
           items={vocab}
           title={lesson.title}
           subtitle={lesson.subtitle}
+          course={course}
           onStart={() => setPhase("quiz")}
         />
       ) : (
@@ -351,15 +352,13 @@ function LessonPage() {
           {q.type === "mc" && q.audioText && (
             <button
               type="button"
-              onClick={() =>
-                speak(q.audioText!, course === "fr" ? "fr-FR" : course === "es" ? "es-ES" : "en-US")
-              }
+              onClick={() => speak(q.audioText!, localeForCourse(course))}
               className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
             >
               🔊 Play audio
             </button>
           )}
-          <h2 className="font-display text-[22px] font-semibold leading-tight text-ink">
+          <h2 className="font-display text-[25px] font-semibold leading-tight text-ink">
             {q.prompt}
           </h2>
 
@@ -388,7 +387,7 @@ function LessonPage() {
                         type="button"
                         disabled={checked}
                         onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
-                        className="rounded-full bg-ink px-3 py-1.5 text-xs font-medium text-surface"
+                        className="rounded-full bg-ink px-3 py-1.5 text-sm font-medium text-surface"
                       >
                         {q.tokens[tokenIdx]}
                       </button>
@@ -403,7 +402,7 @@ function LessonPage() {
                         type="button"
                         disabled={checked}
                         onClick={() => setOrderPicks((arr) => [...arr, i])}
-                        className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                        className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
                       >
                         {t}
                       </button>
@@ -419,7 +418,7 @@ function LessonPage() {
                   value={picked ?? ""}
                   onChange={(e) => setPicked(e.target.value)}
                   placeholder="Type your answer"
-                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-sm outline-none focus:border-moss"
+                  className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
                 />
                 <div className="mt-2 flex flex-wrap gap-2">
                   {q.bank.map((w) => (
@@ -427,7 +426,7 @@ function LessonPage() {
                       key={w}
                       disabled={checked}
                       onClick={() => setPicked(w)}
-                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+                      className="rounded-full border border-hairline bg-surface px-3 py-1.5 text-sm text-ink-soft hover:text-ink"
                     >
                       {w}
                     </button>
@@ -473,11 +472,13 @@ function VocabScreen({
   items,
   title,
   subtitle,
+  course,
   onStart,
 }: {
   items: VocabItem[];
   title: string;
   subtitle: string;
+  course: Course;
   onStart: () => void;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
@@ -514,7 +515,17 @@ function VocabScreen({
                   }}
                 />
               )}
-              <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+                <button
+                  type="button"
+                  onClick={() => speak(v.term, localeForCourse(course))}
+                  aria-label={`Play pronunciation for ${v.term}`}
+                  className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
+                >
+                  🔊
+                </button>
+              </div>
               <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
               <p className="mt-2 border-l-[3px] border-l-hairline pl-3 text-[12px] italic text-ink-soft">
                 {v.example}
@@ -542,7 +553,17 @@ function VocabScreen({
                 />
               )}
               <div className="px-4 py-3.5">
-                <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-display text-base font-semibold text-ink">{v.term}</p>
+                  <button
+                    type="button"
+                    onClick={() => speak(v.term, localeForCourse(course))}
+                    aria-label={`Play pronunciation for ${v.term}`}
+                    className="grid size-7 shrink-0 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition hover:border-ink/30 hover:text-ink"
+                  >
+                    🔊
+                  </button>
+                </div>
                 <p className="mt-0.5 text-xs text-ink-soft/80">{v.meaning}</p>
                 <p className="mt-2 rounded-xl bg-parchment px-3 py-2 text-[12px] italic text-ink-soft">
                   {v.example}
@@ -848,7 +869,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
         Extra practice · {idx + 1}/{questions.length}
       </p>
-      <p className="mt-2 text-sm font-medium text-ink">{q.prompt}</p>
+      <p className="mt-2 text-base font-medium text-ink">{q.prompt}</p>
       <div className="mt-3 space-y-2">
         {q.choices.map((c) => (
           <AnswerOption

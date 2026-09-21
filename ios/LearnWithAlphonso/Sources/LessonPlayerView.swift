@@ -84,7 +84,7 @@ struct LessonPlayerView: View {
                         phase = vocab.isEmpty ? .quiz : .vocab
                     }
                 case .vocab:
-                    VocabScreen(lesson: lesson, items: vocab) { phase = .quiz }
+                    VocabScreen(lesson: lesson, items: vocab, course: course) { phase = .quiz }
                 case .quiz:
                     quizBody
                 }
@@ -324,7 +324,7 @@ private struct QuestionCard: View {
                     }
                     .buttonStyle(.bordered)
                 }
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
@@ -334,7 +334,7 @@ private struct QuestionCard: View {
             }
         case .fillInBlank(let q):
             VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                     .textFieldStyle(.roundedBorder)
                     .disabled(checked)
@@ -355,7 +355,7 @@ private struct QuestionCard: View {
             }
         case .reorder(let q):
             VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
@@ -497,6 +497,7 @@ private struct OverviewScreen: View {
 private struct VocabScreen: View {
     let lesson: Lesson
     let items: [VocabItem]
+    let course: Course
     let onStart: () -> Void
 
     var body: some View {
@@ -517,7 +518,18 @@ private struct VocabScreen: View {
                             if let image = item.image {
                                 VocabImageView(image: image)
                             }
-                            Text(item.term).font(.headline)
+                            HStack(spacing: 8) {
+                                Text(item.term).font(.headline)
+                                Button {
+                                    speak(item.term, languageCode: course.speechLanguageCode)
+                                } label: {
+                                    Image(systemName: "speaker.wave.2.fill")
+                                        .font(.footnote)
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel("Play pronunciation for \(item.term)")
+                            }
                             Text(item.meaning).font(.caption).foregroundStyle(.secondary)
                             Text(item.example)
                                 .font(.caption.italic())

@@ -340,7 +340,7 @@ private struct ReviewQuestionCard: View {
                     }
                     .buttonStyle(.bordered)
                 }
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
@@ -350,7 +350,7 @@ private struct ReviewQuestionCard: View {
             }
         case .fillInBlank(let q):
             VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                     .textFieldStyle(.roundedBorder)
                     .disabled(checked)
@@ -371,7 +371,7 @@ private struct ReviewQuestionCard: View {
             }
         case .reorder(let q):
             VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title3.weight(.semibold))
+                Text(q.prompt).font(.title2.weight(.semibold))
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
