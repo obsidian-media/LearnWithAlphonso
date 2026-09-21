@@ -71,7 +71,11 @@ jobs:
 
       - name: Generate Xcode project
         working-directory: ios/LearnWithAlphonso
-        run: xcodegen generate
+        env:
+          PROFILE_UUID: ${{ secrets.IOS_PROVISIONING_PROFILE_UUID }}
+        run: |
+          sed -i '' "s/PLACEHOLDER_PROVISIONING_PROFILE_UUID/$PROFILE_UUID/" project.yml
+          xcodegen generate
 
       - name: Write App Store Connect API key
         working-directory: ios/LearnWithAlphonso
@@ -143,7 +147,6 @@ jobs:
         working-directory: ios/LearnWithAlphonso
         env:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          PROFILE_UUID: ${{ secrets.IOS_PROVISIONING_PROFILE_UUID }}
           REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
         run: |
           xcodebuild archive \
@@ -152,7 +155,6 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/LearnWithAlphonso.xcarchive \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROFILE_UUID="$PROFILE_UUID" \
             REVENUECAT_API_KEY="$REVENUECAT_API_KEY"
 
       - name: Export signed .ipa

@@ -77,10 +77,16 @@ targets:
           # packages on Automatic, which they require.
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"
-          # $(PROFILE_UUID) resolves from the xcodebuild command-line
-          # override in ios-release.yml's Archive step (same pattern this
-          # file already uses for $(REVENUECAT_API_KEY) below).
-          PROVISIONING_PROFILE_SPECIFIER: "$(PROFILE_UUID)"
+          # Placeholder -- ios-release.yml's "Generate Xcode project" step
+          # substitutes the real UUID (from the IOS_PROVISIONING_PROFILE_UUID
+          # secret) into this file with `sed` before running `xcodegen
+          # generate`, so it's baked into the generated .xcodeproj as a
+          # literal value. NOT resolved via xcodebuild's $(VAR) build-setting
+          # indirection (the pattern this file uses for
+          # $(REVENUECAT_API_KEY) below) -- found live 2026-09-21 that
+          # code-signing-specific attributes like PROVISIONING_PROFILE_SPECIFIER
+          # don't reliably resolve that way, unlike plain string settings.
+          PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_PROVISIONING_PROFILE_UUID"
         Debug:
           # RevenueCat Test Store key -- local/simulator builds only. Safe
           # to commit (RevenueCat's public-key model, same as the Supabase
