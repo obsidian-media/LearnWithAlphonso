@@ -10311,4 +10311,1274 @@ export const VOCAB_IMAGES: Record<string, VocabImage> = {
     alt: "bicycle, traffic light, red, light signal, road traffic, rules of the road, traffic lights, bicycle traffic light, bicycle, bicycle, traffic light, traffic light, traffic light, traffic light, traffic light, traffic lights, traffic lights, traffic lights",
     credit: "paulsteuber",
   },
+  perro: {
+    url: "https://images.pexels.com/photos/144608/pexels-photo-144608.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up black and white portrait of a playful furry dog showing its teeth, capturing emotion and texture.",
+    credit: "Suvan Chowdhury",
+  },
+  gato: {
+    url: "https://images.pexels.com/photos/33585484/pexels-photo-33585484.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A serene gray tabby cat lounging by a sunny window indoors, capturing a moment of calm.",
+    credit: "大 董",
+  },
+  pájaro: {
+    url: "https://images.pexels.com/photos/30174893/pexels-photo-30174893.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant kingfisher perched on a branch next to colorful leaves, showcasing nature's beauty.",
+    credit: "Quang Nguyen Vinh",
+  },
+  pez: {
+    url: "https://images.pexels.com/photos/12349154/pexels-photo-12349154.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant close-up of various fish swimming in a pond, showing their natural behavior.",
+    credit: "Alexey Demidov",
+  },
+  caballo: {
+    url: "https://images.pexels.com/photos/13340063/pexels-photo-13340063.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Dynamic portrait of a black horse galloping against a lush green backdrop.",
+    credit: "Jana Malenová",
+  },
+  vaca: {
+    url: "https://images.pexels.com/photos/31794126/pexels-photo-31794126.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Cows grazing in a lush green field in the English countryside on a sunny day.",
+    credit: "Kristian  Thomas",
+  },
+  cerdo: {
+    url: "https://images.pexels.com/photos/27167732/pexels-photo-27167732.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Adorable piglets on a farm, playfully exploring the grassy pasture. Perfect rural countryside scene.",
+    credit: "Wei86 Travel",
+  },
+  oveja: {
+    url: "https://images.pexels.com/photos/4390263/pexels-photo-4390263.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A sheep and two lambs grazing in a vibrant green meadow, showcasing rural farm life.",
+    credit: "Xach Hill",
+  },
+  león: {
+    url: "https://images.pexels.com/photos/32196368/pexels-photo-32196368.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A serene lion rests amid lush greenery, showcasing its regal mane and natural habitat.",
+    credit: "Jay Brand",
+  },
+  tigre: {
+    url: "https://images.pexels.com/photos/27834727/pexels-photo-27834727.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A beautiful moment captured between a mother tiger and her playful cub in the wilderness.",
+    credit: "Leon Aschemann",
+  },
+  oso: {
+    url: "https://images.pexels.com/photos/3048718/pexels-photo-3048718.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A powerful brown bear walking through its natural woodland habitat, showcasing wildlife beauty.",
+    credit: "Vincent M.A. Janssen",
+  },
+  elefante: {
+    url: "https://images.pexels.com/photos/27116276/pexels-photo-27116276.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A detailed black and white photo of an elephant standing in a rural Indian landscape.",
+    credit: "Almuntadhar  Faris",
+  },
+  mono: {
+    url: "https://images.pexels.com/photos/27558085/pexels-photo-27558085.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Spider monkey gracefully traverses wooden beams amidst lush greenery under a clear blue sky.",
+    credit: "Bruna  Fossile",
+  },
+  conejo: {
+    url: "https://images.pexels.com/photos/19613749/pexels-photo-19613749.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Adorable close-up photo of a domestic rabbit sitting on grass in Normandy, France.",
+    credit: "William Warby",
+  },
+  ratón: {
+    url: "https://images.pexels.com/photos/37116605/pexels-photo-37116605.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Adorable cactus mouse sitting in natural surroundings, showcasing its fluffy fur and curious expression.",
+    credit: "Dmytro Koplyk",
+  },
+  serpiente: {
+    url: "https://images.pexels.com/photos/4576625/pexels-photo-4576625.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Closeup of small snake hiding in tall thick grass looking around while hunting",
+    credit: "maria  dimmerling",
+  },
+  rana: {
+    url: "https://images.pexels.com/photos/39520290/pexels-photo-39520290.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a frog sitting on a lily pad in a pond, showcasing serene nature.",
+    credit: "Jelena Kazak",
+  },
+  tortuga: {
+    url: "https://images.pexels.com/photos/32486966/pexels-photo-32486966.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A turtle sunbathes on a log in a tranquil pond setting.",
+    credit: "patrice schoefolt",
+  },
+  pato: {
+    url: "https://images.pexels.com/photos/38065888/pexels-photo-38065888.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A serene image of a female mallard duck peacefully floating on a calm river.",
+    credit: "Liane Ferreira",
+  },
+  lobo: {
+    url: "https://images.pexels.com/photos/31767241/pexels-photo-31767241.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A lone gray wolf stands alert in a lush green forest clearing.",
+    credit: "Daniel Lengies",
+  },
+  camisa: {
+    url: "https://images.pexels.com/photos/12975963/pexels-photo-12975963.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A group of friends enjoying a casual outdoor gathering in Moldova, smiling and conversing.",
+    credit: "Mohammed Harshil",
+  },
+  camiseta: {
+    url: "https://images.pexels.com/photos/806626/pexels-photo-806626.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Man in forest wearing casual t-shirt, resting during outdoor workout.",
+    credit: "Frame Kings",
+  },
+  pantalones: {
+    url: "https://images.pexels.com/photos/7203482/pexels-photo-7203482.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of pink pants and white sneakers in a studio setting with a white backdrop.",
+    credit: "Tima Miroshnichenko",
+  },
+  vestido: {
+    url: "https://images.pexels.com/photos/5582669/pexels-photo-5582669.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Stylish models in elegant dresses posing with hay bales under a bright sky.",
+    credit: "cottonbro studio",
+  },
+  falda: {
+    url: "https://images.pexels.com/photos/36660086/pexels-photo-36660086.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A woman in a flowy skirt holds yellow wildflowers while standing outside on a grassy field.",
+    credit: "Rahime Gül",
+  },
+  chaqueta: {
+    url: "https://images.pexels.com/photos/10699145/pexels-photo-10699145.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A man with a backpack hikes through a rainy forest wearing a hoodie and jacket.",
+    credit: "Vlad",
+  },
+  abrigo: {
+    url: "https://images.pexels.com/photos/7653719/pexels-photo-7653719.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of two men wearing fashionable coats outdoors on an autumn day.",
+    credit: "cottonbro studio",
+  },
+  zapatos: {
+    url: "https://images.pexels.com/photos/12252411/pexels-photo-12252411.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A diverse collection of sneakers displayed in a modern retail store with stylish interior design.",
+    credit: "Marcus",
+  },
+  calcetines: {
+    url: "https://images.pexels.com/photos/10563910/pexels-photo-10563910.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant array of striped socks displayed on mannequin legs, showcasing fashion variety.",
+    credit: "Jan van der Wolf",
+  },
+  sombrero: {
+    url: "https://images.pexels.com/photos/185765/pexels-photo-185765.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Back view of a man browsing hats at a street market stall on a sunny day.",
+    credit: "Clem Onojeghuo",
+  },
+  guantes: {
+    url: "https://images.pexels.com/photos/7362896/pexels-photo-7362896.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Person wearing transparent gloves, adding protection and hygiene outdoors.",
+    credit: "RDNE Stock project",
+  },
+  bufanda: {
+    url: "https://images.pexels.com/photos/19346997/pexels-photo-19346997.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a stylish orange knit scarf and brown outfit, perfect for fall fashion enthusiasts.",
+    credit: "beyzahzah",
+  },
+  cinturón: {
+    url: "https://images.pexels.com/photos/31367060/pexels-photo-31367060.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Set of luxurious leather belts in black, grey, brown, and tan on elegant fabric background.",
+    credit: "Shivam Patil",
+  },
+  suéter: {
+    url: "https://images.pexels.com/photos/5618175/pexels-photo-5618175.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two women enjoying chocolate drinks indoors, sharing smiles and laughter.",
+    credit: "Pavel Danilyuk",
+  },
+  pijama: {
+    url: "https://images.pexels.com/photos/8497487/pexels-photo-8497487.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Child sitting on a bed in striped pajamas, holding flowers, exudes a calm morning vibe.",
+    credit: "Hanna Auramenka",
+  },
+  "salón de clase": {
+    url: "https://images.pexels.com/photos/18506736/pexels-photo-18506736.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Asian teacher conducting a lesson with attentive students in a bright classroom setting.",
+    credit: "kimmi jun",
+  },
+  maestro: {
+    url: "https://images.pexels.com/photos/37795357/pexels-photo-37795357.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A teacher engages with a student in a university classroom setting, fostering learning.",
+    credit: "Eduard Perez",
+  },
+  estudiante: {
+    url: "https://images.pexels.com/photos/31155018/pexels-photo-31155018.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A group of children taking a test with focus and concentration in a classroom setting.",
+    credit: "This And No Internet 25",
+  },
+  escritorio: {
+    url: "https://images.pexels.com/photos/7658310/pexels-photo-7658310.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Spacious co-working office with wooden desks, laptops, and modern chairs.",
+    credit: "Pavel Danilyuk",
+  },
+  cuaderno: {
+    url: "https://images.pexels.com/photos/5861185/pexels-photo-5861185.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed close-up of an open spiral notebook with lined pages and wire binding.",
+    credit: "Rahul Shah",
+  },
+  lápiz: {
+    url: "https://images.pexels.com/photos/34511907/pexels-photo-34511907.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "An artistic flat lay of orange and black pencils on orange and black background.",
+    credit: "Sóc Năng Động",
+  },
+  goma: {
+    url: "https://images.pexels.com/photos/5705954/pexels-photo-5705954.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A flat lay of colorful erasers alongside a blank card and envelope on a pastel background.",
+    credit: "https://kaboompics.com/",
+  },
+  mochila: {
+    url: "https://images.pexels.com/photos/9629915/pexels-photo-9629915.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two hikers with backpacks explore a dense forest path, surrounded by tall trees and greenery.",
+    credit: "Ivan S",
+  },
+  pizarra: {
+    url: "https://images.pexels.com/photos/8500618/pexels-photo-8500618.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A classroom chalkboard featuring spelling lists and handwriting, ideal for education-themed content.",
+    credit: "RDNE Stock project",
+  },
+  regla: {
+    url: "https://images.pexels.com/photos/5412125/pexels-photo-5412125.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Red plastic rulers and protractors arranged on a soft pastel green background, ideal for school or office themes.",
+    credit: "https://kaboompics.com/",
+  },
+  tijeras: {
+    url: "https://images.pexels.com/photos/36361319/pexels-photo-36361319.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of barber tools in a leather holster, including scissors and combs, in a salon setting.",
+    credit: "Th2city Santana",
+  },
+  pegamento: {
+    url: "https://images.pexels.com/photos/7695191/pexels-photo-7695191.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A person crafting with glue and paper at a desk, creating a handmade project.",
+    credit: "Ksenia Chernaya",
+  },
+  tarea: {
+    url: "https://images.pexels.com/photos/5905466/pexels-photo-5905466.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "From above crop anonymous learners sitting at desk with notebooks in classroom during lesson",
+    credit: "Katerina Holmes",
+  },
+  examen: {
+    url: "https://images.pexels.com/photos/37812750/pexels-photo-37812750.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A group of students focused on writing in a sunlit classroom with desks and windows.",
+    credit: "Kari Alfonso",
+  },
+  médico: {
+    url: "https://images.pexels.com/photos/19963167/pexels-photo-19963167.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Confident female doctor in white coat smiling and holding a stethoscope against a black background.",
+    credit: "Tessy Agbonome",
+  },
+  enfermero: {
+    url: "https://images.pexels.com/photos/6129242/pexels-photo-6129242.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Crop African American female doctor with professional equipment doing examination of ear of woman lying on bed in hospital ward",
+    credit: "RDNE Stock project",
+  },
+  profesor: {
+    url: "https://images.pexels.com/photos/37795357/pexels-photo-37795357.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A teacher engages with a student in a university classroom setting, fostering learning.",
+    credit: "Eduard Perez",
+  },
+  abogado: {
+    url: "https://images.pexels.com/photos/34817073/pexels-photo-34817073.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Female judge in courtroom setting, sitting at desk with justice scales in background.",
+    credit: "khezez  | خزاز",
+  },
+  ingeniero: {
+    url: "https://images.pexels.com/photos/39174644/pexels-photo-39174644.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Engineer in safety gear inspecting machinery, taking notes indoors at an industrial facility.",
+    credit: "Vyvan BÙI VY VÂN",
+  },
+  cocinero: {
+    url: "https://images.pexels.com/photos/15646686/pexels-photo-15646686.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two chefs work diligently in a bustling restaurant kitchen, preparing meals and managing dishes.",
+    credit: "Jvxhn Visuals",
+  },
+  policía: {
+    url: "https://images.pexels.com/photos/7714736/pexels-photo-7714736.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two police officers in uniform ensure public safety, standing confidently outside.",
+    credit: "Kindel Media",
+  },
+  bombero: {
+    url: "https://images.pexels.com/photos/19487945/pexels-photo-19487945.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Firefighter in protective gear holding a hose near a firetruck in a garage setting.",
+    credit: "Mirada Robot",
+  },
+  granjero: {
+    url: "https://images.pexels.com/photos/9368704/pexels-photo-9368704.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A bearded farmer wearing a straw hat smiles while sitting in a tractor outdoors.",
+    credit: "Fariborz MP",
+  },
+  artista: {
+    url: "https://images.pexels.com/photos/36764931/pexels-photo-36764931.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A woman artist paints on a canvas in a bright, well-equipped studio.",
+    credit: "Vitaly Gariev",
+  },
+  músico: {
+    url: "https://images.pexels.com/photos/8044223/pexels-photo-8044223.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Musicians performing together with guitar, keyboard, and drums under colorful lighting.",
+    credit: "ANTONI SHKRABA production",
+  },
+  escritor: {
+    url: "https://images.pexels.com/photos/4865536/pexels-photo-4865536.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Man signing books during an intimate creative event in a cozy indoor setting.",
+    credit: "cottonbro studio",
+  },
+  conductor: {
+    url: "https://images.pexels.com/photos/5834947/pexels-photo-5834947.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "From above of crop unrecognizable person driving modern yellow taxi car with GPS navigator on city street in daytime",
+    credit: "Tim  Samuel",
+  },
+  camarero: {
+    url: "https://images.pexels.com/photos/3769740/pexels-photo-3769740.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Confident young ethnic waiter in elegant clothes holding tray with food and drinks and looking at camera while serving tables in stylish restaurant",
+    credit: "Andrea Piacquadio",
+  },
+  científico: {
+    url: "https://images.pexels.com/photos/9243513/pexels-photo-9243513.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Scientist in PPE examining green liquid in test tubes during a laboratory experiment.",
+    credit: "Mikhail Nilov",
+  },
+  sol: {
+    url: "https://images.pexels.com/photos/239861/pexels-photo-239861.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Captivating sun rays passing through trees creating a natural sunburst effect.",
+    credit: "Erkan  Utu",
+  },
+  luna: {
+    url: "https://images.pexels.com/photos/14591017/pexels-photo-14591017.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A serene view of the crescent moon amidst scattered clouds during nighttime.",
+    credit: "Connor Scott McManus",
+  },
+  estrella: {
+    url: "https://images.pexels.com/photos/13444721/pexels-photo-13444721.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A breathtaking view of the Milky Way galaxy cast over a forest at night.",
+    credit: "Nicolas Outin",
+  },
+  cielo: {
+    url: "https://images.pexels.com/photos/32047220/pexels-photo-32047220.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A bright blue sky adorned with fluffy white clouds, creating a peaceful and serene atmosphere.",
+    credit: "Van Mailian",
+  },
+  árbol: {
+    url: "https://images.pexels.com/photos/11249199/pexels-photo-11249199.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Explore the serene and vibrant beauty of a sprawling oak tree in a lush green forest, perfect for nature lovers.",
+    credit: "Radosław Krupa",
+  },
+  flor: {
+    url: "https://images.pexels.com/photos/31099775/pexels-photo-31099775.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed shot of Viburnum Tinus flowers in bloom, highlighting delicate white and pink petals.",
+    credit: "Zuzanna Hoffmann",
+  },
+  hierba: {
+    url: "https://images.pexels.com/photos/110081/pexels-photo-110081.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Tranquil meadow landscape featuring lush green grass and distant trees under a clear blue sky.",
+    credit: "Negative Space",
+  },
+  mar: {
+    url: "https://images.pexels.com/photos/12985227/pexels-photo-12985227.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A dynamic view of the ocean with waves crashing against a rocky shore under a cloudy sky, ideal for dramatic landscapes.",
+    credit: "DR VLOGS",
+  },
+  arena: {
+    url: "https://images.pexels.com/photos/35418054/pexels-photo-35418054.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A tranquil beach with people strolling along the shoreline during the day.",
+    credit: "Maarten Ceulemans",
+  },
+  roca: {
+    url: "https://images.pexels.com/photos/29554915/pexels-photo-29554915.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of smooth river rocks outdoors, creating a natural texture.",
+    credit: "Li Sun",
+  },
+  lago: {
+    url: "https://images.pexels.com/photos/27786306/pexels-photo-27786306.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Breathtaking view of a clear alpine lake reflecting majestic mountains and lush greenery.",
+    credit: "Yudha Dwiyoko Putra",
+  },
+  isla: {
+    url: "https://images.pexels.com/photos/32570772/pexels-photo-32570772.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Panoramic view of the Bosphorus, with lush greenery and the Istanbul skyline in the distance.",
+    credit: "Fatih Altuntaş",
+  },
+  hoja: {
+    url: "https://images.pexels.com/photos/35817399/pexels-photo-35817399.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed image of an autumn brown leaf with a blurred green background.",
+    credit: "Aleksandr  Poklad",
+  },
+  montaña: {
+    url: "https://images.pexels.com/photos/26926327/pexels-photo-26926327.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Beautiful view of Machapuchare mountain in Nepal's Himalayas blanketed by clouds.",
+    credit: "Razone Gn",
+  },
+  playa: {
+    url: "https://images.pexels.com/photos/38259971/pexels-photo-38259971.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A peaceful beach day in Binh Thuan, Vietnam, with people enjoying the sunny atmosphere and calm sea.",
+    credit: "Nguyen Truong Khang",
+  },
+  manzana: {
+    url: "https://images.pexels.com/photos/39309054/pexels-photo-39309054.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Pile of fresh red and yellow apples at a grocery store, perfect for healthy eating and autumn themes.",
+    credit: "Joolsmagools  ®️",
+  },
+  plátano: {
+    url: "https://images.pexels.com/photos/30893278/pexels-photo-30893278.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Bunches of ripe yellow bananas displayed on a market stall. Perfect for healthy eating concepts.",
+    credit: "Matheus Bertelli",
+  },
+  naranja: {
+    url: "https://images.pexels.com/photos/18452311/pexels-photo-18452311.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant close-up of fresh oranges showcasing their natural texture and color.",
+    credit: "Javid Hashimov",
+  },
+  fresa: {
+    url: "https://images.pexels.com/photos/1350964/pexels-photo-1350964.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of juicy, fresh strawberries with green tops on a clean white surface.",
+    credit: "Brian van den Heuvel",
+  },
+  uva: {
+    url: "https://images.pexels.com/photos/10922960/pexels-photo-10922960.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A hand harvesting grapes in a vineyard, surrounded by colorful autumn leaves.",
+    credit: "Gonzalo Acuña",
+  },
+  sandía: {
+    url: "https://images.pexels.com/photos/1591183/pexels-photo-1591183.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two ripe watermelon slices lying on lush green grass, showcasing summer freshness.",
+    credit: "Kristina Paukshtite",
+  },
+  piña: {
+    url: "https://images.pexels.com/photos/30893237/pexels-photo-30893237.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vibrant display of fresh pineapples at an outdoor market, showcasing their rich texture and color.",
+    credit: "Matheus Bertelli",
+  },
+  pera: {
+    url: "https://images.pexels.com/photos/5564404/pexels-photo-5564404.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Three ripe green pears on burlap with leafy background, sunlit scene.",
+    credit: "Ylanite Koppens",
+  },
+  cereza: {
+    url: "https://images.pexels.com/photos/8180432/pexels-photo-8180432.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a cherry tree branch with ripe red cherries against a green leafy background.",
+    credit: "ROMAN ODINTSOV",
+  },
+  limón: {
+    url: "https://images.pexels.com/photos/35926707/pexels-photo-35926707.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Bright yellow lemons perfectly captured with a single green leaf, conveying freshness and vitality.",
+    credit: "L. Lum",
+  },
+  durazno: {
+    url: "https://images.pexels.com/photos/27429847/pexels-photo-27429847.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A detailed image of ripe nectarines, showcasing their vibrant colors and textures in a warm, rustic setting.",
+    credit: "Ana Vieira",
+  },
+  mango: {
+    url: "https://images.pexels.com/photos/36579504/pexels-photo-36579504.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vivid image of two ripe mangoes hanging from a tree branch in sunlight.",
+    credit: "silas tarus",
+  },
+  coco: {
+    url: "https://images.pexels.com/photos/3986709/pexels-photo-3986709.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of whole and halved coconuts on a gray background, highlighting their texture.",
+    credit: "Bogdan Krupin",
+  },
+  kiwi: {
+    url: "https://images.pexels.com/photos/7675953/pexels-photo-7675953.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A detailed close-up of juicy kiwi slices showcasing fresh texture and seeds.",
+    credit: "Mikhail Nilov",
+  },
+  tomate: {
+    url: "https://images.pexels.com/photos/33499935/pexels-photo-33499935.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh red cherry tomatoes with green stems, showcasing vibrant color and texture.",
+    credit: "Dmitry Kharitonov",
+  },
+  papa: {
+    url: "https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Golden potatoes spilling from a burlap sack onto rich soil, ready for cooking.",
+    credit: "Pixabay",
+  },
+  zanahoria: {
+    url: "https://images.pexels.com/photos/1306559/pexels-photo-1306559.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh organic carrots with greens on a wooden surface, showcasing vibrant orange color.",
+    credit: "Suzy Hazelwood",
+  },
+  cebolla: {
+    url: "https://images.pexels.com/photos/17140078/pexels-photo-17140078.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh onions, garlic, and peppers on a rustic kitchen table, perfect for culinary themes.",
+    credit: "Manuel Mouzo",
+  },
+  ajo: {
+    url: "https://images.pexels.com/photos/6576763/pexels-photo-6576763.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Artistic top view shot of three garlic bulbs against a light background, highlighting their textures.",
+    credit: "Djaheda Richers",
+  },
+  lechuga: {
+    url: "https://images.pexels.com/photos/11509871/pexels-photo-11509871.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh broccoli and lettuce leaves showcasing their vibrant green color.",
+    credit: "Robert Owen-Wahl",
+  },
+  pepino: {
+    url: "https://images.pexels.com/photos/8755152/pexels-photo-8755152.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh cucumber slices in a flatlay pattern on a white background.",
+    credit: "Tamanna Rumee",
+  },
+  pimiento: {
+    url: "https://images.pexels.com/photos/2893525/pexels-photo-2893525.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of fresh green bell peppers and chili peppers, showcasing vibrant and organic produce in a market setting.",
+    credit: "Mark Stebnicki",
+  },
+  maíz: {
+    url: "https://images.pexels.com/photos/16732706/pexels-photo-16732706.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up view of fresh organic corn on the cob with husks at a market. Perfect for healthy eating concepts.",
+    credit: "Engin Akyurt",
+  },
+  aguacate: {
+    url: "https://images.pexels.com/photos/27462724/pexels-photo-27462724.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of ripe avocados on a white surface, perfect for healthy eating visuals.",
+    credit: "Gilmer Diaz Estela",
+  },
+  calabaza: {
+    url: "https://images.pexels.com/photos/10019240/pexels-photo-10019240.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vibrant orange pumpkin and yellow gourds on stone path, highlighting autumn harvest theme.",
+    credit: "Jessica",
+  },
+  rosa: {
+    url: "https://images.pexels.com/photos/6954009/pexels-photo-6954009.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Elegant composition of pink dried sun palm leaves placed in creative ceramic vase near delicate plants against white wall",
+    credit: "George Milton",
+  },
+  morado: {
+    url: "https://images.pexels.com/photos/16825165/pexels-photo-16825165.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed close-up of a purple wildflower in a natural setting, exhibiting lush foliage.",
+    credit: "Rafael Rodrigues",
+  },
+  marrón: {
+    url: "https://images.pexels.com/photos/27047778/pexels-photo-27047778.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Macro shot of aromatic dark roasted coffee beans, showcasing rich texture and detail.",
+    credit: "Isabel Lock",
+  },
+  turquesa: {
+    url: "https://images.pexels.com/photos/7338890/pexels-photo-7338890.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vibrant turquoise ocean waves creating a mesmerizing natural texture from above.",
+    credit: "Gülşah PEHLİVAN",
+  },
+  dorado: {
+    url: "https://images.pexels.com/photos/6638269/pexels-photo-6638269.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of crumpled golden metallic texture, focusing on glossy highlights.",
+    credit: "Jan Kopřiva",
+  },
+  plateado: {
+    url: "https://images.pexels.com/photos/21253720/pexels-photo-21253720.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a smooth, modern metallic facade with abstract curves and lines.",
+    credit: "Laura Paredis",
+  },
+  beige: {
+    url: "https://images.pexels.com/photos/5793951/pexels-photo-5793951.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Elegant arrangement of ceramic and glass vessels on minimalist shelves within a neutral indoor setting.",
+    credit: "Yan Krukau",
+  },
+  círculo: {
+    url: "https://images.pexels.com/photos/31650363/pexels-photo-31650363.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vibrant abstract image featuring overlapping gradient circles in purple and pink hues.",
+    credit: "Mahmoud Ramadan",
+  },
+  cuadrado: {
+    url: "https://images.pexels.com/photos/33923149/pexels-photo-33923149.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Abstract composition with colorful layered paper creating a geometric pattern.",
+    credit: "Sóc Năng Động",
+  },
+  triángulo: {
+    url: "https://images.pexels.com/photos/7901490/pexels-photo-7901490.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A detailed view of a hand with a triangle tattoo holding delicate dried plant stems.",
+    credit: "Joyal Thomas",
+  },
+  rectángulo: {
+    url: "https://images.pexels.com/photos/25626436/pexels-photo-25626436.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Black and white abstract blocks on a white background, conceptual design.",
+    credit: "Google DeepMind",
+  },
+  corazón: {
+    url: "https://images.pexels.com/photos/13786306/pexels-photo-13786306.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of heart-shaped leaves aligned diagonally on a textured white background.",
+    credit: "Lisett Kruusimäe",
+  },
+  óvalo: {
+    url: "https://images.pexels.com/photos/32355718/pexels-photo-32355718.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Contemporary interior design featuring an oval window and a hanging plant, creating a minimalist aesthetic.",
+    credit: "🇻🇳🇻🇳 Việt Anh Nguyễn 🇻🇳🇻🇳",
+  },
+  diamante: {
+    url: "https://images.pexels.com/photos/39017189/pexels-photo-39017189.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Glistening diamonds floating against a dark background, showcasing elegance and luxury.",
+    credit: "NEOSiAM 18+",
+  },
+  línea: {
+    url: "https://images.pexels.com/photos/19860876/pexels-photo-19860876.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Minimalist design featuring a yellow diagonal stripe on a striped surface.",
+    credit: "Jan van der Wolf",
+  },
+  curva: {
+    url: "https://images.pexels.com/photos/37421762/pexels-photo-37421762.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Aerial shot of a winding road cutting through dense green forest.",
+    credit: "Pok Rie",
+  },
+  rayado: {
+    url: "https://images.pexels.com/photos/36299863/pexels-photo-36299863.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "High-quality image of pink and white striped fabric with textured surface for design use.",
+    credit: "Jonathan Borba",
+  },
+  "con manchas": {
+    url: "https://images.pexels.com/photos/24363166/pexels-photo-24363166.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up image of a 22-spot ladybird on a vibrant green leaf.",
+    credit: "Erik Karits",
+  },
+  claro: {
+    url: "https://images.pexels.com/photos/6985055/pexels-photo-6985055.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A vivid and smooth color gradient background blending purple, blue, and green hues.",
+    credit: "Codioful (formerly Gradienta)",
+  },
+  brillante: {
+    url: "https://images.pexels.com/photos/1191710/pexels-photo-1191710.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Colorful bokeh effect with vibrant rainbow glitter, perfect for festive backgrounds.",
+    credit: "Alexander Grey",
+  },
+  "oficina de correos": {
+    url: "https://images.pexels.com/photos/33376731/pexels-photo-33376731.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Street view of a La Poste building in France with its iconic signage.",
+    credit: "Bingqian Li",
+  },
+  farmacia: {
+    url: "https://images.pexels.com/photos/14797864/pexels-photo-14797864.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Pharmacist wearing a turban working at a computer in a pharmacy store with shelves filled with medicine.",
+    credit: "World Sikh Organization of Canada",
+  },
+  supermercado: {
+    url: "https://images.pexels.com/photos/3985077/pexels-photo-3985077.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A happy family shopping in the supermarket's freezer section, emphasizing togetherness and love.",
+    credit: "Gustavo Fring",
+  },
+  biblioteca: {
+    url: "https://images.pexels.com/photos/9572540/pexels-photo-9572540.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Group of students studying together in a cozy library setting with bookshelves around.",
+    credit: "Tima Miroshnichenko",
+  },
+  museo: {
+    url: "https://images.pexels.com/photos/36058209/pexels-photo-36058209.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Aerial view of the Natural History Museum in London, featuring a whale skeleton and visitors.",
+    credit: "Hasan Lütfü Örsdemir",
+  },
+  teatro: {
+    url: "https://images.pexels.com/photos/33126401/pexels-photo-33126401.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Stunning view of the ornate interior of Teatro Colón, Buenos Aires, Argentina.",
+    credit: "Valentina  Rodriguez",
+  },
+  gimnasio: {
+    url: "https://images.pexels.com/photos/4716814/pexels-photo-4716814.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Spacious gym interior featuring treadmills, fitness machines, and lockers.",
+    credit: "Denys Gromov",
+  },
+  restaurante: {
+    url: "https://images.pexels.com/photos/2104568/pexels-photo-2104568.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Elegant setup with wine glasses and a candle, perfect for dining ambiance.",
+    credit: "Zak Chapman",
+  },
+  panadería: {
+    url: "https://images.pexels.com/photos/18656839/pexels-photo-18656839.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A Turkish bakery window showcasing fresh bread and a Turkish flag, creating a warm ambiance.",
+    credit: "Sara Er",
+  },
+  librería: {
+    url: "https://images.pexels.com/photos/33626369/pexels-photo-33626369.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Explore the ghostly and iconic architecture of Livraria Lello, Porto's famous bookstore.",
+    credit: "Sandra Mosconi",
+  },
+  gasolinera: {
+    url: "https://images.pexels.com/photos/34636185/pexels-photo-34636185.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Brightly lit modern gas station featuring multiple fuel pumps and a distinct red and white design.",
+    credit: "ddlogg",
+  },
+  comisaría: {
+    url: "https://images.pexels.com/photos/35429950/pexels-photo-35429950.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Exterior of a modern police station in Iceland featuring distinct architecture and a wall-mounted clock.",
+    credit: "Zak Mir",
+  },
+  ayuntamiento: {
+    url: "https://images.pexels.com/photos/22619624/pexels-photo-22619624.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Drone shot of Zittau Town Hall surrounded by red-roofed buildings under cloudy skies.",
+    credit: "Anh Nguyen",
+  },
+  "palacio de justicia": {
+    url: "https://images.pexels.com/photos/36595111/pexels-photo-36595111.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A black and white view of the historic courthouse facade in Hampton, Virginia, showcasing classic architecture.",
+    credit: "Phil Evenden",
+  },
+  teléfono: {
+    url: "https://images.pexels.com/photos/7115/iphone-speech-conference-cell-phone.jpg?auto=compress&cs=tinysrgb&h=350",
+    alt: "People sitting at a conference casually checking smartphones, communicating and networking.",
+    credit: "Startup Stock Photos",
+  },
+  computadora: {
+    url: "https://images.pexels.com/photos/22763683/pexels-photo-22763683.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Black and white image of a classic Apple II computer on display in Wrocław, Poland.",
+    credit: "Piotr Baranowski",
+  },
+  internet: {
+    url: "https://images.pexels.com/photos/1181449/pexels-photo-1181449.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Businesswoman working on laptop with Android 6.0 Marshmallow webpage open.",
+    credit: "Christina Morillo",
+  },
+  "correo electrónico": {
+    url: "https://images.pexels.com/photos/7439136/pexels-photo-7439136.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A person typing on a laptop in a bright, modern office setting, showing productivity and technology.",
+    credit: "cottonbro studio",
+  },
+  contraseña: {
+    url: "https://images.pexels.com/photos/2882630/pexels-photo-2882630.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Focus on password security with white keyboard tiles spelling 'PASSWORD' on a coral background.",
+    credit: "Miguel Á. Padriñán",
+  },
+  pantalla: {
+    url: "https://images.pexels.com/photos/9784240/pexels-photo-9784240.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Hand interacting with multiple digital tablets on a green screen setup indoors.",
+    credit: "Ron Lach",
+  },
+  teclado: {
+    url: "https://images.pexels.com/photos/4065748/pexels-photo-4065748.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed view of a backlit laptop keyboard keys with blue LED lighting for tech concepts.",
+    credit: "Castorly Stock",
+  },
+  cargador: {
+    url: "https://images.pexels.com/photos/4072683/pexels-photo-4072683.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Minimalist image of a power bank with blue USB charging cables on a white background.",
+    credit: "Markus Winkler",
+  },
+  batería: {
+    url: "https://images.pexels.com/photos/7019805/pexels-photo-7019805.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Top view of two AA batteries with yellow tops on a dark surface.",
+    credit: "Simon Gough",
+  },
+  wifi: {
+    url: "https://images.pexels.com/photos/27177568/pexels-photo-27177568.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Three children on a gray sofa engrossed in digital devices, indoors.",
+    credit: "Helena Lopes",
+  },
+  archivo: {
+    url: "https://images.pexels.com/photos/357514/pexels-photo-357514.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of stacked binders filled with documents for office or educational use.",
+    credit: "Pixabay",
+  },
+  videollamada: {
+    url: "https://images.pexels.com/photos/3783110/pexels-photo-3783110.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Young woman smiles and waves during an outdoor video call, showcasing modern wireless communication.",
+    credit: "Andrea Piacquadio",
+  },
+  descarga: {
+    url: "https://images.pexels.com/photos/2882550/pexels-photo-2882550.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Minimalist photo of keyboard tiles spelling 'DOWNLOAD' on a red background.",
+    credit: "Miguel Á. Padriñán",
+  },
+  refrigerador: {
+    url: "https://images.pexels.com/photos/9031968/pexels-photo-9031968.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Back view of a blonde woman retrieving food from a refrigerator in a bright kitchen.",
+    credit: "Kevin  Malik",
+  },
+  estufa: {
+    url: "https://images.pexels.com/photos/16934765/pexels-photo-16934765.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vintage kitchen stove in a minimalist black and white interior setting.",
+    credit: "Emmanuel Codden",
+  },
+  horno: {
+    url: "https://images.pexels.com/photos/37206720/pexels-photo-37206720.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Delicious Turkish dish cooking in a traditional stone oven, showcasing authentic culinary heritage.",
+    credit: "Mavi Yıldız Restoran Cumalıkızık Bursa",
+  },
+  lavadora: {
+    url: "https://images.pexels.com/photos/11899611/pexels-photo-11899611.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Vibrant close-up of multicolored towels inside a washing machine, ready for a wash.",
+    credit: "Towfiqu barbhuiya",
+  },
+  secadora: {
+    url: "https://images.pexels.com/photos/8774376/pexels-photo-8774376.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Interior view of industrial laundry machines in a facility with linens being washed.",
+    credit: "Tima Miroshnichenko",
+  },
+  lavavajillas: {
+    url: "https://images.pexels.com/photos/3829549/pexels-photo-3829549.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A clean and empty stainless steel dishwasher open in a modern kitchen setting.",
+    credit: "Castorly Stock",
+  },
+  aspiradora: {
+    url: "https://images.pexels.com/photos/38325/vacuum-cleaner-carpet-cleaner-housework-housekeeping-38325.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a modern vacuum cleaner with water filtration on carpet floor indoors.",
+    credit: "Pixabay",
+  },
+  plancha: {
+    url: "https://images.pexels.com/photos/16472075/pexels-photo-16472075.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Antique cast iron irons displayed on vibrant red cloth, evoking a vintage aesthetic.",
+    credit: "T6 Adventures",
+  },
+  licuadora: {
+    url: "https://images.pexels.com/photos/19773943/pexels-photo-19773943.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Mother and child using a blender together in a cozy kitchen setting.",
+    credit: "Jonathan Borba",
+  },
+  tostadora: {
+    url: "https://images.pexels.com/photos/3997309/pexels-photo-3997309.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Golden brown slices of bread popping out of a white toaster, ready to serve.",
+    credit: "Photography Maghradze PH",
+  },
+  ventilador: {
+    url: "https://images.pexels.com/photos/39272326/pexels-photo-39272326.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Black and white close-up of an industrial fan with a concentric design.",
+    credit: "Phát Trương",
+  },
+  "aire acondicionado": {
+    url: "https://images.pexels.com/photos/30962631/pexels-photo-30962631.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A dimly lit urban alley in Kyoto featuring air conditioning units, captured at night.",
+    credit: "Julien",
+  },
+  calefactor: {
+    url: "https://images.pexels.com/photos/923289/pexels-photo-923289.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed view of a modern outdoor patio heater with blurred suburban background, perfect for outdoor comfort concepts.",
+    credit: "Brett Sayles",
+  },
+  cafetera: {
+    url: "https://images.pexels.com/photos/12122684/pexels-photo-12122684.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A detailed view of espresso brewing in a steel Moka pot, capturing rich coffee textures.",
+    credit: "Tolga deniz Aran",
+  },
+  trapeador: {
+    url: "https://images.pexels.com/photos/3769711/pexels-photo-3769711.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Side view of young ethnic male in uniform cleaning floor with mop while working in retro styled restaurant",
+    credit: "Andrea Piacquadio",
+  },
+  escoba: {
+    url: "https://images.pexels.com/photos/18609053/pexels-photo-18609053.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Artisan-crafted Thai brooms showcased at a market stall in Bangkok, Thailand, highlighting traditional craftsmanship.",
+    credit: "Markus Winkler",
+  },
+  cubo: {
+    url: "https://images.pexels.com/photos/9371880/pexels-photo-9371880.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Overhead view of fish in plastic bucket beside empty blue bucket on wet tiled floor.",
+    credit: "Şahin Sezer Dinçer",
+  },
+  esponja: {
+    url: "https://images.pexels.com/photos/4440528/pexels-photo-4440528.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two bright orange sponges suitable for cleaning against a white background.",
+    credit: "Polina Tankilevitch",
+  },
+  detergente: {
+    url: "https://images.pexels.com/photos/5591578/pexels-photo-5591578.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A woman pours detergent into a washing machine in a home laundry room.",
+    credit: "RDNE Stock project",
+  },
+  percha: {
+    url: "https://images.pexels.com/photos/18725622/pexels-photo-18725622.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A row of wooden hangers on a metal rod in an empty, wood-paneled closet.",
+    credit: "Esra Erdem",
+  },
+  cajón: {
+    url: "https://images.pexels.com/photos/6627729/pexels-photo-6627729.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a healthcare professional opening a drawer of medical supplies in a sterile environment.",
+    credit: "https://kaboompics.com/",
+  },
+  estante: {
+    url: "https://images.pexels.com/photos/17541188/pexels-photo-17541188.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A modern bar with a wide selection of liquor bottles arranged on sleek black shelves.",
+    credit: "Thu Huynh",
+  },
+  armario: {
+    url: "https://images.pexels.com/photos/11018242/pexels-photo-11018242.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Empty walk-in closet featuring wall-mounted wire shelving, perfect for organization.",
+    credit: "Curtis Adams",
+  },
+  cortina: {
+    url: "https://images.pexels.com/photos/37252662/pexels-photo-37252662.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Warm sunlight filtering through elegant curtains in a Tokyo room, creating a serene ambiance.",
+    credit: "Iban Lopez Luna",
+  },
+  trabajo: {
+    url: "https://images.pexels.com/photos/7654131/pexels-photo-7654131.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two business professionals collaborating with a laptop and calculator in a modern office.",
+    credit: "Pavel Danilyuk",
+  },
+  carrera: {
+    url: "https://images.pexels.com/photos/7698712/pexels-photo-7698712.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A diverse group of professionals engaged in a collaborative office meeting with laptops and a whiteboard.",
+    credit: "Yan Krukau",
+  },
+  empresa: {
+    url: "https://images.pexels.com/photos/7793111/pexels-photo-7793111.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Team discussion in a modern office setting, focusing on cooperation and strategy development.",
+    credit: "Yan Krukau",
+  },
+  oficina: {
+    url: "https://images.pexels.com/photos/36288084/pexels-photo-36288084.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A night view of an office building in Central Visayas, Philippines, showcasing illuminated office windows.",
+    credit: "Angelyn Sanjorjo",
+  },
+  colega: {
+    url: "https://images.pexels.com/photos/8204399/pexels-photo-8204399.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two business professionals smiling and talking during a coffee break in a modern office setting.",
+    credit: "Kampus Production",
+  },
+  salario: {
+    url: "https://images.pexels.com/photos/4968396/pexels-photo-4968396.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of two people exchanging US dollars and currency with wallets on a table.",
+    credit: "https://kaboompics.com/",
+  },
+  reunión: {
+    url: "https://images.pexels.com/photos/8070723/pexels-photo-8070723.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A diverse group discussing ideas in a modern office setting, using laptops and tablets.",
+    credit: "Edmond Dantès",
+  },
+  horario: {
+    url: "https://images.pexels.com/photos/11773871/pexels-photo-11773871.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up shot of a hand marking a date on a calendar with a pen, emphasizing planning and scheduling.",
+    credit: "Towfiqu barbhuiya",
+  },
+  currículum: {
+    url: "https://images.pexels.com/photos/270238/pexels-photo-270238.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a business document text under a magnifying glass.",
+    credit: "Pixabay",
+  },
+  entrevista: {
+    url: "https://images.pexels.com/photos/4342496/pexels-photo-4342496.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Young woman attending a job interview in a modern office, showcasing confidence and professionalism.",
+    credit: "Edmond Dantès",
+  },
+  contrato: {
+    url: "https://images.pexels.com/photos/7841818/pexels-photo-7841818.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed close-up of a patent agreement document on a polished wooden table.",
+    credit: "RDNE Stock project",
+  },
+  ascenso: {
+    url: "https://images.pexels.com/photos/8555215/pexels-photo-8555215.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Colleagues celebrating with champagne and snacks in a modern office setting.",
+    credit: "Edmond Dantès",
+  },
+  "fecha límite": {
+    url: "https://images.pexels.com/photos/6182181/pexels-photo-6182181.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Conceptual image of a deadline with wooden letters and burnt matchstick on orange background.",
+    credit: "Ann H",
+  },
+  contratar: {
+    url: "https://images.pexels.com/photos/38824376/pexels-photo-38824376.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Wooden tiles on a board forming the phrase 'We Are Hiring', ideal for job announcements.",
+    credit: "Ann H",
+  },
+  equipo: {
+    url: "https://images.pexels.com/photos/7551235/pexels-photo-7551235.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Diverse group enjoying team building games outdoors, fostering unity and fun.",
+    credit: "RDNE Stock project",
+  },
+  campeón: {
+    url: "https://images.pexels.com/photos/14363874/pexels-photo-14363874.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Group of boys celebrating a soccer tournament victory with confetti and trophy.",
+    credit: "Champion  of Champions",
+  },
+  campeonato: {
+    url: "https://images.pexels.com/photos/31825812/pexels-photo-31825812.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A joyous soccer team celebrates with a trophy outdoors under a clear sky.",
+    credit: "César O'neill",
+  },
+  marcador: {
+    url: "https://images.pexels.com/photos/899317/pexels-photo-899317.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up of a tennis scoreboard showing games won by each player.",
+    credit: "Mat Brown",
+  },
+  gol: {
+    url: "https://images.pexels.com/photos/9519542/pexels-photo-9519542.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "A team of female soccer players relax on the field after a game, surrounded by goals and lush greenery.",
+    credit: "Anastasia  Shuraeva",
+  },
+  árbitro: {
+    url: "https://images.pexels.com/photos/34485310/pexels-photo-34485310.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Two soccer referees in orange jerseys walking during a daytime match.",
+    credit: "sirmudi_photography",
+  },
+  entrenador: {
+    url: "https://images.pexels.com/photos/8941613/pexels-photo-8941613.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Coach guiding young soccer players on a lush green field under a clear sky.",
+    credit: "Kampus Production",
+  },
+  victoria: {
+    url: "https://pixabay.com/get/g01ad88404c96ac7284d315df75431882edb6bf2f051d29cb4fad913b2e20df37f30f4b08d685f52e7097e8ce4f1aea14a4ef8a3f152f86605d7b61c36cd0771c_640.jpg",
+    alt: "monument, sculpture, greek gods figures, artwork, greek antiquity, goddess of victory nike, protected, sculpture, sculpture, sculpture, sculpture, sculpture",
+    credit: "Couleur",
+  },
+  derrota: {
+    url: "https://pixabay.com/get/gbdec4b49f35c32565d7fec2f3503d34cb7b6a026369248758e1d7edb519728a17cf23f804a58d0ed63ee79427daa3816e6132240774caa359c229427c233e9a6_640.jpg",
+    alt: "man, depressed, sitting, on the floor, mourning, despair, emotion, pain, discouragement, melancholy, depression, disappointment, defeat, mood, expression, pain, pain, depression, depression, depression, depression, depression",
+    credit: "HolgersFotografie",
+  },
+  estadio: {
+    url: "https://pixabay.com/get/ge5c31f6d26aa316f5a57856d734bc5eba0f63e20719ac180bf050c674fcf3d37d0a717ad3c8237fcbb99291a5359781e61f768398687e7ca6770c17f059e6456_640.jpg",
+    alt: "bleachers, soccer field, stadium, nature, field, soccer stadium, football stadium, football, game, grandstand, grass, match, sports, arena, soccer",
+    credit: "Pexels",
+  },
+  uniforme: {
+    url: "https://pixabay.com/get/g7398bd6a5c492368d0cce274cec1bda5475ea89d534045412ce49b82c3c60788a9c2bd00fc9610432bb0c9158dea7800_640.jpg",
+    alt: "men, honor guard, soldiers, ceremonial guard, guard, uniform, formation, battalion, troop, military, russian honor guard, russia, men, military, russia, russia, russia, russia, russia",
+    credit: "WikiImages",
+  },
+  medalla: {
+    url: "https://pixabay.com/get/g7bde6492991a96ddd527f768ec856d9e06908065b30d0e4075ae7639bf16c4acdd88509d728564a9cd6d5b7c5a0e453923074336d2744a8a4ffb09c9b911c77d_640.jpg",
+    alt: "tournament, victory, match, target, winner, game, competition, challenge, gold, medal, sport, brown gaming, brown game, brown games, brown winner, medal, medal, medal, medal, medal",
+    credit: "michalnavrat",
+  },
+  torneo: {
+    url: "https://pixabay.com/get/gb7bcb54ff2d0bdccf4407d1b5bd5df1aa385cc7da9e932a1092dae99dd8949faabb6c9fd10e84b6feaf4126da94b3a36149e7b874ac5617d81443d74648dcd12_640.jpg",
+    alt: "chess, board, game, board game, black and white, monochrome, pawns, king and queen, chess pieces, chess board, chess game, play, strategy, playing field, checkered, chess championship, chess tournament, chess master, chess, chess, chess, chess, chess, game, strategy",
+    credit: "Felix-Mittermeier",
+  },
+  sofá: {
+    url: "https://pixabay.com/get/g4121095cbcc7669ed40259b37a88f65ed6461774f36a145adff2f7a3bf26b5beb592f1b2392ea5ae999fa1d25d0fb328b49a239a5aaf0d541b90ee5c490e0558_640.jpg",
+    alt: "home, sofa, interior, sofa, sofa, sofa, sofa, sofa",
+    credit: "carolzise",
+  },
+  cojín: {
+    url: "https://pixabay.com/get/gec3faca3ac19f5bc7398dd7211475afd061d8656fa6c5aebbb60b7004aa92ba15873e2f7549c936020776608008a7a30b6014af9ea0b93d02073e9029e51bbbb_640.jpg",
+    alt: "living room, interior design, furniture, lamp, couch, sofa, interior, room, indoors, house, home, apartment, living room, living room, living room, living room, interior design, furniture, interior, room, room, room, house, house, house, home, home, home, home, home, apartment",
+    credit: "Pexels",
+  },
+  alfombra: {
+    url: "https://pixabay.com/get/g56d994b5083da3f0daaee7467148bd4eb1f991e24d8061d48e3bb00c3cc5bcead441a6d5bde58f672e1da3f79e46626a_640.jpg",
+    alt: "bedroom, interior design, house, home, bed, furniture, bedroom furniture, room, room interior, contemporary, bedroom, bedroom, bedroom, bedroom, bedroom, interior design, house, house, home, bed, room",
+    credit: "GregoryButler",
+  },
+  "mesita de noche": {
+    url: "https://pixabay.com/get/ga4ad60e6b1ce6effc4996dddf1c255f9a4c646a129ba47efaf7469aa0c0b31b0b9f108b5acca3e8a2d1058db7ac13673caa75742cb4bc3fd7399e68840d65a0e_640.jpg",
+    alt: "bed, bedroom, closet, furniture, lamp, light, betstand, bed table, brown light, brown table, brown bed, brown bedroom, brown lamp, brown lights, bed, bed, bedroom, bedroom, bedroom, bedroom, bedroom",
+    credit: "Pexels",
+  },
+  colchón: {
+    url: "https://pixabay.com/get/g9110fcad67bd114ae0a1fd5832b348fd44a6da78827fa9bd3c2ed564da73be0c5e9ba63b5063c4785d042eca5ef467d518a0599807f57fbc189cc51f1e6c2ebe_640.jpg",
+    alt: "mattress, bed, pillow, sleep, relax, relaxation, rest, place to sleep, bedding, lie, teddy, bedroom, teddy bear, stuffed animal, toy, cute, mattress, mattress, mattress, mattress, mattress, bed, bed, bed, bed, sleep, sleep, bedroom",
+    credit: "congerdesign",
+  },
+  manta: {
+    url: "https://pixabay.com/get/g389136b1f3b531185ba29db29cad363e3aa00179e62e30b92ee6c05a21c0ef6d414b1b891e7c8451536fbaa97df587304aac0524178a343a051518bb75bf35fc_640.jpg",
+    alt: "baby, baby feet, bed, blanket, child, little, newborn, small, small feet, newborn baby, baby, baby, baby, baby, baby, newborn",
+    credit: "Pexels",
+  },
+  fregadero: {
+    url: "https://pixabay.com/get/g593510547575ce90f087c2f80ea39983d7a9c63497fb0622facce0cdb4da423056093dfe165fd8175a44178cf5f9b872eb9fbd7bc6987f83c615580e50be10f2_640.jpg",
+    alt: "bathroom, clean, faucet, indoors, sink, stainless steel, vanity top, tap, chrome, bathroom sink, tap water, bathroom, bathroom, bathroom, bathroom, bathroom, faucet, sink, sink",
+    credit: "Pexels",
+  },
+  grifo: {
+    url: "https://pixabay.com/get/g0e497c91c3bb87b797c048858a9209f277e0ca5d4c87d7dac18d3367df8609cce4e3978eba973238457d482593eb243f21c2300a4b7a9a7129b775ba10ab72e7_640.jpg",
+    alt: "bathroom, clean, faucet, indoors, sink, stainless steel, vanity top, tap, chrome, bathroom sink, tap water, bathroom, bathroom, bathroom, bathroom, bathroom, faucet, sink, sink",
+    credit: "Pexels",
+  },
+  escalera: {
+    url: "https://pixabay.com/get/g328109e1a7d4bac7a74112a426f7a0f7a725732fa1b1093ba6be200229cf560d6fbf35efa605ec4bb5506abb328986f232cf63dd3bb4e81f13b50ec8f0173155_640.jpg",
+    alt: "mountain landscape, steps, stones, stone stairs, path, trail, alps, alpine, peak, summit, wildflowers, fields, meadows, fog, foggy, haze, mist, misty, mountains, landscape, nature, mountain hiking, mountain peaks, staircase, snow mountains, stairs, away, mountains, mountains, landscape, nature, nature, nature, nature, nature",
+    credit: "kinkate",
+  },
+  suelo: {
+    url: "https://pixabay.com/get/g20ddee7e56ce273e489a13a05a0b46678f0a19d962b17637b76fb034acec4075f3ebccaa30e922af03ee4b9e6245336c2edb57b15facfdb9ddf384fc0154c340_640.jpg",
+    alt: "nature, mushroom, meadow, forest floor, moss, mushroom, mushroom, mushroom, mushroom, mushroom, moss",
+    credit: "0xCoffe",
+  },
+  pared: {
+    url: "https://pixabay.com/get/gad780d2d41d0d5fad2a8ca04557ab94670f1fcf1e450f6c78ae21211d4ca147373107e8b2ceed31f25dd0bb0e1a0c266f4f0c1c2659316accead3d1b06d65014_640.jpg",
+    alt: "brick wall, red, structure, masonry, brick, old, stone, wall, texture, brown texture, brown wall, brown old, brown stone, brick wall, brick wall, brick wall, brick wall, brick wall, brick, brick, wall, wall, wall, wall",
+    credit: "Michael_Laut",
+  },
+  tejado: {
+    url: "https://pixabay.com/get/g4cd6e36fc4c5d845c6dab5c2d10998164a21bb479eac30b4a01b19c262e597372ef8fe03b01c753d4bc738c49a31a9049a75ad066fbc7e500033d32370d40f46_640.jpg",
+    alt: "roof, tile, europe, turkey, pattern",
+    credit: "mrjerryjm",
+  },
+  cerca: {
+    url: "https://pixabay.com/get/g5b8f9387fd482249b9df4c85b5de7da98b603aaab092b7810fd7f891a1b8b1070ab9063dcbdb4cb25b3257fd2298ddddb2d975e4cccfa116a77a3fe382243d25_640.jpg",
+    alt: "cat, fence, animal, wooden, kitty, kitten, feline, pet, cat on fence, wooden fence, demarcation, neighbor's cat, domestic, gray cat",
+    credit: "katya-guseva0",
+  },
+  garaje: {
+    url: "https://pixabay.com/get/gad765d4472aa106446d6487220a49f1cbbe5cab77eeeae8e3b8734cf2aae69ab6f993076fdb76794f72a5c5371edbd1e_640.jpg",
+    alt: "motorbike, garage, repairs, workshop, hobby, automotive, build, mechanic, motor, motorcycle, big bike, vehicle, garage, garage, garage, garage, garage, mechanic, motorcycle, motorcycle",
+    credit: "SplitShire",
+  },
+  balcón: {
+    url: "https://pixabay.com/get/g22717bd8931348d7a977bf788a6f4432fe8972ad460605183fd913aa9a6a81d5fa99433f4bd2c3c57c07bbb83997c64c50f36a98edddd5b9eb0ac0a008c069ea_640.jpg",
+    alt: "apartments, architecture, balconies, building, facade, house, windows, exterior, building exterior, apartment complex, glass windows, apartments, building, building, house, house, house, house, house",
+    credit: "Pexels",
+  },
+  ascensor: {
+    url: "https://pixabay.com/get/g06590e30a6e31b1254310cabba3418f2b504acbcae8ce7158e7619f99f00680ddd373793e0f8828d2ab9a64ef3404385367d426b94f6d5653cb93b20c8334823_640.jpg",
+    alt: "elevator, lift, freight elevator, hamburg, old elbe tunnel, old, historical, passenger elevator, stairwell, rise, ride, descent, elevator, elevator, elevator, elevator, elevator",
+    credit: "Tama66",
+  },
+  sótano: {
+    url: "https://pixabay.com/get/gb105ad3dd3841ae549b28ac1f450cd4efd8d5e07dab46a55b21cc5f5900a10ded5e83c7f51f75f980cf716d7853e01f1b4c4611de133f2277e86badaee420986_640.jpg",
+    alt: "basement, abandoned, ruins, cellar, old, cellar, cellar, cellar, cellar, cellar",
+    credit: "BushBoxer",
+  },
+  ático: {
+    url: "https://pixabay.com/get/gcf747864b83dbcd703bcbce93cb4ca8bc76e8e7a4865c5b3112345f5be4372dc6d5dbd21ec0026f67a404a9cfb99f169_640.jpg",
+    alt: "attic, pise, old attic, tile, light, mystery, door, attic, attic, attic, attic, attic",
+    credit: "Kincse_j",
+  },
+  valle: {
+    url: "https://pixabay.com/get/g1afaa9532769aea5c58be9935127efb9b51f1d0e39cb1603b40a50040746f24783c44b0b8460ad7fc1885e56a0e3d1bd2cce5ac2c87e61e70019d7c359128d72_640.jpg",
+    alt: "landscape, death valley, california, nature, adventure, death valley, death valley, death valley, death valley, death valley, california",
+    credit: "peterperhac",
+  },
+  cueva: {
+    url: "https://pixabay.com/get/g94a9ef0f289107c1c030487a02807f03eb9cbea96e95010e7ffec37b42942571ea2b53349418aa88bec49245ee4cc8537159b7336303eff14e3f45069cf8258a_640.jpg",
+    alt: "boat, river, motorboat, boat trip, phong nha, phong nha cave, cave entrance, vietnam, wooden boat, boat trip, vietnam, vietnam, vietnam, vietnam, vietnam",
+    credit: "pen_ash",
+  },
+  cascada: {
+    url: "https://pixabay.com/get/ga6c423534a900e291c187f073825f4f8ded3eb58273bf3e17d52a35fc59cf90d663b9e428ed5d134c20f275fcd844fa6bd4a99d794f889436406f2b3d0f15f8f_640.jpg",
+    alt: "waterfall, water, rocks, luang prabang, nature, laos, asia, kuang si waterfall, waterfall, waterfall, waterfall, waterfall, waterfall, laos",
+    credit: "1965937",
+  },
+  volcán: {
+    url: "https://pixabay.com/get/ga0cb9e7232f75104a884eb3f89938d0ca07d4d08682d7fe1745b6cdfa6d3e7c2dff962782132a9b469c1fcce006a231f94486d3df6da336503a8d7469bed27f8_640.jpg",
+    alt: "volcano, lava, iceland, nature, eruption, fire, heat, universe, crater, volcano, volcano, volcano, volcano, volcano, lava, fire",
+    credit: "Gylfi",
+  },
+  desierto: {
+    url: "https://pixabay.com/get/ga064b32b176a2d0943c3f09d5e7d346675e4b49942d5fd22915ec2cf51162294cbcc33107e2d57dde51f795990554a8dbe2d3090e06a7aaa39c4cc70ed23adfd_640.jpg",
+    alt: "namib desert, namibia, nature, africa, desert, desert sand, namib, landscape",
+    credit: "Barni1",
+  },
+  selva: {
+    url: "https://pixabay.com/get/g7fda28c724f2220b07e24815aa2cfefbe0fe020037c55d020ac0f43ce75f1769ca43d6372512e7a787b64a3518d137b2b4135eab2045c11f5a48d8c495009e1c_640.jpg",
+    alt: "the, jungle, of, nature, chiapas",
+    credit: "bere69",
+  },
+  pantano: {
+    url: "https://pixabay.com/get/g28ebea064e5532d11967fb9bb815bb8706a7e67af2c4fe20f0f337c84e5ae45e7240b15a1ce61e48fb2d68d5a04e38286a3f1efec3e1e02b24664134897213ae_640.jpg",
+    alt: "castle, park, wetland, swamp, nature, spring, landscape, schloss türnich, castle, castle, castle, castle, castle, swamp, swamp, swamp, spring, spring",
+    credit: "Tama66",
+  },
+  glaciar: {
+    url: "https://pixabay.com/get/g78efabe4b02cf883115b57bf9277a53bcc36fad82e6180c3af7c5a078557c6f8fcfd1622a2d0fadd19b885f3ce25976d29f44e95fdfc6f718553dbb40d438fb3_640.jpg",
+    alt: "mount haast, lendenfeld peak, fox glacier, albert glacier, mountains, clouds, sky, mount cook national park, landscape, snow, summit, glacier, ice, winter, south island, nature, southern alps, peak, new zealand",
+    credit: "xiSerge",
+  },
+  cañón: {
+    url: "https://pixabay.com/get/g3d0c6a054d553653e35a37bb989298ab28052c4044135e613da445805ba3b5f806a3ef212c033462bccd804d99f238760fd12b431ee8d8d09c55a63abd8e8696_640.jpg",
+    alt: "antelope canyon, arizona, canyon, landscape, nature, native american",
+    credit: "Lenzatic",
+  },
+  llanura: {
+    url: "https://pixabay.com/get/g57f3e40a96262f508dd8ecafc4d981083d299951e73d446dcc4243af884a7f2a6062d313d9852fbd94f0e536a1fb2fc085d5057ddd25b2b9c4957b588ea3acee_640.jpg",
+    alt: "vicuna, camelid, animal, mammal, nature, fauna, plain, altitude",
+    credit: "Keishpixl",
+  },
+  colina: {
+    url: "https://pixabay.com/get/gb7e858c8de1150131178731400011e45859ebd1a407bac96fc9a7f2a48783be4e038ea84be2a435eb0360144aabcd653ae441e9406cac1c8a64db50469bc7389_640.jpg",
+    alt: "hill, green, nature, mountain, the hill tea, long grain, vietnam, tea, vietnam, tea, tea, tea, tea, tea",
+    credit: "Oliver_Nguyen",
+  },
+  península: {
+    url: "https://pixabay.com/get/ged3141f97f8fcdb84685e67de26de8e6a14d5eb7799b23f3e38c46f165f9f8ae0cb5f47bb723a55f223137aa4b3eaa74edb0ddbde6854855e817fa9908cd6c97_640.jpg",
+    alt: "ocean, sunrise, dawn, peninsula, nature, france, landscape, horizon",
+    credit: "Aurélien-Barre",
+  },
+  bahía: {
+    url: "https://pixabay.com/get/g917dffc9c2b46d2440a9d0f60fcee69daf5c9f0c65296ce54c48d12c9cd772a316a9abbcbef2e2fcdb2a23724d21936382c366a465b6df337246cb3afb44992a_640.jpg",
+    alt: "winter, pier, sunrise, bay, snow, nature, dock",
+    credit: "Trek_Jason",
+  },
+  costa: {
+    url: "https://pixabay.com/get/gf186d92fc4f63af26e1e5a5e27a823aab4591319c9ee5fd7d3fd4c4b0236e1ae986c4744b0041872793da47e001dd484fca6b9afb0c89816f58b67b2f255b7ee_640.jpg",
+    alt: "sea, the coast, rocks, the horizon, sky, clouds, sunlight, ocean, coast, rocky coast, nature, island, scenery, scandinavia, verdens ende, norway, visitoslo, scenery, scandinavia, scandinavia, scandinavia, norway, norway, norway, norway, norway",
+    credit: "Niewyrazisty",
+  },
+  cabo: {
+    url: "https://pixabay.com/get/g0f6e252b56e3026b0ffbfb64c1b9249a60faac9b7e28507c93ffc0316ecce49c0dcffa0d6b6a58f445cbc27fb9c5a4e3552a65bd9af09a36d11f231625a5201d_640.jpg",
+    alt: "south africa, table mountain, cape town, rock, nature, stones, landscape, mountain panorama, mountain range, panorama, city",
+    credit: "Eknbg",
+  },
+  arrecife: {
+    url: "https://pixabay.com/get/g695e214c5bd9c82679ea23020b503aaf27cef6b651e10976c1ed5707a4cb75e3fe4d674117b7806fe5539cee9645d69a_640.jpg",
+    alt: "lemon butterflyfish, fishes, exotic, tropical, yellow, dive, underwater, water, sea, underwater world, sea creatures, maritime, nature, animals, reef, coral, coral reef, fishes, tropical, yellow, yellow, underwater, underwater, underwater, underwater, underwater, sea, sea, sea, sea, sea creatures, animals, reef, coral, coral, coral, coral reef, coral reef, coral reef, coral reef",
+    credit: "joakant",
+  },
+  duna: {
+    url: "https://pixabay.com/get/gc0627627e6e1cc16dacd0511e05b159c660a11eb09e12601585476515ffa854805f463ad03dd4dd2e4fd937f794e428d7364f704a8e928450dd5223ab5d913c8_640.jpg",
+    alt: "feather, dune, desert, sand, dune landscape, barren, landscape, nature, north, hd background, feather, feather, feather, feather, feather, desert, desert, desert, desert",
+    credit: "fotoblend",
+  },
+  prado: {
+    url: "https://pixabay.com/get/g753ae4f0e08d38100c864b2463de2ce02a88477b0a18cf1025a04f4326ea89d92eaef8ed54876d1af2ca97b54bb3fcf1e7079d4d256376894d84ba5d1a0e3bfe_640.jpg",
+    alt: "chapel, church, meadow, flower meadow, nature, hd background, landscape, rural, landscape, landscape, landscape, landscape, landscape",
+    credit: "ChiemSeherin",
+  },
+  arroyo: {
+    url: "https://pixabay.com/get/g22bb6c27ff86a12aa13d812997358e32af887fd3c39348d7a60e57c573a202045282ae99e1f80643b56b6a80cf3f028d962271553200ea1330af1cce75ef50c7_640.jpg",
+    alt: "cascade, waterfall, stream, forest, nature, landscape, waterfall, waterfall, waterfall, waterfall, waterfall",
+    credit: "lecreusois",
+  },
+  estanque: {
+    url: "https://pixabay.com/get/g97295ac015c28953e80f2490c914804e26c3cd9cb2b64bb06ec960b5518c1c45a00ac3bce7cdb5a97f81b83851067a7199775a6b1eca1a4026d53869234cacda_640.jpg",
+    alt: "frog, water frog, pond frog, amphibian, animal, green frog, lily pad, pond, aquatic life, aquatic animal, green, cute, pond dwellers, water, nature, frog, frog, frog, frog, frog",
+    credit: "Couleur",
+  },
+  meseta: {
+    url: "https://pixabay.com/get/g211efa495bc9a32b0db92b179e9ca599f7c2bb6d8c0b7691e5b5462d81b49bd9cb20a919e45cdd4b805edd3277f778ebcef3578fd65e33e64615118aec4ab590_640.jpg",
+    alt: "mountain, forest, plateau, step, apartment, nature, colors, paddy field",
+    credit: "chienba",
+  },
+  delta: {
+    url: "https://pixabay.com/get/gb1a6367a013f769b8ca7cee21eb736df66dd838386e8e1e4b7ddbc354774c7f5ff8a867c571e73c7bbae3deb3af263d6_640.jpg",
+    alt: "map, land, egypt, geography, satellite image, satellite map, map, egypt, egypt, egypt, egypt, egypt",
+    credit: "WikiImages",
+  },
+  tundra: {
+    url: "https://pixabay.com/get/g0d3a76210e960249313b501d258c691ba3e0e74408ac69808fbcff4990751e3fd35edbf424bbfab123789a96af39c2ae165aa1691b04c78402c3e3da700d4d2a_640.jpg",
+    alt: "stream, brook, field, meadow, mountain, tundra, grassland, grass, nature, outdoors, scenic, countryside, hills, valley, scenery, landscape, stream, stream, stream, stream, stream, brook, tundra, tundra, tundra, valley",
+    credit: "hunt-er",
+  },
+  pintura: {
+    url: "https://pixabay.com/get/gdd7b5dfe27730562127641cdf0aec9a0f0c9059715b8a162fd2bcd04f592ca06e471c9e6ac2988cca69a7cf4809a78746ea0430bcbf82238968bce0baba132d9_640.jpg",
+    alt: "hands, paint, brush, painting, watercolor, watercolor painting, paintbrush, artist, canvas, art, paper, arts, painter, artistic, creative, creativity, painting, painting, painting, painting, painting, artist, artist, artist, art, painter, painter",
+    credit: "Pexels",
+  },
+  escultura: {
+    url: "https://pixabay.com/get/g3150729068cf71399babb89e44b6e264cac91aedb7a1a03556e32d0e8fc1c3d80f1d1ff7c95605626e3e88d2e32ba1edb8cf17db4db445134fee08648a81a6d7_640.jpg",
+    alt: "buddha, buddha purnima, statue, pond, sculpture, nature, buddha statue, buddha sculpture, stone sculpture, buddhism, water, artwork, art installation, china, religion, meditation, zen, asia",
+    credit: "Mr1900",
+  },
+  exposición: {
+    url: "https://pixabay.com/get/g658899f406a8194b3daa4f204653d2ed25754c189cf429efcdb46f6b1cbf760379b0735c54e4c71f756654b53800cbbbf189b693a93f23a2a053004412036b4a_640.jpg",
+    alt: "visitors, exhibition, see, museum, art, gallery, exhibition, museum, museum, museum, museum, museum, gallery, gallery, gallery",
+    credit: "Peggy_Marco",
+  },
+  galería: {
+    url: "https://pixabay.com/get/g9b473c1f436484609497c42d5499b8757b3be852f6f0cc4d28006ec0a4fc9cf074b284664e3410ed56327da242bb8ea766aaadce418c68eba475d885e412cc69_640.jpg",
+    alt: "great gallery, monument, architecture, construction, venaria reale, gallery, palazzo, building, royal palace, construction, construction, construction, construction, gallery, gallery, gallery, gallery, gallery, royal palace, royal palace",
+    credit: "nonmisvegliate",
+  },
+  "obra maestra": {
+    url: "https://pixabay.com/get/g1438db911897a34a4d1a4e3e2620a14813835dfc2446faa523fec4b20356062cbbf402e73d9eafc93fdb09cc9fb198ada66f1ffa97d832967f8d542f4474df5e_640.jpg",
+    alt: "taj mahal, india, agra, travel, tomb, architecture, masterpiece, taj mahal, taj mahal, taj mahal, taj mahal, taj mahal, masterpiece",
+    credit: "JungR",
+  },
+  tradición: {
+    url: "https://pixabay.com/get/gd78251cad7f691da6a42788f8d7fe8549776c2f3ad1cef0df442ff68eb9c4175e43b338db2ffe5574bceb770859ddf3f8f4b0b6c7137c8bc483a6095c8bdff98_640.jpg",
+    alt: "gamelan, tradition, culture, traditional, java, indonesia, surakarta, ethnicity, kingdom, music, gamelan, indonesia, indonesia, indonesia, indonesia, indonesia",
+    credit: "Dedy_Timbul",
+  },
+  patrimonio: {
+    url: "https://pixabay.com/get/g38084888b5e223f7bb0ef4fd2e0d4484b6be828731a87a6f4b1c235752e252be909b27f668344094fc6768be6dc6a9251fc2c31c54dd9a9153dd8dd0564c86fe_640.jpg",
+    alt: "petra, ad deir, world heritage, sand stone, antique, historically, archaeology, nature, monument, culture, ad dayr, history, stones, sky, tourism, travel, vacations, middle east, jordan",
+    credit: "ChiemSeherin",
+  },
+  festival: {
+    url: "https://pixabay.com/get/gf3bc257849213636eda0ce2618f8da81cad407fa278a20a717e8d2619401d4145f327c4931ac97d49651136b02cd1d0eab8136168d45a9c695ea4c50b7be684a_640.jpg",
+    alt: "fireworks, free wallpaper, people, festival, night, mac wallpaper, full hd wallpaper, beautiful wallpaper, cool backgrounds, 4k wallpaper 1920x1080, wallpaper, windows wallpaper, blue night, event, free background, 4k wallpaper, laptop wallpaper, wallpaper 4k, wallpaper hd, desktop backgrounds, party, hd wallpaper, tourism, tourist",
+    credit: "RahulPandit",
+  },
+  actuación: {
+    url: "https://pixabay.com/get/g0e4cda1e9e154f066b2b2707a9ea8985fd48525527207960ec344a8aeeb296d9737c4ae2bfa9014cd6c825c462859c4c_640.jpg",
+    alt: "guitar, music, man, play, strum, chord, acoustic, musical, instrument, musical instrument, sound, musician, guitarist, song, performance, street performance, outdoors, guitar, guitar, guitar, guitar, guitar, music, music, music, song, song, song, song",
+    credit: "RyanMcGuire",
+  },
+  artesanía: {
+    url: "https://pixabay.com/get/geea4f2d5a69518f94956c44f6c4afeca9e7dd08e59af22cbb35aef6ebea3f0a12b3454c12f589b67a84c4e5c825efa1596d3f9c1154f0016030b9ac1507f5a98_640.jpg",
+    alt: "pottery, clay, craft, hobby, potters, ceramic, pottery, pottery, pottery, pottery, pottery, clay, clay, clay, clay, craft, ceramic, ceramic, ceramic, ceramic",
+    credit: "wal_172619",
+  },
+  escultor: {
+    url: "https://pixabay.com/get/gc4a2d2e4d0cccc0f0b23d46cabef9157b460e61d3f2f2be111c879af045b90609fe16bca58fcc299ca92c0dd34f8b5a7616373022ff42e64de245568195c78d7_640.jpg",
+    alt: "artist, studio, art, sculpture, workshop, old man, tools, sculptor, creation, exhibit, working, professional, artwork, artist, artist, artist, artist, artist, studio, sculpture, workshop, old man, sculptor, sculptor, creation",
+    credit: "ottawagraphics",
+  },
 };
