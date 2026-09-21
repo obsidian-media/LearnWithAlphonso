@@ -351,7 +351,9 @@ function LessonPage() {
           {q.type === "mc" && q.audioText && (
             <button
               type="button"
-              onClick={() => speak(q.audioText!, course === "fr" ? "fr-FR" : "en-US")}
+              onClick={() =>
+                speak(q.audioText!, course === "fr" ? "fr-FR" : course === "es" ? "es-ES" : "en-US")
+              }
               className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
             >
               🔊 Play audio

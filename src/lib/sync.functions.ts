@@ -31,7 +31,7 @@ import {
  * split Duolingo-style apps use: one streak, one set of hearts, but a
  * separate level/XP per course.
  */
-const courseSchema = z.enum(["en", "fr"]).default("en");
+const courseSchema = z.enum(["en", "fr", "es"]).default("en");
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);

@@ -63,6 +63,7 @@ struct ReviewQueueView: View {
                     Picker("Course", selection: $course) {
                         Text("English").tag(Course.english)
                         Text("Français").tag(Course.french)
+                        Text("Español").tag(Course.spanish)
                     }
                     .pickerStyle(.segmented)
                     .disabled(!queue.isEmpty && idx < queue.count)
@@ -275,6 +276,7 @@ private extension Course {
         switch self {
         case .english: return "en"
         case .french: return "fr"
+        case .spanish: return "es"
         }
     }
 
@@ -282,6 +284,7 @@ private extension Course {
         switch self {
         case .english: return "en-US"
         case .french: return "fr-FR"
+        case .spanish: return "es-ES"
         }
     }
 }

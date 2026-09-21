@@ -3,6 +3,7 @@ import { LEVELS } from "@/data/levels";
 import { SCENARIOS } from "@/data/scenarios";
 import { PLACEMENT_QUESTIONS } from "@/data/placement";
 import { PLACEMENT_QUESTIONS_FR } from "@/data/placement-fr";
+import { PLACEMENT_QUESTIONS_ES } from "@/data/placement-es";
 import {
   buildFullSeed,
   buildLessonRows,
@@ -124,17 +125,19 @@ describe("buildScenarioRows", () => {
 });
 
 describe("buildFullSeed", () => {
-  it("assembles every table's rows for both courses with consistent totals", () => {
+  it("assembles every table's rows for all courses with consistent totals", () => {
     const seed = buildFullSeed();
     expect(seed.levels.length).toBe(LEVELS.length);
-    expect(seed.units.length).toBe(buildUnitRows("en").length + buildUnitRows("fr").length);
-    expect(seed.lessons.length).toBe(534 + 500);
+    expect(seed.units.length).toBe(
+      buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
+    );
+    expect(seed.lessons.length).toBe(534 + 500 + 110);
     expect(seed.questions.length).toBe(
-      buildQuestionRows("en").length + buildQuestionRows("fr").length,
+      buildQuestionRows("en").length + buildQuestionRows("fr").length + buildQuestionRows("es").length,
     );
     expect(seed.vocabImages.length).toBe(buildVocabImageRows().length);
     expect(seed.placementQuestions.length).toBe(
-      PLACEMENT_QUESTIONS.length + PLACEMENT_QUESTIONS_FR.length,
+      PLACEMENT_QUESTIONS.length + PLACEMENT_QUESTIONS_FR.length + PLACEMENT_QUESTIONS_ES.length,
     );
     expect(seed.scenarios.length).toBe(SCENARIOS.length);
   });

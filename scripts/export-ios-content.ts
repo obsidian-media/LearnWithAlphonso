@@ -42,6 +42,7 @@ function writeJSON(filename: string, data: unknown) {
 
 writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
+writeJSON("curriculum-es.json", buildIOSContentBundle("es"));
 writeJSON("scenarios.json", buildIOSScenariosBundle());
 writeJSON("achievements.json", buildIOSAchievementsBundle());
 writeJSON("vocab-images.json", buildIOSVocabImagesBundle());

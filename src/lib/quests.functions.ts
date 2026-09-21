@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { QUESTS, currentWeekStart } from "../data/quests";
 
-const courseSchema = z.enum(["en", "fr"]).default("en");
+const courseSchema = z.enum(["en", "fr", "es"]).default("en");
 
 export type QuestStatus = {
   questId: string;

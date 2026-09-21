@@ -57,7 +57,7 @@ export const getInviterProfile = createServerFn({ method: "GET" })
     return profile ? { displayName: profile.display_name, avatarSeed: profile.avatar_seed } : null;
   });
 
-const courseSchema = z.enum(["en", "fr"]).default("en");
+const courseSchema = z.enum(["en", "fr", "es"]).default("en");
 
 export type DuelStatus = "pending" | "active" | "declined" | "completed";
 

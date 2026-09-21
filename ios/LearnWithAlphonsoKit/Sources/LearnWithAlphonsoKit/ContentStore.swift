@@ -3,11 +3,13 @@ import Foundation
 public enum Course: Sendable {
     case english
     case french
+    case spanish
 
     fileprivate var resourceName: String {
         switch self {
         case .english: return "curriculum-en"
         case .french: return "curriculum-fr"
+        case .spanish: return "curriculum-es"
         }
     }
 }
@@ -28,6 +30,7 @@ public enum ContentStoreError: Error {
 public final class ContentStore {
     public let english: ContentBundle
     public let french: ContentBundle
+    public let spanish: ContentBundle
     public let scenarios: [Scenario]
     public let achievements: [Achievement]
     /// Vocab-term (lowercased) -> stock-photo lookup, same keying
@@ -38,6 +41,7 @@ public final class ContentStore {
     public init() throws {
         english = try Self.loadBundle(for: .english)
         french = try Self.loadBundle(for: .french)
+        spanish = try Self.loadBundle(for: .spanish)
         scenarios = try Self.loadScenarios()
         achievements = try Self.loadJSON([Achievement].self, resource: "achievements")
         vocabImages = try Self.loadJSON([String: VocabImageRef].self, resource: "vocab-images")
@@ -47,6 +51,7 @@ public final class ContentStore {
         switch course {
         case .english: return english
         case .french: return french
+        case .spanish: return spanish
         }
     }
 

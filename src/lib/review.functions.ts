@@ -5,7 +5,7 @@ import { computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
 import { getCourse } from "../data/courses";
 
 /** Same course-awareness pattern as sync.functions.ts. */
-const courseSchema = z.enum(["en", "fr"]).default("en");
+const courseSchema = z.enum(["en", "fr", "es"]).default("en");
 
 export type ReviewItem = {
   itemKey: string;

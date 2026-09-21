@@ -29,6 +29,7 @@ let package = Package(
             resources: [
                 .copy("Resources/curriculum-en.json"),
                 .copy("Resources/curriculum-fr.json"),
+                .copy("Resources/curriculum-es.json"),
                 .copy("Resources/scenarios.json"),
                 .copy("Resources/achievements.json"),
                 .copy("Resources/vocab-images.json"),

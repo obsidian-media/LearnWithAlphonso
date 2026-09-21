@@ -41,6 +41,7 @@ struct LessonBrowserView: View {
                     Picker("Course", selection: $course) {
                         Text("English").tag(Course.english)
                         Text("Français").tag(Course.french)
+                        Text("Español").tag(Course.spanish)
                     }
                     .pickerStyle(.segmented)
                 }

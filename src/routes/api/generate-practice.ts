@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCourse, type Course } from "@/data/courses";
+import { getCourse, isCourse, type Course } from "@/data/courses";
 import type { Question } from "@/data/curriculum";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
@@ -37,7 +37,8 @@ export const Route = createFileRoute("/api/generate-practice")({
           return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
         const lessonId = typeof body.lessonId === "string" ? body.lessonId : "";
-        const course: Course = body.course === "fr" ? "fr" : "en";
+        const rawCourse = body.course ?? "";
+        const course: Course = isCourse(rawCourse) ? rawCourse : "en";
         if (!lessonId) return Response.json({ error: "Missing lessonId" }, { status: 400 });
 
         const found = getCourse(course).findLesson(lessonId);

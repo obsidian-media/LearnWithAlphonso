@@ -281,6 +281,7 @@ private extension Course {
         switch self {
         case .english: return "en"
         case .french: return "fr"
+        case .spanish: return "es"
         }
     }
 
@@ -288,6 +289,7 @@ private extension Course {
         switch self {
         case .english: return "en-US"
         case .french: return "fr-FR"
+        case .spanish: return "es-ES"
         }
     }
 }
