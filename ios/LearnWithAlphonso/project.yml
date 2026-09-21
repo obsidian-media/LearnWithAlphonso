@@ -87,12 +87,6 @@ targets:
           # code-signing-specific attributes like PROVISIONING_PROFILE_SPECIFIER
           # don't reliably resolve that way, unlike plain string settings.
           PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_PROVISIONING_PROFILE_UUID"
-        Debug:
-          # RevenueCat Test Store key -- local/simulator builds only. Safe
-          # to commit (RevenueCat's public-key model, same as the Supabase
-          # keys above) and deliberately never used for a Release archive.
-          INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
-        Release:
           # Resolved from the REVENUECAT_API_KEY repo secret at archive time
           # (ios-release.yml passes it as an xcodebuild command-line
           # setting, same pattern as DEVELOPMENT_TEAM). Empty until that
@@ -103,3 +97,8 @@ targets:
           # crashed every tester's launch on 2026-09-19 (RevenueCat's SDK
           # asserts on it deliberately).
           INFOPLIST_KEY_RCApiKey: "$(REVENUECAT_API_KEY)"
+        Debug:
+          # RevenueCat Test Store key -- local/simulator builds only. Safe
+          # to commit (RevenueCat's public-key model, same as the Supabase
+          # keys above) and deliberately never used for a Release archive.
+          INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
