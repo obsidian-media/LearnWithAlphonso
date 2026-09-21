@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
+import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -58,7 +59,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           sourceDescription: "English-learner conversation",
           transcriptMessages: messages,
           nvidiaApiKey: key,
-          nvidiaModel: process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct",
+          nvidiaModel: resolveNvidiaChatModel(),
           dedupCheck: async (label) => {
             const { data: existing } = await supabase
               .from("review_items")

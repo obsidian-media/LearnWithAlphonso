@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getCourse, type Course } from "@/data/courses";
 import type { Question } from "@/data/curriculum";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
+import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
 /**
  * V3 pkg 4b: "generative sentence content." On-demand extra practice for
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/api/generate-practice")({
           topic: `${found.lesson.title} -- ${found.lesson.subtitle}`,
           sampleQuestions,
           nvidiaApiKey: key,
-          nvidiaModel: process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct",
+          nvidiaModel: resolveNvidiaChatModel(),
         });
 
         return Response.json({ questions });

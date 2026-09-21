@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
+import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -51,12 +52,9 @@ export const Route = createFileRoute("/api/chat")({
 
         // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
         // OpenAI-compatible, so only the URL/key/model name change from the
-        // Lovable Gateway. Model id is env-configurable — NVIDIA's catalog
-        // shifts (e.g. the Nemotron-70B chat NIM was deprecated on
-        // build.nvidia.com) — verify the default below is still live at
-        // https://build.nvidia.com before relying on it, adjust via
-        // NVIDIA_CHAT_MODEL if not.
-        const model = process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct";
+        // Lovable Gateway. See nvidia-chat-model.server.ts for why the
+        // model id lives there instead of being hardcoded here.
+        const model = resolveNvidiaChatModel();
         const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {

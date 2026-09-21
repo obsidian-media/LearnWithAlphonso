@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import type { Json } from "@/integrations/supabase/types";
 import { ACHIEVEMENTS } from "../data/achievements";
 import type { LeagueTier } from "../data/achievements";
@@ -487,7 +488,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             sourceDescription: "set of English lesson questions the learner got wrong",
             transcriptMessages,
             nvidiaApiKey: process.env.NVIDIA_API_KEY,
-            nvidiaModel: process.env.NVIDIA_CHAT_MODEL || "meta/llama-3.1-70b-instruct",
+            nvidiaModel: resolveNvidiaChatModel(),
             dedupCheck: async (label) => {
               const { data: existing } = await supabase
                 .from("review_items")
