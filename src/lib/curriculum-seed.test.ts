@@ -133,7 +133,9 @@ describe("buildFullSeed", () => {
     );
     expect(seed.lessons.length).toBe(534 + 500 + 110);
     expect(seed.questions.length).toBe(
-      buildQuestionRows("en").length + buildQuestionRows("fr").length + buildQuestionRows("es").length,
+      buildQuestionRows("en").length +
+        buildQuestionRows("fr").length +
+        buildQuestionRows("es").length,
     );
     expect(seed.vocabImages.length).toBe(buildVocabImageRows().length);
     expect(seed.placementQuestions.length).toBe(
