@@ -1,0 +1,48 @@
+name: Manage iOS Certificates
+
+# Manual only -- a diagnostic/fix tool for the "maximum number of
+# certificates" error found 2026-09-21 (see docs/BACKLOG.md and
+# scripts/manage-ios-certificates.ts's doc comment for the full
+# root-cause writeup). List first to see current state, then revoke
+# a specific certificate ID if the account is at its cap.
+#
+# Uses the same APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64
+# secrets already configured for ios-release.yml -- no new credentials.
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "list certificates, or revoke one by ID"
+        required: true
+        type: choice
+        options:
+          - list
+          - revoke
+      certificate_id:
+        description: "Certificate ID to revoke (only used when job=revoke, from a prior 'list' run)"
+        required: false
+        type: string
+
+jobs:
+  manage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: List certificates
+        if: github.event.inputs.job == 'list'
+        run: bunx tsx scripts/manage-ios-certificates.ts list
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+      - name: Revoke certificate
+        if: github.event.inputs.job == 'revoke'
+        run: bunx tsx scripts/manage-ios-certificates.ts revoke "${{ github.event.inputs.certificate_id }}"
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
