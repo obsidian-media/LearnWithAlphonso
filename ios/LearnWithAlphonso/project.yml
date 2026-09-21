@@ -64,6 +64,23 @@ targets:
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
       configs:
+        Release:
+          # Manual signing, scoped to just this app target -- NOT set as a
+          # global xcodebuild command-line override, because Xcode's
+          # implicit signing targets for SPM package products (RevenueCat,
+          # LearnWithAlphonsoKit) categorically reject provisioning
+          # profiles ("does not support provisioning profiles"). A
+          # command-line CODE_SIGN_STYLE=Manual/PROVISIONING_PROFILE_SPECIFIER
+          # override applies to every target in the build including those,
+          # breaking the archive -- found live 2026-09-21. Scoping it here
+          # instead (only this target's build settings) leaves the
+          # packages on Automatic, which they require.
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          # $(PROFILE_UUID) resolves from the xcodebuild command-line
+          # override in ios-release.yml's Archive step (same pattern this
+          # file already uses for $(REVENUECAT_API_KEY) below).
+          PROVISIONING_PROFILE_SPECIFIER: "$(PROFILE_UUID)"
         Debug:
           # RevenueCat Test Store key -- local/simulator builds only. Safe
           # to commit (RevenueCat's public-key model, same as the Supabase
