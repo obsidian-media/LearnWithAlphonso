@@ -246,6 +246,286 @@ heart|corazón
 skin|piel
 face|cara`,
   },
+  {
+    id: "esa1p9",
+    title: "Numbers 21-100",
+    subtitle: "Bigger numbers",
+    kind: "pair",
+    prompt: 'How do you say the number "%s" in Spanish?',
+    note: "Numbers by tens from twenty-one to one hundred.",
+    data: `twenty-one|veintiuno
+twenty-five|veinticinco
+thirty|treinta
+thirty-five|treinta y cinco
+forty|cuarenta
+forty-five|cuarenta y cinco
+fifty|cincuenta
+sixty|sesenta
+seventy|setenta
+eighty|ochenta
+ninety|noventa
+one hundred|cien
+two hundred|doscientos
+five hundred|quinientos
+one thousand|mil`,
+  },
+  {
+    id: "esa1p10",
+    title: "Animals",
+    subtitle: "Pets and wildlife",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common pets and wild animals.",
+    data: `dog|perro
+cat|gato
+bird|pájaro
+fish|pez
+horse|caballo
+cow|vaca
+pig|cerdo
+sheep|oveja
+lion|león
+tiger|tigre
+bear|oso
+elephant|elefante
+monkey|mono
+rabbit|conejo
+mouse|ratón
+snake|serpiente
+frog|rana
+turtle|tortuga
+duck|pato
+wolf|lobo`,
+  },
+  {
+    id: "esa1p11",
+    title: "Weather",
+    subtitle: "Talking about the weather",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Weather-related vocabulary.",
+    data: `sun|sol
+rain|lluvia
+snow|nieve
+wind|viento
+cloud|nube
+storm|tormenta
+fog|niebla
+ice|hielo
+heat|calor
+cold|frío
+humidity|humedad
+rainbow|arcoíris
+thunder|trueno
+lightning|relámpago
+temperature|temperatura`,
+  },
+  {
+    id: "esa1p12",
+    title: "Clothing",
+    subtitle: "What are you wearing?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common clothing items.",
+    data: `shirt|camisa
+t-shirt|camiseta
+pants|pantalones
+dress|vestido
+skirt|falda
+jacket|chaqueta
+coat|abrigo
+shoes|zapatos
+socks|calcetines
+hat|sombrero
+gloves|guantes
+scarf|bufanda
+belt|cinturón
+sweater|suéter
+pajamas|pijama`,
+  },
+  {
+    id: "esa1p13",
+    title: "School & Classroom",
+    subtitle: "In the classroom",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "School and classroom objects.",
+    data: `school|escuela
+classroom|salón de clase
+teacher|maestro
+student|estudiante
+desk|escritorio
+notebook|cuaderno
+pencil|lápiz
+eraser|goma
+backpack|mochila
+blackboard|pizarra
+ruler|regla
+scissors|tijeras
+glue|pegamento
+homework|tarea
+exam|examen`,
+  },
+  {
+    id: "esa1p14",
+    title: "Professions",
+    subtitle: "What do you do?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common jobs and professions.",
+    data: `doctor|médico
+nurse|enfermero
+teacher|profesor
+lawyer|abogado
+engineer|ingeniero
+chef|cocinero
+police officer|policía
+firefighter|bombero
+farmer|granjero
+artist|artista
+musician|músico
+writer|escritor
+driver|conductor
+waiter|camarero
+scientist|científico`,
+  },
+  {
+    id: "esa1p15",
+    title: "Opposites",
+    subtitle: "Qualities and textures",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common opposite adjectives.",
+    data: `hot|caliente
+cold|frío
+sweet|dulce
+salty|salado
+hard|duro
+soft|blando
+clean|limpio
+dirty|sucio
+full|lleno
+empty|vacío
+open|abierto
+closed|cerrado
+wet|mojado
+dry|seco
+heavy|pesado
+light (weight)|ligero
+strong|fuerte
+weak|débil
+loud|ruidoso
+quiet|silencioso`,
+  },
+  {
+    id: "esa1p16",
+    title: "Emotions",
+    subtitle: "How do you feel?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common emotion words.",
+    data: `happy|contento
+sad|triste
+angry|enojado
+scared|asustado
+surprised|sorprendido
+bored|aburrido
+excited|emocionado
+nervous|nervioso
+calm|tranquilo
+in love|enamorado
+tired|cansado
+worried|preocupado
+proud|orgulloso
+jealous|celoso
+confused|confundido`,
+  },
+  {
+    id: "esa1p17",
+    title: "Question Words",
+    subtitle: "Asking questions",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "The core interrogative words.",
+    data: `what|qué
+who|quién
+when|cuándo
+where|dónde
+why|por qué
+how|cómo
+which|cuál
+how much|cuánto
+how many|cuántos
+whose|de quién`,
+  },
+  {
+    id: "esa1p18",
+    title: "Telling Time",
+    subtitle: "What time is it?",
+    kind: "cloze",
+    note: "Basic time-telling expressions.",
+    data: `¿Qué hora ___?|es
+Es la ___ (one o'clock).|una
+Son las ___ (two o'clock).|dos
+Son las tres y ___ (half).|media
+Son las cuatro y ___ (quarter).|cuarto
+Es ___ (midnight).|medianoche
+Es ___ (noon).|mediodía
+Son las cinco en ___ (exactly).|punto
+Son las seis menos ___ (quarter).|cuarto
+Llego a las siete de la ___ (morning).|mañana
+Ceno a las nueve de la ___ (night).|noche
+Trabajo por la ___ (afternoon).|tarde
+Son las ocho y ___ (ten minutes).|diez
+Llega a las once y ___ (twenty).|veinte
+El tren sale a la una y ___ (five).|cinco`,
+  },
+  {
+    id: "esa1p19",
+    title: "Basic Prepositions",
+    subtitle: "Where is it?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common location prepositions.",
+    data: `in|en
+on|sobre
+under|debajo de
+next to|al lado de
+between|entre
+in front of|delante de
+behind|detrás de
+near|cerca de
+far from|lejos de
+inside|dentro de
+outside|fuera de
+above|encima de
+around|alrededor de
+through|a través de
+against|contra`,
+  },
+  {
+    id: "esa1p20",
+    title: "Nature & Outdoors",
+    subtitle: "The world outside",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Basic nature vocabulary.",
+    data: `sun|sol
+moon|luna
+star|estrella
+sky|cielo
+tree|árbol
+flower|flor
+grass|hierba
+sea|mar
+sand|arena
+rock|roca
+lake|lago
+island|isla
+leaf|hoja
+mountain|montaña
+beach|playa`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -488,6 +768,273 @@ photograph|fotografía
 garden|jardín
 to fish|pescar
 to camp|acampar`,
+  },
+  {
+    id: "esa2p9",
+    title: "Weather Expressions",
+    subtitle: "hacer, estar, and weather",
+    kind: "cloze",
+    note: "Common weather expressions using hacer/estar/haber.",
+    data: `___ calor hoy.|Hace
+___ frío en invierno.|Hace
+___ mucho viento.|Hace
+___ sol esta tarde.|Hace
+Está ___ (raining) ahora.|lloviendo
+Está ___ (snowing) en las montañas.|nevando
+Está muy ___ (cloudy) hoy.|nublado
+___ niebla esta mañana.|Hay
+___ buen tiempo hoy.|Hace
+___ mal tiempo este fin de semana.|Hace
+La temperatura ___ (is) de veinte grados.|es
+___ humedad hoy.|Hay
+En verano ___ mucho calor.|hace
+En invierno ___ mucho frío.|hace
+A veces ___ tormentas fuertes.|hay`,
+  },
+  {
+    id: "esa2p10",
+    title: "Restaurant Phrases",
+    subtitle: "Ordering food",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common restaurant phrases.",
+    data: `I would like...|Quisiera...
+Could I have the menu?|¿Me da el menú?
+What do you recommend?|¿Qué me recomienda?
+I'm allergic to...|Soy alérgico a...
+The check, please|La cuenta, por favor
+Is service included?|¿Está incluido el servicio?
+Table for two, please|Mesa para dos, por favor
+I'll have the same|Yo quiero lo mismo
+It was delicious|Estaba delicioso
+Can I get this to go?|¿Me lo da para llevar?
+Do you have vegetarian options?|¿Tienen opciones vegetarianas?
+Enjoy your meal|Buen provecho
+Is this dish spicy?|¿Este plato es picante?
+Water, please|Agua, por favor
+Nothing else, thanks|Nada más, gracias`,
+  },
+  {
+    id: "esa2p11",
+    title: "At the Doctor",
+    subtitle: "Health and illness",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Health and doctor's-visit vocabulary.",
+    data: `doctor's office|consultorio
+appointment|cita
+symptom|síntoma
+fever|fiebre
+headache|dolor de cabeza
+cough|tos
+medicine|medicina
+prescription|receta
+pharmacy|farmacia
+sick|enfermo
+healthy|sano
+injury|lesión
+allergy|alergia
+nurse|enfermera
+patient|paciente`,
+  },
+  {
+    id: "esa2p12",
+    title: "Clothing & Shopping",
+    subtitle: "Trying things on",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Clothes-shopping phrases and vocabulary.",
+    data: `fitting room|probador
+Can I try this on?|¿Puedo probarme esto?
+Do you have a smaller size?|¿Tiene una talla más pequeña?
+Do you have a bigger size?|¿Tiene una talla más grande?
+It fits well|Me queda bien
+It's too tight|Me queda apretado
+It's too loose|Me queda flojo
+What size are you?|¿Qué talla usa?
+I'm just looking|Solo estoy mirando
+Where are the fitting rooms?|¿Dónde están los probadores?
+Does it come in another color?|¿Viene en otro color?
+I'll take it|Me lo llevo
+How much does it cost?|¿Cuánto cuesta?
+It's on sale|Está de rebaja
+Do you accept cards?|¿Aceptan tarjetas?`,
+  },
+  {
+    id: "esa2p13",
+    title: "Places in the City II",
+    subtitle: "More around town",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "More places found around a city.",
+    data: `post office|oficina de correos
+pharmacy|farmacia
+supermarket|supermercado
+library|biblioteca
+museum|museo
+theater|teatro
+gym|gimnasio
+hotel|hotel
+restaurant|restaurante
+bakery|panadería
+bookstore|librería
+gas station|gasolinera
+police station|comisaría
+town hall|ayuntamiento
+courthouse|palacio de justicia`,
+  },
+  {
+    id: "esa2p14",
+    title: "Technology & Devices",
+    subtitle: "Everyday tech vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common technology vocabulary.",
+    data: `phone|teléfono
+computer|computadora
+internet|internet
+email|correo electrónico
+password|contraseña
+screen|pantalla
+keyboard|teclado
+mouse (device)|ratón
+application|aplicación
+charger|cargador
+battery|batería
+wifi|wifi
+file|archivo
+video call|videollamada
+download|descarga`,
+  },
+  {
+    id: "esa2p15",
+    title: "Frequency Adverbs",
+    subtitle: "How often?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Adverbs of frequency for describing routines.",
+    data: `always|siempre
+usually|generalmente
+often|a menudo
+sometimes|a veces
+rarely|raramente
+never|nunca
+every day|todos los días
+once a week|una vez a la semana
+from time to time|de vez en cuando
+again|otra vez`,
+  },
+  {
+    id: "esa2p16",
+    title: "Ir a + Infinitive",
+    subtitle: "Near future tense",
+    kind: "cloze",
+    note: '"Ir a + infinitive" for talking about the near future.',
+    data: `Yo ___ (ir) a estudiar esta noche.|voy
+Tú ___ (ir) a llamar a tu madre.|vas
+Ella ___ (ir) a viajar mañana.|va
+Nosotros ___ (ir) a comer pronto.|vamos
+Ellos ___ (ir) a llegar tarde.|van
+Yo voy a ___ (comprar) un regalo.|comprar
+Tú vas a ___ (visitar) a tus abuelos.|visitar
+Ella va a ___ (empezar) un nuevo trabajo.|empezar
+Nosotros vamos a ___ (ver) una película.|ver
+Ellos van a ___ (hacer) una fiesta.|hacer
+¿___ (ir) tú a venir con nosotros?|Vas
+Yo no ___ (ir) a poder ir.|voy
+Nosotros vamos a ___ (salir) temprano.|salir
+Ella va a ___ (llamar) más tarde.|llamar
+Ellos van a ___ (estudiar) juntos.|estudiar`,
+  },
+  {
+    id: "esa2p17",
+    title: "Possessive Adjectives",
+    subtitle: "my, your, his, her...",
+    kind: "cloze",
+    note: "Possessive adjectives agreeing with the noun they modify.",
+    data: `Este es ___ (my) libro.|mi
+Esta es ___ (your, informal) casa.|tu
+Ese es ___ (his) coche.|su
+Esa es ___ (her) mochila.|su
+Estos son ___ (our) amigos.|nuestros
+Esas son ___ (their) ideas.|sus
+___ (my) padres viven aquí.|Mis
+¿Dónde está ___ (your, formal) oficina?|su
+___ (our) casa es grande.|Nuestra
+Ellos perdieron ___ (their) llaves.|sus
+Ella olvidó ___ (her) teléfono.|su
+Nosotros amamos ___ (our) ciudad.|nuestra
+¿Son ___ (your, informal) estas llaves?|tuyas
+Ese perro es ___ (mine).|mío
+Esa idea fue ___ (his).|suya`,
+  },
+  {
+    id: "esa2p18",
+    title: "Common Irregular Verbs",
+    subtitle: "Yo-form irregulars",
+    kind: "cloze",
+    note: 'Verbs with an irregular "yo" form in the present tense.',
+    data: `Yo ___ (poner) la mesa todos los días.|pongo
+Yo ___ (salir) de casa a las ocho.|salgo
+Yo ___ (traer) el postre a la fiesta.|traigo
+Yo ___ (conducir) al trabajo.|conduzco
+Yo ___ (conocer) a mucha gente aquí.|conozco
+Yo ___ (caer) bien a mis compañeros.|caigo
+Yo ___ (valer) la pena para este equipo.|valgo
+Yo ___ (hacer) ejercicio cada mañana.|hago
+Yo ___ (dar) consejos a mis amigos.|doy
+Yo ___ (ver) las noticias por la noche.|veo`,
+  },
+  {
+    id: "esa2p19",
+    title: "Months & Seasons",
+    subtitle: "The calendar",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Months of the year and the four seasons.",
+    data: `January|enero
+February|febrero
+March|marzo
+April|abril
+May|mayo
+June|junio
+July|julio
+August|agosto
+September|septiembre
+October|octubre
+November|noviembre
+December|diciembre
+spring|primavera
+summer|verano
+autumn|otoño
+winter|invierno
+season|estación
+calendar|calendario
+century|siglo
+decade|década`,
+  },
+  {
+    id: "esa2p20",
+    title: "Weekend Activities",
+    subtitle: "What do you do on weekends?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common weekend and leisure activities.",
+    data: `to relax|relajarse
+to sleep in|dormir hasta tarde
+to go shopping|ir de compras
+to visit friends|visitar a amigos
+to watch a movie|ver una película
+to go for a walk|dar un paseo
+to clean the house|limpiar la casa
+to go to the gym|ir al gimnasio
+to have a picnic|hacer un picnic
+to go out to eat|salir a comer
+to sleep late|acostarse tarde
+to do nothing|no hacer nada
+to read a book|leer un libro
+to cook a big meal|cocinar una gran comida
+to go to the beach|ir a la playa`,
   },
 ];
 
@@ -736,6 +1283,281 @@ customs|aduana
 tourist|turista
 map|mapa`,
   },
+  {
+    id: "esb1p9",
+    title: "Commands",
+    subtitle: "Affirmative and negative tú commands",
+    kind: "cloze",
+    note: "Informal (tú) imperative mood, affirmative and negative.",
+    data: `¡___ (hablar) más despacio!|Habla
+¡No ___ (hablar) tan rápido!|hables
+¡___ (comer) tus verduras!|Come
+¡No ___ (comer) tanto azúcar!|comas
+¡___ (abrir) la ventana!|Abre
+¡No ___ (abrir) la puerta!|abras
+¡___ (venir) aquí!|Ven
+¡No ___ (venir) tarde!|vengas
+¡___ (hacer) tu tarea!|Haz
+¡No ___ (hacer) ruido!|hagas
+¡___ (salir) de aquí!|Sal
+¡No ___ (salir) sin abrigo!|salgas
+¡___ (ser) paciente!|Sé
+¡No ___ (ser) grosero!|seas
+¡___ (poner) la mesa!|Pon
+¡No ___ (poner) los pies en la mesa!|pongas
+¡___ (decir) la verdad!|Di
+¡No ___ (decir) mentiras!|digas
+¡___ (ir) a tu cuarto!|Ve
+¡No ___ (ir) solo!|vayas`,
+  },
+  {
+    id: "esb1p10",
+    title: "Direct Object Pronouns",
+    subtitle: "lo, la, los, las",
+    kind: "cloze",
+    note: "Direct object pronouns replacing a previously mentioned noun.",
+    data: `¿Compraste el pan? Sí, ___ compré.|lo
+¿Viste la película? Sí, ___ vi.|la
+¿Tienes los boletos? Sí, ___ tengo.|los
+¿Leíste las noticias? Sí, ___ leí.|las
+¿Quieres el café? Sí, ___ quiero.|lo
+¿Conoces a María? Sí, ___ conozco.|la
+¿Compraste los zapatos? No, no ___ compré.|los
+¿Escribiste las cartas? No, no ___ escribí.|las
+¿Puedes ayudarme? Sí, puedo ayudar___.|te
+¿Me llamas mañana? Sí, ___ llamo.|te
+¿Nos ves el sábado? Sí, ___ veo.|los
+¿Me esperas aquí? Sí, ___ espero.|te
+¿Trajiste las llaves? Sí, ___ traje.|las
+¿Compraste el regalo? No, no ___ compré.|lo
+¿Terminaste la tarea? Sí, ya ___ terminé.|la`,
+  },
+  {
+    id: "esb1p11",
+    title: "Gustar & Indirect Object Pronouns",
+    subtitle: "me/te/le/nos/les gusta",
+    kind: "cloze",
+    note: '"Gustar" and similar verbs (encantar, molestar, interesar) with indirect object pronouns.',
+    data: `A mí ___ gusta el chocolate.|me
+A ti ___ gusta bailar.|te
+A ella ___ gusta leer.|le
+A nosotros ___ gusta viajar.|nos
+A ellos ___ gustan los deportes.|les
+A mí ___ encanta esta canción.|me
+A ti ___ molesta el ruido.|te
+A él ___ interesa la historia.|le
+A nosotras ___ gustan las películas.|nos
+A ustedes ___ importa el medio ambiente.|les
+A mí me ___ (gustar) mucho los perros.|gustan
+A ella le ___ (encantar) la música clásica.|encanta
+A nosotros nos ___ (faltar) tiempo.|falta
+A ellos les ___ (quedar) poco dinero.|queda
+A ti te ___ (doler) la cabeza.|duele`,
+  },
+  {
+    id: "esb1p12",
+    title: "Preterite vs. Imperfect",
+    subtitle: "Choosing the right past tense",
+    kind: "cloze",
+    note: "Preterite (completed action) vs. imperfect (ongoing/habitual past).",
+    data: `Cuando era niño, ___ (jugar) todos los días.|jugaba
+Ayer ___ (jugar) al fútbol con mis amigos.|jugué
+Mientras yo ___ (cocinar), sonó el teléfono.|cocinaba
+Ella ___ (llamar) a las tres en punto.|llamó
+De pequeño, nosotros ___ (vivir) en el campo.|vivíamos
+El año pasado, nosotros ___ (mudarnos) a la ciudad.|nos mudamos
+Todos los veranos, ellos ___ (visitar) a sus abuelos.|visitaban
+El verano pasado, ellos ___ (viajar) a Perú.|viajaron
+Hacía sol cuando ___ (salir) de casa.|salí
+Eran las diez cuando ___ (empezar) la película.|empezó
+Yo ___ (tener) diez años en esa foto.|tenía
+De repente, ___ (escuchar) un ruido extraño.|escuché
+Todos los días ella ___ (caminar) al trabajo.|caminaba
+Anoche nosotros ___ (cenar) en un restaurante nuevo.|cenamos
+Mientras ellos ___ (hablar), yo escribía notas.|hablaban`,
+  },
+  {
+    id: "esb1p13",
+    title: "Work & Professions",
+    subtitle: "Talking about your job",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Workplace and profession-related vocabulary.",
+    data: `job|trabajo
+career|carrera
+company|empresa
+office|oficina
+boss|jefe
+colleague|colega
+salary|salario
+meeting|reunión
+schedule|horario
+resume|currículum
+interview|entrevista
+contract|contrato
+promotion|ascenso
+deadline|fecha límite
+to hire|contratar`,
+  },
+  {
+    id: "esb1p14",
+    title: "Expressions with Tener",
+    subtitle: "tener que, tener ganas de...",
+    kind: "cloze",
+    note: '"Tener" idiomatic expressions common in everyday Spanish.',
+    data: `Yo ___ (tener) que estudiar hoy.|tengo
+Ella ___ (tener) ganas de bailar.|tiene
+Nosotros ___ (tener) miedo de las alturas.|tenemos
+Ellos ___ (tener) prisa esta mañana.|tienen
+Tú ___ (tener) razón, como siempre.|tienes
+Yo ___ (tener) sueño después de comer.|tengo
+Él ___ (tener) éxito en su trabajo.|tiene
+Nosotras ___ (tener) suerte hoy.|tenemos
+Ellas ___ (tener) cuidado con el perro.|tienen
+Yo ___ (tener) veinte años.|tengo
+Tú ___ (tener) que llegar a tiempo.|tienes
+Ella ___ (tener) ganas de un café.|tiene
+Nosotros ___ (tener) que salir ya.|tenemos
+Ellos ___ (tener) frío en invierno.|tienen
+Yo ___ (tener) calor en verano.|tengo`,
+  },
+  {
+    id: "esb1p15",
+    title: "Technology Verbs",
+    subtitle: "Using devices and the internet",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Verbs for using technology and the internet.",
+    data: `to upload|subir
+to download|descargar
+to browse|navegar
+to search|buscar
+to click|hacer clic
+to save (a file)|guardar
+to delete|eliminar
+to share|compartir
+to install|instalar
+to update|actualizar
+to connect|conectar
+to log in|iniciar sesión
+to log out|cerrar sesión
+to charge (a device)|cargar
+to back up (data)|respaldar`,
+  },
+  {
+    id: "esb1p16",
+    title: "Household Chores",
+    subtitle: "hay que / se debe",
+    kind: "cloze",
+    note: "Impersonal expressions of obligation for household tasks.",
+    data: `___ que lavar los platos.|Hay
+___ que limpiar la casa.|Hay
+Se ___ (deber) sacar la basura.|debe
+Se ___ (deber) barrer el piso.|debe
+Hay que ___ (planchar) la ropa.|planchar
+Hay que ___ (pasar) la aspiradora.|pasar
+Se debe ___ (ordenar) el cuarto.|ordenar
+Hay que ___ (lavar) la ropa hoy.|lavar
+Se debe ___ (regar) las plantas.|regar
+Hay que ___ (hacer) las camas.|hacer
+Se debe ___ (sacudir) los muebles.|sacudir
+Hay que ___ (fregar) el baño.|fregar
+Hay que ___ (organizar) el armario.|organizar
+Se debe ___ (limpiar) las ventanas.|limpiar
+Hay que ___ (tender) la ropa.|tender`,
+  },
+  {
+    id: "esb1p17",
+    title: "Sports & Competition",
+    subtitle: "Games and matches",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Sports and competition vocabulary.",
+    data: `team|equipo
+match|partido
+champion|campeón
+championship|campeonato
+score|marcador
+goal|gol
+referee|árbitro
+coach|entrenador
+victory|victoria
+defeat|derrota
+tie|empate
+stadium|estadio
+uniform|uniforme
+medal|medalla
+tournament|torneo`,
+  },
+  {
+    id: "esb1p18",
+    title: "Making Plans & Invitations",
+    subtitle: "Suggesting and agreeing",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Phrases for making plans and invitations.",
+    data: `Do you want to go out?|¿Quieres salir?
+What are you doing this weekend?|¿Qué haces este fin de semana?
+Want to grab a coffee?|¿Quieres tomar un café?
+I'm free on Saturday|Estoy libre el sábado
+Sounds good|Suena bien
+I can't, I'm busy|No puedo, estoy ocupado
+Maybe another time|Quizás otro día
+Let's meet at eight|Nos vemos a las ocho
+Where should we meet?|¿Dónde nos encontramos?
+I'll pick you up|Paso por ti
+Count me in|Cuenta conmigo
+I'll think about it|Lo voy a pensar
+See you then|Nos vemos entonces
+I'll text you|Te escribo un mensaje
+Let's do it another day|Lo hacemos otro día`,
+  },
+  {
+    id: "esb1p19",
+    title: "Life Events",
+    subtitle: "Milestones",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Vocabulary for major life events.",
+    data: `birth|nacimiento
+childhood|infancia
+graduation|graduación
+wedding|boda
+engagement|compromiso
+divorce|divorcio
+retirement|jubilación
+funeral|funeral
+anniversary|aniversario
+pregnancy|embarazo
+in-laws|suegros
+stepmother|madrastra
+stepfather|padrastro
+widow|viuda
+adulthood|adultez`,
+  },
+  {
+    id: "esb1p20",
+    title: "Emotional Reactions",
+    subtitle: "Reacting to news",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Phrases for reacting emotionally to news or events.",
+    data: `What great news!|¡Qué buena noticia!
+I'm so sorry|Lo siento mucho
+Congratulations!|¡Felicidades!
+That's terrible|Eso es terrible
+I can't believe it|No puedo creerlo
+How exciting!|¡Qué emoción!
+That's a relief|Qué alivio
+I'm speechless|Me quedé sin palabras
+What a shame|Qué lástima
+I'm thrilled for you|Estoy feliz por ti
+That worries me|Eso me preocupa
+It doesn't matter|No importa
+That makes sense|Eso tiene sentido
+I'm proud of you|Estoy orgulloso de ti
+What a surprise!|¡Qué sorpresa!`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -978,6 +1800,275 @@ Nosotros estamos ___ (esperar) el autobús.|esperando
 Ellos están ___ (cantar) una canción.|cantando
 Tú estás ___ (bailar) muy bien.|bailando`,
   },
+  {
+    id: "esb2p9",
+    title: "Subjunctive with Impersonal Expressions",
+    subtitle: "es posible que, es necesario que...",
+    kind: "cloze",
+    note: "Subjunctive triggered by impersonal expressions of necessity/possibility.",
+    data: `Es posible que ___ (llover) mañana.|llueva
+Es necesario que tú ___ (terminar) el informe.|termines
+Es importante que nosotros ___ (llegar) a tiempo.|lleguemos
+Es probable que ellos ___ (venir) tarde.|vengan
+Es raro que ella no ___ (contestar) el teléfono.|conteste
+Es mejor que ustedes ___ (descansar) hoy.|descansen
+Es dudoso que él ___ (saber) la respuesta.|sepa
+Es una lástima que tú no ___ (poder) venir.|puedas
+Es fácil que nosotros ___ (perder) el tren.|perdamos
+Es urgente que ella ___ (hacer) la llamada.|haga
+Es normal que los niños ___ (tener) miedo.|tengan
+Es difícil que él ___ (cambiar) de opinión.|cambie
+Es esencial que nosotros ___ (revisar) el contrato.|revisemos
+Es conveniente que tú ___ (llamar) primero.|llames
+Es lógico que ellos ___ (dudar) al principio.|duden`,
+  },
+  {
+    id: "esb2p10",
+    title: "Subjunctive with Emotion",
+    subtitle: "me alegra que, es una lástima que...",
+    kind: "cloze",
+    note: "Subjunctive triggered by expressions of emotion.",
+    data: `Me alegra que tú ___ (estar) aquí.|estés
+Me sorprende que ella ___ (saber) la verdad.|sepa
+Siento que ustedes ___ (tener) que esperar.|tengan
+Nos encanta que nosotros ___ (poder) viajar juntos.|podamos
+Le molesta que él ___ (llegar) tarde siempre.|llegue
+Es triste que ellos ___ (irse) tan pronto.|se vayan
+Me preocupa que tú no ___ (dormir) bien.|duermas
+Me gusta que ella ___ (ser) tan honesta.|sea
+Nos alegra que ustedes ___ (venir) a la boda.|vengan
+Le sorprende que nosotros ___ (vivir) tan lejos.|vivamos
+Siento mucho que tú ___ (perder) tu trabajo.|hayas perdido
+Me encanta que ellos ___ (celebrar) juntos.|celebren
+Es una pena que ella no ___ (poder) venir.|pueda
+Nos molesta que él siempre ___ (llegar) tarde.|llegue
+Le alegra que nosotros ___ (estar) bien.|estemos`,
+  },
+  {
+    id: "esb2p11",
+    title: "Por vs. Para",
+    subtitle: "Two prepositions, different uses",
+    kind: "cloze",
+    note: '"Por" (cause, exchange, duration, means) vs. "para" (purpose, destination, deadline).',
+    data: `Este regalo es ___ ti.|para
+Caminamos ___ el parque.|por
+Pagué diez dólares ___ el libro.|por
+Salimos ___ Madrid mañana.|para
+Estudio ___ ser doctor.|para
+Gracias ___ tu ayuda.|por
+Necesito esto ___ el lunes.|para
+Viajamos ___ tren.|por
+Trabajó ___ tres horas.|por
+Este café es ___ mi madre.|para
+Lo hice por amor, no ___ dinero.|por
+Llámame ___ teléfono.|por
+Estudiamos ___ la noche.|por
+Este proyecto es ___ el viernes.|para
+Vamos ___ la playa este fin de semana.|para`,
+  },
+  {
+    id: "esb2p12",
+    title: "Indefinite & Negative Words",
+    subtitle: "algo/nada, alguien/nadie...",
+    kind: "cloze",
+    note: "Indefinite and negative pronouns/adverbs.",
+    data: `¿Hay ___ (something) en la caja? No, no hay nada.|algo
+¿Vino ___ (someone) a la fiesta? No, no vino nadie.|alguien
+¿Tienes ___ (some) plan para hoy? No tengo ninguno.|algún
+Nunca como carne; ella ___ (neither) la come.|tampoco
+Yo también voy; ella ___ (also) va.|también
+No tengo ningún problema con eso.|ningún
+¿___ (always) llegas tarde?|Siempre
+No, ___ (never) llego tarde.|nunca
+Hay ___ (some) estudiantes en la clase.|algunos
+No hay ___ (no) razón para preocuparse.|ninguna
+¿Conoces a ___ (someone) aquí?|alguien
+No conozco a ___ (no one) en esta ciudad.|nadie
+¿Compraste ___ (something) en la tienda?|algo
+No compré ___ (nothing) hoy.|nada
+¿Tienes ___ (any) pregunta?|alguna`,
+  },
+  {
+    id: "esb2p13",
+    title: "Passive 'Se' Constructions",
+    subtitle: "se vende, se dice, se necesita",
+    kind: "cloze",
+    note: "Impersonal/passive 'se' constructions common in signs and announcements.",
+    data: `Se ___ (vender) esta casa.|vende
+Se ___ (decir) que va a llover.|dice
+Se ___ (necesitar) empleados.|necesitan
+Se ___ (hablar) español aquí.|habla
+Se ___ (prohibir) fumar.|prohíbe
+Se ___ (buscar) camarero con experiencia.|busca
+Se ___ (alquilar) apartamentos.|alquilan
+Se ___ (poder) pagar con tarjeta.|puede
+Se ___ (permitir) el acceso solo a socios.|permite
+Se ___ (recomendar) llegar temprano.|recomienda
+Se ___ (abrir) a las nueve.|abre
+Se ___ (cerrar) los domingos.|cierra
+Se ___ (aceptar) reservas online.|aceptan
+Se ___ (ofrecer) descuentos a estudiantes.|ofrecen
+Se ___ (requerir) identificación.|requiere`,
+  },
+  {
+    id: "esb2p14",
+    title: "Si-Clauses (Hypothetical Present)",
+    subtitle: "If I had..., I would...",
+    kind: "cloze",
+    note: "Type-2 conditional: si + imperfect subjunctive, + conditional.",
+    data: `Si yo ___ (tener) más dinero, viajaría más.|tuviera
+Si ella ___ (estudiar) más, aprobaría el examen.|estudiara
+Si nosotros ___ (vivir) cerca, nos veríamos más.|viviéramos
+Si ellos ___ (saber) la verdad, actuarían diferente.|supieran
+Si tú ___ (poder), ¿qué harías?|pudieras
+Si yo ___ (ser) rico, ayudaría a más gente.|fuera
+Si ella ___ (querer), podría cambiar de trabajo.|quisiera
+Si nosotros ___ (tener) tiempo, iríamos contigo.|tuviéramos
+Si tú me ___ (decir) la verdad, te ayudaría.|dijeras
+Si ellos ___ (venir) antes, verían el atardecer.|vinieran
+Si yo ___ (hacer) más ejercicio, me sentiría mejor.|hiciera
+Si ella ___ (estar) aquí, todo sería más fácil.|estuviera
+Si nosotros ___ (poder), te ayudaríamos ahora mismo.|pudiéramos
+Si tú ___ (querer), podríamos hablar hoy.|quisieras
+Si ellos ___ (ser) más pacientes, entenderían mejor.|fueran`,
+  },
+  {
+    id: "esb2p15",
+    title: "Business & Economy",
+    subtitle: "The world of work and money",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Business and economics vocabulary.",
+    data: `economy|economía
+market|mercado
+investment|inversión
+profit|ganancia
+loss|pérdida
+budget|presupuesto
+tax|impuesto
+inflation|inflación
+export|exportación
+import|importación
+supply|oferta
+demand|demanda
+stock (shares)|acción
+debt|deuda
+loan|préstamo`,
+  },
+  {
+    id: "esb2p16",
+    title: "Politics & Government",
+    subtitle: "Civic vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Politics and government vocabulary.",
+    data: `government|gobierno
+president|presidente
+election|elección
+vote|voto
+citizen|ciudadano
+law|ley
+congress|congreso
+democracy|democracia
+policy|política
+minister|ministro
+campaign|campaña
+constitution|constitución
+senate|senado
+mayor|alcalde
+referendum|referéndum`,
+  },
+  {
+    id: "esb2p17",
+    title: "Media & Journalism",
+    subtitle: "News and reporting",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Media and journalism vocabulary.",
+    data: `news|noticias
+journalist|periodista
+newspaper|periódico
+headline|titular
+article|artículo
+interview|entrevista
+broadcast|transmisión
+report|reportaje
+editor|editor
+press conference|rueda de prensa
+source (of info)|fuente
+censorship|censura
+publish|publicar
+audience|audiencia
+subscription|suscripción`,
+  },
+  {
+    id: "esb2p18",
+    title: "Art & Culture",
+    subtitle: "The arts",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Art and culture vocabulary.",
+    data: `painting|pintura
+sculpture|escultura
+exhibition|exposición
+museum|museo
+gallery|galería
+artist|artista
+masterpiece|obra maestra
+canvas|lienzo
+brush|pincel
+tradition|tradición
+heritage|patrimonio
+festival|festival
+performance|actuación
+craft|artesanía
+sculptor|escultor`,
+  },
+  {
+    id: "esb2p19",
+    title: "Health & Medicine (Advanced)",
+    subtitle: "Medical vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Advanced health and medical vocabulary.",
+    data: `diagnosis|diagnóstico
+treatment|tratamiento
+surgery|cirugía
+vaccine|vacuna
+infection|infección
+chronic|crónico
+symptom|síntoma
+recovery|recuperación
+specialist|especialista
+emergency room|sala de urgencias
+blood pressure|presión arterial
+side effect|efecto secundario
+immune system|sistema inmunológico
+prescription|receta médica
+anesthesia|anestesia`,
+  },
+  {
+    id: "esb2p20",
+    title: "Probability Expressions",
+    subtitle: "deber de, poder ser que, a lo mejor",
+    kind: "cloze",
+    note: "Expressions of probability and conjecture.",
+    data: `___ de estar en casa ya.|Debe
+A lo ___, llega tarde.|mejor
+Puede ___ que no venga.|ser
+___ (probably) esté ocupado.|Probablemente
+Seguramente ___ (haber) mucho tráfico.|hay
+Tal ___ (vez) mañana llueva.|vez
+Es posible que ___ (perderse).|se haya perdido
+Quizás ella ya lo ___ (saber).|sepa
+A lo mejor no ___ (querer) venir.|quiere
+Debe de ___ (ser) muy tarde ya.|ser
+Igual ___ (llegar) antes que nosotros.|llega
+Puede que ___ (tener) razón.|tenga
+Lo más seguro es que ___ (estar) en camino.|esté
+A lo mejor no ___ (recordar) la cita.|recuerda
+Seguro que ya ___ (terminar).|terminó`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -1215,6 +2306,280 @@ Ella observó: "Algo cambió." → Ella observó que algo ___.|había cambiado
 Él aseguró: "Todo está bien." → Él aseguró que todo ___ bien.|estaba
 Ellos repitieron: "No cambiaremos de opinión." → Ellos repitieron que no ___ de opinión.|cambiarían
 Ella subrayó: "Este punto es clave." → Ella subrayó que ese punto ___ clave.|era`,
+  },
+  {
+    id: "esc1p9",
+    title: "Subjunctive After Conjunctions",
+    subtitle: "para que, a menos que, con tal de que",
+    kind: "cloze",
+    note: "Subjunctive obligatorily triggered by certain conjunctions.",
+    data: `Te lo explico para que lo ___ (entender).|entiendas
+No saldremos a menos que ___ (dejar) de llover.|deje
+Te ayudo con tal de que ___ (terminar) a tiempo.|termines
+Estudia mucho antes de que ___ (ser) el examen.|sea
+Llámame en cuanto ___ (llegar).|llegues
+Iré aunque ___ (llover).|llueva
+Trabajamos sin que nadie nos ___ (decir) qué hacer.|diga
+Ahorra dinero para que ___ (poder) viajar.|puedas
+No firmes hasta que lo ___ (leer) todo.|leas
+Vendrá a menos que ___ (surgir) un problema.|surja
+Hazlo bien de modo que no ___ (haber) errores.|haya
+Espera aquí hasta que yo ___ (volver).|vuelva
+No lo firmes sin que un abogado lo ___ (revisar).|revise
+Seguiremos adelante siempre que ustedes ___ (estar) de acuerdo.|estén
+Avísame cuando ___ (saber) los resultados.|sepas`,
+  },
+  {
+    id: "esc1p10",
+    title: "Past Hypotheticals",
+    subtitle: "If I had had..., I would have...",
+    kind: "cloze",
+    note: "Type-3 conditional: si + pluperfect subjunctive, + conditional perfect.",
+    data: `Si yo ___ (saber) la verdad, habría actuado diferente.|hubiera sabido
+Si ella ___ (estudiar) más, habría aprobado.|hubiera estudiado
+Si nosotros ___ (salir) antes, no habríamos llegado tarde.|hubiéramos salido
+Si ellos ___ (venir), habrían visto el espectáculo.|hubieran venido
+Si tú me lo ___ (decir), te habría ayudado.|hubieras dicho
+Si yo ___ (tener) más tiempo, habría terminado el proyecto.|hubiera tenido
+Si ella ___ (llamar), habríamos ido a recogerla.|hubiera llamado
+Si nosotros lo ___ (saber) antes, habríamos cambiado los planes.|hubiéramos sabido
+Si ellos ___ (escuchar), habrían entendido mejor.|hubieran escuchado
+Si tú ___ (llegar) a tiempo, no te habrías perdido nada.|hubieras llegado
+Si yo ___ (poder), te habría acompañado.|hubiera podido
+Si ella ___ (querer), habría venido con nosotros.|hubiera querido
+Si nosotros ___ (revisar) el contrato, no habría problemas.|hubiéramos revisado
+Si ellos ___ (avisar) antes, habríamos estado listos.|hubieran avisado
+Si tú ___ (insistir), habríamos cambiado de plan.|hubieras insistido`,
+  },
+  {
+    id: "esc1p11",
+    title: "Confusable Verb Pairs",
+    subtitle: "saber/conocer, pedir/preguntar, llevar/traer",
+    kind: "pair",
+    prompt: 'Which verb best fits "%s"?',
+    note: "Classic confusable Spanish verb pairs for English speakers.",
+    data: `to know a fact|saber
+to know/be familiar with a person or place|conocer
+to ask for something|pedir
+to ask a question|preguntar
+to take/carry something (away)|llevar
+to bring something (here)|traer
+to leave (depart)|salir
+to leave something behind|dejar
+to play an instrument|tocar
+to play a game/sport|jugar
+to look at|mirar
+to look for|buscar
+to become (permanent change)|convertirse en
+to become (temporary/emotional)|ponerse
+to realize|darse cuenta de`,
+  },
+  {
+    id: "esc1p12",
+    title: "Business & Negotiation",
+    subtitle: "Formal negotiation vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Business negotiation vocabulary.",
+    data: `agreement|acuerdo
+proposal|propuesta
+counteroffer|contraoferta
+stakeholder|parte interesada
+merger|fusión
+acquisition|adquisición
+deadline|plazo
+terms and conditions|términos y condiciones
+liability|responsabilidad
+shareholder|accionista
+compromise|compromiso
+negotiation|negociación
+partnership|sociedad
+revenue|ingresos
+clause|cláusula`,
+  },
+  {
+    id: "esc1p13",
+    title: "Diplomatic Correspondence",
+    subtitle: "Formal letter phrases",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Phrases typical of formal/diplomatic written correspondence.",
+    data: `Dear Sir or Madam|Estimado señor o señora
+I am writing to inform you|Le escribo para informarle
+With reference to your letter|En referencia a su carta
+Please do not hesitate to contact me|No dude en contactarme
+I look forward to hearing from you|Quedo a la espera de su respuesta
+Yours faithfully|Le saluda atentamente
+Enclosed please find|Adjunto encontrará
+We regret to inform you|Lamentamos informarle
+Thank you for your attention to this matter|Gracias por su atención a este asunto
+It would be greatly appreciated|Se agradecería enormemente
+In accordance with|De acuerdo con
+On behalf of|En nombre de
+Please find attached the requested documents|Adjunto encontrará los documentos solicitados
+We would like to schedule a meeting|Nos gustaría programar una reunión
+Kind regards|Saludos cordiales`,
+  },
+  {
+    id: "esc1p14",
+    title: "Literary & Narrative Devices",
+    subtitle: "Talking about storytelling",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Vocabulary for discussing literature and narrative technique.",
+    data: `plot|trama
+character|personaje
+narrator|narrador
+setting|ambientación
+theme|tema
+metaphor|metáfora
+symbolism|simbolismo
+irony|ironía
+foreshadowing|presagio
+climax|clímax
+protagonist|protagonista
+antagonist|antagonista
+tone|tono
+point of view|punto de vista
+flashback|flashback`,
+  },
+  {
+    id: "esc1p15",
+    title: "Philosophy & Abstract Concepts",
+    subtitle: "Abstract thought vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Philosophical and abstract-concept vocabulary.",
+    data: `existence|existencia
+consciousness|conciencia
+truth|verdad
+ethics|ética
+freedom|libertad
+reality|realidad
+knowledge|conocimiento
+belief|creencia
+reason|razón
+doubt|duda
+identity|identidad
+meaning|sentido
+virtue|virtud
+justice|justicia
+morality|moralidad`,
+  },
+  {
+    id: "esc1p16",
+    title: "Science & Technology (Advanced)",
+    subtitle: "Scientific vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Advanced science and technology vocabulary.",
+    data: `hypothesis|hipótesis
+experiment|experimento
+data|datos
+algorithm|algoritmo
+artificial intelligence|inteligencia artificial
+molecule|molécula
+gene|gen
+theory|teoría
+innovation|innovación
+sustainability|sostenibilidad
+quantum|cuántico
+neural network|red neuronal
+evidence|evidencia
+breakthrough|avance
+simulation|simulación`,
+  },
+  {
+    id: "esc1p17",
+    title: "Word Formation",
+    subtitle: "Prefixes and suffixes",
+    kind: "pair",
+    prompt: 'What does the word "%s" mean?',
+    note: "Common Spanish prefixes/suffixes and the words they form.",
+    data: `rápidamente|quickly
+felizmente|happily
+reconstruir|to rebuild
+deshacer|to undo
+inaceptable|unacceptable
+imposible|impossible
+educación|education
+organización|organization
+panadería|bakery
+librería|bookstore
+inútil|useless
+prehistórico|prehistoric
+subestimar|to underestimate
+sobrevivir|to survive
+imposibilidad|impossibility`,
+  },
+  {
+    id: "esc1p18",
+    title: "Advanced Idiomatic Expressions II",
+    subtitle: "More sophisticated sayings",
+    kind: "pair",
+    prompt: 'What does "%s" mean?',
+    note: "More advanced idiomatic expressions for fluent Spanish.",
+    data: `costar Dios y ayuda|to be extremely difficult
+no tener nombre|to be outrageous
+írsele el santo al cielo|to completely forget something
+ponerse las botas|to indulge oneself
+estar en su salsa|to be in one's element
+no pegar ojo|to not sleep a wink
+tomar el toro por los cuernos|to take the bull by the horns
+importar un bledo|to not care at all
+estar hecho polvo|to be exhausted
+dar gato por liebre|to deceive someone with a substitute
+no tener abuela|to be shamelessly self-praising
+ser el pan de cada día|to be a daily occurrence
+tirar la toalla|to give up
+írsele la mano|to overdo it
+poner los puntos sobre las íes|to spell things out precisely`,
+  },
+  {
+    id: "esc1p19",
+    title: "Register Shifting II",
+    subtitle: "Colloquial to formal, part 2",
+    kind: "pair",
+    prompt: 'What is the more formal way to say "%s"?',
+    note: "More colloquial-to-formal register pairs.",
+    data: `to fix (colloquial: arreglar)|reparar
+to buy (colloquial: comprar algo barato)|adquirir
+kid (colloquial: chaval)|joven
+boss (colloquial: jefe)|superior
+to fire someone (colloquial: echar)|despedir
+to hire (colloquial: coger a alguien)|contratar
+to talk (colloquial: charlar)|conversar
+money (colloquial: pasta)|dinero
+job (colloquial: curro)|empleo
+house (colloquial: casa)|vivienda
+car (colloquial: coche viejo)|vehículo
+to eat (colloquial: comer rápido)|almorzar
+to sleep (colloquial: sobar)|descansar
+friend (colloquial: colega)|compañero
+to leave (colloquial: pirarse)|marcharse`,
+  },
+  {
+    id: "esc1p20",
+    title: "Advanced Discourse Markers II",
+    subtitle: "Even more sophisticated connectors",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Further advanced discourse markers for academic/formal Spanish.",
+    data: `to that end|con ese fin
+in other words|dicho de otra manera
+more specifically|más concretamente
+broadly speaking|en términos generales
+as previously mentioned|como se mencionó anteriormente
+it follows that|de ello se desprende que
+against this backdrop|en este contexto
+on closer inspection|tras un análisis más detallado
+all else being equal|si todo lo demás permanece igual
+in the absence of|en ausencia de
+as a case in point|como caso ilustrativo
+in due course|a su debido tiempo
+with this in mind|con esto en mente
+insofar as possible|en la medida de lo posible
+by the same token|de igual modo`,
   },
 ];
 

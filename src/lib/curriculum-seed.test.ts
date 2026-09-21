@@ -131,7 +131,7 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    expect(seed.lessons.length).toBe(534 + 500 + 177);
+    expect(seed.lessons.length).toBe(534 + 500 + 358);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +
