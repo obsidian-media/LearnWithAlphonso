@@ -1,10 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { useServerFn } from "@tanstack/react-start";
-import { scorePlacement } from "../../data/placement";
+import {
+  groupByBand,
+  nextAdaptiveBand,
+  PLACEMENT_ORDER,
+  scorePlacement,
+  type PlacementQuestion,
+} from "../../data/placement";
 import { getCourse } from "../../data/courses";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
@@ -18,7 +24,8 @@ export const Route = createFileRoute("/_authenticated/placement")({
       { title: "Placement Test — Alphonso" },
       {
         name: "description",
-        content: "A 15-question check that places you at the right CEFR level, from A1 to C1.",
+        content:
+          "An adaptive check (up to 15 questions) that places you at the right CEFR level, from A1 to C1.",
       },
       { property: "og:title", content: "Placement Test — Alphonso" },
       { property: "og:description", content: "Find your English level in two minutes." },
@@ -28,58 +35,129 @@ export const Route = createFileRoute("/_authenticated/placement")({
   }),
 });
 
+const EMPTY_CORRECT: Record<Level, number> = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 };
+
+type Session = {
+  bandPool: Record<Level, PlacementQuestion[]>;
+  /** Questions actually decided-on so far, in display order -- grows band by band as the test adapts. */
+  shown: PlacementQuestion[];
+  /** PLACEMENT_ORDER index of the band currently being tested. */
+  bandIdx: number;
+  /** Index into `shown` where the current band's questions begin. */
+  bandStart: number;
+};
+
+/**
+ * Always starts at A1 and walks forward to the first band that actually
+ * has candidate questions -- defensive only (every shipped course has
+ * content in every band), so a thin/misconfigured pool degrades to "test
+ * whatever exists" instead of crashing on an undefined first question.
+ */
+function startSession(pool: PlacementQuestion[]): Session {
+  const bandPool = groupByBand(pool);
+  let idx = 0;
+  while (idx < PLACEMENT_ORDER.length && (bandPool[PLACEMENT_ORDER[idx]!]?.length ?? 0) === 0) {
+    idx++;
+  }
+  const shown = idx < PLACEMENT_ORDER.length ? bandPool[PLACEMENT_ORDER[idx]!]! : [];
+  return { bandPool, shown, bandIdx: idx, bandStart: 0 };
+}
+
 function PlacementPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
   const course = useProgress((s) => s.course);
-  const [PLACEMENT_QUESTIONS, setQuestionSet] = useState(() => getCourse(course).pickPlacement());
+  const [session, setSession] = useState<Session>(() =>
+    startSession(getCourse(course).pickPlacement()),
+  );
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
+  const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
+  // Imperative tally across band transitions, not itself rendered --
+  // see submit()'s band-complete branch and nextAdaptiveBand in placement.ts.
+  const correctByLevelRef = useRef<Record<Level, number>>({ ...EMPTY_CORRECT });
+
+  function resetSession() {
+    correctByLevelRef.current = { ...EMPTY_CORRECT };
+    setSession(startSession(getCourse(course).pickPlacement()));
+    setAnswers([]);
+    setStep(0);
+    setPicked(null);
+    setDone(false);
+    setSkippedLevels([]);
+  }
 
   useEffect(() => {
-    setQuestionSet(getCourse(course).pickPlacement());
+    resetSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course]);
 
-  const q = PLACEMENT_QUESTIONS[step];
-  const total = PLACEMENT_QUESTIONS.length;
+  const q = session.shown[step];
+  const total = session.shown.length;
 
   const result = useMemo(() => {
     if (!done) return null;
-    const byLevel = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 } as Record<Level, number>;
-    PLACEMENT_QUESTIONS.forEach((item, i) => {
-      if (answers[i]) byLevel[item.level] += 1;
+    return scorePlacement(correctByLevelRef.current);
+  }, [done]);
+
+  function finish(finalAnswers: boolean[]) {
+    setDone(true);
+    const { level } = scorePlacement(correctByLevelRef.current);
+    const score = finalAnswers.filter(Boolean).length;
+    setPlacementLocal({
+      cefrLevel: level,
+      placementLevel: level,
+      placementScore: score,
+      placementTakenAt: new Date().toISOString(),
     });
-    return scorePlacement(byLevel);
-  }, [done, answers, PLACEMENT_QUESTIONS]);
+    void savePlacement({ data: { level, score, course } }).catch(() => {});
+  }
 
   function submit() {
-    if (picked === null) return;
+    if (picked === null || !q) return;
     const next = [...answers, picked === q.answer];
     setPicked(null);
-    if (step + 1 >= total) {
-      setAnswers(next);
-      setDone(true);
-      const byLevel = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 } as Record<Level, number>;
-      PLACEMENT_QUESTIONS.forEach((item, i) => {
-        if (next[i]) byLevel[item.level] += 1;
-      });
-      const { level } = scorePlacement(byLevel);
-      const score = next.filter(Boolean).length;
-      setPlacementLocal({
-        cefrLevel: level,
-        placementLevel: level,
-        placementScore: score,
-        placementTakenAt: new Date().toISOString(),
-      });
-      void savePlacement({ data: { level, score, course } }).catch(() => {});
-    } else {
-      setAnswers(next);
+    setAnswers(next);
+
+    const bandComplete = step + 1 === session.shown.length;
+    if (!bandComplete) {
       setStep(step + 1);
+      return;
     }
+
+    // This band just finished -- tally it and adaptively decide what
+    // comes next. See nextAdaptiveBand's doc comment (placement.ts) for
+    // the skip/stop rules.
+    const correctInBand = next.slice(session.bandStart).filter(Boolean).length;
+    correctByLevelRef.current[q.level] = correctInBand;
+
+    const decision = nextAdaptiveBand(session.bandPool, session.bandIdx, correctInBand);
+    if (decision.skipped) {
+      // Synthetic pass credit -- only ever granted when a real band lies
+      // beyond it too (nextAdaptiveBand's landingHasContent guard), so
+      // it's never the sole basis for the final result.
+      correctByLevelRef.current[decision.skipped] = 2;
+      setSkippedLevels((s) => [...s, decision.skipped!]);
+    }
+
+    const nextLevel = PLACEMENT_ORDER[decision.nextIdx];
+    const nextBandQs = !decision.stop && nextLevel ? session.bandPool[nextLevel] : [];
+    if (decision.stop || !nextBandQs || nextBandQs.length === 0) {
+      finish(next);
+      return;
+    }
+
+    setSession({
+      ...session,
+      shown: [...session.shown, ...nextBandQs],
+      bandIdx: decision.nextIdx,
+      bandStart: session.shown.length,
+    });
+    setStep(step + 1);
   }
 
   if (done && result) {
@@ -107,6 +185,11 @@ function PlacementPage() {
           <p className="tnum mt-4 text-xs text-ink-soft/70">
             {correct} of {total} correct
           </p>
+          {skippedLevels.length > 0 && (
+            <p className="mt-1.5 max-w-[280px] text-[11px] text-ink-soft/60">
+              Fast-tracked past {skippedLevels.join(", ")} after strong answers.
+            </p>
+          )}
           <button
             type="button"
             onClick={() => navigate({ to: "/learn" })}
@@ -116,13 +199,7 @@ function PlacementPage() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              setQuestionSet(getCourse(course).pickPlacement());
-              setAnswers([]);
-              setStep(0);
-              setPicked(null);
-              setDone(false);
-            }}
+            onClick={resetSession}
             className="mt-3 text-xs font-medium text-ink-soft underline underline-offset-4"
           >
             Retake the test
@@ -132,7 +209,38 @@ function PlacementPage() {
     );
   }
 
+  if (!q) {
+    // Defensive only -- see startSession's comment. Every shipped course
+    // has content in every band, so this path isn't expected to trigger.
+    return (
+      <LessonFrame>
+        <div className="flex flex-1 flex-col items-center justify-center px-7 text-center">
+          <p className="text-sm text-ink-soft/80">
+            No placement questions are available for this course right now.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/learn" })}
+            className="mt-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-surface"
+          >
+            Back to Learn
+          </button>
+        </div>
+      </LessonFrame>
+    );
+  }
+
   const pct = Math.round((step / total) * 100);
+  // Whether finishing this question is *guaranteed* regardless of its
+  // outcome -- i.e. no band beyond the current one has any content left,
+  // so even the "keep going" adaptive path would immediately finish()
+  // anyway. Anything else stays "Continue": the real next step (skip,
+  // advance, or stop) depends on whether this last answer is correct,
+  // which isn't known until it's submitted.
+  const noBandsAhead = PLACEMENT_ORDER.slice(session.bandIdx + 1).every(
+    (lvl) => (session.bandPool[lvl]?.length ?? 0) === 0,
+  );
+  const isFinalQuestion = step + 1 === total && noBandsAhead;
 
   return (
     <LessonFrame>
@@ -213,7 +321,7 @@ function PlacementPage() {
             onClick={submit}
             className="w-full rounded-full bg-moss px-6 py-3.5 text-sm font-semibold text-surface transition disabled:cursor-not-allowed disabled:bg-hairline disabled:text-ink-soft/50"
           >
-            {step + 1 === total ? "See my level" : "Continue"}
+            {isFinalQuestion ? "See my level" : "Continue"}
           </button>
           <p className="mt-3 text-center text-[11px] text-ink-soft/60">
             No hearts lost — this just finds your starting point.

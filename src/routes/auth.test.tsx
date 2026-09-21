@@ -129,7 +129,7 @@ describe("Auth page", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("signs up, defaulting the display name to the email's local part", async () => {
+  it("signs up, defaulting the display name to the email's local part, and confirms to /placement", async () => {
     signUp.mockResolvedValue({ data: { session: null }, error: null });
     const user = userEvent.setup();
     renderPage();
@@ -144,7 +144,9 @@ describe("Auth page", () => {
         email: "ada@example.com",
         password: "hunter22",
         options: {
-          emailRedirectTo: `${window.location.origin}/learn`,
+          // New signups confirm into the placement test, not a cold
+          // /learn -- see auth.tsx's signup branch (V4 pkg 3 onboarding).
+          emailRedirectTo: `${window.location.origin}/placement`,
           data: { display_name: "ada" },
         },
       }),
@@ -153,7 +155,7 @@ describe("Auth page", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("signs up and redirects immediately when a session is returned right away", async () => {
+  it("signs up and redirects to placement immediately when a session is returned right away", async () => {
     signUp.mockResolvedValue({ data: { session: { access_token: "tok" } }, error: null });
     const user = userEvent.setup();
     renderPage();
@@ -171,7 +173,31 @@ describe("Auth page", () => {
         }),
       ),
     );
-    expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true });
+    expect(navigate).toHaveBeenCalledWith({ to: "/placement", replace: true });
+  });
+
+  it("respects an explicit 'next' on signup instead of routing to placement", async () => {
+    searchParams = { next: "/profile" };
+    signUp.mockResolvedValue({ data: { session: { access_token: "tok" } }, error: null });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("button", { name: /Create an account/ }));
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "hunter22");
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+
+    await waitFor(() =>
+      expect(signUp).toHaveBeenCalledWith(
+        expect.objectContaining({
+          options: expect.objectContaining({
+            emailRedirectTo: `${window.location.origin}/profile`,
+          }),
+        }),
+      ),
+    );
+    await waitFor(() => expect(window.location.href).toBe("/profile"));
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("requests a password reset link and shows a notice", async () => {
