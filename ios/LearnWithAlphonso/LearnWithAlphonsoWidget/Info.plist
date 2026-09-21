@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Merged with the GENERATE_INFOPLIST_FILE-synthesized Info.plist
+	     (same Xcode 13+ merge pattern as ../Info.plist) -- NSExtension has
+	     no INFOPLIST_KEY_* equivalent, so it has to live in an actual
+	     plist file. This is the standard WidgetKit extension declaration:
+	     no NSExtensionPrincipalClass is needed since the widget's @main
+	     WidgetBundle (LearnWithAlphonsoWidgetBundle.swift) is discovered
+	     automatically. -->
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.widgetkit-extension</string>
+	</dict>
+</dict>
+</plist>

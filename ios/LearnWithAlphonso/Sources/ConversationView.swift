@@ -11,18 +11,28 @@ struct ConversationView: View {
 
     var body: some View {
         NavigationStack {
-            List(contentStore.scenarios) { scenario in
-                NavigationLink {
-                    ConversationSessionView(scenario: scenario, session: session)
-                } label: {
-                    HStack(spacing: 12) {
-                        Text(scenario.emoji).font(.largeTitle)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(scenario.title).font(.body.weight(.semibold))
-                            Text(scenario.blurb).font(.caption).foregroundStyle(.secondary)
+            List {
+                // V4 candidate #4: connected multi-scene campaigns,
+                // additive alongside the scenarios below -- see
+                // CampaignView.swift.
+                if !contentStore.campaigns.isEmpty {
+                    CampaignPickerSection(campaigns: contentStore.campaigns, session: session)
+                }
+                Section(contentStore.campaigns.isEmpty ? "" : "Scenarios") {
+                    ForEach(contentStore.scenarios) { scenario in
+                        NavigationLink {
+                            ConversationSessionView(scenario: scenario, session: session)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(scenario.emoji).font(.largeTitle)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(scenario.title).font(.body.weight(.semibold))
+                                    Text(scenario.blurb).font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.vertical, 4)
                         }
                     }
-                    .padding(.vertical, 4)
                 }
             }
             .navigationTitle("Practice speaking")

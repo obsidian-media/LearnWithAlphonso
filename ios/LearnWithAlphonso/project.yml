@@ -38,9 +38,24 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: Sources
+    # App Group shared with LearnWithAlphonsoWidget below -- the read-only
+    # app -> widget progress channel (WidgetSharing.swift, Kit;
+    # WidgetProgressPublisher.swift here). XcodeGen generates the
+    # .entitlements file itself from `properties` below (never hand-
+    # written/committed, same "generated, not source of truth" treatment
+    # as the .xcodeproj). See WidgetSharing.appGroupID's doc comment for
+    # the real Apple Developer portal registration this still needs before
+    # a signed build can use it.
+    entitlements:
+      path: LearnWithAlphonso.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.obsidianmedia.learnwithalphonso
     dependencies:
       - package: LearnWithAlphonsoKit
       - package: RevenueCat
+      - target: LearnWithAlphonsoWidget
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso
@@ -105,3 +120,60 @@ targets:
           # to commit (RevenueCat's public-key model, same as the Supabase
           # keys above) and deliberately never used for a Release archive.
           INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
+          # V4 candidate #2 (real push) -- Debug/Simulator only. NOT set
+          # for Release yet -- see LearnWithAlphonso-Release.entitlements'
+          # own comment for why (would break the manual-signing archive
+          # step before the Push Notifications capability actually exists
+          # on the App ID).
+          CODE_SIGN_ENTITLEMENTS: LearnWithAlphonso-Debug.entitlements
+
+  # WidgetKit extension -- V4 candidate #6 (home-screen streak widget).
+  # Reads a small progress snapshot LearnWithAlphonso (the app target)
+  # publishes into their shared App Group's UserDefaults suite; never
+  # writes back to it. See ios/LearnWithAlphonsoKit/Sources/
+  # LearnWithAlphonsoKit/WidgetSharing.swift for the shared wire format
+  # and identifiers, and WidgetProgressPublisher.swift (app target) for
+  # the publish side.
+  #
+  # Deliberately left on the global CODE_SIGN_STYLE: Automatic (base
+  # settings above) for both configs, unlike the app target's Release
+  # override -- this extension has no manual-signing config of its own
+  # (no second provisioning profile exists for its
+  # com.obsidianmedia.learnwithalphonso.widget bundle id yet). That's fine
+  # for ios-app-build (Simulator, CODE_SIGNING_ALLOWED=NO overrides
+  # everything). It is NOT fine for a real `xcodebuild archive` -- expect
+  # that to need a widget-specific provisioning profile + secret before it
+  # can succeed; do not "fix" this by touching ios-release.yml's signing
+  # logic, per that workflow's own header comment -- report the exact
+  # failure instead.
+  LearnWithAlphonsoWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: LearnWithAlphonsoWidget
+    entitlements:
+      path: LearnWithAlphonsoWidget/LearnWithAlphonsoWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.obsidianmedia.learnwithalphonso
+    dependencies:
+      - package: LearnWithAlphonsoKit
+      - sdk: SwiftUI.framework
+      - sdk: WidgetKit.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso.widget
+        GENERATE_INFOPLIST_FILE: true
+        # Merged with the synthesized Info.plist -- carries NSExtension,
+        # which has no INFOPLIST_KEY_ equivalent. See
+        # LearnWithAlphonsoWidget/Info.plist.
+        INFOPLIST_FILE: LearnWithAlphonsoWidget/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: "Streak"
+        # An embedded extension's version must match its containing app's
+        # (App Store Connect validation) -- kept in sync with the app
+        # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
+        # for now (no XcodeGen mechanism to derive one from the other).
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "7"
+        SKIP_INSTALL: true

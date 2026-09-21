@@ -1,0 +1,539 @@
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { LessonFrame } from "../../components/AppShell";
+import { getCampaign, type CampaignScene } from "../../data/campaigns";
+import { authHeaders } from "../../lib/auth-headers";
+import { readApiError } from "../../lib/read-api-error";
+import { fetchProgress } from "../../lib/sync.functions";
+
+export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
+  component: CampaignChatPage,
+  loader: ({ params }) => {
+    const campaign = getCampaign(params.campaignId);
+    if (!campaign) throw notFound();
+    return { campaign };
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      { title: `${loaderData?.campaign.title ?? "Campaign"} — Alphonso` },
+      {
+        name: "description",
+        content: `A multi-scene roleplay campaign: ${loaderData?.campaign.blurb ?? "practice with an AI tutor."}`,
+      },
+      { property: "og:title", content: `${loaderData?.campaign.title ?? "Campaign"} — Alphonso` },
+      { property: "og:description", content: "Practice a connected story with an AI tutor." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
+
+/** Same heuristic as converse_.$scenarioId.tsx's clarityLabel. */
+function clarityLabel(confidence: number): { label: string; dotClassName: string } {
+  if (confidence >= 0.85) return { label: "Clear", dotClassName: "bg-emerald-500" };
+  if (confidence >= 0.6) return { label: "Okay", dotClassName: "bg-amber-500" };
+  return { label: "Unclear", dotClassName: "bg-rose-500" };
+}
+
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+  confidence?: number | null;
+};
+
+function CampaignChatPage() {
+  const { campaign } = Route.useLoaderData();
+  const firstScene = campaign.scenes[0];
+
+  // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
+  // campaigns-design.md): client-side, in-memory only -- matches the
+  // existing single-scenario chat's own "zero persistence" baseline
+  // rather than inventing new resume behavior for campaigns alone.
+  const [sceneIndex, setSceneIndex] = useState(0);
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: "assistant", content: firstScene.opener },
+  ]);
+  // Message index where the *current* scene's opener lives -- lets
+  // "Restart this scene" truncate back to a known point, and lets the
+  // turn-count gate count only turns since this scene began.
+  const [sceneAnchor, setSceneAnchor] = useState(0);
+  const [finished, setFinished] = useState(false);
+
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ttsOn, setTtsOn] = useState(true);
+  const [cefrLevel, setCefrLevel] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchProgress({ data: { course: "en" } })
+      .then((p) => {
+        if (!cancelled) setCefrLevel(p.cefrLevel);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const scene = campaign.scenes[sceneIndex];
+  const isLastScene = sceneIndex === campaign.scenes.length - 1;
+  const userTurnsInScene = useMemo(
+    () => messages.slice(sceneAnchor).filter((m) => m.role === "user").length,
+    [messages, sceneAnchor],
+  );
+  const canContinue = userTurnsInScene >= scene.minTurns;
+  // Full campaign transcript + the current scene's persona -- this is
+  // what gives scene 2+ visibility into what happened earlier without
+  // /api/chat needing any new concept of "session" or "campaign."
+  const premise = campaign.premise;
+  const systemPromptForScene = useCallback(
+    (s: CampaignScene) => `${premise}\n\n${s.systemPrompt}`,
+    [premise],
+  );
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const stopRequestedRef = useRef(false);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, sending, finished]);
+
+  const speak = useCallback(
+    async (text: string) => {
+      if (!ttsOn) return;
+      try {
+        const resp = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+          body: JSON.stringify({ text }),
+        });
+        if (!resp.ok) return;
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => URL.revokeObjectURL(url);
+        void audio.play().catch(() => {});
+      } catch {
+        /* ignore */
+      }
+    },
+    [ttsOn],
+  );
+
+  const openerSpokenRef = useRef(false);
+  useEffect(() => {
+    if (openerSpokenRef.current) return;
+    openerSpokenRef.current = true;
+    const t = setTimeout(() => void speak(firstScene.opener), 400);
+    return () => clearTimeout(t);
+  }, [firstScene.opener, speak]);
+
+  const send = useCallback(
+    async (text: string, confidence?: number | null) => {
+      const trimmed = text.trim();
+      if (!trimmed || sending || finished) return;
+      setError(null);
+      const next: Msg[] = [...messages, { role: "user", content: trimmed, confidence }];
+      setMessages(next);
+      setInput("");
+      setSending(true);
+      try {
+        const resp = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+          body: JSON.stringify({
+            systemPrompt: systemPromptForScene(scene),
+            cefrLevel,
+            messages: next.map(({ role, content }) => ({ role, content })),
+          }),
+        });
+        if (!resp.ok) {
+          const t = await readApiError(resp);
+          throw new Error(
+            resp.status === 429
+              ? t || "Daily limit reached — try again tomorrow."
+              : resp.status === 402
+                ? "AI credits exhausted. Add credits to keep chatting."
+                : t || "Something went wrong.",
+          );
+        }
+        const data = (await resp.json()) as { content?: string };
+        const reply = (data.content ?? "").trim() || "…";
+        setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        void speak(reply);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Something went wrong.");
+      } finally {
+        setSending(false);
+      }
+    },
+    [messages, scene, systemPromptForScene, cefrLevel, sending, finished, speak],
+  );
+
+  const continueToNextScene = useCallback(() => {
+    if (isLastScene) {
+      setFinished(true);
+      return;
+    }
+    const nextScene = campaign.scenes[sceneIndex + 1];
+    setMessages((m) => {
+      const updated: Msg[] = [...m, { role: "assistant", content: nextScene.opener }];
+      setSceneAnchor(updated.length - 1);
+      return updated;
+    });
+    setSceneIndex((i) => i + 1);
+    setError(null);
+    void speak(nextScene.opener);
+  }, [campaign.scenes, isLastScene, sceneIndex, speak]);
+
+  const restartScene = useCallback(() => {
+    setMessages((m) => m.slice(0, sceneAnchor + 1));
+    setError(null);
+  }, [sceneAnchor]);
+
+  const startRecording = useCallback(async () => {
+    setError(null);
+    stopRequestedRef.current = false;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (stopRequestedRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      streamRef.current = stream;
+      const mime = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      rec.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      rec.onstop = async () => {
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        const type = rec.mimeType || mime || "audio/webm";
+        const ext = type.includes("mp4") ? "mp4" : type.includes("mpeg") ? "mp3" : "webm";
+        const blob = new Blob(chunksRef.current, { type });
+        if (blob.size < 1024) {
+          setError("That was too short — try again.");
+          return;
+        }
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, `recording.${ext}`);
+          const resp = await fetch("/api/stt", {
+            method: "POST",
+            headers: await authHeaders(),
+            body: fd,
+          });
+          if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
+          const data = (await resp.json()) as { text?: string; confidence?: number | null };
+          const text = (data.text ?? "").trim();
+          if (!text) {
+            setError("Didn't catch that — try again.");
+          } else {
+            await send(text, data.confidence);
+          }
+        } catch (e) {
+          setError(e instanceof Error ? e.message : "Transcription failed.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+    } catch {
+      setError("Microphone access is needed to speak.");
+      setRecording(false);
+    }
+  }, [send]);
+
+  const stopRecording = useCallback(() => {
+    stopRequestedRef.current = true;
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") rec.stop();
+    setRecording(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      audioRef.current?.pause();
+    };
+  }, []);
+
+  return (
+    <LessonFrame>
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+        <Link
+          to="/converse"
+          aria-label="Back"
+          className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+            <path
+              d="M15 6l-6 6 6 6"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xl leading-none">{campaign.emoji}</span>
+            <h1 className="truncate font-display text-[17px] font-semibold text-ink">
+              {campaign.title}
+            </h1>
+          </div>
+          <p className="truncate text-[11px] text-ink-soft/70">
+            {finished
+              ? "Campaign complete"
+              : `Scene ${sceneIndex + 1} of ${campaign.scenes.length} — ${scene.title}`}
+          </p>
+        </div>
+        {!finished && (
+          <button
+            onClick={restartScene}
+            aria-label="Restart this scene"
+            className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+              <path
+                d="M4 4v5h5M20 20v-5h-5M4.5 9A8 8 0 0 1 19 8M19.5 15a8 8 0 0 1-14.5 1"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
+        <button
+          onClick={() => setTtsOn((v) => !v)}
+          aria-pressed={ttsOn}
+          aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
+          className={`grid size-9 place-items-center rounded-full border transition-colors ${
+            ttsOn
+              ? "border-moss/30 bg-moss/10 text-moss"
+              : "border-hairline bg-surface text-ink-soft/60"
+          }`}
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
+            {ttsOn ? (
+              <>
+                <path
+                  d="M4 10v4h4l5 4V6L8 10H4z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 9c1.2 1 1.2 5 0 6M18.5 7c2.2 2 2.2 8 0 10"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </>
+            ) : (
+              <>
+                <path
+                  d="M4 10v4h4l5 4V6L8 10H4z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M17 9l5 6M22 9l-5 6"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </>
+            )}
+          </svg>
+        </button>
+      </header>
+
+      <div
+        ref={scrollRef}
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation"
+        className="flex-1 overflow-y-auto px-5 py-6"
+      >
+        <div className="flex flex-col gap-3">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              {m.role === "assistant" ? (
+                <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                  {m.content}
+                </div>
+              ) : (
+                <div className="flex max-w-[85%] flex-col items-end gap-1">
+                  <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                    {m.content}
+                  </div>
+                  {typeof m.confidence === "number" &&
+                    (() => {
+                      const clarity = clarityLabel(m.confidence);
+                      return (
+                        <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
+                          <span
+                            aria-hidden="true"
+                            className={`size-1.5 rounded-full ${clarity.dotClassName}`}
+                          />
+                          {clarity.label} pronunciation
+                        </span>
+                      );
+                    })()}
+                </div>
+              )}
+            </div>
+          ))}
+          {(sending || transcribing) && (
+            <div className="flex justify-start" role="status">
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
+                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
+              </div>
+              <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
+            </div>
+          )}
+          {error && (
+            <div
+              role="alert"
+              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            >
+              {error}
+            </div>
+          )}
+          {canContinue && !finished && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={continueToNextScene}
+                className="hard-shadow rounded-full bg-moss px-5 py-2.5 text-[13px] font-semibold text-surface transition-transform active:scale-[0.98]"
+              >
+                {isLastScene
+                  ? "Finish campaign"
+                  : `Continue: ${campaign.scenes[sceneIndex + 1].title} →`}
+              </button>
+            </div>
+          )}
+          {finished && (
+            <div className="flex flex-col items-center gap-3 pt-2 text-center">
+              <p className="text-[15px] font-semibold text-ink">Nice work — campaign complete!</p>
+              <p className="max-w-[280px] text-[13px] text-ink-soft/80">
+                You made it through all {campaign.scenes.length} scenes of {campaign.title}.
+              </p>
+              <Link
+                to="/converse"
+                className="hard-shadow rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-surface"
+              >
+                Back to Practice
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {!finished && (
+        <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void send(input);
+            }}
+            className="flex items-end gap-2"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (recording) {
+                  stopRecording();
+                } else {
+                  void startRecording();
+                }
+              }}
+              aria-label={recording ? "Stop recording and send" : "Record a voice message"}
+              aria-pressed={recording}
+              disabled={sending || transcribing}
+              className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
+                recording
+                  ? "bg-ember text-surface scale-110 hard-shadow-ember"
+                  : "bg-moss text-surface hard-shadow"
+              } disabled:opacity-50`}
+            >
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+                <rect
+                  x="9"
+                  y="3"
+                  width="6"
+                  height="12"
+                  rx="3"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                />
+                <path
+                  d="M5 11a7 7 0 0 0 14 0M12 18v3"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void send(input);
+                  }
+                }}
+                rows={1}
+                placeholder={recording ? "Listening…" : "Type or tap the mic"}
+                disabled={sending || transcribing || recording}
+                className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={sending || transcribing || !input.trim()}
+              aria-label="Send"
+              className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
+            >
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+                <path
+                  d="M5 12l14-7-4 7 4 7-14-7z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
+        </div>
+      )}
+    </LessonFrame>
+  );
+}

@@ -27,6 +27,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
 import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
@@ -121,6 +122,12 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
   path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCampaignCampaignIdRoute =
+  AuthenticatedCampaignCampaignIdRouteImport.update({
+    id: '/campaign_/$campaignId',
+    path: '/campaign/$campaignId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConverseScenarioIdRoute =
   AuthenticatedConverseScenarioIdRouteImport.update({
     id: '/converse_/$scenarioId',
@@ -163,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
@@ -211,6 +220,7 @@ export interface FileRoutesById {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
+    | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
+    | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
+    | '/_authenticated/campaign_/$campaignId'
     | '/_authenticated/converse_/$scenarioId'
     | '/_authenticated/invite/$inviterId'
     | '/_authenticated/lesson/$id'
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/campaign_/$campaignId': {
+      id: '/_authenticated/campaign_/$campaignId'
+      path: '/campaign/$campaignId'
+      fullPath: '/campaign/$campaignId'
+      preLoaderRoute: typeof AuthenticatedCampaignCampaignIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/converse_/$scenarioId': {
       id: '/_authenticated/converse_/$scenarioId'
       path: '/converse/$scenarioId'
@@ -470,6 +490,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedCampaignCampaignIdRoute: typeof AuthenticatedCampaignCampaignIdRoute
   AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
   AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
@@ -483,6 +504,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedCampaignCampaignIdRoute: AuthenticatedCampaignCampaignIdRoute,
   AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
   AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,

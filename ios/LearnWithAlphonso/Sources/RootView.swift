@@ -6,6 +6,7 @@ struct RootView: View {
     let contentStore: ContentStore
     let entitlementStore: EntitlementStore
     let notificationScheduler: NotificationScheduler
+    let remotePushRegistrar: RemotePushRegistrar
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
 
@@ -35,6 +36,7 @@ struct RootView: View {
             .task {
                 await triggerSync()
                 notificationScheduler.scheduleWeeklyRecap()
+                await registerRemotePushIfNeeded()
             }
             .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                 if !wasConnected && isConnected {
@@ -45,6 +47,10 @@ struct RootView: View {
                 if newPhase == .active {
                     Task { await triggerSync() }
                 }
+            }
+            .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
+                guard let newToken else { return }
+                Task { await uploadDeviceToken(newToken) }
             }
         }
     }
@@ -69,5 +75,29 @@ struct RootView: View {
         } else {
             syncQueueStore.markSyncedNow()
         }
+    }
+
+    /// V4 candidate #2 -- re-registers for remote notifications on every
+    /// launch/foreground (only actually calls
+    /// UIApplication.registerForRemoteNotifications() if permission was
+    /// already granted -- see RemotePushRegistrar.registerIfAuthorized's
+    /// doc comment). Fires the deviceTokenHex onChange handler above once
+    /// the AppDelegate callback lands.
+    private func registerRemotePushIfNeeded() async {
+        await remotePushRegistrar.registerIfAuthorized()
+    }
+
+    /// Uploads the APNs device token once both it and a signed-in session
+    /// are available. Best-effort -- a failed upload here just means this
+    /// device doesn't receive push until the next successful attempt
+    /// (next launch/foreground re-triggers registerIfAuthorized, which
+    /// re-delivers the same token via the same onChange path), never
+    /// worth surfacing to the user for a feature this silent everywhere
+    /// else (see the design doc: nothing about this feature is
+    /// user-visible until Apple's own push banner appears).
+    private func uploadDeviceToken(_ token: String) async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        try? await client.registerDeviceToken(token)
     }
 }

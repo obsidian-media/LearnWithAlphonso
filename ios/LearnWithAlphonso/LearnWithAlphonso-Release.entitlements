@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- V4 candidate #2 (real push) -- a TestFlight/App Store archive's
+	     device tokens would register against APNs' production
+	     environment, once this file is actually wired in.
+	     **Deliberately NOT referenced by project.yml's Release config
+	     yet** -- unlike LearnWithAlphonso-Debug.entitlements, adding this
+	     to a real signed archive requires the Push Notifications
+	     capability already be enabled on the App ID and baked into the
+	     distribution provisioning profile (the same interactive
+	     developer.apple.com action this feature's design doc flags as the
+	     hard, unresolved blocker). Wiring it in before that's done would
+	     break `ios-release.yml`'s manual-signing archive step -- a
+	     pipeline explicitly called out as fragile and recently,
+	     carefully fixed (docs/BACKLOG.md sec 1.1) -- for a feature that
+	     can't be tested end-to-end anyway. Kept here, ready to reference
+	     via CODE_SIGN_ENTITLEMENTS in project.yml's Release config as the
+	     very next step once a human completes that portal setup. -->
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>

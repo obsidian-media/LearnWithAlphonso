@@ -212,6 +212,11 @@ final class SyncQueueStore {
         state.setProgress(progress)
         state.lastSyncedAt = Date()
         try? modelContext.save()
+        // Every caller of this function (LessonPlayerView after a
+        // completion, RootView after a sync) is exactly the set of moments
+        // the home-screen streak widget also needs to refresh -- see
+        // WidgetProgressPublisher's doc comment.
+        WidgetProgressPublisher.publish(progress)
     }
 
     var lastSyncedAt: Date? {

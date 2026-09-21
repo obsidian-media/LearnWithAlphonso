@@ -5,9 +5,14 @@ import RevenueCat
 
 @main
 struct LearnWithAlphonsoApp: App {
+    // V4 candidate #2 (real push) -- bridges UIApplicationDelegate's
+    // callback-based remote-notification registration into this
+    // otherwise pure-SwiftUI app. See AppDelegate.swift's doc comment.
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var session = Session()
     @State private var entitlementStore = EntitlementStore()
     @State private var notificationScheduler = NotificationScheduler()
+    @State private var remotePushRegistrar = RemotePushRegistrar()
     @State private var networkMonitor = NetworkMonitor()
     private let contentStore: ContentStore?
     private let syncQueueStore: SyncQueueStore
@@ -51,6 +56,7 @@ struct LearnWithAlphonsoApp: App {
                     contentStore: contentStore,
                     entitlementStore: entitlementStore,
                     notificationScheduler: notificationScheduler,
+                    remotePushRegistrar: remotePushRegistrar,
                     networkMonitor: networkMonitor,
                     syncQueueStore: syncQueueStore
                 )
