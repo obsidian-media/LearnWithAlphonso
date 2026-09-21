@@ -1,7 +1,14 @@
 import type { Level } from "./levels";
 import type { PlacementQuestion } from "./placement";
 
-/** Spanish placement test, same 3-questions-per-band structure as placement.ts. */
+/**
+ * Spanish placement test. Shipped this session (V4 #1) with only 3
+ * candidates per band -- thinner than English/French's 9-per-band pools,
+ * which meant pickPlacementSet's 3-per-band sample had nothing to vary
+ * between attempts. Expanded here (V4 #3) to the same 9-per-band shape
+ * (base + "b" + "c" variant trios) so Spanish gets real resampling and
+ * the same adaptive-band headroom as the other two courses.
+ */
 export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep1",
@@ -23,6 +30,48 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     prompt: 'Choose the correct number for "five":',
     choices: ["cuatro", "cinco", "seis", "nueve"],
     answer: 1,
+  },
+  {
+    id: "ep1b",
+    level: "A1",
+    prompt: "Nosotros ___ estudiantes.",
+    choices: ["es", "está", "somos", "son"],
+    answer: 2,
+  },
+  {
+    id: "ep2b",
+    level: "A1",
+    prompt: 'Elige el artículo correcto para "gato":',
+    choices: ["la", "el", "los", "las"],
+    answer: 1,
+  },
+  {
+    id: "ep3b",
+    level: "A1",
+    prompt: "Yo ___ veinte años.",
+    choices: ["soy", "tengo", "tiene", "tienes"],
+    answer: 1,
+  },
+  {
+    id: "ep1c",
+    level: "A1",
+    prompt: "Él ___ un libro.",
+    choices: ["tengo", "tienes", "tiene", "tienen"],
+    answer: 2,
+  },
+  {
+    id: "ep2c",
+    level: "A1",
+    prompt: 'Cómo se dice "goodbye"?',
+    choices: ["Hola", "Gracias", "Adiós", "Perdón"],
+    answer: 2,
+  },
+  {
+    id: "ep3c",
+    level: "A1",
+    prompt: "Ustedes ___ estudiantes.",
+    choices: ["es", "está", "son", "somos"],
+    answer: 2,
   },
 
   {
@@ -46,6 +95,48 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     choices: ["después de", "antes de", "sobre", "en"],
     answer: 1,
   },
+  {
+    id: "ep4b",
+    level: "A2",
+    prompt: "Ella ___ (terminar) su tarea ya.",
+    choices: ["termina", "terminó", "terminando", "terminará"],
+    answer: 1,
+  },
+  {
+    id: "ep5b",
+    level: "A2",
+    prompt: "Hay ___ manzanas en la cesta.",
+    choices: ["mucho", "muchos", "mucha", "muchas"],
+    answer: 3,
+  },
+  {
+    id: "ep6b",
+    level: "A2",
+    prompt: "Voy a ___ un café.",
+    choices: ["tomo", "tomar", "tomando", "tomado"],
+    answer: 1,
+  },
+  {
+    id: "ep4c",
+    level: "A2",
+    prompt: "Nosotros ___ (viajar) a España el próximo verano.",
+    choices: ["viajamos", "viajaremos", "hemos viajado", "viajábamos"],
+    answer: 1,
+  },
+  {
+    id: "ep5c",
+    level: "A2",
+    prompt: "Esta es la ___ película que he visto.",
+    choices: ["buena", "mejor", "bien", "mejora"],
+    answer: 1,
+  },
+  {
+    id: "ep6c",
+    level: "A2",
+    prompt: "___ has visitado Madrid?",
+    choices: ["Has", "Eres", "Haces", "Vas"],
+    answer: 0,
+  },
 
   {
     id: "ep7",
@@ -67,6 +158,48 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     prompt: '"Aunque" introduces…',
     choices: ["a cause", "a concession", "a purpose", "a condition"],
     answer: 1,
+  },
+  {
+    id: "ep7b",
+    level: "B1",
+    prompt: "Cuando llegamos, la película ya ___ empezado.",
+    choices: ["ha", "había", "habrá", "habiendo"],
+    answer: 1,
+  },
+  {
+    id: "ep8b",
+    level: "B1",
+    prompt: "Es la mujer ___ coche fue robado.",
+    choices: ["que", "quien", "cuyo", "donde"],
+    answer: 2,
+  },
+  {
+    id: "ep9b",
+    level: "B1",
+    prompt: "No ___ fumar aquí.",
+    choices: ["debes", "puedes", "has", "sabes"],
+    answer: 0,
+  },
+  {
+    id: "ep7c",
+    level: "B1",
+    prompt: "Antes, yo ___ (jugar) al fútbol cada semana.",
+    choices: ["juego", "jugaba", "jugué", "jugaré"],
+    answer: 1,
+  },
+  {
+    id: "ep8c",
+    level: "B1",
+    prompt: "Me preguntó ___ estaba listo.",
+    choices: ["que", "si", "qué", "entonces"],
+    answer: 1,
+  },
+  {
+    id: "ep9c",
+    level: "B1",
+    prompt: "___ llueve, saldremos.",
+    choices: ["Aunque", "A pesar de", "Sin embargo", "Porque"],
+    answer: 0,
   },
 
   {
@@ -90,6 +223,53 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     choices: ["por lo tanto", "sin embargo", "a pesar de", "aunque"],
     answer: 0,
   },
+  {
+    id: "ep10b",
+    level: "B2",
+    prompt: "Ella dijo que ___ el informe antes del viernes.",
+    choices: ["terminará", "terminaría", "termina", "terminó"],
+    answer: 1,
+  },
+  {
+    id: "ep11b",
+    level: "B2",
+    prompt: 'Manera más formal de decir "mucho crecimiento":',
+    choices: [
+      "un montón de crecimiento",
+      "mucho crecimiento",
+      "un crecimiento sustancial",
+      "bastante crecimiento",
+    ],
+    answer: 2,
+  },
+  {
+    id: "ep12b",
+    level: "B2",
+    prompt: '"Mientras que" se usa para:',
+    choices: ["dar una razón", "comparar dos hechos contrastantes", "dar un ejemplo", "concluir"],
+    answer: 1,
+  },
+  {
+    id: "ep10c",
+    level: "B2",
+    prompt: "El informe debe ___ publicado la próxima semana.",
+    choices: ["ser", "estar", "siendo", "sido"],
+    answer: 0,
+  },
+  {
+    id: "ep11c",
+    level: "B2",
+    prompt: '"Sin embargo" indica:',
+    choices: ["una adición", "una concesión o contraste", "una causa", "un ejemplo"],
+    answer: 1,
+  },
+  {
+    id: "ep12c",
+    level: "B2",
+    prompt: "El puente está ___ inspeccionado anualmente.",
+    choices: ["siendo", "sido", "ser", "es"],
+    answer: 0,
+  },
 
   {
     id: "ep13",
@@ -110,6 +290,73 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     level: "C1",
     prompt: '"No obstante" is closest in meaning to:',
     choices: ["por ejemplo", "sin embargo", "por lo tanto", "es decir"],
+    answer: 1,
+  },
+  {
+    id: "ep13b",
+    level: "C1",
+    prompt: '"Hacer de abogado del diablo" significa:',
+    choices: [
+      "causar problemas a propósito",
+      "defender una postura para ponerla a prueba",
+      "hacer trampa en un juego",
+      "fingir inocencia",
+    ],
+    answer: 1,
+  },
+  {
+    id: "ep14b",
+    level: "C1",
+    prompt: 'Palabra más precisa para "mucha evidencia":',
+    choices: [
+      "un montón de pruebas",
+      "pruebas sustanciales",
+      "pruebas grandes",
+      "mucha cosa de pruebas",
+    ],
+    answer: 1,
+  },
+  {
+    id: "ep15b",
+    level: "C1",
+    prompt: "¿Qué oración evita una construcción torpe?",
+    choices: [
+      "Caminando hacia la tienda, empezó a llover.",
+      "Caminando hacia la tienda, me sorprendió la lluvia.",
+      "La lluvia, caminando hacia la tienda, empezó.",
+      "Hacia la tienda caminando, empezó a llover.",
+    ],
+    answer: 1,
+  },
+  {
+    id: "ep13c",
+    level: "C1",
+    prompt: '"Con todo" es lo más cercano en significado a:',
+    choices: ["a causa de", "sin embargo", "además de", "como resultado de"],
+    answer: 1,
+  },
+  {
+    id: "ep14c",
+    level: "C1",
+    prompt: 'Mejor alternativa formal a "un problema grande":',
+    choices: [
+      "un problema enorme",
+      "un desafío importante",
+      "un lío gigante",
+      "un verdadero problemón",
+    ],
+    answer: 1,
+  },
+  {
+    id: "ep15c",
+    level: "C1",
+    prompt: "¿Qué oración usa un matiz apropiado en la escritura académica?",
+    choices: [
+      "Esto prueba que la teoría es correcta.",
+      "Esto sugiere que la teoría podría ser correcta.",
+      "Todo el mundo sabe que esta teoría es correcta.",
+      "Es evidentemente correcto.",
+    ],
     answer: 1,
   },
 ];

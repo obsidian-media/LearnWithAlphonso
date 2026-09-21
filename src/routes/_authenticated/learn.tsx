@@ -248,7 +248,7 @@ function LearnPage() {
                 Not sure where to start?
               </p>
               <p className="mt-1 text-xs text-ink-soft/80">
-                Take a 15-question placement test and we&apos;ll set your CEFR level for you.
+                Take a quick placement test and we&apos;ll set your CEFR level for you.
               </p>
               <Link
                 to="/placement"
@@ -267,7 +267,7 @@ function LearnPage() {
                 Not sure where to start?
               </p>
               <p className="mt-1 text-xs text-ink-soft/80">
-                Take a 15-question placement test and we&apos;ll set your CEFR level for you.
+                Take a quick placement test and we&apos;ll set your CEFR level for you.
               </p>
               <Link
                 to="/placement"

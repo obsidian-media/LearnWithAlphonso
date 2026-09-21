@@ -57,8 +57,30 @@ const FIXED_QUESTIONS = [
     answer: 3,
   },
 ];
+// Three real bands (A1, B1, C1) with A2/B2 deliberately absent -- exercises
+// the adaptive skip-ahead path (acing a band skips the next one, credited
+// synthetically, and resumes on the one after) without needing the full
+// 15-question shape.
+const MULTI_BAND_QUESTIONS = [
+  { id: "m-a1-1", level: "A1", prompt: "A1 Q1", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-a1-2", level: "A1", prompt: "A1 Q2", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-a1-3", level: "A1", prompt: "A1 Q3", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-b1-1", level: "B1", prompt: "B1 Q1", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-b1-2", level: "B1", prompt: "B1 Q2", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-b1-3", level: "B1", prompt: "B1 Q3", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-c1-1", level: "C1", prompt: "C1 Q1", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-c1-2", level: "C1", prompt: "C1 Q2", choices: ["wrong", "right"], answer: 1 },
+  { id: "m-c1-3", level: "C1", prompt: "C1 Q3", choices: ["wrong", "right"], answer: 1 },
+];
+
 const pickPlacement = vi.fn(() => FIXED_QUESTIONS);
 vi.mock("../../data/courses", () => ({ getCourse: () => ({ pickPlacement }) }));
+
+/** Answers the current question and advances, regardless of which label ("Continue" / "See my level") the submit button currently shows. */
+async function answer(user: ReturnType<typeof userEvent.setup>, choice: "right" | "wrong") {
+  await user.click(screen.getByRole("button", { name: choice }));
+  await user.click(screen.getByRole("button", { name: /Continue|See my level/ }));
+}
 
 const { Route } = await import("./placement");
 const { useProgress } = await import("../../lib/progress");
@@ -171,5 +193,36 @@ describe("Placement test", () => {
     renderPage();
     await user.click(screen.getByRole("button", { name: "Exit placement test" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
+});
+
+describe("Adaptive band sequencing", () => {
+  it("skips ahead on a perfect run, testing only the confirming bands, and discloses the fast-track", async () => {
+    pickPlacement.mockReturnValue(MULTI_BAND_QUESTIONS);
+    const user = userEvent.setup();
+    renderPage();
+
+    // A1 (3) -> ace it, skip A2 -> B1 (3) -> ace it, skip B2 -> C1 (3).
+    for (let i = 0; i < 9; i++) {
+      await answer(user, "right");
+    }
+
+    expect(await screen.findByText("C1")).toBeInTheDocument();
+    expect(screen.getByText("9 of 9 correct")).toBeInTheDocument();
+    expect(screen.getByText(/Fast-tracked past A2, B2/)).toBeInTheDocument();
+  });
+
+  it("stops right after a decisive fail on the first band instead of testing every band", async () => {
+    pickPlacement.mockReturnValue(MULTI_BAND_QUESTIONS);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      await answer(user, "wrong");
+    }
+
+    expect(await screen.findByText("A1")).toBeInTheDocument();
+    expect(screen.getByText("0 of 3 correct")).toBeInTheDocument();
+    expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
   });
 });

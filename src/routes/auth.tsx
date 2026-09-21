@@ -33,10 +33,17 @@ function AuthPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const { next } = Route.useSearch();
-  const afterAuth = useCallback(() => {
-    if (next) window.location.href = next;
-    else navigate({ to: "/learn", replace: true });
-  }, [next, navigate]);
+  // `fallback` lets signup default somewhere other than /learn (see the
+  // signup branch below) while every other caller keeps today's
+  // behavior. An explicit `next` always wins over either default -- a
+  // deep link (e.g. an invite) shouldn't get hijacked into onboarding.
+  const afterAuth = useCallback(
+    (fallback: string = "/learn") => {
+      if (next) window.location.href = next;
+      else navigate({ to: fallback, replace: true });
+    },
+    [next, navigate],
+  );
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,17 +73,22 @@ function AuthPage() {
           "If an account exists for that address, we've sent a link to reset your password. Check your inbox.",
         );
       } else if (mode === "signup") {
+        // New signups land on the placement test first instead of a cold
+        // /learn -- V4 pkg 3's onboarding call: not a hard gate (the
+        // placement route's own exit button still lets them bail straight
+        // to /learn), just a better default first screen than starting
+        // blind at A1. An explicit `next` (e.g. an invite link) still wins.
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin + (next ?? "/learn"),
+            emailRedirectTo: window.location.origin + (next ?? "/placement"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
         if (error) throw error;
         if (data.session) {
-          afterAuth();
+          afterAuth("/placement");
         } else {
           setNotice(
             "Almost there — check your email and click the confirmation link to activate your account.",

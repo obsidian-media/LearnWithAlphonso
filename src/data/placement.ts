@@ -399,3 +399,63 @@ export function scorePlacement(correctByLevel: Record<Level, number>): {
   const next = PLACEMENT_ORDER[Math.min(idx + 1, PLACEMENT_ORDER.length - 1)];
   return { level: next, passed };
 }
+
+/** Groups an already-sampled placement set (e.g. from pickPlacementSet) by CEFR band, in PLACEMENT_ORDER. */
+export function groupByBand(questions: PlacementQuestion[]): Record<Level, PlacementQuestion[]> {
+  const grouped = { A1: [], A2: [], B1: [], B2: [], C1: [] } as Record<Level, PlacementQuestion[]>;
+  for (const q of questions) grouped[q.level].push(q);
+  return grouped;
+}
+
+export type AdaptiveBandDecision = {
+  /** True when the test should end here -- no further bands get tested. */
+  stop: boolean;
+  /** A band that gets synthetic pass credit without being shown to the learner. */
+  skipped: Level | null;
+  /** Which PLACEMENT_ORDER index to test next (meaningless when stop is true). */
+  nextIdx: number;
+};
+
+/**
+ * V4 pkg 3 -- adaptive band sequencing. Modeled on V3 pkg 4b's
+ * pickReinforcementQuestion "doingWell" skew (bank-engine.ts): pool/path
+ * selection driven by running accuracy instead of a fixed order. That
+ * function skews which *question pool* to draw from; this data's only
+ * real difficulty axis is the CEFR band itself (no per-question
+ * difficulty tag exists), so here "harder if doing well, easier if not"
+ * is expressed as skipping or stopping bands rather than picking within
+ * one.
+ *
+ * - Every question wrong in a band (or the band has no candidates at
+ *   all): stop testing further bands immediately -- there's no value
+ *   grinding a beginner through B2/C1 material they have ~0 chance at.
+ * - Every question right in a band, AND a real band still exists two
+ *   steps ahead with actual content: skip the immediately-next band
+ *   (synthetic pass credit, never shown to the learner) and resume
+ *   testing from the one after it. The "two steps ahead has content"
+ *   guard means a skip only ever happens when it can be confirmed by a
+ *   real question afterwards -- it never grants free credit right before
+ *   the test would otherwise end, and the final band (C1) can only ever
+ *   be earned by answering real C1 questions, never awarded as a skip
+ *   target.
+ * - Anything else (partial credit): advance to the very next band as
+ *   normal -- ambiguous performance always gets a real test.
+ */
+export function nextAdaptiveBand(
+  bandPool: Record<Level, PlacementQuestion[]>,
+  currentIdx: number,
+  correctInBand: number,
+): AdaptiveBandDecision {
+  const last = PLACEMENT_ORDER.length - 1;
+  const bandSize = bandPool[PLACEMENT_ORDER[currentIdx]!]?.length ?? 0;
+  if (bandSize === 0 || correctInBand === 0) {
+    return { stop: true, skipped: null, nextIdx: currentIdx };
+  }
+  const landingIdx = currentIdx + 2;
+  const landingHasContent =
+    landingIdx <= last && (bandPool[PLACEMENT_ORDER[landingIdx]!]?.length ?? 0) > 0;
+  if (correctInBand === bandSize && landingHasContent) {
+    return { stop: false, skipped: PLACEMENT_ORDER[currentIdx + 1]!, nextIdx: landingIdx };
+  }
+  return { stop: false, skipped: null, nextIdx: currentIdx + 1 };
+}
