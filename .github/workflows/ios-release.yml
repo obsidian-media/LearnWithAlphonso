@@ -83,6 +83,8 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}
         run: |
           echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          echo "DEBUG: p12 bytes=$(wc -c < "$RUNNER_TEMP/cert.p12") sha256=$(shasum -a 256 "$RUNNER_TEMP/cert.p12" | cut -d' ' -f1)"
+          echo "DEBUG: password bytes=${#P12_PASSWORD}"
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -lut 21600 build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
