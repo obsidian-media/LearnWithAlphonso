@@ -1,0 +1,40 @@
+name: Setup iOS Manual Signing (one-time)
+
+# One-time (or rare -- e.g. if the certificate is later revoked/expires)
+# setup step for the permanent fix to the certificate-limit blocker (see
+# docs/BACKLOG.md and scripts/generate-ios-distribution-signing.ts's doc
+# comment for the full root-cause writeup). Generates a new, CI-owned iOS
+# Distribution certificate + App Store provisioning profile and uploads
+# them as a workflow artifact -- download it and add the contents as repo
+# secrets (IOS_DIST_CERTIFICATE_P12_BASE64, IOS_DIST_CERTIFICATE_PASSWORD,
+# IOS_PROVISIONING_PROFILE_BASE64, IOS_PROVISIONING_PROFILE_UUID), then
+# switch ios-release.yml from automatic to manual signing using them.
+#
+# Uses the same APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64 secrets
+# already configured for ios-release.yml -- no new credentials needed.
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bunx tsx scripts/generate-ios-distribution-signing.ts
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-distribution-signing
+          path: |
+            out/ios_distribution.p12
+            out/ios_distribution.mobileprovision
+            out/p12_password.txt
+            out/profile-info.txt
+          retention-days: 1
