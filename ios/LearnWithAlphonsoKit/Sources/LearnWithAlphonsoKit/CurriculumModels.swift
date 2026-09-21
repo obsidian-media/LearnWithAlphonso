@@ -119,6 +119,37 @@ public struct Scenario: Decodable, Identifiable, Sendable {
     public let opener: String
 }
 
+/// Mirrors src/data/campaigns.ts's `CampaignScene` type exactly (V4
+/// candidate #4). One scene within a `Campaign` -- roughly a `Scenario` on
+/// its own (own persona via `systemPrompt`, own `opener`), plus `minTurns`:
+/// the minimum number of learner turns in this scene before the
+/// "Continue" action unlocks (see the campaigns design doc for why this
+/// -- not a fixed cutoff, not an AI self-reported "done" signal -- is the
+/// scene-completion gate).
+public struct CampaignScene: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let systemPrompt: String
+    public let opener: String
+    public let minTurns: Int
+}
+
+/// Mirrors src/data/campaigns.ts's `Campaign` type exactly -- an ordered,
+/// connected sequence of scenes sharing one continuous chat transcript, as
+/// opposed to `Scenario`'s one-shot, independent roleplays. `premise` is
+/// framing shared by every scene; CampaignSessionView composes
+/// `premise + scene.systemPrompt` per /api/chat call so a later scene's
+/// model call still sees the full prior transcript and can reference it.
+public struct Campaign: Decodable, Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let emoji: String
+    public let blurb: String
+    public let level: String
+    public let premise: String
+    public let scenes: [CampaignScene]
+}
+
 /// Mirrors src/data/achievements.ts's `Achievement` type exactly. `tier` is
 /// "bronze" | "silver" | "gold" | "diamond"; `category` is "streak" | "xp" |
 /// "perfect" | "lessons" | "league" | "freeze" -- kept as plain strings

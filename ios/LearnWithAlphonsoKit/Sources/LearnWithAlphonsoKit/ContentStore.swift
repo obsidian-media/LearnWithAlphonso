@@ -32,6 +32,9 @@ public final class ContentStore {
     public let french: ContentBundle
     public let spanish: ContentBundle
     public let scenarios: [Scenario]
+    /// V4 candidate #4: connected multi-scene campaigns, additive
+    /// alongside `scenarios` -- see CurriculumModels.swift's `Campaign` doc.
+    public let campaigns: [Campaign]
     public let achievements: [Achievement]
     /// Vocab-term (lowercased) -> stock-photo lookup, same keying
     /// deriveVocab(lesson:images:) expects. Empty entries just mean no
@@ -43,6 +46,7 @@ public final class ContentStore {
         french = try Self.loadBundle(for: .french)
         spanish = try Self.loadBundle(for: .spanish)
         scenarios = try Self.loadScenarios()
+        campaigns = try Self.loadJSON([Campaign].self, resource: "campaigns")
         achievements = try Self.loadJSON([Achievement].self, resource: "achievements")
         vocabImages = try Self.loadJSON([String: VocabImageRef].self, resource: "vocab-images")
     }

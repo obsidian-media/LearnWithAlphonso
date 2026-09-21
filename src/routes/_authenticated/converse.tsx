@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
+import { CAMPAIGNS } from "../../data/campaigns";
 import { SCENARIOS } from "../../data/scenarios";
 import { useTheme } from "../../lib/theme";
 
@@ -40,8 +41,84 @@ function ConversePage() {
           back.
         </p>
 
+        {/* V4 candidate #4: connected multi-scene campaigns, additive
+            alongside the one-shot scenarios below -- see
+            docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md */}
+        {CAMPAIGNS.length > 0 && (
+          <div className="mt-7">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
+              Campaigns
+            </p>
+            <div className={isStudioInk ? "divide-y divide-hairline" : "grid grid-cols-1 gap-3"}>
+              {CAMPAIGNS.map((c, i) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link
+                    to="/campaign/$campaignId"
+                    params={{ campaignId: c.id }}
+                    className={
+                      isStudioInk
+                        ? "flex items-center gap-4 py-4 transition-opacity hover:opacity-80"
+                        : "hard-shadow flex items-center gap-4 rounded-2xl border border-hairline bg-surface p-4 transition-transform active:scale-[0.99]"
+                    }
+                  >
+                    <div
+                      className={
+                        isStudioInk
+                          ? "grid size-12 shrink-0 place-items-center text-2xl"
+                          : "grid size-12 shrink-0 place-items-center rounded-xl bg-parchment text-2xl"
+                      }
+                    >
+                      {c.emoji}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h2 className="truncate font-display text-base font-semibold text-ink">
+                          {c.title}
+                        </h2>
+                        <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-soft/70">
+                          {c.level}
+                        </span>
+                        <span className="rounded-full border border-ember/30 bg-ember/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-ember">
+                          {c.scenes.length} scenes
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-ink-soft/80">{c.blurb}</p>
+                    </div>
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="size-5 shrink-0 text-ink-soft/50"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M9 6l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+            <p className="mb-2 mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
+              Scenarios
+            </p>
+          </div>
+        )}
+
         <div
-          className={isStudioInk ? "mt-7 divide-y divide-hairline" : "mt-7 grid grid-cols-1 gap-3"}
+          className={
+            isStudioInk
+              ? `${CAMPAIGNS.length > 0 ? "" : "mt-7 "}divide-y divide-hairline`
+              : `${CAMPAIGNS.length > 0 ? "" : "mt-7 "}grid grid-cols-1 gap-3`
+          }
         >
           {SCENARIOS.map((s, i) => (
             <motion.div
