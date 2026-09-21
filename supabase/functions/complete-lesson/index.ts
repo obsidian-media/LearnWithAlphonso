@@ -33,6 +33,7 @@ import {
   resolveHeartsRefill,
   streakHeartMilestoneReached,
 } from "./hearts.ts";
+import { sendPushToUser } from "../_shared/apns.ts";
 
 const courseSchema = z.enum(["en", "fr"]);
 const lessonIdSchema = z
@@ -334,6 +335,50 @@ export async function handleRequest(req: Request): Promise<Response> {
       ? [admin.from("friend_activity_events").insert(activityEvents)]
       : []),
   ]);
+
+  // Real (remote) push for leaderboard "you've been overtaken" -- V4
+  // candidate #2 (docs/BACKLOG.md sec 2.1). This function is the one
+  // place that already knows this user's XP just changed, so overtake
+  // detection happens here rather than a separately-scheduled job: a
+  // friend just got overtaken exactly when their xp falls strictly
+  // between this user's xp *before* this completion and *after* it (this
+  // user passed them). sendPushToUser itself no-ops silently if APNs
+  // secrets aren't configured yet -- see supabase/functions/_shared/apns.ts.
+  // Deliberately best-effort and never awaited into the critical path in
+  // a way that could turn a successful lesson completion into a 500.
+  if (xpGain > 0) {
+    try {
+      const { data: friendRows } = await admin
+        .from("friendships")
+        .select("friend_id")
+        .eq("user_id", userId)
+        .eq("status", "accepted");
+      const friendIds = (friendRows ?? []).map((r) => r.friend_id as string);
+      if (friendIds.length > 0) {
+        const { data: overtaken } = await admin
+          .from("language_progress")
+          .select("user_id")
+          .eq("language", course)
+          .in("user_id", friendIds)
+          .gt("xp", curLp.xp)
+          .lte("xp", xp);
+        await Promise.all(
+          (overtaken ?? []).map((row) =>
+            sendPushToUser(
+              admin,
+              row.user_id as string,
+              "Leaderboard update",
+              "Someone passed you on the leaderboard!",
+              { type: "overtake" },
+            ).catch(() => undefined)
+          ),
+        );
+      }
+    } catch {
+      // Same best-effort reasoning as above -- never fail this response
+      // over a push-delivery hiccup.
+    }
+  }
 
   const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] =
     await Promise.all([
