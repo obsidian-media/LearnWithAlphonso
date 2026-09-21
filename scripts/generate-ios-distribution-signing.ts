@@ -152,6 +152,12 @@ async function main() {
   ]);
 
   console.log("Bundling key + certificate into a .p12...");
+  // OpenSSL 3.x defaults to AES-256/PBES2 encryption for PKCS12 -- found
+  // live: Apple's `security import` (SecKeychainItemImport) rejects that
+  // with "MAC verification failed" even though the password and file are
+  // correct (confirmed via matching sha256 in CI vs. locally). Force the
+  // legacy 3DES/SHA1 scheme explicitly, which Apple's importer has always
+  // supported reliably -- the standard fix for this well-known gotcha.
   execFileSync("openssl", [
     "pkcs12",
     "-export",
@@ -165,6 +171,12 @@ async function main() {
     "LearnWithAlphonso CI Distribution",
     "-passout",
     `pass:${p12Password}`,
+    "-certpbe",
+    "PBE-SHA1-3DES",
+    "-keypbe",
+    "PBE-SHA1-3DES",
+    "-macalg",
+    "SHA1",
   ]);
 
   console.log(`Looking up the bundle ID resource for ${BUNDLE_ID}...`);
