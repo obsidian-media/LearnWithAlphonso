@@ -121,11 +121,18 @@ async function main() {
   ]);
   const csrContent = readFileSync("out/ios_distribution.csr", "utf-8");
 
-  console.log("Requesting a new iOS Distribution certificate from App Store Connect...");
+  // "DISTRIBUTION" (Apple Distribution, the modern universal type covering
+  // iOS/macOS/etc) rather than the legacy "IOS_DISTRIBUTION" -- found live
+  // via a 409 "You already have a current iOS Distribution certificate or
+  // a pending certificate request" when this account already had 3
+  // IOS_DISTRIBUTION certs (Apple caps each type separately at a small
+  // number). "Apple Distribution" is also the correct CODE_SIGN_IDENTITY
+  // value ios-release.yml uses for manual signing either way.
+  console.log("Requesting a new Apple Distribution certificate from App Store Connect...");
   const certResp = await api("/certificates", "POST", {
     data: {
       type: "certificates",
-      attributes: { csrContent, certificateType: "IOS_DISTRIBUTION" },
+      attributes: { csrContent, certificateType: "DISTRIBUTION" },
     },
   });
   const certId = certResp.data.id;
