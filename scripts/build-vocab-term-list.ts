@@ -8,6 +8,7 @@
  */
 import { curriculum } from "../src/data/curriculum";
 import { curriculumFr } from "../src/data/curriculum-fr";
+import { curriculumEs } from "../src/data/curriculum-es";
 import { VOCAB_IMAGES } from "../src/data/vocab-images";
 import type { Question } from "../src/data/curriculum";
 import fs from "node:fs";
@@ -171,23 +172,22 @@ function collect(units: typeof curriculum): Map<string, string> {
 
 const enTerms = collect(curriculum);
 const frTerms = collect(curriculumFr);
+const esTerms = collect(curriculumEs);
 
-const missingEn: string[] = [];
-for (const [key, original] of enTerms) {
-  if (VOCAB_IMAGES[key]) continue;
-  if (!isCandidate(original)) continue;
-  missingEn.push(original);
+function missingFor(terms: Map<string, string>): string[] {
+  const missing: string[] = [];
+  for (const [key, original] of terms) {
+    if (VOCAB_IMAGES[key]) continue;
+    if (!isCandidate(original)) continue;
+    missing.push(original);
+  }
+  missing.sort((a, b) => a.localeCompare(b));
+  return missing;
 }
 
-const missingFr: string[] = [];
-for (const [key, original] of frTerms) {
-  if (VOCAB_IMAGES[key]) continue;
-  if (!isCandidate(original)) continue;
-  missingFr.push(original);
-}
-
-missingEn.sort((a, b) => a.localeCompare(b));
-missingFr.sort((a, b) => a.localeCompare(b));
+const missingEn = missingFor(enTerms);
+const missingFr = missingFor(frTerms);
+const missingEs = missingFor(esTerms);
 
 fs.writeFileSync(
   "scripts/vocab-terms-missing-en.json",
@@ -199,14 +199,18 @@ fs.writeFileSync(
   JSON.stringify(missingFr, null, 2) + "\n",
   "utf-8",
 );
+fs.writeFileSync(
+  "scripts/vocab-terms-missing-es.json",
+  JSON.stringify(missingEs, null, 2) + "\n",
+  "utf-8",
+);
 
 console.log(
-  `English: ${enTerms.size} total unique terms, ${enTerms.size - missingEn.length - (enTerms.size - [...enTerms.keys()].filter((k) => !VOCAB_IMAGES[k]).length)} skipped by filter or already covered`,
+  `English: ${enTerms.size} total unique terms, ${missingEn.length} candidate terms missing images -> scripts/vocab-terms-missing-en.json`,
 );
 console.log(
-  `English: ${missingEn.length} candidate terms missing images -> scripts/vocab-terms-missing-en.json`,
+  `French: ${frTerms.size} total unique terms, ${missingFr.length} candidate terms missing images -> scripts/vocab-terms-missing-fr.json`,
 );
-console.log(`French: ${frTerms.size} total unique terms`);
 console.log(
-  `French: ${missingFr.length} candidate terms missing images -> scripts/vocab-terms-missing-fr.json`,
+  `Spanish: ${esTerms.size} total unique terms, ${missingEs.length} candidate terms missing images -> scripts/vocab-terms-missing-es.json`,
 );

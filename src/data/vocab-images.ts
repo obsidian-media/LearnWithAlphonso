@@ -9981,4 +9981,334 @@ export const VOCAB_IMAGES: Record<string, VocabImage> = {
     alt: "traffic sign, palm tree, traffic signs, arrow, blue, sign, information, direction, traffic, right, left, a notice, turn, curve, street sign, road marking, one way street",
     credit: "weareaway",
   },
+  "rojo": {
+    url: "https://images.pexels.com/photos/39586488/pexels-photo-39586488.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Colorful ivy leaves changing from green to red on a wall, symbolizing seasonal transition.",
+    credit: "Sergej  *****",
+  },
+  "azul": {
+    url: "https://images.pexels.com/photos/32207995/pexels-photo-32207995.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Minimalist abstract image featuring a blue arch against a beige background.",
+    credit: "Jan van der Wolf",
+  },
+  "verde": {
+    url: "https://images.pexels.com/photos/39484458/pexels-photo-39484458.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Close-up view of vibrant green leaves in a tropical garden showcasing natural beauty and freshness.",
+    credit: "Abdul Kader Nahid",
+  },
+  "amarillo": {
+    url: "https://images.pexels.com/photos/956769/pexels-photo-956769.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Detailed view of a textured wall with moss and a metallic lamp in Matale, Sri Lanka.",
+    credit: "Huzni Mohamed",
+  },
+  "negro": {
+    url: "https://images.pexels.com/photos/5279328/pexels-photo-5279328.jpeg?auto=compress&cs=tinysrgb&h=350",
+    alt: "Dynamic black and white image of tangled metal scrap, creating an industrial abstract art form.",
+    credit: "Alex Tepetidis",
+  },
+  "blanco": {
+    url: "https://images.pexels.com/photos/28744738/pexels-photo-28744738.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "A simple, elegant top-down view of an empty white coffee mug on a white surface.",
+    credit: "Maurits Groen",
+  },
+  "pequeño": {
+    url: "https://images.pexels.com/photos/38689219/pexels-photo-38689219.png?auto=compress&cs=tinysrgb&h=350",
+    alt: "Rally car with vibrant decals races on a sunny, winding road in Greece.",
+    credit: "Alex Ravvas",
+  },
+  "nuevo": {
+    url: "https://pixabay.com/get/g1c44a53a337e669e46656fef1d18abbdf0e1619198bc75f0353f0bd7369e68a918d56702907cb43157080d4881bbb784c3c0681ec3656979a2bc16284c60bcf0_640.jpg",
+    alt: "nothing, new, bye, new, new, new, new, new",
+    credit: "kim_hester",
+  },
+  "viejo": {
+    url: "https://pixabay.com/get/g61ca3f97781b4f628e2d68f5671a1eb6b64afd0358e9bd848db1980241cae39940cb2134cd108ecab912e79fac0937a6e7630a9a8cf274cef9c37380a5ddccc3_640.jpg",
+    alt: "alley, historic center, historical, old, france, architecture, old building, old house, facade, empty, old houses, masonry, house facade, rustic, shutter, fos-sur-mer, france, france, france, france, france, old house",
+    credit: "Tama66",
+  },
+  "feliz": {
+    url: "https://pixabay.com/get/gb8a25819a988c5df5024f4027639399695ff93407e65818d0f443adbcf583478618704034549024ed53385d6a7bb30a8cbe9445f6d6b10848ad728157b23ec90_640.jpg",
+    alt: "people, kid, child, cute, happy, smile, orange happy, orange smile, orange happiness, people, people, people, kid, kid, kid, child, happy, happy, happy, happy, smile, smile, smile, smile, smile",
+    credit: "StockSnap",
+  },
+  "hermoso": {
+    url: "https://pixabay.com/get/g011331298722fa455a3cb1a23d94a42c7125f94e076ce1286886038807b6fe8802f3b674323b1a909c9d05e872dacbc7_640.jpg",
+    alt: "spring flowers, flowers, collage, nature, floral, blossom, beautiful, beauty, bloom, blooming, plants, flower background, beautiful flowers, flora, flower wallpaper, spring, photo art",
+    credit: "Shirley810",
+  },
+  "alto": {
+    url: "https://pixabay.com/get/ge0c82237c50e07b17b941c1762430f5bab47c63d5cf60286d12f74643efcc28e2299799f445aa6af7ab86a353c522d418b24d18dfbc074ce9e1d918d19685674_640.jpg",
+    alt: "bird, reeds, nature, wild, yellow, autumn hues, solitude, tranquility, bird on reed, living nature, songbird, natural scene, migration, biotope, landscape, natural habitat, lonely bird, river bird, color palette, yellow wagtail",
+    credit: "Wolfgang_Hasselmann",
+  },
+  "rápido": {
+    url: "https://pixabay.com/get/g36edbe3dfab8d3553333c45c68c5cf62ad2a25b5f01c8b77ad1c304832970a95f92175f5767680fc169a4c9fe73b37b0a1d564829c315a04286b00cbb311e109_640.jpg",
+    alt: "french fries, potato, fast food, chips, chips, chips, chips, chips, chips",
+    credit: "Fotorech",
+  },
+  "lento": {
+    url: "https://pixabay.com/get/gdc3021e9d5b8ddc2ee105d4013a93fc86ff0ad96b740255fa187348e0b86139d50937ba00ed556fe45d164c21c9cf6cfa235237d4aa866ce085c9d725b34fae7_640.jpg",
+    alt: "snail, shell, stem, plant, animal, gastropod, nature, fauna, crawl, slow",
+    credit: "slyyle",
+  },
+  "madre": {
+    url: "https://pixabay.com/get/g6cf9d70f7f521b9c9d92297d19b809dbabc72d1924c24d229839387037baf6ebfd9b9d33ba018dae80133b9cb0312ddb526f75c2bd78403131aa21d5ef45de40_640.jpg",
+    alt: "mum, child, family, happy mothers day, nature, asian, mom, mother, mother and daughter",
+    credit: "Chikilino",
+  },
+  "padre": {
+    url: "https://pixabay.com/get/g1eabbeb18854dcfabe7a096d3253531b4c1734ad20dc11a70ad20c982c8df2f393941e5dbb44fbe85b330bdabcae0983_640.jpg",
+    alt: "father, baby, portrait, infant, newborn, child, dad, daddy, man, family, love, asleep, sleeping, together, fathers day, father, baby, baby, baby, baby, baby, man, family, family, family, love, love, sleeping, sleeping",
+    credit: "PublicDomainPictures",
+  },
+  "hermana": {
+    url: "https://pixabay.com/get/g32a2ea5330d07122217585edc61725a4095b368677864ce661ef3c192884435c765a0a9fde325495e92b22743713c22f_640.jpg",
+    alt: "siblings, brother, sister, children, girl, boy, people, nature, cute, kids, portrait, summer, outdoors, together, love",
+    credit: "Bessi",
+  },
+  "hermano": {
+    url: "https://pixabay.com/get/g4509fad67fc072b2fc9645ab79412fc2694eb78a29742dd3568f5f0919c9adc9008666a08271c907ddec8f6cadcb7077_640.jpg",
+    alt: "siblings, brother, sister, children, girl, boy, people, nature, cute, kids, portrait, summer, outdoors, together, love",
+    credit: "Bessi",
+  },
+  "hija": {
+    url: "https://pixabay.com/get/g5898333672eac074230562ac06acfd084bc184b9b664d6fdb8427e69cf52bdebaae8defa96676d75180b8f653fb732ff722239c1a279d28a534ebe1094b1d27c_640.jpg",
+    alt: "baby, girl, portrait, child, daughter, childhood, baby, baby, baby, baby, baby, girl, girl, child, child, child",
+    credit: "ymyphoto",
+  },
+  "hijo": {
+    url: "https://pixabay.com/get/gbcd0342e1f832da04cc5383a3d1503ceee250a7b79f43272c169abfefe4cf5e2849bb6449c23564034f4d82fd084f6007359644c18cd98c2b635e4d260fae0c5_640.jpg",
+    alt: "bicycle, cambodia, outside, myanmar, burma, family, thailand, vietnamese, father, son, meadow, wetlands, fathers day, cambodia, family, family, family, family, family, thailand, father, father, fathers day",
+    credit: "sasint",
+  },
+  "abuela": {
+    url: "https://pixabay.com/get/gf8ee4fb9709c20d7b12ca0752939add6678b5b8a24513b97c60d1096f96d40803c87c045b3764f19e6fcb79b278021bb_640.jpg",
+    alt: "woman, elderly, portrait, old, senior, aged, grandma, grandmother, elderly, elderly, elderly, senior, senior, grandma, grandma, grandma, grandma, grandma, grandmother, grandmother, grandmother",
+    credit: "geralt",
+  },
+  "abuelo": {
+    url: "https://pixabay.com/get/gb789c59767f81f6f7c0d5b7eb69ba9d3d7fc7d7e8d43de1d928aed8886f893211f58b70ac38c02fdcb9386ee1e2ca0434bbdd402e64aee4853bccc591d1faf9b_640.jpg",
+    alt: "man, retro, fashion, bowtie, hat, glasses, old, old man, elderly man, grandfather, aged, elderly, portrait, grandpa, black and white, monochrome, old man, old man, old man, old man, old man, grandfather, grandpa",
+    credit: "Pexels",
+  },
+  "tía": {
+    url: "https://pixabay.com/get/gd44ca082bb89f669f536d39c5ac2cd4bf06967e1c47d52b7a85088cad3871f3b74dec6c3702e5fe02d642b7338e2d8357bcf8870c626c9bd083250c887f11383_640.jpg",
+    alt: "aunt-emma-shop, fruit, vegetables, nourishment, food, health, netherlands, food, food, netherlands, netherlands, netherlands, netherlands, netherlands",
+    credit: "Rotesonne",
+  },
+  "tío": {
+    url: "https://pixabay.com/get/g09467a217c4ac14a38126f49ac9e64b5fae78bf0be7455b28196575c7fc81cf20b2f08d2dfc4388815d3242c9ce6764bb9816ba2a809beabf48d3d810742654c_640.jpg",
+    alt: "taibai mountain, uncle sea, china, the scenery",
+    credit: "Petrick_L",
+  },
+  "primo": {
+    url: "https://pixabay.com/get/ga3c7d5538b631561ee4ed54e1d3d8b3b4e8fdb6d6430778d3e47a87a3b9f76fcaf209ac063e3d8ea7700d0a215d21ba37287e8a7a411d7c779246c6c129b1a5a_640.jpg",
+    alt: "netflix, computer, cousin, keyboard, relaxation, relax, evening, netflix, netflix, netflix, netflix, netflix",
+    credit: "Jade87",
+  },
+  "esposa": {
+    url: "https://pixabay.com/get/g359f47d93d08b6892691aaad71831ecd374816a67fff92e6723f09a0f218d332dc7461f89a99b2a6826c9aaa98f898095254c39a092c28cb80e2f573f789ee88_640.jpg",
+    alt: "marriage, couple, wedding, love, family, romantic, romance, relationship, happy, together, grooms, husband, wife, wedding, wedding, wedding, wedding, wedding, family",
+    credit: "8090666",
+  },
+  "esposo": {
+    url: "https://pixabay.com/get/ge411d2dba4bbf35dcb68c24847f8602e44476160c3d0a06201d2cbb73456c42b0f9e582b38e8fcad1af5cc33d0abd3c59a4c13183cc5b273e3ba02ee81d4af75_640.jpg",
+    alt: "marriage, couple, wedding, love, family, romantic, romance, relationship, happy, together, grooms, husband, wife, wedding, wedding, wedding, wedding, wedding, family",
+    credit: "8090666",
+  },
+  "familia": {
+    url: "https://pixabay.com/get/gc4a42934d1055076bb29acf8d94951d3c4096dd72a28e8e669c50c66c330887920cd031d497fc5d357f16476917b44bd390d9af961678b2fd53eda23029befd7_640.jpg",
+    alt: "family, newborn, baby, child, infant, happy, mother, cute, family portrait, family love, parents, people, girl, love, kid, small, little, childhood, young, father, happiness, care, woman, portrait, together, dad, boy, person, parenthood, sleeping, tired, asleep, family, family, family, family, family, baby, baby",
+    credit: "smpratt90",
+  },
+  "bebé": {
+    url: "https://pixabay.com/get/ge500897a80dde6bf390c9d463a6fe56cbe82ff1318fbc8f1dd2e489630f7fe4adef53fdb125e30db15f42111dc09fe054e22087e4141c2882681678ab3bb8c9b_640.jpg",
+    alt: "baby, child, grandchild, feet, baby feet, infant, children's feet, toes, cute, baby, baby, baby, baby, baby",
+    credit: "Marjonhorn",
+  },
+  "padres": {
+    url: "https://pixabay.com/get/g25f6a4b6872e1f2fe10d84ddb4dbaa50375f6f34994b1eb05320a67e153fd8798d788e8bae88f06f55e728f83b29d2b28ebc842ae7f9a9502a88ab3c597b4c2d_640.jpg",
+    alt: "deer, parent child, morning, cute, kojika, deer, deer, deer, deer, deer",
+    credit: "yamabon",
+  },
+  "amiga": {
+    url: "https://pixabay.com/get/g879d2759e98be279c794027fe1d9cd788d750169627733844065f5c31d79ee0bfe028d37217759aa92967999ea97d02524f47322765bc04e991f186cea6d21c8_640.jpg",
+    alt: "friendship day, black women, portrait, women, natural hair, happy, female, together, family, lifestyle, girls, fun, smiling, group, happiness, smile, joy, cheerful, friends, best friends, love, women, women, women, women, family, family, family, family, family, smile, friends, friends, friends, friends",
+    credit: "trevoykellyphotography",
+  },
+  "niño": {
+    url: "https://pixabay.com/get/g8eeb970bc9ba214d1b72891581cd0f214233d63e33c150539e7fe71f23984d18a880b5f67f3951adb417e8c762fef6d1b3c5f5a04f0e1821f959d3a02f5156a3_640.jpg",
+    alt: "infant, girl, cap, jacket, child, cute, infant, child, child, child, child, child",
+    credit: "2147792",
+  },
+  "adulto": {
+    url: "https://pixabay.com/get/g8faa7a7ee6ae5d9c7e9e274f9e13a3436e45ac2703266f0f72293f0faf8fb6e50c574c164828600b5c1fabad816b825a5f4caef965c12f8625e3f6efed32dc1e_640.jpg",
+    alt: "grown up, born, earth, nature, soil, moisture, farming, compost, soil, soil, compost, compost, compost, compost, compost",
+    credit: "GAD-BM",
+  },
+  "pan": {
+    url: "https://pixabay.com/get/gf54cf669286ada005b0121635237163ceffa1a10c2cc5d844ea941fe605f93bcf71489476597eee6f8899fd51af9f4ebfebf856289f6eb578d1d1d0329fc422a_640.jpg",
+    alt: "bread, toaster, food, toast, white bread, slices of toast, breakfast, snack, meal, tasty, bread, bread, bread, bread, toaster, toast, toast, toast, toast, toast, breakfast",
+    credit: "CordMediaDigitalServices",
+  },
+  "agua": {
+    url: "https://pixabay.com/get/g5b20d20c8d786b2defb62cebc1dcd5ddd54cc0ada013ae25e62f982d24e0088e3eca4a376d809395c08c3986172b011451370d57b98a6350a5b0fb49f49001ad_640.jpg",
+    alt: "water, water jet, fountain, wet, water feature, nature, flow, close up, drops, pool of water, water fountain, splash, source, power, blue",
+    credit: "congerdesign",
+  },
+  "leche": {
+    url: "https://pixabay.com/get/gd3dbc63c77642f5b45d21716a8ba55e5d715f8a6e68a9801d4fcec51ad92213cbb3d48209d31a5e54cdbe330b7f84bd9_640.jpg",
+    alt: "milk, glass, fresh, healthy, drink, nutritious, jug, glass jug, milk, milk, milk, milk, milk",
+    credit: "congerdesign",
+  },
+  "arroz": {
+    url: "https://pixabay.com/get/ge19ea2318524bdecffc0b6b63a1a87631d4c47be06df877225b364cebbbfd13930d25a034eb7cd7dd10a4c9cc10a87e8fa79d27cecbf566f8bc900b8d7a08f94_640.jpg",
+    alt: "rice, rice bowl, asian, food, rice plate, meal, shell, rice dish, rice, rice bowl, rice bowl, rice bowl, rice bowl, rice bowl",
+    credit: "moritz320",
+  },
+  "pollo": {
+    url: "https://pixabay.com/get/g02367d43b2c9ab5083173be9a49a586a29146d6f158866040d750097814c1a8042e08143b1a3ba74d30616942bf2f296_640.jpg",
+    alt: "bird, chick, baby chicken, young bird, young chicken, animal, fauna, nature, cute, close up, chick, chick, chick, chick, chick",
+    credit: "onefox",
+  },
+  "pescado": {
+    url: "https://pixabay.com/get/g2666e68e3550826678d0e33c2dd9fad9b06cce235fd84631803afaea50955843290e4b99f8b61bd138df56d85fd2cc654a9e9b30279d535de768692a68860474_640.jpg",
+    alt: "discus fish, fish, aquarium, fauna, symphysodon aequifasciatus, nature, animal, swim, underwater, aquatic, aquatic animal, scaly, fish, fish, fish, fish, fish",
+    credit: "Bergadder",
+  },
+  "verduras": {
+    url: "https://pixabay.com/get/gbb85b0a77d21a8800d3e5e839d629008096f999a1744948ae012de93a4468a8100e07470a090522d8e6b5020d58dc3d6550ffc691a85122f3e0772bdc03c5032_640.png",
+    alt: "broccoli, vegetable, food, green vegetable, edible, organic, natural, cut out, broccoli, broccoli, broccoli, broccoli, broccoli",
+    credit: "Schwarzenarzisse",
+  },
+  "fruta": {
+    url: "https://pixabay.com/get/g9d2f89647ae841b210d79f4994a8f12dba038d0d82b0bde8c87ee267676f7487d84703a4f6acd80a56befd386d4449f22d0254a342791c44ec89ead9fe7d379a_640.jpg",
+    alt: "berry, blackberries, fruit, food, vitamins, berry, blackberries, blackberries, blackberries, blackberries, blackberries",
+    credit: "ChiemSeherin",
+  },
+  "desayuno": {
+    url: "https://pixabay.com/get/g0b0191bcfd2ed2a931ef83b96b581ade8ef5c623dc9ea3cf350874a25c29c4e4540e891e62df12364c513f33128848e1e1184691dd126dba23ad4ec5587d29bb_640.jpg",
+    alt: "pancakes, maple syrup, raspberries, breakfast, pouring syrup, plate, breakfast plate, stack, stack of pancakes, breakfast food, breakfast meal, sweet, food, delicious, morning, tasty, fruits, food photography, pancakes, breakfast, breakfast, food, food, food, food, food",
+    credit: "piviso",
+  },
+  "almuerzo": {
+    url: "https://pixabay.com/get/g1cfad323a53255632541978566f6f9ee76cb7f3953b1dfcb0daaff98524e45e572f79e49b5b311a9790c8a1e605cbf40c8e6bc3591503d6c06efa933fe8a49b2_640.jpg",
+    alt: "pizza, kitchen, pizzeria, food, tomato, pasta, flour, nutrition, to eat, diet, sano, cook, lunch, traditional, restaurant, pizza, pizza, pizza, pizza, pizza",
+    credit: "MatteoPhotoPro2020",
+  },
+  "cena": {
+    url: "https://pixabay.com/get/gbc2293f0e4d25d9d33537bb44448f0a9e15850463c853ff93ac3cfe4b3e1bf00d6536270c2ccee7468ddcb1693beb803105729ed42f71c6284cb1fcf29cf87e9_640.jpg",
+    alt: "table, glassware, cutlery, silverware, nature, stemware, dining table, dinner table, table setting, table set-up, dinner, luxury, restaurant, sunset",
+    credit: "JoelFazhari",
+  },
+  "la cuenta": {
+    url: "https://pixabay.com/get/gcb3bdd1b4d5f29bfc6408556f398c5302480571d339357d6f61a9001d26b33d8198b986218a1c2e00ab0bdc1a55b0e724b750b882983c8a25eca9c3df767e87c_640.jpg",
+    alt: "spoonbill, bird, nature, wildlife, bill",
+    credit: "jim5511",
+  },
+  "menú": {
+    url: "https://pixabay.com/get/gc677799ac61f7ac4613b46ebb861ed5afc1eaabbd3cec0c2b635e4e9b1a06c906acd8f4910ae7d6d4347898ad4b059bd395af1e5b8ac30529f89e4e65e306479_640.jpg",
+    alt: "cafe, barista, coffee shop, counter, coffee machine, caffeine, interior design, interior decoration, indoors, menu, coffee menu, cafe, cafe, cafe, cafe, cafe, coffee shop, coffee shop, coffee shop, coffee shop, menu",
+    credit: "Pexels",
+  },
+  "delicioso": {
+    url: "https://pixabay.com/get/g5218de8fc4f6b9bf7adefb3728bb5e8fba28da2aebe25cdfd17a259d6d9192d57da7c5aa0c4f41f6df83917a258a874d_640.jpg",
+    alt: "apple, red, delicious, fruit, vitamins, apple, apple, apple, apple, apple",
+    credit: "jarmoluk",
+  },
+  "cuchara": {
+    url: "https://pixabay.com/get/g041f3dd88901d51c70990c296580f9f5ea9044637a446c9ec735999c5b2deacc41eb5b3ac121154689f926e8ed9908d4_640.jpg",
+    alt: "pot, kitchen, cook, wooden spoon, prepare, meal, ingredients, preparation, pot, kitchen, kitchen, kitchen, kitchen, kitchen",
+    credit: "congerdesign",
+  },
+  "calle": {
+    url: "https://pixabay.com/get/g68e61d9a7ca2005a3bc3a179a392f87033ef5dc1074b1c0a63c642bfb3448e3d615acfd071efdf3e68c28ccf9c73c04b_640.jpg",
+    alt: "alley, street, night, evening, city, urban, town, street lamps, street lights, cobblestones, dark, england, street, street, night, night, night, night, city, city, city, city, city, dark, dark",
+    credit: "PublicDomainPictures",
+  },
+  "ciudad": {
+    url: "https://pixabay.com/get/gdf27c8d88b689adb92e15561f6719072b05859c2c8bab72d1059d0180a9b4a8692c5d0ffe43955f8321c361c66f8640f792d52c5e817826809080e610f0622b2_640.jpg",
+    alt: "sunset, nature, city, twilight, urban landscape, horizon line, living nature, urban, skyscrapers, natural, cityscape, skyline, city center, city lights, structures, building, towers, city, city, city, city, city, cityscape",
+    credit: "soultrain",
+  },
+  "banco": {
+    url: "https://pixabay.com/get/g697998dc8da4f5ec5fd285d69eccc7ca2581626e79d60cd146623c4194b3a160b10cad0dd0e83e7d2a6c4796eebd9104f4b7962d7a7b94fe6615566532bfa840_640.jpg",
+    alt: "bank, money, shares, save up, capital, financing, banking crisis, credit, banks house, building, architecture, rent, bank building, facade, stone relief, columns, sculptures, historical, monument, stone figure, classical, artful",
+    credit: "JamesQube",
+  },
+  "hospital": {
+    url: "https://pixabay.com/get/g23b8eb67170140824f00845071241874c4bd35de83f80b84e079d31c5a7ee0cfccbe61a56655e25a8ae271a37b24da44b3b7daa9e4fb7ca6619a079890884261_640.jpg",
+    alt: "operation, operating room, surgery, operating table, hospital, healthcare, emergency room, doctor, surgeon, hospital workers, operation, surgery, surgery, surgery, hospital, hospital, hospital, hospital, hospital, healthcare, healthcare, doctor, doctor, doctor, doctor",
+    credit: "sasint",
+  },
+  "escuela": {
+    url: "https://pixabay.com/get/g433cf7c10611df2f95b61b1e06a9a4dc47d3e18ebb8c0c6c4632717516a67a1dd88e2a1cf6ab69b7fe2d9d56c84d833037006dc64fa1c83bd114f5fd4e7b81e1_640.jpg",
+    alt: "kids, painting, school, drawing, draw, art class, child, children, elementary school, childhood, workshop, learn, learning, educate, education, color, coloring, art school, drawings, student, activity, creative, creativity, young, pencils, school, school, school, school, school, drawing, draw, draw, draw, draw, draw, art class, art class, art class, elementary school, elementary school, elementary school, learning, educate, student",
+    credit: "rawpixel",
+  },
+  "tienda": {
+    url: "https://pixabay.com/get/gf55fa7fb6da74dca937ceabce4e47cbe6eed797a146bd7f09df07c7297986f1c511a88532afacd4c868986edfa860821c024b43d1884a18253b19c6c5b95aa61_640.jpg",
+    alt: "grocery, shopping, supermarket, merchandising, grocery shopping, grocery store, store, shop, food, market, retail, buy, commerce, purchase, products, consumer, consumerism, shelves, produce, marketing, business, grocery, grocery, shopping, shopping, shopping, supermarket, supermarket, supermarket, supermarket, supermarket, grocery store, grocery store, grocery store, store, store, shop, shop, shop, market, market, market, retail",
+    credit: "stevepb",
+  },
+  "mercado": {
+    url: "https://pixabay.com/get/gc200a2f71d492e75bc024109f119805a5daac506326c3ae4af102b3f1df8f5b4bc78e835e2ae7c55e72a21d310be496fed201e1a171c015dcc8f1c1ae4a1ec94_640.jpg",
+    alt: "market, produce, farmer's market, shopping, everyday life, market, market, shopping, shopping, shopping, shopping, shopping",
+    credit: "udayteja7770",
+  },
+  "parque": {
+    url: "https://pixabay.com/get/g2d6f72140fafc7909c2ffa21b90d460ff792dc3a0fb23f97831f0fc367b868d08d1da645e04c8a3ae984ef81b8f2c071_640.jpg",
+    alt: "amusement park, europa park, nature, boat, park, waterslide, water, splash, fun, children",
+    credit: "keulefm",
+  },
+  "iglesia": {
+    url: "https://pixabay.com/get/gaa34cfda60061d268c0a466959351b2fea0423c10fd9beabd8e64f56a844a47d3ee96c6a92e4e355c086cc8d01c5143f7127d507dde1d4211f8ef3f6027e1ff4_640.jpg",
+    alt: "altar, cathedral, catholic church, church, church art, faith, religion, architecture, nave, church interior, cathedral, church, church, church, church, church",
+    credit: "ChiemSeherin",
+  },
+  "aeropuerto": {
+    url: "https://pixabay.com/get/g86bec523bca6a343479d0266d59d6b2906110756e79460dcb185d4820d4e9f15af16184fae0df3e3732fe4518a792bd3e37c5c24c26416b6087c030807bc5c7f_640.jpg",
+    alt: "airport, aircraft, departure, travel, airliner, airbus, airline, passenger aircraft, aviation, tilt shift, airport, airport, airport, airport, airport, airline, aviation",
+    credit: "652234",
+  },
+  "izquierda": {
+    url: "https://pixabay.com/get/g9a92ee4fb3b0f41ed786fc4946fab4f97c24bd340b4d660b12f5db1893045f5e6996b1a2d6478d9e269c1d4dd7e489a96d1a9c89da9a24f38bbd4f7730e47633_640.jpg",
+    alt: "music, headset, sound, headphones, earphones, earbuds, apple, digital, technology, music, music, music, headphones, headphones, headphones, headphones, headphones, earphones, earphones, earbuds",
+    credit: "rupixen",
+  },
+  "derecha": {
+    url: "https://pixabay.com/get/gba539c7d3965292a194c16b201ef6175c1f5d04c1cb887ad6d55a61341a6bb75746270a04860bf8ca1fd3e65c33572cf_640.jpg",
+    alt: "signpost, waypoint, wood, grain, board, sign, nature, direction, right, path, marking, arrow, heaven, clouds",
+    credit: "geralt",
+  },
+  "derecho": {
+    url: "https://pixabay.com/get/g72f542afbd714a12a7756d7b07999ea85b6a2f8fb41b383833e4463e64aee99c59dfe4a3c2bb65f55313d6bd297942227992d3dffee3d10d6046cbf6c60e7e61_640.jpg",
+    alt: "palm trees, tropical, straight ahead, road, florida",
+    credit: "writerchick",
+  },
+  "lejos": {
+    url: "https://pixabay.com/get/ga8dcb3be9f3932aec4b673f379a51c7a310b347726ca7aad359bf88a38aa2ad81339fd483e2dad28bf7563586a71da360c4e950cd3087b225150ad3fb1b22349_640.jpg",
+    alt: "fog, autumn, sunrise, nature, landscape, trees, mood, light, far, forest, times, atmospheric, wood, fog, autumn, autumn, sunrise, trees, light, far, far, far, far, far, forest, forest, forest, forest, wood",
+    credit: "Hunt_on_Photos_Studio",
+  },
+  "aquí": {
+    url: "https://pixabay.com/get/g84af0333154d05355b206efee73f9a1a1453db834c942abbced1cfb6fe33093f0d8ad59b5dd3c8cb4e903e28228845049d18d444d933c471960cc8522abb5d3c_640.png",
+    alt: "here, nothing, there, nothing, nothing, nothing, nothing, nothing",
+    credit: "SarahRichterArt",
+  },
+  "allí": {
+    url: "https://pixabay.com/get/g817192a0c1acc1c22dca8f6129e6e49e193d8fb922a0af83f0ae0eb38f760c7f129eb3221fe4d0bbc5c176b597e17d55e93a78bfe1375b93280f8d1b319ed790_640.png",
+    alt: "here, nothing, there, nothing, nothing, nothing, nothing, nothing",
+    credit: "SarahRichterArt",
+  },
+  "esquina": {
+    url: "https://pixabay.com/get/g96656f3cbceaa5f5d4a700fe13e9fcb7c5757df6b21df5a03a959fc21e3cb2aea4290a6f26c1efe99024bfc8b367f92df2805874eed8cf6a083eed78e31ea259_640.jpg",
+    alt: "soccer, sport, ball, football, field, activity, game, soccer, sport, football, football, football, football, football",
+    credit: "NoName_13",
+  },
+  "semáforo": {
+    url: "https://pixabay.com/get/gabdb82ba2f3d9874e355982174ea6c86767d7df29aace4707a4c085a30c222a012a1b760bd1b9cf11a6f1b6fb129742e58518dfc08a518a3220dd0bab8638099_640.jpg",
+    alt: "bicycle, traffic light, red, light signal, road traffic, rules of the road, traffic lights, bicycle traffic light, bicycle, bicycle, traffic light, traffic light, traffic light, traffic light, traffic light, traffic lights, traffic lights, traffic lights",
+    credit: "paulsteuber",
+  },
 };
