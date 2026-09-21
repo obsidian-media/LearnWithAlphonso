@@ -5,11 +5,11 @@
 Learn with Alphonso (repo internal name `english-buddy-app-33`, now at
 `github.com/obsidian-media/LearnWithAlphonso`) is a mobile-first English
 learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI
-conversation practice, and gamification. Also ships a much thinner
-French course (see Content Structure below). A native iOS app (`ios/`)
-shares the same Supabase backend/account and has grown a substantial
-V2 feature set of its own — see the Key Files table and
-`ARCHITECTURE.md`'s "Native iOS app" section.
+conversation practice, and gamification. Also ships French and Spanish
+courses at full parity with English (see Content Structure below). A
+native iOS app (`ios/`) shares the same Supabase backend/account and
+has grown a substantial V2 feature set of its own — see the Key Files
+table and `ARCHITECTURE.md`'s "Native iOS app" section.
 
 ## Key Files
 
@@ -32,7 +32,9 @@ V2 feature set of its own — see the Key Files table and
 | `supabase/functions/start-lesson-session/` | Deno Edge Function: issues the HMAC session token `complete-lesson` requires — the iOS equivalent of `startLessonSession` (a web-only TanStack server function iOS can't call) |
 | `ios/LearnWithAlphonso/Sources/LessonPlayerView.swift` | SwiftUI lesson player: overview → vocab (via `deriveVocab`) → quiz → finish; calls `start-lesson-session` then `complete-lesson` on finish |
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/VocabDerivation.swift` | Port of `deriveVocab` (`src/lib/vocab.ts`) — vocabulary is derived from a lesson's own questions, not separate content; stock-photo lookup (`VOCAB_IMAGES`) not ported yet |
-| `.github/workflows/ios-release.yml`        | Manual (`workflow_dispatch`) signed archive + `.ipa` export via an App Store Connect API key — see that file's header comment for the required repo secrets |
+| `.github/workflows/ios-release.yml`        | Manual (`workflow_dispatch`) signed archive + `.ipa` export + optional TestFlight upload. Uses **manual signing with a persisted, CI-owned Distribution certificate** imported into a temporary keychain every run (the App Store Connect API key is now only used for the TestFlight upload step, not signing) — see that file's header comment for the required repo secrets and why this replaced `-allowProvisioningUpdates` (it was exhausting the account's certificate cap) |
+| `scripts/generate-ios-distribution-signing.ts`, `.github/workflows/setup-ios-manual-signing.yml` | One-time setup that generated the persisted Distribution certificate + provisioning profile `ios-release.yml` now imports every run — re-run only if that certificate/profile ever needs to be rotated |
+| `scripts/manage-ios-certificates.ts`, `.github/workflows/manage-ios-certificates.yml` | Diagnostic/admin tool: lists this account's certificates and which real app each one's provisioning profile belongs to (a certificate alone isn't app-specific), and can revoke one by ID — built to safely resolve the certificate-cap issue above without guessing which cert was safe to revoke |
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/AIConversationClient.swift` | Calls this repo's own `/api/chat`, `/api/tts`, `/api/stt` (same backend the web app uses, same Supabase access token) — not AlphonsoEcosystem's Cloud Voice backend; see the type's doc comment |
 | `ios/LearnWithAlphonso/Sources/ConversationView.swift` | Scenario picker + hold-to-talk conversation screen (record → `/api/stt` → `/api/chat` → `/api/tts` → play) |
 | `supabase/functions/grade-review/`         | Deno Edge Function: 1:1 port of `gradeReview` (re-derives review-answer correctness server-side) for iOS |
@@ -51,19 +53,25 @@ V2 feature set of its own — see the Key Files table and
 | `ios/LearnWithAlphonso/Sources/ToastBanner.swift` | Shared in-app toast (overtake detection, nudge banner) — extracted after the two call sites were near-identical |
 | `ios/LearnWithAlphonso/Sources/NotificationScheduler.swift` | Local (not push) notification scheduling: streak reminder, due-review nudge, weekly leaderboard recap |
 | `vitest.setup.ts`                          | React Testing Library cleanup + DOM matchers for the Vitest suite (added with PR #46's coverage expansion — see Testing below) |
+| `src/data/vocab-images.ts`                 | Stock-photo lookup keyed by vocab term (`VOCAB_IMAGES`), used by `deriveVocab`'s web path. Covers English/French/Spanish terms — Spanish images added 2026-09-21 (two batches, searched by English-concept query since the image provider's index isn't Spanish-aware). Not yet ported to iOS (`VocabDerivation.swift`) |
 
 ## Content Structure
 
-Counted directly from `curriculum` / `curriculumFr` on 2026-09-13 (do not
-trust a stale number here — re-run the count if this drifts):
+Counted directly from `curriculum` / `curriculumFr` / `curriculumEs` on
+2026-09-21 (do not trust a stale number here — re-run the count if this
+drifts):
 
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 122 | 104 | 104 | 102 | 102 | **534**       |
-| French  | 25  | 25  | 25  | 25  | 25  | **125**       |
+| French  | 100 | 100 | 100 | 100 | 100 | **500**       |
+| Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
-French has less than a quarter of English's lesson count — either treat it
-as explicitly "in progress" in the UI, or prioritize closing the gap.
+All three courses are now at full parity (French and Spanish both grew
+from a 25-pack/125-lesson starting point this session, reusing the same
+bank-engine pack pipeline). Content correctness (grammar, natural
+phrasing) for French and Spanish still needs native-speaker review —
+not done for either, just structurally complete.
 
 - **SM-2 spaced repetition** for missed items (all levels, both courses)
 
@@ -101,7 +109,7 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (502 tests, 72 files)
+bun run test         # Vitest (595 tests, 80 files, verified passing 2026-09-21)
 bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
@@ -109,8 +117,10 @@ swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/Learn
 
 **Coverage as of 2026-09-20** (`bun run test:coverage`, don't trust this
 without re-running — re-run rather than assuming it holds after further
-changes): 90.55% statements / 79.24% branches / 89.02% functions /
-91.56% lines overall. Notably thinner spots: `HeartsModal.tsx` (~70%),
+changes; the test *count* above was re-verified 2026-09-21 alongside a
+clean `tsc --noEmit`, but coverage percentages were not re-run): 90.55%
+statements / 79.24% branches / 89.02% functions / 91.56% lines overall.
+Notably thinner spots: `HeartsModal.tsx` (~70%),
 `src/routes/__root.tsx` (~18% — mostly error-boundary paths), and
 `src/routes/api/analyze-weaknesses.ts` (~8% — no dedicated unit tests,
 matching the established pattern that server routes adjacent to Edge
