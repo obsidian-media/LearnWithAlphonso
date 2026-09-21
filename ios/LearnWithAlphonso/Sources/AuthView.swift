@@ -67,6 +67,27 @@ struct AuthView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(session.isBusy || !email.contains("@"))
+
+            HStack(spacing: 8) {
+                Divider()
+                Text("or")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Divider()
+            }
+
+            Button {
+                Task { await session.signInWithGoogle() }
+            } label: {
+                if session.isBusy {
+                    ProgressView()
+                } else {
+                    Text("Continue with Google")
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.bordered)
+            .disabled(session.isBusy)
         }
     }
 

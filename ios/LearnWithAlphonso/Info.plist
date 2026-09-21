@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Merged with the GENERATE_INFOPLIST_FILE-synthesized Info.plist
+	     (Xcode 13+ supports both at once) -- this is the one entry that
+	     can't be expressed as a flat INFOPLIST_KEY_* build setting.
+	     Lets ASWebAuthenticationSession hand control back to this app once
+	     Google sign-in completes -- see GoogleSignInPresenter.swift and
+	     AppConfig.googleSignInURLScheme. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.obsidianmedia.learnwithalphonso</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

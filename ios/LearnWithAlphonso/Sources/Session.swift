@@ -21,6 +21,7 @@ final class Session {
     private(set) var isBusy = false
 
     private let authClient: SupabaseAuthClient
+    private let googleSignInPresenter = GoogleSignInPresenter()
 
     init(authClient: SupabaseAuthClient = SupabaseAuthClient(
         supabaseURL: AppConfig.supabaseURL,
@@ -62,6 +63,40 @@ final class Session {
         do {
             let session = try await authClient.verifyEmailOTP(email: email, code: code)
             state = .signedIn(session)
+        } catch {
+            errorMessage = Self.message(for: error)
+        }
+    }
+
+    /// Signs in through the *same* Google OAuth client Supabase already
+    /// has configured for the web app (Authentication > Providers >
+    /// Google) -- no separate Google Cloud Console credentials for iOS.
+    /// Opens a system browser sheet (ASWebAuthenticationSession) for the
+    /// actual Google consent screen, then completes Supabase's PKCE
+    /// exchange once it redirects back to this app's custom URL scheme.
+    func signInWithGoogle() async {
+        errorMessage = nil
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            let challenge = SupabaseOAuthFlow.makePKCEChallenge()
+            let authorizeURL = SupabaseOAuthFlow.authorizeURL(
+                supabaseURL: AppConfig.supabaseURL,
+                redirectTo: AppConfig.googleSignInRedirectURL,
+                challenge: challenge
+            )
+            let callbackURL = try await googleSignInPresenter.authenticate(
+                url: authorizeURL,
+                callbackScheme: AppConfig.googleSignInURLScheme
+            )
+            guard let code = SupabaseOAuthFlow.authorizationCode(from: callbackURL) else {
+                errorMessage = "Google sign-in didn't complete. Please try again."
+                return
+            }
+            let session = try await authClient.exchangeOAuthCode(code, codeVerifier: challenge.verifier)
+            state = .signedIn(session)
+        } catch GoogleSignInPresenterError.cancelled {
+            // The user dismissed the sheet -- not a real error.
         } catch {
             errorMessage = Self.message(for: error)
         }

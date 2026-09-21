@@ -46,6 +46,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: true
+        # Merged with the synthesized Info.plist (Xcode 13+ supports both
+        # at once) -- carries CFBundleURLTypes for Google sign-in's
+        # ASWebAuthenticationSession callback, which has no INFOPLIST_KEY_
+        # equivalent. See ../Info.plist.
+        INFOPLIST_FILE: Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
         # App Store Connect's upload validation (error 90474) requires all

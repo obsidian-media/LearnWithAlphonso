@@ -96,6 +96,47 @@ final class SupabaseAuthClientTests: XCTestCase {
         }
     }
 
+    // MARK: - exchangeOAuthCode
+
+    func testExchangeOAuthCodePostsTheAuthCodeAndVerifierAndDecodesASession() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.response(for: request.url!, body: [
+                "access_token": "at-3", "refresh_token": "rt-3", "expires_in": 3600,
+                "user": ["id": "user-1"],
+            ])
+        }
+
+        let session = try await client.exchangeOAuthCode("auth-code-1", codeVerifier: "verifier-1")
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/token?grant_type=pkce")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["auth_code"] as? String, "auth-code-1")
+        XCTAssertEqual(payload["code_verifier"] as? String, "verifier-1")
+
+        XCTAssertEqual(session.accessToken, "at-3")
+        XCTAssertEqual(session.userID, "user-1")
+    }
+
+    func testExchangeOAuthCodeThrowsWhenTheCodeIsRejected() async {
+        let client = makeClient { request in
+            self.response(for: request.url!, body: ["msg": "invalid request: both auth code and code verifier should be non-empty"], status: 400)
+        }
+
+        do {
+            _ = try await client.exchangeOAuthCode("bad-code", codeVerifier: "verifier-1")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(
+                error as? SupabaseAuthError,
+                .server(status: 400, message: "invalid request: both auth code and code verifier should be non-empty")
+            )
+        }
+    }
+
     // MARK: - refresh
 
     func testRefreshPostsTheRefreshTokenAndDecodesANewSession() async throws {

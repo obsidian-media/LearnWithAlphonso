@@ -88,6 +88,25 @@ public final class SupabaseAuthClient: Sendable {
         return try Self.decodeSession(from: data)
     }
 
+    /// Completes the PKCE handshake started by SupabaseOAuthFlow.authorizeURL
+    /// once the app has captured `code` from the browser's redirect back.
+    public func exchangeOAuthCode(_ code: String, codeVerifier: String) async throws -> SupabaseSession {
+        var components = URLComponents(url: supabaseURL.appendingPathComponent("auth/v1/token"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "grant_type", value: "pkce")]
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "auth_code": code,
+            "code_verifier": codeVerifier,
+        ])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        return try Self.decodeSession(from: data)
+    }
+
     public func refresh(_ session: SupabaseSession) async throws -> SupabaseSession {
         var components = URLComponents(url: supabaseURL.appendingPathComponent("auth/v1/token"), resolvingAgainstBaseURL: false)!
         components.queryItems = [URLQueryItem(name: "grant_type", value: "refresh_token")]

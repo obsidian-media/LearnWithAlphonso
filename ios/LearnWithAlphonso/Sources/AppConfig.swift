@@ -52,4 +52,13 @@ enum AppConfig {
     /// The RevenueCat Entitlement identifier (RevenueCat dashboard ->
     /// Entitlements) that gates Hector -- see EntitlementStore.swift.
     static let proEntitlementID = "pro"
+
+    /// The custom URL scheme this app registers (project.yml's `info`
+    /// block) so ASWebAuthenticationSession can hand control back to the
+    /// app once Google sign-in completes -- see GoogleSignInPresenter and
+    /// Session.signInWithGoogle. Reuses the bundle identifier itself as
+    /// the scheme (a common, collision-safe convention) rather than
+    /// registering a second one.
+    static let googleSignInURLScheme = "com.obsidianmedia.learnwithalphonso"
+    static let googleSignInRedirectURL = "\(googleSignInURLScheme)://login-callback"
 }
