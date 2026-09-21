@@ -143,6 +143,19 @@ jobs:
           </plist>
           PLIST
 
+      - name: DEBUG signing state
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          echo "--- pbxproj PROVISIONING_PROFILE_SPECIFIER / CODE_SIGN_STYLE / CODE_SIGN_IDENTITY (LearnWithAlphonso target) ---"
+          grep -E "PROVISIONING_PROFILE_SPECIFIER|CODE_SIGN_STYLE|CODE_SIGN_IDENTITY" LearnWithAlphonso.xcodeproj/project.pbxproj || echo "(no matches)"
+          echo "--- installed provisioning profile UUID/Name/bundle-id-suffix ---"
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/ci.mobileprovision > /tmp/profile.plist
+          /usr/libexec/PlistBuddy -c "Print :UUID" /tmp/profile.plist
+          /usr/libexec/PlistBuddy -c "Print :Name" /tmp/profile.plist
+          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /tmp/profile.plist
+          echo "--- security find-identity (available signing identities in build.keychain) ---"
+          security find-identity -v -p codesigning build.keychain || true
+
       - name: Archive (manual signing with persisted certificate)
         working-directory: ios/LearnWithAlphonso
         env:
