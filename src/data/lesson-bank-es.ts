@@ -162,6 +162,90 @@ Yo ___ (estudiar) español.|estudio
 Yo ___ (llegar) tarde.|llego
 Yo ___ (empezar) ahora.|empiezo`,
   },
+  {
+    id: "esa1p6",
+    title: "Days & Time Expressions",
+    subtitle: "Talking about when",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Days of the week and common time words.",
+    data: `Monday|lunes
+Tuesday|martes
+Wednesday|miércoles
+Thursday|jueves
+Friday|viernes
+Saturday|sábado
+Sunday|domingo
+today|hoy
+tomorrow|mañana
+yesterday|ayer
+now|ahora
+later|luego
+week|semana
+month|mes
+year|año
+in the morning|por la mañana
+in the afternoon|por la tarde
+at night|por la noche
+early|temprano
+late|tarde`,
+  },
+  {
+    id: "esa1p7",
+    title: "Household Objects",
+    subtitle: "Around the house",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common household nouns.",
+    data: `house|casa
+room|habitación
+kitchen|cocina
+bathroom|baño
+bedroom|dormitorio
+table|mesa
+chair|silla
+bed|cama
+door|puerta
+window|ventana
+key|llave
+lamp|lámpara
+mirror|espejo
+clock|reloj
+television|televisor
+telephone|teléfono
+book|libro
+pen|bolígrafo
+paper|papel
+bag|bolsa`,
+  },
+  {
+    id: "esa1p8",
+    title: "Body Parts",
+    subtitle: "The human body",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Basic body-part vocabulary.",
+    data: `head|cabeza
+hair|pelo
+eye|ojo
+ear|oreja
+nose|nariz
+mouth|boca
+tooth|diente
+neck|cuello
+shoulder|hombro
+arm|brazo
+hand|mano
+finger|dedo
+leg|pierna
+knee|rodilla
+foot|pie
+back|espalda
+stomach|estómago
+heart|corazón
+skin|piel
+face|cara`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -316,6 +400,94 @@ Este edificio es el ___ alto de la ciudad.|más
 La comida aquí es ___ rica como en casa.|tan
 Este camino es ___ corto que el otro.|más
 Su idea es la ___ original de todas.|más`,
+  },
+  {
+    id: "esa2p6",
+    title: "Common Verbs (tú form)",
+    subtitle: "Present tense, informal you",
+    kind: "cloze",
+    note: 'Present-tense "tú" conjugation of common verbs.',
+    data: `Tú ___ (hablar) muy bien español.|hablas
+Tú ___ (comer) mucha fruta.|comes
+Tú ___ (vivir) en Madrid.|vives
+Tú ___ (tener) razón.|tienes
+Tú ___ (ser) muy amable.|eres
+Tú ___ (estar) cansado.|estás
+Tú ___ (ir) a la escuela.|vas
+Tú ___ (hacer) la tarea.|haces
+Tú ___ (querer) un café.|quieres
+Tú ___ (poder) ayudarme.|puedes
+Tú ___ (saber) la respuesta.|sabes
+Tú ___ (tomar) el autobús.|tomas
+Tú ___ (ver) la película.|ves
+Tú ___ (venir) a la fiesta.|vienes
+Tú ___ (decir) la verdad.|dices
+Tú ___ (dormir) bien.|duermes
+Tú ___ (beber) agua.|bebes
+Tú ___ (leer) el periódico.|lees
+Tú ___ (escribir) una carta.|escribes
+Tú ___ (jugar) al fútbol.|juegas
+Tú ___ (trabajar) mucho.|trabajas
+Tú ___ (estudiar) español.|estudias
+Tú ___ (llegar) tarde.|llegas
+Tú ___ (empezar) el proyecto.|empiezas
+Tú ___ (pedir) ayuda.|pides`,
+  },
+  {
+    id: "esa2p7",
+    title: "Shopping & Money",
+    subtitle: "At the store",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Shopping and money vocabulary.",
+    data: `money|dinero
+price|precio
+expensive|caro
+cheap|barato
+store|tienda
+to buy|comprar
+to sell|vender
+cash|efectivo
+credit card|tarjeta de crédito
+receipt|recibo
+discount|descuento
+size|talla
+change (money)|cambio
+wallet|cartera
+free (no cost)|gratis
+sale|rebaja
+to pay|pagar
+customer|cliente
+bill (invoice)|factura
+coin|moneda`,
+  },
+  {
+    id: "esa2p8",
+    title: "Hobbies & Free Time",
+    subtitle: "What do you like to do?",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Hobbies and leisure-activity vocabulary.",
+    data: `to read|leer
+to swim|nadar
+to dance|bailar
+to sing|cantar
+to paint|pintar
+to cook|cocinar
+to travel|viajar
+to run|correr
+to walk|caminar
+to draw|dibujar
+music|música
+movie|película
+game|juego
+sport|deporte
+soccer|fútbol
+guitar|guitarra
+photograph|fotografía
+garden|jardín
+to fish|pescar
+to camp|acampar`,
   },
 ];
 
@@ -472,6 +644,98 @@ estar como pez en el agua|to feel right at home
 no dar pie con bola|to keep getting it wrong
 tomar cartas en el asunto|to take action`,
   },
+  {
+    id: "esb1p6",
+    title: "Present Perfect",
+    subtitle: "haber + past participle",
+    kind: "cloze",
+    note: "Present perfect tense across several subjects.",
+    data: `Yo ___ (comer) ya.|he comido
+Tú ___ (terminar) el trabajo.|has terminado
+Ella ___ (llegar) tarde.|ha llegado
+Nosotros ___ (viajar) mucho.|hemos viajado
+Ellos ___ (ver) esa película.|han visto
+Yo ___ (hacer) mi tarea.|he hecho
+Tú ___ (escribir) la carta.|has escrito
+Él ___ (abrir) la puerta.|ha abierto
+Nosotras ___ (decir) la verdad.|hemos dicho
+Ellas ___ (poner) la mesa.|han puesto
+Yo nunca ___ (estar) en España.|he estado
+Tú ___ (romper) el vaso.|has roto
+Ella ___ (volver) a casa.|ha vuelto
+Nosotros ___ (resolver) el problema.|hemos resuelto
+Ellos ___ (descubrir) la verdad.|han descubierto
+Yo ___ (vivir) aquí diez años.|he vivido
+Tú ___ (leer) ese libro.|has leído
+Él ___ (cubrir) la mesa.|ha cubierto
+Nosotras ___ (freír) el pollo.|hemos freído
+Ellos ___ (imprimir) el documento.|han impreso
+Yo ___ (ganar) el partido.|he ganado
+Tú ___ (perder) las llaves.|has perdido
+Ella ___ (aprender) mucho.|ha aprendido
+Nosotros ___ (comprar) una casa.|hemos comprado
+Ellos ___ (llegar) temprano.|han llegado`,
+  },
+  {
+    id: "esb1p7",
+    title: "Ser vs. Estar",
+    subtitle: "Two verbs for 'to be'",
+    kind: "cloze",
+    note: "Ser (identity/traits) vs. estar (state/location), present tense.",
+    data: `Ella ___ (ser) doctora.|es
+Él ___ (estar) enfermo hoy.|está
+Nosotros ___ (ser) de México.|somos
+Ellos ___ (estar) en la playa.|están
+Yo ___ (ser) alto.|soy
+Tú ___ (estar) muy feliz.|estás
+El café ___ (estar) caliente.|está
+La casa ___ (ser) grande.|es
+Nosotras ___ (estar) cansadas.|estamos
+Ellas ___ (ser) profesoras.|son
+Yo ___ (estar) en casa.|estoy
+Tú ___ (ser) muy inteligente.|eres
+El cielo ___ (estar) nublado.|está
+La fiesta ___ (ser) el sábado.|es
+Nosotros ___ (estar) listos.|estamos
+Ellos ___ (ser) argentinos.|son
+Yo ___ (ser) estudiante.|soy
+Tú ___ (estar) preocupado.|estás
+El libro ___ (ser) interesante.|es
+La sopa ___ (estar) fría.|está
+Nosotras ___ (ser) hermanas.|somos
+Ellas ___ (estar) ocupadas.|están
+Yo ___ (estar) aburrido.|estoy
+Tú ___ (ser) muy amable.|eres
+El examen ___ (ser) difícil.|es`,
+  },
+  {
+    id: "esb1p8",
+    title: "Travel & Transportation",
+    subtitle: "Getting from A to B",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Travel and transportation vocabulary.",
+    data: `airplane|avión
+train|tren
+bus|autobús
+car|coche
+ship|barco
+bicycle|bicicleta
+ticket|boleto
+passport|pasaporte
+suitcase|maleta
+trip|viaje
+to fly|volar
+to arrive|llegar
+to depart|partir
+schedule|horario
+platform|andén
+seat|asiento
+luggage|equipaje
+customs|aduana
+tourist|turista
+map|mapa`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -622,6 +886,98 @@ Además ___ ser inteligente, es muy amable.|de
 Frente ___ la casa hay un jardín grande.|a
 Antes ___ salir, cierra la puerta con llave.|de`,
   },
+  {
+    id: "esb2p6",
+    title: "Relative Pronouns",
+    subtitle: "que, quien, cuyo",
+    kind: "cloze",
+    note: "Relative pronouns linking clauses.",
+    data: `El libro ___ leí es excelente.|que
+La mujer con ___ hablé es mi jefa.|quien
+El hombre ___ casa visitamos es mi tío.|cuya
+Los amigos ___ conocí son de Chile.|que
+La persona a ___ llamé no contestó.|quien
+El coche ___ compré es nuevo.|que
+La ciudad en ___ vivo es hermosa.|que
+El profesor ___ libro leímos es famoso.|cuyo
+Las chicas ___ vimos ayer son mis primas.|que
+El escritor ___ obras admiro nació en España.|cuyas
+La razón por ___ llegué tarde fue el tráfico.|la que
+El niño ___ juguete se rompió lloró.|cuyo
+Los países ___ visitamos fueron interesantes.|que
+La empresa para ___ trabajo es grande.|la que
+El equipo ___ ganó celebró mucho.|que
+La casa ___ ventanas son azules es mía.|cuyas
+Los estudiantes ___ estudian mucho aprueban.|que
+La actriz de ___ hablamos ganó un premio.|quien
+El parque ___ está cerca es bonito.|que
+Las noticias ___ escuché me sorprendieron.|que
+El médico ___ consulta visité es excelente.|cuya
+La canción ___ cantamos es popular.|que
+Los vecinos ___ perro ladra mucho se mudaron.|cuyo
+La idea ___ propuso fue aceptada.|que
+El amigo con ___ viajé vive en Lima.|quien`,
+  },
+  {
+    id: "esb2p7",
+    title: "Environment & Nature",
+    subtitle: "The natural world",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Environment and nature vocabulary.",
+    data: `environment|medio ambiente
+nature|naturaleza
+forest|bosque
+mountain|montaña
+river|río
+ocean|océano
+climate|clima
+pollution|contaminación
+recycling|reciclaje
+energy|energía
+sustainable|sostenible
+species|especie
+planet|planeta
+resource|recurso
+drought|sequía
+wildlife|fauna
+ecosystem|ecosistema
+renewable|renovable
+carbon|carbono
+biodiversity|biodiversidad`,
+  },
+  {
+    id: "esb2p8",
+    title: "Gerund & Present Progressive",
+    subtitle: "estar + gerundio",
+    kind: "cloze",
+    note: "Present progressive constructions with irregular gerunds included.",
+    data: `Ella está ___ (hablar) por teléfono.|hablando
+Yo estoy ___ (comer) ahora mismo.|comiendo
+Nosotros estamos ___ (escribir) un informe.|escribiendo
+Ellos están ___ (dormir) todavía.|durmiendo
+Tú estás ___ (leer) ese libro.|leyendo
+Yo estoy ___ (trabajar) en un proyecto.|trabajando
+Ella está ___ (pedir) ayuda.|pidiendo
+Nosotros estamos ___ (venir) hacia allá.|viniendo
+Ellos están ___ (decir) la verdad.|diciendo
+Tú estás ___ (sentir) mucho dolor.|sintiendo
+Yo estoy ___ (seguir) las instrucciones.|siguiendo
+Ella está ___ (repetir) la pregunta.|repitiendo
+Nosotros estamos ___ (construir) una casa.|construyendo
+Ellos están ___ (destruir) el edificio viejo.|destruyendo
+Tú estás ___ (creer) algo falso.|creyendo
+Yo estoy ___ (jugar) al tenis.|jugando
+Ella está ___ (estudiar) para el examen.|estudiando
+Nosotros estamos ___ (viajar) por Europa.|viajando
+Ellos están ___ (correr) en el parque.|corriendo
+Tú estás ___ (aprender) mucho.|aprendiendo
+Yo estoy ___ (mirar) la televisión.|mirando
+Ella está ___ (preparar) la cena.|preparando
+Nosotros estamos ___ (esperar) el autobús.|esperando
+Ellos están ___ (cantar) una canción.|cantando
+Tú estás ___ (bailar) muy bien.|bailando`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -767,6 +1123,98 @@ in the strictest sense|en el sentido más estricto
 paradoxically|paradójicamente
 by extension|por extensión
 in essence|en esencia`,
+  },
+  {
+    id: "esc1p6",
+    title: "Compound Tenses",
+    subtitle: "Pluperfect & future perfect",
+    kind: "cloze",
+    note: "Pluperfect (had done) and future perfect (will have done) tenses.",
+    data: `Cuando llegué, ella ya ___ (salir).|había salido
+Para el año próximo, yo ___ (terminar) mis estudios.|habré terminado
+Antes de la reunión, nosotros ya ___ (revisar) el informe.|habíamos revisado
+Para mañana, ellos ___ (completar) el proyecto.|habrán completado
+Cuando llamaste, yo ya ___ (comer).|había comido
+Para el viernes, tú ___ (recibir) la respuesta.|habrás recibido
+Antes de mudarnos, nosotros ___ (vivir) allí diez años.|habíamos vivido
+Cuando desperté, el sol ya ___ (salir).|había salido
+Para las ocho, ella ___ (llegar) a casa.|habrá llegado
+Antes del examen, yo ya ___ (estudiar) todo.|había estudiado
+Para entonces, ellos ya ___ (decidir).|habrán decidido
+Cuando abrí la puerta, el perro ya ___ (escapar).|había escapado
+Para el próximo mes, nosotros ___ (ahorrar) suficiente.|habremos ahorrado
+Antes de esa fecha, tú nunca ___ (viajar) al extranjero.|habías viajado
+Cuando volví, ellos ya ___ (limpiar) la casa.|habían limpiado
+Para diciembre, yo ___ (publicar) el libro.|habré publicado
+Antes de conocerte, yo ya ___ (mudarme) tres veces.|me había mudado
+Para esa hora, la tienda ya ___ (cerrar).|habrá cerrado
+Cuando llegamos, la película ya ___ (empezar).|había empezado
+Para el final del curso, los estudiantes ___ (aprender) mucho.|habrán aprendido
+Antes de esta noche, nunca había ___ (probar) ese plato.|probado
+Para el lunes, nosotros ___ (firmar) el contrato.|habremos firmado
+Cuando te vi, ya ___ (terminar) el trabajo.|había terminado
+Para entonces, ella ___ (cumplir) treinta años.|habrá cumplido
+Antes de irme, ya ___ (apagar) las luces.|había apagado`,
+  },
+  {
+    id: "esc1p7",
+    title: "Legal & Academic Vocabulary",
+    subtitle: "Formal institutional terms",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Legal and academic register vocabulary.",
+    data: `law|ley
+contract|contrato
+lawyer|abogado
+judge|juez
+court|tribunal
+evidence|prueba
+lawsuit|demanda
+regulation|reglamento
+clause|cláusula
+verdict|veredicto
+research|investigación
+thesis|tesis
+argument|argumento
+hypothesis|hipótesis
+methodology|metodología
+citation|cita
+conclusion|conclusión
+peer review|revisión por pares
+academic|académico
+scholarship|beca`,
+  },
+  {
+    id: "esc1p8",
+    title: "Advanced Reported Speech",
+    subtitle: "Direct to indirect speech",
+    kind: "cloze",
+    note: "Tense-shifting when converting direct speech to indirect (reported) speech.",
+    data: `Ella dijo: "Voy a venir." → Ella dijo que ___ a venir.|iba
+Él dijo: "Tengo hambre." → Él dijo que ___ hambre.|tenía
+Ellos dijeron: "Hemos terminado." → Ellos dijeron que ___ terminado.|habían
+Ella preguntó: "¿Vendrás mañana?" → Ella preguntó si ___ al día siguiente.|vendría
+Él afirmó: "Es la verdad." → Él afirmó que ___ la verdad.|era
+Ellos comentaron: "Nos gusta viajar." → Ellos comentaron que les ___ viajar.|gustaba
+Ella explicó: "No puedo ir." → Ella explicó que no ___ ir.|podía
+Él admitió: "Cometí un error." → Él admitió que ___ un error.|había cometido
+Ellos insistieron: "Queremos ayudar." → Ellos insistieron en que ___ ayudar.|querían
+Ella señaló: "El plan funcionará." → Ella señaló que el plan ___.|funcionaría
+Él prometió: "Volveré pronto." → Él prometió que ___ pronto.|volvería
+Ellos negaron: "No sabíamos nada." → Ellos negaron que ___ nada.|supieran
+Ella sugirió: "Deberíamos esperar." → Ella sugirió que ___ esperar.|deberían
+Él confesó: "Estoy nervioso." → Él confesó que ___ nervioso.|estaba
+Ellos anunciaron: "Ganamos el premio." → Ellos anunciaron que ___ el premio.|habían ganado
+Ella declaró: "Esto es importante." → Ella declaró que esto ___ importante.|era
+Él respondió: "No lo entiendo." → Él respondió que no lo ___.|entendía
+Ellos advirtieron: "Habrá problemas." → Ellos advirtieron que ___ problemas.|habría
+Ella recordó: "Debemos llegar temprano." → Ella recordó que ___ llegar temprano.|debían
+Él reconoció: "Necesito ayuda." → Él reconoció que ___ ayuda.|necesitaba
+Ellos concluyeron: "El experimento falló." → Ellos concluyeron que el experimento ___.|había fallado
+Ella observó: "Algo cambió." → Ella observó que algo ___.|había cambiado
+Él aseguró: "Todo está bien." → Él aseguró que todo ___ bien.|estaba
+Ellos repitieron: "No cambiaremos de opinión." → Ellos repitieron que no ___ de opinión.|cambiarían
+Ella subrayó: "Este punto es clave." → Ella subrayó que ese punto ___ clave.|era`,
   },
 ];
 

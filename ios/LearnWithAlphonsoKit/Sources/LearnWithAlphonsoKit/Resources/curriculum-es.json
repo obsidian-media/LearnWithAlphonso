@@ -1559,6 +1559,897 @@
       ]
     },
     {
+      "id": "esa1p6u1",
+      "level": "A1",
+      "eyebrow": "Unit 6",
+      "title": "Days & Time Expressions",
+      "description": "Talking about when — Days of the week and common time words.",
+      "lessons": [
+        {
+          "id": "esa1p6l1",
+          "title": "Days & Time Expressions 1",
+          "subtitle": "Talking about when",
+          "questions": [
+            {
+              "id": "esa1p6q0",
+              "type": "mc",
+              "prompt": "How do you say \"Monday\" in Spanish?",
+              "choices": [
+                "lunes",
+                "miércoles",
+                "ayer",
+                "por la tarde"
+              ],
+              "answer": 0,
+              "explanation": "Monday → lunes. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q1",
+              "type": "fill",
+              "prompt": "How do you say \"Tuesday\" in Spanish? ___",
+              "bank": [
+                "ahora",
+                "por la noche",
+                "martes",
+                "sábado"
+              ],
+              "answer": "martes",
+              "explanation": "Tuesday → martes. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q2",
+              "type": "mc",
+              "prompt": "How do you say \"Wednesday\" in Spanish?",
+              "choices": [
+                "domingo",
+                "temprano",
+                "miércoles",
+                "mes"
+              ],
+              "answer": 2,
+              "explanation": "Wednesday → miércoles. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q3",
+              "type": "fill",
+              "prompt": "How do you say \"Thursday\" in Spanish? ___",
+              "bank": [
+                "jueves",
+                "hoy",
+                "martes",
+                "año"
+              ],
+              "answer": "jueves",
+              "explanation": "Thursday → jueves. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q4",
+              "type": "mc",
+              "prompt": "How do you say \"Friday\" in Spanish?",
+              "choices": [
+                "viernes",
+                "por la mañana",
+                "miércoles",
+                "ahora"
+              ],
+              "answer": 0,
+              "explanation": "Friday → viernes. Days of the week and common time words."
+            }
+          ]
+        },
+        {
+          "id": "esa1p6l2",
+          "title": "Days & Time Expressions 2",
+          "subtitle": "Talking about when",
+          "questions": [
+            {
+              "id": "esa1p6q5",
+              "type": "fill",
+              "prompt": "How do you say \"Saturday\" in Spanish? ___",
+              "bank": [
+                "temprano",
+                "jueves",
+                "luego",
+                "sábado"
+              ],
+              "answer": "sábado",
+              "explanation": "Saturday → sábado. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q6",
+              "type": "mc",
+              "prompt": "How do you say \"Sunday\" in Spanish?",
+              "choices": [
+                "tarde",
+                "semana",
+                "domingo",
+                "hoy"
+              ],
+              "answer": 2,
+              "explanation": "Sunday → domingo. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q7",
+              "type": "fill",
+              "prompt": "How do you say \"today\" in Spanish? ___",
+              "bank": [
+                "hoy",
+                "lunes",
+                "por la mañana",
+                "mañana"
+              ],
+              "answer": "hoy",
+              "explanation": "today → hoy. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q8",
+              "type": "mc",
+              "prompt": "How do you say \"tomorrow\" in Spanish?",
+              "choices": [
+                "mañana",
+                "año",
+                "martes",
+                "ayer"
+              ],
+              "answer": 0,
+              "explanation": "tomorrow → mañana. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q9",
+              "type": "fill",
+              "prompt": "How do you say \"yesterday\" in Spanish? ___",
+              "bank": [
+                "miércoles",
+                "ahora",
+                "ayer",
+                "por la noche"
+              ],
+              "answer": "ayer",
+              "explanation": "yesterday → ayer. Days of the week and common time words."
+            }
+          ]
+        },
+        {
+          "id": "esa1p6l3",
+          "title": "Days & Time Expressions 3",
+          "subtitle": "Talking about when",
+          "questions": [
+            {
+              "id": "esa1p6q10",
+              "type": "fill",
+              "prompt": "How do you say \"now\" in Spanish? ___",
+              "bank": [
+                "ahora",
+                "hoy",
+                "lunes",
+                "por la mañana"
+              ],
+              "answer": "ahora",
+              "explanation": "now → ahora. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q11",
+              "type": "mc",
+              "prompt": "How do you say \"later\" in Spanish?",
+              "choices": [
+                "tarde",
+                "semana",
+                "luego",
+                "domingo"
+              ],
+              "answer": 2,
+              "explanation": "later → luego. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q12",
+              "type": "fill",
+              "prompt": "How do you say \"week\" in Spanish? ___",
+              "bank": [
+                "ahora",
+                "semana",
+                "jueves",
+                "temprano"
+              ],
+              "answer": "semana",
+              "explanation": "week → semana. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q13",
+              "type": "mc",
+              "prompt": "How do you say \"month\" in Spanish?",
+              "choices": [
+                "mes",
+                "por la mañana",
+                "miércoles",
+                "ayer"
+              ],
+              "answer": 0,
+              "explanation": "month → mes. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q14",
+              "type": "fill",
+              "prompt": "How do you say \"year\" in Spanish? ___",
+              "bank": [
+                "martes",
+                "mes",
+                "año",
+                "mañana"
+              ],
+              "answer": "año",
+              "explanation": "year → año. Days of the week and common time words."
+            }
+          ]
+        },
+        {
+          "id": "esa1p6l4",
+          "title": "Days & Time Expressions 4",
+          "subtitle": "Talking about when",
+          "questions": [
+            {
+              "id": "esa1p6q15",
+              "type": "mc",
+              "prompt": "How do you say \"in the morning\" in Spanish?",
+              "choices": [
+                "semana",
+                "sábado",
+                "por la mañana",
+                "lunes"
+              ],
+              "answer": 2,
+              "explanation": "in the morning → por la mañana. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q16",
+              "type": "fill",
+              "prompt": "How do you say \"in the afternoon\" in Spanish? ___",
+              "bank": [
+                "viernes",
+                "por la tarde",
+                "por la noche",
+                "luego"
+              ],
+              "answer": "por la tarde",
+              "explanation": "in the afternoon → por la tarde. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q17",
+              "type": "mc",
+              "prompt": "How do you say \"at night\" in Spanish?",
+              "choices": [
+                "por la noche",
+                "mañana",
+                "por la mañana",
+                "jueves"
+              ],
+              "answer": 0,
+              "explanation": "at night → por la noche. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q18",
+              "type": "fill",
+              "prompt": "How do you say \"early\" in Spanish? ___",
+              "bank": [
+                "semana",
+                "hoy",
+                "lunes",
+                "temprano"
+              ],
+              "answer": "temprano",
+              "explanation": "early → temprano. Days of the week and common time words."
+            },
+            {
+              "id": "esa1p6q19",
+              "type": "mc",
+              "prompt": "How do you say \"late\" in Spanish?",
+              "choices": [
+                "luego",
+                "viernes",
+                "tarde",
+                "temprano"
+              ],
+              "answer": 2,
+              "explanation": "late → tarde. Days of the week and common time words."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa1p7u1",
+      "level": "A1",
+      "eyebrow": "Unit 7",
+      "title": "Household Objects",
+      "description": "Around the house — Common household nouns.",
+      "lessons": [
+        {
+          "id": "esa1p7l1",
+          "title": "Household Objects 1",
+          "subtitle": "Around the house",
+          "questions": [
+            {
+              "id": "esa1p7q0",
+              "type": "fill",
+              "prompt": "How do you say \"house\" in Spanish? ___",
+              "bank": [
+                "libro",
+                "dormitorio",
+                "casa",
+                "ventana"
+              ],
+              "answer": "casa",
+              "explanation": "house → casa. Common household nouns."
+            },
+            {
+              "id": "esa1p7q1",
+              "type": "mc",
+              "prompt": "How do you say \"room\" in Spanish?",
+              "choices": [
+                "habitación",
+                "bolígrafo",
+                "mesa",
+                "espejo"
+              ],
+              "answer": 0,
+              "explanation": "room → habitación. Common household nouns."
+            },
+            {
+              "id": "esa1p7q2",
+              "type": "fill",
+              "prompt": "How do you say \"kitchen\" in Spanish? ___",
+              "bank": [
+                "espejo",
+                "bolsa",
+                "cocina",
+                "cama"
+              ],
+              "answer": "cocina",
+              "explanation": "kitchen → cocina. Common household nouns."
+            },
+            {
+              "id": "esa1p7q3",
+              "type": "mc",
+              "prompt": "How do you say \"bathroom\" in Spanish?",
+              "choices": [
+                "puerta",
+                "casa",
+                "baño",
+                "teléfono"
+              ],
+              "answer": 2,
+              "explanation": "bathroom → baño. Common household nouns."
+            },
+            {
+              "id": "esa1p7q4",
+              "type": "fill",
+              "prompt": "How do you say \"bedroom\" in Spanish? ___",
+              "bank": [
+                "cocina",
+                "llave",
+                "dormitorio",
+                "bolígrafo"
+              ],
+              "answer": "dormitorio",
+              "explanation": "bedroom → dormitorio. Common household nouns."
+            }
+          ]
+        },
+        {
+          "id": "esa1p7l2",
+          "title": "Household Objects 2",
+          "subtitle": "Around the house",
+          "questions": [
+            {
+              "id": "esa1p7q5",
+              "type": "mc",
+              "prompt": "How do you say \"table\" in Spanish?",
+              "choices": [
+                "mesa",
+                "lámpara",
+                "papel",
+                "silla"
+              ],
+              "answer": 0,
+              "explanation": "table → mesa. Common household nouns."
+            },
+            {
+              "id": "esa1p7q6",
+              "type": "fill",
+              "prompt": "How do you say \"chair\" in Spanish? ___",
+              "bank": [
+                "mesa",
+                "silla",
+                "casa",
+                "reloj"
+              ],
+              "answer": "silla",
+              "explanation": "chair → silla. Common household nouns."
+            },
+            {
+              "id": "esa1p7q7",
+              "type": "mc",
+              "prompt": "How do you say \"bed\" in Spanish?",
+              "choices": [
+                "habitación",
+                "televisor",
+                "cama",
+                "ventana"
+              ],
+              "answer": 2,
+              "explanation": "bed → cama. Common household nouns."
+            },
+            {
+              "id": "esa1p7q8",
+              "type": "fill",
+              "prompt": "How do you say \"door\" in Spanish? ___",
+              "bank": [
+                "lámpara",
+                "libro",
+                "puerta",
+                "baño"
+              ],
+              "answer": "puerta",
+              "explanation": "door → puerta. Common household nouns."
+            },
+            {
+              "id": "esa1p7q9",
+              "type": "mc",
+              "prompt": "How do you say \"window\" in Spanish?",
+              "choices": [
+                "ventana",
+                "dormitorio",
+                "espejo",
+                "bolsa"
+              ],
+              "answer": 0,
+              "explanation": "window → ventana. Common household nouns."
+            }
+          ]
+        },
+        {
+          "id": "esa1p7l3",
+          "title": "Household Objects 3",
+          "subtitle": "Around the house",
+          "questions": [
+            {
+              "id": "esa1p7q10",
+              "type": "mc",
+              "prompt": "How do you say \"key\" in Spanish?",
+              "choices": [
+                "llave",
+                "baño",
+                "lámpara",
+                "papel"
+              ],
+              "answer": 0,
+              "explanation": "key → llave. Common household nouns."
+            },
+            {
+              "id": "esa1p7q11",
+              "type": "fill",
+              "prompt": "How do you say \"lamp\" in Spanish? ___",
+              "bank": [
+                "lámpara",
+                "teléfono",
+                "ventana",
+                "cocina"
+              ],
+              "answer": "lámpara",
+              "explanation": "lamp → lámpara. Common household nouns."
+            },
+            {
+              "id": "esa1p7q12",
+              "type": "mc",
+              "prompt": "How do you say \"mirror\" in Spanish?",
+              "choices": [
+                "televisor",
+                "silla",
+                "espejo",
+                "habitación"
+              ],
+              "answer": 2,
+              "explanation": "mirror → espejo. Common household nouns."
+            },
+            {
+              "id": "esa1p7q13",
+              "type": "fill",
+              "prompt": "How do you say \"clock\" in Spanish? ___",
+              "bank": [
+                "reloj",
+                "mesa",
+                "papel",
+                "espejo"
+              ],
+              "answer": "reloj",
+              "explanation": "clock → reloj. Common household nouns."
+            },
+            {
+              "id": "esa1p7q14",
+              "type": "mc",
+              "prompt": "How do you say \"television\" in Spanish?",
+              "choices": [
+                "televisor",
+                "bolígrafo",
+                "dormitorio",
+                "lámpara"
+              ],
+              "answer": 0,
+              "explanation": "television → televisor. Common household nouns."
+            }
+          ]
+        },
+        {
+          "id": "esa1p7l4",
+          "title": "Household Objects 4",
+          "subtitle": "Around the house",
+          "questions": [
+            {
+              "id": "esa1p7q15",
+              "type": "fill",
+              "prompt": "How do you say \"telephone\" in Spanish? ___",
+              "bank": [
+                "puerta",
+                "baño",
+                "teléfono",
+                "libro"
+              ],
+              "answer": "teléfono",
+              "explanation": "telephone → teléfono. Common household nouns."
+            },
+            {
+              "id": "esa1p7q16",
+              "type": "mc",
+              "prompt": "How do you say \"book\" in Spanish?",
+              "choices": [
+                "cama",
+                "casa",
+                "libro",
+                "televisor"
+              ],
+              "answer": 2,
+              "explanation": "book → libro. Common household nouns."
+            },
+            {
+              "id": "esa1p7q17",
+              "type": "fill",
+              "prompt": "How do you say \"pen\" in Spanish? ___",
+              "bank": [
+                "lámpara",
+                "bolsa",
+                "silla",
+                "bolígrafo"
+              ],
+              "answer": "bolígrafo",
+              "explanation": "pen → bolígrafo. Common household nouns."
+            },
+            {
+              "id": "esa1p7q18",
+              "type": "mc",
+              "prompt": "How do you say \"paper\" in Spanish?",
+              "choices": [
+                "papel",
+                "teléfono",
+                "baño",
+                "llave"
+              ],
+              "answer": 0,
+              "explanation": "paper → papel. Common household nouns."
+            },
+            {
+              "id": "esa1p7q19",
+              "type": "fill",
+              "prompt": "How do you say \"bag\" in Spanish? ___",
+              "bank": [
+                "bolsa",
+                "televisor",
+                "cama",
+                "cocina"
+              ],
+              "answer": "bolsa",
+              "explanation": "bag → bolsa. Common household nouns."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa1p8u1",
+      "level": "A1",
+      "eyebrow": "Unit 8",
+      "title": "Body Parts",
+      "description": "The human body — Basic body-part vocabulary.",
+      "lessons": [
+        {
+          "id": "esa1p8l1",
+          "title": "Body Parts 1",
+          "subtitle": "The human body",
+          "questions": [
+            {
+              "id": "esa1p8q0",
+              "type": "mc",
+              "prompt": "How do you say \"head\" in Spanish?",
+              "choices": [
+                "piel",
+                "dedo",
+                "cabeza",
+                "diente"
+              ],
+              "answer": 2,
+              "explanation": "head → cabeza. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q1",
+              "type": "fill",
+              "prompt": "How do you say \"hair\" in Spanish? ___",
+              "bank": [
+                "cuello",
+                "pelo",
+                "cara",
+                "pie"
+              ],
+              "answer": "pelo",
+              "explanation": "hair → pelo. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q2",
+              "type": "mc",
+              "prompt": "How do you say \"eye\" in Spanish?",
+              "choices": [
+                "ojo",
+                "pie",
+                "pelo",
+                "brazo"
+              ],
+              "answer": 0,
+              "explanation": "eye → ojo. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q3",
+              "type": "fill",
+              "prompt": "How do you say \"ear\" in Spanish? ___",
+              "bank": [
+                "mano",
+                "ojo",
+                "corazón",
+                "oreja"
+              ],
+              "answer": "oreja",
+              "explanation": "ear → oreja. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q4",
+              "type": "mc",
+              "prompt": "How do you say \"nose\" in Spanish?",
+              "choices": [
+                "pierna",
+                "boca",
+                "nariz",
+                "cara"
+              ],
+              "answer": 2,
+              "explanation": "nose → nariz. Basic body-part vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa1p8l2",
+          "title": "Body Parts 2",
+          "subtitle": "The human body",
+          "questions": [
+            {
+              "id": "esa1p8q5",
+              "type": "fill",
+              "prompt": "How do you say \"mouth\" in Spanish? ___",
+              "bank": [
+                "rodilla",
+                "hombro",
+                "cabeza",
+                "boca"
+              ],
+              "answer": "boca",
+              "explanation": "mouth → boca. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q6",
+              "type": "mc",
+              "prompt": "How do you say \"tooth\" in Spanish?",
+              "choices": [
+                "diente",
+                "hombro",
+                "espalda",
+                "ojo"
+              ],
+              "answer": 0,
+              "explanation": "tooth → diente. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q7",
+              "type": "fill",
+              "prompt": "How do you say \"neck\" in Spanish? ___",
+              "bank": [
+                "dedo",
+                "cuello",
+                "estómago",
+                "oreja"
+              ],
+              "answer": "cuello",
+              "explanation": "neck → cuello. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q8",
+              "type": "mc",
+              "prompt": "How do you say \"shoulder\" in Spanish?",
+              "choices": [
+                "boca",
+                "piel",
+                "hombro",
+                "rodilla"
+              ],
+              "answer": 2,
+              "explanation": "shoulder → hombro. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q9",
+              "type": "fill",
+              "prompt": "How do you say \"arm\" in Spanish? ___",
+              "bank": [
+                "pelo",
+                "pie",
+                "brazo",
+                "diente"
+              ],
+              "answer": "brazo",
+              "explanation": "arm → brazo. Basic body-part vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa1p8l3",
+          "title": "Body Parts 3",
+          "subtitle": "The human body",
+          "questions": [
+            {
+              "id": "esa1p8q10",
+              "type": "fill",
+              "prompt": "How do you say \"hand\" in Spanish? ___",
+              "bank": [
+                "cuello",
+                "rodilla",
+                "cabeza",
+                "mano"
+              ],
+              "answer": "mano",
+              "explanation": "hand → mano. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q11",
+              "type": "mc",
+              "prompt": "How do you say \"finger\" in Spanish?",
+              "choices": [
+                "dedo",
+                "pelo",
+                "hombro",
+                "estómago"
+              ],
+              "answer": 0,
+              "explanation": "finger → dedo. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q12",
+              "type": "fill",
+              "prompt": "How do you say \"leg\" in Spanish? ___",
+              "bank": [
+                "oreja",
+                "estómago",
+                "pierna",
+                "mano"
+              ],
+              "answer": "pierna",
+              "explanation": "leg → pierna. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q13",
+              "type": "mc",
+              "prompt": "How do you say \"knee\" in Spanish?",
+              "choices": [
+                "dedo",
+                "nariz",
+                "rodilla",
+                "cara"
+              ],
+              "answer": 2,
+              "explanation": "knee → rodilla. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q14",
+              "type": "fill",
+              "prompt": "How do you say \"foot\" in Spanish? ___",
+              "bank": [
+                "pie",
+                "diente",
+                "rodilla",
+                "cara"
+              ],
+              "answer": "pie",
+              "explanation": "foot → pie. Basic body-part vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa1p8l4",
+          "title": "Body Parts 4",
+          "subtitle": "The human body",
+          "questions": [
+            {
+              "id": "esa1p8q15",
+              "type": "mc",
+              "prompt": "How do you say \"back\" in Spanish?",
+              "choices": [
+                "espalda",
+                "cuello",
+                "pie",
+                "ojo"
+              ],
+              "answer": 0,
+              "explanation": "back → espalda. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q16",
+              "type": "fill",
+              "prompt": "How do you say \"stomach\" in Spanish? ___",
+              "bank": [
+                "brazo",
+                "estómago",
+                "corazón",
+                "ojo"
+              ],
+              "answer": "estómago",
+              "explanation": "stomach → estómago. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q17",
+              "type": "mc",
+              "prompt": "How do you say \"heart\" in Spanish?",
+              "choices": [
+                "piel",
+                "mano",
+                "corazón",
+                "boca"
+              ],
+              "answer": 2,
+              "explanation": "heart → corazón. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q18",
+              "type": "fill",
+              "prompt": "How do you say \"skin\" in Spanish? ___",
+              "bank": [
+                "pie",
+                "cuello",
+                "piel",
+                "cabeza"
+              ],
+              "answer": "piel",
+              "explanation": "skin → piel. Basic body-part vocabulary."
+            },
+            {
+              "id": "esa1p8q19",
+              "type": "mc",
+              "prompt": "How do you say \"face\" in Spanish?",
+              "choices": [
+                "cara",
+                "hombro",
+                "espalda",
+                "oreja"
+              ],
+              "answer": 0,
+              "explanation": "face → cara. Basic body-part vocabulary."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esa2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -3226,6 +4117,969 @@
               ],
               "answer": 0,
               "explanation": "\"más\" is correct here. Comparative and superlative structures."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p6u1",
+      "level": "A2",
+      "eyebrow": "Unit 6",
+      "title": "Common Verbs (tú form)",
+      "description": "Present tense, informal you — Present-tense \"tú\" conjugation of common verbs.",
+      "lessons": [
+        {
+          "id": "esa2p6l1",
+          "title": "Common Verbs (tú form) 1",
+          "subtitle": "Present tense, informal you",
+          "questions": [
+            {
+              "id": "esa2p6q0",
+              "type": "fill",
+              "prompt": "Tú ___ (hablar) muy bien español.",
+              "bank": [
+                "bebes",
+                "hablas",
+                "empiezas",
+                "vas"
+              ],
+              "answer": "hablas",
+              "explanation": "\"hablas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q1",
+              "type": "mc",
+              "prompt": "Tú ___ (comer) mucha fruta.",
+              "choices": [
+                "sabes",
+                "tienes",
+                "comes",
+                "lees"
+              ],
+              "answer": 2,
+              "explanation": "\"comes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q2",
+              "type": "fill",
+              "prompt": "Tú ___ (vivir) en Madrid.",
+              "bank": [
+                "eres",
+                "vives",
+                "dices",
+                "estudias"
+              ],
+              "answer": "vives",
+              "explanation": "\"vives\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q3",
+              "type": "mc",
+              "prompt": "Tú ___ (tener) razón.",
+              "choices": [
+                "tienes",
+                "hablas",
+                "quieres",
+                "duermes"
+              ],
+              "answer": 0,
+              "explanation": "\"tienes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q4",
+              "type": "fill",
+              "prompt": "Tú ___ (ser) muy amable.",
+              "bank": [
+                "eres",
+                "vives",
+                "sabes",
+                "trabajas"
+              ],
+              "answer": "eres",
+              "explanation": "\"eres\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            }
+          ]
+        },
+        {
+          "id": "esa2p6l2",
+          "title": "Common Verbs (tú form) 2",
+          "subtitle": "Present tense, informal you",
+          "questions": [
+            {
+              "id": "esa2p6q5",
+              "type": "mc",
+              "prompt": "Tú ___ (estar) cansado.",
+              "choices": [
+                "dices",
+                "haces",
+                "estás",
+                "estudias"
+              ],
+              "answer": 2,
+              "explanation": "\"estás\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q6",
+              "type": "fill",
+              "prompt": "Tú ___ (ir) a la escuela.",
+              "bank": [
+                "escribes",
+                "quieres",
+                "hablas",
+                "vas"
+              ],
+              "answer": "vas",
+              "explanation": "\"vas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q7",
+              "type": "mc",
+              "prompt": "Tú ___ (hacer) la tarea.",
+              "choices": [
+                "haces",
+                "eres",
+                "ves",
+                "juegas"
+              ],
+              "answer": 0,
+              "explanation": "\"haces\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q8",
+              "type": "fill",
+              "prompt": "Tú ___ (querer) un café.",
+              "bank": [
+                "haces",
+                "llegas",
+                "quieres",
+                "duermes"
+              ],
+              "answer": "quieres",
+              "explanation": "\"quieres\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q9",
+              "type": "mc",
+              "prompt": "Tú ___ (poder) ayudarme.",
+              "choices": [
+                "comes",
+                "juegas",
+                "puedes",
+                "quieres"
+              ],
+              "answer": 2,
+              "explanation": "\"puedes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            }
+          ]
+        },
+        {
+          "id": "esa2p6l3",
+          "title": "Common Verbs (tú form) 3",
+          "subtitle": "Present tense, informal you",
+          "questions": [
+            {
+              "id": "esa2p6q10",
+              "type": "mc",
+              "prompt": "Tú ___ (saber) la respuesta.",
+              "choices": [
+                "escribes",
+                "tomas",
+                "sabes",
+                "hablas"
+              ],
+              "answer": 2,
+              "explanation": "\"sabes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q11",
+              "type": "fill",
+              "prompt": "Tú ___ (tomar) el autobús.",
+              "bank": [
+                "tomas",
+                "ves",
+                "eres",
+                "llegas"
+              ],
+              "answer": "tomas",
+              "explanation": "\"tomas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q12",
+              "type": "mc",
+              "prompt": "Tú ___ (ver) la película.",
+              "choices": [
+                "ves",
+                "vienes",
+                "trabajas",
+                "vives"
+              ],
+              "answer": 0,
+              "explanation": "\"ves\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q13",
+              "type": "fill",
+              "prompt": "Tú ___ (venir) a la fiesta.",
+              "bank": [
+                "dices",
+                "pides",
+                "vienes",
+                "vas"
+              ],
+              "answer": "vienes",
+              "explanation": "\"vienes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q14",
+              "type": "mc",
+              "prompt": "Tú ___ (decir) la verdad.",
+              "choices": [
+                "llegas",
+                "duermes",
+                "dices",
+                "eres"
+              ],
+              "answer": 2,
+              "explanation": "\"dices\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            }
+          ]
+        },
+        {
+          "id": "esa2p6l4",
+          "title": "Common Verbs (tú form) 4",
+          "subtitle": "Present tense, informal you",
+          "questions": [
+            {
+              "id": "esa2p6q15",
+              "type": "fill",
+              "prompt": "Tú ___ (dormir) bien.",
+              "bank": [
+                "quieres",
+                "bebes",
+                "duermes",
+                "comes"
+              ],
+              "answer": "duermes",
+              "explanation": "\"duermes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q16",
+              "type": "mc",
+              "prompt": "Tú ___ (beber) agua.",
+              "choices": [
+                "bebes",
+                "lees",
+                "pides",
+                "vas"
+              ],
+              "answer": 0,
+              "explanation": "\"bebes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q17",
+              "type": "fill",
+              "prompt": "Tú ___ (leer) el periódico.",
+              "bank": [
+                "escribes",
+                "sabes",
+                "tienes",
+                "lees"
+              ],
+              "answer": "lees",
+              "explanation": "\"lees\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q18",
+              "type": "mc",
+              "prompt": "Tú ___ (escribir) una carta.",
+              "choices": [
+                "comes",
+                "juegas",
+                "escribes",
+                "quieres"
+              ],
+              "answer": 2,
+              "explanation": "\"escribes\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q19",
+              "type": "fill",
+              "prompt": "Tú ___ (jugar) al fútbol.",
+              "bank": [
+                "ves",
+                "juegas",
+                "trabajas",
+                "estás"
+              ],
+              "answer": "juegas",
+              "explanation": "\"juegas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            }
+          ]
+        },
+        {
+          "id": "esa2p6l5",
+          "title": "Common Verbs (tú form) 5",
+          "subtitle": "Present tense, informal you",
+          "questions": [
+            {
+              "id": "esa2p6q20",
+              "type": "fill",
+              "prompt": "Tú ___ (trabajar) mucho.",
+              "bank": [
+                "hablas",
+                "trabajas",
+                "haces",
+                "lees"
+              ],
+              "answer": "trabajas",
+              "explanation": "\"trabajas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q21",
+              "type": "mc",
+              "prompt": "Tú ___ (estudiar) español.",
+              "choices": [
+                "vienes",
+                "vas",
+                "estudias",
+                "trabajas"
+              ],
+              "answer": 2,
+              "explanation": "\"estudias\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q22",
+              "type": "fill",
+              "prompt": "Tú ___ (llegar) tarde.",
+              "bank": [
+                "juegas",
+                "vives",
+                "llegas",
+                "puedes"
+              ],
+              "answer": "llegas",
+              "explanation": "\"llegas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q23",
+              "type": "mc",
+              "prompt": "Tú ___ (empezar) el proyecto.",
+              "choices": [
+                "empiezas",
+                "quieres",
+                "duermes",
+                "llegas"
+              ],
+              "answer": 0,
+              "explanation": "\"empiezas\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            },
+            {
+              "id": "esa2p6q24",
+              "type": "fill",
+              "prompt": "Tú ___ (pedir) ayuda.",
+              "bank": [
+                "vienes",
+                "tienes",
+                "pides",
+                "trabajas"
+              ],
+              "answer": "pides",
+              "explanation": "\"pides\" is correct here. Present-tense \"tú\" conjugation of common verbs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p7u1",
+      "level": "A2",
+      "eyebrow": "Unit 7",
+      "title": "Shopping & Money",
+      "description": "At the store — Shopping and money vocabulary.",
+      "lessons": [
+        {
+          "id": "esa2p7l1",
+          "title": "Shopping & Money 1",
+          "subtitle": "At the store",
+          "questions": [
+            {
+              "id": "esa2p7q0",
+              "type": "mc",
+              "prompt": "How do you say \"money\" in Spanish?",
+              "choices": [
+                "vender",
+                "factura",
+                "dinero",
+                "cartera"
+              ],
+              "answer": 2,
+              "explanation": "money → dinero. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q1",
+              "type": "fill",
+              "prompt": "How do you say \"price\" in Spanish? ___",
+              "bank": [
+                "precio",
+                "cliente",
+                "descuento",
+                "comprar"
+              ],
+              "answer": "precio",
+              "explanation": "price → precio. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q2",
+              "type": "mc",
+              "prompt": "How do you say \"expensive\" in Spanish?",
+              "choices": [
+                "caro",
+                "rebaja",
+                "barato",
+                "descuento"
+              ],
+              "answer": 0,
+              "explanation": "expensive → caro. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q3",
+              "type": "fill",
+              "prompt": "How do you say \"cheap\" in Spanish? ___",
+              "bank": [
+                "barato",
+                "precio",
+                "efectivo",
+                "gratis"
+              ],
+              "answer": "barato",
+              "explanation": "cheap → barato. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q4",
+              "type": "mc",
+              "prompt": "How do you say \"store\" in Spanish?",
+              "choices": [
+                "moneda",
+                "cambio",
+                "tienda",
+                "efectivo"
+              ],
+              "answer": 2,
+              "explanation": "store → tienda. Shopping and money vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p7l2",
+          "title": "Shopping & Money 2",
+          "subtitle": "At the store",
+          "questions": [
+            {
+              "id": "esa2p7q5",
+              "type": "fill",
+              "prompt": "How do you say \"to buy\" in Spanish? ___",
+              "bank": [
+                "factura",
+                "barato",
+                "talla",
+                "comprar"
+              ],
+              "answer": "comprar",
+              "explanation": "to buy → comprar. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q6",
+              "type": "mc",
+              "prompt": "How do you say \"to sell\" in Spanish?",
+              "choices": [
+                "vender",
+                "recibo",
+                "pagar",
+                "barato"
+              ],
+              "answer": 0,
+              "explanation": "to sell → vender. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q7",
+              "type": "fill",
+              "prompt": "How do you say \"cash\" in Spanish? ___",
+              "bank": [
+                "tarjeta de crédito",
+                "rebaja",
+                "efectivo",
+                "dinero"
+              ],
+              "answer": "efectivo",
+              "explanation": "cash → efectivo. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q8",
+              "type": "mc",
+              "prompt": "How do you say \"credit card\" in Spanish?",
+              "choices": [
+                "cartera",
+                "comprar",
+                "tarjeta de crédito",
+                "dinero"
+              ],
+              "answer": 2,
+              "explanation": "credit card → tarjeta de crédito. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q9",
+              "type": "fill",
+              "prompt": "How do you say \"receipt\" in Spanish? ___",
+              "bank": [
+                "cliente",
+                "tienda",
+                "cambio",
+                "recibo"
+              ],
+              "answer": "recibo",
+              "explanation": "receipt → recibo. Shopping and money vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p7l3",
+          "title": "Shopping & Money 3",
+          "subtitle": "At the store",
+          "questions": [
+            {
+              "id": "esa2p7q10",
+              "type": "fill",
+              "prompt": "How do you say \"discount\" in Spanish? ___",
+              "bank": [
+                "pagar",
+                "talla",
+                "barato",
+                "descuento"
+              ],
+              "answer": "descuento",
+              "explanation": "discount → descuento. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q11",
+              "type": "mc",
+              "prompt": "How do you say \"size\" in Spanish?",
+              "choices": [
+                "talla",
+                "efectivo",
+                "rebaja",
+                "caro"
+              ],
+              "answer": 0,
+              "explanation": "size → talla. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q12",
+              "type": "fill",
+              "prompt": "How do you say \"change (money)\" in Spanish? ___",
+              "bank": [
+                "dinero",
+                "cartera",
+                "cambio",
+                "efectivo"
+              ],
+              "answer": "cambio",
+              "explanation": "change (money) → cambio. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q13",
+              "type": "mc",
+              "prompt": "How do you say \"wallet\" in Spanish?",
+              "choices": [
+                "talla",
+                "tienda",
+                "cartera",
+                "moneda"
+              ],
+              "answer": 2,
+              "explanation": "wallet → cartera. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q14",
+              "type": "fill",
+              "prompt": "How do you say \"free (no cost)\" in Spanish? ___",
+              "bank": [
+                "caro",
+                "gratis",
+                "cliente",
+                "recibo"
+              ],
+              "answer": "gratis",
+              "explanation": "free (no cost) → gratis. Shopping and money vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p7l4",
+          "title": "Shopping & Money 4",
+          "subtitle": "At the store",
+          "questions": [
+            {
+              "id": "esa2p7q15",
+              "type": "mc",
+              "prompt": "How do you say \"sale\" in Spanish?",
+              "choices": [
+                "rebaja",
+                "cartera",
+                "precio",
+                "tarjeta de crédito"
+              ],
+              "answer": 0,
+              "explanation": "sale → rebaja. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q16",
+              "type": "fill",
+              "prompt": "How do you say \"to pay\" in Spanish? ___",
+              "bank": [
+                "pagar",
+                "cartera",
+                "moneda",
+                "vender"
+              ],
+              "answer": "pagar",
+              "explanation": "to pay → pagar. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q17",
+              "type": "mc",
+              "prompt": "How do you say \"customer\" in Spanish?",
+              "choices": [
+                "factura",
+                "descuento",
+                "cliente",
+                "comprar"
+              ],
+              "answer": 2,
+              "explanation": "customer → cliente. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q18",
+              "type": "fill",
+              "prompt": "How do you say \"bill (invoice)\" in Spanish? ___",
+              "bank": [
+                "tarjeta de crédito",
+                "barato",
+                "rebaja",
+                "factura"
+              ],
+              "answer": "factura",
+              "explanation": "bill (invoice) → factura. Shopping and money vocabulary."
+            },
+            {
+              "id": "esa2p7q19",
+              "type": "mc",
+              "prompt": "How do you say \"coin\" in Spanish?",
+              "choices": [
+                "moneda",
+                "dinero",
+                "efectivo",
+                "gratis"
+              ],
+              "answer": 0,
+              "explanation": "coin → moneda. Shopping and money vocabulary."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p8u1",
+      "level": "A2",
+      "eyebrow": "Unit 8",
+      "title": "Hobbies & Free Time",
+      "description": "What do you like to do? — Hobbies and leisure-activity vocabulary.",
+      "lessons": [
+        {
+          "id": "esa2p8l1",
+          "title": "Hobbies & Free Time 1",
+          "subtitle": "What do you like to do?",
+          "questions": [
+            {
+              "id": "esa2p8q0",
+              "type": "fill",
+              "prompt": "How do you say \"to read\" in Spanish? ___",
+              "bank": [
+                "caminar",
+                "leer",
+                "nadar",
+                "deporte"
+              ],
+              "answer": "leer",
+              "explanation": "to read → leer. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q1",
+              "type": "mc",
+              "prompt": "How do you say \"to swim\" in Spanish?",
+              "choices": [
+                "nadar",
+                "bailar",
+                "dibujar",
+                "fotografía"
+              ],
+              "answer": 0,
+              "explanation": "to swim → nadar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q2",
+              "type": "fill",
+              "prompt": "How do you say \"to dance\" in Spanish? ___",
+              "bank": [
+                "bailar",
+                "película",
+                "pintar",
+                "fotografía"
+              ],
+              "answer": "bailar",
+              "explanation": "to dance → bailar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q3",
+              "type": "mc",
+              "prompt": "How do you say \"to sing\" in Spanish?",
+              "choices": [
+                "juego",
+                "cocinar",
+                "cantar",
+                "acampar"
+              ],
+              "answer": 2,
+              "explanation": "to sing → cantar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q4",
+              "type": "fill",
+              "prompt": "How do you say \"to paint\" in Spanish? ___",
+              "bank": [
+                "correr",
+                "acampar",
+                "pintar",
+                "fútbol"
+              ],
+              "answer": "pintar",
+              "explanation": "to paint → pintar. Hobbies and leisure-activity vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p8l2",
+          "title": "Hobbies & Free Time 2",
+          "subtitle": "What do you like to do?",
+          "questions": [
+            {
+              "id": "esa2p8q5",
+              "type": "mc",
+              "prompt": "How do you say \"to cook\" in Spanish?",
+              "choices": [
+                "cocinar",
+                "caminar",
+                "guitarra",
+                "bailar"
+              ],
+              "answer": 0,
+              "explanation": "to cook → cocinar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q6",
+              "type": "fill",
+              "prompt": "How do you say \"to travel\" in Spanish? ___",
+              "bank": [
+                "viajar",
+                "bailar",
+                "jardín",
+                "música"
+              ],
+              "answer": "viajar",
+              "explanation": "to travel → viajar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q7",
+              "type": "mc",
+              "prompt": "How do you say \"to run\" in Spanish?",
+              "choices": [
+                "pescar",
+                "película",
+                "correr",
+                "cocinar"
+              ],
+              "answer": 2,
+              "explanation": "to run → correr. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q8",
+              "type": "fill",
+              "prompt": "How do you say \"to walk\" in Spanish? ___",
+              "bank": [
+                "caminar",
+                "leer",
+                "cocinar",
+                "deporte"
+              ],
+              "answer": "caminar",
+              "explanation": "to walk → caminar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q9",
+              "type": "mc",
+              "prompt": "How do you say \"to draw\" in Spanish?",
+              "choices": [
+                "dibujar",
+                "fútbol",
+                "nadar",
+                "caminar"
+              ],
+              "answer": 0,
+              "explanation": "to draw → dibujar. Hobbies and leisure-activity vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p8l3",
+          "title": "Hobbies & Free Time 3",
+          "subtitle": "What do you like to do?",
+          "questions": [
+            {
+              "id": "esa2p8q10",
+              "type": "mc",
+              "prompt": "How do you say \"music\" in Spanish?",
+              "choices": [
+                "música",
+                "fútbol",
+                "nadar",
+                "caminar"
+              ],
+              "answer": 0,
+              "explanation": "music → música. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q11",
+              "type": "fill",
+              "prompt": "How do you say \"movie\" in Spanish? ___",
+              "bank": [
+                "dibujar",
+                "bailar",
+                "película",
+                "jardín"
+              ],
+              "answer": "película",
+              "explanation": "movie → película. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q12",
+              "type": "mc",
+              "prompt": "How do you say \"game\" in Spanish?",
+              "choices": [
+                "pescar",
+                "música",
+                "juego",
+                "cocinar"
+              ],
+              "answer": 2,
+              "explanation": "game → juego. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q13",
+              "type": "fill",
+              "prompt": "How do you say \"sport\" in Spanish? ___",
+              "bank": [
+                "fútbol",
+                "deporte",
+                "acampar",
+                "viajar"
+              ],
+              "answer": "deporte",
+              "explanation": "sport → deporte. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q14",
+              "type": "mc",
+              "prompt": "How do you say \"soccer\" in Spanish?",
+              "choices": [
+                "fútbol",
+                "correr",
+                "guitarra",
+                "bailar"
+              ],
+              "answer": 0,
+              "explanation": "soccer → fútbol. Hobbies and leisure-activity vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esa2p8l4",
+          "title": "Hobbies & Free Time 4",
+          "subtitle": "What do you like to do?",
+          "questions": [
+            {
+              "id": "esa2p8q15",
+              "type": "fill",
+              "prompt": "How do you say \"guitar\" in Spanish? ___",
+              "bank": [
+                "guitarra",
+                "fotografía",
+                "cantar",
+                "música"
+              ],
+              "answer": "guitarra",
+              "explanation": "guitar → guitarra. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q16",
+              "type": "mc",
+              "prompt": "How do you say \"photograph\" in Spanish?",
+              "choices": [
+                "película",
+                "pintar",
+                "fotografía",
+                "acampar"
+              ],
+              "answer": 2,
+              "explanation": "photograph → fotografía. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q17",
+              "type": "fill",
+              "prompt": "How do you say \"garden\" in Spanish? ___",
+              "bank": [
+                "correr",
+                "leer",
+                "jardín",
+                "juego"
+              ],
+              "answer": "jardín",
+              "explanation": "garden → jardín. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q18",
+              "type": "mc",
+              "prompt": "How do you say \"to fish\" in Spanish?",
+              "choices": [
+                "pescar",
+                "nadar",
+                "caminar",
+                "guitarra"
+              ],
+              "answer": 0,
+              "explanation": "to fish → pescar. Hobbies and leisure-activity vocabulary."
+            },
+            {
+              "id": "esa2p8q19",
+              "type": "fill",
+              "prompt": "How do you say \"to camp\" in Spanish? ___",
+              "bank": [
+                "fotografía",
+                "dibujar",
+                "pintar",
+                "acampar"
+              ],
+              "answer": "acampar",
+              "explanation": "to camp → acampar. Hobbies and leisure-activity vocabulary."
             }
           ]
         }
@@ -4933,6 +6787,1041 @@
       ]
     },
     {
+      "id": "esb1p6u1",
+      "level": "B1",
+      "eyebrow": "Unit 6",
+      "title": "Present Perfect",
+      "description": "haber + past participle — Present perfect tense across several subjects.",
+      "lessons": [
+        {
+          "id": "esb1p6l1",
+          "title": "Present Perfect 1",
+          "subtitle": "haber + past participle",
+          "questions": [
+            {
+              "id": "esb1p6q0",
+              "type": "fill",
+              "prompt": "Yo ___ (comer) ya.",
+              "bank": [
+                "has leído",
+                "han puesto",
+                "ha llegado",
+                "he comido"
+              ],
+              "answer": "he comido",
+              "explanation": "\"he comido\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q1",
+              "type": "mc",
+              "prompt": "Tú ___ (terminar) el trabajo.",
+              "choices": [
+                "has terminado",
+                "hemos resuelto",
+                "he ganado",
+                "hemos viajado"
+              ],
+              "answer": 0,
+              "explanation": "\"has terminado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q2",
+              "type": "fill",
+              "prompt": "Ella ___ (llegar) tarde.",
+              "bank": [
+                "han visto",
+                "hemos freído",
+                "ha llegado",
+                "has roto"
+              ],
+              "answer": "ha llegado",
+              "explanation": "\"ha llegado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q3",
+              "type": "mc",
+              "prompt": "Nosotros ___ (viajar) mucho.",
+              "choices": [
+                "ha aprendido",
+                "he vivido",
+                "hemos viajado",
+                "he hecho"
+              ],
+              "answer": 2,
+              "explanation": "\"hemos viajado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q4",
+              "type": "fill",
+              "prompt": "Ellos ___ (ver) esa película.",
+              "bank": [
+                "han visto",
+                "ha vuelto",
+                "ha aprendido",
+                "he hecho"
+              ],
+              "answer": "han visto",
+              "explanation": "\"han visto\" is correct here. Present perfect tense across several subjects."
+            }
+          ]
+        },
+        {
+          "id": "esb1p6l2",
+          "title": "Present Perfect 2",
+          "subtitle": "haber + past participle",
+          "questions": [
+            {
+              "id": "esb1p6q5",
+              "type": "mc",
+              "prompt": "Yo ___ (hacer) mi tarea.",
+              "choices": [
+                "he hecho",
+                "han puesto",
+                "has leído",
+                "hemos comprado"
+              ],
+              "answer": 0,
+              "explanation": "\"he hecho\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q6",
+              "type": "fill",
+              "prompt": "Tú ___ (escribir) la carta.",
+              "bank": [
+                "ha abierto",
+                "han llegado",
+                "han descubierto",
+                "has escrito"
+              ],
+              "answer": "has escrito",
+              "explanation": "\"has escrito\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q7",
+              "type": "mc",
+              "prompt": "Él ___ (abrir) la puerta.",
+              "choices": [
+                "hemos freído",
+                "has roto",
+                "ha abierto",
+                "he comido"
+              ],
+              "answer": 2,
+              "explanation": "\"ha abierto\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q8",
+              "type": "fill",
+              "prompt": "Nosotras ___ (decir) la verdad.",
+              "bank": [
+                "ha abierto",
+                "hemos freído",
+                "he comido",
+                "hemos dicho"
+              ],
+              "answer": "hemos dicho",
+              "explanation": "\"hemos dicho\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q9",
+              "type": "mc",
+              "prompt": "Ellas ___ (poner) la mesa.",
+              "choices": [
+                "han puesto",
+                "han visto",
+                "ha vuelto",
+                "han impreso"
+              ],
+              "answer": 0,
+              "explanation": "\"han puesto\" is correct here. Present perfect tense across several subjects."
+            }
+          ]
+        },
+        {
+          "id": "esb1p6l3",
+          "title": "Present Perfect 3",
+          "subtitle": "haber + past participle",
+          "questions": [
+            {
+              "id": "esb1p6q10",
+              "type": "mc",
+              "prompt": "Yo nunca ___ (estar) en España.",
+              "choices": [
+                "he estado",
+                "has perdido",
+                "hemos viajado",
+                "has roto"
+              ],
+              "answer": 0,
+              "explanation": "\"he estado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q11",
+              "type": "fill",
+              "prompt": "Tú ___ (romper) el vaso.",
+              "bank": [
+                "ha cubierto",
+                "has roto",
+                "han llegado",
+                "han puesto"
+              ],
+              "answer": "has roto",
+              "explanation": "\"has roto\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q12",
+              "type": "mc",
+              "prompt": "Ella ___ (volver) a casa.",
+              "choices": [
+                "he hecho",
+                "hemos comprado",
+                "ha vuelto",
+                "hemos resuelto"
+              ],
+              "answer": 2,
+              "explanation": "\"ha vuelto\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q13",
+              "type": "fill",
+              "prompt": "Nosotros ___ (resolver) el problema.",
+              "bank": [
+                "has terminado",
+                "han impreso",
+                "has roto",
+                "hemos resuelto"
+              ],
+              "answer": "hemos resuelto",
+              "explanation": "\"hemos resuelto\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q14",
+              "type": "mc",
+              "prompt": "Ellos ___ (descubrir) la verdad.",
+              "choices": [
+                "han descubierto",
+                "ha cubierto",
+                "han llegado",
+                "has escrito"
+              ],
+              "answer": 0,
+              "explanation": "\"han descubierto\" is correct here. Present perfect tense across several subjects."
+            }
+          ]
+        },
+        {
+          "id": "esb1p6l4",
+          "title": "Present Perfect 4",
+          "subtitle": "haber + past participle",
+          "questions": [
+            {
+              "id": "esb1p6q15",
+              "type": "fill",
+              "prompt": "Yo ___ (vivir) aquí diez años.",
+              "bank": [
+                "ha vuelto",
+                "he hecho",
+                "he vivido",
+                "he ganado"
+              ],
+              "answer": "he vivido",
+              "explanation": "\"he vivido\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q16",
+              "type": "mc",
+              "prompt": "Tú ___ (leer) ese libro.",
+              "choices": [
+                "has terminado",
+                "han impreso",
+                "has leído",
+                "hemos dicho"
+              ],
+              "answer": 2,
+              "explanation": "\"has leído\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q17",
+              "type": "fill",
+              "prompt": "Él ___ (cubrir) la mesa.",
+              "bank": [
+                "han descubierto",
+                "ha abierto",
+                "ha cubierto",
+                "ha aprendido"
+              ],
+              "answer": "ha cubierto",
+              "explanation": "\"ha cubierto\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q18",
+              "type": "mc",
+              "prompt": "Nosotras ___ (freír) el pollo.",
+              "choices": [
+                "hemos freído",
+                "han visto",
+                "has roto",
+                "han impreso"
+              ],
+              "answer": 0,
+              "explanation": "\"hemos freído\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q19",
+              "type": "fill",
+              "prompt": "Ellos ___ (imprimir) el documento.",
+              "bank": [
+                "he comido",
+                "ha abierto",
+                "ha cubierto",
+                "han impreso"
+              ],
+              "answer": "han impreso",
+              "explanation": "\"han impreso\" is correct here. Present perfect tense across several subjects."
+            }
+          ]
+        },
+        {
+          "id": "esb1p6l5",
+          "title": "Present Perfect 5",
+          "subtitle": "haber + past participle",
+          "questions": [
+            {
+              "id": "esb1p6q20",
+              "type": "fill",
+              "prompt": "Yo ___ (ganar) el partido.",
+              "bank": [
+                "has escrito",
+                "hemos resuelto",
+                "he ganado",
+                "han llegado"
+              ],
+              "answer": "he ganado",
+              "explanation": "\"he ganado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q21",
+              "type": "mc",
+              "prompt": "Tú ___ (perder) las llaves.",
+              "choices": [
+                "has perdido",
+                "ha vuelto",
+                "han impreso",
+                "ha llegado"
+              ],
+              "answer": 0,
+              "explanation": "\"has perdido\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q22",
+              "type": "fill",
+              "prompt": "Ella ___ (aprender) mucho.",
+              "bank": [
+                "has perdido",
+                "has roto",
+                "ha aprendido",
+                "han visto"
+              ],
+              "answer": "ha aprendido",
+              "explanation": "\"ha aprendido\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q23",
+              "type": "mc",
+              "prompt": "Nosotros ___ (comprar) una casa.",
+              "choices": [
+                "ha cubierto",
+                "he estado",
+                "hemos comprado",
+                "he comido"
+              ],
+              "answer": 2,
+              "explanation": "\"hemos comprado\" is correct here. Present perfect tense across several subjects."
+            },
+            {
+              "id": "esb1p6q24",
+              "type": "fill",
+              "prompt": "Ellos ___ (llegar) temprano.",
+              "bank": [
+                "he estado",
+                "hemos viajado",
+                "ha cubierto",
+                "han llegado"
+              ],
+              "answer": "han llegado",
+              "explanation": "\"han llegado\" is correct here. Present perfect tense across several subjects."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb1p7u1",
+      "level": "B1",
+      "eyebrow": "Unit 7",
+      "title": "Ser vs. Estar",
+      "description": "Two verbs for 'to be' — Ser (identity/traits) vs. estar (state/location), present tense.",
+      "lessons": [
+        {
+          "id": "esb1p7l1",
+          "title": "Ser vs. Estar 1",
+          "subtitle": "Two verbs for 'to be'",
+          "questions": [
+            {
+              "id": "esb1p7q0",
+              "type": "mc",
+              "prompt": "Ella ___ (ser) doctora.",
+              "choices": [
+                "es",
+                "estoy",
+                "está",
+                "están"
+              ],
+              "answer": 0,
+              "explanation": "\"es\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q1",
+              "type": "fill",
+              "prompt": "Él ___ (estar) enfermo hoy.",
+              "bank": [
+                "eres",
+                "es",
+                "son",
+                "está"
+              ],
+              "answer": "está",
+              "explanation": "\"está\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q2",
+              "type": "mc",
+              "prompt": "Nosotros ___ (ser) de México.",
+              "choices": [
+                "estamos",
+                "es",
+                "somos",
+                "estoy"
+              ],
+              "answer": 2,
+              "explanation": "\"somos\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q3",
+              "type": "fill",
+              "prompt": "Ellos ___ (estar) en la playa.",
+              "bank": [
+                "están",
+                "es",
+                "estoy",
+                "estamos"
+              ],
+              "answer": "están",
+              "explanation": "\"están\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q4",
+              "type": "mc",
+              "prompt": "Yo ___ (ser) alto.",
+              "choices": [
+                "soy",
+                "estamos",
+                "estoy",
+                "estás"
+              ],
+              "answer": 0,
+              "explanation": "\"soy\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            }
+          ]
+        },
+        {
+          "id": "esb1p7l2",
+          "title": "Ser vs. Estar 2",
+          "subtitle": "Two verbs for 'to be'",
+          "questions": [
+            {
+              "id": "esb1p7q5",
+              "type": "fill",
+              "prompt": "Tú ___ (estar) muy feliz.",
+              "bank": [
+                "soy",
+                "estás",
+                "estoy",
+                "está"
+              ],
+              "answer": "estás",
+              "explanation": "\"estás\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q6",
+              "type": "mc",
+              "prompt": "El café ___ (estar) caliente.",
+              "choices": [
+                "somos",
+                "es",
+                "está",
+                "estoy"
+              ],
+              "answer": 2,
+              "explanation": "\"está\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q7",
+              "type": "fill",
+              "prompt": "La casa ___ (ser) grande.",
+              "bank": [
+                "están",
+                "eres",
+                "es",
+                "está"
+              ],
+              "answer": "es",
+              "explanation": "\"es\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q8",
+              "type": "mc",
+              "prompt": "Nosotras ___ (estar) cansadas.",
+              "choices": [
+                "estamos",
+                "eres",
+                "estás",
+                "es"
+              ],
+              "answer": 0,
+              "explanation": "\"estamos\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q9",
+              "type": "fill",
+              "prompt": "Ellas ___ (ser) profesoras.",
+              "bank": [
+                "están",
+                "es",
+                "son",
+                "estás"
+              ],
+              "answer": "son",
+              "explanation": "\"son\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            }
+          ]
+        },
+        {
+          "id": "esb1p7l3",
+          "title": "Ser vs. Estar 3",
+          "subtitle": "Two verbs for 'to be'",
+          "questions": [
+            {
+              "id": "esb1p7q10",
+              "type": "fill",
+              "prompt": "Yo ___ (estar) en casa.",
+              "bank": [
+                "son",
+                "somos",
+                "está",
+                "estoy"
+              ],
+              "answer": "estoy",
+              "explanation": "\"estoy\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q11",
+              "type": "mc",
+              "prompt": "Tú ___ (ser) muy inteligente.",
+              "choices": [
+                "son",
+                "somos",
+                "eres",
+                "estás"
+              ],
+              "answer": 2,
+              "explanation": "\"eres\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q12",
+              "type": "fill",
+              "prompt": "El cielo ___ (estar) nublado.",
+              "bank": [
+                "somos",
+                "está",
+                "estoy",
+                "es"
+              ],
+              "answer": "está",
+              "explanation": "\"está\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q13",
+              "type": "mc",
+              "prompt": "La fiesta ___ (ser) el sábado.",
+              "choices": [
+                "es",
+                "son",
+                "eres",
+                "estamos"
+              ],
+              "answer": 0,
+              "explanation": "\"es\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q14",
+              "type": "fill",
+              "prompt": "Nosotros ___ (estar) listos.",
+              "bank": [
+                "son",
+                "estamos",
+                "estoy",
+                "soy"
+              ],
+              "answer": "estamos",
+              "explanation": "\"estamos\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            }
+          ]
+        },
+        {
+          "id": "esb1p7l4",
+          "title": "Ser vs. Estar 4",
+          "subtitle": "Two verbs for 'to be'",
+          "questions": [
+            {
+              "id": "esb1p7q15",
+              "type": "mc",
+              "prompt": "Ellos ___ (ser) argentinos.",
+              "choices": [
+                "soy",
+                "estoy",
+                "son",
+                "está"
+              ],
+              "answer": 2,
+              "explanation": "\"son\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q16",
+              "type": "fill",
+              "prompt": "Yo ___ (ser) estudiante.",
+              "bank": [
+                "somos",
+                "estás",
+                "está",
+                "soy"
+              ],
+              "answer": "soy",
+              "explanation": "\"soy\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q17",
+              "type": "mc",
+              "prompt": "Tú ___ (estar) preocupado.",
+              "choices": [
+                "estás",
+                "está",
+                "somos",
+                "estoy"
+              ],
+              "answer": 0,
+              "explanation": "\"estás\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q18",
+              "type": "fill",
+              "prompt": "El libro ___ (ser) interesante.",
+              "bank": [
+                "estamos",
+                "estás",
+                "están",
+                "es"
+              ],
+              "answer": "es",
+              "explanation": "\"es\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q19",
+              "type": "mc",
+              "prompt": "La sopa ___ (estar) fría.",
+              "choices": [
+                "somos",
+                "es",
+                "está",
+                "estoy"
+              ],
+              "answer": 2,
+              "explanation": "\"está\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            }
+          ]
+        },
+        {
+          "id": "esb1p7l5",
+          "title": "Ser vs. Estar 5",
+          "subtitle": "Two verbs for 'to be'",
+          "questions": [
+            {
+              "id": "esb1p7q20",
+              "type": "mc",
+              "prompt": "Nosotras ___ (ser) hermanas.",
+              "choices": [
+                "estás",
+                "estoy",
+                "somos",
+                "es"
+              ],
+              "answer": 2,
+              "explanation": "\"somos\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q21",
+              "type": "fill",
+              "prompt": "Ellas ___ (estar) ocupadas.",
+              "bank": [
+                "estoy",
+                "somos",
+                "estás",
+                "están"
+              ],
+              "answer": "están",
+              "explanation": "\"están\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q22",
+              "type": "mc",
+              "prompt": "Yo ___ (estar) aburrido.",
+              "choices": [
+                "estoy",
+                "es",
+                "son",
+                "eres"
+              ],
+              "answer": 0,
+              "explanation": "\"estoy\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q23",
+              "type": "fill",
+              "prompt": "Tú ___ (ser) muy amable.",
+              "bank": [
+                "es",
+                "estás",
+                "eres",
+                "son"
+              ],
+              "answer": "eres",
+              "explanation": "\"eres\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            },
+            {
+              "id": "esb1p7q24",
+              "type": "mc",
+              "prompt": "El examen ___ (ser) difícil.",
+              "choices": [
+                "eres",
+                "están",
+                "es",
+                "somos"
+              ],
+              "answer": 2,
+              "explanation": "\"es\" is correct here. Ser (identity/traits) vs. estar (state/location), present tense."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb1p8u1",
+      "level": "B1",
+      "eyebrow": "Unit 8",
+      "title": "Travel & Transportation",
+      "description": "Getting from A to B — Travel and transportation vocabulary.",
+      "lessons": [
+        {
+          "id": "esb1p8l1",
+          "title": "Travel & Transportation 1",
+          "subtitle": "Getting from A to B",
+          "questions": [
+            {
+              "id": "esb1p8q0",
+              "type": "fill",
+              "prompt": "How do you say \"airplane\" in Spanish? ___",
+              "bank": [
+                "avión",
+                "aduana",
+                "coche",
+                "volar"
+              ],
+              "answer": "avión",
+              "explanation": "airplane → avión. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q1",
+              "type": "mc",
+              "prompt": "How do you say \"train\" in Spanish?",
+              "choices": [
+                "turista",
+                "llegar",
+                "tren",
+                "boleto"
+              ],
+              "answer": 2,
+              "explanation": "train → tren. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q2",
+              "type": "fill",
+              "prompt": "How do you say \"bus\" in Spanish? ___",
+              "bank": [
+                "autobús",
+                "mapa",
+                "andén",
+                "pasaporte"
+              ],
+              "answer": "autobús",
+              "explanation": "bus → autobús. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q3",
+              "type": "mc",
+              "prompt": "How do you say \"car\" in Spanish?",
+              "choices": [
+                "coche",
+                "maleta",
+                "asiento",
+                "autobús"
+              ],
+              "answer": 0,
+              "explanation": "car → coche. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q4",
+              "type": "fill",
+              "prompt": "How do you say \"ship\" in Spanish? ___",
+              "bank": [
+                "coche",
+                "barco",
+                "equipaje",
+                "llegar"
+              ],
+              "answer": "barco",
+              "explanation": "ship → barco. Travel and transportation vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb1p8l2",
+          "title": "Travel & Transportation 2",
+          "subtitle": "Getting from A to B",
+          "questions": [
+            {
+              "id": "esb1p8q5",
+              "type": "mc",
+              "prompt": "How do you say \"bicycle\" in Spanish?",
+              "choices": [
+                "partir",
+                "barco",
+                "bicicleta",
+                "mapa"
+              ],
+              "answer": 2,
+              "explanation": "bicycle → bicicleta. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q6",
+              "type": "fill",
+              "prompt": "How do you say \"ticket\" in Spanish? ___",
+              "bank": [
+                "avión",
+                "horario",
+                "maleta",
+                "boleto"
+              ],
+              "answer": "boleto",
+              "explanation": "ticket → boleto. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q7",
+              "type": "mc",
+              "prompt": "How do you say \"passport\" in Spanish?",
+              "choices": [
+                "pasaporte",
+                "tren",
+                "viaje",
+                "equipaje"
+              ],
+              "answer": 0,
+              "explanation": "passport → pasaporte. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q8",
+              "type": "fill",
+              "prompt": "How do you say \"suitcase\" in Spanish? ___",
+              "bank": [
+                "aduana",
+                "barco",
+                "volar",
+                "maleta"
+              ],
+              "answer": "maleta",
+              "explanation": "suitcase → maleta. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q9",
+              "type": "mc",
+              "prompt": "How do you say \"trip\" in Spanish?",
+              "choices": [
+                "bicicleta",
+                "turista",
+                "viaje",
+                "horario"
+              ],
+              "answer": 2,
+              "explanation": "trip → viaje. Travel and transportation vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb1p8l3",
+          "title": "Travel & Transportation 3",
+          "subtitle": "Getting from A to B",
+          "questions": [
+            {
+              "id": "esb1p8q10",
+              "type": "mc",
+              "prompt": "How do you say \"to fly\" in Spanish?",
+              "choices": [
+                "tren",
+                "andén",
+                "volar",
+                "maleta"
+              ],
+              "answer": 2,
+              "explanation": "to fly → volar. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q11",
+              "type": "fill",
+              "prompt": "How do you say \"to arrive\" in Spanish? ___",
+              "bank": [
+                "aduana",
+                "llegar",
+                "viaje",
+                "autobús"
+              ],
+              "answer": "llegar",
+              "explanation": "to arrive → llegar. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q12",
+              "type": "mc",
+              "prompt": "How do you say \"to depart\" in Spanish?",
+              "choices": [
+                "partir",
+                "aduana",
+                "barco",
+                "llegar"
+              ],
+              "answer": 0,
+              "explanation": "to depart → partir. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q13",
+              "type": "fill",
+              "prompt": "How do you say \"schedule\" in Spanish? ___",
+              "bank": [
+                "horario",
+                "avión",
+                "partir",
+                "bicicleta"
+              ],
+              "answer": "horario",
+              "explanation": "schedule → horario. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q14",
+              "type": "mc",
+              "prompt": "How do you say \"platform\" in Spanish?",
+              "choices": [
+                "asiento",
+                "pasaporte",
+                "andén",
+                "autobús"
+              ],
+              "answer": 2,
+              "explanation": "platform → andén. Travel and transportation vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb1p8l4",
+          "title": "Travel & Transportation 4",
+          "subtitle": "Getting from A to B",
+          "questions": [
+            {
+              "id": "esb1p8q15",
+              "type": "fill",
+              "prompt": "How do you say \"seat\" in Spanish? ___",
+              "bank": [
+                "equipaje",
+                "volar",
+                "asiento",
+                "coche"
+              ],
+              "answer": "asiento",
+              "explanation": "seat → asiento. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q16",
+              "type": "mc",
+              "prompt": "How do you say \"luggage\" in Spanish?",
+              "choices": [
+                "equipaje",
+                "volar",
+                "turista",
+                "bicicleta"
+              ],
+              "answer": 0,
+              "explanation": "luggage → equipaje. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q17",
+              "type": "fill",
+              "prompt": "How do you say \"customs\" in Spanish? ___",
+              "bank": [
+                "aduana",
+                "boleto",
+                "mapa",
+                "horario"
+              ],
+              "answer": "aduana",
+              "explanation": "customs → aduana. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q18",
+              "type": "mc",
+              "prompt": "How do you say \"tourist\" in Spanish?",
+              "choices": [
+                "horario",
+                "boleto",
+                "turista",
+                "tren"
+              ],
+              "answer": 2,
+              "explanation": "tourist → turista. Travel and transportation vocabulary."
+            },
+            {
+              "id": "esb1p8q19",
+              "type": "fill",
+              "prompt": "How do you say \"map\" in Spanish? ___",
+              "bank": [
+                "autobús",
+                "mapa",
+                "viaje",
+                "andén"
+              ],
+              "answer": "mapa",
+              "explanation": "map → mapa. Travel and transportation vocabulary."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb2p1u1",
       "level": "B2",
       "eyebrow": "Unit 1",
@@ -6542,6 +9431,1037 @@
       ]
     },
     {
+      "id": "esb2p6u1",
+      "level": "B2",
+      "eyebrow": "Unit 6",
+      "title": "Relative Pronouns",
+      "description": "que, quien, cuyo — Relative pronouns linking clauses.",
+      "lessons": [
+        {
+          "id": "esb2p6l1",
+          "title": "Relative Pronouns 1",
+          "subtitle": "que, quien, cuyo",
+          "questions": [
+            {
+              "id": "esb2p6q0",
+              "type": "mc",
+              "prompt": "El libro ___ leí es excelente.",
+              "choices": [
+                "quien",
+                "la que",
+                "que",
+                "cuyo"
+              ],
+              "answer": 2,
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q1",
+              "type": "mc",
+              "prompt": "La mujer con ___ hablé es mi jefa.",
+              "choices": [
+                "quien",
+                "que",
+                "cuyo"
+              ],
+              "answer": 0,
+              "explanation": "\"quien\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q2",
+              "type": "mc",
+              "prompt": "El hombre ___ casa visitamos es mi tío.",
+              "choices": [
+                "cuya",
+                "que",
+                "la que",
+                "quien"
+              ],
+              "answer": 0,
+              "explanation": "\"cuya\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q3",
+              "type": "fill",
+              "prompt": "Los amigos ___ conocí son de Chile.",
+              "bank": [
+                "que",
+                "la que",
+                "cuyo",
+                "cuyas"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q4",
+              "type": "mc",
+              "prompt": "La persona a ___ llamé no contestó.",
+              "choices": [
+                "quien",
+                "cuyo",
+                "que"
+              ],
+              "answer": 0,
+              "explanation": "\"quien\" is correct here. Relative pronouns linking clauses."
+            }
+          ]
+        },
+        {
+          "id": "esb2p6l2",
+          "title": "Relative Pronouns 2",
+          "subtitle": "que, quien, cuyo",
+          "questions": [
+            {
+              "id": "esb2p6q5",
+              "type": "fill",
+              "prompt": "El coche ___ compré es nuevo.",
+              "bank": [
+                "que",
+                "cuya",
+                "cuyo",
+                "quien"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q6",
+              "type": "mc",
+              "prompt": "La ciudad en ___ vivo es hermosa.",
+              "choices": [
+                "que",
+                "quien",
+                "cuyo",
+                "la que"
+              ],
+              "answer": 0,
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q7",
+              "type": "fill",
+              "prompt": "El profesor ___ libro leímos es famoso.",
+              "bank": [
+                "que",
+                "cuyo",
+                "cuyas",
+                "quien"
+              ],
+              "answer": "cuyo",
+              "explanation": "\"cuyo\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q8",
+              "type": "mc",
+              "prompt": "Las chicas ___ vimos ayer son mis primas.",
+              "choices": [
+                "cuyas",
+                "cuya",
+                "que",
+                "cuyo"
+              ],
+              "answer": 2,
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q9",
+              "type": "fill",
+              "prompt": "El escritor ___ obras admiro nació en España.",
+              "bank": [
+                "que",
+                "la que",
+                "cuyo",
+                "cuyas"
+              ],
+              "answer": "cuyas",
+              "explanation": "\"cuyas\" is correct here. Relative pronouns linking clauses."
+            }
+          ]
+        },
+        {
+          "id": "esb2p6l3",
+          "title": "Relative Pronouns 3",
+          "subtitle": "que, quien, cuyo",
+          "questions": [
+            {
+              "id": "esb2p6q10",
+              "type": "fill",
+              "prompt": "La razón por ___ llegué tarde fue el tráfico.",
+              "bank": [
+                "cuyas",
+                "que",
+                "la que",
+                "cuyo"
+              ],
+              "answer": "la que",
+              "explanation": "\"la que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q11",
+              "type": "mc",
+              "prompt": "El niño ___ juguete se rompió lloró.",
+              "choices": [
+                "cuyo",
+                "cuya",
+                "la que",
+                "que"
+              ],
+              "answer": 0,
+              "explanation": "\"cuyo\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q12",
+              "type": "fill",
+              "prompt": "Los países ___ visitamos fueron interesantes.",
+              "bank": [
+                "quien",
+                "que",
+                "la que",
+                "cuyo"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q13",
+              "type": "mc",
+              "prompt": "La empresa para ___ trabajo es grande.",
+              "choices": [
+                "cuyo",
+                "que",
+                "la que",
+                "quien"
+              ],
+              "answer": 2,
+              "explanation": "\"la que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q14",
+              "type": "fill",
+              "prompt": "El equipo ___ ganó celebró mucho.",
+              "bank": [
+                "cuyas",
+                "que",
+                "la que",
+                "cuyo"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            }
+          ]
+        },
+        {
+          "id": "esb2p6l4",
+          "title": "Relative Pronouns 4",
+          "subtitle": "que, quien, cuyo",
+          "questions": [
+            {
+              "id": "esb2p6q15",
+              "type": "mc",
+              "prompt": "La casa ___ ventanas son azules es mía.",
+              "choices": [
+                "cuyas",
+                "cuyo",
+                "quien",
+                "que"
+              ],
+              "answer": 0,
+              "explanation": "\"cuyas\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q16",
+              "type": "fill",
+              "prompt": "Los estudiantes ___ estudian mucho aprueban.",
+              "bank": [
+                "quien",
+                "que",
+                "cuyo",
+                "cuya"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q17",
+              "type": "mc",
+              "prompt": "La actriz de ___ hablamos ganó un premio.",
+              "choices": [
+                "quien",
+                "cuyas",
+                "que"
+              ],
+              "answer": 0,
+              "explanation": "\"quien\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q18",
+              "type": "fill",
+              "prompt": "El parque ___ está cerca es bonito.",
+              "bank": [
+                "quien",
+                "cuyas",
+                "que",
+                "cuyo"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q19",
+              "type": "mc",
+              "prompt": "Las noticias ___ escuché me sorprendieron.",
+              "choices": [
+                "que",
+                "quien",
+                "cuyo",
+                "cuya"
+              ],
+              "answer": 0,
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            }
+          ]
+        },
+        {
+          "id": "esb2p6l5",
+          "title": "Relative Pronouns 5",
+          "subtitle": "que, quien, cuyo",
+          "questions": [
+            {
+              "id": "esb2p6q20",
+              "type": "mc",
+              "prompt": "El médico ___ consulta visité es excelente.",
+              "choices": [
+                "cuya",
+                "que",
+                "la que",
+                "quien"
+              ],
+              "answer": 0,
+              "explanation": "\"cuya\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q21",
+              "type": "fill",
+              "prompt": "La canción ___ cantamos es popular.",
+              "bank": [
+                "cuyo",
+                "que",
+                "cuyas",
+                "la que"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q22",
+              "type": "mc",
+              "prompt": "Los vecinos ___ perro ladra mucho se mudaron.",
+              "choices": [
+                "la que",
+                "quien",
+                "cuyo",
+                "cuya"
+              ],
+              "answer": 2,
+              "explanation": "\"cuyo\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q23",
+              "type": "fill",
+              "prompt": "La idea ___ propuso fue aceptada.",
+              "bank": [
+                "cuyo",
+                "que",
+                "quien",
+                "cuya"
+              ],
+              "answer": "que",
+              "explanation": "\"que\" is correct here. Relative pronouns linking clauses."
+            },
+            {
+              "id": "esb2p6q24",
+              "type": "mc",
+              "prompt": "El amigo con ___ viajé vive en Lima.",
+              "choices": [
+                "que",
+                "cuyo",
+                "quien"
+              ],
+              "answer": 2,
+              "explanation": "\"quien\" is correct here. Relative pronouns linking clauses."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb2p7u1",
+      "level": "B2",
+      "eyebrow": "Unit 7",
+      "title": "Environment & Nature",
+      "description": "The natural world — Environment and nature vocabulary.",
+      "lessons": [
+        {
+          "id": "esb2p7l1",
+          "title": "Environment & Nature 1",
+          "subtitle": "The natural world",
+          "questions": [
+            {
+              "id": "esb2p7q0",
+              "type": "fill",
+              "prompt": "How do you say \"environment\" in Spanish? ___",
+              "bank": [
+                "contaminación",
+                "bosque",
+                "medio ambiente",
+                "sequía"
+              ],
+              "answer": "medio ambiente",
+              "explanation": "environment → medio ambiente. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q1",
+              "type": "mc",
+              "prompt": "How do you say \"nature\" in Spanish?",
+              "choices": [
+                "clima",
+                "carbono",
+                "naturaleza",
+                "recurso"
+              ],
+              "answer": 2,
+              "explanation": "nature → naturaleza. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q2",
+              "type": "fill",
+              "prompt": "How do you say \"forest\" in Spanish? ___",
+              "bank": [
+                "renovable",
+                "océano",
+                "bosque",
+                "sostenible"
+              ],
+              "answer": "bosque",
+              "explanation": "forest → bosque. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q3",
+              "type": "mc",
+              "prompt": "How do you say \"mountain\" in Spanish?",
+              "choices": [
+                "montaña",
+                "naturaleza",
+                "energía",
+                "ecosistema"
+              ],
+              "answer": 0,
+              "explanation": "mountain → montaña. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q4",
+              "type": "fill",
+              "prompt": "How do you say \"river\" in Spanish? ___",
+              "bank": [
+                "fauna",
+                "río",
+                "reciclaje",
+                "medio ambiente"
+              ],
+              "answer": "río",
+              "explanation": "river → río. Environment and nature vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb2p7l2",
+          "title": "Environment & Nature 2",
+          "subtitle": "The natural world",
+          "questions": [
+            {
+              "id": "esb2p7q5",
+              "type": "mc",
+              "prompt": "How do you say \"ocean\" in Spanish?",
+              "choices": [
+                "biodiversidad",
+                "planeta",
+                "océano",
+                "contaminación"
+              ],
+              "answer": 2,
+              "explanation": "ocean → océano. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q6",
+              "type": "fill",
+              "prompt": "How do you say \"climate\" in Spanish? ___",
+              "bank": [
+                "montaña",
+                "especie",
+                "carbono",
+                "clima"
+              ],
+              "answer": "clima",
+              "explanation": "climate → clima. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q7",
+              "type": "mc",
+              "prompt": "How do you say \"pollution\" in Spanish?",
+              "choices": [
+                "contaminación",
+                "fauna",
+                "bosque",
+                "sostenible"
+              ],
+              "answer": 0,
+              "explanation": "pollution → contaminación. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q8",
+              "type": "fill",
+              "prompt": "How do you say \"recycling\" in Spanish? ___",
+              "bank": [
+                "biodiversidad",
+                "reciclaje",
+                "sequía",
+                "clima"
+              ],
+              "answer": "reciclaje",
+              "explanation": "recycling → reciclaje. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q9",
+              "type": "mc",
+              "prompt": "How do you say \"energy\" in Spanish?",
+              "choices": [
+                "carbono",
+                "especie",
+                "energía",
+                "océano"
+              ],
+              "answer": 2,
+              "explanation": "energy → energía. Environment and nature vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb2p7l3",
+          "title": "Environment & Nature 3",
+          "subtitle": "The natural world",
+          "questions": [
+            {
+              "id": "esb2p7q10",
+              "type": "mc",
+              "prompt": "How do you say \"sustainable\" in Spanish?",
+              "choices": [
+                "biodiversidad",
+                "planeta",
+                "sostenible",
+                "clima"
+              ],
+              "answer": 2,
+              "explanation": "sustainable → sostenible. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q11",
+              "type": "fill",
+              "prompt": "How do you say \"species\" in Spanish? ___",
+              "bank": [
+                "montaña",
+                "carbono",
+                "especie",
+                "sostenible"
+              ],
+              "answer": "especie",
+              "explanation": "species → especie. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q12",
+              "type": "mc",
+              "prompt": "How do you say \"planet\" in Spanish?",
+              "choices": [
+                "planeta",
+                "reciclaje",
+                "ecosistema",
+                "montaña"
+              ],
+              "answer": 0,
+              "explanation": "planet → planeta. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q13",
+              "type": "fill",
+              "prompt": "How do you say \"resource\" in Spanish? ___",
+              "bank": [
+                "fauna",
+                "recurso",
+                "medio ambiente",
+                "contaminación"
+              ],
+              "answer": "recurso",
+              "explanation": "resource → recurso. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q14",
+              "type": "mc",
+              "prompt": "How do you say \"drought\" in Spanish?",
+              "choices": [
+                "planeta",
+                "océano",
+                "sequía",
+                "medio ambiente"
+              ],
+              "answer": 2,
+              "explanation": "drought → sequía. Environment and nature vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esb2p7l4",
+          "title": "Environment & Nature 4",
+          "subtitle": "The natural world",
+          "questions": [
+            {
+              "id": "esb2p7q15",
+              "type": "fill",
+              "prompt": "How do you say \"wildlife\" in Spanish? ___",
+              "bank": [
+                "fauna",
+                "especie",
+                "renovable",
+                "río"
+              ],
+              "answer": "fauna",
+              "explanation": "wildlife → fauna. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q16",
+              "type": "mc",
+              "prompt": "How do you say \"ecosystem\" in Spanish?",
+              "choices": [
+                "ecosistema",
+                "bosque",
+                "energía",
+                "renovable"
+              ],
+              "answer": 0,
+              "explanation": "ecosystem → ecosistema. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q17",
+              "type": "fill",
+              "prompt": "How do you say \"renewable\" in Spanish? ___",
+              "bank": [
+                "reciclaje",
+                "recurso",
+                "naturaleza",
+                "renovable"
+              ],
+              "answer": "renovable",
+              "explanation": "renewable → renovable. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q18",
+              "type": "mc",
+              "prompt": "How do you say \"carbon\" in Spanish?",
+              "choices": [
+                "clima",
+                "biodiversidad",
+                "carbono",
+                "recurso"
+              ],
+              "answer": 2,
+              "explanation": "carbon → carbono. Environment and nature vocabulary."
+            },
+            {
+              "id": "esb2p7q19",
+              "type": "fill",
+              "prompt": "How do you say \"biodiversity\" in Spanish? ___",
+              "bank": [
+                "océano",
+                "biodiversidad",
+                "sostenible",
+                "renovable"
+              ],
+              "answer": "biodiversidad",
+              "explanation": "biodiversity → biodiversidad. Environment and nature vocabulary."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb2p8u1",
+      "level": "B2",
+      "eyebrow": "Unit 8",
+      "title": "Gerund & Present Progressive",
+      "description": "estar + gerundio — Present progressive constructions with irregular gerunds included.",
+      "lessons": [
+        {
+          "id": "esb2p8l1",
+          "title": "Gerund & Present Progressive 1",
+          "subtitle": "estar + gerundio",
+          "questions": [
+            {
+              "id": "esb2p8q0",
+              "type": "mc",
+              "prompt": "Ella está ___ (hablar) por teléfono.",
+              "choices": [
+                "hablando",
+                "destruyendo",
+                "mirando",
+                "durmiendo"
+              ],
+              "answer": 0,
+              "explanation": "\"hablando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q1",
+              "type": "fill",
+              "prompt": "Yo estoy ___ (comer) ahora mismo.",
+              "bank": [
+                "viniendo",
+                "creyendo",
+                "comiendo",
+                "bailando"
+              ],
+              "answer": "comiendo",
+              "explanation": "\"comiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q2",
+              "type": "mc",
+              "prompt": "Nosotros estamos ___ (escribir) un informe.",
+              "choices": [
+                "corriendo",
+                "repitiendo",
+                "escribiendo",
+                "hablando"
+              ],
+              "answer": 2,
+              "explanation": "\"escribiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q3",
+              "type": "fill",
+              "prompt": "Ellos están ___ (dormir) todavía.",
+              "bank": [
+                "durmiendo",
+                "trabajando",
+                "esperando",
+                "construyendo"
+              ],
+              "answer": "durmiendo",
+              "explanation": "\"durmiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q4",
+              "type": "mc",
+              "prompt": "Tú estás ___ (leer) ese libro.",
+              "choices": [
+                "leyendo",
+                "viajando",
+                "bailando",
+                "viniendo"
+              ],
+              "answer": 0,
+              "explanation": "\"leyendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            }
+          ]
+        },
+        {
+          "id": "esb2p8l2",
+          "title": "Gerund & Present Progressive 2",
+          "subtitle": "estar + gerundio",
+          "questions": [
+            {
+              "id": "esb2p8q5",
+              "type": "fill",
+              "prompt": "Yo estoy ___ (trabajar) en un proyecto.",
+              "bank": [
+                "corriendo",
+                "repitiendo",
+                "durmiendo",
+                "trabajando"
+              ],
+              "answer": "trabajando",
+              "explanation": "\"trabajando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q6",
+              "type": "mc",
+              "prompt": "Ella está ___ (pedir) ayuda.",
+              "choices": [
+                "esperando",
+                "jugando",
+                "pidiendo",
+                "leyendo"
+              ],
+              "answer": 2,
+              "explanation": "\"pidiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q7",
+              "type": "fill",
+              "prompt": "Nosotros estamos ___ (venir) hacia allá.",
+              "bank": [
+                "viniendo",
+                "sintiendo",
+                "comiendo",
+                "estudiando"
+              ],
+              "answer": "viniendo",
+              "explanation": "\"viniendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q8",
+              "type": "mc",
+              "prompt": "Ellos están ___ (decir) la verdad.",
+              "choices": [
+                "diciendo",
+                "preparando",
+                "durmiendo",
+                "repitiendo"
+              ],
+              "answer": 0,
+              "explanation": "\"diciendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q9",
+              "type": "fill",
+              "prompt": "Tú estás ___ (sentir) mucho dolor.",
+              "bank": [
+                "viniendo",
+                "sintiendo",
+                "jugando",
+                "esperando"
+              ],
+              "answer": "sintiendo",
+              "explanation": "\"sintiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            }
+          ]
+        },
+        {
+          "id": "esb2p8l3",
+          "title": "Gerund & Present Progressive 3",
+          "subtitle": "estar + gerundio",
+          "questions": [
+            {
+              "id": "esb2p8q10",
+              "type": "fill",
+              "prompt": "Yo estoy ___ (seguir) las instrucciones.",
+              "bank": [
+                "siguiendo",
+                "creyendo",
+                "durmiendo",
+                "preparando"
+              ],
+              "answer": "siguiendo",
+              "explanation": "\"siguiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q11",
+              "type": "mc",
+              "prompt": "Ella está ___ (repetir) la pregunta.",
+              "choices": [
+                "sintiendo",
+                "escribiendo",
+                "repitiendo",
+                "viajando"
+              ],
+              "answer": 2,
+              "explanation": "\"repitiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q12",
+              "type": "fill",
+              "prompt": "Nosotros estamos ___ (construir) una casa.",
+              "bank": [
+                "estudiando",
+                "trabajando",
+                "construyendo",
+                "cantando"
+              ],
+              "answer": "construyendo",
+              "explanation": "\"construyendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q13",
+              "type": "mc",
+              "prompt": "Ellos están ___ (destruir) el edificio viejo.",
+              "choices": [
+                "destruyendo",
+                "leyendo",
+                "repitiendo",
+                "aprendiendo"
+              ],
+              "answer": 0,
+              "explanation": "\"destruyendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q14",
+              "type": "fill",
+              "prompt": "Tú estás ___ (creer) algo falso.",
+              "bank": [
+                "creyendo",
+                "viniendo",
+                "hablando",
+                "corriendo"
+              ],
+              "answer": "creyendo",
+              "explanation": "\"creyendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            }
+          ]
+        },
+        {
+          "id": "esb2p8l4",
+          "title": "Gerund & Present Progressive 4",
+          "subtitle": "estar + gerundio",
+          "questions": [
+            {
+              "id": "esb2p8q15",
+              "type": "mc",
+              "prompt": "Yo estoy ___ (jugar) al tenis.",
+              "choices": [
+                "destruyendo",
+                "pidiendo",
+                "jugando",
+                "preparando"
+              ],
+              "answer": 2,
+              "explanation": "\"jugando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q16",
+              "type": "fill",
+              "prompt": "Ella está ___ (estudiar) para el examen.",
+              "bank": [
+                "sintiendo",
+                "estudiando",
+                "escribiendo",
+                "mirando"
+              ],
+              "answer": "estudiando",
+              "explanation": "\"estudiando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q17",
+              "type": "mc",
+              "prompt": "Nosotros estamos ___ (viajar) por Europa.",
+              "choices": [
+                "viajando",
+                "diciendo",
+                "jugando",
+                "cantando"
+              ],
+              "answer": 0,
+              "explanation": "\"viajando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q18",
+              "type": "fill",
+              "prompt": "Ellos están ___ (correr) en el parque.",
+              "bank": [
+                "corriendo",
+                "trabajando",
+                "mirando",
+                "construyendo"
+              ],
+              "answer": "corriendo",
+              "explanation": "\"corriendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q19",
+              "type": "mc",
+              "prompt": "Tú estás ___ (aprender) mucho.",
+              "choices": [
+                "comiendo",
+                "corriendo",
+                "aprendiendo",
+                "diciendo"
+              ],
+              "answer": 2,
+              "explanation": "\"aprendiendo\" is correct here. Present progressive constructions with irregular gerunds included."
+            }
+          ]
+        },
+        {
+          "id": "esb2p8l5",
+          "title": "Gerund & Present Progressive 5",
+          "subtitle": "estar + gerundio",
+          "questions": [
+            {
+              "id": "esb2p8q20",
+              "type": "mc",
+              "prompt": "Yo estoy ___ (mirar) la televisión.",
+              "choices": [
+                "destruyendo",
+                "pidiendo",
+                "mirando",
+                "preparando"
+              ],
+              "answer": 2,
+              "explanation": "\"mirando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q21",
+              "type": "fill",
+              "prompt": "Ella está ___ (preparar) la cena.",
+              "bank": [
+                "preparando",
+                "hablando",
+                "viniendo",
+                "viajando"
+              ],
+              "answer": "preparando",
+              "explanation": "\"preparando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q22",
+              "type": "mc",
+              "prompt": "Nosotros estamos ___ (esperar) el autobús.",
+              "choices": [
+                "esperando",
+                "diciendo",
+                "jugando",
+                "cantando"
+              ],
+              "answer": 0,
+              "explanation": "\"esperando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q23",
+              "type": "fill",
+              "prompt": "Ellos están ___ (cantar) una canción.",
+              "bank": [
+                "sintiendo",
+                "cantando",
+                "escribiendo",
+                "aprendiendo"
+              ],
+              "answer": "cantando",
+              "explanation": "\"cantando\" is correct here. Present progressive constructions with irregular gerunds included."
+            },
+            {
+              "id": "esb2p8q24",
+              "type": "mc",
+              "prompt": "Tú estás ___ (bailar) muy bien.",
+              "choices": [
+                "sintiendo",
+                "escribiendo",
+                "bailando",
+                "estudiando"
+              ],
+              "answer": 2,
+              "explanation": "\"bailando\" is correct here. Present progressive constructions with irregular gerunds included."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esc1p1u1",
       "level": "C1",
       "eyebrow": "Unit 1",
@@ -8093,6 +12013,1041 @@
               ],
               "answer": "en esencia",
               "explanation": "in essence → en esencia. Discourse markers for sophisticated argumentation and academic writing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p6u1",
+      "level": "C1",
+      "eyebrow": "Unit 6",
+      "title": "Compound Tenses",
+      "description": "Pluperfect & future perfect — Pluperfect (had done) and future perfect (will have done) tenses.",
+      "lessons": [
+        {
+          "id": "esc1p6l1",
+          "title": "Compound Tenses 1",
+          "subtitle": "Pluperfect & future perfect",
+          "questions": [
+            {
+              "id": "esc1p6q0",
+              "type": "mc",
+              "prompt": "Cuando llegué, ella ya ___ (salir).",
+              "choices": [
+                "habremos firmado",
+                "habían limpiado",
+                "había salido",
+                "había comido"
+              ],
+              "answer": 2,
+              "explanation": "\"había salido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q1",
+              "type": "fill",
+              "prompt": "Para el año próximo, yo ___ (terminar) mis estudios.",
+              "bank": [
+                "me había mudado",
+                "habré terminado",
+                "habrá cumplido",
+                "habíamos vivido"
+              ],
+              "answer": "habré terminado",
+              "explanation": "\"habré terminado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q2",
+              "type": "mc",
+              "prompt": "Antes de la reunión, nosotros ya ___ (revisar) el informe.",
+              "choices": [
+                "habíamos revisado",
+                "había salido",
+                "habrá llegado",
+                "habré publicado"
+              ],
+              "answer": 0,
+              "explanation": "\"habíamos revisado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q3",
+              "type": "fill",
+              "prompt": "Para mañana, ellos ___ (completar) el proyecto.",
+              "bank": [
+                "habrán completado",
+                "habremos firmado",
+                "había comido",
+                "habían limpiado"
+              ],
+              "answer": "habrán completado",
+              "explanation": "\"habrán completado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q4",
+              "type": "mc",
+              "prompt": "Cuando llamaste, yo ya ___ (comer).",
+              "choices": [
+                "habían limpiado",
+                "había salido",
+                "había comido",
+                "habremos firmado"
+              ],
+              "answer": 2,
+              "explanation": "\"había comido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            }
+          ]
+        },
+        {
+          "id": "esc1p6l2",
+          "title": "Compound Tenses 2",
+          "subtitle": "Pluperfect & future perfect",
+          "questions": [
+            {
+              "id": "esc1p6q5",
+              "type": "fill",
+              "prompt": "Para el viernes, tú ___ (recibir) la respuesta.",
+              "bank": [
+                "habrán decidido",
+                "probado",
+                "habrás recibido",
+                "habíamos revisado"
+              ],
+              "answer": "habrás recibido",
+              "explanation": "\"habrás recibido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q6",
+              "type": "mc",
+              "prompt": "Antes de mudarnos, nosotros ___ (vivir) allí diez años.",
+              "choices": [
+                "habíamos vivido",
+                "había comido",
+                "habremos ahorrado",
+                "habrán aprendido"
+              ],
+              "answer": 0,
+              "explanation": "\"habíamos vivido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q7",
+              "type": "fill",
+              "prompt": "Cuando desperté, el sol ya ___ (salir).",
+              "bank": [
+                "habremos ahorrado",
+                "habrán aprendido",
+                "había salido",
+                "habíamos revisado"
+              ],
+              "answer": "había salido",
+              "explanation": "\"había salido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q8",
+              "type": "mc",
+              "prompt": "Para las ocho, ella ___ (llegar) a casa.",
+              "choices": [
+                "habré terminado",
+                "habrán aprendido",
+                "habrá llegado",
+                "había estudiado"
+              ],
+              "answer": 2,
+              "explanation": "\"habrá llegado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q9",
+              "type": "fill",
+              "prompt": "Antes del examen, yo ya ___ (estudiar) todo.",
+              "bank": [
+                "habré publicado",
+                "había terminado",
+                "había estudiado",
+                "había salido"
+              ],
+              "answer": "había estudiado",
+              "explanation": "\"había estudiado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            }
+          ]
+        },
+        {
+          "id": "esc1p6l3",
+          "title": "Compound Tenses 3",
+          "subtitle": "Pluperfect & future perfect",
+          "questions": [
+            {
+              "id": "esc1p6q10",
+              "type": "fill",
+              "prompt": "Para entonces, ellos ya ___ (decidir).",
+              "bank": [
+                "había empezado",
+                "había escapado",
+                "habrán decidido",
+                "habrán completado"
+              ],
+              "answer": "habrán decidido",
+              "explanation": "\"habrán decidido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q11",
+              "type": "mc",
+              "prompt": "Cuando abrí la puerta, el perro ya ___ (escapar).",
+              "choices": [
+                "había escapado",
+                "habrá cerrado",
+                "había apagado",
+                "habíamos vivido"
+              ],
+              "answer": 0,
+              "explanation": "\"había escapado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q12",
+              "type": "fill",
+              "prompt": "Para el próximo mes, nosotros ___ (ahorrar) suficiente.",
+              "bank": [
+                "habrá llegado",
+                "habremos ahorrado",
+                "me había mudado",
+                "habré terminado"
+              ],
+              "answer": "habremos ahorrado",
+              "explanation": "\"habremos ahorrado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q13",
+              "type": "mc",
+              "prompt": "Antes de esa fecha, tú nunca ___ (viajar) al extranjero.",
+              "choices": [
+                "había terminado",
+                "habré publicado",
+                "habías viajado",
+                "había comido"
+              ],
+              "answer": 2,
+              "explanation": "\"habías viajado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q14",
+              "type": "fill",
+              "prompt": "Cuando volví, ellos ya ___ (limpiar) la casa.",
+              "bank": [
+                "habías viajado",
+                "habían limpiado",
+                "había apagado",
+                "habíamos vivido"
+              ],
+              "answer": "habían limpiado",
+              "explanation": "\"habían limpiado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            }
+          ]
+        },
+        {
+          "id": "esc1p6l4",
+          "title": "Compound Tenses 4",
+          "subtitle": "Pluperfect & future perfect",
+          "questions": [
+            {
+              "id": "esc1p6q15",
+              "type": "mc",
+              "prompt": "Para diciembre, yo ___ (publicar) el libro.",
+              "choices": [
+                "habré publicado",
+                "habremos ahorrado",
+                "probado",
+                "habíamos revisado"
+              ],
+              "answer": 0,
+              "explanation": "\"habré publicado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q16",
+              "type": "fill",
+              "prompt": "Antes de conocerte, yo ya ___ (mudarme) tres veces.",
+              "bank": [
+                "había escapado",
+                "había comido",
+                "me había mudado",
+                "había terminado"
+              ],
+              "answer": "me había mudado",
+              "explanation": "\"me había mudado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q17",
+              "type": "mc",
+              "prompt": "Para esa hora, la tienda ya ___ (cerrar).",
+              "choices": [
+                "había empezado",
+                "habrán decidido",
+                "habrá cerrado",
+                "había salido"
+              ],
+              "answer": 2,
+              "explanation": "\"habrá cerrado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q18",
+              "type": "fill",
+              "prompt": "Cuando llegamos, la película ya ___ (empezar).",
+              "bank": [
+                "probado",
+                "había empezado",
+                "habíamos revisado",
+                "había estudiado"
+              ],
+              "answer": "había empezado",
+              "explanation": "\"había empezado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q19",
+              "type": "mc",
+              "prompt": "Para el final del curso, los estudiantes ___ (aprender) mucho.",
+              "choices": [
+                "habrán aprendido",
+                "habrá llegado",
+                "habré publicado",
+                "habrá cumplido"
+              ],
+              "answer": 0,
+              "explanation": "\"habrán aprendido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            }
+          ]
+        },
+        {
+          "id": "esc1p6l5",
+          "title": "Compound Tenses 5",
+          "subtitle": "Pluperfect & future perfect",
+          "questions": [
+            {
+              "id": "esc1p6q20",
+              "type": "mc",
+              "prompt": "Antes de esta noche, nunca había ___ (probar) ese plato.",
+              "choices": [
+                "probado",
+                "había salido",
+                "habían limpiado",
+                "había terminado"
+              ],
+              "answer": 0,
+              "explanation": "\"probado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q21",
+              "type": "fill",
+              "prompt": "Para el lunes, nosotros ___ (firmar) el contrato.",
+              "bank": [
+                "habrán completado",
+                "habías viajado",
+                "probado",
+                "habremos firmado"
+              ],
+              "answer": "habremos firmado",
+              "explanation": "\"habremos firmado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q22",
+              "type": "mc",
+              "prompt": "Cuando te vi, ya ___ (terminar) el trabajo.",
+              "choices": [
+                "había estudiado",
+                "habíamos revisado",
+                "había terminado",
+                "me había mudado"
+              ],
+              "answer": 2,
+              "explanation": "\"había terminado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q23",
+              "type": "fill",
+              "prompt": "Para entonces, ella ___ (cumplir) treinta años.",
+              "bank": [
+                "había terminado",
+                "habré publicado",
+                "habrás recibido",
+                "habrá cumplido"
+              ],
+              "answer": "habrá cumplido",
+              "explanation": "\"habrá cumplido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            },
+            {
+              "id": "esc1p6q24",
+              "type": "mc",
+              "prompt": "Antes de irme, ya ___ (apagar) las luces.",
+              "choices": [
+                "había apagado",
+                "había comido",
+                "había escapado",
+                "había empezado"
+              ],
+              "answer": 0,
+              "explanation": "\"había apagado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p7u1",
+      "level": "C1",
+      "eyebrow": "Unit 7",
+      "title": "Legal & Academic Vocabulary",
+      "description": "Formal institutional terms — Legal and academic register vocabulary.",
+      "lessons": [
+        {
+          "id": "esc1p7l1",
+          "title": "Legal & Academic Vocabulary 1",
+          "subtitle": "Formal institutional terms",
+          "questions": [
+            {
+              "id": "esc1p7q0",
+              "type": "fill",
+              "prompt": "How do you say \"law\" in Spanish? ___",
+              "bank": [
+                "abogado",
+                "ley",
+                "veredicto",
+                "conclusión"
+              ],
+              "answer": "ley",
+              "explanation": "law → ley. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q1",
+              "type": "mc",
+              "prompt": "How do you say \"contract\" in Spanish?",
+              "choices": [
+                "revisión por pares",
+                "investigación",
+                "contrato",
+                "prueba"
+              ],
+              "answer": 2,
+              "explanation": "contract → contrato. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q2",
+              "type": "fill",
+              "prompt": "How do you say \"lawyer\" in Spanish? ___",
+              "bank": [
+                "abogado",
+                "demanda",
+                "académico",
+                "hipótesis"
+              ],
+              "answer": "abogado",
+              "explanation": "lawyer → abogado. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q3",
+              "type": "mc",
+              "prompt": "How do you say \"judge\" in Spanish?",
+              "choices": [
+                "juez",
+                "reglamento",
+                "metodología",
+                "contrato"
+              ],
+              "answer": 0,
+              "explanation": "judge → juez. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q4",
+              "type": "fill",
+              "prompt": "How do you say \"court\" in Spanish? ___",
+              "bank": [
+                "abogado",
+                "tribunal",
+                "investigación",
+                "cita"
+              ],
+              "answer": "tribunal",
+              "explanation": "court → tribunal. Legal and academic register vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esc1p7l2",
+          "title": "Legal & Academic Vocabulary 2",
+          "subtitle": "Formal institutional terms",
+          "questions": [
+            {
+              "id": "esc1p7q5",
+              "type": "mc",
+              "prompt": "How do you say \"evidence\" in Spanish?",
+              "choices": [
+                "tribunal",
+                "revisión por pares",
+                "prueba",
+                "argumento"
+              ],
+              "answer": 2,
+              "explanation": "evidence → prueba. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q6",
+              "type": "fill",
+              "prompt": "How do you say \"lawsuit\" in Spanish? ___",
+              "bank": [
+                "veredicto",
+                "conclusión",
+                "juez",
+                "demanda"
+              ],
+              "answer": "demanda",
+              "explanation": "lawsuit → demanda. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q7",
+              "type": "mc",
+              "prompt": "How do you say \"regulation\" in Spanish?",
+              "choices": [
+                "reglamento",
+                "ley",
+                "cláusula",
+                "cita"
+              ],
+              "answer": 0,
+              "explanation": "regulation → reglamento. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q8",
+              "type": "fill",
+              "prompt": "How do you say \"clause\" in Spanish? ___",
+              "bank": [
+                "veredicto",
+                "metodología",
+                "cláusula",
+                "contrato"
+              ],
+              "answer": "cláusula",
+              "explanation": "clause → cláusula. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q9",
+              "type": "mc",
+              "prompt": "How do you say \"verdict\" in Spanish?",
+              "choices": [
+                "investigación",
+                "abogado",
+                "veredicto",
+                "revisión por pares"
+              ],
+              "answer": 2,
+              "explanation": "verdict → veredicto. Legal and academic register vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esc1p7l3",
+          "title": "Legal & Academic Vocabulary 3",
+          "subtitle": "Formal institutional terms",
+          "questions": [
+            {
+              "id": "esc1p7q10",
+              "type": "mc",
+              "prompt": "How do you say \"research\" in Spanish?",
+              "choices": [
+                "ley",
+                "hipótesis",
+                "investigación",
+                "reglamento"
+              ],
+              "answer": 2,
+              "explanation": "research → investigación. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q11",
+              "type": "fill",
+              "prompt": "How do you say \"thesis\" in Spanish? ___",
+              "bank": [
+                "cláusula",
+                "conclusión",
+                "tesis",
+                "contrato"
+              ],
+              "answer": "tesis",
+              "explanation": "thesis → tesis. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q12",
+              "type": "mc",
+              "prompt": "How do you say \"argument\" in Spanish?",
+              "choices": [
+                "argumento",
+                "conclusión",
+                "juez",
+                "investigación"
+              ],
+              "answer": 0,
+              "explanation": "argument → argumento. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q13",
+              "type": "fill",
+              "prompt": "How do you say \"hypothesis\" in Spanish? ___",
+              "bank": [
+                "tribunal",
+                "hipótesis",
+                "tesis",
+                "beca"
+              ],
+              "answer": "hipótesis",
+              "explanation": "hypothesis → hipótesis. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q14",
+              "type": "mc",
+              "prompt": "How do you say \"methodology\" in Spanish?",
+              "choices": [
+                "hipótesis",
+                "demanda",
+                "metodología",
+                "contrato"
+              ],
+              "answer": 2,
+              "explanation": "methodology → metodología. Legal and academic register vocabulary."
+            }
+          ]
+        },
+        {
+          "id": "esc1p7l4",
+          "title": "Legal & Academic Vocabulary 4",
+          "subtitle": "Formal institutional terms",
+          "questions": [
+            {
+              "id": "esc1p7q15",
+              "type": "fill",
+              "prompt": "How do you say \"citation\" in Spanish? ___",
+              "bank": [
+                "veredicto",
+                "abogado",
+                "metodología",
+                "cita"
+              ],
+              "answer": "cita",
+              "explanation": "citation → cita. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q16",
+              "type": "mc",
+              "prompt": "How do you say \"conclusion\" in Spanish?",
+              "choices": [
+                "conclusión",
+                "veredicto",
+                "revisión por pares",
+                "tribunal"
+              ],
+              "answer": 0,
+              "explanation": "conclusion → conclusión. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q17",
+              "type": "fill",
+              "prompt": "How do you say \"peer review\" in Spanish? ___",
+              "bank": [
+                "académico",
+                "prueba",
+                "argumento",
+                "revisión por pares"
+              ],
+              "answer": "revisión por pares",
+              "explanation": "peer review → revisión por pares. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q18",
+              "type": "mc",
+              "prompt": "How do you say \"academic\" in Spanish?",
+              "choices": [
+                "reglamento",
+                "ley",
+                "académico",
+                "metodología"
+              ],
+              "answer": 2,
+              "explanation": "academic → académico. Legal and academic register vocabulary."
+            },
+            {
+              "id": "esc1p7q19",
+              "type": "fill",
+              "prompt": "How do you say \"scholarship\" in Spanish? ___",
+              "bank": [
+                "cláusula",
+                "cita",
+                "beca",
+                "juez"
+              ],
+              "answer": "beca",
+              "explanation": "scholarship → beca. Legal and academic register vocabulary."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p8u1",
+      "level": "C1",
+      "eyebrow": "Unit 8",
+      "title": "Advanced Reported Speech",
+      "description": "Direct to indirect speech — Tense-shifting when converting direct speech to indirect (reported) speech.",
+      "lessons": [
+        {
+          "id": "esc1p8l1",
+          "title": "Advanced Reported Speech 1",
+          "subtitle": "Direct to indirect speech",
+          "questions": [
+            {
+              "id": "esc1p8q0",
+              "type": "mc",
+              "prompt": "Ella dijo: \"Voy a venir.\" → Ella dijo que ___ a venir.",
+              "choices": [
+                "iba",
+                "funcionaría",
+                "entendía",
+                "cambiarían"
+              ],
+              "answer": 0,
+              "explanation": "\"iba\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q1",
+              "type": "fill",
+              "prompt": "Él dijo: \"Tengo hambre.\" → Él dijo que ___ hambre.",
+              "bank": [
+                "gustaba",
+                "estaba",
+                "tenía",
+                "deberían"
+              ],
+              "answer": "tenía",
+              "explanation": "\"tenía\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q2",
+              "type": "mc",
+              "prompt": "Ellos dijeron: \"Hemos terminado.\" → Ellos dijeron que ___ terminado.",
+              "choices": [
+                "debían",
+                "supieran",
+                "habían",
+                "iba"
+              ],
+              "answer": 2,
+              "explanation": "\"habían\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q3",
+              "type": "fill",
+              "prompt": "Ella preguntó: \"¿Vendrás mañana?\" → Ella preguntó si ___ al día siguiente.",
+              "bank": [
+                "había cometido",
+                "vendría",
+                "era",
+                "habían ganado"
+              ],
+              "answer": "vendría",
+              "explanation": "\"vendría\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q4",
+              "type": "mc",
+              "prompt": "Él afirmó: \"Es la verdad.\" → Él afirmó que ___ la verdad.",
+              "choices": [
+                "era",
+                "iba",
+                "querían",
+                "entendía"
+              ],
+              "answer": 0,
+              "explanation": "\"era\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            }
+          ]
+        },
+        {
+          "id": "esc1p8l2",
+          "title": "Advanced Reported Speech 2",
+          "subtitle": "Direct to indirect speech",
+          "questions": [
+            {
+              "id": "esc1p8q5",
+              "type": "fill",
+              "prompt": "Ellos comentaron: \"Nos gusta viajar.\" → Ellos comentaron que les ___ viajar.",
+              "bank": [
+                "gustaba",
+                "funcionaría",
+                "tenía",
+                "entendía"
+              ],
+              "answer": "gustaba",
+              "explanation": "\"gustaba\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q6",
+              "type": "mc",
+              "prompt": "Ella explicó: \"No puedo ir.\" → Ella explicó que no ___ ir.",
+              "choices": [
+                "estaba",
+                "era",
+                "podía",
+                "deberían"
+              ],
+              "answer": 2,
+              "explanation": "\"podía\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q7",
+              "type": "fill",
+              "prompt": "Él admitió: \"Cometí un error.\" → Él admitió que ___ un error.",
+              "bank": [
+                "había cometido",
+                "vendría",
+                "debían",
+                "supieran"
+              ],
+              "answer": "había cometido",
+              "explanation": "\"había cometido\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q8",
+              "type": "mc",
+              "prompt": "Ellos insistieron: \"Queremos ayudar.\" → Ellos insistieron en que ___ ayudar.",
+              "choices": [
+                "querían",
+                "habría",
+                "era",
+                "podía"
+              ],
+              "answer": 0,
+              "explanation": "\"querían\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q9",
+              "type": "fill",
+              "prompt": "Ella señaló: \"El plan funcionará.\" → Ella señaló que el plan ___.",
+              "bank": [
+                "gustaba",
+                "estaba",
+                "había fallado",
+                "funcionaría"
+              ],
+              "answer": "funcionaría",
+              "explanation": "\"funcionaría\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            }
+          ]
+        },
+        {
+          "id": "esc1p8l3",
+          "title": "Advanced Reported Speech 3",
+          "subtitle": "Direct to indirect speech",
+          "questions": [
+            {
+              "id": "esc1p8q10",
+              "type": "fill",
+              "prompt": "Él prometió: \"Volveré pronto.\" → Él prometió que ___ pronto.",
+              "bank": [
+                "podía",
+                "habían ganado",
+                "era",
+                "volvería"
+              ],
+              "answer": "volvería",
+              "explanation": "\"volvería\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q11",
+              "type": "mc",
+              "prompt": "Ellos negaron: \"No sabíamos nada.\" → Ellos negaron que ___ nada.",
+              "choices": [
+                "debían",
+                "volvería",
+                "supieran",
+                "iba"
+              ],
+              "answer": 2,
+              "explanation": "\"supieran\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q12",
+              "type": "fill",
+              "prompt": "Ella sugirió: \"Deberíamos esperar.\" → Ella sugirió que ___ esperar.",
+              "bank": [
+                "supieran",
+                "era",
+                "estaba",
+                "deberían"
+              ],
+              "answer": "deberían",
+              "explanation": "\"deberían\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q13",
+              "type": "mc",
+              "prompt": "Él confesó: \"Estoy nervioso.\" → Él confesó que ___ nervioso.",
+              "choices": [
+                "estaba",
+                "tenía",
+                "querían",
+                "entendía"
+              ],
+              "answer": 0,
+              "explanation": "\"estaba\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q14",
+              "type": "fill",
+              "prompt": "Ellos anunciaron: \"Ganamos el premio.\" → Ellos anunciaron que ___ el premio.",
+              "bank": [
+                "habían ganado",
+                "vendría",
+                "debían",
+                "volvería"
+              ],
+              "answer": "habían ganado",
+              "explanation": "\"habían ganado\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            }
+          ]
+        },
+        {
+          "id": "esc1p8l4",
+          "title": "Advanced Reported Speech 4",
+          "subtitle": "Direct to indirect speech",
+          "questions": [
+            {
+              "id": "esc1p8q15",
+              "type": "mc",
+              "prompt": "Ella declaró: \"Esto es importante.\" → Ella declaró que esto ___ importante.",
+              "choices": [
+                "había cambiado",
+                "estaba",
+                "era",
+                "gustaba"
+              ],
+              "answer": 2,
+              "explanation": "\"era\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q16",
+              "type": "fill",
+              "prompt": "Él respondió: \"No lo entiendo.\" → Él respondió que no lo ___.",
+              "bank": [
+                "era",
+                "tenía",
+                "querían",
+                "entendía"
+              ],
+              "answer": "entendía",
+              "explanation": "\"entendía\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q17",
+              "type": "mc",
+              "prompt": "Ellos advirtieron: \"Habrá problemas.\" → Ellos advirtieron que ___ problemas.",
+              "choices": [
+                "habría",
+                "deberían",
+                "había fallado",
+                "habían"
+              ],
+              "answer": 0,
+              "explanation": "\"habría\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q18",
+              "type": "fill",
+              "prompt": "Ella recordó: \"Debemos llegar temprano.\" → Ella recordó que ___ llegar temprano.",
+              "bank": [
+                "habían ganado",
+                "debían",
+                "había cometido",
+                "estaba"
+              ],
+              "answer": "debían",
+              "explanation": "\"debían\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q19",
+              "type": "mc",
+              "prompt": "Él reconoció: \"Necesito ayuda.\" → Él reconoció que ___ ayuda.",
+              "choices": [
+                "tenía",
+                "debían",
+                "necesitaba",
+                "querían"
+              ],
+              "answer": 2,
+              "explanation": "\"necesitaba\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            }
+          ]
+        },
+        {
+          "id": "esc1p8l5",
+          "title": "Advanced Reported Speech 5",
+          "subtitle": "Direct to indirect speech",
+          "questions": [
+            {
+              "id": "esc1p8q20",
+              "type": "mc",
+              "prompt": "Ellos concluyeron: \"El experimento falló.\" → Ellos concluyeron que el experimento ___.",
+              "choices": [
+                "estaba",
+                "podía",
+                "había fallado",
+                "había cambiado"
+              ],
+              "answer": 2,
+              "explanation": "\"había fallado\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q21",
+              "type": "fill",
+              "prompt": "Ella observó: \"Algo cambió.\" → Ella observó que algo ___.",
+              "bank": [
+                "funcionaría",
+                "necesitaba",
+                "habían",
+                "había cambiado"
+              ],
+              "answer": "había cambiado",
+              "explanation": "\"había cambiado\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q22",
+              "type": "mc",
+              "prompt": "Él aseguró: \"Todo está bien.\" → Él aseguró que todo ___ bien.",
+              "choices": [
+                "estaba",
+                "debían",
+                "tenía",
+                "querían"
+              ],
+              "answer": 0,
+              "explanation": "\"estaba\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q23",
+              "type": "fill",
+              "prompt": "Ellos repitieron: \"No cambiaremos de opinión.\" → Ellos repitieron que no ___ de opinión.",
+              "bank": [
+                "cambiarían",
+                "había cometido",
+                "iba",
+                "habría"
+              ],
+              "answer": "cambiarían",
+              "explanation": "\"cambiarían\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
+            },
+            {
+              "id": "esc1p8q24",
+              "type": "mc",
+              "prompt": "Ella subrayó: \"Este punto es clave.\" → Ella subrayó que ese punto ___ clave.",
+              "choices": [
+                "necesitaba",
+                "supieran",
+                "era",
+                "habían"
+              ],
+              "answer": 2,
+              "explanation": "\"era\" is correct here. Tense-shifting when converting direct speech to indirect (reported) speech."
             }
           ]
         }
