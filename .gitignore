@@ -98,6 +98,12 @@ ios/LearnWithAlphonso/*.xcodeproj/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 
+# Same "XcodeGen-generated, never committed" treatment for the
+# .entitlements files project.yml's `entitlements.properties` blocks
+# generate (App Group, for the LearnWithAlphonsoWidget slice).
+ios/LearnWithAlphonso/*.entitlements
+ios/LearnWithAlphonso/LearnWithAlphonsoWidget/*.entitlements
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
