@@ -1,5 +1,6 @@
 import { getCourse, type Course } from "@/data/courses";
 import { SCENARIOS } from "@/data/scenarios";
+import { CAMPAIGNS, type Campaign } from "@/data/campaigns";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
@@ -37,6 +38,15 @@ export type IOSScenario = {
 /** Same pass-through reasoning as buildIOSContentBundle, for SCENARIOS. */
 export function buildIOSScenariosBundle(): IOSScenario[] {
   return SCENARIOS;
+}
+
+/**
+ * V4 candidate #4: same pass-through reasoning as buildIOSScenariosBundle,
+ * for CAMPAIGNS -- iOS decodes this into the mirrored `Campaign`/
+ * `CampaignScene` Decodable structs in CurriculumModels.swift.
+ */
+export function buildIOSCampaignsBundle(): Campaign[] {
+  return CAMPAIGNS;
 }
 
 /** Same pass-through reasoning as buildIOSContentBundle, for ACHIEVEMENTS. */

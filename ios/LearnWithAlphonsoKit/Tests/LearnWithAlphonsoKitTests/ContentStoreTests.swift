@@ -15,6 +15,21 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertEqual(found?.lesson.title, "Saying Hello")
     }
 
+    func testLoadsCampaigns() throws {
+        // V4 candidate #4: one real campaign shipped as proof of the
+        // architecture -- see docs/superpowers/specs/2026-09-21-
+        // conversation-campaigns-design.md.
+        let store = try ContentStore()
+        XCTAssertEqual(store.campaigns.count, 1)
+        let campaign = try XCTUnwrap(store.campaigns.first { $0.id == "city-day" })
+        XCTAssertEqual(campaign.title, "A day in a new city")
+        XCTAssertEqual(campaign.scenes.count, 3)
+        XCTAssertEqual(campaign.scenes.map(\.id), ["coffee-stop", "directions", "small-talk"])
+        for scene in campaign.scenes {
+            XCTAssertGreaterThan(scene.minTurns, 0)
+        }
+    }
+
     func testLoadsTheAchievementsCatalog() throws {
         let store = try ContentStore()
         XCTAssertEqual(store.achievements.count, 24) // 18 original + 6 from V3 pkg 2's expanded catalog

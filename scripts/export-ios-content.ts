@@ -18,6 +18,7 @@ import path from "node:path";
 import {
   buildIOSContentBundle,
   buildIOSScenariosBundle,
+  buildIOSCampaignsBundle,
   buildIOSAchievementsBundle,
   buildIOSVocabImagesBundle,
 } from "../src/lib/ios-content-export";
@@ -44,5 +45,6 @@ writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
 writeJSON("curriculum-es.json", buildIOSContentBundle("es"));
 writeJSON("scenarios.json", buildIOSScenariosBundle());
+writeJSON("campaigns.json", buildIOSCampaignsBundle());
 writeJSON("achievements.json", buildIOSAchievementsBundle());
 writeJSON("vocab-images.json", buildIOSVocabImagesBundle());
