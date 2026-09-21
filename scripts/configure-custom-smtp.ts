@@ -51,7 +51,7 @@ async function main() {
       external_email_enabled: true,
       smtp_admin_email: SENDER_EMAIL,
       smtp_host: "smtp.resend.com",
-      smtp_port: 587,
+      smtp_port: "587",
       smtp_user: "resend",
       smtp_pass: RESEND_API_KEY,
       smtp_sender_name: SENDER_NAME,
