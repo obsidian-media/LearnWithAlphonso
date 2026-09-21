@@ -858,6 +858,43 @@ public final class ProgressSyncClient: Sendable {
             }
     }
 
+    /// V4 candidate #2 -- upserts this device's APNs token into
+    /// `device_tokens` (supabase/migrations/20260921030000_remote_push_notifications.sql).
+    /// `on_conflict=user_id,token` matches that table's unique constraint
+    /// exactly, so re-registering the same device (app relaunch, a token
+    /// that happens not to have rotated) updates `updated_at` in place
+    /// rather than erroring or duplicating. RLS is own-row-only (`auth.uid()
+    /// = user_id`), same as sendNudge/markNudgesRead above -- no RPC
+    /// needed, this isn't a trust-sensitive write.
+    public func registerDeviceToken(_ token: String) async throws {
+        var request = restRequest(path: "device_tokens", query: [
+            URLQueryItem(name: "on_conflict", value: "user_id,token"),
+        ])
+        request.httpMethod = "POST"
+        request.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "token": token, "platform": "ios",
+            "updated_at": ISO8601DateFormatter().string(from: Date()),
+        ])
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
+    /// Not currently called from any UI (see the design doc's "Left out"
+    /// section -- sign-out doesn't wire this up yet), provided so that
+    /// follow-up doesn't need to add this call from scratch. Deletes only
+    /// this device's own row -- RLS's own-row policy would reject deleting
+    /// anyone else's regardless.
+    public func unregisterDeviceToken(_ token: String) async throws {
+        var request = restRequest(path: "device_tokens", query: [
+            URLQueryItem(name: "token", value: "eq.\(token)"),
+        ])
+        request.httpMethod = "DELETE"
+        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
     /// PostgREST returns `timestamptz` columns with fractional-second
     /// precision (e.g. "2026-09-20T01:23:45.678901+00:00"), which the
     /// default `ISO8601DateFormatter()` fails to parse -- try with

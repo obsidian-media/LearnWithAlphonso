@@ -105,3 +105,9 @@ targets:
           # to commit (RevenueCat's public-key model, same as the Supabase
           # keys above) and deliberately never used for a Release archive.
           INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
+          # V4 candidate #2 (real push) -- Debug/Simulator only. NOT set
+          # for Release yet -- see LearnWithAlphonso-Release.entitlements'
+          # own comment for why (would break the manual-signing archive
+          # step before the Push Notifications capability actually exists
+          # on the App ID).
+          CODE_SIGN_ENTITLEMENTS: LearnWithAlphonso-Debug.entitlements

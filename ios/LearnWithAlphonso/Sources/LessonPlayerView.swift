@@ -252,7 +252,19 @@ struct LessonPlayerView: View {
     /// lesson changes whether one is still needed today.
     private func scheduleStreakReminderAfterCompletion(lastActiveDate: String?) async {
         if await notificationScheduler.currentAuthorizationStatus() == .notDetermined {
-            _ = await notificationScheduler.requestAuthorization()
+            let granted = await notificationScheduler.requestAuthorization()
+            // V4 candidate #2 (real push) -- iOS has exactly one system
+            // notification-permission prompt for both local and remote
+            // notifications, so this reuses NotificationScheduler's
+            // existing prompt rather than adding a second one. Only
+            // registers once permission is actually granted; RootView's
+            // own registerIfAuthorized() (on every launch/foreground)
+            // covers the "granted in a prior session" and token-refresh
+            // cases, so this call is purely about not waiting for the
+            // *next* app launch after the very first grant.
+            if granted {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
         }
         notificationScheduler.scheduleStreakReminder(lastActiveDate: lastActiveDate)
     }

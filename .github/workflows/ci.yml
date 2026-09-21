@@ -136,8 +136,32 @@ jobs:
           supabase functions deploy complete-lesson
           supabase functions deploy start-lesson-session
           supabase functions deploy grade-review
+          supabase functions deploy send-push
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Sync APNs secrets (V4 push notifications)
+        # Deliberately conditional on all four being set -- none exist yet
+        # (see docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md's
+        # hard blocker: the APNs Auth Key is an interactive
+        # developer.apple.com action no agent can perform). Once a human
+        # creates the key and adds these four as repo secrets, this step
+        # starts syncing them with no further workflow change needed --
+        # same "no-op until configured, then just works" shape as the rest
+        # of this feature. supabase/functions/_shared/apns.ts is the
+        # runtime consumer.
+        run: |
+          if [ -z "$APNS_KEY_P8" ] || [ -z "$APNS_KEY_ID" ] || [ -z "$APNS_TEAM_ID" ] || [ -z "$APNS_BUNDLE_ID" ]; then
+            echo "::warning::APNS_KEY_P8/APNS_KEY_ID/APNS_TEAM_ID/APNS_BUNDLE_ID not all set -- skipping APNs secret sync (push send stays a no-op, see this step's header comment)."
+            exit 0
+          fi
+          supabase secrets set APNS_KEY_P8="$APNS_KEY_P8" APNS_KEY_ID="$APNS_KEY_ID" APNS_TEAM_ID="$APNS_TEAM_ID" APNS_BUNDLE_ID="$APNS_BUNDLE_ID"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          APNS_KEY_P8: ${{ secrets.APNS_KEY_P8 }}
+          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+          APNS_BUNDLE_ID: ${{ secrets.APNS_BUNDLE_ID }}
 
       - uses: oven-sh/setup-bun@v2
         with:

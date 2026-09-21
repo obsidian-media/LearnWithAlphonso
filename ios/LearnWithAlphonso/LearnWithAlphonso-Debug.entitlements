@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- V4 candidate #2 (real push) -- Debug/Simulator builds' device
+	     tokens register against APNs' sandbox environment. See
+	     docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md.
+	     Harmless with no Push Notifications capability actually enabled
+	     on the App ID yet (the hard blocker that doc flags) -- an
+	     unsigned/Simulator build (ios-app-build CI,
+	     CODE_SIGNING_ALLOWED=NO) never enforces entitlements at all. -->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>
