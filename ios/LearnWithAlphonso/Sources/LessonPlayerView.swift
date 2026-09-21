@@ -32,9 +32,31 @@ struct LessonPlayerView: View {
     @State private var isLeaguePromotion = false
     @State private var queuedOffline: PendingLessonCompletion?
     @State private var errorMessage: String?
+    // V3 pkg 4b: in-lesson reinforcement, staged in two steps -- see
+    // pickReinforcementQuestion's doc comment (LessonReinforcement.swift)
+    // and lesson.$id.tsx's identical web-side pattern for why. Never
+    // affects correctCount/missedQuestionIDs/hearts/XP.
+    @State private var pendingReinforcement: Question?
+    @State private var activeReinforcement: Question?
+    // Fresh per-mount seed for reinforcement-pick determinism across a
+    // single attempt without repeating the exact same pick on identical
+    // misses -- mirrors lesson.$id.tsx's attemptSeed.
+    private let attemptSeed = UUID().uuidString
 
     private var total: Int { lesson.questions.count }
     private var vocab: [VocabItem] { deriveVocab(lesson: lesson, images: contentStore.vocabImages) }
+    private var isReinforcing: Bool { activeReinforcement != nil }
+    private var currentQuestion: Question { activeReinforcement ?? lesson.questions[idx] }
+
+    private var unit: Unit? { contentStore.findLesson(id: lesson.id, course: course)?.unit }
+    private var siblingQuestions: [Question] {
+        (unit?.lessons ?? []).filter { $0.id != lesson.id }.flatMap(\.questions)
+    }
+    private var levelQuestions: [Question] {
+        contentStore.bundle(for: course).units
+            .filter { $0.level == unit?.level && $0.id != unit?.id }
+            .flatMap { $0.lessons.flatMap(\.questions) }
+    }
 
     var body: some View {
         Group {
@@ -70,7 +92,7 @@ struct LessonPlayerView: View {
     private var quizBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             ProgressView(value: Double(idx), total: Double(total))
-            Text("\(idx + 1)/\(total)")
+            Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -78,8 +100,8 @@ struct LessonPlayerView: View {
             // per question -- without it, SwiftUI would keep reusing the
             // same view identity across questions and a reorder question's
             // tapped-token state would leak into the next question.
-            QuestionCard(question: lesson.questions[idx], course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
-                .id(questionID(lesson.questions[idx]))
+            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
+                .id(questionID(currentQuestion))
 
             Spacer()
 
@@ -92,7 +114,19 @@ struct LessonPlayerView: View {
                     .disabled(picked == nil)
                     .frame(maxWidth: .infinity)
             } else {
-                Button(idx < total - 1 ? "Continue" : "Finish") {
+                Button(isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish") {
+                    if let pendingReinforcement {
+                        activeReinforcement = pendingReinforcement
+                        self.pendingReinforcement = nil
+                        picked = nil
+                        checked = false
+                        return
+                    }
+                    if activeReinforcement != nil {
+                        activeReinforcement = nil
+                        // falls through: finishing a reinforcement round
+                        // still needs to advance below.
+                    }
                     if idx < total - 1 {
                         idx += 1
                         picked = nil
@@ -109,11 +143,26 @@ struct LessonPlayerView: View {
     }
 
     private func recordAnswer() {
+        // Reinforcement rounds are supplementary practice only -- they
+        // never touch correctCount/missedQuestionIDs/hearts/XP.
+        guard !isReinforcing else { return }
         let question = lesson.questions[idx]
         if isAnswerCorrect(question, picked: picked) {
             correctCount += 1
         } else {
             missedQuestionIDs.append(questionID(question))
+            // "Doing well" skews the reinforcement pool wider (see
+            // pickReinforcementQuestion's doc comment) -- based on
+            // accuracy over prior questions this attempt, not counting
+            // this miss. Queued as *pending*, not shown yet -- the
+            // learner should see this question's own feedback first.
+            let doingWell = idx > 0 && Double(correctCount) / Double(idx) >= 0.8
+            pendingReinforcement = pickReinforcementQuestion(
+                siblingQuestions: siblingQuestions,
+                levelQuestions: levelQuestions,
+                doingWell: doingWell,
+                seed: "\(attemptSeed)-reinforce-\(idx)"
+            )
         }
     }
 

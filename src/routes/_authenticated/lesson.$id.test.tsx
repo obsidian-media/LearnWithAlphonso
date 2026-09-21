@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { Question } from "../../data/curriculum";
 
 const navigate = vi.fn();
 let currentLessonId = "u1l1";
@@ -22,10 +23,19 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 // Real reshuffle would randomize choice/bank order per mount, making the
 // correct answer's position (and thus what to click) non-deterministic.
 // The lesson player's own state machine is under test here, not the
-// shuffle -- that's covered by bank-engine.test.ts.
+// shuffle -- that's covered by bank-engine.test.ts. Reinforcement is
+// disabled by default (pickReinforcementQuestion -> null) for the same
+// reason: most tests below are about the core quiz flow, not V3 pkg 4b's
+// in-lesson reinforcement, which gets its own dedicated tests further
+// down overriding this mock's return value.
+const pickReinforcementQuestion = vi.fn((_params: unknown) => null as unknown);
 vi.mock("../../data/bank-engine", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../data/bank-engine")>();
-  return { ...actual, reshuffleQuestion: (q: unknown) => q };
+  return {
+    ...actual,
+    reshuffleQuestion: (q: unknown) => q,
+    pickReinforcementQuestion: (params: unknown) => pickReinforcementQuestion(params),
+  };
 });
 
 const startLessonSession = vi.fn();
@@ -79,6 +89,8 @@ beforeEach(() => {
   loseHeartRemote.mockResolvedValue({ hearts: 4 });
   recordMisses.mockReset();
   recordMisses.mockResolvedValue({ added: 1 });
+  pickReinforcementQuestion.mockReset();
+  pickReinforcementQuestion.mockReturnValue(null);
   useProgress.getState().reset();
 });
 
@@ -234,6 +246,85 @@ describe("Lesson page", () => {
     renderPage();
     await user.click(await screen.findByRole("button", { name: "Close" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
+});
+
+// V3 pkg 4b: in-lesson reinforcement. pickReinforcementQuestion is mocked
+// per-test here (defaults to null in beforeEach, matching every other
+// test in this file) so these can control exactly when a reinforcement
+// round appears, independent of the real curriculum's sibling/level pools.
+describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
+  const reinforcementQuestion: Question = {
+    id: "reinforce1",
+    type: "mc",
+    prompt: "Reinforcement: pick the greeting.",
+    choices: ["Hello", "Goodbye"],
+    answer: 0,
+    explanation: "Hello is a greeting.",
+  };
+
+  it("shows a reinforcement question after a miss, then continues without double-counting", async () => {
+    pickReinforcementQuestion.mockReturnValue(reinforcementQuestion);
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+
+    // Miss q1 -- its own feedback shows first, not the reinforcement yet.
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(loseHeartRemote).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
+
+    // Continue reveals the reinforcement round, not q2 yet -- progress
+    // stays at 1/8 since it isn't a real question.
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("Quick practice")).toBeInTheDocument();
+    expect(screen.getByText("Reinforcement: pick the greeting.")).toBeInTheDocument();
+    expect(screen.getByText("1/8")).toBeInTheDocument();
+
+    // Answering it (even wrong) doesn't touch hearts/missed again.
+    await user.click(screen.getByRole("button", { name: "Goodbye" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(loseHeartRemote).toHaveBeenCalledTimes(1);
+
+    // Continue past the reinforcement lands on the real next question.
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+    expect(screen.getByText("2/8")).toBeInTheDocument();
+  });
+
+  it("shows no reinforcement round when none is available", async () => {
+    pickReinforcementQuestion.mockReturnValue(null);
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+    expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
+  });
+
+  it("says 'Continue' rather than 'Finish' when a reinforcement is pending on the last question", async () => {
+    pickReinforcementQuestion.mockReturnValue(reinforcementQuestion);
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+
+    for (let i = 0; i < ANSWERS.length - 1; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+    }
+    // Miss the last real question -- a naive idx-based label would say
+    // "Finish" here, but the reinforcement round is still pending.
+    await user.click(await screen.findByRole("button", { name: ANSWERS[7].wrong }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Finish" })).not.toBeInTheDocument();
   });
 });
 

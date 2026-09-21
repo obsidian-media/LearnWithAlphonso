@@ -7,7 +7,7 @@ import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 import { getCourse } from "../../data/courses";
-import { reshuffleQuestion } from "../../data/bank-engine";
+import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { speak } from "../../lib/speech";
@@ -50,6 +50,25 @@ function LessonPage() {
     for (const u of curriculum) if (u.lessons.some((l) => l.id === id)) return u.level;
     return "A1";
   }, [curriculum, id]);
+  // V3 pkg 4b: pools backing in-lesson reinforcement -- see
+  // pickReinforcementQuestion's doc comment in bank-engine.ts for why
+  // these two are kept separate (same-pack vs. wider-level) rather than
+  // one combined pool.
+  const unit = useMemo(
+    () => curriculum.find((u) => u.lessons.some((l) => l.id === id)),
+    [curriculum, id],
+  );
+  const siblingQuestions = useMemo(
+    () => (unit?.lessons ?? []).filter((l) => l.id !== id).flatMap((l) => l.questions),
+    [unit, id],
+  );
+  const levelQuestions = useMemo(
+    () =>
+      curriculum
+        .filter((u) => u.level === lessonLevel && u.id !== unit?.id)
+        .flatMap((u) => u.lessons.flatMap((l) => l.questions)),
+    [curriculum, lessonLevel, unit],
+  );
 
   const applyCompletion = useProgress((s) => s.applyCompletion);
   const loseHeartLocal = useProgress((s) => s.loseHeartLocal);
@@ -65,6 +84,15 @@ function LessonPage() {
   // `picked` directly -- see submittedAnswer below for where these unify.
   const [orderPicks, setOrderPicks] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
+  // V3 pkg 4b: in-lesson reinforcement, staged in two steps so the
+  // learner sees the *missed* question's own feedback first, then the
+  // reinforcement question fresh on the next "Continue" -- never affects
+  // correct/missed/hearts/XP, purely supplementary practice.
+  // `pendingReinforcement` is queued by a miss but not yet shown (the
+  // learner is still looking at the missed question's feedback);
+  // `activeReinforcement` is the one currently on screen.
+  const [pendingReinforcement, setPendingReinforcement] = useState<Question | null>(null);
+  const [activeReinforcement, setActiveReinforcement] = useState<Question | null>(null);
   const [done, setDone] = useState<{
     xp: number;
     unlocked: string[];
@@ -110,8 +138,9 @@ function LessonPage() {
     );
   }
   const lesson = maybeLesson;
-  const q: Question = questions[idx];
   const total = questions.length;
+  const isReinforcing = activeReinforcement !== null;
+  const q: Question = activeReinforcement ?? questions[idx];
 
   const submittedAnswer =
     q.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
@@ -123,16 +152,49 @@ function LessonPage() {
         ? q.choices[q.answer] === submittedAnswer
         : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
     setChecked(true);
+    // Reinforcement rounds are supplementary practice only -- they never
+    // touch correct/missed/hearts/XP, regardless of outcome.
+    if (isReinforcing) return;
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
       setMissedQs((m) => [...m, { q, yours: submittedAnswer }]);
       loseHeartLocal();
       void loseHeartRemote();
+      // "Doing well" skews the reinforcement pool wider (see
+      // pickReinforcementQuestion's doc comment) -- based on accuracy
+      // over prior questions this attempt, not counting this miss.
+      // Queued as *pending*, not shown yet -- the learner should see this
+      // question's own feedback first; next() promotes it to active.
+      const doingWell = idx > 0 && correct / idx >= 0.8;
+      const reinforcement = pickReinforcementQuestion({
+        siblingQuestions,
+        levelQuestions,
+        doingWell,
+        seed: `${attemptSeed}-reinforce-${idx}`,
+      });
+      if (reinforcement) {
+        setPendingReinforcement(
+          reshuffleQuestion(reinforcement, `${attemptSeed}-reinforce-${idx}-r`),
+        );
+      }
     }
   }
 
   async function next() {
+    if (pendingReinforcement) {
+      setActiveReinforcement(pendingReinforcement);
+      setPendingReinforcement(null);
+      setPicked(null);
+      setOrderPicks([]);
+      setChecked(false);
+      return;
+    }
+    if (activeReinforcement) {
+      setActiveReinforcement(null);
+      // falls through: finishing a reinforcement round still needs to
+      // advance to the next real question (or finish the lesson) below.
+    }
     if (idx < total - 1) {
       setIdx((i) => i + 1);
       setPicked(null);
@@ -268,7 +330,7 @@ function LessonPage() {
       ) : (
         <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-            {lesson.subtitle}
+            {isReinforcing ? "Quick practice" : lesson.subtitle}
           </p>
           {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
             <img
@@ -392,7 +454,7 @@ function LessonPage() {
                 onClick={next}
                 className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
               >
-                {idx < total - 1 ? "Continue" : "Finish"}
+                {isReinforcing || pendingReinforcement || idx < total - 1 ? "Continue" : "Finish"}
               </button>
             )}
           </div>

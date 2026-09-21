@@ -147,3 +147,39 @@ export function unitsFromBank(
   const levels: Level[] = ["A1", "A2", "B1", "B2", "C1"];
   return levels.flatMap((l) => buildLevel(l, bank[l] ?? [], existingCountByLevel[l] ?? 0));
 }
+
+/**
+ * V3 pkg 4b -- "in-lesson reinforcement." Picks one extra question testing
+ * the same concept as a question the learner just missed, for immediate
+ * retrieval practice, right there in the lesson rather than only later in
+ * spaced review. Reuses existing curriculum data outright -- no new
+ * content, no difficulty tagging (none exists).
+ *
+ * `doingWell` implements "skew toward easier or harder based on how
+ * you're doing" without inventing a difficulty score this data doesn't
+ * have: `siblingQuestions` (the same unit/pack -- same exact grammar or
+ * vocab point, tightly scaffolded) is the default, "easier" pool;
+ * `levelQuestions` (everything else at this CEFR level -- broader, less
+ * predictable) is drawn from instead once the learner is doing well this
+ * session. Falls back to the other pool if the preferred one is empty
+ * (e.g. a hand-authored unit with no other lessons), and returns `null`
+ * only if both are empty.
+ *
+ * Callers are responsible for excluding the current lesson's own
+ * questions from both pools before calling this -- `Question.id` is only
+ * unique *within* a lesson (hand-authored English lessons reuse "q1".."q8"),
+ * so filtering by id here would risk wrongly excluding a legitimate
+ * sibling question that happens to share an id with one in this lesson.
+ */
+export function pickReinforcementQuestion(params: {
+  siblingQuestions: Question[];
+  levelQuestions: Question[];
+  doingWell: boolean;
+  seed: string;
+}): Question | null {
+  const primary = params.doingWell ? params.levelQuestions : params.siblingQuestions;
+  const fallback = params.doingWell ? params.siblingQuestions : params.levelQuestions;
+  const pool = primary.length > 0 ? primary : fallback;
+  if (pool.length === 0) return null;
+  return pool[hash(params.seed) % pool.length]!;
+}

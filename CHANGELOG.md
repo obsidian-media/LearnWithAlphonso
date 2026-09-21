@@ -169,6 +169,24 @@ expressions). No new question types were needed -- all 75 packs reuse the
 existing pair/cloze pack engine, which already auto-generates mc/fill
 questions with distractors and shuffling. This closes out package 4a.
 
+**Adaptive difficulty (in progress)** — in-lesson reinforcement: missing a
+question now queues one extra practice question testing the same concept
+(pulled from a sibling lesson in the same unit/pack) right there in the
+lesson, not just later in spaced review. Shown as its own "Quick practice"
+interstitial *after* the missed question's own feedback (never replacing
+it), and never affects correct/missed/hearts/XP regardless of its own
+outcome -- purely supplementary. No difficulty metadata exists on
+individual questions, so "skew toward easier or harder based on how
+you're doing this session" is implemented as a *pool* skew instead:
+`pickReinforcementQuestion` (mirrored in `bank-engine.ts` and a new
+`LessonReinforcement.swift` in the Kit) draws from the tightly-scaffolded
+same-unit pool by default, or the wider same-CEFR-level pool once recent
+accuracy this attempt is high, falling back to the other pool if the
+preferred one is empty. Ships on both web (`lesson.$id.tsx`) and iOS
+(`LessonPlayerView`), reusing 100% existing curriculum data. Still open:
+generative sentence content (on-demand AI-written extra practice per
+lesson).
+
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 
 Built as a batch of independent, parallel-safe feature slices against

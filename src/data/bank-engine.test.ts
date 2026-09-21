@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildLevel, hash, packQuestions, reshuffleQuestion, unitsFromBank } from "./bank-engine";
+import {
+  buildLevel,
+  hash,
+  packQuestions,
+  pickReinforcementQuestion,
+  reshuffleQuestion,
+  unitsFromBank,
+} from "./bank-engine";
 import type { Pack } from "./bank-engine";
 import type { Question } from "./curriculum";
 
@@ -192,5 +199,78 @@ describe("unitsFromBank", () => {
     const bank = { A1: [pairPack], A2: [], B1: [], B2: [], C1: [] } as Record<string, Pack[]>;
     const units = unitsFromBank(bank as never, { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 } as never);
     expect(units.every((u) => u.level === "A1")).toBe(true);
+  });
+});
+
+describe("pickReinforcementQuestion", () => {
+  function q(id: string): Question {
+    return { id, type: "mc", prompt: `p${id}`, choices: ["a", "b"], answer: 0, explanation: "e" };
+  }
+
+  it("draws from siblingQuestions by default (not doing well)", () => {
+    const result = pickReinforcementQuestion({
+      siblingQuestions: [q("s1"), q("s2")],
+      levelQuestions: [q("l1"), q("l2")],
+      doingWell: false,
+      seed: "seed-1",
+    });
+    expect(["s1", "s2"]).toContain(result?.id);
+  });
+
+  it("draws from levelQuestions when doing well", () => {
+    const result = pickReinforcementQuestion({
+      siblingQuestions: [q("s1"), q("s2")],
+      levelQuestions: [q("l1"), q("l2")],
+      doingWell: true,
+      seed: "seed-1",
+    });
+    expect(["l1", "l2"]).toContain(result?.id);
+  });
+
+  it("falls back to levelQuestions when siblingQuestions is empty", () => {
+    const result = pickReinforcementQuestion({
+      siblingQuestions: [],
+      levelQuestions: [q("l1")],
+      doingWell: false,
+      seed: "seed-1",
+    });
+    expect(result?.id).toBe("l1");
+  });
+
+  it("falls back to siblingQuestions when levelQuestions is empty", () => {
+    const result = pickReinforcementQuestion({
+      siblingQuestions: [q("s1")],
+      levelQuestions: [],
+      doingWell: true,
+      seed: "seed-1",
+    });
+    expect(result?.id).toBe("s1");
+  });
+
+  it("returns null when both pools are empty", () => {
+    const result = pickReinforcementQuestion({
+      siblingQuestions: [],
+      levelQuestions: [],
+      doingWell: false,
+      seed: "seed-1",
+    });
+    expect(result).toBeNull();
+  });
+
+  it("is deterministic for the same seed", () => {
+    const pool = [q("s1"), q("s2"), q("s3")];
+    const a = pickReinforcementQuestion({
+      siblingQuestions: pool,
+      levelQuestions: [],
+      doingWell: false,
+      seed: "same-seed",
+    });
+    const b = pickReinforcementQuestion({
+      siblingQuestions: pool,
+      levelQuestions: [],
+      doingWell: false,
+      seed: "same-seed",
+    });
+    expect(a?.id).toBe(b?.id);
   });
 });
