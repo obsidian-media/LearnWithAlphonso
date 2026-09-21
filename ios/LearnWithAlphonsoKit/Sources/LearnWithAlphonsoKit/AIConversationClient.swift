@@ -26,6 +26,21 @@ public enum AIConversationError: Error, Equatable {
     case invalidPayload
 }
 
+/// V3 pkg 4b -- mirrors generate-practice.ts's response shape exactly.
+public struct GeneratedPracticeQuestion: Sendable, Equatable {
+    public let prompt: String
+    public let choices: [String]
+    public let answerIndex: Int
+    public let explanation: String
+
+    public init(prompt: String, choices: [String], answerIndex: Int, explanation: String) {
+        self.prompt = prompt
+        self.choices = choices
+        self.answerIndex = answerIndex
+        self.explanation = explanation
+    }
+}
+
 public final class AIConversationClient: Sendable {
     public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
@@ -87,6 +102,37 @@ public final class AIConversationClient: Sendable {
             throw AIConversationError.invalidPayload
         }
         return count
+    }
+
+    /// POST /api/generate-practice -- V3 pkg 4b "generative sentence
+    /// content." On-demand extra practice for a lesson the learner just
+    /// finished; entirely ephemeral on the caller's side too (never
+    /// persisted, never touches XP/hearts/review scheduling), same
+    /// posture as generate-practice.ts's server-side design. An empty
+    /// array is a valid response (the model found nothing worth writing),
+    /// not an error.
+    public func generatePractice(lessonID: String, course: String) async throws -> [GeneratedPracticeQuestion] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/generate-practice"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["lessonId": lessonID, "course": course])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let rows = object["questions"] as? [[String: Any]] else {
+            throw AIConversationError.invalidPayload
+        }
+        return rows.compactMap { row -> GeneratedPracticeQuestion? in
+            guard let prompt = row["prompt"] as? String,
+                  let choices = row["choices"] as? [String],
+                  let answerIndex = row["answerIndex"] as? Int,
+                  let explanation = row["explanation"] as? String else { return nil }
+            return GeneratedPracticeQuestion(
+                prompt: prompt, choices: choices, answerIndex: answerIndex, explanation: explanation
+            )
+        }
     }
 
     /// POST /api/tts -- returns raw MP3 audio bytes for `text`.

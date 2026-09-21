@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Question } from "../../data/curriculum";
@@ -49,6 +49,8 @@ vi.mock("../../lib/sync.functions", () => ({
 
 const recordMisses = vi.fn();
 vi.mock("../../lib/review.functions", () => ({ recordMisses }));
+
+vi.mock("../../lib/auth-headers", () => ({ authHeaders: vi.fn().mockResolvedValue({}) }));
 
 const { Route } = await import("./lesson.$id");
 const { useProgress } = await import("../../lib/progress");
@@ -433,5 +435,92 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
     }
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+});
+
+// V3 pkg 4b: generative sentence content -- on-demand extra practice from
+// the finish screen, calling /api/generate-practice directly (a raw HTTP
+// route, not a TanStack server function, same as /api/chat).
+describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    completeLessonRemote.mockResolvedValue({
+      xpGain: 80,
+      newlyUnlocked: [],
+      heartsBonus: null,
+      progress: {
+        xp: 80,
+        streak: 1,
+        longestStreak: 1,
+        lastActiveDate: "2026-09-20",
+        hearts: 5,
+        heartsRefillAt: null,
+        streakFreezes: 0,
+        leagueTier: "bronze",
+      },
+    });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  async function finishLesson(user: ReturnType<typeof userEvent.setup>) {
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
+      await user.click(screen.getByRole("button", { name: label }));
+    }
+    await screen.findByText("+80 XP");
+  }
+
+  it("generates and lets the user practice extra questions", async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          questions: [
+            { prompt: "Extra Q1", choices: ["a", "b"], answerIndex: 0, explanation: "why" },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+    const user = userEvent.setup();
+    await finishLesson(user);
+
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(await screen.findByText("Extra Q1")).toBeInTheDocument();
+    expect(screen.getByText("Extra practice · 1/1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "a" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Finish practice" }));
+    expect(await screen.findByText(/that's all the extra practice/)).toBeInTheDocument();
+  });
+
+  it("shows a message when no practice could be generated", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ questions: [] }), { status: 200 }));
+    const user = userEvent.setup();
+    await finishLesson(user);
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(
+      await screen.findByText("Couldn't generate practice for this lesson right now."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows an error message when the request fails", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response("err", { status: 500 }));
+    const user = userEvent.setup();
+    await finishLesson(user);
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(await screen.findByText("Something went wrong — try again.")).toBeInTheDocument();
   });
 });

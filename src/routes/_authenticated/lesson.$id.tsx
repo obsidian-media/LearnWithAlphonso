@@ -20,6 +20,7 @@ import {
 import { recordMisses } from "../../lib/review.functions";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
+import { authHeaders } from "../../lib/auth-headers";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPage,
@@ -311,6 +312,8 @@ function LessonPage() {
           correct={correct}
           total={total}
           missedQs={missedQs}
+          lessonId={lesson.id}
+          course={course}
         />
       ) : phase === "overview" ? (
         <OverviewScreen
@@ -627,6 +630,8 @@ function FinishScreen({
   correct,
   total,
   missedQs,
+  lessonId,
+  course,
 }: {
   xp: number;
   unlocked: string[];
@@ -635,6 +640,8 @@ function FinishScreen({
   correct: number;
   total: number;
   missedQs: { q: Question; yours: string }[];
+  lessonId: string;
+  course: string;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   return (
@@ -740,12 +747,141 @@ function FinishScreen({
         )}
       </AnimatePresence>
 
+      <GeneratedPracticeSection lessonId={lessonId} course={course} />
+
       <Link
         to="/learn"
         className="mt-8 w-full rounded-full bg-ink px-4 py-3.5 text-center text-sm font-semibold text-surface"
       >
         Back to path
       </Link>
+    </div>
+  );
+}
+
+/** Mirrors generate-practice.ts's response shape exactly. Defined locally
+ * rather than imported from practice-generation.server.ts -- that module
+ * is server-only, this is client-rendered. */
+type GeneratedPracticeQuestion = {
+  prompt: string;
+  choices: string[];
+  answerIndex: number;
+  explanation: string;
+};
+
+/**
+ * V3 pkg 4b: "generative sentence content." On-demand extra practice a
+ * learner can do immediately after finishing a lesson -- entirely
+ * ephemeral (component-local state only), never touching XP/hearts/review
+ * scheduling, same posture as in-lesson reinforcement above.
+ */
+function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; course: string }) {
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
+  const [questions, setQuestions] = useState<GeneratedPracticeQuestion[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  async function generate() {
+    setStatus("loading");
+    try {
+      const resp = await fetch("/api/generate-practice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ lessonId, course }),
+      });
+      if (!resp.ok) throw new Error("request failed");
+      const data = (await resp.json()) as { questions: GeneratedPracticeQuestion[] };
+      if (data.questions.length === 0) {
+        setStatus("empty");
+        return;
+      }
+      setQuestions(data.questions);
+      setIdx(0);
+      setPicked(null);
+      setChecked(false);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status !== "ready") {
+    return (
+      <div className="mt-8 w-full">
+        <button
+          onClick={() => void generate()}
+          disabled={status === "loading"}
+          className="w-full rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:border-ink/30 disabled:opacity-50"
+        >
+          {status === "loading" ? "Writing more practice…" : "Generate more practice"}
+        </button>
+        {status === "empty" && (
+          <p className="mt-2 text-center text-xs text-ink-soft">
+            Couldn't generate practice for this lesson right now.
+          </p>
+        )}
+        {status === "error" && (
+          <p className="mt-2 text-center text-xs text-ink-soft">
+            Something went wrong — try again.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (idx >= questions.length) {
+    return (
+      <div className="mt-8 w-full rounded-2xl border border-hairline bg-parchment p-4 text-center text-sm text-ink-soft">
+        Nice work — that's all the extra practice for this lesson.
+      </div>
+    );
+  }
+
+  const q = questions[idx];
+  const isCorrect = picked === q.choices[q.answerIndex];
+
+  return (
+    <div className="mt-8 w-full text-left">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+        Extra practice · {idx + 1}/{questions.length}
+      </p>
+      <p className="mt-2 text-sm font-medium text-ink">{q.prompt}</p>
+      <div className="mt-3 space-y-2">
+        {q.choices.map((c) => (
+          <AnswerOption
+            key={c}
+            label={c}
+            checked={checked}
+            isPicked={picked === c}
+            isRight={q.choices[q.answerIndex] === c}
+            disabled={checked}
+            onClick={() => setPicked(c)}
+          />
+        ))}
+      </div>
+      {checked && (
+        <AnswerFeedback
+          correct={isCorrect}
+          headline={isCorrect ? "Nice." : "Not quite."}
+          explanation={q.explanation}
+        />
+      )}
+      <button
+        disabled={!checked && !picked}
+        onClick={() => {
+          if (!checked) {
+            setChecked(true);
+            return;
+          }
+          setIdx((i) => i + 1);
+          setPicked(null);
+          setChecked(false);
+        }}
+        className="mt-4 w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
+      >
+        {!checked ? "Check" : idx < questions.length - 1 ? "Next" : "Finish practice"}
+      </button>
     </div>
   );
 }

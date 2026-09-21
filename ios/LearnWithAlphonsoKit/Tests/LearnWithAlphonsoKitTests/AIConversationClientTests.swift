@@ -125,6 +125,56 @@ final class AIConversationClientTests: XCTestCase {
         }
     }
 
+    // MARK: - generatePractice (V3 pkg 4b)
+
+    func testGeneratePracticePostsTheLessonAndReturnsParsedQuestions() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: [
+                "questions": [
+                    ["prompt": "He ___ to work.", "choices": ["drive", "drives", "drove", "driven"], "answerIndex": 1, "explanation": "why"],
+                ],
+            ])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let questions = try await client.generatePractice(lessonID: "u1l1", course: "en")
+
+        XCTAssertEqual(questions, [
+            GeneratedPracticeQuestion(prompt: "He ___ to work.", choices: ["drive", "drives", "drove", "driven"], answerIndex: 1, explanation: "why"),
+        ])
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/generate-practice"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
+        XCTAssertEqual(payload["course"] as? String, "en")
+    }
+
+    func testGeneratePracticeReturnsAnEmptyArrayWhenNoneWereGenerated() async throws {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["questions": [] as [Any]])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        let questions = try await client.generatePractice(lessonID: "u1l1", course: "en")
+        XCTAssertEqual(questions, [])
+    }
+
+    func testGeneratePracticeSurfacesAQuotaError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "slow down"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!)
+        }
+        do {
+            _ = try await client.generatePractice(lessonID: "u1l1", course: "en")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AIConversationError, .server(status: 429, message: "slow down"))
+        }
+    }
+
     // MARK: - synthesizeSpeech
 
     func testSynthesizeSpeechPostsTextAndReturnsTheAudioBytes() async throws {

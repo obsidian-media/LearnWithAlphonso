@@ -169,7 +169,7 @@ expressions). No new question types were needed -- all 75 packs reuse the
 existing pair/cloze pack engine, which already auto-generates mc/fill
 questions with distractors and shuffling. This closes out package 4a.
 
-**Adaptive difficulty (in progress)** — in-lesson reinforcement: missing a
+**Adaptive difficulty** — in-lesson reinforcement: missing a
 question now queues one extra practice question testing the same concept
 (pulled from a sibling lesson in the same unit/pack) right there in the
 lesson, not just later in spaced review. Shown as its own "Quick practice"
@@ -183,9 +183,23 @@ you're doing this session" is implemented as a *pool* skew instead:
 same-unit pool by default, or the wider same-CEFR-level pool once recent
 accuracy this attempt is high, falling back to the other pool if the
 preferred one is empty. Ships on both web (`lesson.$id.tsx`) and iOS
-(`LessonPlayerView`), reusing 100% existing curriculum data. Still open:
-generative sentence content (on-demand AI-written extra practice per
-lesson).
+(`LessonPlayerView`), reusing 100% existing curriculum data.
+
+**Generative sentence content** — a "Generate more practice" option on the
+lesson finish screen: NVIDIA NIM (same integration as weakness detection
+and free conversation) writes 3-5 fresh multiple-choice questions on that
+specific lesson's topic, using the lesson's own questions as grounding
+examples so the model stays on-topic and doesn't just repeat them
+verbatim. New `src/lib/practice-generation.server.ts` (same defensive-
+parse-never-throw design as `weakness-detection.server.ts`) backs a new
+raw HTTP route, `api/generate-practice.ts` (reuses the existing `chat`
+quota bucket, same precedent as `analyze-weaknesses.ts`). Entirely
+ephemeral on both platforms -- generated questions live only in
+component-local state (web) / view-local `@State` (iOS,
+`AIConversationClient.generatePractice`), never persisted, never counted
+toward XP/hearts/review scheduling, same posture as in-lesson
+reinforcement above. This closes out package 4b, and with it, all six V3
+packages.
 
 ## V2 — Native iOS feature expansion (2026-09-19 – 2026-09-20)
 

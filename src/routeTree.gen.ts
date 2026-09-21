@@ -24,6 +24,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
@@ -105,6 +106,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGeneratePracticeRoute = ApiGeneratePracticeRouteImport.update({
+  id: '/api/generate-practice',
+  path: '/api/generate-practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/review': typeof AuthenticatedReviewRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/review': typeof AuthenticatedReviewRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/api/analyze-weaknesses'
     | '/api/chat'
+    | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
     | '/converse/$scenarioId'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/review'
     | '/api/analyze-weaknesses'
     | '/api/chat'
+    | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
     | '/converse/$scenarioId'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/review'
     | '/api/analyze-weaknesses'
     | '/api/chat'
+    | '/api/generate-practice'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/converse_/$scenarioId'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
@@ -398,6 +411,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/generate-practice': {
+      id: '/api/generate-practice'
+      path: '/api/generate-practice'
+      fullPath: '/api/generate-practice'
+      preLoaderRoute: typeof ApiGeneratePracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stt': {
       id: '/api/stt'
       path: '/api/stt'
@@ -482,6 +502,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }

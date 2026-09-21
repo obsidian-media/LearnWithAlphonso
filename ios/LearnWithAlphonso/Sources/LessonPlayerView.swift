@@ -66,7 +66,7 @@ struct LessonPlayerView: View {
     var body: some View {
         Group {
             if let result {
-                FinishView(result: result, correct: correctCount, total: total, contentStore: contentStore, isLeaguePromotion: isLeaguePromotion)
+                FinishView(result: result, correct: correctCount, total: total, contentStore: contentStore, isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session)
             } else if let queuedOffline {
                 OfflineFinishView(pending: queuedOffline, correct: correctCount, total: total)
             } else if let errorMessage {
@@ -580,6 +580,9 @@ private struct FinishView: View {
     let total: Int
     let contentStore: ContentStore
     let isLeaguePromotion: Bool
+    let lessonID: String
+    let course: Course
+    let session: Session
 
     @State private var showPromotionOverlay = false
 
@@ -620,6 +623,8 @@ private struct FinishView: View {
                     }
                     .padding(.top, 8)
                 }
+
+                GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)
             }
             .padding()
         }
@@ -628,6 +633,135 @@ private struct FinishView: View {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
                 showPromotionOverlay = false
             }
+        }
+    }
+}
+
+/// V3 pkg 4b -- "generative sentence content." On-demand extra practice a
+/// learner can do immediately after finishing a lesson -- entirely
+/// ephemeral (view-local state only), never touching XP/hearts/review
+/// scheduling, same posture as in-lesson reinforcement (QuestionCard
+/// above). Mirrors the web's identical FinishScreen addition
+/// (lesson.$id.tsx's GeneratedPracticeSection).
+private struct GeneratedPracticeSection: View {
+    let lessonID: String
+    let course: Course
+    let session: Session
+
+    private enum Status: Equatable { case idle, loading, ready, empty, error }
+
+    @State private var status: Status = .idle
+    @State private var questions: [GeneratedPracticeQuestion] = []
+    @State private var idx = 0
+    @State private var picked: String?
+    @State private var checked = false
+
+    var body: some View {
+        switch status {
+        case .idle, .loading, .empty, .error:
+            VStack(spacing: 8) {
+                Button {
+                    Task { await generate() }
+                } label: {
+                    if status == .loading {
+                        ProgressView()
+                    } else {
+                        Text("Generate more practice")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(status == .loading)
+                .frame(maxWidth: .infinity)
+
+                if status == .empty {
+                    Text("Couldn't generate practice for this lesson right now.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if status == .error {
+                    Text("Something went wrong -- try again.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.top, 8)
+        case .ready:
+            if idx >= questions.count {
+                Text("Nice work -- that's all the extra practice for this lesson.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 8)
+            } else {
+                practiceCard
+            }
+        }
+    }
+
+    private var practiceCard: some View {
+        let q = questions[idx]
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Extra practice \u{00B7} \(idx + 1)/\(questions.count)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(q.prompt).font(.subheadline.weight(.semibold))
+            ForEach(q.choices, id: \.self) { choice in
+                Button {
+                    picked = choice
+                } label: {
+                    HStack {
+                        Text(choice)
+                        Spacer()
+                        if checked && q.choices[q.answerIndex] == choice {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                        } else if checked && picked == choice {
+                            Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                        }
+                    }
+                    .padding()
+                    .background(picked == choice ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .disabled(checked)
+                .foregroundStyle(.primary)
+            }
+            if checked {
+                Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+            }
+            Button(!checked ? "Check" : idx < questions.count - 1 ? "Next" : "Finish practice") {
+                if !checked {
+                    checked = true
+                    return
+                }
+                idx += 1
+                picked = nil
+                checked = false
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!checked && picked == nil)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 8)
+    }
+
+    private func generate() async {
+        status = .loading
+        guard let accessToken = session.accessToken else {
+            status = .error
+            return
+        }
+        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+        do {
+            let result = try await client.generatePractice(lessonID: lessonID, course: course.code)
+            if result.isEmpty {
+                status = .empty
+                return
+            }
+            questions = result
+            idx = 0
+            picked = nil
+            checked = false
+            status = .ready
+        } catch {
+            status = .error
         }
     }
 }
