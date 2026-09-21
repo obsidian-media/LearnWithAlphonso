@@ -175,3 +175,16 @@ Hector is `AppConfig.proEntitlementID` ("pro").
 A full codebase audit (security, architecture, accessibility, content,
 performance, UX, testing) is kept locally, not committed to this repo —
 see README.md's Documentation section for why.
+
+## Backlog
+
+**`docs/BACKLOG.md`** (local-only, gitignored, added 2026-09-21) is the
+master list of every deferred/postponed/not-yet-tackled item across
+this project — launch-blockers, scoped-but-unbuilt V3 features, older
+carried-over deferrals, and known rough edges. Check it before assuming
+something hasn't been thought about yet, and add to it (rather than
+letting something drop) whenever new work gets raised and postponed.
+It consolidates `DEFERRED-WORDS.md`, `docs/v2-kickoffs/`,
+`docs/v3-kickoffs/`, and this file's own Testing section's coverage
+gaps — those still exist with more detail, `docs/BACKLOG.md` is the
+index layer on top.

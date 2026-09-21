@@ -60,6 +60,14 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # candidates to fresh sessions. Not committed for the same reason.
 /docs/v3-kickoffs/
 
+# Master backlog doc (2026-09-21) — consolidates DEFERRED-WORDS.md,
+# the v2/v3 kickoff docs above, and ARCHITECTURE.md/AGENTS.md's still-
+# open items into one place so nothing raised in conversation gets
+# forgotten. Local-only for the same reason as everything else here:
+# it drifts fast and would calcify into stale "documentation" if
+# committed. See the file itself for how to keep it current.
+docs/BACKLOG.md
+
 # Hector weakness-detection design spec (2026-09-20) -- internal
 # decision doc for an unreleased feature, kept local rather than in
 # shared history until it ships.
