@@ -317,6 +317,32 @@ decisions rather than trusting that doc's roadmap section as current).
 (A full audit is kept locally, gitignored, not in this repo — see the
 note in README.md's Documentation section for why.)
 
+- **Found 2026-09-21, mid-fix: this Supabase project's auth emails were
+  never usable for real (non-team) users, and iOS's OTP sign-in never
+  actually showed a code.** Two compounding issues, found while
+  investigating "the app asks for a 6-digit code but the email I get is
+  a login link (which doesn't load)": (1) the project was still on
+  Supabase's built-in mailer (`noreply@mail.app.supabase.io`, confirmed
+  via `mail_type:"magic_link"` in the auth logs) — per Supabase's own
+  docs, that mailer **refuses to deliver to any address outside the
+  project's own organization team**, so no real end user (web or iOS —
+  same Supabase Auth instance, same mailer, for both) could receive any
+  auth email at all until custom SMTP is configured; (2) iOS's OTP flow
+  (`SupabaseAuthClient.requestEmailOTP`, `POST /auth/v1/otp`) shares
+  Supabase's single "Magic Link" template with every OTP request, and
+  that template ships showing only a clickable link, never the raw
+  `{{ .Token }}` code the iOS UI asks the user to type in — so even a
+  successfully-delivered email was the wrong shape for iOS's flow.
+  `scripts/configure-custom-smtp.ts` (Resend) and `scripts/
+  update-auth-email-template.ts` fix these via the Supabase Management
+  API directly (no CLI/MCP wrapper exists for either setting), runnable
+  via the `configure-auth-emails.yml` workflow. Also surfaced a real
+  scope gap, not a regression: iOS has no Google OAuth at all —
+  `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` scoped
+  iOS auth as "the existing web app's auth pattern, ported," but the web
+  app actually uses password + Google OAuth, never OTP; iOS's OTP-only
+  design was built on that incorrect premise and Google was simply never
+  added.
 - `src/integrations/supabase/{client.ts,client.server.ts,auth-middleware.ts}`
   carry "auto-generated, do not edit" banners from the Lovable Supabase
   connection tool and duplicate a `createSupabaseFetch` helper 3 ways;
