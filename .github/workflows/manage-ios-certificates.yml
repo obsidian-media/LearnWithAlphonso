@@ -12,11 +12,12 @@ on:
   workflow_dispatch:
     inputs:
       job:
-        description: "list certificates, or revoke one by ID"
+        description: "list certificates, list profiles (shows which app each cert is actually used by), or revoke a certificate by ID"
         required: true
         type: choice
         options:
           - list
+          - profiles
           - revoke
       certificate_id:
         description: "Certificate ID to revoke (only used when job=revoke, from a prior 'list' run)"
@@ -35,6 +36,13 @@ jobs:
       - name: List certificates
         if: github.event.inputs.job == 'list'
         run: bunx tsx scripts/manage-ios-certificates.ts list
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+      - name: List provisioning profiles (which app each cert is used by)
+        if: github.event.inputs.job == 'profiles'
+        run: bunx tsx scripts/manage-ios-certificates.ts profiles
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}

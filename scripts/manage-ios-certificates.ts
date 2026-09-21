@@ -15,7 +15,17 @@
  *
  * Usage:
  *   node_modules/.bin/tsx scripts/manage-ios-certificates.ts list
+ *   node_modules/.bin/tsx scripts/manage-ios-certificates.ts profiles
  *   node_modules/.bin/tsx scripts/manage-ios-certificates.ts revoke <certificate-id>
+ *
+ * `list` only shows certificates themselves -- a certificate isn't tied
+ * to one app directly, so it can't answer "which app is this for." The
+ * provisioning profiles that reference a certificate are what's actually
+ * app-specific (each profile names one bundle ID). `profiles` lists every
+ * profile with its app and which certificate ID(s) it uses, so a
+ * certificate can be matched to a real app (or shown to have zero
+ * profiles referencing it at all, meaning it isn't currently used for
+ * distributing anything) before deciding what's safe to revoke.
  *
  * Requires APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
  * APP_STORE_CONNECT_KEY_P8_BASE64 in the environment (already repo
@@ -82,6 +92,16 @@ type Certificate = {
   };
 };
 
+type Profile = {
+  id: string;
+  attributes: { name: string; profileType: string; uuid: string; expirationDate: string };
+  relationships: {
+    bundleId: { data: { id: string } | null };
+    certificates: { data: { id: string }[] };
+  };
+};
+type BundleId = { id: string; attributes: { identifier: string; name: string } };
+
 async function main() {
   const cmd = process.argv[2];
   if (cmd === "list") {
@@ -93,6 +113,45 @@ async function main() {
       );
     }
     console.log(`\n${data.data.length} certificate(s) total.`);
+  } else if (cmd === "profiles") {
+    const data = (await api(
+      "/profiles?limit=200&include=bundleId,certificates&fields[bundleIds]=identifier,name",
+    )) as { data: Profile[]; included?: (BundleId | Certificate)[] };
+    const bundleIds = new Map<string, BundleId>();
+    const certsById = new Map<string, Certificate>();
+    for (const item of data.included ?? []) {
+      if ("identifier" in item.attributes) bundleIds.set(item.id, item as BundleId);
+      else certsById.set(item.id, item as Certificate);
+    }
+    for (const profile of data.data) {
+      const bundle = profile.relationships.bundleId.data
+        ? bundleIds.get(profile.relationships.bundleId.data.id)
+        : undefined;
+      const certIds = profile.relationships.certificates.data.map((c) => c.id);
+      console.log(
+        `${profile.id}  name="${profile.attributes.name}"  type=${profile.attributes.profileType}  ` +
+          `app=${bundle ? `${bundle.attributes.name} (${bundle.attributes.identifier})` : "UNKNOWN"}  ` +
+          `expires=${profile.attributes.expirationDate}  certificates=[${certIds.join(", ")}]`,
+      );
+    }
+    console.log(`\n${data.data.length} profile(s) total.`);
+
+    // Cross-reference: which certificates from the account have NO profile
+    // referencing them at all (i.e. not currently used to distribute anything).
+    const allCerts = (await api("/certificates?limit=200")) as { data: Certificate[] };
+    const referencedCertIds = new Set(
+      data.data.flatMap((p) => p.relationships.certificates.data.map((c) => c.id)),
+    );
+    console.log(
+      "\nCertificates with NO provisioning profile referencing them (unused for distribution):",
+    );
+    for (const cert of allCerts.data) {
+      if (!referencedCertIds.has(cert.id)) {
+        console.log(
+          `  ${cert.id}  type=${cert.attributes.certificateType}  expires=${cert.attributes.expirationDate}`,
+        );
+      }
+    }
   } else if (cmd === "revoke") {
     const id = process.argv[3];
     if (!id) {
@@ -102,7 +161,7 @@ async function main() {
     await api(`/certificates/${id}`, "DELETE");
     console.log(`Revoked certificate ${id}`);
   } else {
-    console.error("Usage: list | revoke <certificate-id>");
+    console.error("Usage: list | profiles | revoke <certificate-id>");
     process.exit(1);
   }
 }
