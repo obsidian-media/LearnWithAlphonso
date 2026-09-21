@@ -27,8 +27,15 @@ import LearnWithAlphonsoKit
 final class RemotePushRegistrar {
     private(set) var deviceTokenHex: String?
     private let center: UNUserNotificationCenter
-    private var tokenObserver: NSObjectProtocol?
 
+    // Deliberately never unregistered -- this type is a @State-owned
+    // singleton with the same app-process lifetime as the AppDelegate
+    // that posts to it (LearnWithAlphonsoApp), so there's no meaningful
+    // "early deinit" case to guard, and removing the observer from
+    // `deinit` would require touching a stored property from a
+    // nonisolated context, which Swift's actor-isolation checking
+    // rejects for a @MainActor class's stored state (found via a real
+    // ios-app-build CI failure, not a guess -- see this feature's PR).
     init(center: UNUserNotificationCenter = .current(), notificationCenter: NotificationCenter = .default) {
         self.center = center
         // deviceTokenHex is @Observable-tracked, so this assignment from a
@@ -36,7 +43,7 @@ final class RemotePushRegistrar {
         // every other cross-boundary callback in this app
         // (GoogleSignInPresenter, HectorSession) hopping back to @MainActor
         // explicitly rather than assuming the poster's queue.
-        tokenObserver = notificationCenter.addObserver(
+        _ = notificationCenter.addObserver(
             forName: AppDelegate.deviceTokenNotification,
             object: nil,
             queue: nil
@@ -46,12 +53,6 @@ final class RemotePushRegistrar {
             Task { @MainActor [weak self] in
                 self?.deviceTokenHex = hex
             }
-        }
-    }
-
-    deinit {
-        if let tokenObserver {
-            NotificationCenter.default.removeObserver(tokenObserver)
         }
     }
 
