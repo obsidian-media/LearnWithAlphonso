@@ -526,6 +526,203 @@ leaf|hoja
 mountain|montaña
 beach|playa`,
   },
+  {
+    id: "esa1p21",
+    title: "Fruits & Vegetables",
+    subtitle: "At the market",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common fruits and vegetables.",
+    data: `apple|manzana
+banana|plátano
+orange (fruit)|naranja
+strawberry|fresa
+grape|uva
+watermelon|sandía
+pineapple|piña
+pear|pera
+cherry|cereza
+lemon|limón
+peach|durazno
+mango|mango
+coconut|coco
+kiwi|kiwi
+tomato|tomate
+potato|papa
+carrot|zanahoria
+onion|cebolla
+garlic|ajo
+lettuce|lechuga
+cucumber|pepino
+pepper (vegetable)|pimiento
+corn|maíz
+avocado|aguacate
+pumpkin|calabaza`,
+  },
+  {
+    id: "esa1p22",
+    title: "Kitchen Verbs",
+    subtitle: "Cooking actions",
+    kind: "cloze",
+    note: 'Present-tense "yo" conjugation of common cooking verbs.',
+    data: `Yo ___ (cortar) las verduras.|corto
+Yo ___ (mezclar) los ingredientes.|mezclo
+Yo ___ (hervir) el agua.|hiervo
+Yo ___ (freír) el pescado.|frío
+Yo ___ (hornear) un pastel.|horneo
+Yo ___ (lavar) los platos.|lavo
+Yo ___ (verter) la leche.|vierto
+Yo ___ (añadir) sal a la sopa.|añado
+Yo ___ (calentar) la comida.|caliento
+Yo ___ (servir) la cena.|sirvo
+Yo ___ (probar) la salsa.|pruebo
+Yo ___ (pelar) las papas.|pelo
+Yo ___ (picar) la cebolla.|pico
+Yo ___ (batir) los huevos.|bato
+Yo ___ (asar) el pollo.|aso
+Yo ___ (colar) la pasta.|cuelo
+Yo ___ (rallar) el queso.|rallo
+Yo ___ (exprimir) un limón.|exprimo
+Yo ___ (revolver) el arroz.|revuelvo
+Yo ___ (tapar) la olla.|tapo
+Yo ___ (encender) la estufa.|enciendo
+Yo ___ (apagar) el horno.|apago
+Yo ___ (medir) la harina.|mido
+Yo ___ (untar) mantequilla en el pan.|unto
+Yo ___ (enfriar) el postre.|enfrío`,
+  },
+  {
+    id: "esa1p23",
+    title: "Quantifiers",
+    subtitle: "How much, how many",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common quantity words.",
+    data: `more|más
+less|menos
+a lot|mucho
+a little|poco
+several|varios
+enough|suficiente
+too much|demasiado
+each|cada
+none|ninguno
+half|mitad
+some|algunos
+many|muchos
+few|pocos
+most|mayoría
+only|solo
+almost|casi
+nothing|nada
+double|doble
+triple|triple
+single (just one)|único
+extra|extra
+entire|entero
+partial|parcial
+approximately|aproximadamente
+exactly|exactamente`,
+  },
+  {
+    id: "esa1p24",
+    title: "Basic Conversation Phrases",
+    subtitle: "Everyday small talk",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common small-talk and reaction phrases.",
+    data: `Nice to meet you|Mucho gusto
+How's it going?|¿Qué tal?
+Long time no see|Cuánto tiempo sin verte
+See you later|Hasta luego
+Take care|Cuídate
+Have a good day|Que tengas un buen día
+Welcome back|Bienvenido de vuelta
+I don't understand|No entiendo
+Can you repeat that?|¿Puedes repetirlo?
+Speak slowly, please|Habla despacio, por favor
+What does that mean?|¿Qué significa eso?
+I don't know|No sé
+Of course|Claro
+No problem|No hay problema
+That's okay|Está bien
+I agree|Estoy de acuerdo
+I disagree|No estoy de acuerdo
+Good luck|Buena suerte
+Congratulations|Felicidades
+I'm sorry|Perdón
+Excuse me (getting attention)|Disculpe
+It's a pleasure|Es un placer
+Same to you|Igualmente
+Take it easy|Tómalo con calma
+Good job|Buen trabajo`,
+  },
+  {
+    id: "esa1p25",
+    title: "Colors & Shapes",
+    subtitle: "More colors, and basic shapes",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Additional colors and basic geometric shapes.",
+    data: `pink|rosa
+purple|morado
+gray|gris
+brown|marrón
+turquoise|turquesa
+gold|dorado
+silver|plateado
+beige|beige
+navy blue|azul marino
+circle|círculo
+square|cuadrado
+triangle|triángulo
+rectangle|rectángulo
+star (shape)|estrella
+heart (shape)|corazón
+oval|óvalo
+diamond (shape)|diamante
+line|línea
+dot|punto
+curve|curva
+striped|rayado
+spotted|con manchas
+light (color shade)|claro
+dark (color shade)|oscuro
+bright|brillante`,
+  },
+  {
+    id: "esa1p26",
+    title: "Directions & Commands",
+    subtitle: "Basic instructions",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Basic imperative instructions and directions.",
+    data: `turn left|gira a la izquierda
+turn right|gira a la derecha
+go straight|sigue derecho
+stop|para
+walk|camina
+cross the street|cruza la calle
+go up|sube
+go down|baja
+come here|ven aquí
+go there|ve allá
+wait here|espera aquí
+follow me|sígueme
+hurry up|apúrate
+be careful|ten cuidado
+slow down|más despacio
+look here|mira aquí
+listen|escucha
+sit down|siéntate
+stand up|levántate
+come in|entra
+go out|sal
+close the door|cierra la puerta
+open the window|abre la ventana
+be quiet|cállate
+pay attention|presta atención`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1035,6 +1232,202 @@ to do nothing|no hacer nada
 to read a book|leer un libro
 to cook a big meal|cocinar una gran comida
 to go to the beach|ir a la playa`,
+  },
+  {
+    id: "esa2p21",
+    title: "Household Appliances",
+    subtitle: "Around the house",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Home appliances and cleaning tools.",
+    data: `refrigerator|refrigerador
+stove|estufa
+oven|horno
+microwave|microondas
+washing machine|lavadora
+dryer|secadora
+dishwasher|lavavajillas
+vacuum cleaner|aspiradora
+iron|plancha
+blender|licuadora
+toaster|tostadora
+fan|ventilador
+air conditioner|aire acondicionado
+heater|calefactor
+coffee maker|cafetera
+mop|trapeador
+broom|escoba
+bucket|cubo
+sponge|esponja
+detergent|detergente
+hanger|percha
+drawer|cajón
+shelf|estante
+closet|armario
+curtain|cortina`,
+  },
+  {
+    id: "esa2p22",
+    title: "Emotions & Feelings",
+    subtitle: "ponerse / sentirse + adjective",
+    kind: "cloze",
+    note: '"Ponerse" and "sentirse" with emotion adjectives.',
+    data: `Ella se pone ___ (nervous) antes de un examen.|nerviosa
+Yo me siento ___ (happy) hoy.|feliz
+Nos ponemos ___ (sad) cuando llueve.|tristes
+Él se siente ___ (tired) después del trabajo.|cansado
+Te pones ___ (angry) fácilmente.|enojado
+Me siento ___ (confused) con esta pregunta.|confundido
+Se ponen ___ (excited) antes del viaje.|emocionados
+Nos sentimos ___ (proud) de nuestro equipo.|orgullosos
+Te sientes ___ (nervous) por la entrevista.|nervioso
+Se pone ___ (worried) cuando no llamas.|preocupada
+Me siento ___ (relaxed) en la playa.|relajado
+Se sienten ___ (surprised) por la noticia.|sorprendidos
+Te pones ___ (sad) cuando pierdes.|triste
+Nos ponemos ___ (happy) en las fiestas.|felices
+Se siente ___ (bored) los domingos.|aburrido
+Me pongo ___ (embarrassed) fácilmente.|avergonzado
+Él se siente ___ (calm) antes de dormir.|tranquilo
+Ellas se ponen ___ (excited) con la música.|emocionadas
+Te sientes ___ (confident) hoy.|seguro
+Nos sentimos ___ (grateful) por su ayuda.|agradecidos
+Se pone ___ (impatient) en las filas.|impaciente
+Me siento ___ (curious) sobre esto.|curioso
+Se sienten ___ (disappointed) con el resultado.|decepcionados
+Te pones ___ (jealous) a veces.|celoso
+Nos sentimos ___ (motivated) para empezar.|motivados`,
+  },
+  {
+    id: "esa2p23",
+    title: "Banking & Post Office",
+    subtitle: "Money and mail",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Banking and post-office vocabulary.",
+    data: `bank account|cuenta bancaria
+ATM|cajero automático
+deposit|depósito
+withdrawal|retiro
+savings|ahorros
+loan|préstamo
+interest rate|tasa de interés
+balance|saldo
+envelope|sobre
+stamp|estampilla
+package|paquete
+mailbox|buzón
+address|dirección
+zip code|código postal
+to send|enviar
+to mail|enviar por correo
+signature|firma
+form (document)|formulario
+identification|identificación
+teller|cajero
+branch (bank)|sucursal
+transfer|transferencia
+currency|moneda
+exchange rate|tipo de cambio
+safe (deposit box)|caja fuerte`,
+  },
+  {
+    id: "esa2p24",
+    title: "Common Adverbs",
+    subtitle: "Describing how",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common manner and degree adverbs.",
+    data: `quickly|rápidamente
+slowly|lentamente
+well|bien
+badly|mal
+easily|fácilmente
+carefully|cuidadosamente
+suddenly|de repente
+finally|finalmente
+immediately|inmediatamente
+especially|especialmente
+probably|probablemente
+certainly|ciertamente
+unfortunately|desafortunadamente
+fortunately|afortunadamente
+obviously|obviamente
+simply|simplemente
+completely|completamente
+totally|totalmente
+generally|generalmente
+personally|personalmente
+seriously|en serio
+actually|en realidad
+apparently|aparentemente
+clearly|claramente
+directly|directamente`,
+  },
+  {
+    id: "esa2p25",
+    title: "Prepositions of Time",
+    subtitle: "When things happen",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Prepositions and expressions for talking about time.",
+    data: `before|antes de
+after|después de
+during|durante
+since|desde
+until|hasta
+for (duration)|por
+at (time)|a las
+on (day)|el
+in (month/year)|en
+within|dentro de
+throughout|a lo largo de
+by (deadline)|para
+from...to|desde...hasta
+ago|hace
+soon|pronto
+meanwhile|mientras tanto
+eventually|con el tiempo
+nowadays|hoy en día
+previously|anteriormente
+subsequently|posteriormente
+briefly|brevemente
+frequently|frecuentemente
+occasionally|ocasionalmente
+right now|ahora mismo
+from now on|de ahora en adelante`,
+  },
+  {
+    id: "esa2p26",
+    title: "Common Verbs (nosotros form)",
+    subtitle: "Present tense, we form",
+    kind: "cloze",
+    note: 'Present-tense "nosotros" conjugation, including stem-changing and irregular verbs.',
+    data: `Nosotros ___ (empezar) el proyecto mañana.|empezamos
+Nosotros ___ (terminar) el trabajo a las cinco.|terminamos
+Nosotros ___ (entender) la lección.|entendemos
+Nosotros ___ (pensar) viajar pronto.|pensamos
+Nosotros ___ (perder) el autobús a veces.|perdemos
+Nosotros ___ (encontrar) las llaves.|encontramos
+Nosotros ___ (dormir) ocho horas.|dormimos
+Nosotros ___ (pedir) ayuda cuando la necesitamos.|pedimos
+Nosotros ___ (seguir) las instrucciones.|seguimos
+Nosotros ___ (repetir) la pregunta.|repetimos
+Nosotros ___ (preferir) el té al café.|preferimos
+Nosotros ___ (cerrar) la tienda a las nueve.|cerramos
+Nosotros ___ (mostrar) el camino a los turistas.|mostramos
+Nosotros ___ (recordar) su cumpleaños.|recordamos
+Nosotros ___ (volver) a casa tarde.|volvemos
+Nosotros ___ (conseguir) boletos para el concierto.|conseguimos
+Nosotros ___ (elegir) el mejor restaurante.|elegimos
+Nosotros ___ (construir) una casa nueva.|construimos
+Nosotros ___ (destruir) los documentos viejos.|destruimos
+Nosotros ___ (incluir) a todos en el plan.|incluimos
+Nosotros ___ (huir) del peligro.|huimos
+Nosotros ___ (concluir) la reunión temprano.|concluimos
+Nosotros ___ (sonreír) mucho.|sonreímos
+Nosotros ___ (reír) con sus chistes.|reímos
+Nosotros ___ (freír) las papas.|freímos`,
   },
 ];
 
@@ -1558,6 +1951,202 @@ That makes sense|Eso tiene sentido
 I'm proud of you|Estoy orgulloso de ti
 What a surprise!|¡Qué sorpresa!`,
   },
+  {
+    id: "esb1p21",
+    title: "Furniture & Home Structure",
+    subtitle: "Around the house, part 2",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Furniture and parts of a house.",
+    data: `sofa|sofá
+cushion|cojín
+rug|alfombra
+curtain|cortina
+shelf|estante
+drawer|cajón
+wardrobe|armario
+nightstand|mesita de noche
+mattress|colchón
+blanket|manta
+pillow|almohada
+towel|toalla
+sink|fregadero
+faucet|grifo
+stairs|escalera
+ceiling|techo
+floor|suelo
+wall|pared
+roof|tejado
+fence|cerca
+garage|garaje
+balcony|balcón
+elevator|ascensor
+basement|sótano
+attic|ático`,
+  },
+  {
+    id: "esb1p22",
+    title: "Emotion Reflexive Verbs",
+    subtitle: "More reflexive verbs of feeling",
+    kind: "cloze",
+    note: "Reflexive verbs describing emotional reactions.",
+    data: `Yo me ___ (enamorarse) fácilmente.|enamoro
+Tú te ___ (frustrarse) cuando algo no funciona.|frustras
+Ella se ___ (calmarse) después de respirar.|calma
+Nosotros nos ___ (emocionarse) con las buenas noticias.|emocionamos
+Ellos se ___ (aburrirse) en clases largas.|aburren
+Yo me ___ (preocuparse) por mi familia.|preocupo
+Tú te ___ (sorprenderse) con los regalos.|sorprendes
+Ella se ___ (entristecerse) con las despedidas.|entristece
+Nosotros nos ___ (alegrarse) de verte.|alegramos
+Ellos se ___ (enojarse) por pequeñas cosas.|enojan
+Yo me ___ (sentirse) mejor ahora.|siento
+Tú te ___ (relajarse) los fines de semana.|relajas
+Ella se ___ (avergonzarse) fácilmente.|avergüenza
+Nosotros nos ___ (divertirse) en las fiestas.|divertimos
+Ellos se ___ (cansarse) rápido.|cansan
+Yo me ___ (estresarse) antes de los exámenes.|estreso
+Tú te ___ (acostumbrarse) a la rutina.|acostumbras
+Ella se ___ (interesarse) por el arte.|interesa
+Nosotros nos ___ (arrepentirse) de nada.|arrepentimos
+Ellos se ___ (quejarse) del clima.|quejan
+Yo me ___ (impacientarse) en las filas.|impaciento
+Tú te ___ (asustarse) con las películas de terror.|asustas
+Ella se ___ (concentrarse) al estudiar.|concentra
+Nosotros nos ___ (esforzarse) para mejorar.|esforzamos
+Ellos se ___ (motivarse) antes del partido.|motivan`,
+  },
+  {
+    id: "esb1p23",
+    title: "Nature & Landscape",
+    subtitle: "Geographic features",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Landscape and geography vocabulary.",
+    data: `valley|valle
+cliff|acantilado
+cave|cueva
+waterfall|cascada
+volcano|volcán
+desert|desierto
+jungle|selva
+swamp|pantano
+glacier|glaciar
+canyon|cañón
+plain|llanura
+hill|colina
+peninsula|península
+bay|bahía
+coast|costa
+cape (geography)|cabo
+reef|arrecife
+dune|duna
+meadow|prado
+stream|arroyo
+pond|estanque
+plateau|meseta
+archipelago|archipiélago
+delta|delta
+tundra|tundra`,
+  },
+  {
+    id: "esb1p24",
+    title: "Common Reactions",
+    subtitle: "Interjections and exclamations",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Common interjections and reaction phrases.",
+    data: `Wow!|¡Guau!
+Ouch!|¡Ay!
+Oh no!|¡Oh no!
+Really?|¿En serio?
+No way!|¡No puede ser!
+Come on!|¡Vamos!
+Watch out!|¡Cuidado!
+Hurry!|¡Rápido!
+Wait!|¡Espera!
+Help!|¡Ayuda!
+Cheers! (toast)|¡Salud!
+Bless you! (sneeze)|¡Salud!
+Good grief!|¡Vaya!
+That's enough!|¡Ya basta!
+Of course!|¡Claro!
+Exactly!|¡Exacto!
+Not again!|¡Otra vez no!
+Finally!|¡Por fin!
+Look out!|¡Ojo!
+What a mess!|¡Qué desastre!
+Poor thing!|¡Pobrecito!
+Yikes!|¡Uy!
+Bravo!|¡Bravo!
+Enough already!|¡Basta ya!
+No kidding!|¡No me digas!`,
+  },
+  {
+    id: "esb1p25",
+    title: "Cooking & Recipes",
+    subtitle: "Kitchen vocabulary, advanced",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Vocabulary for recipes and cooking technique.",
+    data: `recipe|receta
+ingredient|ingrediente
+portion|porción
+teaspoon|cucharadita
+tablespoon|cucharada
+cup (measure)|taza
+oven-safe|apto para horno
+boil (noun/point)|ebullición
+simmer|fuego lento
+marinate|marinar
+season (verb)|sazonar
+garnish|decorar
+dough|masa
+broth|caldo
+sauce|salsa
+spice|especia
+herb|hierba
+flavor|sabor
+texture|textura
+crispy|crujiente
+tender|tierno
+well-done (meat)|bien cocido
+rare (meat)|poco cocido
+medium (meat)|término medio
+leftover|sobras`,
+  },
+  {
+    id: "esb1p26",
+    title: "Adjective + Preposition Combos",
+    subtitle: "Fixed adjective-preposition pairings",
+    kind: "cloze",
+    note: "Common adjectives paired with a specific preposition.",
+    data: `Estoy interesado ___ (in) la música.|en
+Estoy cansado ___ (of) trabajar tanto.|de
+Estoy contento ___ (with) los resultados.|con
+Ella está enamorada ___ (of) él.|de
+Estamos preocupados ___ (about) el examen.|por
+Él es responsable ___ (for) el proyecto.|de
+Estoy seguro ___ (of) mi decisión.|de
+Ella está orgullosa ___ (of) su hijo.|de
+Estamos listos ___ (for) el viaje.|para
+Él es bueno ___ (at) matemáticas.|en
+Estoy acostumbrado ___ (to) este clima.|a
+Ella es diferente ___ (from) su hermana.|de
+Estamos emocionados ___ (about) las vacaciones.|por
+Él es amable ___ (with) todos.|con
+Estoy harto ___ (of) esperar.|de
+Ella es capaz ___ (of) hacerlo sola.|de
+Estamos agradecidos ___ (for) su ayuda.|por
+Él es fiel ___ (to) sus principios.|a
+Estoy dispuesto ___ (to) ayudar.|a
+Ella es similar ___ (to) su madre.|a
+Estamos ansiosos ___ (about) los resultados.|por
+Él es alérgico ___ (to) los gatos.|a
+Estoy libre ___ (of) compromisos.|de
+Ella es amable ___ (with) los niños.|con
+Estamos satisfechos ___ (with) el servicio.|con`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -2068,6 +2657,203 @@ Puede que ___ (tener) razón.|tenga
 Lo más seguro es que ___ (estar) en camino.|esté
 A lo mejor no ___ (recordar) la cita.|recuerda
 Seguro que ya ___ (terminar).|terminó`,
+  },
+  {
+    id: "esb2p21",
+    title: "Subjunctive with Doubt & Denial",
+    subtitle: "No creo que, dudo que, niego que...",
+    kind: "cloze",
+    note: "Subjunctive triggered by expressions of doubt or denial.",
+    data: `No creo que ella ___ (venir) hoy.|venga
+Dudo que ellos ___ (saber) la respuesta.|sepan
+No es verdad que él ___ (mentir).|mienta
+Niego que nosotros ___ (tener) la culpa.|tengamos
+No pienso que tú ___ (estar) equivocado.|estés
+No parece que ___ (ir) a llover.|vaya
+No es cierto que ella ___ (haber) llegado.|haya
+Dudamos que ellos ___ (poder) terminar a tiempo.|puedan
+No creemos que él ___ (decir) la verdad.|diga
+No es seguro que nosotros ___ (ganar).|ganemos
+No confío en que ellos ___ (cumplir) su promesa.|cumplan
+No es probable que ___ (nevar) esta semana.|nieve
+No creo que tú ___ (querer) hacerlo.|quieras
+Niegan que la empresa ___ (perder) dinero.|pierda
+No es evidente que ella ___ (saber) nadar.|sepa
+Dudo que él ___ (venir) mañana.|venga
+No creo que nosotros ___ (necesitar) más tiempo.|necesitemos
+No parece justo que ellos ___ (pagar) tanto.|paguen
+No es lógico que tú ___ (hacer) eso.|hagas
+No creo que ella ___ (poder) sola.|pueda
+Dudamos que el plan ___ (funcionar).|funcione
+No es verdad que nosotros ___ (mentir).|mintamos
+No pienso que ustedes ___ (estar) listos.|estén
+No creo que él ___ (ser) el culpable.|sea
+No es seguro que ellos ___ (llegar) a tiempo.|lleguen`,
+  },
+  {
+    id: "esb2p22",
+    title: "Advanced Personality Adjectives",
+    subtitle: "Describing character",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Advanced personality-trait adjectives.",
+    data: `ambitious|ambicioso
+stubborn|terco
+generous|generoso
+arrogant|arrogante
+humble|humilde
+reliable|confiable
+cautious|cauteloso
+curious|curioso
+sincere|sincero
+hypocritical|hipócrita
+optimistic|optimista
+pessimistic|pesimista
+sensitive|sensible
+tolerant|tolerante
+rude|grosero
+polite|cortés
+honest|honesto
+dishonest|deshonesto
+loyal|leal
+disloyal|desleal
+competitive|competitivo
+easygoing|relajado
+demanding|exigente
+resourceful|ingenioso
+naive|ingenuo`,
+  },
+  {
+    id: "esb2p23",
+    title: "Legal & Civic Rights",
+    subtitle: "Rights and civic vocabulary",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Civic rights and legal-process vocabulary.",
+    data: `right (entitlement)|derecho
+duty|deber
+freedom of speech|libertad de expresión
+privacy|privacidad
+equality|igualdad
+discrimination|discriminación
+injustice|injusticia
+citizenship|ciudadanía
+immigration|inmigración
+refugee|refugiado
+asylum|asilo
+human rights|derechos humanos
+protest|protesta
+petition|petición
+jury|jurado
+witness|testigo
+testimony|testimonio
+sentence (legal)|sentencia
+appeal|apelación
+plaintiff|demandante
+defendant|acusado
+fine (penalty)|multa
+bail|fianza
+custody|custodia
+verdict|veredicto`,
+  },
+  {
+    id: "esb2p24",
+    title: "Emotional Intelligence",
+    subtitle: "Communication and self-awareness",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Emotional-intelligence and communication vocabulary.",
+    data: `empathy|empatía
+self-esteem|autoestima
+assertiveness|asertividad
+resilience|resiliencia
+conflict|conflicto
+feedback|retroalimentación
+criticism|crítica
+praise|elogio
+active listening|escucha activa
+body language|lenguaje corporal
+tone of voice|tono de voz
+misunderstanding|malentendido
+apology|disculpa
+forgiveness|perdón
+gratitude|gratitud
+vulnerability|vulnerabilidad
+boundary|límite
+trust|confianza
+betrayal|traición
+reconciliation|reconciliación
+patience|paciencia
+mindfulness|atención plena
+self-awareness|autoconocimiento
+motivation|motivación
+compromise|compromiso`,
+  },
+  {
+    id: "esb2p25",
+    title: "Housing & Real Estate",
+    subtitle: "Renting and buying property",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Housing and real-estate vocabulary.",
+    data: `rent|alquiler
+mortgage|hipoteca
+lease|contrato de arrendamiento
+tenant|inquilino
+landlord|propietario
+deposit|depósito
+real estate agent|agente inmobiliario
+property|propiedad
+neighborhood|vecindario
+utilities|servicios públicos
+square meters|metros cuadrados
+down payment|pago inicial
+appraisal|tasación
+renovation|renovación
+furnished|amueblado
+unfurnished|sin amueblar
+move in|mudarse
+eviction|desalojo
+homeowner|propietario de vivienda
+condominium|condominio
+suburb|suburbio
+downtown|centro
+lease agreement|contrato de alquiler
+security deposit|depósito de seguridad
+real estate market|mercado inmobiliario`,
+  },
+  {
+    id: "esb2p26",
+    title: "Connectors of Contrast & Concession",
+    subtitle: "Advanced contrast connectors",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Advanced connectors expressing contrast or concession.",
+    data: `even though|aunque
+despite the fact that|a pesar de que
+whereas|mientras que
+on the contrary|por el contrario
+however|sin embargo
+nonetheless|no obstante
+regardless of|independientemente de
+in spite of|a pesar de
+granted that|si bien es cierto que
+on the other hand|por otro lado
+conversely|en cambio
+all the same|de todas formas
+in contrast|en contraste
+notwithstanding|pese a
+be that as it may|sea como sea
+yet still|aun así
+albeit|si bien
+in any case|en todo caso
+either way|de cualquier manera
+that said|dicho esto
+having said that|habiendo dicho esto
+on balance|en definitiva
+all things considered|considerando todo
+in the end|al final
+ultimately|en última instancia`,
   },
 ];
 
@@ -2580,6 +3366,203 @@ in due course|a su debido tiempo
 with this in mind|con esto en mente
 insofar as possible|en la medida de lo posible
 by the same token|de igual modo`,
+  },
+  {
+    id: "esc1p21",
+    title: "Subjunctive in Relative Clauses",
+    subtitle: "Nonexistent or indefinite antecedents",
+    kind: "cloze",
+    note: "Subjunctive required when the antecedent is unknown, indefinite, or nonexistent.",
+    data: `Busco a alguien que ___ (hablar) tres idiomas.|hable
+No hay nadie que ___ (saber) la respuesta.|sepa
+Necesito un libro que ___ (explicar) esto bien.|explique
+¿Conoces a alguien que ___ (poder) ayudarme?|pueda
+No existe ningún método que ___ (garantizar) el éxito.|garantice
+Buscamos una casa que ___ (tener) jardín.|tenga
+No hay nada que ___ (justificar) su comportamiento.|justifique
+Quiero un trabajo que me ___ (permitir) viajar.|permita
+No conozco a nadie que ___ (vivir) allí.|viva
+Necesitamos alguien que ___ (conocer) el sistema.|conozca
+¿Hay algún restaurante que ___ (servir) comida vegana?|sirva
+No hay razón que ___ (explicar) su ausencia.|explique
+Buscan un candidato que ___ (tener) experiencia.|tenga
+No hay nadie aquí que ___ (querer) ese puesto.|quiera
+Quiero encontrar algo que me ___ (hacer) feliz.|haga
+No existe una solución que ___ (satisfacer) a todos.|satisfaga
+Necesito a alguien que ___ (entender) el problema.|entienda
+¿Hay alguien que ___ (saber) tocar el piano?|sepa
+No hay ningún plan que ___ (funcionar) perfectamente.|funcione
+Buscamos empleados que ___ (ser) responsables.|sean
+No conozco ningún lugar que ___ (ofrecer) esto.|ofrezca
+Quiero un coche que ___ (consumir) poca gasolina.|consuma
+No hay evidencia que ___ (probar) su culpabilidad.|pruebe
+Necesitamos una estrategia que ___ (resolver) esto.|resuelva
+¿Existe algo que ___ (poder) cambiar su decisión?|pueda`,
+  },
+  {
+    id: "esc1p22",
+    title: "Nuanced Synonyms II",
+    subtitle: "Even more precise vocabulary",
+    kind: "pair",
+    prompt: 'What is a more precise/formal way to say "%s"?',
+    note: "Further advanced vocabulary offering more precise alternatives.",
+    data: `to cause (basic: causar)|ocasionar
+to reduce (basic: reducir)|disminuir
+to increase (basic: aumentar)|incrementar
+to show (basic: mostrar)|revelar
+to demand (basic: exigir)|reclamar
+to avoid (basic: evitar)|eludir
+to gather (basic: reunir)|congregar
+to reject (basic: rechazar)|repudiar
+to support (basic: apoyar)|respaldar
+to achieve (basic: lograr)|alcanzar
+to face (a problem)|afrontar
+to solve (basic: resolver)|solucionar
+to consider (basic: considerar)|contemplar
+to strengthen (basic: fortalecer)|robustecer
+to weaken (basic: debilitar)|menoscabar
+to emphasize (basic: enfatizar)|recalcar
+to clarify (basic: aclarar)|esclarecer
+to summarize (basic: resumir)|sintetizar
+to expand (basic: expandir)|ampliar
+to restrict (basic: restringir)|limitar
+to enable (basic: permitir)|posibilitar
+to hinder (basic: dificultar)|obstaculizar
+to promote (basic: promover)|fomentar
+to establish (basic: establecer)|instaurar
+to delay (basic: retrasar)|posponer`,
+  },
+  {
+    id: "esc1p23",
+    title: "Political & Social Commentary",
+    subtitle: "Discussing society",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Vocabulary for political and social commentary.",
+    data: `public opinion|opinión pública
+social inequality|desigualdad social
+grassroots movement|movimiento de base
+policy reform|reforma de políticas
+civic engagement|participación cívica
+socioeconomic status|estatus socioeconómico
+marginalized community|comunidad marginada
+systemic change|cambio sistémico
+collective action|acción colectiva
+public discourse|discurso público
+social cohesion|cohesión social
+economic disparity|disparidad económica
+political polarization|polarización política
+civil disobedience|desobediencia civil
+grassroots activism|activismo de base
+social contract|contrato social
+common good|bien común
+public accountability|rendición de cuentas pública
+institutional trust|confianza institucional
+social mobility|movilidad social
+wealth gap|brecha de riqueza
+policy implementation|implementación de políticas
+civic duty|deber cívico
+public welfare|bienestar público
+social justice|justicia social`,
+  },
+  {
+    id: "esc1p24",
+    title: "Academic Writing Verbs",
+    subtitle: "Verbs for scholarly writing",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Verbs common in academic and scholarly writing.",
+    data: `to argue (in writing)|argumentar
+to demonstrate|demostrar
+to postulate|postular
+to critique|criticar
+to synthesize|sintetizar
+to substantiate|fundamentar
+to corroborate|corroborar
+to refute|refutar
+to elaborate (on)|profundizar en
+to delineate|delinear
+to formulate|formular
+to interpret|interpretar
+to derive (a conclusion)|derivar
+to validate|validar
+to challenge (an idea)|cuestionar
+to underscore|subrayar
+to juxtapose|yuxtaponer
+to contextualize|contextualizar
+to problematize|problematizar
+to extrapolate|extrapolar
+to conceptualize|conceptualizar
+to hypothesize|formular una hipótesis
+to enumerate|enumerar
+to categorize|categorizar
+to differentiate|diferenciar`,
+  },
+  {
+    id: "esc1p25",
+    title: "Idiomatic Business Expressions",
+    subtitle: "English business idioms, in Spanish",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Idiomatic business/formal expressions.",
+    data: `to think outside the box|pensar fuera de la caja
+to be on the same page|estar en sintonía
+to touch base|ponerse en contacto
+to keep someone in the loop|mantener a alguien informado
+to go the extra mile|dar lo mejor de sí
+to hit the ground running|empezar con buen pie
+low-hanging fruit|tarea fácil de lograr
+to move the needle|generar un impacto real
+to circle back|retomar el tema
+to be a game changer|cambiar las reglas del juego
+to read between the lines|leer entre líneas
+to have skin in the game|tener intereses propios en el asunto
+to drop the ball|cometer un descuido
+to raise the bar|elevar el estándar
+to take ownership|asumir la responsabilidad
+to be in the pipeline|estar en proceso
+to think on one's feet|pensar rápido
+to get the ball rolling|poner las cosas en marcha
+to cut to the chase|ir al grano
+to be on the fence|estar indeciso
+to bite the bullet|afrontar lo inevitable
+to leave no stone unturned|no dejar piedra sin remover
+to weather the storm|superar la crisis
+to be at a crossroads|estar en una encrucijada
+to turn the tide|cambiar el rumbo`,
+  },
+  {
+    id: "esc1p26",
+    title: "Nuanced Discourse Connectors III",
+    subtitle: "Further sophisticated connectors",
+    kind: "pair",
+    prompt: 'How do you say "%s" in Spanish?',
+    note: "Further advanced discourse markers.",
+    data: `insofar as it concerns|en lo que concierne a
+with the exception of|con la excepción de
+in the same vein|en la misma línea
+for lack of a better term|a falta de un término mejor
+in a manner of speaking|por así decirlo
+strictly speaking|en sentido estricto
+loosely speaking|en sentido amplio
+to put it another way|dicho de otro modo
+needless to say|huelga decir
+suffice it to say|baste decir
+be it as it may|sea como fuere
+without further ado|sin más preámbulos
+that being the case|siendo así
+under these circumstances|en estas circunstancias
+by virtue of|en virtud de
+with a view to|con miras a
+in the interest of|en aras de
+to the extent possible|en la medida de lo posible
+as things stand|tal como están las cosas
+in retrospect|en retrospectiva
+on second thought|pensándolo bien
+all told|en total
+by and large|en general
+for all intents and purposes|a todos los efectos
+in the grand scheme of things|en el gran esquema de las cosas`,
   },
 ];
 
