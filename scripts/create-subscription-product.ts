@@ -180,7 +180,10 @@ async function main() {
     // compound-document "included" mechanism with a client-generated id
     // for the not-yet-existing subscriptionPrices resource -- this is
     // also how multiple territory prices are set atomically in one call.
-    const clientPriceId = randomUUID();
+    // Apple requires inline-created resource ids in JSON:API's local-id
+    // format "${local-id}" (a literal leading $), not a bare UUID --
+    // found live 2026-09-22 via ENTITY_ERROR.INCLUDED.INVALID_ID.
+    const clientPriceId = `$${randomUUID()}`;
     const result = await api(`/subscriptions/${subId}`, "PATCH", {
       data: {
         type: "subscriptions",
