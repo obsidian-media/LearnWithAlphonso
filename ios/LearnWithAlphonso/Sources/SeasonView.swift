@@ -12,22 +12,38 @@ struct SeasonView: View {
     var body: some View {
         List {
             if isLoading {
-                ProgressView()
+                ProgressView().tint(AlphonsoColor.moss)
             } else if let status {
                 Section {
-                    Text("Division \(status.division)").font(.largeTitle.bold())
-                    Text("Rank \(status.rankInCohort) of \(status.cohortSize) this week").foregroundStyle(.secondary)
+                    Text("Division \(status.division)")
+                        .font(AlphonsoFont.display(28, weight: .bold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("Rank \(status.rankInCohort) of \(status.cohortSize) this week")
+                        .font(AlphonsoFont.sans(13))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 }
+                .listRowBackground(AlphonsoColor.parchment)
                 if let lastWeek = status.lastWeekResult {
-                    Section("Last week") {
+                    Section {
                         Text("Division \(lastWeek.division), rank \(lastWeek.rankInCohort) of \(lastWeek.cohortSize)")
+                            .font(AlphonsoFont.sans(14))
+                            .foregroundStyle(AlphonsoColor.ink)
+                    } header: {
+                        Text("Last week")
+                            .font(AlphonsoFont.sans(12, weight: .semiBold))
+                            .tracking(0.4)
+                            .foregroundStyle(AlphonsoColor.ember)
                     }
+                    .listRowBackground(AlphonsoColor.parchment)
                 }
             } else {
-                Text("Couldn't load your season status.").foregroundStyle(.secondary)
+                Text("Couldn't load your season status.").foregroundStyle(AlphonsoColor.inkSoft)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(AlphonsoColor.surface)
         .navigationTitle("Season")
+        .tint(AlphonsoColor.moss)
         .task {
             guard let accessToken = session.accessToken else { isLoading = false; return }
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
