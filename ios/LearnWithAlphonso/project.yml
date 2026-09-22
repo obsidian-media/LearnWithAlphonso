@@ -115,6 +115,15 @@ targets:
           # crashed every tester's launch on 2026-09-19 (RevenueCat's SDK
           # asserts on it deliberately).
           INFOPLIST_KEY_RCApiKey: "$(REVENUECAT_API_KEY)"
+          # V4 candidate #2 (real push) -- wired in 2026-09-22 once the
+          # Push Notifications capability was confirmed enabled on the
+          # App ID and the Distribution provisioning profile was
+          # regenerated to include it (reusing the existing certificate,
+          # no new one minted -- see docs/BACKLOG.md sec 1.3). Safe to
+          # wire now; was deliberately left out until this prerequisite
+          # was real, not assumed (see
+          # LearnWithAlphonso-Release.entitlements' own header comment).
+          CODE_SIGN_ENTITLEMENTS: LearnWithAlphonso-Release.entitlements
         Debug:
           # RevenueCat Test Store key -- local/simulator builds only. Safe
           # to commit (RevenueCat's public-key model, same as the Supabase

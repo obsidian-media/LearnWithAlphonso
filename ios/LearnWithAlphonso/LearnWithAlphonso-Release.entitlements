@@ -3,21 +3,17 @@
 <plist version="1.0">
 <dict>
 	<!-- V4 candidate #2 (real push) -- a TestFlight/App Store archive's
-	     device tokens would register against APNs' production
-	     environment, once this file is actually wired in.
-	     **Deliberately NOT referenced by project.yml's Release config
-	     yet** -- unlike LearnWithAlphonso-Debug.entitlements, adding this
-	     to a real signed archive requires the Push Notifications
-	     capability already be enabled on the App ID and baked into the
-	     distribution provisioning profile (the same interactive
-	     developer.apple.com action this feature's design doc flags as the
-	     hard, unresolved blocker). Wiring it in before that's done would
-	     break `ios-release.yml`'s manual-signing archive step -- a
-	     pipeline explicitly called out as fragile and recently,
-	     carefully fixed (docs/BACKLOG.md sec 1.1) -- for a feature that
-	     can't be tested end-to-end anyway. Kept here, ready to reference
-	     via CODE_SIGN_ENTITLEMENTS in project.yml's Release config as the
-	     very next step once a human completes that portal setup. -->
+	     device tokens register against APNs' production environment.
+	     Wired into project.yml's Release config (CODE_SIGN_ENTITLEMENTS)
+	     2026-09-22, after confirming (via a read-only App Store Connect
+	     API check, not assumed) the Push Notifications capability is
+	     enabled on the App ID, and regenerating the Distribution
+	     provisioning profile to include it -- reusing the existing
+	     certificate, no new one minted, so this didn't repeat the
+	     certificate-cap incident (docs/BACKLOG.md sec 1.1). See
+	     docs/BACKLOG.md sec 1.3 for the full trail. Push delivery itself
+	     is still unverified end-to-end -- that needs a real TestFlight
+	     build and a physical device, not just a config check. -->
 	<key>aps-environment</key>
 	<string>production</string>
 </dict>
