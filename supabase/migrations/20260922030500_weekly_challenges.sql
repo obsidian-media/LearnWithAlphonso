@@ -157,6 +157,8 @@ DECLARE
   candidate_user uuid;
   levels text[] := ARRAY['A1', 'A2', 'B1', 'B2', 'C1'];
   new_duel_id uuid;
+  my_xp integer;
+  candidate_xp integer;
 BEGIN
   IF me IS NULL THEN
     RETURN QUERY SELECT false, NULL::uuid;
@@ -190,8 +192,18 @@ BEGIN
   IF candidate_user IS NOT NULL THEN
     DELETE FROM public.duel_queue WHERE user_id = candidate_user;
     DELETE FROM public.duel_queue WHERE user_id = me;
-    INSERT INTO public.duels (challenger_id, opponent_id, course)
-    VALUES (me, candidate_user, _course)
+
+    -- Unlike a friend duel (create_duel), both sides here already
+    -- consented by joining the queue -- no separate accept step makes
+    -- sense, so this goes straight to 'active' with the XP baseline
+    -- and race window captured immediately, mirroring exactly what
+    -- respond_to_duel does on acceptance (same 3-day default
+    -- duration).
+    SELECT xp INTO my_xp FROM public.language_progress WHERE user_id = me AND language = _course;
+    SELECT xp INTO candidate_xp FROM public.language_progress WHERE user_id = candidate_user AND language = _course;
+
+    INSERT INTO public.duels (challenger_id, opponent_id, course, status, challenger_xp_start, opponent_xp_start, ends_at)
+    VALUES (me, candidate_user, _course, 'active', COALESCE(my_xp, 0), COALESCE(candidate_xp, 0), now() + interval '3 days')
     RETURNING id INTO new_duel_id;
     RETURN QUERY SELECT true, new_duel_id;
     RETURN;
