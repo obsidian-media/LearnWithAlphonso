@@ -311,29 +311,72 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 `9Y6GYPM3K5`.
 
 **Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
-2026-09-22): ports the web app's default "Meadow" theme
-(`src/styles.css`'s `:root` block) rather than inventing a separate
-native-only look, so web and iOS read as one product. `AlphonsoTheme.swift`
-converts that file's oklch color values to sRGB via a standard OKLab
-conversion (computed, not eyeballed). `AlphonsoFont.swift` bundles
-Fraunces/Geist as their upstream **variable** font files
-(`Sources/Fonts/*.ttf`, from google/fonts' `ofl/fraunces`/`ofl/geist` —
-neither ships pre-built static weight instances) and resolves a specific
-weight/optical-size at request time via CoreText's
-`kCTFontVariationAttribute`, rather than depending on iOS's per-OS-version
-support for resolving a variable font's named instances by PostScript
-name. Fonts are registered via `Info.plist`'s `UIAppFonts` array (the
-same "merged custom Info.plist" mechanism already used for Google
-Sign-In's `CFBundleURLTypes`) — no `project.yml` change was needed,
-since XcodeGen already treats non-Swift files under a `sources:` path as
-Copy Bundle Resources. `AlphonsoComponents.swift` has the reusable
-button styles (the primary one replicates `styles.css`'s `.hard-shadow`
-pressed effect), card/badge/progress-bar/empty-state views, and
-`SpringEntrance` (promoted out of `LessonPlayerView`'s original private
-copy). Applied across every screen. Only the default Meadow theme ships
-on iOS — no in-app theme switcher, no dark mode, no grain-texture effect
-(no trivial SwiftUI equivalent to the CSS `feTurbulence` noise) — all
-deliberately deferred, not oversights.
+2026-09-22, extended to a full theme system 2026-09-22): ports all
+three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
+`[data-theme="studio-ink"]`, `[data-theme="manuscript"]` blocks) rather
+than inventing a separate native-only look, so web and iOS read as one
+product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` (raw values
+match the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
+exactly), `AlphonsoPalette` (colors converted from each theme's oklch
+values to sRGB via a standard OKLab conversion — computed, not
+eyeballed — plus each theme's font base names/optical-size range and a
+`ColorScheme`), and `AlphonsoThemeManager` (an `@Observable` singleton,
+`UserDefaults`-backed — the iOS equivalent of the web's `theme.ts`
+Zustand store). `AlphonsoColor`'s members are computed properties
+reading the active theme's palette rather than fixed constants, so
+adding a theme required zero changes at any of the ~16 already-styled
+screens' call sites.
+
+Each theme's font pair is bundled as its upstream **variable** font
+file(s) (`Sources/Fonts/*.ttf`, all from google/fonts, OFL-licensed:
+Fraunces/Geist for Meadow, Instrument Serif/Instrument Sans for Studio
+Ink, Newsreader/Source Sans 3 for Manuscript — Instrument Serif is the
+one static-only exception, a single Regular face, since the web app
+never loads a bold weight for it) and `AlphonsoFont.swift` resolves a
+specific weight/optical-size instance at request time via CoreText's
+`kCTFontVariationAttribute`, rather than depending on iOS's per-OS-
+version support for resolving a variable font's named instances by
+PostScript name. Fonts are registered via `Info.plist`'s `UIAppFonts`
+array (the same "merged custom Info.plist" mechanism already used for
+Google Sign-In's `CFBundleURLTypes`) — no `project.yml` change needed,
+since XcodeGen already treats non-Swift files under a `sources:` path
+as Copy Bundle Resources.
+
+`RootView` applies `.preferredColorScheme(theme.colorScheme)` around
+the whole app (including `AuthView`, shown before sign-in) so SwiftUI's
+own dynamic/system colors — navigation-bar titles, `ContentUnavailableView`,
+segmented-Picker tint — resolve against the *active theme's*
+light-or-dark-ness rather than the device's own system Dark Mode
+setting. This is a real-bug fix, not speculative hardening: a Meadow-
+only build (no `preferredColorScheme` override) shipped to TestFlight
+and was illegible on a device in system Dark Mode — native chrome
+flipped to light-on-dark text while the app's then-fixed-light palette
+stayed put. Studio Ink is a genuinely dark theme by design (not "Meadow
+following system dark mode"), so this same mechanism is what makes it
+render correctly too, not just Meadow/Manuscript.
+
+`SettingsView.swift` (new — the app had no settings screen before this)
+is the in-app theme picker, reachable from a gear button on the Learn
+tab. Picking a theme applies instantly (via `AlphonsoThemeManager`) and
+syncs to `profiles.theme` in the background
+(`ProgressSyncClient+Profile.swift`, new Kit extension) — a plain
+PostgREST GET/PATCH, since `profiles` (unlike the gamification tables)
+never had its direct-write grant revoked; RLS's `profiles_update_own`
+policy is the same one the web's `updateProfile` server function relies
+on. `restRequest` widened from `private` to `internal` in
+`ProgressSyncClient.swift` so this extension file can call it, same
+precedent as `ProgressSyncClient+Season.swift`'s earlier widening.
+
+`AlphonsoComponents.swift` has the reusable button styles (the primary
+one replicates `styles.css`'s `.hard-shadow` pressed effect),
+card/badge/progress-bar/empty-state views, `SpringEntrance` (promoted
+out of `LessonPlayerView`'s original private copy), and
+`alphonsoInputBackground()` (parchment fill + a visible hairline
+border, applied to every text-input field app-wide — added after a
+real device showed parchment-on-surface alone was too subtle to read as
+an input field). Still deliberately deferred: no in-app light/dark
+override independent of the chosen theme, and no grain-texture effect
+(no trivial SwiftUI equivalent to the CSS `feTurbulence` noise).
 
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
 original design (note: that doc's plan to reuse Cloud Voice for *all* AI
@@ -373,6 +416,25 @@ decisions rather than trusting that doc's roadmap section as current).
 (A full audit is kept locally, gitignored, not in this repo — see the
 note in README.md's Documentation section for why.)
 
+- **A custom SwiftUI color palette that doesn't set `.preferredColorScheme`
+  will look broken on a device in system Dark Mode, even if every color
+  is a fixed/explicit value.** Found for real on TestFlight (2026-09-22):
+  the iOS design system's Meadow palette (`AlphonsoColor`, all fixed
+  hex values, not adaptive) shipped without a `.preferredColorScheme`
+  override. On a device in Dark Mode, every *system*-styled element this
+  app didn't explicitly restyle (`.navigationTitle` text,
+  `ContentUnavailableView`'s icon/title, segmented-Picker chrome) still
+  resolves its color against the *device's* Dark Mode setting via
+  SwiftUI's dynamic/semantic colors (`.primary`, etc.) — so those
+  elements rendered light-colored text, while this app's fixed-light
+  background colors stayed put, making titles and empty states
+  unreadable. Fixed by applying `.preferredColorScheme(theme.colorScheme)`
+  at the app root (`RootView`) — this pins every dynamic system color to
+  resolve against the *chosen theme's* light-or-dark-ness instead of the
+  device's setting. Generalizes beyond Meadow: Studio Ink is
+  legitimately a dark theme (see "Design system" above), and this same
+  mechanism is what makes its dynamic system colors resolve correctly
+  too, not a special case.
 - **SwiftUI `Section { content } header: { header }` silently misparses
   if the content closure is missing its own closing brace** — found
   twice while restyling every screen for the design-system pass
