@@ -164,9 +164,14 @@ export type VocabEntry = {
   word: string;
   pos: "noun" | "verb" | "adjective";
   level: Level;
-  /** Only for verbs where `compromise`'s regular-conjugation rules get
-   *  it wrong (be, have, go, ...). Keyed by the form compromise would
-   *  otherwise mis-derive. */
+  /** VERIFIED 2026-09-22 via a hands-on spike (not assumed from docs --
+   *  see the compiler section below): `compromise` conjugates have,
+   *  go, do, and every tested regular verb (walk/run/eat/play)
+   *  correctly with NO manual override needed, once queried the right
+   *  way (fixed-context derivation, see component 4). This field
+   *  exists as a safety valve for a future word that needs one, but
+   *  the pilot's actual starter vocab needs zero entries here -- see
+   *  "be" below for the one verb that's excluded instead of overridden. */
   irregularForms?: Partial<Record<"presentThirdPerson" | "past", string>>;
   /** Topic tag(s) this word was proposed under -- lets a pack-generation
    *  run filter to vocab relevant to its topic instead of the whole
@@ -226,18 +231,71 @@ tagging and compare against the LLM's claimed POS.
 Given a `Template` and a concrete word assigned to each slot, produces
 one literal `"sentence|answer"` line — the exact same shape
 `bank-engine.ts`'s `packQuestions()` already parses from a `Pack.data`
-string. Uses `compromise` for the actual conjugation:
+string. Uses `compromise` for the actual conjugation.
 
-- `agreeWith` resolution: for `svo-present`, the verb slot conjugates
-  to third-person-singular (`-s` form) when the subject pronoun is
-  he/she/it, base form otherwise — `compromise`'s `.verbs().toPresentTense()`
-  family, falling back to `irregularForms.presentThirdPerson` from the
-  vocab entry when the word has one (be/have/go/etc. — `compromise`'s
-  regular-rule output is checked against the curated irregular-override
-  table first, not trusted blind for closed-class high-frequency verbs
-  where a wrong form would be maximally visible to a learner).
-- Past-tense slots: `.verbs().toPastTense()`, same irregular-override
-  precedence.
+**Verified conjugation strategy (spiked 2026-09-22, not assumed):**
+querying `compromise` with the sentence's *actual* subject pronoun and
+trusting its own agreement detection is unreliable — confirmed via a
+hands-on spike that `nlp("you go").verbs().toPresentTense()` incorrectly
+produces "you goes" (and "you is"/"you has" for be/have), because
+`compromise` treats "you" as 3rd-person-singular. A bare isolated word
+is also unreliable — `nlp("go").verbs().toPastTense()` returns "go"
+unchanged (no subject context to key off).
+
+The fix: **never feed compromise the real subject; always derive both
+needed forms from fixed, known-correct contexts**, and let the compiler
+itself — not compromise — decide which form the actual subject needs:
+
+```ts
+function baseForm(verb: string): string {
+  const doc = nlp(`I ${verb}`);
+  doc.verbs().toPresentTense();
+  return doc.text().replace(/^I /, "");
+}
+function thirdPersonForm(verb: string): string {
+  const doc = nlp(`he ${verb}`);
+  doc.verbs().toPresentTense();
+  return doc.text().replace(/^he /, "");
+}
+function pastForm(verb: string): string {
+  const doc = nlp(`I ${verb}`);
+  doc.verbs().toPastTense();
+  return doc.text().replace(/^I /, "");
+}
+```
+
+Verified output for the pilot's planned starter verbs — **zero manual
+overrides needed** for any of these:
+
+| verb  | base  | 3rd-person | past    |
+|-------|-------|------------|---------|
+| have  | have  | has        | had     |
+| go    | go    | goes       | went    |
+| do    | do    | does       | did     |
+| walk  | walk  | walks      | walked  |
+| run   | run   | runs       | ran     |
+| eat   | eat   | eats       | ate     |
+| play  | play  | plays      | played  |
+
+`agreeWith` resolution for `svo-present`: the compiler calls
+`thirdPersonForm` when the subject pronoun is he/she/it, `baseForm`
+otherwise (I/you/we/they) — this is the compiler's own agreement logic,
+not delegated to compromise. Past-tense slots always use `pastForm`
+(English past tense doesn't vary by person, confirmed in the same
+spike). `irregularForms` on a `VocabEntry` remains available as an
+override for a future word this derivation gets wrong, but isn't needed
+for the pilot's verified starter set.
+
+**"be" is excluded from the pilot's starter vocab, not overridden.**
+Spiked result: `baseForm("be")` returns `"be"` (should be `"am"` for an
+I-subject) — `compromise` handles "be"'s 3rd-person ("is") and past
+("was") correctly via this same derivation, but not the full
+person-varying present paradigm (am/are/is). Building override
+infrastructure for one word's full paradigm isn't worth it for a pilot
+proving the architecture — "be" is simply left out of the initial
+curated vocab (component 2), documented here rather than silently
+missing.
+
 - The "answer" side of each generated line is the verb form alone
   (matching the existing cloze-pack convention — see `lesson-bank.ts`'s
   `___ have missed the train.|may`-style lines), with the full
@@ -305,9 +363,12 @@ identical to a hand-authored one once it lands in `lesson-bank.ts`.
 
 ## Testing
 
-- Unit tests for the compiler (component 4) against a fixed set of
-  test verbs including known English irregulars (be, have, go, do) —
-  asserts exact conjugated output per tense/person combination.
+- Unit tests for the compiler (component 4) against the verified verb
+  table above (have, go, do, walk, run, eat, play) — asserts exact
+  conjugated output per tense/person combination, pinned to the real
+  spiked values, not assumed ones. A separate test confirms "be" is
+  absent from the starter vocab (not silently included with a wrong
+  conjugation).
 - Unit tests for template expansion + sampling (deterministic given a
   fixed pack id, per existing `hash()` convention).
 - Unit tests for the POS cross-check rejection path (component 3) —
@@ -321,23 +382,22 @@ identical to a hand-authored one once it lands in `lesson-bank.ts`.
 
 ## Self-critique (found on review, before implementation)
 
-- **`compromise`'s exact API surface is unverified hands-on.** The
-  method names referenced above (`.verbs().toPresentTense()`,
-  `.verbs().toPastTense()`) come from published documentation found via
-  search, not from actually running the library against this pilot's
-  test verbs. Per this project's own "verify against documentation
-  rather than guessing" discipline: **the first implementation task
-  must be a small standalone spike** — run `compromise` against the
-  planned irregular-verb test set (be, have, go, do) and confirm its
-  real output before the compiler (component 4) is built around
-  assumed method names/behavior. If its output is wrong or
-  inconsistent for a case the irregular-override table doesn't already
-  cover, that's a real finding to bring back before continuing, not
-  something to route around silently.
-- **`compromise`'s license hasn't been checked.** Needs confirming
-  before it ships in this app, same diligence any new dependency in
-  this codebase gets — not a blocker to writing the spec, but a
-  concrete pre-merge check for the implementation plan.
+- **`compromise`'s exact API surface was unverified hands-on when this
+  spec was first drafted — now resolved.** A real spike (not assumed
+  from docs) found two genuine bugs the first draft's design didn't
+  account for: `compromise` mis-conjugates "you" as 3rd-person-singular
+  ("you goes"/"you is"/"you has"), and fails to conjugate a bare
+  isolated word to past tense with no subject context at all ("go" ->
+  "go", not "went"). Both are worked around by never trusting
+  compromise's own subject-agreement detection — deriving both forms
+  from fixed, known-correct contexts instead, with the compiler doing
+  its own agreement resolution. See component 4 above for the verified
+  strategy and output table. This also revealed the pilot's planned
+  starter verbs need **zero** manual `irregularForms` overrides (not
+  what the first draft assumed) except "be", which is excluded from the
+  starter vocab entirely rather than special-cased.
+- **`compromise`'s license: confirmed MIT** (checked `node_modules/compromise/package.json`
+  directly during the spike) — clear to depend on.
 - **Known limitation, not a bug: pilot content will be repetitive for
   small vocab sets.** A topic with only 5-8 words in the curated
   dataset produces a correspondingly small number of distinct
