@@ -24,7 +24,7 @@
  * Requires APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
  * APP_STORE_CONNECT_KEY_P8_BASE64 in the environment.
  */
-import { createSign } from "node:crypto";
+import { createSign, randomUUID } from "node:crypto";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -171,21 +171,36 @@ async function main() {
       console.error("Usage: set-price <subscriptionId> <pricePointId>");
       process.exit(1);
     }
-    // A bare subscription+subscriptionPricePoint relationship 409s with
-    // ENTITY_ERROR.RELATIONSHIP.INVALID (found live 2026-09-22) -- this
-    // endpoint also requires an explicit territory relationship even
-    // though the price point id already encodes one (base64 JSON
-    // {s,t,p} -- decode a price point id to see its territory if unsure).
-    const result = await api("/subscriptionPrices", "POST", {
+    // A standalone POST /v1/subscriptionPrices 409s with
+    // ENTITY_ERROR.RELATIONSHIP.INVALID on subscriptionPricePoint/id no
+    // matter what relationships are added (found live 2026-09-22, tried
+    // with and without an explicit territory relationship). Apple's
+    // real supported pattern for setting a NEW subscription's first
+    // price is a PATCH on the subscription itself, using JSON:API's
+    // compound-document "included" mechanism with a client-generated id
+    // for the not-yet-existing subscriptionPrices resource -- this is
+    // also how multiple territory prices are set atomically in one call.
+    const clientPriceId = randomUUID();
+    const result = await api(`/subscriptions/${subId}`, "PATCH", {
       data: {
-        type: "subscriptionPrices",
-        attributes: { preserveCurrentPrice: false },
+        type: "subscriptions",
+        id: subId,
         relationships: {
-          subscription: { data: { type: "subscriptions", id: subId } },
-          subscriptionPricePoint: { data: { type: "subscriptionPricePoints", id: pricePointId } },
-          territory: { data: { type: "territories", id: "USA" } },
+          prices: { data: [{ type: "subscriptionPrices", id: clientPriceId }] },
         },
       },
+      included: [
+        {
+          type: "subscriptionPrices",
+          id: clientPriceId,
+          attributes: { preserveCurrentPrice: false },
+          relationships: {
+            subscriptionPricePoint: {
+              data: { type: "subscriptionPricePoints", id: pricePointId },
+            },
+          },
+        },
+      ],
     });
     printResult(`set-price (subscription ${subId}, price point ${pricePointId})`, result);
   } else if (cmd === "status") {
