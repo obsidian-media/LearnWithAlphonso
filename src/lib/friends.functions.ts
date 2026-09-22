@@ -44,6 +44,24 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
     return row ?? { ok: false, message: "unknown error" };
   });
 
+/**
+ * Removes a friendship (both directions, atomically) via the
+ * `remove_friend` SECURITY DEFINER RPC (supabase/migrations/
+ * 20260922020500_remove_friend.sql). Remove-only, no blocking -- see
+ * that migration's header comment for why blocking was deliberately
+ * left out of this slice.
+ */
+export const removeFriend = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ friendId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
+    const { data: rows } = await context.supabase.rpc("remove_friend", {
+      _friend_id: data.friendId,
+    });
+    const row = rows?.[0];
+    return row ?? { ok: false, message: "unknown error" };
+  });
+
 /** Display name + avatar for the invite confirmation screen. */
 export const getInviterProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

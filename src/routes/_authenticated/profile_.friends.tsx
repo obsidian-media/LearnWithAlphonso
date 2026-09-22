@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
-import { getFriends } from "../../lib/friends.functions";
+import { getFriends, removeFriend, type FriendEntry } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { useTheme } from "../../lib/theme";
 
@@ -21,12 +21,28 @@ export const Route = createFileRoute("/_authenticated/profile_/friends")({
 
 function FriendsPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  const queryClient = useQueryClient();
   const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
   const { data: friends, isLoading } = useQuery({
     queryKey: ["friends"],
     queryFn: () => getFriends(),
   });
   const [copied, setCopied] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  async function confirmRemove(friendId: string) {
+    setRemovingId(friendId);
+    try {
+      await removeFriend({ data: { friendId } });
+      queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
+        (prev ?? []).filter((f) => f.userId !== friendId),
+      );
+    } finally {
+      setRemovingId(null);
+      setConfirmingId(null);
+    }
+  }
 
   const inviteLink = profile ? `${window.location.origin}/invite/${profile.id}` : null;
 
@@ -131,10 +147,41 @@ function FriendsPage() {
                   </p>
                   <p className="text-xs text-ink-soft/80">🔥 {f.streak}-day streak</p>
                 </div>
-                <div className="shrink-0 text-right">
-                  <p className="tnum text-sm font-semibold text-ink">{f.weekXp}</p>
-                  <p className="text-[10px] text-ink-soft/70">XP this week</p>
-                </div>
+                {confirmingId === f.userId ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingId(null)}
+                      disabled={removingId === f.userId}
+                      className="text-xs font-medium text-ink-soft underline underline-offset-4 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => confirmRemove(f.userId)}
+                      disabled={removingId === f.userId}
+                      className="text-xs font-semibold text-rose-500 underline underline-offset-4 disabled:opacity-50"
+                    >
+                      {removingId === f.userId ? "Removing…" : "Confirm"}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="shrink-0 text-right">
+                      <p className="tnum text-sm font-semibold text-ink">{f.weekXp}</p>
+                      <p className="text-[10px] text-ink-soft/70">XP this week</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingId(f.userId)}
+                      aria-label={`Remove ${f.displayName}`}
+                      className="shrink-0 text-ink-soft/50 hover:text-rose-500"
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
               </div>
             ))}
           </div>

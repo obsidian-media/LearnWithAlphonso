@@ -535,6 +535,30 @@ public final class ProgressSyncClient: Sendable {
         return (ok, message)
     }
 
+    /// Calls the `remove_friend` SECURITY DEFINER RPC (supabase/migrations/
+    /// 20260922020500_remove_friend.sql) -- deletes both directions of the
+    /// friendship atomically, same shape as acceptFriendInvite above.
+    /// Remove-only, no blocking (see that migration's header comment for
+    /// why blocking was deliberately left out of this slice).
+    public func removeFriend(friendID: String) async throws -> (ok: Bool, message: String) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/remove_friend"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_friend_id": friendID])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool,
+              let message = row["message"] as? String else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, message)
+    }
+
     /// Calls the `get_friends_progress` SECURITY DEFINER RPC -- the
     /// logged-in user's own friends list with stats, ordered by `week_xp
     /// DESC` server-side.

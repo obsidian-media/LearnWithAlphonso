@@ -555,6 +555,38 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(result.message, "cannot invite yourself")
     }
 
+    // MARK: - removeFriend
+
+    func testRemoveFriendPostsTheFriendIdAndReturnsTheResult() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "removed"]])
+        }
+
+        let result = try await client.removeFriend(friendID: "u1")
+
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.message, "removed")
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/remove_friend"))
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["_friend_id"] as? String, "u1")
+    }
+
+    func testRemoveFriendSurfacesAServerRejectionAsAFalseOkNotAThrow() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "message": "cannot remove yourself"]])
+        }
+
+        let result = try await client.removeFriend(friendID: "u1")
+
+        XCTAssertFalse(result.ok)
+        XCTAssertEqual(result.message, "cannot remove yourself")
+    }
+
     // MARK: - fetchFriendsProgress
 
     func testFetchFriendsProgressPostsToTheRpcAndDecodesTheRows() async throws {

@@ -27,6 +27,7 @@ struct FriendsView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var nudgeBannerMessage: String?
+    @State private var friendPendingRemoval: FriendProgress?
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -68,6 +69,13 @@ struct FriendsView: View {
                                 FriendRowView(friend: friend) {
                                     await nudge(friend)
                                 }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        friendPendingRemoval = friend
+                                    } label: {
+                                        Label("Remove", systemImage: "person.badge.minus")
+                                    }
+                                }
                             }
                         }
                     }
@@ -94,6 +102,24 @@ struct FriendsView: View {
             if newPhase == .active {
                 Task { await checkForNudges() }
             }
+        }
+        .confirmationDialog(
+            "Remove \(friendPendingRemoval?.displayName ?? "this friend")?",
+            isPresented: Binding(
+                get: { friendPendingRemoval != nil },
+                set: { if !$0 { friendPendingRemoval = nil } },
+            ),
+            titleVisibility: .visible,
+        ) {
+            Button("Remove", role: .destructive) {
+                if let friend = friendPendingRemoval {
+                    Task { await removeFriend(friend) }
+                }
+                friendPendingRemoval = nil
+            }
+            Button("Cancel", role: .cancel) { friendPendingRemoval = nil }
+        } message: {
+            Text("You won't see each other's activity or streaks anymore.")
         }
     }
 
@@ -136,6 +162,21 @@ struct FriendsView: View {
             NudgeCooldownCache.recordNudge(friendID: friend.userID)
         } catch {
             // Non-critical -- a nudge is a nice-to-have, not worth surfacing an error for.
+        }
+    }
+
+    private func removeFriend(_ friend: FriendProgress) async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            let result = try await client.removeFriend(friendID: friend.userID)
+            if result.ok {
+                friends.removeAll { $0.userID == friend.userID }
+            }
+        } catch {
+            // Non-critical to surface as a blocking error -- the row simply
+            // stays in the list, matching this file's existing precedent
+            // (nudge failures are silent too) rather than a new error UI.
         }
     }
 
