@@ -70,6 +70,20 @@ const MAX_OVERDUE_GROWTH_BONUS = 1.5;
  * setback) without being maximally punishing.
  */
 const LAPSE_REPETITIONS_RETENTION = 0.5;
+/**
+ * SM-2 audit finding (2026-09-22): the interval side of a lapse used to
+ * snap to a fixed step (1 or 3 days) keyed off the *halved repetitions*
+ * bucket, not the item's actual prior interval -- and because
+ * RETIRE_AFTER_REPETITIONS caps live repetitions at 3,
+ * floor(repetitions * LAPSE_REPETITIONS_RETENTION) can only ever land on 0
+ * or 1, so every lapse collapsed to the same two possible intervals (1 or 3
+ * days) regardless of whether the item had earned a 6-day or a 60-day
+ * interval. That defeated the "halving, not zeroing" intent above -- a
+ * well-established item lost just as much ground as a brand-new one.
+ * Scaling directly off the previous intervalDays instead makes the
+ * retention proportional to what was actually earned, floored at 1 day.
+ */
+const LAPSE_INTERVAL_RETENTION = 0.5;
 
 /**
  * Wrong answer: halve (rather than zero out) repetitions and record a
@@ -85,8 +99,7 @@ export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
 
   if (!input.correct) {
     const repetitions = Math.floor(input.repetitions * LAPSE_REPETITIONS_RETENTION);
-    const intervalDays =
-      repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.round(input.intervalDays * ease) || 6;
+    const intervalDays = Math.max(1, Math.round(input.intervalDays * LAPSE_INTERVAL_RETENTION));
     return { retired: false, ease, intervalDays, repetitions, lapses: input.lapses + 1 };
   }
 
