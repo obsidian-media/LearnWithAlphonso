@@ -217,14 +217,27 @@ model; any parse/shape failure yields nothing rather than throwing).
 Each candidate is then cross-checked: run it through `compromise`'s own
 tagging and compare against the LLM's claimed POS.
 
-- **Match** → candidate is accepted into the curated vocab dataset
-  (pending the human `apply --confirm` gate downstream, same as any
-  other content change).
+- **Match** → candidate is accepted and written directly into the
+  curated vocab dataset (`src/data/generative/vocab.ts`) — **not**
+  gated behind `apply --confirm`. This is a deliberate distinction
+  from pack content, resolved here after an inconsistency was caught
+  reviewing an earlier draft of this spec (it claimed vocab entries
+  were "pending the apply --confirm gate," while also claiming `apply`
+  itself gets zero changes — both can't be true). The actual trust
+  model: `vocab.ts` never reaches a learner directly, only compiled
+  packs do, and those still go through the full unmodified
+  `validate`/`preview`/`apply --confirm` pipeline (component 6). A
+  vocab entry has already passed a real automated check (this
+  cross-check) by the time it's written — categorically different from
+  trusting raw LLM prose, and low-risk even if occasionally an odd
+  word: worst case, a slightly unusual but grammatically valid word
+  becomes available for a future `generate` run, still fully visible
+  in that run's own preview before anything reaches a real course file.
 - **Mismatch** → rejected outright, surfaced in the CLI output as
-  "needs manual review," never silently coerced or guessed. This is
-  the concrete implementation of "the LLM never writes grammar-bearing
-  text directly" — an LLM POS mistake gets caught here, before it can
-  ever reach a template slot.
+  "needs manual review," never silently coerced or guessed, never
+  written to `vocab.ts`. This is the concrete implementation of "the
+  LLM never writes grammar-bearing text directly" — an LLM POS mistake
+  gets caught here, before it can ever reach a template slot.
 
 ### 4. Compiler — `src/data/generative/compile.ts` (new)
 
@@ -343,6 +356,15 @@ schema changes, no changes to the review system, no changes to the iOS
 Swift export (`export-ios-content.ts`) — a generated pack looks
 identical to a hand-authored one once it lands in `lesson-bank.ts`.
 
+Two different write timings in one command, deliberately: `vocab.ts`
+gets any newly-accepted candidates written immediately when `generate`
+runs (component 3's trust model above), while the compiled *pack* only
+ever reaches `lesson-bank.ts` through the unmodified, still fully
+human-gated `apply --confirm` step. The command's own console output
+makes this explicit (e.g. "written N new vocab entries to vocab.ts" as
+a separate line from "draft pack written to drafts/xxx.json — run
+validate/preview/apply next").
+
 ## Error handling
 
 - LLM call fails or returns unparseable output → `generate` reports
@@ -398,6 +420,17 @@ identical to a hand-authored one once it lands in `lesson-bank.ts`.
   starter vocab entirely rather than special-cased.
 - **`compromise`'s license: confirmed MIT** (checked `node_modules/compromise/package.json`
   directly during the spike) — clear to depend on.
+- **Direct self-contradiction caught while starting the implementation
+  plan**: an earlier draft said accepted vocab candidates were "pending
+  the human `apply --confirm` gate downstream," while the "Explicitly
+  out of scope" section also claimed zero changes to `apply` — those
+  can't both be true (there's no gate for `vocab.ts` to be pending on).
+  Resolved by making the trust model explicit: `vocab.ts` writes happen
+  immediately (each entry already passed the real POS cross-check,
+  categorically different from trusting raw LLM prose), while `apply`
+  genuinely is unchanged because the compiled *pack* — what actually
+  reaches a learner — still goes through it untouched. See the "Two
+  different write timings" note in component 6.
 - **Known limitation, not a bug: pilot content will be repetitive for
   small vocab sets.** A topic with only 5-8 words in the curated
   dataset produces a correspondingly small number of distinct
