@@ -17,6 +17,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
+import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
@@ -70,6 +71,11 @@ const TermsRoute = TermsRouteImport.update({
 const AuthenticatedConverseRoute = AuthenticatedConverseRouteImport.update({
   id: '/converse',
   path: '/converse',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDuelsRoute = AuthenticatedDuelsRouteImport.update({
+  id: '/duels',
+  path: '/duels',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
+  '/duels': typeof AuthenticatedDuelsRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/converse': typeof AuthenticatedConverseRoute
+  '/duels': typeof AuthenticatedDuelsRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/placement': typeof AuthenticatedPlacementRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
+  '/_authenticated/duels': typeof AuthenticatedDuelsRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/converse'
+    | '/duels'
     | '/league'
     | '/learn'
     | '/placement'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/converse'
+    | '/duels'
     | '/league'
     | '/learn'
     | '/placement'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/_authenticated/converse'
+    | '/_authenticated/duels'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/placement'
@@ -373,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/converse'
       fullPath: '/converse'
       preLoaderRoute: typeof AuthenticatedConverseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/duels': {
+      id: '/_authenticated/duels'
+      path: '/duels'
+      fullPath: '/duels'
+      preLoaderRoute: typeof AuthenticatedDuelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/league': {
@@ -485,6 +504,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
+  AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
@@ -499,6 +519,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConverseRoute: AuthenticatedConverseRoute,
+  AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,

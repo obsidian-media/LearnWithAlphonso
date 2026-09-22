@@ -96,6 +96,13 @@ struct FriendsView: View {
                 }
             }
             .navigationTitle("Friends")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink("Duels") {
+                        DuelsView(session: session)
+                    }
+                }
+            }
         }
         .task { await loadAll() }
         .onChange(of: scenePhase) { _, newPhase in

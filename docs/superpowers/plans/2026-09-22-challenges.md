@@ -508,7 +508,7 @@ git push
 
 - [ ] **Step 1: Widen `ProgressSyncClient`'s stored properties from `private` to `internal` (skip if already done)**
 
-Run `grep -n "private let supabaseURL" ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient.swift` first — if it reports nothing, already applied by another plan; skip to Step 2. Otherwise apply the exact change described in the Teams plan's Task 6 Step 1.
+Run `grep -n "private let supabaseURL" ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient.swift` first — if it reports nothing, already applied by another plan; skip to Step 2. Otherwise apply the exact change described in the Teams plan's Task 6 Step 1 — **including `requireSuccess`**, not just the four stored properties (confirmed live via a real CI failure: `requireSuccess` being left `private` compile-fails every RPC method this plan adds).
 
 - [ ] **Step 2: Create `ProgressSyncClient+Challenges.swift` with the type and client methods**
 

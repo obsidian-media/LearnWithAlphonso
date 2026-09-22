@@ -65,6 +65,12 @@ function FriendsPage() {
             ←
           </Link>
           <h1 className="font-display text-[22px] font-semibold text-ink">Friends</h1>
+          <Link
+            to="/duels"
+            className="ml-auto text-xs font-medium text-moss underline underline-offset-4"
+          >
+            Duels →
+          </Link>
         </div>
 
         <div

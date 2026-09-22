@@ -228,10 +228,15 @@ public struct LessonCompletionResult: Sendable, Decodable, Equatable {
 public final class ProgressSyncClient: Sendable {
     public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
-    private let supabaseURL: URL
-    private let anonKey: String
-    private let accessToken: String
-    private let requester: Requester
+    // internal (not private) so feature-specific extension files
+    // (ProgressSyncClient+Teams.swift, +Season.swift, +Challenges.swift)
+    // can add methods without editing this shared file directly --
+    // those three plans can land in parallel without conflicting here.
+    // Still not public: external consumers of the Kit can't touch these.
+    let supabaseURL: URL
+    let anonKey: String
+    let accessToken: String
+    let requester: Requester
 
     public init(
         supabaseURL: URL,
@@ -942,7 +947,9 @@ public final class ProgressSyncClient: Sendable {
         return request
     }
 
-    private static func requireSuccess(data: Data, response: URLResponse) throws {
+    // internal, not private -- see the stored-properties comment above;
+    // same reasoning, extension files in other feature plans call this too.
+    static func requireSuccess(data: Data, response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw ProgressSyncError.badResponse
         }

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
+import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
@@ -235,6 +236,10 @@ function LearnPage() {
               {c.flag} {c.label}
             </button>
           ))}
+        </div>
+
+        <div className="mb-6">
+          <WeeklyChallengesCard />
         </div>
 
         {!placed &&
