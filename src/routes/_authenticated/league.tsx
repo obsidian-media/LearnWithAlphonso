@@ -71,6 +71,9 @@ function LeaguePage() {
           <Link to="/teams" className="text-xs font-medium text-moss underline underline-offset-4">
             Teams →
           </Link>
+          <Link to="/season" className="text-xs font-medium text-moss underline underline-offset-4">
+            Season →
+          </Link>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-2">
