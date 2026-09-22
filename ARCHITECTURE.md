@@ -1,6 +1,6 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-09-20 — re-verify
+Written 2026-09-13, last substantially updated 2026-09-22 — re-verify
 against `supabase/migrations/*.sql` and `src/routes/` before trusting a
 detail here; this codebase's own audit history shows even a careful
 point-in-time doc goes stale within weeks. This doc favors "where to look"
@@ -57,6 +57,10 @@ over "what the answer currently is," since the latter goes stale fast.
 | `ai_rate_limits`                                     | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                        |
 | `levels` / `units` / `lessons` / `questions`         | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`. |
 | `vocab_images` / `placement_questions` / `scenarios` | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet                                                                                                                                                                                                                                                                                  |
+| `teams` / `team_members` / `team_weekly_rewards`     | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`.                                                                                                                                                                                                                            |
+| `season_cohorts` / `season_cohort_members` / `season_placements` | V4 #7 — Duolingo-style weekly promotion/demotion ladder, ~30-person cohorts ranked by weekly XP, 5 divisions. Resolved by the `get-season-status` Edge Function (below), not raw SQL — the ranking/promotion math (`floor(size/3)` promote, `floor(size/6)` demote) is unit-tested Deno/TS, not PL/pgSQL. No client RLS policy — only the Edge Function (service_role) touches these directly. Added `supabase/migrations/20260922050000_season_ladder.sql`.                                                                                                                                                                                                                                          |
+| `challenge_templates` / `challenge_completions`      | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `duel_queue`                                          | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch.                                                    |
 
 RPCs worth knowing (all `SECURITY DEFINER`, all in `supabase/migrations/`):
 `get_leaderboard`, `get_friends_progress`, `accept_friend_invite`,
@@ -67,7 +71,14 @@ row-locked hearts-economy operations — see "Hearts economy" below),
 2026-09-20 — the iOS client's remaining direct-write replacements, see
 "Known rough edges" below), and (V3 package 2, same day)
 `buy_streak_freeze_with_xp`, `create_duel`, `respond_to_duel`,
-`get_my_duels`, `claim_weekly_quest` — see CHANGELOG.md's V3 entry.
+`get_my_duels`, `claim_weekly_quest` — see CHANGELOG.md's V3 entry. V4
+#7 (2026-09-22) added `weekly_xp` (extracted out of `get_leaderboard`,
+the shared building block the rest of this batch depends on),
+`join_team`/`join_public_team`/`auto_join_team`/`leave_team`/
+`get_my_team`/`get_team_leaderboard`, `get_weekly_challenges`,
+`join_open_duel_queue`/`leave_duel_queue`, and
+`get_cohort_weekly_xp` (service_role-only, called by the
+`get-season-status` Edge Function below, not client-callable).
 
 `user_progress`, `language_progress`, `lesson_completions`,
 `user_achievements`, `activity_days`, and `review_items` all carry `CHECK`
@@ -132,10 +143,11 @@ questions does it have."
 
 ## Edge Functions (Deno, `supabase/functions/`)
 
-Three trust-sensitive write/issue paths that aren't TanStack Start server
+Trust-sensitive write/issue paths that aren't TanStack Start server
 functions, because the native iOS client has no server layer of its own
-to run them in. All three are deployed and live in production (project
-`qhcjpfbxfcltjbiuknyt`):
+to run them in. Also home to `get-season-status`, which needs genuinely
+complex server-side logic (not just a trust boundary) — see below. All
+are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
 
 - **`complete-lesson`** — 1:1 port of `completeLessonRemote`
   (`src/lib/sync.functions.ts`) to Deno, reading curriculum data from the
@@ -156,6 +168,25 @@ to run them in. All three are deployed and live in production (project
   due yet, updates/retires the item. Branches on `review_items.source`:
   a `"weakness"` row derives correctness from its own embedded
   `choices`/`answer_index` instead of looking up a `questions` row.
+- **`send-push`** — V4 real-push-notifications work: sends a real APNs
+  push (`supabase/functions/_shared/apns.ts`) for nudge-a-friend and
+  leaderboard-overtake, upgrading those from the weaker
+  polling-on-foreground/in-app-toast approaches described elsewhere in
+  this doc. No-ops gracefully when `APNS_KEY_P8`/`APNS_KEY_ID`/
+  `APNS_TEAM_ID`/`APNS_BUNDLE_ID` aren't all set (see `ci.yml`'s "Sync
+  APNs secrets" step) — same "do nothing until configured" precedent as
+  `REVENUECAT_API_KEY`.
+- **`get-season-status`** — V4 #7 (deeper gamification): resolves the
+  caller's previous week's season-ladder cohort lazily (a side effect
+  of this call, same no-cron pattern as `get_my_duels`), ensures a
+  current-week cohort exists (room-or-create, same pattern as Teams'
+  `auto_join_team`), and returns live division/rank/cohort-size. Unlike
+  the three above, this isn't wrapping a trust boundary an existing web
+  server function already has — the ranking/promotion math itself is
+  genuinely complex enough to want real unit tests (`season-math.ts`/
+  `season-math.test.ts`, pure functions, no Supabase client), which is
+  why this system is an Edge Function instead of a PL/pgSQL RPC like
+  every other V4 #7 write path.
 
 **Not an Edge Function, deliberately**: `/api/analyze-weaknesses`
 (weakness detection, see "AI integrations" below) is a plain TanStack

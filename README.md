@@ -1,6 +1,6 @@
 # Learn with Alphonso
 
-A full-stack mobile-first English (and French) learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus a native iOS app sharing the same backend/account.
+A full-stack mobile-first English, French, and Spanish learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus a native iOS app sharing the same backend/account.
 
 > Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
 > code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
@@ -33,11 +33,11 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 ## Features
 
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
-- **Two courses**: English and French, via a shared `getCourse()` content bundle
+- **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page
 - **Placement test**: 15-question adaptive test to set starting level
 - **AI conversation**: voice-enabled chat with 6 scenarios
-- **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements
+- **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
 - **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
@@ -169,6 +169,13 @@ compile verification that exists):
   (deliberately the weaker polling-based V2 version, not real push — see
   `ARCHITECTURE.md`)
 - **Achievements/leagues**: browse screen + unlock celebrations
+- **Teams, weekly challenges, open duels, season ladder**: persistent
+  teams with weekly-XP competition; fixed weekly solo goals plus
+  stranger-matchmaking duels (alongside friend duels); a weekly
+  promotion/demotion season ladder distinct from the permanent league
+  tier — linked from Leaderboards, real push (not push-style local
+  reminders) planned as a fast-follow for whichever of these gets
+  real usage first
 - **Offline-first**: lesson completion and review grading both queue
   locally (SwiftData) and sync when connectivity returns, with two
   known, deliberately-unsolved edge cases documented in `ARCHITECTURE.md`

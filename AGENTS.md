@@ -52,7 +52,7 @@ table and `ARCHITECTURE.md`'s "Native iOS app" section.
 | `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/QuestionGrading.swift` | `isAnswerCorrect` (client-side optimistic grading) + `question(fromWeaknessItem:)` — builds a `Question` from a weakness-sourced `ReviewItem`'s embedded content instead of a bundled-lesson lookup |
 | `ios/LearnWithAlphonso/Sources/ToastBanner.swift` | Shared in-app toast (overtake detection, nudge banner) — extracted after the two call sites were near-identical |
 | `ios/LearnWithAlphonso/Sources/NotificationScheduler.swift` | Local (not push) notification scheduling: streak reminder, due-review nudge, weekly leaderboard recap |
-| `supabase/functions/_shared/apns.ts`, `supabase/functions/send-push/` | V4 candidate #2: real (remote APNs) push infrastructure. No-ops until `APNS_KEY_P8`/`APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_BUNDLE_ID` are set (the APNs Auth Key is an interactive developer.apple.com action, not yet done) — see `docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md` |
+| `supabase/functions/_shared/apns.ts`, `supabase/functions/send-push/` | V4 candidate #2: real (remote APNs) push infrastructure. Live in production as of 2026-09-22 — a real APNs Auth Key was created and `APNS_KEY_P8`/`APNS_KEY_ID`/`APNS_TEAM_ID`/`APNS_BUNDLE_ID` are all set as repo secrets, no longer a no-op — see `docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md` |
 | `ios/LearnWithAlphonso/Sources/RemotePushRegistrar.swift`, `AppDelegate.swift` | iOS half of real push: remote-notification registration + APNs device token capture, materially separate from the local `NotificationScheduler` above |
 | `vitest.setup.ts`                          | React Testing Library cleanup + DOM matchers for the Vitest suite (added with PR #46's coverage expansion — see Testing below) |
 | `src/data/vocab-images.ts`                 | Stock-photo lookup keyed by vocab term (`VOCAB_IMAGES`), used by `deriveVocab`'s web path. Covers English/French/Spanish terms — Spanish images added 2026-09-21 (two batches, searched by English-concept query since the image provider's index isn't Spanish-aware). Not yet ported to iOS (`VocabDerivation.swift`) |
@@ -147,9 +147,13 @@ Function deploys are now automated by `.github/workflows/ci.yml`'s
 `deploy-supabase` job on every push to `main` (added 2026-09-20 — see
 ARCHITECTURE.md's "Known rough edges" section for the required repo
 secrets and the manual fallback if that job's credentials ever lapse).
-**Current state (2026-09-20, verify before trusting): all migrations
-applied, all three Edge Functions deployed and current (`complete-lesson`
-v6, `start-lesson-session` v1, `grade-review` v2).**
+**Current state (2026-09-22, verify before trusting): all migrations
+applied, all five Edge Functions deployed and current (`complete-lesson`,
+`start-lesson-session`, `grade-review`, `send-push`, `get-season-status`
+— the last two added by V4). Caught a real deploy-pipeline gap adding
+`get-season-status`: `deno check`/`deno test` don't catch a missing
+per-function `deno.json` import map, only the Supabase CLI's own
+bundler does — see that function's directory for the fix.**
 
 **Web app (Vercel) — reconnected and fully confirmed 2026-09-20,
 re-verify anyway before assuming it stayed that way.** Vercel's GitHub

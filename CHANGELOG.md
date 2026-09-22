@@ -8,6 +8,66 @@ file itself won't be kept perfectly current — treat entries as a guide
 to *when* something shipped, and re-check the actual code for *how it
 works now*.
 
+## V4 — Spanish course, remote push, placement, campaigns, content tooling, widget, deeper gamification (2026-09-21 – in progress)
+
+Batch of independent V4 candidates from `docs/v4-kickoffs/00-INDEX.md`,
+each its own worktree/branch/PR with real CI verification before merge
+(PR #59 for the first five; V4 #7's four sub-plans below merged
+separately, PRs #64-#67).
+
+**Spanish course (#1)** — third course, full parity with English/French:
+130 packs, 508 lessons, same CEFR A1-C1 structure via the existing
+bank-engine pipeline. `Course` type widened to `"en" | "fr" | "es"`
+across all ~22 call sites (web + iOS).
+
+**Real push notifications (#2)** — see `send-push` Edge Function in
+`ARCHITECTURE.md`. Upgrades nudge-a-friend and leaderboard-overtake from
+polling/in-app-toast to real APNs push. Built end-to-end but gated on a
+human-created APNs Auth Key (an interactive Apple Developer portal
+action no agent can perform) — no-ops gracefully until that key and its
+four secrets are set, same precedent as `REVENUECAT_API_KEY`.
+
+**Placement test / smarter onboarding (#3)**, **multi-turn conversation
+campaigns (#4)**, **content authoring tooling (#5)** — done, no
+blockers; see `docs/BACKLOG.md` §1 for what each actually shipped.
+
+**iOS widget (#6)** — home-screen streak widget (not a Live Activity —
+scoped down from the index's either/or framing), signed and shipped in
+TestFlight build 8. Needed a real App Group + second provisioning
+profile, extending `ios-release.yml`'s manual-signing pipeline (see
+that workflow's own comments) — the same signing-cert saga V4's
+handoff doc flagged as "fully resolved" for the main app target turned
+out to need a second round for the widget extension target.
+
+**Deeper gamification (#7)** — three systems (a fourth, themed content
+events, explicitly deferred — see
+`docs/superpowers/specs/2026-09-22-deeper-gamification-design.md`'s
+own "Deferred" section for whoever picks it up):
+- *Teams* — persistent groups (invite code, public discovery,
+  auto-assign, 7-day switch lock), weekly-XP-sum leaderboard, a lazy-
+  resolved weekly win bonus (+100 XP to last week's #1 team, no cron).
+- *Challenges* — fixed weekly solo goals (6 DB-seeded templates, same
+  pattern as `achievements`) plus open/stranger duel matchmaking
+  (`join_open_duel_queue`, `FOR UPDATE SKIP LOCKED`). Also shipped the
+  first duel UI on either platform (web `/duels`, iOS `DuelsView`) —
+  the `duels` table and its RPCs existed since V3 but nothing had ever
+  surfaced them, an unplanned-but-approved scope addition. Along the
+  way, fixed a real bug live since the V4 #1 Spanish launch: `duels`'
+  `course` CHECK constraint only allowed `('en','fr')`.
+- *Season ladder* — Duolingo-style weekly promotion/demotion cohorts
+  (~30 members, 5 divisions, `floor(size/3)` promote / `floor(size/6)`
+  demote), distinct from the permanent `league_tier` badge. The one
+  system complex enough to be an Edge Function (`get-season-status`)
+  rather than a PL/pgSQL RPC — its ranking/promotion math is pure,
+  unit-tested TypeScript.
+
+All four V4 #7 migrations/Edge Function merged to `main` in dependency
+order (`weekly_xp` shared helper first, since Teams' and Season
+Ladder's migrations both call it) — see `ARCHITECTURE.md`'s database
+table for the new schema and `docs/BACKLOG.md` §1 item 7 for the merge
+history, including which PRs needed a real rebase (not just a
+fast-forward) against an already-merged sibling.
+
 ## V3 — Feature depth expansion (2026-09-20 – in progress)
 
 Six-package initiative adding depth to existing features rather than new
