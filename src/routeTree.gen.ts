@@ -23,6 +23,7 @@ import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
+import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
@@ -33,6 +34,7 @@ import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_a
 import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
+import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,6 +105,11 @@ const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
   id: '/api/analyze-weaknesses',
   path: '/api/analyze-weaknesses',
@@ -157,6 +164,12 @@ const AuthenticatedProfileFriendsRoute =
     path: '/profile/friends',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsTeamIdRoute =
+  AuthenticatedTeamsTeamIdRouteImport.update({
+    id: '/teams_/$teamId',
+    path: '/teams/$teamId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
+  '/teams': typeof AuthenticatedTeamsRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -182,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -197,6 +212,7 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
+  '/teams': typeof AuthenticatedTeamsRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -207,6 +223,7 @@ export interface FileRoutesByTo {
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -224,6 +241,7 @@ export interface FileRoutesById {
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
+  '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -234,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
+  '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,6 +270,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/profile'
     | '/review'
+    | '/teams'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -261,6 +281,7 @@ export interface FileRouteTypes {
     | '/invite/$inviterId'
     | '/lesson/$id'
     | '/profile/friends'
+    | '/teams/$teamId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -276,6 +297,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/profile'
     | '/review'
+    | '/teams'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -286,6 +308,7 @@ export interface FileRouteTypes {
     | '/invite/$inviterId'
     | '/lesson/$id'
     | '/profile/friends'
+    | '/teams/$teamId'
   id:
     | '__root__'
     | '/'
@@ -302,6 +325,7 @@ export interface FileRouteTypes {
     | '/_authenticated/placement'
     | '/_authenticated/profile'
     | '/_authenticated/review'
+    | '/_authenticated/teams'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -312,6 +336,7 @@ export interface FileRouteTypes {
     | '/_authenticated/invite/$inviterId'
     | '/_authenticated/lesson/$id'
     | '/_authenticated/profile_/friends'
+    | '/_authenticated/teams_/$teamId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -429,6 +454,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams': {
+      id: '/_authenticated/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof AuthenticatedTeamsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/analyze-weaknesses': {
       id: '/api/analyze-weaknesses'
       path: '/api/analyze-weaknesses'
@@ -499,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams_/$teamId': {
+      id: '/_authenticated/teams_/$teamId'
+      path: '/teams/$teamId'
+      fullPath: '/teams/$teamId'
+      preLoaderRoute: typeof AuthenticatedTeamsTeamIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -510,11 +549,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
+  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
   AuthenticatedCampaignCampaignIdRoute: typeof AuthenticatedCampaignCampaignIdRoute
   AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
   AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
+  AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -525,11 +566,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
+  AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedCampaignCampaignIdRoute: AuthenticatedCampaignCampaignIdRoute,
   AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
   AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
+  AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
