@@ -384,7 +384,12 @@ replaced a duplicated `Picker` in both `LessonBrowserView` and
 `ReviewQueueView` that used full course names ("English"/"Français"/
 "Español") in `.segmented` style — with no room to spare in the toolbar,
 this truncated to a single indistinguishable letter each on a real
-device. Now flag + 2-letter code. `StatusHeaderView.swift` (new) shows
+device. Now flag + 2-letter code (2026-09-22 correction: flag+code alone
+still wasn't enough -- `.segmented` itself is too narrow a control for a
+`.topBarLeading` slot competing with a large `navigationTitle`, clipping
+even the compact labels to unreadable slivers on a real device; switched
+to `.pickerStyle(.menu)`, which only ever renders one selection plus a
+chevron in the toolbar). `StatusHeaderView.swift` (new) shows
 streak/hearts/XP/league tier at the top of the Learn tab — reads
 `SyncQueueStore`'s already-cached last-known progress, no new network
 call — with a continuously pulsing flame (`PulsingGlow` modifier,
