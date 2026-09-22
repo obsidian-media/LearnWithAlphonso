@@ -102,3 +102,118 @@ $$;
 
 REVOKE ALL ON FUNCTION public.get_weekly_challenges() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_weekly_challenges() TO authenticated;
+
+-- Open ("anyone") duel matchmaking -- extends the existing friend-only
+-- duels (create_duel requires an accepted friendship) with a live
+-- queue: join, and either get matched instantly with another waiting
+-- entry, or become the new waiting entry yourself (the same table
+-- serves both a live match and a "bulletin board" of waiting
+-- challenges, per the design brainstorm).
+--
+-- Real bug found while implementing this (not part of the original
+-- spec/plan): duels.course still has CHECK (course IN ('en', 'fr'))
+-- -- never updated for the Spanish course launch (V4 #1). This
+-- already silently breaks Spanish friend-duels today via
+-- create_duel, and would identically break Spanish open-duel
+-- matchmaking here. Fixed below by replacing that check constraint
+-- (found via pg_constraint rather than assuming its auto-generated
+-- name, since this repo has no local Postgres to verify against).
+DO $$
+DECLARE
+  con record;
+BEGIN
+  FOR con IN
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'public.duels'::regclass
+      AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%course%'
+  LOOP
+    EXECUTE format('ALTER TABLE public.duels DROP CONSTRAINT %I', con.conname);
+  END LOOP;
+END $$;
+ALTER TABLE public.duels ADD CONSTRAINT duels_course_check CHECK (course IN ('en', 'fr', 'es'));
+
+CREATE TABLE public.duel_queue (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  course text NOT NULL,
+  cefr_level text NOT NULL,
+  match_by_level boolean NOT NULL DEFAULT true,
+  queued_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT ALL ON public.duel_queue TO service_role;
+ALTER TABLE public.duel_queue ENABLE ROW LEVEL SECURITY;
+-- No client policy -- only join_open_duel_queue/leave_duel_queue
+-- (SECURITY DEFINER) touch this table.
+
+CREATE OR REPLACE FUNCTION public.join_open_duel_queue(_course text, _match_by_level boolean DEFAULT true)
+RETURNS TABLE(matched boolean, duel_id uuid)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  my_level text;
+  candidate_user uuid;
+  levels text[] := ARRAY['A1', 'A2', 'B1', 'B2', 'C1'];
+  new_duel_id uuid;
+BEGIN
+  IF me IS NULL THEN
+    RETURN QUERY SELECT false, NULL::uuid;
+    RETURN;
+  END IF;
+
+  SELECT lp.cefr_level INTO my_level FROM public.language_progress lp WHERE lp.user_id = me AND lp.language = _course;
+  my_level := COALESCE(my_level, 'A1');
+
+  -- Opportunistic cleanup of stale entries (>10 min), no cron needed.
+  DELETE FROM public.duel_queue WHERE queued_at < now() - interval '10 minutes';
+
+  -- FOR UPDATE SKIP LOCKED: the standard safe-concurrent-queue pattern
+  -- -- if two callers run this at nearly the same instant, they can't
+  -- both grab the same waiting row (self-critique finding from the
+  -- design brainstorm).
+  SELECT dq.user_id INTO candidate_user
+  FROM public.duel_queue dq
+  WHERE dq.course = _course
+    AND dq.user_id != me
+    AND (
+      (_match_by_level AND dq.match_by_level AND
+        abs(array_position(levels, dq.cefr_level) - array_position(levels, my_level)) <= 1)
+      OR NOT _match_by_level
+      OR NOT dq.match_by_level
+    )
+  ORDER BY dq.queued_at
+  FOR UPDATE SKIP LOCKED
+  LIMIT 1;
+
+  IF candidate_user IS NOT NULL THEN
+    DELETE FROM public.duel_queue WHERE user_id = candidate_user;
+    DELETE FROM public.duel_queue WHERE user_id = me;
+    INSERT INTO public.duels (challenger_id, opponent_id, course)
+    VALUES (me, candidate_user, _course)
+    RETURNING id INTO new_duel_id;
+    RETURN QUERY SELECT true, new_duel_id;
+    RETURN;
+  END IF;
+
+  INSERT INTO public.duel_queue (user_id, course, cefr_level, match_by_level)
+  VALUES (me, _course, my_level, _match_by_level)
+  ON CONFLICT (user_id) DO UPDATE SET course = _course, cefr_level = my_level, match_by_level = _match_by_level, queued_at = now();
+  RETURN QUERY SELECT false, NULL::uuid;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.leave_duel_queue()
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  DELETE FROM public.duel_queue WHERE user_id = auth.uid();
+$$;
+
+REVOKE ALL ON FUNCTION public.join_open_duel_queue(text, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.join_open_duel_queue(text, boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.leave_duel_queue() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.leave_duel_queue() TO authenticated;
