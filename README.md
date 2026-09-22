@@ -45,17 +45,25 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 
 ## Content
 
-Counted directly from the actual `curriculum`/`curriculumFr` bundles (see
-`AGENTS.md`'s Content Structure table for how/when this was last verified —
-re-run the count rather than trusting a number here if it's been a while):
+Counted directly from the actual `curriculum`/`curriculumFr`/`curriculumEs`
+bundles (see `AGENTS.md`'s Content Structure table for how/when this was
+last verified — re-run the count rather than trusting a number here if
+it's been a while). **Corrected 2026-09-22** — this table previously
+still showed only English/French with French at its old 125-lesson
+count; French and Spanish both grew to full parity with English this
+session:
 
 | Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
-| **English** | 122 | 104 | 104 | 102 | 102 | **534**       | 2,718           |
-| **French**  | 25  | 25  | 25  | 25  | 25  | **125**       | 625             |
+| **English** | 122 | 104 | 104 | 102 | 102 | **534**       | 2,721           |
+| **French**  | 100 | 100 | 100 | 100 | 100 | **500**       | 2,500           |
+| **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
 
-French is a complete 5-level course, just meaningfully thinner than English —
-not a stub or placeholder.
+All three courses are now at full structural parity. Content correctness
+(grammar, natural phrasing) for French and Spanish still needs a real
+native-speaker review pass — not done for either, just structurally
+complete (see `docs/BACKLOG.md`, gitignored/local, for the full open-items
+list).
 
 ## Spaced Repetition System
 

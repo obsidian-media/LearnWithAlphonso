@@ -1,10 +1,13 @@
 # Learn with Alphonso — Complete Lesson Asset List
 
-> **Status (2026-09-13):** this file's premise — a uniform 300-lesson
-> curriculum (60/level) — is stale. Actual counts, hand-counted from the
-> real curriculum bundles: **English 534 lessons across uneven per-level
-> counts (122/104/104/102/102), French 125 lessons (25/level)**. See
-> `AGENTS.md`'s Content Structure table for the authoritative numbers.
+> **Status (2026-09-13, counts refreshed 2026-09-22):** this file's
+> premise — a uniform 300-lesson curriculum (60/level) — is stale.
+> Actual counts, verified 2026-09-22: **English 534 lessons
+> (122/104/104/102/102), French 500 lessons (100/level), Spanish 508
+> lessons (100/101/104/102/101)** — French and Spanish both grew to full
+> parity with English after this note was first written; the numbers
+> above are current, the rest of this file is not. See `AGENTS.md`'s
+> Content Structure table for the authoritative numbers going forward.
 >
 > **The IMAGE ASSETS section below (§2) is superseded.** It describes a
 > planned category-based approach (`public/images/a1/greetings/`, stock

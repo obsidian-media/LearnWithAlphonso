@@ -127,19 +127,84 @@ rebuild is ever needed, `supabase db pull` against the live project first.
 
 `src/data/courses.ts`'s `getCourse(course)` is the single entry point for
 lesson content — returns a `CourseBundle` (curriculum, question index,
-placement pool) for `"en"` or `"fr"`. Each course pairs hand-written units
-(`curriculum.ts` / `curriculum-fr.ts`) with a generator-produced bank
-(`lesson-bank.ts` / `lesson-bank-fr.ts`, via `generatedUnits()`). Actual
-counts as of 2026-09-13: English 534 lessons / 2,718 questions, French 125
-lessons / 625 questions (see `AGENTS.md`'s Content Structure table — don't
-trust a lesson-count claim anywhere without re-running the count script
-that produced those numbers).
+placement pool) for `"en"`, `"fr"`, or `"es"`. Each course pairs
+hand-written units (`curriculum.ts` / `curriculum-fr.ts` / `curriculum-es.ts`)
+with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
+`lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
+counts, verified 2026-09-22 (re-run the count rather than trusting this
+without checking — see README.md's Content table for the same numbers,
+kept in sync): English 534 lessons / 2,721 questions, French 500 lessons
+/ 2,500 questions, Spanish 508 lessons / 2,540 questions. All three at
+full structural parity; French/Spanish still need a native-speaker
+review pass for grammar/naturalness (`docs/BACKLOG.md`, gitignored).
 
 Server-side score validation (`completeLessonRemote` in
 `src/lib/sync.functions.ts`) looks lessons up through this same
 `getCourse().findLesson()` path, so the curriculum data doubles as the
 server's source of truth for "does this lesson exist and how many
 questions does it have."
+
+## Generative content pipeline (pilot, English-only, `src/data/generative/`)
+
+Added 2026-09-22 (PR #76) — a `generate` subcommand on
+`scripts/pack-tool.ts` that produces real course content from
+hand-authored grammar templates and an LLM-proposed, compiler-validated
+vocabulary dataset, feeding the *existing*, unmodified
+`validate`/`preview`/`apply --confirm` pipeline (`src/lib/
+pack-authoring.ts`) — a generated pack looks identical to a
+hand-authored one once it lands in `lesson-bank.ts`.
+
+- `src/data/generative/templates.ts` — hand-authored grammar skeletons
+  (`TEMPLATES`, currently `svo-present`/`svo-past` only) and the fixed
+  7-word `PRONOUNS` closed class. Templates are never LLM-proposed.
+- `src/data/generative/vocab.ts` — `GENERATIVE_VOCAB`, grows only
+  through the CLI (never hand-edited) after each candidate passes a
+  real part-of-speech cross-check against `compromise`'s own tagging.
+  "be" is permanently excluded (needs a full person-varying present
+  paradigm this pipeline doesn't derive).
+- `src/data/generative/compile.ts` — `baseForm`/`thirdPersonForm`/
+  `pastForm` conjugate via a verified fixed-context derivation
+  (`nlp("I " + verb)`/`nlp("he " + verb)`), never trusting `compromise`'s
+  own subject-agreement detection directly — a hands-on spike found it
+  mis-conjugates "you" as 3rd-person-singular and fails to conjugate a
+  bare isolated word to past tense with no context. `compileLine`
+  compiles one template + slot assignment into a literal
+  `"sentence|answer"` line, capitalized, with `a`/`an` articles on
+  countable noun slots.
+- `src/data/generative/expand.ts` — combinatorial template × vocab
+  expansion, deduped to one verb per (subject, object) pair (prevents
+  the same prompt appearing twice with different "correct" answers),
+  verb pool capped at 4 per pack (bounds — doesn't eliminate —
+  cross-verb multiple-choice distractor pollution, since
+  `bank-engine.ts`'s `pickDistractors` is shared/unmodified), then
+  sampled via `sampleStratified` (groups by subject, round-robins
+  across groups) so every pronoun's agreement class is proportionally
+  represented — a naive sort-by-hash was found to cluster picks into
+  one or two pronoun classes.
+- `src/lib/generative-vocab.server.ts` — LLM vocab-candidate proposal
+  (same NVIDIA NIM integration as every other AI feature) +
+  `verifyCandidatePos` (the real POS cross-check gate) +
+  `proposeVocabForTopic` orchestration.
+- `src/lib/generative-vocab-authoring.ts` — pure `mergeVocabEntries`
+  (unions topics into an existing entry rather than duplicating it) and
+  `replaceVocabArrayInSource` (splices `vocab.ts`'s array via
+  bracket-depth counting, not a literal string search — the real
+  committed file collapses an empty array onto one line, which a naive
+  `"\n];"` search couldn't find).
+
+**Known, documented limitations** (not silently solved): French/Spanish
+out of scope; cross-verb MC distractors reduced but not eliminated
+(would need semantic verb/object modeling or a shared `bank-engine.ts`
+change, both out of scope for the pilot); a new LLM-proposed verb
+beyond the 7 spike-verified ones (have/go/do/walk/run/eat/play) is
+never re-checked against a known-correct conjugation table before
+compiling; the POS cross-check still false-rejects some genuinely
+ambiguous common words (book/cook-class) — a context-based fix was
+investigated and found to be a *worse* regression (verified it
+wrongly accepts "coffee" as a verb, "relax" as a noun), so the
+fail-safe bare-word check stays. Full detail, every finding, and the
+verified spike data: `docs/superpowers/specs/
+2026-09-22-generative-sentence-content-design.md`.
 
 ## Edge Functions (Deno, `supabase/functions/`)
 
@@ -681,3 +746,15 @@ note in README.md's Documentation section for why.)
   review-item ids are keyed against (`lessonId:questionId`), so it needs
   its own careful pass confirming lesson/unit id output is byte-for-byte
   identical before/after, not a rider on an unrelated bug fix.
+- **`bun run vitest run` (the full ~90-file suite, one isolated worker
+  per file) can hang indefinitely with zero output in this project's
+  Windows development sandbox, after a long agent session has
+  accumulated enough lingering `bun.exe`/`node.exe` processes.** Hit
+  repeatedly 2026-09-22 (multiple 10-20+ minute hangs across two
+  separate sessions, each confirmed via `tasklist | grep -i bun` showing
+  8-9+ stale processes at the time). Not a code defect — a *scoped* run
+  (`bun run vitest run <specific files/dirs>`) against the exact same
+  code consistently completes in seconds. If the full suite hangs,
+  don't assume a real regression: scope to the changed files first, and
+  treat a genuinely-needed full-suite confirmation as something to run
+  in a fresh session/shell rather than deep into a long one.

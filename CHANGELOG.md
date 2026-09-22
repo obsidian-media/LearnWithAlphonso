@@ -133,7 +133,72 @@ speech bubble rather than the small circular-avatar card, explicitly
 asking for one version, not both. New `SpeechBubbleShape`, a larger
 88×112pt portrait, kept deliberately in-flow (not an overlay) so it
 can never cover the Check/Continue button the way the user's own
-reference mockup did.
+reference mockup did. Merged PR #72 — real CI caught a genuine bug
+before merge: `SpeechBubbleShape` needed `InsettableShape` conformance
+(not just `Shape`) for `.strokeBorder` to compile.
+
+**Course picker still unreadable — root-cause fix** — real device
+screenshot on build 12 showed item 13's flag+2-letter-code fix wasn't
+enough: `.pickerStyle(.segmented)` itself is too narrow a control for a
+`.topBarLeading` slot competing with a large `navigationTitle`, so
+segments still clipped to unreadable slivers. Switched to
+`.pickerStyle(.menu)` — a menu picker only ever renders one selection +
+a chevron, so it always has room regardless of screen size. Merged
+PR #73, no conflict with PR #72 despite both touching
+`AlphonsoComponents.swift`/`ARCHITECTURE.md`. This is the third
+consecutive iOS UI PR where CI-green and looks-right-on-device
+diverged at least once (see `docs/BACKLOG.md` items 11/13/15).
+
+**SM-2 audit + lapse-interval fix** — a read-only audit of
+`src/lib/srs.ts` (prompted by "can these deferred items be tackled?")
+found the post-lapse interval formula's third branch was dead code:
+`RETIRE_AFTER_REPETITIONS=4` caps live repetitions at 3, so
+`floor(repetitions * 0.5)` can only ever be 0 or 1, meaning every lapse
+collapsed to the same fixed 1-or-3-day interval regardless of how much
+progress the item had earned — defeating the "halving, not zeroing"
+softening the code's own comments already described. Fixed: interval
+now scales proportionally off the item's real prior interval (a
+40-day item and a 3-day item both halve to the same repetitions
+bucket, but now land on 20 days vs. 2 days, not the same fixed step).
+No telemetry exists to check lapse/retention rates against real usage
+— flagged as a gap, not fixed. Merged PR #74.
+
+**Content-generator case-bug fix + automated consistency scan** — a
+new `src/data/curriculum-consistency.test.ts` (CI-enforced going
+forward) scans all 3 course content banks for structural bugs
+(duplicate ids, out-of-range answers, duplicate MC choices, fill
+answers missing from their own bank, orphaned vocab-image keys). On
+its first run it found 5 real questions across all 3 languages with
+duplicate-looking answer choices (e.g. English "may"/"May", French
+"est"/"Est") — traced to `pickDistractors` (duplicated in both
+`lesson-bank.ts` and `bank-engine.ts`) deduping candidates
+case-*sensitively*, so a cloze pack reusing the same word as the
+correct answer for two differently-capitalized lines could surface
+both casings as separate choices. One logic fix in both duplicated
+copies, not 5 content edits, since content regenerates from packs on
+every load. Merged PR #75.
+
+**Generative sentence-template content (pilot, English-only)** — new
+`generate` subcommand on `scripts/pack-tool.ts`: an LLM proposes
+candidate vocabulary for a topic, a real morphological library
+(`compromise`) — queried via a verified derivation strategy that works
+around two confirmed bugs in the library's own subject-agreement
+detection — is the sole authority that conjugates verbs and compiles
+final sentences. Grammar templates are hand-authored, never
+LLM-proposed. Output feeds the *existing*, unmodified
+`validate`/`preview`/`apply --confirm` pipeline. Built via
+brainstorming → spec → 11-task TDD implementation plan → a fresh
+whole-branch review (dispatched on a separate model, not
+self-reviewed) → a fix pass on 3 Critical + 6 Important findings the
+review caught (sampler skew that silently omitted 3rd-person subjects
+from generated packs; ambiguous/duplicate-answer questions; missing
+capitalization and articles). One suggested review fix was
+investigated and *declined* after verification showed it would be a
+regression. Full detail: `docs/superpowers/specs/
+2026-09-22-generative-sentence-content-design.md`'s "Final-review
+fixes" section. English-only; French/Spanish, and the residual
+cross-verb-distractor and unverified-new-verb risks, are explicitly
+open follow-ups, not silently solved. Merged PR #76.
 
 ## V3 — Feature depth expansion (2026-09-20 – in progress)
 

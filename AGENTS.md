@@ -64,9 +64,11 @@ table and `ARCHITECTURE.md`'s "Native iOS app" section.
 
 ## Content Structure
 
-Counted directly from `curriculum` / `curriculumFr` / `curriculumEs` on
-2026-09-21 (do not trust a stale number here — re-run the count if this
-drifts):
+Counted directly from `curriculum` / `curriculumFr` / `curriculumEs`,
+re-verified 2026-09-22 (do not trust a stale number here — re-run the
+count if this drifts; ARCHITECTURE.md's "Content model" section and
+README.md's Content table carry the same numbers plus a question-count
+column, kept in sync):
 
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
@@ -116,7 +118,11 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (595 tests, 80 files, verified passing 2026-09-21)
+bun run test         # Vitest (94 test files as of 2026-09-22 -- test *count*
+                      # not re-verified via a full-suite run this session; the
+                      # full suite has been unreliable in this sandbox lately,
+                      # see ARCHITECTURE.md's "Known rough edges" -- every
+                      # touched file's own scoped run passed clean instead)
 bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
