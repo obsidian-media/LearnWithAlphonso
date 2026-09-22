@@ -8,15 +8,16 @@ struct AuthView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            VStack(spacing: AlphonsoSpacing.lg) {
                 Spacer()
 
-                VStack(spacing: 8) {
+                VStack(spacing: AlphonsoSpacing.xs) {
                     Text("Learn with Alphonso")
-                        .font(.largeTitle.bold())
+                        .font(AlphonsoFont.display(32, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ink)
                     Text("Sign in to start learning")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(AlphonsoFont.sans(15))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 }
 
                 Group {
@@ -33,8 +34,8 @@ struct AuthView: View {
 
                 if let message = session.errorMessage {
                     Text(message)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
+                        .font(AlphonsoFont.sans(13))
+                        .foregroundStyle(AlphonsoColor.destructive)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
@@ -43,13 +44,17 @@ struct AuthView: View {
                 Spacer()
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AlphonsoColor.surface)
         }
     }
 
     private var emailStep: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AlphonsoSpacing.sm) {
             TextField("Email", text: $email)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(AlphonsoSpacing.sm + 2)
+                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
@@ -59,20 +64,19 @@ struct AuthView: View {
                 Task { await session.requestCode(email: email) }
             } label: {
                 if session.isBusy {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.surface)
                 } else {
                     Text("Send code")
-                        .frame(maxWidth: .infinity)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.alphonsoPrimary)
             .disabled(session.isBusy || !email.contains("@"))
 
-            HStack(spacing: 8) {
+            HStack(spacing: AlphonsoSpacing.sm) {
                 Divider()
                 Text("or")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                 Divider()
             }
 
@@ -83,22 +87,23 @@ struct AuthView: View {
                     ProgressView()
                 } else {
                     Text("Continue with Google")
-                        .frame(maxWidth: .infinity)
                 }
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.alphonsoSecondary)
             .disabled(session.isBusy)
         }
     }
 
     private func codeStep(email: String) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AlphonsoSpacing.sm) {
             Text("Enter the code sent to \(email)")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
 
             TextField("6-digit code", text: $code)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(AlphonsoSpacing.sm + 2)
+                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
 
@@ -106,13 +111,12 @@ struct AuthView: View {
                 Task { await session.verifyCode(code) }
             } label: {
                 if session.isBusy {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.surface)
                 } else {
                     Text("Verify")
-                        .frame(maxWidth: .infinity)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.alphonsoPrimary)
             .disabled(session.isBusy || code.isEmpty)
         }
     }

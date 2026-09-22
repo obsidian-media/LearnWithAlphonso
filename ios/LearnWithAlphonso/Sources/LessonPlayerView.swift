@@ -822,37 +822,8 @@ private struct OfflineFinishView: View {
     }
 }
 
-/// Scale+opacity entrance driven by a spring, triggered on first appear --
-/// SwiftUI's equivalent of the web's Framer Motion spring entrance for
-/// celebration moments (lesson.$id.tsx's FinishScreen). Shared by the
-/// achievement-unlock cards (staggered via `delay`) and the league-
-/// promotion overlay's badge (its own, punchier spring tuning) below, so
-/// the appear-state/onAppear/withAnimation boilerplate exists once.
-private struct SpringEntrance: ViewModifier {
-    var response: Double = 0.5
-    var dampingFraction: Double = 0.65
-    var delay: Double = 0
-    var minScale: Double = 0.6
-
-    @State private var appeared = false
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(appeared ? 1 : minScale)
-            .opacity(appeared ? 1 : 0)
-            .onAppear {
-                withAnimation(.spring(response: response, dampingFraction: dampingFraction).delay(delay)) {
-                    appeared = true
-                }
-            }
-    }
-}
-
-private extension View {
-    func springEntrance(response: Double = 0.5, dampingFraction: Double = 0.65, delay: Double = 0, minScale: Double = 0.6) -> some View {
-        modifier(SpringEntrance(response: response, dampingFraction: dampingFraction, delay: delay, minScale: minScale))
-    }
-}
+// SpringEntrance/`.springEntrance(...)` moved to
+// DesignSystem/AlphonsoComponents.swift so other screens can share it.
 
 /// A distinct, bigger celebration for a league promotion -- rarer and more
 /// significant than a typical achievement unlock, so it gets a full-screen
