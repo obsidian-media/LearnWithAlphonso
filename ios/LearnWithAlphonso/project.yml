@@ -77,12 +77,16 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # Bumped past the last TestFlight upload (build 12, uploaded
-        # 2026-09-22T ~08:04 UTC, the Alphonso/Hector mascot visuals,
-        # PR #71) -- Apple rejects a re-upload of an already-used build
-        # number. Build 13 is the speech-bubble redesign (PR #72) + the
-        # course-picker .menu-style fix (PR #73).
-        CURRENT_PROJECT_VERSION: "13"
+        # Bumped past the last TestFlight upload (build 13, uploaded
+        # 2026-09-22T ~18:12 UTC, the speech-bubble redesign + course-picker
+        # .menu-style fix, PR #72/#73) -- Apple rejects a re-upload of an
+        # already-used build number. Build 14 covers PR #76 (generative
+        # sentence-content pilot) -- note: that PR is backend/authoring
+        # tooling (scripts/pack-tool.ts, src/data/generative/*) with no
+        # iOS-app-visible change; this build exists for build-number
+        # continuity/CI validation, not because there's anything new to
+        # see on-device.
+        CURRENT_PROJECT_VERSION: "14"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -183,7 +187,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "13"
+        CURRENT_PROJECT_VERSION: "14"
         SKIP_INSTALL: true
       configs:
         Release:
