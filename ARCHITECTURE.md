@@ -378,6 +378,52 @@ an input field). Still deliberately deferred: no in-app light/dark
 override independent of the chosen theme, and no grain-texture effect
 (no trivial SwiftUI equivalent to the CSS `feTurbulence` noise).
 
+**Liveliness pass + mascots** (2026-09-22, direct real-device feedback
+after the theme system shipped): `CoursePicker` (`AlphonsoComponents.swift`)
+replaced a duplicated `Picker` in both `LessonBrowserView` and
+`ReviewQueueView` that used full course names ("English"/"Français"/
+"Español") in `.segmented` style — with no room to spare in the toolbar,
+this truncated to a single indistinguishable letter each on a real
+device. Now flag + 2-letter code. `StatusHeaderView.swift` (new) shows
+streak/hearts/XP/league tier at the top of the Learn tab — reads
+`SyncQueueStore`'s already-cached last-known progress, no new network
+call — with a continuously pulsing flame (`PulsingGlow` modifier,
+`AlphonsoComponents.swift`) as the one element that's always quietly
+animating rather than only reacting to a tap. `AlphonsoPrimaryButtonStyle`
+moved from a flat fill to a subtle top-to-bottom gradient. Lesson and
+leaderboard rows use `.springEntrance` with a small index-based delay so
+they cascade in as they scroll into view (`List` is lazy — each row's
+own `onAppear` fires independently, so this doesn't animate an entire
+long list at once).
+
+Two named personas (**Alphonso**, the app's own namesake/host;
+**Hector**, the Pro AI tutor) had zero visual form anywhere in the app
+or its docs before this — confirmed by search, not assumed
+(`LESSON_ASSETS.md`'s own status banner says its image/character section
+was never built). The user generated real character portraits for both
+and provided them directly; both cropped to tight face/shoulders avatars
+and compressed for bundle size (`Assets.xcassets`'
+`Alphonso.imageset`/`Hector.imageset` — originals were 1.1MB/6.6MB,
+now ~470KB/~750KB). **Alphonso does wrong-answer help**: a new
+`AlphonsoTipCard` (his portrait + "Alphonso says" + the question's
+explanation) slides in from the trailing edge on a wrong answer, via a
+shared `ExplanationView` (`question`/`picked` in, a plain caption for a
+correct answer vs `AlphonsoTipCard` for a wrong one out) so every
+question-type call site across `LessonPlayerView`'s `QuestionCard`/
+`GeneratedPracticeSection` and `ReviewQueueView`'s `ReviewQuestionCard`
+shares one decision point. **Deliberately Alphonso, not Hector, for
+this** — Hector is a $9.99/mo persona; giving him away for free in the
+ordinary lesson/review flow would undercut the subscription. Hector
+instead gets real presence in his own paid screen: his portrait on
+Hector's sign-in step, a small avatar beside his chat bubbles during
+conversation. Alphonso also now greets the user on the app's own
+sign-in screen (`AuthView`), replacing the generic SF Symbol icon the
+liveliness pass had used there. `QuestionCard`/`ReviewQuestionCard`'s
+`body` (a bare `switch` before this) is now wrapped in `Group { switch
+... }` so `.animation(value: checked)` can drive the slide-in transition
+— without an explicit animation tied to that state change, the card
+would just pop in instead of animating.
+
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
 original design (note: that doc's plan to reuse Cloud Voice for *all* AI
 conversation, and its V2 deferral of hearts/streak-freezes, were both

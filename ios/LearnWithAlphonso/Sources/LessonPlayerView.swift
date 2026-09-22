@@ -320,8 +320,9 @@ private struct QuestionCard: View {
     @State private var orderPicks: [Int] = []
 
     var body: some View {
-        switch question {
-        case .multipleChoice(let q):
+        Group {
+            switch question {
+            case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
                     VocabImageView(image: image, cardHeight: 160)
@@ -339,7 +340,7 @@ private struct QuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
         case .fillInBlank(let q):
@@ -362,7 +363,7 @@ private struct QuestionCard: View {
                     }
                 }
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
         case .reorder(let q):
@@ -371,7 +372,7 @@ private struct QuestionCard: View {
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
             .onChange(of: orderPicks) {
@@ -382,7 +383,12 @@ private struct QuestionCard: View {
                     ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
                     : nil
             }
+            }
         }
+        // Drives ExplanationView's AlphonsoTipCard .transition -- without
+        // an explicit animation tied to `checked`, the card would just pop
+        // in instantly instead of sliding in from the trailing edge.
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func assembledArea(tokens: [String]) -> some View {
@@ -774,7 +780,11 @@ private struct GeneratedPracticeSection: View {
                 .foregroundStyle(AlphonsoColor.ink)
             }
             if checked {
-                Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                if picked == q.choices[q.answerIndex] {
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                } else {
+                    AlphonsoTipCard(explanation: q.explanation)
+                }
             }
             Button(!checked ? "Check" : idx < questions.count - 1 ? "Next" : "Finish practice") {
                 if !checked {
@@ -789,6 +799,7 @@ private struct GeneratedPracticeSection: View {
             .disabled(!checked && picked == nil)
         }
         .padding(.top, 8)
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func generate() async {

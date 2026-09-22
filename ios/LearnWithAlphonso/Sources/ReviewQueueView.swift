@@ -321,8 +321,9 @@ private struct ReviewQuestionCard: View {
     @State private var orderPicks: [Int] = []
 
     var body: some View {
-        switch question {
-        case .multipleChoice(let q):
+        Group {
+            switch question {
+            case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
                     VocabImageView(image: image, cardHeight: 160)
@@ -340,7 +341,7 @@ private struct ReviewQuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
         case .fillInBlank(let q):
@@ -363,7 +364,7 @@ private struct ReviewQuestionCard: View {
                     }
                 }
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
         case .reorder(let q):
@@ -372,7 +373,7 @@ private struct ReviewQuestionCard: View {
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
             .onChange(of: orderPicks) {
@@ -380,7 +381,9 @@ private struct ReviewQuestionCard: View {
                     ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
                     : nil
             }
+            }
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func assembledArea(tokens: [String]) -> some View {
