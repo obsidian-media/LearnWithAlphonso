@@ -73,6 +73,11 @@ struct LeaderboardView: View {
                         TeamsView(session: session)
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink("Season") {
+                        SeasonView(session: session)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Recap", systemImage: "calendar") { showingWeeklyRecap = true }
                 }
