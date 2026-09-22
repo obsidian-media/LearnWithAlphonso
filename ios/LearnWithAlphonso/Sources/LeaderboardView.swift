@@ -42,7 +42,7 @@ struct LeaderboardView: View {
 
                     Group {
                         if isLoading {
-                            ProgressView().frame(maxHeight: .infinity)
+                            ProgressView().tint(AlphonsoColor.moss).frame(maxHeight: .infinity)
                         } else if let errorMessage {
                             ContentUnavailableView("Couldn't load the leaderboard", systemImage: "wifi.slash", description: Text(errorMessage))
                         } else if rows.isEmpty {
@@ -51,14 +51,17 @@ struct LeaderboardView: View {
                             List {
                                 ForEach(Array(rows.enumerated()), id: \.element.userID) { index, row in
                                     LeaderboardRowView(rank: index + 1, row: row, isYou: row.userID == session.userID)
+                                        .listRowBackground(row.userID == session.userID ? AlphonsoColor.emberSoft : AlphonsoColor.parchment)
                                 }
                             }
                             .listStyle(.plain)
+                            .scrollContentBackground(.hidden)
                         }
                     }
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
+                .background(AlphonsoColor.surface)
 
                 if let overtakeToastMessage {
                     ToastBanner(message: overtakeToastMessage, iconName: "arrow.up.arrow.down.circle.fill")
@@ -86,6 +89,7 @@ struct LeaderboardView: View {
                 WeeklyRecapView(session: session)
             }
         }
+        .tint(AlphonsoColor.moss)
         .task(id: "\(scope.rawValue)-\(period.rawValue)") { await load() }
         .task { await checkForOvertake() }
         .onChange(of: scenePhase) { _, newPhase in
@@ -157,9 +161,9 @@ private struct LeaderboardRowView: View {
     let isYou: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AlphonsoSpacing.sm + 4) {
             Text("\(rank)")
-                .font(.caption.weight(.semibold))
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .frame(width: 28, height: 28)
                 .background(rankBadgeColor)
                 .clipShape(Circle())
@@ -169,36 +173,38 @@ private struct LeaderboardRowView: View {
                 .frame(width: 36, height: 36)
                 .overlay(
                     Text(row.displayName.prefix(1).uppercased())
-                        .font(.caption.weight(.semibold))
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
                         .foregroundStyle(.white)
                 )
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(row.displayName).font(.subheadline.weight(.medium))
+                    Text(row.displayName)
+                        .font(AlphonsoFont.sans(15, weight: .medium))
+                        .foregroundStyle(AlphonsoColor.ink)
                     if isYou {
                         Text("YOU")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(AlphonsoFont.sans(9, weight: .semiBold))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.accentColor)
+                            .background(AlphonsoColor.ember)
                             .foregroundStyle(.white)
                             .clipShape(Capsule())
                     }
                 }
                 if let country = row.country {
                     Text(country.uppercased())
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(AlphonsoFont.sans(11))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
 
             Spacer()
 
             Text("\(row.xp) XP")
-                .font(.subheadline.weight(.semibold))
+                .font(AlphonsoFont.sans(15, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
         }
-        .listRowBackground(isYou ? Color.accentColor.opacity(0.1) : nil)
     }
 
     /// Matches the web app's rank-medal coloring for the top 3 rows
@@ -206,9 +212,9 @@ private struct LeaderboardRowView: View {
     private var rankBadgeColor: Color {
         switch rank {
         case 1: return .yellow.opacity(0.6)
-        case 2: return Color(.systemGray4)
+        case 2: return Color(white: 0.82)
         case 3: return .orange.opacity(0.6)
-        default: return Color(.secondarySystemBackground)
+        default: return AlphonsoColor.surface
         }
     }
 
@@ -265,30 +271,32 @@ private struct WeeklyRecapView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.moss)
                 } else {
                     ScrollView {
-                        VStack(spacing: 20) {
+                        VStack(spacing: AlphonsoSpacing.lg) {
                             VStack(spacing: 4) {
                                 Text("Last week you earned")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .font(AlphonsoFont.sans(14))
+                                    .foregroundStyle(AlphonsoColor.inkSoft)
                                 Text("\(lastWeekXP ?? 0) XP")
-                                    .font(.system(size: 40, weight: .bold))
+                                    .font(AlphonsoFont.display(40, weight: .bold))
+                                    .foregroundStyle(AlphonsoColor.ink)
                             }
 
                             if let currentRank {
                                 VStack(spacing: 6) {
                                     VStack(spacing: 2) {
                                         Text("Your rank today (global, weekly)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .font(AlphonsoFont.sans(12))
+                                            .foregroundStyle(AlphonsoColor.inkSoft)
                                         Text("#\(currentRank)")
-                                            .font(.title2.weight(.semibold))
+                                            .font(AlphonsoFont.display(22, weight: .semiBold))
+                                            .foregroundStyle(AlphonsoColor.ink)
                                     }
                                     Text("Approximate -- this app doesn't keep a historical snapshot of last week's exact standings.")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
+                                        .font(AlphonsoFont.sans(11))
+                                        .foregroundStyle(AlphonsoColor.inkSoft)
                                         .multilineTextAlignment(.center)
                                         .padding(.horizontal)
                                 }
@@ -300,13 +308,15 @@ private struct WeeklyRecapView: View {
                                         .font(.title)
                                         .foregroundStyle(LeagueTierPalette.color(for: promotedToTier))
                                     Text("You moved up to \(LeagueTierPalette.label(for: promotedToTier))!")
-                                        .font(.subheadline.weight(.semibold))
+                                        .font(AlphonsoFont.sans(15, weight: .semiBold))
+                                        .foregroundStyle(AlphonsoColor.ink)
                                 }
                             }
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
                     }
+                    .background(AlphonsoColor.surface)
                 }
             }
             .navigationTitle("Weekly recap")
@@ -314,6 +324,7 @@ private struct WeeklyRecapView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
+                        .tint(AlphonsoColor.moss)
                 }
             }
         }

@@ -10,6 +10,9 @@ import SwiftUI
 struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     var tint: Color = AlphonsoColor.moss
     var shadow: Color = AlphonsoColor.mossDeep
+    /// false for inline/chip usage (e.g. a word-bank token) where the
+    /// button should size to its label instead of filling its container.
+    var fullWidth: Bool = true
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -17,7 +20,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(AlphonsoColor.surface)
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
             .background(tint, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
             .offset(y: configuration.isPressed ? 4 : 0)
             .background(
@@ -33,16 +36,18 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
 /// no pressed shadow (reserved for primary CTAs, matching the web app's
 /// use of `.hard-shadow` only on its main action buttons).
 struct AlphonsoSecondaryButtonStyle: ButtonStyle {
+    var fullWidth: Bool = true
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(AlphonsoFont.sans(17, weight: .medium))
+            .font(AlphonsoFont.sans(15, weight: .medium))
             .foregroundStyle(AlphonsoColor.ink)
-            .padding(.vertical, AlphonsoSpacing.sm + 2)
-            .padding(.horizontal, AlphonsoSpacing.lg)
-            .frame(maxWidth: .infinity)
-            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            .padding(.vertical, AlphonsoSpacing.sm)
+            .padding(.horizontal, AlphonsoSpacing.md)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous)
                     .strokeBorder(AlphonsoColor.hairline, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -54,10 +59,16 @@ extension ButtonStyle where Self == AlphonsoPrimaryButtonStyle {
     static var alphonsoEmber: AlphonsoPrimaryButtonStyle {
         AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65))
     }
+    static func alphonsoPrimary(fullWidth: Bool) -> AlphonsoPrimaryButtonStyle {
+        AlphonsoPrimaryButtonStyle(fullWidth: fullWidth)
+    }
 }
 
 extension ButtonStyle where Self == AlphonsoSecondaryButtonStyle {
     static var alphonsoSecondary: AlphonsoSecondaryButtonStyle { AlphonsoSecondaryButtonStyle() }
+    static func alphonsoSecondary(fullWidth: Bool) -> AlphonsoSecondaryButtonStyle {
+        AlphonsoSecondaryButtonStyle(fullWidth: fullWidth)
+    }
 }
 
 // MARK: - Surfaces
