@@ -36,13 +36,13 @@ struct ConversationView: View {
                             }
                             .padding(.vertical, 4)
                         }
-                    } header: {
-                        if !contentStore.campaigns.isEmpty {
-                            Text("Scenarios")
-                                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                                .tracking(0.4)
-                                .foregroundStyle(AlphonsoColor.ember)
-                        }
+                    }
+                } header: {
+                    if !contentStore.campaigns.isEmpty {
+                        Text("Scenarios")
+                            .font(AlphonsoFont.sans(12, weight: .semiBold))
+                            .tracking(0.4)
+                            .foregroundStyle(AlphonsoColor.ember)
                     }
                 }
                 .listRowBackground(AlphonsoColor.parchment)

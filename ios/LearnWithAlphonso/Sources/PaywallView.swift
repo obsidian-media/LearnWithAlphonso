@@ -10,23 +10,24 @@ struct PaywallView: View {
     let entitlementStore: EntitlementStore
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AlphonsoSpacing.lg) {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
-                .foregroundStyle(.yellow)
+                .foregroundStyle(AlphonsoColor.ember)
             Text("Alphonso Pro")
-                .font(.title.weight(.bold))
+                .font(AlphonsoFont.display(28, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
             Text("Unlock Hector, your personal AI tutor, for $9.99/month.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
 
             if entitlementStore.isLoading {
-                ProgressView()
+                ProgressView().tint(AlphonsoColor.ember)
             } else if entitlementStore.packages.isEmpty {
                 Text("Subscriptions aren't available yet -- check back soon.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
             } else {
                 ForEach(entitlementStore.packages, id: \.identifier) { package in
@@ -34,26 +35,27 @@ struct PaywallView: View {
                         Task { await entitlementStore.purchase(package) }
                     } label: {
                         Text("Subscribe -- \(package.storeProduct.localizedPriceString)")
-                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.alphonsoEmber)
                 }
             }
 
             Button("Restore Purchases") {
                 Task { await entitlementStore.restorePurchases() }
             }
-            .font(.footnote)
+            .font(AlphonsoFont.sans(13))
+            .tint(AlphonsoColor.moss)
 
             if let errorMessage = entitlementStore.errorMessage {
                 Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.destructive)
                     .multilineTextAlignment(.center)
             }
         }
         .padding()
         .frame(maxWidth: 360)
+        .background(AlphonsoColor.surface)
         .task { await entitlementStore.loadOffering() }
     }
 }
