@@ -664,3 +664,20 @@ note in README.md's Documentation section for why.)
   leaderboards' "you've been overtaken" feature (currently an in-app
   toast, same reasoning) if that's ever upgraded to real push too — worth
   building once for both rather than twice.
+- **`pickDistractors`/`packQuestions` (content-pack question generation)
+  is duplicated verbatim in both `src/data/lesson-bank.ts` (English) and
+  `src/data/bank-engine.ts` (the shared engine French/Spanish import) —
+  English predates the shared engine and was never consolidated onto
+  it.** Found live 2026-09-22 while fixing a real bug in this logic
+  (case-sensitive distractor deduping let a cloze pack reusing the same
+  word for two differently-capitalized lines surface both casings as
+  separate, visually-duplicate multiple-choice options — see
+  `src/data/curriculum-consistency.test.ts`, added the same day as a
+  standing automated scan against this whole class of content bug). The
+  fix had to be applied identically in both files; a future fix to this
+  logic that only touches one copy will silently miss the other.
+  Consolidating English onto `bank-engine.ts` wasn't done as part of
+  that fix — it changes core content-generation code that all users'
+  review-item ids are keyed against (`lessonId:questionId`), so it needs
+  its own careful pass confirming lesson/unit id output is byte-for-byte
+  identical before/after, not a rider on an unrelated bug fix.
