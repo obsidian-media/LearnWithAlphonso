@@ -219,3 +219,110 @@ REVOKE ALL ON FUNCTION public.auto_join_team() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.auto_join_team() TO authenticated;
 REVOKE ALL ON FUNCTION public.leave_team() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.leave_team() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_team_leaderboard()
+RETURNS TABLE(team_id uuid, name text, weekly_xp integer)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  wk date := (current_date - ((extract(isodow from current_date)::int) - 1));
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN;
+  END IF;
+  RETURN QUERY
+  SELECT t.id, t.name, COALESCE(SUM(public.weekly_xp(tm.user_id, wk)), 0)::int
+  FROM public.teams t
+  JOIN public.team_members tm ON tm.team_id = t.id
+  GROUP BY t.id, t.name
+  ORDER BY 3 DESC
+  LIMIT 50;
+END;
+$$;
+
+-- Resolves the caller's own team's PREVIOUS week's win bonus (if it
+-- was #1 and hasn't been paid yet), the same "resolve as a side
+-- effect of a read the client already makes" pattern get_my_duels
+-- uses for its own lazy window-resolution -- no cron, no separate
+-- trigger call needed.
+CREATE OR REPLACE FUNCTION public.get_my_team()
+RETURNS TABLE(
+  team_id uuid, name text, join_code text, joined_at timestamptz,
+  switch_locked_until timestamptz, this_week_xp integer
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  my_team uuid;
+  my_joined_at timestamptz;
+  wk date := (current_date - ((extract(isodow from current_date)::int) - 1));
+  prev_wk date := wk - 7;
+  winner_team uuid;
+BEGIN
+  IF me IS NULL THEN
+    RETURN;
+  END IF;
+
+  SELECT tm.team_id, tm.joined_at INTO my_team, my_joined_at
+  FROM public.team_members tm WHERE tm.user_id = me;
+
+  IF my_team IS NULL THEN
+    RETURN;
+  END IF;
+
+  -- Lazy reward resolution for whichever team was #1 last week --
+  -- resolved at most once per team per week, guarded by the
+  -- team_weekly_rewards primary key.
+  SELECT t.id INTO winner_team
+  FROM public.teams t
+  JOIN public.team_members tm2 ON tm2.team_id = t.id
+  GROUP BY t.id
+  ORDER BY COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) DESC
+  LIMIT 1;
+
+  IF winner_team IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.team_weekly_rewards WHERE team_id = winner_team AND week_start = prev_wk
+  ) THEN
+    INSERT INTO public.team_weekly_rewards (team_id, week_start, resolved_at)
+    VALUES (winner_team, prev_wk, now())
+    ON CONFLICT DO NOTHING;
+
+    -- Only actually grant XP if this insert is the one that "won" the
+    -- race (guards against two concurrent callers both trying to pay
+    -- out the same week). Set-based UPDATE across every member at
+    -- once -- not a per-member loop, which would need a correlated
+    -- subquery per iteration and is easy to get wrong (verified while
+    -- writing this: a naive loop version doesn't correlate the UPDATE
+    -- to the current loop member and breaks on more than one member).
+    IF FOUND THEN
+      UPDATE public.language_progress lp
+      SET xp = lp.xp + 100
+      FROM public.team_members tm3
+      JOIN public.profiles p ON p.id = tm3.user_id
+      WHERE tm3.team_id = winner_team
+        AND lp.user_id = tm3.user_id
+        AND lp.language = p.active_language;
+    END IF;
+  END IF;
+
+  RETURN QUERY
+  SELECT t.id, t.name, t.join_code, my_joined_at,
+         my_joined_at + interval '7 days',
+         COALESCE(SUM(public.weekly_xp(tm.user_id, wk)), 0)::int
+  FROM public.teams t
+  JOIN public.team_members tm ON tm.team_id = t.id
+  WHERE t.id = my_team
+  GROUP BY t.id, t.name, t.join_code;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_team_leaderboard() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_team_leaderboard() TO authenticated;
+REVOKE ALL ON FUNCTION public.get_my_team() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_team() TO authenticated;
