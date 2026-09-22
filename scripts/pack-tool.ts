@@ -235,7 +235,9 @@ async function cmdGenerate(flags: Flags) {
 
   const template = TEMPLATES.find((t) => t.id === templateId);
   if (!template) {
-    fail(`unknown --template "${templateId}" -- must be one of ${TEMPLATES.map((t) => t.id).join(", ")}`);
+    fail(
+      `unknown --template "${templateId}" -- must be one of ${TEMPLATES.map((t) => t.id).join(", ")}`,
+    );
   }
   if (template!.level !== level) {
     fail(`--level ${level} doesn't match template "${templateId}"'s level (${template!.level})`);
@@ -265,7 +267,7 @@ async function cmdGenerate(flags: Flags) {
 
   console.log(`  accepted: ${proposal.accepted.length}, rejected: ${proposal.rejected.length}`);
   if (proposal.rejected.length > 0) {
-    console.log("  rejected (needs manual review -- POS mismatch, or excluded like \"be\"):");
+    console.log('  rejected (needs manual review -- POS mismatch, or excluded like "be"):');
     for (const r of proposal.rejected) console.log(`    - ${r.word} (claimed ${r.pos})`);
   }
 

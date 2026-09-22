@@ -16,12 +16,14 @@ const CANDIDATES = [
 const originalFetch = global.fetch;
 
 beforeEach(() => {
-  global.fetch = vi.fn().mockResolvedValue(
-    new Response(
-      JSON.stringify({ choices: [{ message: { content: JSON.stringify(CANDIDATES) } }] }),
-      { status: 200 },
-    ),
-  );
+  global.fetch = vi
+    .fn()
+    .mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: JSON.stringify(CANDIDATES) } }] }),
+        { status: 200 },
+      ),
+    );
 });
 
 afterEach(() => {
@@ -148,9 +150,7 @@ describe("proposeVocabForTopic", () => {
     global.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
-          choices: [
-            { message: { content: JSON.stringify([{ word: "coffee", pos: "verb" }]) } },
-          ],
+          choices: [{ message: { content: JSON.stringify([{ word: "coffee", pos: "verb" }]) } }],
         }),
         { status: 200 },
       ),

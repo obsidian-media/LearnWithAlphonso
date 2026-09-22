@@ -8,9 +8,7 @@ import type { VocabEntry } from "../data/generative/vocab";
 
 describe("mergeVocabEntries", () => {
   it("appends a genuinely new (word, pos) entry", () => {
-    const existing: VocabEntry[] = [
-      { word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] },
-    ];
+    const existing: VocabEntry[] = [{ word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] }];
     const merged = mergeVocabEntries(existing, [
       { word: "walk", pos: "verb", level: "A1", topics: ["daily"] },
     ]);
@@ -19,9 +17,7 @@ describe("mergeVocabEntries", () => {
   });
 
   it("unions topics into an existing entry instead of duplicating it", () => {
-    const existing: VocabEntry[] = [
-      { word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] },
-    ];
+    const existing: VocabEntry[] = [{ word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] }];
     const merged = mergeVocabEntries(existing, [
       { word: "coffee", pos: "noun", level: "A1", topics: ["daily", "cafe"] },
     ]);
@@ -30,9 +26,7 @@ describe("mergeVocabEntries", () => {
   });
 
   it("treats word matching as case-insensitive but keys on (word, pos)", () => {
-    const existing: VocabEntry[] = [
-      { word: "Coffee", pos: "noun", level: "A1", topics: ["cafe"] },
-    ];
+    const existing: VocabEntry[] = [{ word: "Coffee", pos: "noun", level: "A1", topics: ["cafe"] }];
     const merged = mergeVocabEntries(existing, [
       { word: "coffee", pos: "verb", level: "A1", topics: ["odd"] },
     ]);
@@ -41,13 +35,9 @@ describe("mergeVocabEntries", () => {
   });
 
   it("does not mutate the input arrays", () => {
-    const existing: VocabEntry[] = [
-      { word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] },
-    ];
+    const existing: VocabEntry[] = [{ word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] }];
     const existingCopy = JSON.parse(JSON.stringify(existing));
-    mergeVocabEntries(existing, [
-      { word: "coffee", pos: "noun", level: "A1", topics: ["daily"] },
-    ]);
+    mergeVocabEntries(existing, [{ word: "coffee", pos: "noun", level: "A1", topics: ["daily"] }]);
     expect(existing).toEqual(existingCopy);
   });
 });
@@ -79,7 +69,7 @@ export const GENERATIVE_VOCAB: VocabEntry[] = [
   it("splices entries into the GENERATIVE_VOCAB array without touching the rest of the file", () => {
     const entries: VocabEntry[] = [{ word: "coffee", pos: "noun", level: "A1", topics: ["cafe"] }];
     const updated = replaceVocabArrayInSource(fakeSource, entries);
-    expect(updated).toContain('export type VocabEntry = { word: string };');
+    expect(updated).toContain("export type VocabEntry = { word: string };");
     expect(updated).toContain('word: "coffee"');
   });
 

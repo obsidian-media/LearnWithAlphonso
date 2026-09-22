@@ -86,7 +86,6 @@ export function replaceVocabArrayInSource(fileSource: string, entries: VocabEntr
   }
   const closeBracketIdx = i - 1; // index of the matching "]"
 
-  const body =
-    entries.length > 0 ? "\n" + entries.map(formatVocabEntryAsTs).join("\n") + "\n" : "";
+  const body = entries.length > 0 ? "\n" + entries.map(formatVocabEntryAsTs).join("\n") + "\n" : "";
   return fileSource.slice(0, arrayStart) + body + fileSource.slice(closeBracketIdx);
 }

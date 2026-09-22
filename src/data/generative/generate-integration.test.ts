@@ -27,12 +27,14 @@ const CANDIDATES = [
 
 const originalFetch = global.fetch;
 beforeEach(() => {
-  global.fetch = vi.fn().mockResolvedValue(
-    new Response(
-      JSON.stringify({ choices: [{ message: { content: JSON.stringify(CANDIDATES) } }] }),
-      { status: 200 },
-    ),
-  );
+  global.fetch = vi
+    .fn()
+    .mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: JSON.stringify(CANDIDATES) } }] }),
+        { status: 200 },
+      ),
+    );
 });
 afterEach(() => {
   global.fetch = originalFetch;
