@@ -146,9 +146,7 @@ async function main() {
       console.error("Usage: list-price-points <subscriptionId>");
       process.exit(1);
     }
-    const result = await api(
-      `/subscriptions/${subId}/pricePoints?filter[territory]=USA&limit=200`,
-    );
+    const result = await api(`/subscriptions/${subId}/pricePoints?filter[territory]=USA&limit=200`);
     if (result.ok) {
       const data = result.json as {
         data: { id: string; attributes: { customerPrice: string; proceeds: string } }[];
