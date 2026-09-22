@@ -18,25 +18,40 @@ struct ConversationView: View {
                 if !contentStore.campaigns.isEmpty {
                     CampaignPickerSection(campaigns: contentStore.campaigns, session: session)
                 }
-                Section(contentStore.campaigns.isEmpty ? "" : "Scenarios") {
+                Section {
                     ForEach(contentStore.scenarios) { scenario in
                         NavigationLink {
                             ConversationSessionView(scenario: scenario, session: session)
                         } label: {
-                            HStack(spacing: 12) {
+                            HStack(spacing: AlphonsoSpacing.sm + 4) {
                                 Text(scenario.emoji).font(.largeTitle)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(scenario.title).font(.body.weight(.semibold))
-                                    Text(scenario.blurb).font(.caption).foregroundStyle(.secondary)
+                                    Text(scenario.title)
+                                        .font(AlphonsoFont.sans(16, weight: .semiBold))
+                                        .foregroundStyle(AlphonsoColor.ink)
+                                    Text(scenario.blurb)
+                                        .font(AlphonsoFont.sans(12))
+                                        .foregroundStyle(AlphonsoColor.inkSoft)
                                 }
                             }
                             .padding(.vertical, 4)
                         }
+                    } header: {
+                        if !contentStore.campaigns.isEmpty {
+                            Text("Scenarios")
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .tracking(0.4)
+                                .foregroundStyle(AlphonsoColor.ember)
+                        }
                     }
                 }
+                .listRowBackground(AlphonsoColor.parchment)
             }
+            .scrollContentBackground(.hidden)
+            .background(AlphonsoColor.surface)
             .navigationTitle("Practice speaking")
         }
+        .tint(AlphonsoColor.moss)
     }
 }
 
@@ -83,14 +98,15 @@ private struct ConversationSessionView: View {
 
             if let errorMessage {
                 Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.destructive)
                     .padding(.horizontal)
             }
 
             micButton
                 .padding()
         }
+        .background(AlphonsoColor.surface)
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -115,10 +131,14 @@ private struct ConversationSessionView: View {
             HStack {
                 if turn.role == "assistant" { Spacer(minLength: 40) }
                 Text(turn.content)
+                    .font(AlphonsoFont.sans(15))
+                    .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(turn.role == "user" ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .background(
+                        turn.role == "user" ? AlphonsoColor.moss : AlphonsoColor.parchment,
+                        in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+                    )
                 if turn.role == "user" { Spacer(minLength: 40) }
             }
             // V3 package 3a: lightweight pronunciation-clarity heuristic
@@ -126,8 +146,8 @@ private struct ConversationSessionView: View {
             // phoneme-level scoring -- see AIConversationClient.transcribe.
             if let confidence {
                 Text(clarityLabel(confidence))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(11))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .padding(.trailing, 6)
             }
         }
@@ -144,10 +164,10 @@ private struct ConversationSessionView: View {
         Group {
             switch phase {
             case .transcribing, .thinking, .speaking:
-                ProgressView(label(for: phase))
+                ProgressView(label(for: phase)).tint(AlphonsoColor.moss)
             case .idle:
                 Circle()
-                    .fill(isRecording ? Color.red : Color.accentColor)
+                    .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.moss)
                     .frame(width: 72, height: 72)
                     .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
                     .gesture(

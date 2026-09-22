@@ -14,22 +14,32 @@ struct CampaignPickerSection: View {
     let session: Session
 
     var body: some View {
-        Section("Campaigns") {
+        Section {
             ForEach(campaigns) { campaign in
                 NavigationLink {
                     CampaignSessionView(campaign: campaign, session: session)
                 } label: {
-                    HStack(spacing: 12) {
+                    HStack(spacing: AlphonsoSpacing.sm + 4) {
                         Text(campaign.emoji).font(.largeTitle)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(campaign.title).font(.body.weight(.semibold))
-                            Text(campaign.blurb).font(.caption).foregroundStyle(.secondary)
+                            Text(campaign.title)
+                                .font(AlphonsoFont.sans(16, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ink)
+                            Text(campaign.blurb)
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                         }
                     }
                     .padding(.vertical, 4)
                 }
             }
+        } header: {
+            Text("Campaigns")
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
         }
+        .listRowBackground(AlphonsoColor.parchment)
     }
 }
 
@@ -81,8 +91,8 @@ private struct CampaignSessionView: View {
         VStack(spacing: 0) {
             if !finished {
                 Text("Scene \(sceneIndex + 1) of \(campaign.scenes.count) — \(scene.title)")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .padding(.top, 8)
             }
 
@@ -107,15 +117,20 @@ private struct CampaignSessionView: View {
             }
 
             if let errorMessage {
-                Text(errorMessage).font(.footnote).foregroundStyle(.red).padding(.horizontal)
+                Text(errorMessage)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.destructive)
+                    .padding(.horizontal)
             }
 
             if !finished {
                 micButton.padding()
             }
         }
+        .background(AlphonsoColor.surface)
         .navigationTitle(campaign.title)
         .navigationBarTitleDisplayMode(.inline)
+        .tint(AlphonsoColor.moss)
         .toolbar {
             if !finished {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -144,19 +159,19 @@ private struct CampaignSessionView: View {
             continueToNextScene()
         } label: {
             Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) →")
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.alphonsoPrimary)
         .padding(.top, 4)
     }
 
     private var completionCard: some View {
         VStack(spacing: 8) {
-            Text("Nice work — campaign complete!").font(.headline)
+            Text("Nice work — campaign complete!")
+                .font(AlphonsoFont.display(19, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
             Text("You made it through all \(campaign.scenes.count) scenes of \(campaign.title).")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -167,10 +182,14 @@ private struct CampaignSessionView: View {
         HStack {
             if turn.role == "assistant" { Spacer(minLength: 40) }
             Text(turn.content)
+                .font(AlphonsoFont.sans(15))
+                .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(turn.role == "user" ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .background(
+                    turn.role == "user" ? AlphonsoColor.moss : AlphonsoColor.parchment,
+                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+                )
             if turn.role == "user" { Spacer(minLength: 40) }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
@@ -180,10 +199,10 @@ private struct CampaignSessionView: View {
         Group {
             switch phase {
             case .transcribing, .thinking, .speaking:
-                ProgressView().frame(maxWidth: .infinity)
+                ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
             case .idle:
                 Circle()
-                    .fill(isRecording ? Color.red : Color.accentColor)
+                    .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.moss)
                     .frame(width: 72, height: 72)
                     .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
                     .gesture(
