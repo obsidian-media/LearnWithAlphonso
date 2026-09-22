@@ -424,6 +424,19 @@ liveliness pass had used there. `QuestionCard`/`ReviewQuestionCard`'s
 — without an explicit animation tied to that state change, the card
 would just pop in instead of animating.
 
+**`AlphonsoTipCard` redesign** (2026-09-22, same day): the user sent a
+mockup showing Alphonso larger and speaking through a real speech
+bubble rather than the original small circular-avatar-in-a-card design,
+and asked for exactly one version, not both. New `SpeechBubbleShape` (a
+real `Shape` — rounded rect + a tail pointing at the portrait, not a
+plain box); portrait grew from a 52pt circle to an 88×112pt rounded
+rectangle. Deliberately kept in-flow (same `VStack` as the Check/
+Continue button below it, never an absolute overlay) specifically
+because the user's own mockup had Alphonso's cape covering the Check
+button — this can't repeat that regardless of portrait size. The
+card's public API (`explanation:` only) didn't change, so no call site
+needed touching.
+
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
 original design (note: that doc's plan to reuse Cloud Voice for *all* AI
 conversation, and its V2 deferral of hearts/streak-freezes, were both
