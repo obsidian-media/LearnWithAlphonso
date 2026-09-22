@@ -310,6 +310,31 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 `6813969159`, bundle `com.obsidianmedia.learnwithalphonso`, Team ID
 `9Y6GYPM3K5`.
 
+**Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
+2026-09-22): ports the web app's default "Meadow" theme
+(`src/styles.css`'s `:root` block) rather than inventing a separate
+native-only look, so web and iOS read as one product. `AlphonsoTheme.swift`
+converts that file's oklch color values to sRGB via a standard OKLab
+conversion (computed, not eyeballed). `AlphonsoFont.swift` bundles
+Fraunces/Geist as their upstream **variable** font files
+(`Sources/Fonts/*.ttf`, from google/fonts' `ofl/fraunces`/`ofl/geist` —
+neither ships pre-built static weight instances) and resolves a specific
+weight/optical-size at request time via CoreText's
+`kCTFontVariationAttribute`, rather than depending on iOS's per-OS-version
+support for resolving a variable font's named instances by PostScript
+name. Fonts are registered via `Info.plist`'s `UIAppFonts` array (the
+same "merged custom Info.plist" mechanism already used for Google
+Sign-In's `CFBundleURLTypes`) — no `project.yml` change was needed,
+since XcodeGen already treats non-Swift files under a `sources:` path as
+Copy Bundle Resources. `AlphonsoComponents.swift` has the reusable
+button styles (the primary one replicates `styles.css`'s `.hard-shadow`
+pressed effect), card/badge/progress-bar/empty-state views, and
+`SpringEntrance` (promoted out of `LessonPlayerView`'s original private
+copy). Applied across every screen. Only the default Meadow theme ships
+on iOS — no in-app theme switcher, no dark mode, no grain-texture effect
+(no trivial SwiftUI equivalent to the CSS `feTurbulence` noise) — all
+deliberately deferred, not oversights.
+
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
 original design (note: that doc's plan to reuse Cloud Voice for *all* AI
 conversation, and its V2 deferral of hearts/streak-freezes, were both
@@ -348,6 +373,25 @@ decisions rather than trusting that doc's roadmap section as current).
 (A full audit is kept locally, gitignored, not in this repo — see the
 note in README.md's Documentation section for why.)
 
+- **SwiftUI `Section { content } header: { header }` silently misparses
+  if the content closure is missing its own closing brace** — found
+  twice while restyling every screen for the design-system pass
+  (2026-09-22). When a `Section`'s sole content is a bare
+  `ForEach(...) { ... }` with no wrapping `if`/`else`, it's easy to
+  write only one closing brace before `header:` instead of two (one for
+  `ForEach`, one for `Section`'s own content closure) — Swift then
+  parses `header:` as a second trailing closure on `ForEach` itself
+  ("extra trailing closure passed in call"), not on `Section`. This
+  compiles as an ordinary Swift file — `swift -frontend -parse` (the
+  only syntax check available without local Xcode/macOS) doesn't catch
+  it, since it's a semantic overload-resolution error, not a syntax
+  error; only a real `ios-app-build` CI run surfaces it. Safest fix when
+  a `Section`'s content is a bare `ForEach`: assign the `ForEach` to a
+  `let` constant first and reference it by name inside `Section`'s
+  content closure (see `DuelsView.swift`'s `pendingSection`/
+  `pastDuelsSection`) — that leaves no nested unclosed brace for
+  `header:` to misattach to, rather than relying on getting the
+  indentation/brace-count exactly right by eye.
 - **Found 2026-09-21, mid-fix: this Supabase project's auth emails were
   never usable for real (non-team) users, and iOS's OTP sign-in never
   actually showed a code.** Two compounding issues, found while

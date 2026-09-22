@@ -25,18 +25,26 @@ struct LessonBrowserView: View {
                             NavigationLink(value: lesson.id) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(lesson.title)
-                                        .font(.body)
+                                        .font(AlphonsoFont.sans(16, weight: .medium))
+                                        .foregroundStyle(AlphonsoColor.ink)
                                     Text(lesson.subtitle)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .font(AlphonsoFont.sans(13))
+                                        .foregroundStyle(AlphonsoColor.inkSoft)
                                 }
+                                .padding(.vertical, 2)
                             }
                         }
                     } header: {
                         Text("\(unit.eyebrow) · \(unit.title)")
+                            .font(AlphonsoFont.sans(12, weight: .semiBold))
+                            .tracking(0.4)
+                            .foregroundStyle(AlphonsoColor.ember)
                     }
+                    .listRowBackground(AlphonsoColor.parchment)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AlphonsoColor.surface)
             .navigationTitle("Learn with Alphonso")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -49,6 +57,7 @@ struct LessonBrowserView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Sign out") { session.signOut() }
+                        .tint(AlphonsoColor.moss)
                 }
             }
             .navigationDestination(for: String.self) { lessonId in
@@ -59,6 +68,7 @@ struct LessonBrowserView: View {
                 }
             }
         }
+        .tint(AlphonsoColor.moss)
     }
 }
 
@@ -75,19 +85,27 @@ private struct WeeklyChallengesSection: View {
     var body: some View {
         Group {
             if !isLoading && !challenges.isEmpty {
-                Section("This week's challenges") {
+                Section {
                     ForEach(challenges) { c in
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(c.title)
+                                .font(AlphonsoFont.sans(15, weight: .medium))
                                 .strikethrough(c.completed)
-                                .foregroundStyle(c.completed ? .secondary : .primary)
-                            ProgressView(value: Double(min(c.progress, c.threshold)), total: Double(c.threshold))
+                                .foregroundStyle(c.completed ? AlphonsoColor.inkSoft : AlphonsoColor.ink)
+                            AlphonsoProgressBar(progress: Double(min(c.progress, c.threshold)) / Double(max(c.threshold, 1)))
                             Text("\(min(c.progress, c.threshold))/\(c.threshold)")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .font(AlphonsoFont.sans(11))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                         }
+                        .padding(.vertical, 2)
                     }
+                } header: {
+                    Text("This week's challenges")
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
                 }
+                .listRowBackground(AlphonsoColor.parchment)
             }
         }
         // Group keeps a stable identity across the isLoading transition,

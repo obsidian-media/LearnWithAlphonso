@@ -68,6 +68,24 @@ table for the new schema and `docs/BACKLOG.md` §1 item 7 for the merge
 history, including which PRs needed a real rebase (not just a
 fast-forward) against an already-merged sibling.
 
+**iOS design system** — not one of the original V4 kickoff candidates;
+prompted directly by the user opening the TestFlight build and finding
+it had essentially no visual design (stock SwiftUI throughout, zero
+design-system files, `Assets.xcassets` with only the app icon). Ports
+the web app's default Meadow theme (`src/styles.css`) to a real SwiftUI
+design system (`ios/LearnWithAlphonso/Sources/DesignSystem/` — color/
+spacing/radius tokens computed from the CSS's oklch values, Fraunces/
+Geist bundled as variable fonts and resolved via CoreText, the
+`.hard-shadow` pressed-button effect) and applies it to every screen,
+including Season/Teams/Duels once that work merged (see `ARCHITECTURE.md`'s
+"Native iOS app" section for the full breakdown). Meadow only — no
+in-app theme switcher, dark mode, or the CSS grain-texture effect, all
+deliberately deferred. Built in its own worktree/branch off `main`
+throughout to stay clear of V4 #7's concurrent work; `ios-app-build` CI
+green on every commit, including a real bug it caught (see
+`ARCHITECTURE.md`'s "Known rough edges" for the `Section`/`header:`
+brace-nesting gotcha that caused it).
+
 ## V3 — Feature depth expansion (2026-09-20 – in progress)
 
 Six-package initiative adding depth to existing features rather than new

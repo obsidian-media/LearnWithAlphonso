@@ -95,11 +95,11 @@ struct LessonPlayerView: View {
     }
 
     private var quizBody: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ProgressView(value: Double(idx), total: Double(total))
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            AlphonsoProgressBar(progress: total == 0 ? 0 : Double(idx) / Double(total))
             Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(13, weight: .medium))
+                .foregroundStyle(AlphonsoColor.inkSoft)
 
             // .id() forces a fresh QuestionCard (and its reorder @State)
             // per question -- without it, SwiftUI would keep reusing the
@@ -111,13 +111,11 @@ struct LessonPlayerView: View {
             Spacer()
 
             if isSubmitting {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
+                ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
             } else if !checked {
                 Button("Check") { checked = true; recordAnswer() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.alphonsoPrimary)
                     .disabled(picked == nil)
-                    .frame(maxWidth: .infinity)
             } else {
                 Button(isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish") {
                     if let pendingReinforcement {
@@ -140,11 +138,11 @@ struct LessonPlayerView: View {
                         Task { await finish() }
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.alphonsoPrimary)
             }
         }
         .padding()
+        .background(AlphonsoColor.surface)
     }
 
     private func recordAnswer() {
@@ -324,7 +322,7 @@ private struct QuestionCard: View {
     var body: some View {
         switch question {
         case .multipleChoice(let q):
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
                     VocabImageView(image: image, cardHeight: 160)
                 }
@@ -334,44 +332,46 @@ private struct QuestionCard: View {
                     } label: {
                         Label("Play audio", systemImage: "speaker.wave.2.fill")
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
                 }
-                Text(q.prompt).font(.title2.weight(.semibold))
+                Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
         case .fillInBlank(let q):
-            VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title2.weight(.semibold))
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(AlphonsoSpacing.sm)
+                    .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                     .disabled(checked)
                 if !q.bank.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(q.bank, id: \.self) { word in
                                 Button(word) { picked = word }
-                                    .buttonStyle(.bordered)
+                                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
                                     .disabled(checked)
                             }
                         }
                     }
                 }
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
         case .reorder(let q):
-            VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title2.weight(.semibold))
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
             .onChange(of: orderPicks) {
@@ -389,23 +389,22 @@ private struct QuestionCard: View {
         HStack {
             if orderPicks.isEmpty {
                 Text("Tap the words below in order")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             } else {
                 ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
                     Button(tokens[tokenIdx]) {
                         orderPicks.remove(at: position)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
                     .disabled(checked)
                 }
             }
             Spacer()
         }
         .frame(minHeight: 44)
-        .padding(8)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(AlphonsoSpacing.sm)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
     }
 
     // Horizontal scroll rather than a wrapping layout -- same tradeoff
@@ -418,7 +417,7 @@ private struct QuestionCard: View {
                 ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
                     if !orderPicks.contains(i) {
                         Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.alphonsoSecondary(fullWidth: false))
                             .disabled(checked)
                     }
                 }
@@ -432,19 +431,26 @@ private struct QuestionCard: View {
         } label: {
             HStack {
                 Text(choice)
+                    .font(AlphonsoFont.sans(16))
                 Spacer()
                 if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
                 } else if checked && picked == choice {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
                 }
             }
-            .padding()
-            .background(picked == choice ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(AlphonsoSpacing.sm + 4)
+            .background(
+                picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
+                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    .strokeBorder(picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: picked == choice ? 1.5 : 1)
+            )
         }
         .disabled(checked)
-        .foregroundStyle(.primary)
+        .foregroundStyle(AlphonsoColor.ink)
     }
 }
 
@@ -461,14 +467,16 @@ private struct OverviewScreen: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(lesson.subtitle)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.orange)
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            Text(lesson.subtitle.uppercased())
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
             Text(lesson.title)
-                .font(.title.weight(.bold))
+                .font(AlphonsoFont.display(28, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
                 overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
                 if !previewImages.isEmpty {
                     HStack(spacing: 8) {
@@ -485,22 +493,27 @@ private struct OverviewScreen: View {
             Spacer()
 
             Button("Begin lesson", action: onStart)
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.alphonsoPrimary)
         }
         .padding()
+        .background(AlphonsoColor.surface)
     }
 
     private func overviewStep(number: Int, label: String, detail: String) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AlphonsoSpacing.sm + 4) {
             Text("\(number)")
-                .font(.caption.weight(.semibold))
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.surface)
                 .frame(width: 28, height: 28)
-                .background(Color(.secondarySystemBackground))
+                .background(AlphonsoColor.moss)
                 .clipShape(Circle())
             VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.subheadline.weight(.semibold))
-                Text(detail).font(.caption).foregroundStyle(.secondary)
+                Text(label)
+                    .font(AlphonsoFont.sans(15, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(detail)
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
         }
     }
@@ -513,25 +526,29 @@ private struct VocabScreen: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Vocabulary · \(lesson.subtitle)")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.orange)
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            Text("Vocabulary · \(lesson.subtitle)".uppercased())
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
             Text(lesson.title)
-                .font(.title2.weight(.bold))
+                .font(AlphonsoFont.display(24, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
             Text("\(items.count) word\(items.count == 1 ? "" : "s") to learn before you practise.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
                     ForEach(items, id: \.term) { item in
                         VStack(alignment: .leading, spacing: 4) {
                             if let image = item.image {
                                 VocabImageView(image: image)
                             }
                             HStack(spacing: 8) {
-                                Text(item.term).font(.headline)
+                                Text(item.term)
+                                    .font(AlphonsoFont.display(17, weight: .semiBold))
+                                    .foregroundStyle(AlphonsoColor.ink)
                                 Button {
                                     speak(item.term, languageCode: course.speechLanguageCode)
                                 } label: {
@@ -539,27 +556,29 @@ private struct VocabScreen: View {
                                         .font(.footnote)
                                 }
                                 .buttonStyle(.plain)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                                 .accessibilityLabel("Play pronunciation for \(item.term)")
                             }
-                            Text(item.meaning).font(.caption).foregroundStyle(.secondary)
+                            Text(item.meaning)
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                             Text(item.example)
-                                .font(.caption.italic())
+                                .font(AlphonsoFont.sans(12).italic())
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                                 .padding(.top, 2)
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
                     }
                 }
             }
 
             Button("Start practice", action: onStart)
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.alphonsoPrimary)
         }
         .padding()
+        .background(AlphonsoColor.surface)
     }
 }
 
@@ -587,14 +606,14 @@ struct VocabImageView: View {
             case .success(let loadedImage):
                 loadedImage.resizable().aspectRatio(contentMode: .fill)
             case .empty:
-                ProgressView()
+                ProgressView().tint(AlphonsoColor.moss)
             default:
-                Color(.secondarySystemBackground)
+                AlphonsoColor.parchment
             }
         }
         .frame(width: thumbnailSize, height: thumbnailSize ?? cardHeight)
         .frame(maxWidth: thumbnailSize == nil ? .infinity : nil)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
         .clipped()
         .accessibilityLabel(image.alt)
     }
@@ -618,29 +637,30 @@ private struct FinishView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: AlphonsoSpacing.md) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(AlphonsoColor.moss)
                 Text("Lesson complete")
-                    .font(.title2.weight(.semibold))
+                    .font(AlphonsoFont.display(21, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
                 Text("+\(result.xpGain) XP")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(.green)
+                    .font(AlphonsoFont.display(32, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.moss)
                 Text("\(correct)/\(total) correct")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                 if let bonus = result.heartsBonus {
                     Text(bonus == "streak" ? "Streak milestone: hearts fully refilled" : "Perfect lesson: +1 heart")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.pink)
+                        .font(AlphonsoFont.sans(13, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ember)
                 }
                 if !unlockedAchievements.isEmpty {
-                    VStack(spacing: 12) {
+                    VStack(spacing: AlphonsoSpacing.sm + 4) {
                         Text("Achievement\(unlockedAchievements.count == 1 ? "" : "s") unlocked")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                            .font(AlphonsoFont.sans(13, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
                             ForEach(Array(unlockedAchievements.enumerated()), id: \.element.id) { index, achievement in
                                 AchievementBadgeView(achievement: achievement, unlocked: true)
                                     .springEntrance(delay: Double(index) * 0.15)
@@ -654,6 +674,7 @@ private struct FinishView: View {
             }
             .padding()
         }
+        .background(AlphonsoColor.surface)
         .onAppear { showPromotionOverlay = isLeaguePromotion }
         .fullScreenCover(isPresented: $showPromotionOverlay) {
             LeaguePromotionOverlay(tier: result.progress.leagueTier) {
@@ -690,31 +711,30 @@ private struct GeneratedPracticeSection: View {
                     Task { await generate() }
                 } label: {
                     if status == .loading {
-                        ProgressView()
+                        ProgressView().tint(AlphonsoColor.ink)
                     } else {
                         Text("Generate more practice")
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.alphonsoSecondary)
                 .disabled(status == .loading)
-                .frame(maxWidth: .infinity)
 
                 if status == .empty {
                     Text("Couldn't generate practice for this lesson right now.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 } else if status == .error {
                     Text("Something went wrong -- try again.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
             .padding(.top, 8)
         case .ready:
             if idx >= questions.count {
                 Text("Nice work -- that's all the extra practice for this lesson.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .padding(.top, 8)
             } else {
                 practiceCard
@@ -724,33 +744,37 @@ private struct GeneratedPracticeSection: View {
 
     private var practiceCard: some View {
         let q = questions[idx]
-        return VStack(alignment: .leading, spacing: 12) {
+        return VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
             Text("Extra practice \u{00B7} \(idx + 1)/\(questions.count)")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(q.prompt).font(.subheadline.weight(.semibold))
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            Text(q.prompt)
+                .font(AlphonsoFont.sans(16, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
             ForEach(q.choices, id: \.self) { choice in
                 Button {
                     picked = choice
                 } label: {
                     HStack {
-                        Text(choice)
+                        Text(choice).font(AlphonsoFont.sans(15))
                         Spacer()
                         if checked && q.choices[q.answerIndex] == choice {
-                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
                         } else if checked && picked == choice {
-                            Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                            Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
                         }
                     }
-                    .padding()
-                    .background(picked == choice ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(AlphonsoSpacing.sm + 4)
+                    .background(
+                        picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
+                        in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    )
                 }
                 .disabled(checked)
-                .foregroundStyle(.primary)
+                .foregroundStyle(AlphonsoColor.ink)
             }
             if checked {
-                Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
             }
             Button(!checked ? "Check" : idx < questions.count - 1 ? "Next" : "Finish practice") {
                 if !checked {
@@ -761,9 +785,8 @@ private struct GeneratedPracticeSection: View {
                 picked = nil
                 checked = false
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.alphonsoPrimary)
             .disabled(!checked && picked == nil)
-            .frame(maxWidth: .infinity)
         }
         .padding(.top, 8)
     }
@@ -804,55 +827,28 @@ private struct OfflineFinishView: View {
     let total: Int
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AlphonsoSpacing.md) {
             Image(systemName: "icloud.and.arrow.up.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(.orange)
+                .foregroundStyle(AlphonsoColor.ember)
             Text("Saved -- will sync when you're back online")
-                .font(.title3.weight(.semibold))
+                .font(AlphonsoFont.display(19, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
                 .multilineTextAlignment(.center)
             Text("~+\(pending.optimisticXpEstimate) XP (estimated)")
-                .font(.title2.weight(.bold))
-                .foregroundStyle(.orange)
+                .font(AlphonsoFont.display(24, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ember)
             Text("\(correct)/\(total) correct")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.inkSoft)
         }
         .padding()
+        .background(AlphonsoColor.surface)
     }
 }
 
-/// Scale+opacity entrance driven by a spring, triggered on first appear --
-/// SwiftUI's equivalent of the web's Framer Motion spring entrance for
-/// celebration moments (lesson.$id.tsx's FinishScreen). Shared by the
-/// achievement-unlock cards (staggered via `delay`) and the league-
-/// promotion overlay's badge (its own, punchier spring tuning) below, so
-/// the appear-state/onAppear/withAnimation boilerplate exists once.
-private struct SpringEntrance: ViewModifier {
-    var response: Double = 0.5
-    var dampingFraction: Double = 0.65
-    var delay: Double = 0
-    var minScale: Double = 0.6
-
-    @State private var appeared = false
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(appeared ? 1 : minScale)
-            .opacity(appeared ? 1 : 0)
-            .onAppear {
-                withAnimation(.spring(response: response, dampingFraction: dampingFraction).delay(delay)) {
-                    appeared = true
-                }
-            }
-    }
-}
-
-private extension View {
-    func springEntrance(response: Double = 0.5, dampingFraction: Double = 0.65, delay: Double = 0, minScale: Double = 0.6) -> some View {
-        modifier(SpringEntrance(response: response, dampingFraction: dampingFraction, delay: delay, minScale: minScale))
-    }
-}
+// SpringEntrance/`.springEntrance(...)` moved to
+// DesignSystem/AlphonsoComponents.swift so other screens can share it.
 
 /// A distinct, bigger celebration for a league promotion -- rarer and more
 /// significant than a typical achievement unlock, so it gets a full-screen
@@ -871,15 +867,16 @@ private struct LeaguePromotionOverlay: View {
                     .foregroundStyle(LeagueTierPalette.color(for: tier))
                     .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
                 Text("League up!")
-                    .font(.largeTitle.weight(.bold))
+                    .font(AlphonsoFont.display(34, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
                 Text("You've been promoted to \(LeagueTierPalette.label(for: tier))")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(17))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 Spacer()
                 Button("Continue", action: onContinue)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.alphonsoPrimary)
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
             }

@@ -17,43 +17,77 @@ struct TeamsView: View {
     var body: some View {
         List {
             if let myTeam {
-                Section(myTeam.name) {
+                Section {
                     Text("Join code: \(myTeam.joinCode)")
-                    Text("\(myTeam.thisWeekXP) XP this week").font(.headline)
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("\(myTeam.thisWeekXP) XP this week")
+                        .font(AlphonsoFont.display(17, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ink)
                     if myTeam.switchLockedUntil > Date() {
                         Text("Can't leave until \(myTeam.switchLockedUntil.formatted(date: .abbreviated, time: .omitted))")
-                            .foregroundStyle(.secondary)
+                            .font(AlphonsoFont.sans(12))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
                     } else {
                         Button("Leave team", role: .destructive) { Task { await leave() } }
+                            .tint(AlphonsoColor.destructive)
                     }
+                } header: {
+                    Text(myTeam.name)
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
                 }
+                .listRowBackground(AlphonsoColor.parchment)
             } else {
-                Section("Join a team") {
+                Section {
                     TextField("Join code", text: $code)
+                        .font(AlphonsoFont.sans(15))
                     Button("Join by code") { Task { await joinByCode() } }
+                        .tint(AlphonsoColor.moss)
                     Button("Put me on a team") { Task { await autoJoin() } }
+                        .tint(AlphonsoColor.moss)
+                } header: {
+                    Text("Join a team")
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
                 }
+                .listRowBackground(AlphonsoColor.parchment)
             }
 
-            Section("This week's top teams") {
+            Section {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.moss)
                 } else {
                     ForEach(Array(leaderboard.enumerated()), id: \.element.teamID) { i, team in
                         HStack {
                             Text("\(i + 1). \(team.name)")
+                                .font(AlphonsoFont.sans(14, weight: .medium))
+                                .foregroundStyle(AlphonsoColor.ink)
                             Spacer()
-                            Text("\(team.weeklyXP) XP").foregroundStyle(.secondary)
+                            Text("\(team.weeklyXP) XP")
+                                .font(AlphonsoFont.sans(14, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                         }
                     }
                 }
+            } header: {
+                Text("This week's top teams")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
             }
+            .listRowBackground(AlphonsoColor.parchment)
 
             if let errorMessage {
-                Text(errorMessage).foregroundStyle(.secondary)
+                Text(errorMessage).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(AlphonsoColor.surface)
         .navigationTitle("Teams")
+        .tint(AlphonsoColor.moss)
         .task { await loadAll() }
     }
 

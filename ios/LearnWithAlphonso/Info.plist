@@ -32,5 +32,17 @@
 	     needs re-evaluating -- don't copy this value forward blindly. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Design system (Meadow theme port, see DesignSystem/AlphonsoFont.swift):
+	     Fraunces and Geist, bundled as their upstream variable-font files
+	     under Sources/Fonts/ (XcodeGen picks up non-Swift files under a
+	     `sources:` path as Copy Bundle Resources automatically, same as
+	     Assets.xcassets). Registering by filename here is the standard
+	     "Fonts provided by application" mechanism -- no project.yml change
+	     needed. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fraunces-Variable.ttf</string>
+		<string>Geist-Variable.ttf</string>
+	</array>
 </dict>
 </plist>

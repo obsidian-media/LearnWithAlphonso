@@ -39,99 +39,172 @@ struct DuelsView: View {
     var body: some View {
         List {
             if let errorMessage {
-                Text(errorMessage).foregroundStyle(.red)
+                Text(errorMessage).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.destructive)
             }
 
             if !pending.isEmpty {
-                Section("Pending challenges") {
-                    ForEach(pending) { d in
-                        HStack {
-                            Text("Challenge (\(d.course))")
-                            Spacer()
-                            Button("Accept") { Task { await respond(d, accept: true) } }
-                                .buttonStyle(.borderedProminent)
-                            Button("Decline") { Task { await respond(d, accept: false) } }
-                                .buttonStyle(.bordered)
-                        }
-                    }
-                }
+                pendingSection
             }
 
-            Section("Active duels") {
-                if isLoading {
-                    ProgressView()
-                } else if active.isEmpty {
-                    Text("No active duels right now.").foregroundStyle(.secondary)
-                } else {
-                    ForEach(active) { d in
-                        let myXPNow = d.challengerID == myID ? d.challengerXPNow : d.opponentXPNow
-                        let myXPStart = d.challengerID == myID ? d.challengerXPStart : d.opponentXPStart
-                        let oppXPNow = d.challengerID == myID ? d.opponentXPNow : d.challengerXPNow
-                        let oppXPStart = d.challengerID == myID ? d.opponentXPStart : d.challengerXPStart
-                        VStack(alignment: .leading) {
-                            Text(d.course).font(.caption).foregroundStyle(.secondary)
-                            HStack {
-                                Text("You: +\(myXPNow - myXPStart)").font(.headline)
-                                Spacer()
-                                Text("Them: +\(oppXPNow - oppXPStart)").foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-            }
+            activeSection
 
-            Section("Challenge a friend") {
-                Picker("Friend", selection: $challengeFriendID) {
-                    Text("Choose a friend…").tag("")
-                    ForEach(friends, id: \.userID) { f in
-                        Text(f.displayName).tag(f.userID)
-                    }
-                }
-                Picker("Course", selection: $challengeCourse) {
-                    ForEach(CourseOption.allCases, id: \.self) { c in
-                        Text(c.label).tag(c)
-                    }
-                }
-                Button("Send challenge") { Task { await challengeFriend() } }
-                    .disabled(challengeFriendID.isEmpty)
-            }
+            challengeFriendSection
 
-            Section("Open duel") {
-                Text("Get matched with another learner at your level.").font(.caption).foregroundStyle(.secondary)
-                Picker("Course", selection: $openCourse) {
-                    ForEach(CourseOption.allCases, id: \.self) { c in
-                        Text(c.label).tag(c)
-                    }
-                }
-                Toggle("Match me with someone at my level", isOn: $matchByLevel)
-                if waitingInQueue {
-                    HStack {
-                        Text("Waiting for an opponent…").foregroundStyle(.secondary)
-                        Spacer()
-                        Button("Cancel") { Task { await leaveQueue() } }
-                    }
-                } else {
-                    Button(queueing ? "Finding a match…" : "Find an open duel") {
-                        Task { await joinQueue() }
-                    }
-                    .disabled(queueing)
-                }
-            }
+            openDuelSection
 
             if !finished.isEmpty {
-                Section("Past duels") {
-                    ForEach(finished) { d in
+                pastDuelsSection
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(AlphonsoColor.surface)
+        .navigationTitle("Duels")
+        .tint(AlphonsoColor.moss)
+        .task { await loadAll() }
+    }
+
+    private var sectionHeaderFont: Font { AlphonsoFont.sans(12, weight: .semiBold) }
+
+    private var pendingSection: some View {
+        let content = ForEach(pending) { d in
+            HStack {
+                Text("Challenge (\(d.course))")
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Spacer()
+                Button("Accept") { Task { await respond(d, accept: true) } }
+                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
+                Button("Decline") { Task { await respond(d, accept: false) } }
+                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
+            }
+        }
+        return Section {
+            content
+        } header: {
+            Text("Pending challenges")
+                .font(sectionHeaderFont)
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
+        }
+        .listRowBackground(AlphonsoColor.parchment)
+    }
+
+    private var activeSection: some View {
+        Section {
+            if isLoading {
+                ProgressView().tint(AlphonsoColor.moss)
+            } else if active.isEmpty {
+                Text("No active duels right now.").font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+            } else {
+                ForEach(active) { d in
+                    let myXPNow = d.challengerID == myID ? d.challengerXPNow : d.opponentXPNow
+                    let myXPStart = d.challengerID == myID ? d.challengerXPStart : d.opponentXPStart
+                    let oppXPNow = d.challengerID == myID ? d.opponentXPNow : d.challengerXPNow
+                    let oppXPStart = d.challengerID == myID ? d.opponentXPStart : d.challengerXPStart
+                    VStack(alignment: .leading) {
+                        Text(d.course).font(AlphonsoFont.sans(11)).foregroundStyle(AlphonsoColor.inkSoft)
                         HStack {
-                            Text(d.course)
+                            Text("You: +\(myXPNow - myXPStart)")
+                                .font(AlphonsoFont.sans(15, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ink)
                             Spacer()
-                            Text(resultLabel(d)).foregroundStyle(.secondary)
+                            Text("Them: +\(oppXPNow - oppXPStart)")
+                                .font(AlphonsoFont.sans(13))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                         }
                     }
                 }
             }
+        } header: {
+            Text("Active duels")
+                .font(sectionHeaderFont)
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
         }
-        .navigationTitle("Duels")
-        .task { await loadAll() }
+        .listRowBackground(AlphonsoColor.parchment)
+    }
+
+    private var challengeFriendSection: some View {
+        Section {
+            Picker("Friend", selection: $challengeFriendID) {
+                Text("Choose a friend…").tag("")
+                ForEach(friends, id: \.userID) { f in
+                    Text(f.displayName).tag(f.userID)
+                }
+            }
+            Picker("Course", selection: $challengeCourse) {
+                ForEach(CourseOption.allCases, id: \.self) { c in
+                    Text(c.label).tag(c)
+                }
+            }
+            Button("Send challenge") { Task { await challengeFriend() } }
+                .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                .disabled(challengeFriendID.isEmpty)
+        } header: {
+            Text("Challenge a friend")
+                .font(sectionHeaderFont)
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
+        }
+        .listRowBackground(AlphonsoColor.parchment)
+    }
+
+    private var openDuelSection: some View {
+        Section {
+            Text("Get matched with another learner at your level.")
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            Picker("Course", selection: $openCourse) {
+                ForEach(CourseOption.allCases, id: \.self) { c in
+                    Text(c.label).tag(c)
+                }
+            }
+            Toggle("Match me with someone at my level", isOn: $matchByLevel)
+                .tint(AlphonsoColor.moss)
+            if waitingInQueue {
+                HStack {
+                    Text("Waiting for an opponent…").font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    Spacer()
+                    Button("Cancel") { Task { await leaveQueue() } }
+                        .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                }
+            } else {
+                Button(queueing ? "Finding a match…" : "Find an open duel") {
+                    Task { await joinQueue() }
+                }
+                .buttonStyle(.alphonsoPrimary)
+                .disabled(queueing)
+            }
+        } header: {
+            Text("Open duel")
+                .font(sectionHeaderFont)
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
+        }
+        .listRowBackground(AlphonsoColor.parchment)
+    }
+
+    private var pastDuelsSection: some View {
+        let content = ForEach(finished) { d in
+            HStack {
+                Text(d.course)
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Spacer()
+                Text(resultLabel(d))
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+        }
+        return Section {
+            content
+        } header: {
+            Text("Past duels")
+                .font(sectionHeaderFont)
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
+        }
+        .listRowBackground(AlphonsoColor.parchment)
     }
 
     private func resultLabel(_ d: Duel) -> String {

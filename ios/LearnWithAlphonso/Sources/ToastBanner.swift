@@ -10,19 +10,21 @@ import SwiftUI
 struct ToastBanner: View {
     let message: String
     var iconName = "bell.fill"
-    var iconColor = Color.orange
+    var iconColor = AlphonsoColor.ember
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: AlphonsoSpacing.xs + 2) {
             Image(systemName: iconName)
                 .foregroundStyle(iconColor)
             Text(message)
-                .font(.subheadline.weight(.medium))
+                .font(AlphonsoFont.sans(14, weight: .medium))
+                .foregroundStyle(AlphonsoColor.ink)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.regularMaterial, in: Capsule())
-        .shadow(radius: 4)
+        .padding(.horizontal, AlphonsoSpacing.md - 2)
+        .padding(.vertical, AlphonsoSpacing.sm + 2)
+        .background(AlphonsoColor.parchment, in: Capsule())
+        .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .shadow(color: AlphonsoColor.ink.opacity(0.12), radius: 6, y: 2)
     }
 }
 

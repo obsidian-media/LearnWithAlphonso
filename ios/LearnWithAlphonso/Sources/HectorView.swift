@@ -26,23 +26,26 @@ struct HectorView: View {
                     case .signedOut, .awaitingCode:
                         signInBody
                     case .enrolling:
-                        ProgressView("Connecting to Hector...")
+                        ProgressView("Connecting to Hector...").tint(AlphonsoColor.ember)
                     case .ready:
                         HectorConversationView(session: session, hectorSession: hectorSession)
                     }
                 }
             }
+            .background(AlphonsoColor.surface)
             .navigationTitle("Hector")
         }
+        .tint(AlphonsoColor.ember)
     }
 
     private var signInBody: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AlphonsoSpacing.md) {
             Text("Sign in to Hector")
-                .font(.title2.weight(.semibold))
+                .font(AlphonsoFont.display(22, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
             Text("Hector uses a separate account from your main Learn with Alphonso sign-in.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
 
             switch hectorSession.state {
@@ -56,8 +59,8 @@ struct HectorView: View {
 
             if let errorMessage = hectorSession.errorMessage {
                 Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.destructive)
                     .multilineTextAlignment(.center)
             }
         }
@@ -71,9 +74,11 @@ private struct HectorEmailStep: View {
     @State private var email = ""
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AlphonsoSpacing.sm) {
             TextField("Email", text: $email)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(AlphonsoSpacing.sm + 2)
+                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
@@ -83,12 +88,12 @@ private struct HectorEmailStep: View {
                 Task { await hectorSession.requestCode(email: email) }
             } label: {
                 if hectorSession.isBusy {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.surface)
                 } else {
-                    Text("Send code").frame(maxWidth: .infinity)
+                    Text("Send code")
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.alphonsoEmber)
             .disabled(hectorSession.isBusy || !email.contains("@"))
         }
     }
@@ -100,24 +105,26 @@ private struct HectorCodeStep: View {
     @State private var code = ""
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AlphonsoSpacing.sm) {
             Text("Enter the code sent to \(email)")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
             TextField("6-digit code", text: $code)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
+                .padding(AlphonsoSpacing.sm + 2)
+                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
             Button {
                 Task { await hectorSession.verifyCodeAndEnroll(code) }
             } label: {
                 if hectorSession.isBusy {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.surface)
                 } else {
-                    Text("Verify").frame(maxWidth: .infinity)
+                    Text("Verify")
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.alphonsoEmber)
             .disabled(hectorSession.isBusy || code.isEmpty)
         }
     }
@@ -162,11 +169,15 @@ private struct HectorConversationView: View {
             }
 
             if let errorMessage {
-                Text(errorMessage).font(.footnote).foregroundStyle(.red).padding(.horizontal)
+                Text(errorMessage)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.destructive)
+                    .padding(.horizontal)
             }
 
             micButton.padding()
         }
+        .background(AlphonsoColor.surface)
         .task { await loadMemoryContext() }
         .onDisappear {
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
@@ -199,10 +210,14 @@ private struct HectorConversationView: View {
         HStack {
             if turn.role == "assistant" { Spacer(minLength: 40) }
             Text(turn.content)
+                .font(AlphonsoFont.sans(15))
+                .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(turn.role == "user" ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .background(
+                    turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.parchment,
+                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+                )
             if turn.role == "user" { Spacer(minLength: 40) }
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
@@ -212,10 +227,10 @@ private struct HectorConversationView: View {
         Group {
             switch phase {
             case .transcribing, .thinking, .speaking:
-                ProgressView().frame(maxWidth: .infinity)
+                ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
             case .idle:
                 Circle()
-                    .fill(isRecording ? Color.red : Color.accentColor)
+                    .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.ember)
                     .frame(width: 72, height: 72)
                     .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
                     .gesture(

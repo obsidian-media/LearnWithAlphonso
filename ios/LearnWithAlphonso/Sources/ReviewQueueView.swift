@@ -33,7 +33,7 @@ struct ReviewQueueView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.moss)
                 } else if let errorMessage {
                     ContentUnavailableView("Couldn't load your review queue", systemImage: "wifi.slash", description: Text(errorMessage))
                 } else if queue.isEmpty {
@@ -57,6 +57,7 @@ struct ReviewQueueView: View {
                     }
                 }
             }
+            .background(AlphonsoColor.surface)
             .navigationTitle("Review")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -70,6 +71,7 @@ struct ReviewQueueView: View {
                 }
             }
         }
+        .tint(AlphonsoColor.moss)
         .task(id: course) { await loadQueue() }
     }
 
@@ -87,10 +89,10 @@ struct ReviewQueueView: View {
     private var reviewBody: some View {
         Group {
             if let question = currentQuestion {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
                     Text("\(idx + 1)/\(queue.count) due")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(AlphonsoFont.sans(13, weight: .medium))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
 
                     // .id() forces a fresh ReviewQuestionCard (and its
                     // reorder @State) per item -- same reasoning as
@@ -101,16 +103,14 @@ struct ReviewQueueView: View {
                     Spacer()
 
                     if isSubmitting {
-                        ProgressView().frame(maxWidth: .infinity)
+                        ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
                     } else if !checked {
                         Button("Check") { checked = true }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.alphonsoPrimary)
                             .disabled(picked == nil)
-                            .frame(maxWidth: .infinity)
                     } else {
                         Button("Next") { Task { await submitAndAdvance(question: question) } }
-                            .buttonStyle(.borderedProminent)
-                            .frame(maxWidth: .infinity)
+                            .buttonStyle(.alphonsoPrimary)
                     }
                 }
                 .padding()
@@ -300,11 +300,11 @@ private struct CachedQueueBanner: View {
             Image(systemName: "wifi.slash")
             Text(label)
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .font(AlphonsoFont.sans(12, weight: .medium))
+        .foregroundStyle(AlphonsoColor.inkSoft)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemBackground))
+        .background(AlphonsoColor.emberSoft)
     }
 
     private var label: String {
@@ -328,7 +328,7 @@ private struct ReviewQuestionCard: View {
     var body: some View {
         switch question {
         case .multipleChoice(let q):
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
                     VocabImageView(image: image, cardHeight: 160)
                 }
@@ -338,44 +338,46 @@ private struct ReviewQuestionCard: View {
                     } label: {
                         Label("Play audio", systemImage: "speaker.wave.2.fill")
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
                 }
-                Text(q.prompt).font(.title2.weight(.semibold))
+                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 ForEach(q.choices, id: \.self) { choice in
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
         case .fillInBlank(let q):
-            VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title2.weight(.semibold))
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(AlphonsoSpacing.sm)
+                    .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
                     .disabled(checked)
                 if !q.bank.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(q.bank, id: \.self) { word in
                                 Button(word) { picked = word }
-                                    .buttonStyle(.bordered)
+                                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
                                     .disabled(checked)
                             }
                         }
                     }
                 }
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
         case .reorder(let q):
-            VStack(alignment: .leading, spacing: 12) {
-                Text(q.prompt).font(.title2.weight(.semibold))
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    Text(q.explanation).font(.footnote).foregroundStyle(.secondary)
+                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
                 }
             }
             .onChange(of: orderPicks) {
@@ -390,23 +392,22 @@ private struct ReviewQuestionCard: View {
         HStack {
             if orderPicks.isEmpty {
                 Text("Tap the words below in order")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             } else {
                 ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
                     Button(tokens[tokenIdx]) {
                         orderPicks.remove(at: position)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
                     .disabled(checked)
                 }
             }
             Spacer()
         }
         .frame(minHeight: 44)
-        .padding(8)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(AlphonsoSpacing.sm)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
     }
 
     private func tokenPool(tokens: [String]) -> some View {
@@ -415,7 +416,7 @@ private struct ReviewQuestionCard: View {
                 ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
                     if !orderPicks.contains(i) {
                         Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.alphonsoSecondary(fullWidth: false))
                             .disabled(checked)
                     }
                 }
@@ -429,18 +430,25 @@ private struct ReviewQuestionCard: View {
         } label: {
             HStack {
                 Text(choice)
+                    .font(AlphonsoFont.sans(16))
                 Spacer()
                 if checked && isCorrectChoice {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
                 } else if checked && picked == choice {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(.red)
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
                 }
             }
-            .padding()
-            .background(picked == choice ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(AlphonsoSpacing.sm + 4)
+            .background(
+                picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
+                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                    .strokeBorder(picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline, lineWidth: picked == choice ? 1.5 : 1)
+            )
         }
         .disabled(checked)
-        .foregroundStyle(.primary)
+        .foregroundStyle(AlphonsoColor.ink)
     }
 }

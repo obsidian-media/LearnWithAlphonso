@@ -33,6 +33,12 @@ struct RootView: View {
                 AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
                     .tabItem { Label("Achievements", systemImage: "trophy.fill") }
             }
+            // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
+            // for selected tab items, parchment tab-bar background instead
+            // of the system default, matching the web app's brand.
+            .tint(AlphonsoColor.moss)
+            .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
+            .toolbarBackground(.visible, for: .tabBar)
             .task {
                 await triggerSync()
                 notificationScheduler.scheduleWeeklyRecap()
