@@ -21,7 +21,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 });
 
 const getFriends = vi.fn();
-vi.mock("../../lib/friends.functions", () => ({ getFriends }));
+const removeFriend = vi.fn();
+vi.mock("../../lib/friends.functions", () => ({ getFriends, removeFriend }));
 
 const getMyProfile = vi.fn();
 vi.mock("../../lib/leaderboard.functions", () => ({ getMyProfile }));
@@ -41,6 +42,7 @@ function renderPage() {
 
 beforeEach(() => {
   getFriends.mockReset();
+  removeFriend.mockReset();
   getMyProfile.mockReset();
   useTheme.setState({ theme: "meadow" });
   Object.defineProperty(navigator, "clipboard", {
@@ -116,6 +118,41 @@ describe("Friends page", () => {
     await waitFor(() => expect(screen.getByRole("button")).toHaveTextContent("Copy invite link"), {
       timeout: 3000,
     });
+  });
+
+  it("shows a cancel/confirm toggle for removing a friend, and cancel reverts it", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyProfile.mockResolvedValue({ id: "me" });
+    renderPage();
+
+    const removeButton = await screen.findByRole("button", { name: "Remove Ada" });
+    fireEvent.click(removeButton);
+
+    expect(await screen.findByRole("button", { name: "Confirm" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(await screen.findByRole("button", { name: "Remove Ada" })).toBeInTheDocument();
+    expect(removeFriend).not.toHaveBeenCalled();
+  });
+
+  it("removes a friend from the list after confirming", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+      { userId: "f2", displayName: "Bo", avatarSeed: "B", streak: 1, weekXp: 10 },
+    ]);
+    getMyProfile.mockResolvedValue({ id: "me" });
+    removeFriend.mockResolvedValue({ ok: true, message: "removed" });
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Ada" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
+
+    await waitFor(() => expect(removeFriend).toHaveBeenCalledWith({ data: { friendId: "f1" } }));
+    await waitFor(() => expect(screen.queryByText("Ada")).not.toBeInTheDocument());
+    expect(screen.getByText("Bo")).toBeInTheDocument();
+    expect(await screen.findByText("1 friend")).toBeInTheDocument();
   });
 
   it("uses the studio-ink copy and arrow affordance for that theme", async () => {

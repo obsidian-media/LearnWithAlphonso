@@ -892,6 +892,13 @@ export type Database = {
           hearts_refill_at: string;
         }[];
       };
+      remove_friend: {
+        Args: { _friend_id: string };
+        Returns: {
+          message: string;
+          ok: boolean;
+        }[];
+      };
       respond_to_duel: {
         Args: { _accept: boolean; _duel_id: string; _duration_days?: number };
         Returns: {
