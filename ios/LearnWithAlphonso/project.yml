@@ -77,10 +77,11 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # Bumped past the last TestFlight upload (build 7, uploaded
-        # 2026-09-21T21:56 UTC, before this V4 batch existed) -- Apple
-        # rejects a re-upload of an already-used build number.
-        CURRENT_PROJECT_VERSION: "8"
+        # Bumped past the last TestFlight upload (build 8, uploaded
+        # 2026-09-22T01:56 UTC, the V4 widget/gamification batch) -- Apple
+        # rejects a re-upload of an already-used build number. Build 9 is
+        # the iOS design-system pass (PR #68).
+        CURRENT_PROJECT_VERSION: "9"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -181,7 +182,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "8"
+        CURRENT_PROJECT_VERSION: "9"
         SKIP_INSTALL: true
       configs:
         Release:
