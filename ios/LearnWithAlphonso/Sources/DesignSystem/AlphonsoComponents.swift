@@ -295,3 +295,71 @@ extension View {
         modifier(PulsingGlow(scale: scale, duration: duration))
     }
 }
+
+// MARK: - Mascot
+
+/// Alphonso appearing in person to help after a wrong answer -- direct
+/// user request: the app has two named personas (Alphonso, the app's
+/// own free host; Hector, the Pro AI tutor) with zero visual presence
+/// anywhere. Alphonso, not Hector, does wrong-answer help specifically
+/// because Hector is a paid persona ($9.99/mo) -- having him "give away"
+/// tutoring for free in the ordinary lesson/review flow would undercut
+/// the subscription. Used in LessonPlayerView's QuestionCard/
+/// GeneratedPracticeSection and ReviewQueueView's ReviewQuestionCard,
+/// wherever `checked && !isAnswerCorrect(...)`.
+struct AlphonsoTipCard: View {
+    let explanation: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: AlphonsoSpacing.sm + 2) {
+            Image("Alphonso")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 52, height: 52)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(AlphonsoColor.ember, lineWidth: 2))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Alphonso says")
+                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                    .tracking(0.3)
+                    .foregroundStyle(AlphonsoColor.ember)
+                Text(explanation)
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(AlphonsoSpacing.sm + 4)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                .strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
+        )
+        .transition(.asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .opacity
+        ))
+    }
+}
+
+/// Wraps the checked/wrong-answer-vs-correct-answer branch every
+/// question-explanation call site needs -- Alphonso shows up on a wrong
+/// answer, a plain caption suffices for a right one (no need for him to
+/// pop in just to confirm what the learner already got right).
+struct ExplanationView: View {
+    let question: Question
+    let picked: String?
+    let explanation: String
+
+    var body: some View {
+        if isAnswerCorrect(question, picked: picked) {
+            Text(explanation)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        } else {
+            AlphonsoTipCard(explanation: explanation)
+        }
+    }
+}

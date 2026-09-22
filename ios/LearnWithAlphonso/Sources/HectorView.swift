@@ -40,6 +40,16 @@ struct HectorView: View {
 
     private var signInBody: some View {
         VStack(spacing: AlphonsoSpacing.md) {
+            // Hector's own visual presence -- previously text/voice-only
+            // everywhere in the app despite being a fully-named persona.
+            Image("Hector")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 96, height: 96)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(AlphonsoColor.ember, lineWidth: 3))
+                .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.7)
+
             Text("Sign in to Hector")
                 .font(AlphonsoFont.display(22, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
@@ -207,8 +217,20 @@ private struct HectorConversationView: View {
     }
 
     private func bubble(for turn: TutorConversationMessage) -> some View {
-        HStack {
-            if turn.role == "assistant" { Spacer(minLength: 40) }
+        HStack(alignment: .bottom, spacing: 6) {
+            if turn.role == "assistant" {
+                // Hector's own visual presence in the one place he's
+                // actually talking -- a small avatar instead of the plain
+                // blank leading space every other bubble list in this app
+                // still uses.
+                Image("Hector")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 26, height: 26)
+                    .clipShape(Circle())
+            } else {
+                Spacer(minLength: 40)
+            }
             Text(turn.content)
                 .font(AlphonsoFont.sans(15))
                 .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)

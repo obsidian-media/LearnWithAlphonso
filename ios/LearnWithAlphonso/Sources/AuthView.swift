@@ -11,11 +11,17 @@ struct AuthView: View {
             ScrollView {
                 VStack(spacing: AlphonsoSpacing.xl) {
                     VStack(spacing: AlphonsoSpacing.md) {
-                        Image(systemName: "book.pages.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(AlphonsoColor.moss)
-                            .frame(width: 84, height: 84)
-                            .background(AlphonsoColor.emberSoft.opacity(0.5), in: Circle())
+                        // Alphonso himself greets you -- the app's own
+                        // namesake had zero visual presence anywhere
+                        // before this; the sign-in screen is the first
+                        // thing every user ever sees.
+                        Image("Alphonso")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 96, height: 96)
+                            .clipShape(Circle())
+                            .overlay(Circle().strokeBorder(AlphonsoColor.moss, lineWidth: 3))
+                            .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.7)
 
                         VStack(spacing: AlphonsoSpacing.xs) {
                             Text("Learn with Alphonso")
