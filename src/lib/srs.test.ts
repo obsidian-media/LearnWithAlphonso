@@ -15,7 +15,7 @@ describe("computeReviewGrade", () => {
     expect(result.retired).toBe(false);
     expect(result.ease).toBeCloseTo(2.1);
     expect(result.repetitions).toBe(1); // floor(2 * 0.5)
-    expect(result.intervalDays).toBe(3); // the repetitions===1 fixed step
+    expect(result.intervalDays).toBe(3); // half of the previous 6-day interval
     expect(result.lapses).toBe(2);
   });
 
@@ -29,7 +29,39 @@ describe("computeReviewGrade", () => {
       elapsedDays: 1,
     });
     expect(result.repetitions).toBe(0); // floor(1 * 0.5)
-    expect(result.intervalDays).toBe(1); // the repetitions===0 fixed step
+    expect(result.intervalDays).toBe(1); // half of 1 day, floored at the 1-day minimum
+  });
+
+  it("scales the post-lapse interval off the item's actual prior interval, not a fixed step keyed off repetitions", () => {
+    // Regression test for a real audit finding (2026-09-22): repetitions
+    // caps at 3 before RETIRE_AFTER_REPETITIONS kicks in, so
+    // floor(repetitions * 0.5) can only ever be 0 or 1 -- a fixed-step
+    // lookup on that value collapsed every lapse to the same 1-or-3-day
+    // interval regardless of how long the item's real interval had grown.
+    // A well-established 40-day item lapsing should land much further out
+    // than a brand-new item lapsing, even though both halve to the same
+    // repetitions bucket (1).
+    const established = computeReviewGrade({
+      correct: false,
+      ease: 2.6,
+      intervalDays: 40,
+      repetitions: 3,
+      lapses: 0,
+      elapsedDays: 40,
+    });
+    const fresh = computeReviewGrade({
+      correct: false,
+      ease: 2.6,
+      intervalDays: 3,
+      repetitions: 2,
+      lapses: 0,
+      elapsedDays: 3,
+    });
+    expect(established.repetitions).toBe(1); // floor(3 * 0.5)
+    expect(fresh.repetitions).toBe(1); // floor(2 * 0.5) -- same bucket as `established`
+    expect(established.intervalDays).toBe(20); // half of 40, not the old fixed 3-day step
+    expect(fresh.intervalDays).toBe(2); // half of 3
+    expect(established.intervalDays).toBeGreaterThan(fresh.intervalDays);
   });
 
   it("floors ease at 1.3 so it never goes negative on repeated misses", () => {
