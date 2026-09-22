@@ -46,15 +46,34 @@ export function pastForm(verb: string): string {
 export type SlotAssignment = Record<string, string>;
 
 /**
+ * Article for a noun slot's value: "" for an uncountable noun (per
+ * compromise's own tagging -- verified against water/music/clothes,
+ * which do get tagged "Uncountable"), otherwise "a "/"an " by a plain
+ * leading-vowel-sound heuristic. Found in the 2026-09-22 final review
+ * (finding C3): the original compiler rendered nouns bare ("he ___
+ * dog.", "it ___ shower."), which is ungrammatical for any ordinary
+ * countable noun -- falsifying the pilot's own "grammar-correct-by-
+ * construction" claim. This is an improvement, not a perfect fix:
+ * compromise's Singular/Uncountable tagging doesn't capture every
+ * idiomatic exception (e.g. "coffee" tags Singular, so this renders "a
+ * coffee" even though "drinks coffee" is also natural; "go to school"
+ * idiomatically drops the article compromise's tag says to add) --
+ * documented as a known limitation, not silently assumed solved.
+ */
+function articleFor(noun: string): string {
+  const doc = nlp(noun);
+  const tags: string[] = doc.json()[0]?.terms?.[0]?.tags ?? [];
+  if (tags.includes("Uncountable")) return "";
+  return /^[aeiou]/i.test(noun) ? "an " : "a ";
+}
+
+/**
  * Compiles one Template + a concrete word-per-slot assignment into a
  * literal "sentence|answer" line -- the exact shape bank-engine.ts's
  * packQuestions() already parses from a Pack.data string. Only the verb
  * slot is blanked (the grammatically interesting part being tested);
- * other slots render as plain text. Note: noun slots render without an
- * article ("he ___ dog.", not "he ___ the dog.") -- the pilot doesn't
- * model determiners, matching its narrow goal of testing verb
- * conjugation, not full sentence naturalness (see the design doc's
- * "known limitation" note).
+ * other slots render as plain text, except noun slots which get an
+ * article (see articleFor). The rendered sentence is capitalized.
  */
 export function compileLine(template: Template, assignment: SlotAssignment): string {
   const verbSlot = template.slots.find((s) => s.pos === "verb");
@@ -87,8 +106,10 @@ export function compileLine(template: Template, assignment: SlotAssignment): str
     }
     const value = assignment[slot.name];
     if (value === undefined) throw new Error(`missing assignment for slot "${slot.name}"`);
-    prompt = prompt.replace(placeholder, value);
+    const rendered = slot.pos === "noun" ? `${articleFor(value)}${value}` : value;
+    prompt = prompt.replace(placeholder, rendered);
   });
+  prompt = prompt.charAt(0).toUpperCase() + prompt.slice(1);
 
   return `${prompt}|${answer}`;
 }

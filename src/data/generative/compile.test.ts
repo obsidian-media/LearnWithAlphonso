@@ -30,33 +30,54 @@ describe("compileLine", () => {
   const svoPresent = TEMPLATES.find((t) => t.id === "svo-present")!;
   const svoPast = TEMPLATES.find((t) => t.id === "svo-past")!;
 
-  it("conjugates to 3rd-person-singular when the subject is he/she/it", () => {
+  // Regression tests for finding C3 (2026-09-22 final review): generated
+  // output had no capitalization and no articles ("it takes shower."),
+  // which is ungrammatical -- falsifying the pilot's central
+  // grammar-correct-by-construction claim. Expected values below verified
+  // against the real installed compromise@14.17.0 tagging.
+
+  it("conjugates to 3rd-person-singular when the subject is he/she/it, capitalized, with an article on the noun", () => {
     expect(compileLine(svoPresent, { subject: "he", verb: "walk", object: "dog" })).toBe(
-      "he ___ dog.|walks",
+      "He ___ a dog.|walks",
     );
     expect(compileLine(svoPresent, { subject: "she", verb: "run", object: "school" })).toBe(
-      "she ___ school.|runs",
+      "She ___ a school.|runs",
     );
   });
 
-  it("conjugates to base form for I/you/we/they", () => {
+  it("conjugates to base form for I/you/we/they, capitalized, with an article on the noun", () => {
     expect(compileLine(svoPresent, { subject: "I", verb: "walk", object: "dog" })).toBe(
-      "I ___ dog.|walk",
+      "I ___ a dog.|walk",
     );
     expect(compileLine(svoPresent, { subject: "they", verb: "eat", object: "cake" })).toBe(
-      "they ___ cake.|eat",
+      "They ___ a cake.|eat",
     );
     expect(compileLine(svoPresent, { subject: "you", verb: "go", object: "school" })).toBe(
-      "you ___ school.|go",
+      "You ___ a school.|go",
     );
   });
 
   it("uses past tense unconditionally on a past-tense template, no agreement", () => {
     expect(compileLine(svoPast, { subject: "I", verb: "go", object: "school" })).toBe(
-      "I ___ school.|went",
+      "I ___ a school.|went",
     );
     expect(compileLine(svoPast, { subject: "they", verb: "eat", object: "cake" })).toBe(
-      "they ___ cake.|ate",
+      "They ___ a cake.|ate",
+    );
+  });
+
+  it("uses 'an' before a vowel-sound noun", () => {
+    expect(compileLine(svoPresent, { subject: "I", verb: "eat", object: "apple" })).toBe(
+      "I ___ an apple.|eat",
+    );
+  });
+
+  it("omits the article for an uncountable noun", () => {
+    expect(compileLine(svoPresent, { subject: "I", verb: "drink", object: "water" })).toBe(
+      "I ___ water.|drink",
+    );
+    expect(compileLine(svoPresent, { subject: "she", verb: "play", object: "music" })).toBe(
+      "She ___ music.|plays",
     );
   });
 
