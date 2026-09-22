@@ -144,17 +144,14 @@ targets:
   # and identifiers, and WidgetProgressPublisher.swift (app target) for
   # the publish side.
   #
-  # Deliberately left on the global CODE_SIGN_STYLE: Automatic (base
-  # settings above) for both configs, unlike the app target's Release
-  # override -- this extension has no manual-signing config of its own
-  # (no second provisioning profile exists for its
-  # com.obsidianmedia.learnwithalphonso.widget bundle id yet). That's fine
-  # for ios-app-build (Simulator, CODE_SIGNING_ALLOWED=NO overrides
-  # everything). It is NOT fine for a real `xcodebuild archive` -- expect
-  # that to need a widget-specific provisioning profile + secret before it
-  # can succeed; do not "fix" this by touching ios-release.yml's signing
-  # logic, per that workflow's own header comment -- report the exact
-  # failure instead.
+  # Manual Release signing added 2026-09-22, same pattern as the app
+  # target below: com.obsidianmedia.learnwithalphonso.widget was
+  # registered as its own App ID, granted the App Groups capability
+  # (linked to group.com.obsidianmedia.learnwithalphonso via the portal
+  # -- that link has no App Store Connect API equivalent, confirmed
+  # live), and a distribution provisioning profile was generated for it
+  # reusing the existing certificate (no new cert minted). See
+  # docs/BACKLOG.md sec 1.4 for the full trail.
   LearnWithAlphonsoWidget:
     type: app-extension
     platform: iOS
@@ -186,3 +183,15 @@ targets:
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "8"
         SKIP_INSTALL: true
+      configs:
+        Release:
+          # Same scoping rationale as the app target's Release config
+          # below: manual signing set per-target, not as a global
+          # xcodebuild override (which would also hit the SPM package
+          # targets and break the archive).
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          # ios-release.yml's "Generate Xcode project" step substitutes
+          # the real UUID (IOS_WIDGET_PROVISIONING_PROFILE_UUID secret)
+          # with `sed`, same pattern as the app target's placeholder.
+          PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_WIDGET_PROVISIONING_PROFILE_UUID"
