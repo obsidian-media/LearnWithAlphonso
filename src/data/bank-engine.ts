@@ -31,9 +31,21 @@ function pickDistractors(answer: string, pool: string[], seed: string) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
   const out: string[] = [];
+  // Dedupe case-insensitively -- a cloze pack legitimately reuses the same
+  // word as the correct answer for two different lines with different
+  // capitalization (e.g. sentence-initial "May ...?" vs mid-sentence
+  // "... may have ..."). A case-sensitive `out.includes` check let both
+  // land as separate distractors, producing two choices that read as
+  // identical to the learner. Found via an automated content-consistency
+  // scan (2026-09-22) across all 3 course content banks.
+  const seen = new Set<string>([answer.toLowerCase()]);
   for (let i = 0; out.length < 3 && i < others.length; i++) {
     const cand = others[(start + i * 7) % others.length];
-    if (cand && !out.includes(cand)) out.push(cand);
+    const key = cand?.toLowerCase();
+    if (cand && key && !seen.has(key)) {
+      out.push(cand);
+      seen.add(key);
+    }
   }
   return out;
 }
