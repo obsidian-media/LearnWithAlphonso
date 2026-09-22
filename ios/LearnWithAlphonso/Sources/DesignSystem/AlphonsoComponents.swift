@@ -71,6 +71,24 @@ extension ButtonStyle where Self == AlphonsoSecondaryButtonStyle {
     }
 }
 
+extension View {
+    /// Parchment-filled input background with a visible hairline border.
+    /// Parchment-vs-surface alone is a deliberately subtle two-shade
+    /// difference (matches the web app's own design), which read as
+    /// "input field is invisible" on a real device -- this is the fix,
+    /// centralized so every TextField/input across the app shares one
+    /// definition instead of repeating background+overlay at each call
+    /// site (found via real device screenshots, not simulated).
+    func alphonsoInputBackground(radius: CGFloat = AlphonsoRadius.md) -> some View {
+        self
+            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .strokeBorder(AlphonsoColor.hairline, lineWidth: 1)
+            )
+    }
+}
+
 // MARK: - Surfaces
 
 /// A parchment-background card, used in place of plain `List`

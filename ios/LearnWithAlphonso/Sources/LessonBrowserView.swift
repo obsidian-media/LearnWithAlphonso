@@ -13,6 +13,7 @@ struct LessonBrowserView: View {
     let syncQueueStore: SyncQueueStore
 
     @State private var course: Course = .english
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -56,8 +57,12 @@ struct LessonBrowserView: View {
                     .pickerStyle(.segmented)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Sign out") { session.signOut() }
-                        .tint(AlphonsoColor.moss)
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                    }
+                    .tint(AlphonsoColor.moss)
                 }
             }
             .navigationDestination(for: String.self) { lessonId in
@@ -66,6 +71,9 @@ struct LessonBrowserView: View {
                 } else {
                     Text("Lesson not found")
                 }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView(session: session)
             }
         }
         .tint(AlphonsoColor.moss)

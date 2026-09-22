@@ -937,7 +937,10 @@ public final class ProgressSyncClient: Sendable {
         return ISO8601DateFormatter().date(from: string)
     }
 
-    private func restRequest(path: String, query: [URLQueryItem]) -> URLRequest {
+    // internal, not private -- see the stored-properties comment above;
+    // ProgressSyncClient+Profile.swift (theme sync) calls this too, same
+    // reasoning as requireSuccess's own widening.
+    func restRequest(path: String, query: [URLQueryItem]) -> URLRequest {
         var components = URLComponents(url: supabaseURL.appendingPathComponent("rest/v1/\(path)"), resolvingAgainstBaseURL: false)!
         components.queryItems = query
         var request = URLRequest(url: components.url!)

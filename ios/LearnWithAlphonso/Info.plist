@@ -32,17 +32,23 @@
 	     needs re-evaluating -- don't copy this value forward blindly. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Design system (Meadow theme port, see DesignSystem/AlphonsoFont.swift):
-	     Fraunces and Geist, bundled as their upstream variable-font files
-	     under Sources/Fonts/ (XcodeGen picks up non-Swift files under a
-	     `sources:` path as Copy Bundle Resources automatically, same as
-	     Assets.xcassets). Registering by filename here is the standard
-	     "Fonts provided by application" mechanism -- no project.yml change
-	     needed. -->
+	<!-- Design system (all 3 themes, see DesignSystem/AlphonsoTheme.swift
+	     and AlphonsoFont.swift): each theme's display/sans font pair,
+	     bundled as upstream variable-font files under Sources/Fonts/
+	     (XcodeGen picks up non-Swift files under a `sources:` path as
+	     Copy Bundle Resources automatically, same as Assets.xcassets).
+	     Instrument Serif is the one static (non-variable) file -- the web
+	     app only ever loads its italic axis for Studio Ink, never bold.
+	     Registering by filename here is the standard "Fonts provided by
+	     application" mechanism -- no project.yml change needed. -->
 	<key>UIAppFonts</key>
 	<array>
 		<string>Fraunces-Variable.ttf</string>
 		<string>Geist-Variable.ttf</string>
+		<string>InstrumentSerif-Regular.ttf</string>
+		<string>InstrumentSans-Variable.ttf</string>
+		<string>Newsreader-Variable.ttf</string>
+		<string>SourceSans3-Variable.ttf</string>
 	</array>
 </dict>
 </plist>

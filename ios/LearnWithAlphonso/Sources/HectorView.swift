@@ -78,7 +78,7 @@ private struct HectorEmailStep: View {
             TextField("Email", text: $email)
                 .textFieldStyle(.plain)
                 .padding(AlphonsoSpacing.sm + 2)
-                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
+                .alphonsoInputBackground()
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
@@ -112,7 +112,7 @@ private struct HectorCodeStep: View {
             TextField("6-digit code", text: $code)
                 .textFieldStyle(.plain)
                 .padding(AlphonsoSpacing.sm + 2)
-                .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
+                .alphonsoInputBackground()
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
             Button {

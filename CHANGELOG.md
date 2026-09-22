@@ -86,6 +86,26 @@ green on every commit, including a real bug it caught (see
 `ARCHITECTURE.md`'s "Known rough edges" for the `Section`/`header:`
 brace-nesting gotcha that caused it).
 
+**iOS theme system + real-device bug fixes** — direct follow-up once
+the user actually tested the design-system build on their phone via
+TestFlight. Found two things: (1) almost every screen was near-illegible
+— white text on a light background — because the device was in system
+Dark Mode and the app's fixed-light palette didn't account for that;
+(2) the sign-in screen had a real layout bug (a `Divider()` in an
+`HStack` stretching to fill the screen) and looked sparse. Root-cause
+fix for (1): the design system became a real *theme system* (Meadow +
+the web's other two themes, Studio Ink and Manuscript, all three now on
+iOS) with `.preferredColorScheme` pinned to whichever theme is active,
+so system-styled chrome resolves colors against the theme's own
+light-or-dark-ness instead of the device's setting — this is also what
+makes Studio Ink (legitimately dark by design) render correctly, not
+just a Dark Mode workaround. New in-app theme picker (`SettingsView.swift`,
+the app's first settings screen) syncs the choice to `profiles.theme`
+in the background, round-tripping with the web app's own theme picker
+on the same account. Sign-in screen got a real visual pass, not just
+the bug fix. See `ARCHITECTURE.md`'s "Native iOS app" and "Known rough
+edges" sections for the full breakdown.
+
 ## V3 — Feature depth expansion (2026-09-20 – in progress)
 
 Six-package initiative adding depth to existing features rather than new
