@@ -19,6 +19,9 @@ dist-ssr
 # Wrangler / Cloudflare
 .wrangler/
 
+# superpowers:executing-plans / subagent-driven-development scratch workspace
+.superpowers/
+
 # Vercel CLI local project link (machine-specific)
 .vercel
 .dev.vars

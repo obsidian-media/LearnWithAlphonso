@@ -22,6 +22,7 @@
     "@tanstack/react-start": "^1.168.52",
     "@tanstack/router-plugin": "^1.168.37",
     "clsx": "^2.1.1",
+    "compromise": "^14.17.0",
     "framer-motion": "^12.43.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

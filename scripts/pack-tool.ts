@@ -41,6 +41,11 @@ import {
   type PackIssue,
 } from "../src/lib/pack-authoring";
 import { draftPack } from "../src/lib/pack-draft-generation.server";
+import { GENERATIVE_VOCAB } from "../src/data/generative/vocab";
+import { TEMPLATES } from "../src/data/generative/templates";
+import { expandTemplate } from "../src/data/generative/expand";
+import { proposeVocabForTopic } from "../src/lib/generative-vocab.server";
+import { replaceVocabArrayInSource } from "../src/lib/generative-vocab-authoring";
 
 type Course = "en" | "fr" | "es";
 const COURSES: Course[] = ["en", "fr", "es"];
@@ -206,6 +211,125 @@ async function cmdDraft(flags: Flags) {
   printIssues(validatePack(pack));
 }
 
+const VOCAB_FILE = "src/data/generative/vocab.ts";
+
+async function cmdGenerate(flags: Flags) {
+  const course = requireCourse(flags);
+  if (course !== "en") {
+    fail(
+      '--course must be "en" -- this pilot is English-only, see ' +
+        "docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md",
+    );
+  }
+  const level = requireLevel(flags);
+  const id = requireString(flags, "id", "e.g. a1gen1");
+  const templateId = requireString(
+    flags,
+    "template",
+    `one of ${TEMPLATES.map((t) => t.id).join(", ")}`,
+  );
+  const topic = requireString(flags, "topic", 'e.g. "daily routines"');
+  const count = flags.count ? Number(flags.count) : 25;
+  const out = typeof flags.out === "string" ? flags.out : `drafts/${id}.json`;
+  if (!Number.isFinite(count) || count < 3) fail("--count must be a number >= 3");
+
+  const template = TEMPLATES.find((t) => t.id === templateId);
+  if (!template) {
+    fail(
+      `unknown --template "${templateId}" -- must be one of ${TEMPLATES.map((t) => t.id).join(", ")}`,
+    );
+  }
+  if (template!.level !== level) {
+    fail(`--level ${level} doesn't match template "${templateId}"'s level (${template!.level})`);
+  }
+
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) {
+    fail(
+      "NVIDIA_API_KEY is not set. Vocab proposal needs a NVIDIA NIM key (see .env.example, " +
+        "build.nvidia.com).",
+    );
+  }
+
+  const posTypes = [
+    ...new Set(template!.slots.filter((s) => s.pos !== "pronoun").map((s) => s.pos)),
+  ];
+
+  console.log(`Proposing vocab for "${topic}" (${posTypes.join(", ")})...`);
+  const proposal = await proposeVocabForTopic({
+    topic,
+    posTypes,
+    level,
+    existingVocab: GENERATIVE_VOCAB,
+    nvidiaApiKey: apiKey,
+    nvidiaModel: resolveNvidiaChatModel(),
+  });
+
+  console.log(`  accepted: ${proposal.accepted.length}, rejected: ${proposal.rejected.length}`);
+  if (proposal.rejected.length > 0) {
+    console.log('  rejected (needs manual review -- POS mismatch, or excluded like "be"):');
+    for (const r of proposal.rejected) console.log(`    - ${r.word} (claimed ${r.pos})`);
+  }
+
+  if (proposal.accepted.length > 0) {
+    if (!existsSync(VOCAB_FILE)) fail(`vocab file not found: ${VOCAB_FILE}`);
+    const vocabSource = readFileSync(VOCAB_FILE, "utf-8");
+    const updated = replaceVocabArrayInSource(vocabSource, proposal.merged);
+    writeFileSync(VOCAB_FILE, updated);
+    console.log(`  written ${proposal.accepted.length} new vocab entries to ${VOCAB_FILE}.`);
+  }
+
+  // Filter to vocab actually tagged with this topic -- not the whole
+  // merged dataset. Found in the 2026-09-22 final review (finding I1):
+  // passing the full dataset meant a pack titled "Shopping" could be
+  // built from "daily routines" words once vocab.ts had grown past its
+  // first topic, defeating the whole point of `VocabEntry.topics`.
+  const topicVocab = proposal.merged.filter((v) => v.topics.includes(topic));
+
+  const lines = expandTemplate({
+    template: template!,
+    vocab: topicVocab,
+    packId: id,
+    targetCount: count,
+  });
+
+  if (lines.length === 0) {
+    fail(
+      `no sentences could be generated -- not enough vocab at level ${level} for this ` +
+        `template's required parts of speech (${posTypes.join(", ")}). Run "generate" again ` +
+        "with a broader topic, or add vocab manually.",
+    );
+  }
+  if (lines.length < count) {
+    console.log(
+      `  warning: only ${lines.length} distinct sentences possible (requested ${count}) -- ` +
+        "the vocab pool for this topic/level is small. Not an error, just a shortfall.",
+    );
+  }
+
+  const pack: Pack = {
+    id,
+    title: topic.replace(/^\w/, (c) => c.toUpperCase()),
+    subtitle: `Generated: ${template!.tense}-tense sentences`,
+    kind: "cloze",
+    note: `Auto-generated via "${template!.id}" -- verb-conjugation practice.`,
+    data: lines.join("\n"),
+  };
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, JSON.stringify(pack, null, 2) + "\n");
+  console.log(`\nDraft pack written to ${out} (${lines.length} lines).`);
+  console.log(
+    "THIS IS GENERATED CONTENT -- grammar is compiler-verified, but read every line before",
+  );
+  console.log("validating/applying, same discipline as a hand-authored or AI-drafted pack.\n");
+  console.log(previewPack(pack));
+  console.log("\nValidation:");
+  printIssues(validatePack(pack));
+  console.log(`\nNext:`);
+  console.log(`  bun run scripts/pack-tool.ts validate ${out} --course ${course}`);
+  console.log(`  bun run scripts/pack-tool.ts apply ${out} --course ${course} --level ${level}`);
+}
+
 function cmdValidate(positional: string[], flags: Flags) {
   const file = positional[0];
   if (!file) fail("usage: validate <file.json> [--course en|fr|es]");
@@ -281,6 +405,7 @@ function printHelp(exitCode: number) {
       "Commands:",
       "  new      --course <en|fr|es> --level <A1..C1> --id <id> [--kind pair|cloze] [--out <path>]",
       "  draft    --course <en|fr|es> --level <A1..C1> --id <id> --topic <topic> [--kind pair|cloze] [--lines N] [--out <path>]",
+      "  generate --course en --level <A1..C1> --id <id> --template <svo-present|svo-past> --topic <topic> [--count N] [--out <path>]",
       "  validate <file.json> [--course <en|fr|es>]",
       "  preview  <file.json>",
       "  apply    <file.json> --course <en|fr|es> --level <A1..C1> [--confirm]",
@@ -297,6 +422,9 @@ async function main() {
       break;
     case "draft":
       await cmdDraft(flags);
+      break;
+    case "generate":
+      await cmdGenerate(flags);
       break;
     case "validate":
       cmdValidate(positional, flags);
