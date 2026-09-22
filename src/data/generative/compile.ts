@@ -1,4 +1,6 @@
 import nlp from "compromise";
+import type { Template } from "./templates";
+import { PRONOUNS } from "./templates";
 
 /**
  * Generative sentence-content pilot (English only) --
@@ -37,4 +39,56 @@ export function pastForm(verb: string): string {
   const doc = nlp(`I ${verb}`);
   doc.verbs().toPastTense();
   return doc.text().replace(/^I /, "");
+}
+
+/** Slot name -> the concrete word chosen for it (a pronoun's own word,
+ *  or a VocabEntry's word). */
+export type SlotAssignment = Record<string, string>;
+
+/**
+ * Compiles one Template + a concrete word-per-slot assignment into a
+ * literal "sentence|answer" line -- the exact shape bank-engine.ts's
+ * packQuestions() already parses from a Pack.data string. Only the verb
+ * slot is blanked (the grammatically interesting part being tested);
+ * other slots render as plain text. Note: noun slots render without an
+ * article ("he ___ dog.", not "he ___ the dog.") -- the pilot doesn't
+ * model determiners, matching its narrow goal of testing verb
+ * conjugation, not full sentence naturalness (see the design doc's
+ * "known limitation" note).
+ */
+export function compileLine(template: Template, assignment: SlotAssignment): string {
+  const verbSlot = template.slots.find((s) => s.pos === "verb");
+  if (!verbSlot) throw new Error(`template "${template.id}" has no verb slot to test`);
+
+  const subjectSlot = verbSlot.agreeWith
+    ? template.slots.find((s) => s.name === verbSlot.agreeWith)
+    : undefined;
+  const subjectWord = subjectSlot ? assignment[subjectSlot.name] : undefined;
+  const pronoun = subjectWord
+    ? PRONOUNS.find((p) => p.word.toLowerCase() === subjectWord.toLowerCase())
+    : undefined;
+
+  const rawVerb = assignment[verbSlot.name];
+  if (rawVerb === undefined) throw new Error(`missing assignment for slot "${verbSlot.name}"`);
+
+  const answer =
+    template.tense === "past"
+      ? pastForm(rawVerb)
+      : pronoun?.thirdPersonSingular
+        ? thirdPersonForm(rawVerb)
+        : baseForm(rawVerb);
+
+  let prompt = template.render;
+  template.slots.forEach((slot, i) => {
+    const placeholder = `%${i + 1}`;
+    if (slot.name === verbSlot.name) {
+      prompt = prompt.replace(placeholder, "___");
+      return;
+    }
+    const value = assignment[slot.name];
+    if (value === undefined) throw new Error(`missing assignment for slot "${slot.name}"`);
+    prompt = prompt.replace(placeholder, value);
+  });
+
+  return `${prompt}|${answer}`;
 }
