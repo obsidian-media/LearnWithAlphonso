@@ -33,21 +33,21 @@ struct AchievementsView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(AlphonsoColor.moss)
                 } else {
                     ScrollView {
                         if let errorMessage {
                             Text(errorMessage)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                                 .padding(.top, 8)
                         }
                         Text("\(unlockedCount) of \(totalCount) unlocked")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(AlphonsoFont.sans(12, weight: .medium))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
                             .padding(.top, 8)
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: AlphonsoSpacing.sm + 4)], spacing: AlphonsoSpacing.sm + 4) {
                             ForEach(contentStore.achievements) { achievement in
                                 AchievementBadgeView(achievement: achievement, unlocked: unlockedByID[achievement.id] != nil)
                             }
@@ -60,10 +60,12 @@ struct AchievementsView: View {
                                 .padding(.bottom)
                         }
                     }
+                    .background(AlphonsoColor.surface)
                 }
             }
             .navigationTitle("Achievements")
         }
+        .tint(AlphonsoColor.moss)
         .task { await load() }
     }
 
@@ -100,33 +102,34 @@ struct WeaknessTrendSection: View {
     let entries: [WeaknessTrendEntry]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 2) {
             Text("Weakness trend")
-                .font(.headline)
+                .font(AlphonsoFont.display(18, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
             Text("Grammar gaps we've spotted, and how they're going")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            VStack(spacing: 8) {
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            VStack(spacing: AlphonsoSpacing.sm) {
                 ForEach(entries.prefix(8), id: \.category) { entry in
                     HStack {
                         Text(entry.category.replacingOccurrences(of: "-", with: " ").capitalized)
-                            .font(.subheadline)
+                            .font(AlphonsoFont.sans(14))
+                            .foregroundStyle(AlphonsoColor.ink)
                         Spacer()
                         if entry.openCount > 0 {
                             Text("Still working on it")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.orange)
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ember)
                         } else {
                             Text("Mastered (\(entry.resolvedCount)\u{00D7})")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.green)
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.moss)
                         }
                     }
                 }
             }
-            .padding(12)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(AlphonsoSpacing.sm + 4)
+            .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
         }
     }
 }
@@ -147,19 +150,19 @@ struct AchievementBadgeView: View {
                 .background(unlocked ? tierColor : Color(white: 0.78))
                 .clipShape(Circle())
             Text(achievement.title)
-                .font(.caption.weight(.semibold))
+                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
             Text(achievement.description)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(AlphonsoFont.sans(11))
+                .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
-        .padding(12)
+        .padding(AlphonsoSpacing.sm + 4)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous))
         .opacity(unlocked ? 1 : 0.55)
     }
 
@@ -187,12 +190,6 @@ struct AchievementBadgeView: View {
     }
 }
 
-extension Color {
-    init(hex: UInt32) {
-        self.init(
-            red: Double((hex >> 16) & 0xFF) / 255,
-            green: Double((hex >> 8) & 0xFF) / 255,
-            blue: Double(hex & 0xFF) / 255
-        )
-    }
-}
+// Color(hex:) now lives in DesignSystem/AlphonsoTheme.swift (shared across
+// the app) -- this file's own copy was removed to avoid a duplicate
+// `init(hex:)` declaration on the same type in the same module.

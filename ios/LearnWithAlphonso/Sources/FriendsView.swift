@@ -41,29 +41,32 @@ struct FriendsView: View {
             ZStack(alignment: .top) {
                 List {
                     Section {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Invite a friend").font(.headline)
+                        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs + 4) {
+                            Text("Invite a friend")
+                                .font(AlphonsoFont.display(17, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ink)
                             Text("Share your link — when they open it, you're automatically friends.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                             if let inviteLink {
                                 ShareLink(item: inviteLink) {
                                     Label("Share invite link", systemImage: "square.and.arrow.up")
                                 }
-                                .buttonStyle(.borderedProminent)
+                                .buttonStyle(.alphonsoPrimary(fullWidth: false))
                             }
                         }
                         .padding(.vertical, 4)
                     }
+                    .listRowBackground(AlphonsoColor.parchment)
 
-                    Section(friendsCountTitle) {
+                    Section {
                         if isLoading {
-                            ProgressView()
+                            ProgressView().tint(AlphonsoColor.moss)
                         } else if let errorMessage {
-                            Text(errorMessage).foregroundStyle(.secondary)
+                            Text(errorMessage).foregroundStyle(AlphonsoColor.inkSoft)
                         } else if friends.isEmpty {
                             Text("No friends yet. Share your invite link to get started.")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AlphonsoColor.inkSoft)
                         } else {
                             ForEach(friends, id: \.userID) { friend in
                                 FriendRowView(friend: friend) {
@@ -78,16 +81,30 @@ struct FriendsView: View {
                                 }
                             }
                         }
+                    } header: {
+                        Text(friendsCountTitle)
+                            .font(AlphonsoFont.sans(12, weight: .semiBold))
+                            .tracking(0.4)
+                            .foregroundStyle(AlphonsoColor.ember)
                     }
+                    .listRowBackground(AlphonsoColor.parchment)
 
                     if !activityEvents.isEmpty {
-                        Section("Activity") {
+                        Section {
                             ForEach(activityEvents) { event in
                                 ActivityEventRow(event: event, displayName: displayName(for: event.userID))
                             }
+                        } header: {
+                            Text("Activity")
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .tracking(0.4)
+                                .foregroundStyle(AlphonsoColor.ember)
                         }
+                        .listRowBackground(AlphonsoColor.parchment)
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(AlphonsoColor.surface)
 
                 if let nudgeBannerMessage {
                     ToastBanner(message: nudgeBannerMessage, iconName: "hand.wave.fill")
@@ -104,6 +121,7 @@ struct FriendsView: View {
                 }
             }
         }
+        .tint(AlphonsoColor.moss)
         .task { await loadAll() }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
@@ -213,28 +231,34 @@ private struct FriendRowView: View {
     @State private var canNudge = true
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AlphonsoSpacing.sm + 4) {
             Circle()
                 .fill(AvatarColor.forSeed(friend.avatarSeed))
                 .frame(width: 40, height: 40)
                 .overlay(
                     Text(friend.displayName.prefix(1).uppercased())
-                        .font(.subheadline.weight(.semibold))
+                        .font(AlphonsoFont.sans(14, weight: .semiBold))
                         .foregroundStyle(.white)
                 )
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(friend.displayName).font(.subheadline.weight(.semibold))
+                Text(friend.displayName)
+                    .font(AlphonsoFont.sans(15, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
                 Text("\u{1F525} \(friend.streak)-day streak")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(friend.weekXP)").font(.subheadline.weight(.semibold))
-                Text("XP this week").font(.caption2).foregroundStyle(.secondary)
+                Text("\(friend.weekXP)")
+                    .font(AlphonsoFont.sans(15, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text("XP this week")
+                    .font(AlphonsoFont.sans(11))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
 
             Button {
@@ -243,7 +267,7 @@ private struct FriendRowView: View {
             } label: {
                 Image(systemName: "hand.wave")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.alphonsoSecondary(fullWidth: false))
             .disabled(!canNudge)
         }
         .padding(.vertical, 4)
@@ -261,7 +285,8 @@ private struct ActivityEventRow: View {
                 .foregroundStyle(iconColor)
                 .frame(width: 24)
             Text(copy)
-                .font(.subheadline)
+                .font(AlphonsoFont.sans(14))
+                .foregroundStyle(AlphonsoColor.ink)
             Spacer()
         }
         .padding(.vertical, 2)
@@ -294,10 +319,10 @@ private struct ActivityEventRow: View {
 
     private var iconColor: Color {
         switch event.eventType {
-        case "lesson_completed": return .green
-        case "streak_milestone": return .orange
-        case "league_promotion": return .purple
-        default: return .secondary
+        case "lesson_completed": return AlphonsoColor.moss
+        case "streak_milestone": return AlphonsoColor.ember
+        case "league_promotion": return AlphonsoColor.mossDeep
+        default: return AlphonsoColor.inkSoft
         }
     }
 }
