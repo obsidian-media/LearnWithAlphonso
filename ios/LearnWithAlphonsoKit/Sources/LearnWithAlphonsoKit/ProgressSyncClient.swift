@@ -947,7 +947,9 @@ public final class ProgressSyncClient: Sendable {
         return request
     }
 
-    private static func requireSuccess(data: Data, response: URLResponse) throws {
+    // internal, not private -- see the stored-properties comment above;
+    // same reasoning, extension files in other feature plans call this too.
+    static func requireSuccess(data: Data, response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw ProgressSyncError.badResponse
         }

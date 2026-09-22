@@ -678,6 +678,8 @@ git push
 
 Run `grep -n "private let supabaseURL" ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient.swift` first — if it reports nothing, this was already applied (by the Teams or Challenges plan, if implemented first) and this step is a no-op; skip to Step 2. Otherwise apply the exact same change described in the Teams plan's Task 6 Step 1 (`private let supabaseURL/anonKey/accessToken/requester` → drop `private`).
 
+**Verified live via a real CI failure while implementing the Challenges plan**: the stored properties aren't the only thing that needs widening — `private static func requireSuccess(data:response:)` (used by every RPC-calling method via `try Self.requireSuccess(...)`) is also `private` and needs the same treatment (`private static func` → `static func`). Check both in the same grep pass; a plan that only widens the four stored properties will compile-fail in CI on this method specifically.
+
 - [ ] **Step 2: Create `ProgressSyncClient+Season.swift` with the type and client method**
 
 ```swift
