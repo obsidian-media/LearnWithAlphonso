@@ -298,6 +298,28 @@ extension View {
 
 // MARK: - Mascot
 
+/// A rounded speech-bubble outline with a small tail pointing out its
+/// trailing edge -- used by `AlphonsoTipCard` so Alphonso's explanation
+/// reads as him actually *speaking* rather than sitting in a plain card.
+struct SpeechBubbleShape: Shape {
+    var cornerRadius: CGFloat = AlphonsoRadius.lg
+    var tailWidth: CGFloat = 14
+    var tailHeight: CGFloat = 16
+
+    func path(in rect: CGRect) -> Path {
+        let bubbleRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width - tailWidth, height: rect.height)
+        var path = Path(roundedRect: bubbleRect, cornerRadius: cornerRadius)
+        // Tail anchored low on the trailing edge, pointing toward Alphonso's
+        // portrait (which sits just outside the bubble's trailing edge).
+        let tailMidY = rect.maxY - cornerRadius - tailHeight / 2
+        path.move(to: CGPoint(x: bubbleRect.maxX, y: tailMidY - tailHeight / 2))
+        path.addLine(to: CGPoint(x: rect.maxX, y: tailMidY))
+        path.addLine(to: CGPoint(x: bubbleRect.maxX, y: tailMidY + tailHeight / 2))
+        path.closeSubpath()
+        return path
+    }
+}
+
 /// Alphonso appearing in person to help after a wrong answer -- direct
 /// user request: the app has two named personas (Alphonso, the app's
 /// own free host; Hector, the Pro AI tutor) with zero visual presence
@@ -307,18 +329,20 @@ extension View {
 /// the subscription. Used in LessonPlayerView's QuestionCard/
 /// GeneratedPracticeSection and ReviewQueueView's ReviewQuestionCard,
 /// wherever `checked && !isAnswerCorrect(...)`.
+///
+/// A bigger, more theatrical version than this card's original small
+/// inline-avatar design -- direct user request, with a real speech
+/// bubble instead of a plain rounded box. Deliberately still laid out
+/// in-flow (part of the same VStack as the Check/Continue button below
+/// it, never an absolute overlay), so -- unlike the user's own reference
+/// mockup, where Alphonso's cape covered the Check button -- this can
+/// never obscure an interactive element regardless of how large the
+/// portrait renders.
 struct AlphonsoTipCard: View {
     let explanation: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: AlphonsoSpacing.sm + 2) {
-            Image("Alphonso")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 52, height: 52)
-                .clipShape(Circle())
-                .overlay(Circle().strokeBorder(AlphonsoColor.ember, lineWidth: 2))
-
+        HStack(alignment: .bottom, spacing: 0) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Alphonso says")
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
@@ -328,15 +352,27 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(14))
                     .foregroundStyle(AlphonsoColor.ink)
             }
+            .padding(AlphonsoSpacing.sm + 4)
+            .padding(.trailing, AlphonsoSpacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                SpeechBubbleShape().fill(AlphonsoColor.parchment)
+            )
+            .overlay(
+                SpeechBubbleShape().strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
+            )
 
-            Spacer(minLength: 0)
+            Image("Alphonso")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 88, height: 112)
+                .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                        .strokeBorder(AlphonsoColor.ember, lineWidth: 2)
+                )
+                .padding(.leading, -6)
         }
-        .padding(AlphonsoSpacing.sm + 4)
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                .strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
-        )
         .transition(.asymmetric(
             insertion: .move(edge: .trailing).combined(with: .opacity),
             removal: .opacity
