@@ -1,4 +1,5 @@
 import { z } from "zod";
+import nlp from "compromise";
 
 /**
  * Generative sentence-content pilot -- LLM proposes vocab candidates
@@ -72,4 +73,23 @@ export async function proposeVocabCandidates(params: {
   } catch {
     return [];
   }
+}
+
+const POS_TAG_MAP: Record<"noun" | "verb" | "adjective", string> = {
+  noun: "Noun",
+  verb: "Verb",
+  adjective: "Adjective",
+};
+
+/**
+ * Cross-checks an LLM-claimed part-of-speech against compromise's own
+ * tagging -- the concrete implementation of "the LLM never writes
+ * grammar-bearing text directly" (design doc component 3). A mismatch
+ * is rejected outright by the caller (proposeVocabForTopic, added in
+ * Task 9), never coerced or guessed.
+ */
+export function verifyCandidatePos(candidate: VocabCandidate): boolean {
+  const doc = nlp(candidate.word);
+  const tags: string[] = doc.json()[0]?.terms?.[0]?.tags ?? [];
+  return tags.includes(POS_TAG_MAP[candidate.pos]);
 }

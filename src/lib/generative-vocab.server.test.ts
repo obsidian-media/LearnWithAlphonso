@@ -3,6 +3,7 @@ import {
   parseVocabCandidates,
   proposeVocabCandidates,
   vocabProposalPrompt,
+  verifyCandidatePos,
 } from "./generative-vocab.server";
 
 const CANDIDATES = [
@@ -89,5 +90,18 @@ describe("proposeVocabCandidates", () => {
       nvidiaModel: "m",
     });
     expect(result).toEqual([]);
+  });
+});
+
+describe("verifyCandidatePos", () => {
+  it("accepts a candidate whose claimed POS matches compromise's own tagging", () => {
+    expect(verifyCandidatePos({ word: "coffee", pos: "noun" })).toBe(true);
+    expect(verifyCandidatePos({ word: "happy", pos: "adjective" })).toBe(true);
+    expect(verifyCandidatePos({ word: "walk", pos: "verb" })).toBe(true);
+  });
+
+  it("rejects a candidate with a deliberately wrong claimed POS", () => {
+    expect(verifyCandidatePos({ word: "coffee", pos: "verb" })).toBe(false);
+    expect(verifyCandidatePos({ word: "quickly", pos: "noun" })).toBe(false);
   });
 });
