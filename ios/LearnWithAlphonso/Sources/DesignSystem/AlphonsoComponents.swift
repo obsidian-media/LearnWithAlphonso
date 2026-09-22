@@ -250,11 +250,15 @@ extension View {
 
 /// Shared by LessonBrowserView and ReviewQueueView -- was two separately
 /// duplicated Pickers using full course names ("English"/"Français"/
-/// "Español") in a `.segmented` style, which on a real device left almost
-/// no room per segment (competing with a trailing toolbar button) and
-/// truncated down to a single letter each ("E"/"F"/"E" -- indistinguishable
-/// for English vs Español). Flag + 2-letter code is both far more compact
-/// and more visually alive than plain text.
+/// "Español") in a `.segmented` style. First fix (flag + 2-letter code)
+/// wasn't enough on its own: a real device screenshot showed the
+/// `.segmented` control itself is too narrow in a `.topBarLeading` slot
+/// competing with a large navigationTitle -- three segments squeezed into
+/// that width clipped even the compact flag+code labels down to unreadable
+/// vertical slivers. The real fix is the control, not the label: `.menu`
+/// style only ever has to render *one* selection in the toolbar (plus a
+/// chevron), so there's no per-segment width to divide -- tapping opens a
+/// full-width menu where "🇬🇧 EN" etc. always has room.
 struct CoursePicker: View {
     @Binding var course: Course
 
@@ -264,7 +268,7 @@ struct CoursePicker: View {
             Text("🇫🇷 FR").tag(Course.french)
             Text("🇪🇸 ES").tag(Course.spanish)
         }
-        .pickerStyle(.segmented)
+        .pickerStyle(.menu)
     }
 }
 
