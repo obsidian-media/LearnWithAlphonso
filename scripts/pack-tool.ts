@@ -277,9 +277,16 @@ async function cmdGenerate(flags: Flags) {
     console.log(`  written ${proposal.accepted.length} new vocab entries to ${VOCAB_FILE}.`);
   }
 
+  // Filter to vocab actually tagged with this topic -- not the whole
+  // merged dataset. Found in the 2026-09-22 final review (finding I1):
+  // passing the full dataset meant a pack titled "Shopping" could be
+  // built from "daily routines" words once vocab.ts had grown past its
+  // first topic, defeating the whole point of `VocabEntry.topics`.
+  const topicVocab = proposal.merged.filter((v) => v.topics.includes(topic));
+
   const lines = expandTemplate({
     template: template!,
-    vocab: proposal.merged,
+    vocab: topicVocab,
     packId: id,
     targetCount: count,
   });

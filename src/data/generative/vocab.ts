@@ -4,11 +4,6 @@ export type VocabEntry = {
   word: string;
   pos: "noun" | "verb" | "adjective";
   level: Level;
-  /** Safety valve for a future word compile.ts's derivation gets wrong.
-   *  Verified 2026-09-22: the pilot's actual starter vocab (have, go,
-   *  do, walk, run, eat, play) needs zero entries here -- see
-   *  compile.test.ts. */
-  irregularForms?: Partial<Record<"presentThirdPerson" | "past", string>>;
   /** Topic tag(s) this word was proposed under. Unioned (not
    *  duplicated) across repeated proposals of the same (word, pos) --
    *  see generative-vocab-authoring.ts's mergeVocabEntries. */

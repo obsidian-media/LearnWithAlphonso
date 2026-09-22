@@ -64,18 +64,6 @@ describe("formatVocabEntryAsTs", () => {
     expect(rendered).toContain('pos: "noun"');
     expect(rendered).toContain('level: "A1"');
     expect(rendered).toContain('topics: ["cafe", "daily"]');
-    expect(rendered).not.toContain("irregularForms");
-  });
-
-  it("includes irregularForms only when present", () => {
-    const rendered = formatVocabEntryAsTs({
-      word: "go",
-      pos: "verb",
-      level: "A1",
-      topics: ["daily"],
-      irregularForms: { presentThirdPerson: "goes", past: "went" },
-    });
-    expect(rendered).toContain("irregularForms: { presentThirdPerson: \"goes\", past: \"went\" }");
   });
 });
 

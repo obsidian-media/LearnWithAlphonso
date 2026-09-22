@@ -40,16 +40,6 @@ export function formatVocabEntryAsTs(entry: VocabEntry): string {
     `    pos: ${tsString(entry.pos)},`,
     `    level: ${tsString(entry.level)},`,
   ];
-  if (entry.irregularForms) {
-    const parts: string[] = [];
-    if (entry.irregularForms.presentThirdPerson) {
-      parts.push(`presentThirdPerson: ${tsString(entry.irregularForms.presentThirdPerson)}`);
-    }
-    if (entry.irregularForms.past) {
-      parts.push(`past: ${tsString(entry.irregularForms.past)}`);
-    }
-    lines.push(`    irregularForms: { ${parts.join(", ")} },`);
-  }
   lines.push(`    topics: [${entry.topics.map(tsString).join(", ")}],`);
   lines.push("  },");
   return lines.join("\n");

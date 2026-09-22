@@ -164,15 +164,6 @@ export type VocabEntry = {
   word: string;
   pos: "noun" | "verb" | "adjective";
   level: Level;
-  /** VERIFIED 2026-09-22 via a hands-on spike (not assumed from docs --
-   *  see the compiler section below): `compromise` conjugates have,
-   *  go, do, and every tested regular verb (walk/run/eat/play)
-   *  correctly with NO manual override needed, once queried the right
-   *  way (fixed-context derivation, see component 4). This field
-   *  exists as a safety valve for a future word that needs one, but
-   *  the pilot's actual starter vocab needs zero entries here -- see
-   *  "be" below for the one verb that's excluded instead of overridden. */
-  irregularForms?: Partial<Record<"presentThirdPerson" | "past", string>>;
   /** Topic tag(s) this word was proposed under -- lets a pack-generation
    *  run filter to vocab relevant to its topic instead of the whole
    *  dataset. Unioned, not duplicated: if a `generate` run proposes a
@@ -184,6 +175,20 @@ export type VocabEntry = {
   topics: string[];
 };
 ```
+
+**No `irregularForms` override field.** An earlier draft had one --
+removed in the final-review fix pass (2026-09-22, finding I2). The
+verified spike table below (component 4) already showed the pilot's
+actual starter verbs (have, go, do, walk, run, eat, play) need zero
+overrides, and the compiler (`compileLine`) only ever receives bare
+word strings (`SlotAssignment = Record<string, string>`), never a
+`VocabEntry`, so an override on the entry could never have reached the
+compiler anyway -- the field was declared but structurally
+disconnected. Wiring it through would mean threading `VocabEntry`
+metadata through the whole combinatorics pipeline for a safety net the
+pilot's actual vocab never exercises; not worth it for content this
+narrow. If a future word genuinely needs an override, that's the point
+to build the wiring, not before.
 
 **Pronouns are a fixed closed class (I/you/he/she/it/we/they), not
 LLM-proposed vocabulary.** An earlier draft of this spec had `"pronoun"`
@@ -295,9 +300,9 @@ overrides needed** for any of these:
 otherwise (I/you/we/they) — this is the compiler's own agreement logic,
 not delegated to compromise. Past-tense slots always use `pastForm`
 (English past tense doesn't vary by person, confirmed in the same
-spike). `irregularForms` on a `VocabEntry` remains available as an
-override for a future word this derivation gets wrong, but isn't needed
-for the pilot's verified starter set.
+spike). No override mechanism exists for a future word this derivation
+gets wrong — see the "No `irregularForms` override field" note in
+component 2 for why that was removed rather than wired through.
 
 **"be" is excluded from the pilot's starter vocab, not overridden.**
 Spiked result: `baseForm("be")` returns `"be"` (should be `"am"` for an
@@ -377,11 +382,18 @@ validate/preview/apply next").
   rather than silently emitting a smaller-than-requested pack; the
   operator adds more vocab (via another `generate` topic run) and
   retries.
-- A compiled sentence's `compromise` output for an irregular verb with
-  no override on file → treated as a mismatch/failure for that
-  combination (skipped, not guessed) — the fix is adding the word's
-  `irregularForms` entry to the vocab dataset, never trusting an
-  unverified conjugation into a real pack.
+- **Correction (2026-09-22 final review, finding I2): there is no
+  irregular-verb override mechanism.** An earlier draft of this bullet
+  promised one; it was never actually wired to the compiler (which only
+  ever receives bare word strings, never `VocabEntry` metadata) and was
+  removed rather than connected — see component 2's "No `irregularForms`
+  override field" note. The real, honest state: `compileLine` trusts
+  whatever `baseForm`/`thirdPersonForm`/`pastForm` derive for *any*
+  LLM-proposed verb that passes the POS cross-check, not just the 7
+  verbs the spike specifically verified (have, go, do, walk, run, eat,
+  play). A new verb the LLM proposes for a topic is never re-verified
+  against a known-correct conjugation table before compiling — this is
+  a real, currently-unmitigated residual risk, not a solved problem.
 
 ## Testing
 
@@ -397,10 +409,15 @@ validate/preview/apply next").
   a candidate with a deliberately wrong claimed POS must be rejected,
   not silently accepted.
 - Integration test: a full `generate` run (mocked LLM response, real
-  `compromise` compilation) produces a draft pack that passes
-  `src/data/curriculum-consistency.test.ts`'s existing checks
-  unchanged — reusing that scan as the acceptance gate for generated
-  content, not writing a parallel one.
+  `compromise` compilation) asserts directly on `validatePack`'s real
+  output (zero errors, zero duplicate-left-side warnings) — the same
+  gate the `generate` CLI itself runs before ever showing a preview.
+  **Correction (2026-09-22 final review, finding I4):** an earlier
+  draft of this bullet, and the test's own comment, claimed to "reuse"
+  `curriculum-consistency.test.ts`'s checks — the test never actually
+  called that file or `validatePack`, so it wasn't reusing anything,
+  and wouldn't have caught the sampler-skew or duplicate-prompt findings
+  (C1/C2) from that same review. Fixed to actually call `validatePack`.
 
 ## Self-critique (found on review, before implementation)
 
@@ -449,6 +466,70 @@ validate/preview/apply next").
   an earlier draft — the type suggested arbitrary slot-to-slot
   agreement rules, but the actual compiler only implements the one rule
   the two pilot templates need. Fixed above (see the note on `Slot`).
+
+## Final-review fixes (2026-09-22, after implementation)
+
+A fresh whole-branch code review (dispatched per the implementation
+plan's own process, not self-reviewed) found real defects the earlier
+self-critique passes missed — the implementation had been verified at
+the *mechanism* level (does the compiler produce grammatically correct
+verb forms) but not at the *artifact* level (is a whole generated pack
+actually usable course content). Three were Critical:
+
+- **Sampler skew (finding C1):** `expandTemplate`'s original sampler
+  sorted combinations by `hash(packId + "-" + i)`, which is not a
+  shuffle — verified independently that FNV-1a doesn't decorrelate
+  strings differing only in a numeric suffix, so the chosen indices
+  clustered into one or two contiguous blocks. Since the subject slot
+  is outermost in the combinatorics, this meant 3 of 5 measured real
+  packIds produced **zero** he/she/it lines — a `svo-present` pack that
+  never exercised the 3rd-person agreement rule it exists to test.
+  Fixed with stratified sampling (group by subject, round-robin across
+  groups) — see component 5's `sampleStratified`.
+- **Ambiguous/contradictory questions (finding C2):** no constraint
+  between verb and object meant the same rendered prompt could appear
+  twice with two different "correct" answers, and distractors were
+  drawn from the whole pack's answer pool (many different verbs), so
+  most base-form questions admitted multiple grammatically valid
+  answers. Fixed by pinning one verb per (subject, object) pair
+  (eliminates the literal contradiction) and capping verb diversity per
+  pack to 4 (shrinks, but does not eliminate, the cross-verb distractor
+  pool — full elimination would need either semantic modeling or
+  changing `bank-engine.ts`'s shared distractor logic, both explicitly
+  out of scope). This is a real, documented residual limitation, not a
+  solved problem.
+- **Missing articles/capitalization (finding C3):** generated prompts
+  read as ungrammatical ("it takes shower.", lowercase sentence-initial
+  words), falsifying the "grammar-correct-by-construction" claim. Fixed
+  by capitalizing the rendered sentence and prepending "a"/"an" to
+  countable noun slots (via `compromise`'s Uncountable tag) — verified
+  against real nouns (water/music/clothes correctly get no article),
+  documented as an improvement rather than a perfect fix (idiomatic
+  exceptions like "go to school" aren't modeled).
+
+Four Important findings were also fixed: `--topic` never actually
+filtered the vocab pool (I1); the unconnected `irregularForms` field
+was removed rather than wired through, since the compiler never
+received `VocabEntry` metadata to check it against (I2, see component
+2's note above); `vocab.test.ts` asserted the dataset stays empty
+forever, which the feature's own documented workflow breaks on its
+first real run (I3, now asserts durable invariants instead); and the
+integration test's comment claiming to "reuse" `curriculum-
+consistency.test.ts` was inaccurate — it now actually asserts on
+`validatePack`'s output (I4). The branch was also rebased onto `main`
+to pick up a dependency the spec already named as a prerequisite (I7).
+
+One suggested fix was investigated and **declined** after verification
+showed it would be a regression: using sentence context to disambiguate
+an LLM-proposed word's part of speech (e.g. checking "the ___" for a
+noun claim) was tested against real `compromise` output and found to
+rubber-stamp genuinely wrong claims too (e.g. "the relax" tags as a
+Noun, "I coffee it" tags as a Verb) — trading the current fail-safe
+false-*rejection* of some ambiguous common words (like "book"/"cook")
+for a broader false-*acceptance* risk across unrelated words. The
+current bare-word check remains in place; a real fix here needs either
+a proper multi-reading tagger or a curated allowlist, both beyond this
+pass's scope.
 
 ## Explicitly out of scope for this pilot
 

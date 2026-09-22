@@ -3,14 +3,20 @@ import { proposeVocabForTopic } from "../../lib/generative-vocab.server";
 import { expandTemplate } from "./expand";
 import { TEMPLATES } from "./templates";
 import { packQuestions, type Pack } from "../bank-engine";
+import { validatePack } from "../../lib/pack-authoring";
 
 /**
- * Full pipeline test (mocked LLM, real `compromise` compilation) --
- * reuses the same invariants curriculum-consistency.test.ts enforces
- * across every hand-authored/AI-drafted course, as the acceptance gate
- * for generated content too (design doc's Testing section: "reusing
- * that scan as the acceptance gate for generated content, not writing
- * a parallel one").
+ * Full pipeline test (mocked LLM, real `compromise` compilation).
+ *
+ * Corrected 2026-09-22 (final review, finding I4): an earlier version of
+ * this comment claimed to "reuse the same invariants
+ * curriculum-consistency.test.ts enforces," but the test never called
+ * that file or `validatePack` -- it only re-implemented a narrower set
+ * of inline checks, which is a parallel gate, not a reused one, and
+ * would NOT have caught the C1/C2 findings (sampler skew, duplicate
+ * prompts) from that same review. Now actually asserts on
+ * `validatePack`'s real output -- the single cheapest gate this
+ * pipeline has, already wired into the `generate` CLI's own output.
  */
 const CANDIDATES = [
   { word: "coffee", pos: "noun" },
@@ -75,6 +81,16 @@ describe("full generate pipeline", () => {
         expect(q.bank.map((b) => b.toLowerCase())).toContain(q.answer.toLowerCase());
       }
     }
+
+    // The real acceptance gate this pipeline actually has: the same
+    // validatePack the `generate` CLI runs before ever showing a preview.
+    // Zero errors always; zero duplicate-left-side warnings too, now that
+    // expandTemplate pins one verb per (subject, object) pair (finding C2).
+    const issues = validatePack(pack);
+    const errors = issues.filter((i) => i.level === "error");
+    const duplicateWarnings = issues.filter((i) => i.message.includes("duplicate left side"));
+    expect(errors, JSON.stringify(errors)).toEqual([]);
+    expect(duplicateWarnings, JSON.stringify(duplicateWarnings)).toEqual([]);
   });
 
   it("returns an empty pipeline result gracefully when the LLM proposes nothing usable", async () => {
