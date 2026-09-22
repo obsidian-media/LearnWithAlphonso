@@ -52,6 +52,7 @@ struct LeaderboardView: View {
                                 ForEach(Array(rows.enumerated()), id: \.element.userID) { index, row in
                                     LeaderboardRowView(rank: index + 1, row: row, isYou: row.userID == session.userID)
                                         .listRowBackground(row.userID == session.userID ? AlphonsoColor.emberSoft : AlphonsoColor.parchment)
+                                        .springEntrance(delay: Double(index % 8) * 0.04)
                                 }
                             }
                             .listStyle(.plain)
