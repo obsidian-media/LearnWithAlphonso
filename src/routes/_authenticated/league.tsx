@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
@@ -65,6 +65,12 @@ function LeaguePage() {
               <p className="text-xs font-semibold text-ink">{LEAGUE_TIER_META[nextTier].label}</p>
             </div>
           )}
+        </div>
+
+        <div className="mt-3 flex items-center gap-4">
+          <Link to="/teams" className="text-xs font-medium text-moss underline underline-offset-4">
+            Teams →
+          </Link>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-2">

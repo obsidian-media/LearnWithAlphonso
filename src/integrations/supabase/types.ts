@@ -792,6 +792,14 @@ export type Database = {
           ok: boolean;
         }[];
       };
+      auto_join_team: {
+        Args: never;
+        Returns: {
+          ok: boolean;
+          reason: string | null;
+          team_id: string | null;
+        }[];
+      };
       buy_heart_with_xp: {
         Args: { _cost?: number; _course: string };
         Returns: {
@@ -885,6 +893,25 @@ export type Database = {
           winner_id: string;
         }[];
       };
+      get_my_team: {
+        Args: never;
+        Returns: {
+          join_code: string;
+          joined_at: string;
+          name: string;
+          switch_locked_until: string;
+          team_id: string;
+          this_week_xp: number;
+        }[];
+      };
+      get_team_leaderboard: {
+        Args: never;
+        Returns: {
+          name: string;
+          team_id: string;
+          weekly_xp: number;
+        }[];
+      };
       get_weekly_challenges: {
         Args: never;
         Returns: {
@@ -904,9 +931,32 @@ export type Database = {
           matched: boolean;
         }[];
       };
+      join_public_team: {
+        Args: { _team_id: string };
+        Returns: {
+          ok: boolean;
+          reason: string | null;
+          team_id: string | null;
+        }[];
+      };
+      join_team: {
+        Args: { _code: string };
+        Returns: {
+          ok: boolean;
+          reason: string | null;
+          team_id: string | null;
+        }[];
+      };
       leave_duel_queue: {
         Args: never;
         Returns: undefined;
+      };
+      leave_team: {
+        Args: never;
+        Returns: {
+          ok: boolean;
+          reason: string | null;
+        }[];
       };
       lose_heart: {
         Args: never;
