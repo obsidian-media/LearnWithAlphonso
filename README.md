@@ -41,7 +41,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
 - **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
-- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). See the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own design system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) porting the web app's Meadow theme (Fraunces/Geist fonts, moss/ember/parchment palette, the hard-shadow pressed-button effect), applied across every screen — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
 
 ## Content
 
@@ -150,6 +150,13 @@ runner, `ios-app-build` in `.github/workflows/ci.yml` — there is no local
 Xcode/macOS in this development environment, so that CI job is the only
 compile verification that exists):
 
+- **Design system** (`Sources/DesignSystem/`): the app's own port of the
+  web's Meadow theme — Fraunces/Geist (bundled variable fonts, resolved
+  to a specific weight/optical-size via CoreText rather than static
+  files, since neither font ships those), an oklch-accurate color
+  palette, and the `.hard-shadow` pressed-button effect — applied across
+  every screen. Before this, the app had no design system at all and
+  rendered as stock SwiftUI throughout
 - Auth (email/OTP), lesson browser, lesson player (multiple-choice +
   fill-in-blank), SM-2 review queue, progress sync (XP/streaks/hearts)
 - **Free** AI conversation: 6 roleplay scenarios against this repo's own
@@ -217,6 +224,10 @@ ios/
                             # committed .xcodeproj) -- lesson player, review
                             # queue, AI conversation (free + Pro/Hector),
                             # RevenueCat paywall
+    └── Sources/
+        ├── DesignSystem/   # Meadow-theme tokens/fonts/components, applied
+                            # app-wide -- see "Native iOS app" below
+        └── Fonts/          # Bundled Fraunces/Geist variable-font .ttf files
 ```
 
 ## Documentation
