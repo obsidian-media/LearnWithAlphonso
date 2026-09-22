@@ -1,5 +1,8 @@
 import { z } from "zod";
 import nlp from "compromise";
+import type { Level } from "../data/levels";
+import type { VocabEntry } from "../data/generative/vocab";
+import { mergeVocabEntries } from "./generative-vocab-authoring";
 
 /**
  * Generative sentence-content pilot -- LLM proposes vocab candidates
@@ -92,4 +95,55 @@ export function verifyCandidatePos(candidate: VocabCandidate): boolean {
   const doc = nlp(candidate.word);
   const tags: string[] = doc.json()[0]?.terms?.[0]?.tags ?? [];
   return tags.includes(POS_TAG_MAP[candidate.pos]);
+}
+
+export type VocabProposalResult = {
+  accepted: VocabEntry[];
+  rejected: VocabCandidate[];
+  merged: VocabEntry[];
+};
+
+/**
+ * Full pipeline: propose candidates for a topic, cross-check each
+ * one's claimed POS, exclude "be" (see vocab.ts's own header comment
+ * for why), and merge the accepted ones into the existing vocab array.
+ * Rejected candidates are returned -- not thrown away silently -- so
+ * the CLI (Task 10) can report them as "needs manual review."
+ */
+export async function proposeVocabForTopic(params: {
+  topic: string;
+  posTypes: ("noun" | "verb" | "adjective")[];
+  level: Level;
+  existingVocab: VocabEntry[];
+  nvidiaApiKey: string;
+  nvidiaModel: string;
+}): Promise<VocabProposalResult> {
+  const candidates = await proposeVocabCandidates({
+    topic: params.topic,
+    posTypes: params.posTypes,
+    nvidiaApiKey: params.nvidiaApiKey,
+    nvidiaModel: params.nvidiaModel,
+  });
+
+  const accepted: VocabEntry[] = [];
+  const rejected: VocabCandidate[] = [];
+  for (const candidate of candidates) {
+    if (candidate.word.toLowerCase() === "be") {
+      rejected.push(candidate);
+      continue;
+    }
+    if (verifyCandidatePos(candidate)) {
+      accepted.push({
+        word: candidate.word,
+        pos: candidate.pos,
+        level: params.level,
+        topics: [params.topic],
+      });
+    } else {
+      rejected.push(candidate);
+    }
+  }
+
+  const merged = mergeVocabEntries(params.existingVocab, accepted);
+  return { accepted, rejected, merged };
 }

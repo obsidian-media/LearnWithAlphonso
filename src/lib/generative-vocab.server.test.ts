@@ -4,6 +4,7 @@ import {
   proposeVocabCandidates,
   vocabProposalPrompt,
   verifyCandidatePos,
+  proposeVocabForTopic,
 } from "./generative-vocab.server";
 
 const CANDIDATES = [
@@ -103,5 +104,66 @@ describe("verifyCandidatePos", () => {
   it("rejects a candidate with a deliberately wrong claimed POS", () => {
     expect(verifyCandidatePos({ word: "coffee", pos: "verb" })).toBe(false);
     expect(verifyCandidatePos({ word: "quickly", pos: "noun" })).toBe(false);
+  });
+});
+
+describe("proposeVocabForTopic", () => {
+  it("merges accepted candidates into the existing vocab and reports rejections", async () => {
+    const result = await proposeVocabForTopic({
+      topic: "daily routines",
+      posTypes: ["noun", "verb", "adjective"],
+      level: "A1",
+      existingVocab: [],
+      nvidiaApiKey: "k",
+      nvidiaModel: "m",
+    });
+    expect(result.accepted).toHaveLength(3);
+    expect(result.rejected).toEqual([]);
+    expect(result.merged).toHaveLength(3);
+    expect(result.merged.find((e) => e.word === "coffee")?.topics).toEqual(["daily routines"]);
+  });
+
+  it("excludes 'be' even if the LLM proposes it, reporting it as rejected", async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify([{ word: "be", pos: "verb" }]) } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const result = await proposeVocabForTopic({
+      topic: "x",
+      posTypes: ["verb"],
+      level: "A1",
+      existingVocab: [],
+      nvidiaApiKey: "k",
+      nvidiaModel: "m",
+    });
+    expect(result.accepted).toEqual([]);
+    expect(result.rejected).toEqual([{ word: "be", pos: "verb" }]);
+  });
+
+  it("rejects a candidate that fails the POS cross-check", async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            { message: { content: JSON.stringify([{ word: "coffee", pos: "verb" }]) } },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+    const result = await proposeVocabForTopic({
+      topic: "x",
+      posTypes: ["verb"],
+      level: "A1",
+      existingVocab: [],
+      nvidiaApiKey: "k",
+      nvidiaModel: "m",
+    });
+    expect(result.accepted).toEqual([]);
+    expect(result.rejected).toEqual([{ word: "coffee", pos: "verb" }]);
   });
 });
