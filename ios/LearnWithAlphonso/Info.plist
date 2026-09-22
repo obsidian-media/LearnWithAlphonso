@@ -17,5 +17,20 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Export compliance, answered directly so App Store Connect doesn't
+	     ask on every submission. All network calls (Supabase, RevenueCat,
+	     NVIDIA, Deepgram, APNs registration) go over plain HTTPS/TLS via
+	     URLSession -- Apple's own OS-provided encryption, always exempt.
+	     The one piece of hand-implemented crypto in this app,
+	     LearnWithAlphonsoKit/SHA256Pure.swift (a standard FIPS 180-4
+	     SHA-256, not proprietary), is used only to derive a PKCE
+	     code_challenge for Google sign-in -- authentication/integrity,
+	     never confidentiality of user data -- which is the specific
+	     exemption in EAR Category 5 Part 2 / Sec. 740.17(b)(1). If this
+	     app ever adds encryption for actual data confidentiality (e.g.
+	     encrypting stored content, not just an OAuth handshake), this
+	     needs re-evaluating -- don't copy this value forward blindly. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
