@@ -127,6 +127,14 @@ bubbles. Alphonso does wrong-answer help rather than Hector deliberately
 ordinary lesson flow would undercut the subscription. See
 `ARCHITECTURE.md`'s "Native iOS app" section for the full breakdown.
 
+**`AlphonsoTipCard` speech-bubble redesign** — same-day follow-up: the
+user sent a mockup wanting Alphonso bigger and speaking through a real
+speech bubble rather than the small circular-avatar card, explicitly
+asking for one version, not both. New `SpeechBubbleShape`, a larger
+88×112pt portrait, kept deliberately in-flow (not an overlay) so it
+can never cover the Check/Continue button the way the user's own
+reference mockup did.
+
 ## V3 — Feature depth expansion (2026-09-20 – in progress)
 
 Six-package initiative adding depth to existing features rather than new
