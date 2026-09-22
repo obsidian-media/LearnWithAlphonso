@@ -1,0 +1,39 @@
+name: Check App Store Subscription Status
+
+# Manual only -- Shipaton Day 1 diagnostic. Checks whether the Paid
+# Applications Agreement is signed by attempting the real App Store
+# Connect API calls that need it (docs/BACKLOG.md's §1.1, and
+# D:\AgentDevWork\repos\Hackaton\Shipaton\02-launch-checklist\ for the
+# hackathon-timeline version of this checklist). "check" is read-only.
+# "create-group" attempts to actually create the real "Alphonso Pro"
+# subscription group -- only run that once you intend to actually do
+# this, not just to probe status.
+#
+# Uses the same APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64
+# secrets already configured for ios-release.yml -- no new credentials.
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "check (read-only) or create-group (actually creates the real subscription group)"
+        required: true
+        type: choice
+        options:
+          - check
+          - create-group
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Check subscription/agreement status
+        run: bunx tsx scripts/check-subscription-status.ts "${{ github.event.inputs.job }}"
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
