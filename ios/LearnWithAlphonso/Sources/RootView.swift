@@ -13,52 +13,66 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        switch session.state {
-        case .signedOut, .awaitingCode:
-            AuthView(session: session)
-        case .signedIn:
-            TabView {
-                LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                    .tabItem { Label("Learn", systemImage: "book.fill") }
-                ReviewQueueView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                    .tabItem { Label("Review", systemImage: "arrow.clockwise") }
-                LeaderboardView(session: session)
-                    .tabItem { Label("League", systemImage: "trophy.fill") }
-                FriendsView(session: session)
-                    .tabItem { Label("Friends", systemImage: "person.2.fill") }
-                ConversationView(contentStore: contentStore, session: session)
-                    .tabItem { Label("Practice", systemImage: "mic.fill") }
-                HectorView(session: session, entitlementStore: entitlementStore)
-                    .tabItem { Label("Hector", systemImage: "sparkles") }
-                AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
-                    .tabItem { Label("Achievements", systemImage: "trophy.fill") }
-            }
-            // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
-            // for selected tab items, parchment tab-bar background instead
-            // of the system default, matching the web app's brand.
-            .tint(AlphonsoColor.moss)
-            .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
-            .toolbarBackground(.visible, for: .tabBar)
-            .task {
-                await triggerSync()
-                notificationScheduler.scheduleWeeklyRecap()
-                await registerRemotePushIfNeeded()
-            }
-            .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
-                if !wasConnected && isConnected {
-                    Task { await triggerSync() }
+        // Group wraps both branches so .preferredColorScheme below covers
+        // AuthView too, not just the signed-in TabView -- forces every
+        // screen (system-styled chrome included: navigation titles,
+        // segmented pickers, ContentUnavailableView) to resolve colors
+        // against the *active theme's* light/dark-ness rather than the
+        // device's own Dark Mode setting, which is what caused a real bug
+        // on a real device: system chrome flipped to light-on-dark text
+        // while this app's fixed-light palette stayed put, making titles
+        // and empty states unreadable. See AlphonsoTheme.swift's
+        // AlphonsoPalette.colorScheme doc comment.
+        Group {
+            switch session.state {
+            case .signedOut, .awaitingCode:
+                AuthView(session: session)
+            case .signedIn:
+                TabView {
+                    LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                        .tabItem { Label("Learn", systemImage: "book.fill") }
+                    ReviewQueueView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                        .tabItem { Label("Review", systemImage: "arrow.clockwise") }
+                    LeaderboardView(session: session)
+                        .tabItem { Label("League", systemImage: "trophy.fill") }
+                    FriendsView(session: session)
+                        .tabItem { Label("Friends", systemImage: "person.2.fill") }
+                    ConversationView(contentStore: contentStore, session: session)
+                        .tabItem { Label("Practice", systemImage: "mic.fill") }
+                    HectorView(session: session, entitlementStore: entitlementStore)
+                        .tabItem { Label("Hector", systemImage: "sparkles") }
+                    AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+                        .tabItem { Label("Achievements", systemImage: "trophy.fill") }
                 }
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .active {
-                    Task { await triggerSync() }
+                // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
+                // for selected tab items, parchment tab-bar background instead
+                // of the system default, matching the web app's brand.
+                .tint(AlphonsoColor.moss)
+                .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
+                .toolbarBackground(.visible, for: .tabBar)
+                .task {
+                    await triggerSync()
+                    await hydrateThemeFromServer()
+                    notificationScheduler.scheduleWeeklyRecap()
+                    await registerRemotePushIfNeeded()
                 }
-            }
-            .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
-                guard let newToken else { return }
-                Task { await uploadDeviceToken(newToken) }
+                .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
+                    if !wasConnected && isConnected {
+                        Task { await triggerSync() }
+                    }
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        Task { await triggerSync() }
+                    }
+                }
+                .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
+                    guard let newToken else { return }
+                    Task { await uploadDeviceToken(newToken) }
+                }
             }
         }
+        .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
     }
 
     /// Drains the offline sync queue (docs/v2-kickoffs/01-offline-first.md)
@@ -81,6 +95,18 @@ struct RootView: View {
         } else {
             syncQueueStore.markSyncedNow()
         }
+    }
+
+    /// Resolves the server's saved theme (mirrors the web's `theme.ts`
+    /// `hydrateFromServer`: server value wins over whatever's already
+    /// resolved locally). Best-effort -- a failed fetch just means this
+    /// launch keeps using the local/default theme, same posture as every
+    /// other best-effort call in this file.
+    private func hydrateThemeFromServer() async {
+        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let serverTheme = try? await client.fetchProfileTheme(userID: userID)
+        AlphonsoThemeManager.shared.hydrate(fromServerValue: serverTheme)
     }
 
     /// V4 candidate #2 -- re-registers for remote notifications on every

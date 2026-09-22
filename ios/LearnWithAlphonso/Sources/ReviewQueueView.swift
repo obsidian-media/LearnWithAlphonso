@@ -354,7 +354,7 @@ private struct ReviewQuestionCard: View {
                 TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                     .textFieldStyle(.plain)
                     .padding(AlphonsoSpacing.sm)
-                    .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
+                    .alphonsoInputBackground()
                     .disabled(checked)
                 if !q.bank.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
