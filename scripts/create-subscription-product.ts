@@ -35,7 +35,10 @@ const PRODUCT_ID =
   process.env.SUBSCRIPTION_PRODUCT_ID ?? "com.obsidianmedia.learnwithalphonso.pro.monthly";
 const REFERENCE_NAME = "Alphonso Pro Monthly";
 const DISPLAY_NAME = "Alphonso Pro";
-const DESCRIPTION = "Unlock Hector, your AI conversation tutor, for real practice.";
+// App Store Connect caps subscription localization descriptions at 55
+// characters (found live 2026-09-22: ENTITY_ERROR.ATTRIBUTE.INVALID.TOO_LONG
+// on a longer first attempt) -- keep this under that limit.
+const DESCRIPTION = "Unlock Hector, your AI conversation tutor.";
 const TARGET_PRICE_USD = "9.99";
 
 const missing = [
