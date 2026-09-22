@@ -223,10 +223,14 @@ The first time a user does anything XP-earning in a new ISO week:
    `weekly_xp(user_id, that_week_start)` descending. Using **ratios,
    not fixed counts** (self-critique finding, fixed here — a fixed
    "top 10 / bottom 5" breaks if a cohort didn't reach 30 members that
-   week): top third promotes one division, bottom sixth demotes one
-   division, the rest stay. Division 5 has no promotion target (top
-   performers stay); Division 1 has no demotion target (bottom
-   performers stay). Write one `season_placements` row per member.
+   week): the top `floor(cohort_size / 3)` ranks promote one division,
+   the bottom `floor(cohort_size / 6)` demote one division, the rest
+   stay — explicitly **floor, not round**, so a cohort too small to
+   promote/demote anyone (e.g. size 1 or 2) safely resolves to zero
+   movement rather than needing a special case. Division 5 has no
+   promotion target (top performers stay); Division 1 has no demotion
+   target (bottom performers stay). Write one `season_placements` row
+   per member.
 4. Place the user into a `season_cohorts` row for the *current* week at
    their resulting division — find one with room (<30 members), or
    create a new one. Same room-or-create logic as team auto-join,
