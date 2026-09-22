@@ -162,6 +162,13 @@ compile verification that exists):
   regardless of the device's own Dark Mode setting. Before this, the
   app had no design system at all and rendered as stock SwiftUI
   throughout
+- **Mascots**: Alphonso (the app's own namesake/host) and Hector (the
+  Pro AI tutor) both have real character portraits now — Alphonso
+  greets you on sign-in and shows up with an explanation whenever a
+  lesson/review answer is wrong (`AlphonsoTipCard`); Hector has his own
+  portrait on his sign-in step and a small avatar beside his chat
+  bubbles during conversation. Deliberately Alphonso, not Hector, for
+  free wrong-answer help — Hector is Pro-gated ($9.99/mo)
 - Auth (email/OTP), lesson browser, lesson player (multiple-choice +
   fill-in-blank), SM-2 review queue, progress sync (XP/streaks/hearts)
 - **Free** AI conversation: 6 roleplay scenarios against this repo's own
