@@ -1,4 +1,5 @@
 import SwiftUI
+import LearnWithAlphonsoKit
 
 // MARK: - Buttons
 
@@ -21,7 +22,14 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)
             .frame(maxWidth: fullWidth ? .infinity : nil)
-            .background(tint, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+            // A subtle top-to-bottom gradient instead of a flat fill --
+            // one of several small touches (see also PulsingGlow,
+            // SpringEntrance's now-broader use) added after direct
+            // feedback that solid-color, static UI read as "not alive."
+            .background(
+                LinearGradient(colors: [tint, shadow], startPoint: .top, endPoint: .bottom),
+                in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+            )
             .offset(y: configuration.isPressed ? 4 : 0)
             .background(
                 RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
@@ -235,5 +243,55 @@ struct SpringEntrance: ViewModifier {
 extension View {
     func springEntrance(response: Double = 0.5, dampingFraction: Double = 0.65, delay: Double = 0, minScale: Double = 0.6) -> some View {
         modifier(SpringEntrance(response: response, dampingFraction: dampingFraction, delay: delay, minScale: minScale))
+    }
+}
+
+// MARK: - Course picker
+
+/// Shared by LessonBrowserView and ReviewQueueView -- was two separately
+/// duplicated Pickers using full course names ("English"/"Français"/
+/// "Español") in a `.segmented` style, which on a real device left almost
+/// no room per segment (competing with a trailing toolbar button) and
+/// truncated down to a single letter each ("E"/"F"/"E" -- indistinguishable
+/// for English vs Español). Flag + 2-letter code is both far more compact
+/// and more visually alive than plain text.
+struct CoursePicker: View {
+    @Binding var course: Course
+
+    var body: some View {
+        Picker("Course", selection: $course) {
+            Text("🇬🇧 EN").tag(Course.english)
+            Text("🇫🇷 FR").tag(Course.french)
+            Text("🇪🇸 ES").tag(Course.spanish)
+        }
+        .pickerStyle(.segmented)
+    }
+}
+
+// MARK: - Motion: ambient life
+
+/// A slow, continuous scale+glow pulse -- used on the streak flame in
+/// StatusHeaderView so the app has at least one element that's always
+/// quietly *alive* rather than only animating in reaction to a tap.
+struct PulsingGlow: ViewModifier {
+    var scale: CGFloat = 1.12
+    var duration: Double = 1.4
+
+    @State private var isPulsing = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isPulsing ? scale : 1)
+            .onAppear {
+                withAnimation(.easeInOut(duration: duration).repeatForever(autoreverses: true)) {
+                    isPulsing = true
+                }
+            }
+    }
+}
+
+extension View {
+    func pulsingGlow(scale: CGFloat = 1.12, duration: Double = 1.4) -> some View {
+        modifier(PulsingGlow(scale: scale, duration: duration))
     }
 }

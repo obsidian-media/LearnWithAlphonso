@@ -18,11 +18,16 @@ struct LessonBrowserView: View {
     var body: some View {
         NavigationStack {
             List {
+                StatusHeaderView(progress: syncQueueStore.lastKnownProgress())
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
                 WeeklyChallengesSection(session: session)
 
                 ForEach(contentStore.bundle(for: course).units) { unit in
                     Section {
-                        ForEach(unit.lessons) { lesson in
+                        ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
                             NavigationLink(value: lesson.id) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(lesson.title)
@@ -34,6 +39,13 @@ struct LessonBrowserView: View {
                                 }
                                 .padding(.vertical, 2)
                             }
+                            // Lazy List rows already fire onAppear as they
+                            // scroll into view, so this cascades naturally
+                            // rather than animating the whole (possibly
+                            // 100+ row) list at once -- a small index-based
+                            // delay just makes the *first* screenful cascade
+                            // in visibly instead of popping in together.
+                            .springEntrance(delay: Double(index % 8) * 0.04)
                         }
                     } header: {
                         Text("\(unit.eyebrow) · \(unit.title)")
@@ -49,12 +61,7 @@ struct LessonBrowserView: View {
             .navigationTitle("Learn with Alphonso")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Picker("Course", selection: $course) {
-                        Text("English").tag(Course.english)
-                        Text("Français").tag(Course.french)
-                        Text("Español").tag(Course.spanish)
-                    }
-                    .pickerStyle(.segmented)
+                    CoursePicker(course: $course)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
