@@ -885,6 +885,29 @@ export type Database = {
           winner_id: string;
         }[];
       };
+      get_weekly_challenges: {
+        Args: never;
+        Returns: {
+          completed: boolean;
+          description: string;
+          progress: number;
+          template_id: string;
+          threshold: number;
+          title: string;
+          type: string;
+        }[];
+      };
+      join_open_duel_queue: {
+        Args: { _course: string; _match_by_level?: boolean };
+        Returns: {
+          duel_id: string | null;
+          matched: boolean;
+        }[];
+      };
+      leave_duel_queue: {
+        Args: never;
+        Returns: undefined;
+      };
       lose_heart: {
         Args: never;
         Returns: {

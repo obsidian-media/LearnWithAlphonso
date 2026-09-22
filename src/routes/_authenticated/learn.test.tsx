@@ -71,6 +71,13 @@ vi.mock("../../lib/sync.functions", () => ({
 const fetchDueReviews = vi.fn();
 vi.mock("../../lib/review.functions", () => ({ fetchDueReviews }));
 
+// WeeklyChallengesCard uses react-query's useQuery, which needs a
+// QueryClientProvider this test doesn't set up (this page has never
+// needed react-query before) -- stubbed out since this test isn't
+// exercising that card's own behavior (see WeeklyChallengesCard.test.tsx
+// for that).
+vi.mock("../../components/WeeklyChallengesCard", () => ({ WeeklyChallengesCard: () => null }));
+
 const { Route } = await import("./learn");
 const { useProgress } = await import("../../lib/progress");
 const { getCourse } = await import("../../data/courses");
