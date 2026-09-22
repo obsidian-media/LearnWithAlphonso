@@ -1,0 +1,93 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  parseVocabCandidates,
+  proposeVocabCandidates,
+  vocabProposalPrompt,
+} from "./generative-vocab.server";
+
+const CANDIDATES = [
+  { word: "coffee", pos: "noun" },
+  { word: "walk", pos: "verb" },
+  { word: "happy", pos: "adjective" },
+];
+
+const originalFetch = global.fetch;
+
+beforeEach(() => {
+  global.fetch = vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({ choices: [{ message: { content: JSON.stringify(CANDIDATES) } }] }),
+      { status: 200 },
+    ),
+  );
+});
+
+afterEach(() => {
+  global.fetch = originalFetch;
+});
+
+describe("parseVocabCandidates", () => {
+  it("parses a well-formed JSON array", () => {
+    expect(parseVocabCandidates(JSON.stringify(CANDIDATES))).toEqual(CANDIDATES);
+  });
+
+  it("strips markdown code fences before parsing", () => {
+    expect(parseVocabCandidates("```json\n" + JSON.stringify(CANDIDATES) + "\n```")).toEqual(
+      CANDIDATES,
+    );
+  });
+
+  it("returns [] for invalid JSON", () => {
+    expect(parseVocabCandidates("not json")).toEqual([]);
+  });
+
+  it("returns [] when a candidate's pos isn't noun/verb/adjective", () => {
+    expect(parseVocabCandidates(JSON.stringify([{ word: "x", pos: "adverb" }]))).toEqual([]);
+  });
+});
+
+describe("vocabProposalPrompt", () => {
+  it("includes the topic and requested parts of speech", () => {
+    const prompt = vocabProposalPrompt("daily routines", ["noun", "verb"]);
+    expect(prompt).toContain("daily routines");
+    expect(prompt).toContain("noun, verb");
+  });
+
+  it("explicitly excludes 'be'", () => {
+    expect(vocabProposalPrompt("test", ["verb"])).toContain('Do not include "be"');
+  });
+});
+
+describe("proposeVocabCandidates", () => {
+  it("calls NVIDIA NIM and returns parsed candidates", async () => {
+    const result = await proposeVocabCandidates({
+      topic: "daily routines",
+      posTypes: ["noun", "verb", "adjective"],
+      nvidiaApiKey: "test-key",
+      nvidiaModel: "test-model",
+    });
+    expect(result).toEqual(CANDIDATES);
+  });
+
+  it("returns [] when the API responds with a non-OK status", async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response("", { status: 500 }));
+    const result = await proposeVocabCandidates({
+      topic: "x",
+      posTypes: ["noun"],
+      nvidiaApiKey: "k",
+      nvidiaModel: "m",
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("returns [] when fetch throws", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error("network error"));
+    const result = await proposeVocabCandidates({
+      topic: "x",
+      posTypes: ["noun"],
+      nvidiaApiKey: "k",
+      nvidiaModel: "m",
+    });
+    expect(result).toEqual([]);
+  });
+});
