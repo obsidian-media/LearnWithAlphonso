@@ -58,13 +58,24 @@ export function formatVocabEntryAsTs(entry: VocabEntry): string {
 /**
  * Splices a freshly-serialized entries array into vocab.ts's source,
  * replacing everything between `export const GENERATIVE_VOCAB:
- * VocabEntry[] = [` and the following `\n];` -- mirrors
+ * VocabEntry[] = [` and its matching closing `]` -- mirrors
  * pack-authoring.ts's insertPackIntoBank marker-splice pattern, but
  * replaces the WHOLE array body each time (not just appends one entry)
  * since the caller already has the complete desired array in memory
  * from mergeVocabEntries. This is what lets a repeated proposal's
  * merged topics show up correctly without surgical per-entry editing.
  * Never touches the file's header/type/comment above the marker.
+ *
+ * Finds the matching `]` by counting bracket depth from the opening
+ * `[`, rather than searching for a literal `"\n];"` string -- a real
+ * end-to-end CLI run (2026-09-22) found the committed vocab.ts collapses
+ * an empty array onto one line (`= [];`), which a literal `"\n];"`
+ * search can't find. Bracket counting handles that format and a
+ * multi-line one identically, and also handles a VocabEntry whose own
+ * `topics` field is itself a nested `[...]` array. It does not account
+ * for a literal `[`/`]` character inside a string value (a word or
+ * topic containing a bracket) -- not expected for real vocabulary
+ * content, and out of scope for this pilot.
  */
 export function replaceVocabArrayInSource(fileSource: string, entries: VocabEntry[]): string {
   const startMarker = "export const GENERATIVE_VOCAB: VocabEntry[] = [";
@@ -72,15 +83,20 @@ export function replaceVocabArrayInSource(fileSource: string, entries: VocabEntr
   if (start === -1) {
     throw new Error(`could not find "${startMarker}" in the vocab file source.`);
   }
-  const closeMarker = "\n];";
-  const closeIdx = fileSource.indexOf(closeMarker, start);
-  if (closeIdx === -1) {
-    throw new Error(`found "${startMarker}" but no closing "];" after it.`);
+  const arrayStart = start + startMarker.length; // just after the opening "["
+
+  let depth = 1;
+  let i = arrayStart;
+  for (; i < fileSource.length && depth > 0; i++) {
+    if (fileSource[i] === "[") depth++;
+    else if (fileSource[i] === "]") depth--;
   }
-  const arrayStart = start + startMarker.length;
-  const body = entries.length > 0 ? "\n" + entries.map(formatVocabEntryAsTs).join("\n") : "";
-  // Slice AT closeIdx (not closeIdx + 1) so the "\n];" close marker is
-  // preserved verbatim in the output -- it supplies the newline before
-  // "];" on its own, whether body is empty or not.
-  return fileSource.slice(0, arrayStart) + body + fileSource.slice(closeIdx);
+  if (depth !== 0) {
+    throw new Error(`found "${startMarker}" but no matching "]" after it.`);
+  }
+  const closeBracketIdx = i - 1; // index of the matching "]"
+
+  const body =
+    entries.length > 0 ? "\n" + entries.map(formatVocabEntryAsTs).join("\n") + "\n" : "";
+  return fileSource.slice(0, arrayStart) + body + fileSource.slice(closeBracketIdx);
 }
