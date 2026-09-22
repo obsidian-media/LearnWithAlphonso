@@ -171,6 +171,11 @@ async function main() {
       console.error("Usage: set-price <subscriptionId> <pricePointId>");
       process.exit(1);
     }
+    // A bare subscription+subscriptionPricePoint relationship 409s with
+    // ENTITY_ERROR.RELATIONSHIP.INVALID (found live 2026-09-22) -- this
+    // endpoint also requires an explicit territory relationship even
+    // though the price point id already encodes one (base64 JSON
+    // {s,t,p} -- decode a price point id to see its territory if unsure).
     const result = await api("/subscriptionPrices", "POST", {
       data: {
         type: "subscriptionPrices",
@@ -178,6 +183,7 @@ async function main() {
         relationships: {
           subscription: { data: { type: "subscriptions", id: subId } },
           subscriptionPricePoint: { data: { type: "subscriptionPricePoints", id: pricePointId } },
+          territory: { data: { type: "territories", id: "USA" } },
         },
       },
     });
