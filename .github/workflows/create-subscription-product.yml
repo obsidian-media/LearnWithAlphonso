@@ -1,0 +1,51 @@
+name: Create Subscription Product
+
+# Manual only -- Shipaton launch checklist, Part 1 step 2: creates the
+# real "Alphonso Pro Monthly" subscription product, its localization,
+# and its price, inside subscription group 22405850 (created via
+# check-app-store-status.yml's create-group job). Run the jobs in order:
+# create-subscription -> create-localization -> list-price-points ->
+# set-price -> status. See scripts/create-subscription-product.ts's doc
+# comment and D:\AgentDevWork\repos\Hackaton\Shipaton\02-launch-checklist\
+# execution-record.md for the full record.
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "which step to run"
+        required: true
+        type: choice
+        options:
+          - create-subscription
+          - create-localization
+          - list-price-points
+          - set-price
+          - status
+      subscription_id:
+        description: "Subscription id (from create-subscription's output) -- required for every job except create-subscription"
+        required: false
+        type: string
+      price_point_id:
+        description: "Price point id (from list-price-points' output) -- required only for set-price"
+        required: false
+        type: string
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Run subscription product step
+        run: |
+          bunx tsx scripts/create-subscription-product.ts \
+            "${{ github.event.inputs.job }}" \
+            "${{ github.event.inputs.subscription_id }}" \
+            "${{ github.event.inputs.price_point_id }}"
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
