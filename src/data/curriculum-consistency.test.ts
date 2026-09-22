@@ -30,9 +30,7 @@ function allLessons(units: Unit[]): { unit: Unit; lesson: Lesson }[] {
   return units.flatMap((unit) => unit.lessons.map((lesson) => ({ unit, lesson })));
 }
 
-function allQuestions(
-  units: Unit[],
-): { unit: Unit; lesson: Lesson; question: Question }[] {
+function allQuestions(units: Unit[]): { unit: Unit; lesson: Lesson; question: Question }[] {
   return allLessons(units).flatMap(({ unit, lesson }) =>
     lesson.questions.map((question) => ({ unit, lesson, question })),
   );
@@ -74,7 +72,9 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
       if (question.type !== "mc") continue;
       const key = `${lesson.id}:${question.id}`;
       if (question.answer < 0 || question.answer >= question.choices.length) {
-        offenders.push(`${key}: answer index ${question.answer} out of range for ${question.choices.length} choices`);
+        offenders.push(
+          `${key}: answer index ${question.answer} out of range for ${question.choices.length} choices`,
+        );
         continue;
       }
       const normalized = question.choices.map((c) => c.trim().toLowerCase());
@@ -105,7 +105,9 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     for (const { lesson, question } of allQuestions(units)) {
       if (question.type !== "mc" || !question.imageKey) continue;
       if (!(question.imageKey in VOCAB_IMAGES)) {
-        offenders.push(`${lesson.id}:${question.id}: imageKey "${question.imageKey}" not in VOCAB_IMAGES`);
+        offenders.push(
+          `${lesson.id}:${question.id}: imageKey "${question.imageKey}" not in VOCAB_IMAGES`,
+        );
       }
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
@@ -136,7 +138,8 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
       const normalized = question.bank.map((b) => b.trim().toLowerCase());
       if (normalized.some((b) => b === "")) offenders.push(`${key}: empty bank entry`);
       const dupes = normalized.filter((b, i) => normalized.indexOf(b) !== i);
-      if (dupes.length > 0) offenders.push(`${key}: duplicate bank entries (${[...new Set(dupes)].join(", ")})`);
+      if (dupes.length > 0)
+        offenders.push(`${key}: duplicate bank entries (${[...new Set(dupes)].join(", ")})`);
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
   });
