@@ -28,6 +28,15 @@ proposes *vocabulary and topics*, a real morphological library
 (gender, adjective agreement) is materially harder and deliberately
 deferred until this pipeline is proven.
 
+**Honest framing: this pilot does not, by itself, reduce the actual
+backlog pain point.** The motivating problem (`docs/BACKLOG.md`'s
+native-speaker review burden on French's 500 lessons and Spanish's 508)
+is specifically a French/Spanish problem, and this pilot is deliberately
+English-only. Shipping the pilot proves the architecture works; it does
+not reduce anyone's review workload until the same architecture is
+extended to French/Spanish, which is real follow-on work, not a
+formality. Don't read "pilot done" as "the backlog item is done."
+
 ## Why not the alternatives
 
 - **Fully dynamic, generate-at-request-time content** (a new runtime
@@ -98,7 +107,16 @@ export type Slot = {
   name: string;
   pos: "pronoun" | "noun" | "verb" | "adjective";
   /** For verb slots: which other slot's word this one must agree with
-   *  (English: 3rd-person-singular -s). Undefined for non-verb slots. */
+   *  (English: 3rd-person-singular -s). Undefined for non-verb slots.
+   *  NOTE: the pilot's compiler (component 4) only implements the one
+   *  concrete rule svo-present actually needs -- subject-pronoun ->
+   *  3rd-person-singular-or-not. The field is typed generically because
+   *  the concept generalizes, but a *general* agreement-resolution
+   *  engine (arbitrary slot-to-slot rules) is explicitly NOT built in
+   *  this pilot -- adding a third template with a different agreement
+   *  shape means extending the compiler's resolution logic, not just
+   *  adding a Template entry. Flagging this now so it isn't discovered
+   *  as a surprise mid-implementation. */
   agreeWith?: string;
 };
 
@@ -144,7 +162,7 @@ export const TEMPLATES: Template[] = [
 ```ts
 export type VocabEntry = {
   word: string;
-  pos: "pronoun" | "noun" | "verb" | "adjective";
+  pos: "noun" | "verb" | "adjective";
   level: Level;
   /** Only for verbs where `compromise`'s regular-conjugation rules get
    *  it wrong (be, have, go, ...). Keyed by the form compromise would
@@ -152,10 +170,26 @@ export type VocabEntry = {
   irregularForms?: Partial<Record<"presentThirdPerson" | "past", string>>;
   /** Topic tag(s) this word was proposed under -- lets a pack-generation
    *  run filter to vocab relevant to its topic instead of the whole
-   *  dataset. */
+   *  dataset. Unioned, not duplicated: if a `generate` run proposes a
+   *  word that already exists in the dataset (e.g. "coffee" proposed
+   *  again under a new topic after already existing from an earlier
+   *  run), the new topic tag is added to the existing entry's `topics`
+   *  array rather than creating a second entry for the same
+   *  (word, pos) pair -- entries are keyed by (word, pos). */
   topics: string[];
 };
 ```
+
+**Pronouns are a fixed closed class (I/you/he/she/it/we/they), not
+LLM-proposed vocabulary.** An earlier draft of this spec had `"pronoun"`
+as a `VocabEntry.pos` option alongside the open word classes — wrong on
+review: there are 7 of them, they never change, and running them
+through an LLM-propose-then-validate pipeline designed for open-ended
+vocabulary growth is pointless ceremony for a fixed list. Pronouns live
+as a small hardcoded constant (`PRONOUNS` in `templates.ts`, alongside
+each pronoun's own agreement class — 3rd-person-singular vs. not) that
+the compiler consults directly; `VocabEntry.pos` only covers the three
+genuinely open classes a topic-driven LLM proposal makes sense for.
 
 This is a **new, separate dataset** from `VOCAB_IMAGES` — different
 concern (grammar tags vs. stock-photo keys for image-matching
@@ -216,6 +250,16 @@ correct answers (other conjugated forms in the same run) feeds it
 exactly like a hand-authored pack's pool does today. No new distractor
 logic needed.
 
+**Invariant this relies on: one `generate` run uses exactly one
+template (one tense).** The CLI signature in component 6 takes a single
+`--template` flag, so a generated pack's answer pool is always
+tense-homogeneous by construction (all present-tense forms, or all
+past-tense forms, never mixed) — this is what keeps distractors
+meaningful (a wrong-verb distractor, not a wrong-tense giveaway). Worth
+stating explicitly since nothing before this line made it a hard rule:
+`generate` must reject a request to mix templates in one run, not
+silently allow it.
+
 ### 5. Sampling — reuse `bank-engine.ts`'s `hash()`
 
 A template × vocab-set expansion can combinatorially overproduce (e.g.
@@ -274,6 +318,44 @@ identical to a hand-authored one once it lands in `lesson-bank.ts`.
   `src/data/curriculum-consistency.test.ts`'s existing checks
   unchanged — reusing that scan as the acceptance gate for generated
   content, not writing a parallel one.
+
+## Self-critique (found on review, before implementation)
+
+- **`compromise`'s exact API surface is unverified hands-on.** The
+  method names referenced above (`.verbs().toPresentTense()`,
+  `.verbs().toPastTense()`) come from published documentation found via
+  search, not from actually running the library against this pilot's
+  test verbs. Per this project's own "verify against documentation
+  rather than guessing" discipline: **the first implementation task
+  must be a small standalone spike** — run `compromise` against the
+  planned irregular-verb test set (be, have, go, do) and confirm its
+  real output before the compiler (component 4) is built around
+  assumed method names/behavior. If its output is wrong or
+  inconsistent for a case the irregular-override table doesn't already
+  cover, that's a real finding to bring back before continuing, not
+  something to route around silently.
+- **`compromise`'s license hasn't been checked.** Needs confirming
+  before it ships in this app, same diligence any new dependency in
+  this codebase gets — not a blocker to writing the spec, but a
+  concrete pre-merge check for the implementation plan.
+- **Known limitation, not a bug: pilot content will be repetitive for
+  small vocab sets.** A topic with only 5-8 words in the curated
+  dataset produces a correspondingly small number of distinct
+  sentences no matter how the sampling step sequences them. This is
+  inherent to a template-driven approach at this stage (vocab growth is
+  incremental, LLM-proposal-run by LLM-proposal-run) — worth setting
+  expectations on this rather than promising infinite variety the pilot
+  can't yet deliver. Mitigated over time by growing the curated vocab
+  dataset across multiple `generate` topic runs, not something to solve
+  in the pilot itself.
+- **Pronouns were originally (incorrectly) modeled as LLM-proposed
+  vocabulary** in an earlier draft of this spec — a closed 7-word class
+  doesn't belong in an open-ended-growth dataset. Fixed above (see the
+  "Pronouns are a fixed closed class" note in component 2).
+- **The generic `agreeWith` mechanism oversold its own generality** in
+  an earlier draft — the type suggested arbitrary slot-to-slot
+  agreement rules, but the actual compiler only implements the one rule
+  the two pilot templates need. Fixed above (see the note on `Slot`).
 
 ## Explicitly out of scope for this pilot
 
