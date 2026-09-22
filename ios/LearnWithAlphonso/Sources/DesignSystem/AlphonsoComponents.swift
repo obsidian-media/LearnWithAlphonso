@@ -301,17 +301,32 @@ extension View {
 /// A rounded speech-bubble outline with a small tail pointing out its
 /// trailing edge -- used by `AlphonsoTipCard` so Alphonso's explanation
 /// reads as him actually *speaking* rather than sitting in a plain card.
-struct SpeechBubbleShape: Shape {
+/// `InsettableShape`, not just `Shape` -- `.strokeBorder(...)` (used here
+/// and everywhere else in this design system, e.g. every card's hairline
+/// border) requires that conformance; plain `Shape` only has `.stroke(...)`,
+/// which centers the line on the path instead of insetting it (a real
+/// build failure caught by CI: "value of type 'SpeechBubbleShape' has no
+/// member 'strokeBorder'").
+struct SpeechBubbleShape: InsettableShape {
     var cornerRadius: CGFloat = AlphonsoRadius.lg
     var tailWidth: CGFloat = 14
     var tailHeight: CGFloat = 16
+    private var insetAmount: CGFloat = 0
+
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var copy = self
+        copy.insetAmount += amount
+        return copy
+    }
 
     func path(in rect: CGRect) -> Path {
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let radius = max(0, cornerRadius - insetAmount)
         let bubbleRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width - tailWidth, height: rect.height)
-        var path = Path(roundedRect: bubbleRect, cornerRadius: cornerRadius)
+        var path = Path(roundedRect: bubbleRect, cornerRadius: radius)
         // Tail anchored low on the trailing edge, pointing toward Alphonso's
         // portrait (which sits just outside the bubble's trailing edge).
-        let tailMidY = rect.maxY - cornerRadius - tailHeight / 2
+        let tailMidY = rect.maxY - radius - tailHeight / 2
         path.move(to: CGPoint(x: bubbleRect.maxX, y: tailMidY - tailHeight / 2))
         path.addLine(to: CGPoint(x: rect.maxX, y: tailMidY))
         path.addLine(to: CGPoint(x: bubbleRect.maxX, y: tailMidY + tailHeight / 2))
