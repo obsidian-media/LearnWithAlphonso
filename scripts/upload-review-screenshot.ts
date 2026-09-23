@@ -99,9 +99,9 @@ async function main() {
   console.log(`File: ${fileName}, ${fileSize} bytes`);
 
   console.log("\n=== Step 1: reserve the appStoreReviewScreenshot resource ===");
-  const reserve = await api("/appStoreReviewScreenshots", "POST", {
+  const reserve = await api("/subscriptionAppStoreReviewScreenshots", "POST", {
     data: {
-      type: "appStoreReviewScreenshots",
+      type: "subscriptionAppStoreReviewScreenshots",
       attributes: { fileName, fileSize },
       relationships: {
         subscription: { data: { type: "subscriptions", id: subId } },
@@ -141,9 +141,9 @@ async function main() {
   console.log("\n=== Step 3: PATCH to mark uploaded, with checksum ===");
   const checksum = createHash("md5").update(fileBuffer).digest("hex");
   console.log(`MD5 checksum: ${checksum}`);
-  const finalize = await api(`/appStoreReviewScreenshots/${screenshotId}`, "PATCH", {
+  const finalize = await api(`/subscriptionAppStoreReviewScreenshots/${screenshotId}`, "PATCH", {
     data: {
-      type: "appStoreReviewScreenshots",
+      type: "subscriptionAppStoreReviewScreenshots",
       id: screenshotId,
       attributes: { uploaded: true, sourceFileChecksum: checksum },
     },
