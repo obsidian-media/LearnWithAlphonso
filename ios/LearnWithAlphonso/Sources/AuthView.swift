@@ -11,27 +11,19 @@ struct AuthView: View {
             ScrollView {
                 VStack(spacing: AlphonsoSpacing.xl) {
                     VStack(spacing: AlphonsoSpacing.md) {
+                        Text("Learn with Alphonso")
+                            .font(AlphonsoFont.display(32, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.ink)
+                            .multilineTextAlignment(.center)
+
                         // Alphonso himself greets you -- the app's own
                         // namesake had zero visual presence anywhere
                         // before this; the sign-in screen is the first
-                        // thing every user ever sees.
-                        Image("Alphonso")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 96, height: 96)
-                            .clipShape(Circle())
-                            .overlay(Circle().strokeBorder(AlphonsoColor.moss, lineWidth: 3))
-                            .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.7)
-
-                        VStack(spacing: AlphonsoSpacing.xs) {
-                            Text("Learn with Alphonso")
-                                .font(AlphonsoFont.display(32, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                                .multilineTextAlignment(.center)
-                            Text("Sign in to start learning")
-                                .font(AlphonsoFont.sans(15))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        }
+                        // thing every user ever sees. A banner (not just
+                        // a small circular avatar) so he's actually
+                        // "speaking" the greeting, not just decorating it.
+                        AlphonsoMascotBanner(mascot: .alphonso, message: "Sign in to start learning")
+                            .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.9)
                     }
 
                     VStack(spacing: AlphonsoSpacing.md) {
