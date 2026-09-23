@@ -15,12 +15,13 @@ on:
   workflow_dispatch:
     inputs:
       job:
-        description: "check (read-only) or create-group (actually creates the real subscription group)"
+        description: "check (read-only) or create-group (actually creates the real subscription group) or app-info (read-only, category/age rating)"
         required: true
         type: choice
         options:
           - check
           - create-group
+          - app-info
 
 jobs:
   check:

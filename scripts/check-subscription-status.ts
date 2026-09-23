@@ -115,7 +115,15 @@ async function main() {
     console.log(JSON.stringify(groups.json, null, 2));
   }
 
-  if (cmd === "create-group") {
+  if (cmd === "app-info") {
+    // Shipaton Part 2 prep: re-verify category + age rating are still
+    // correct via the API rather than trusting prior session notes.
+    const appInfos = await api(
+      `/apps/${APP_ID}/appInfos?include=ageRatingDeclaration,primaryCategory`,
+    );
+    console.log(`\nStatus: ${appInfos.status}`);
+    console.log(JSON.stringify(appInfos.json, null, 2));
+  } else if (cmd === "create-group") {
     console.log('\nAttempting to create subscription group "Alphonso Pro"...');
     const result = await api("/subscriptionGroups", "POST", {
       data: {
