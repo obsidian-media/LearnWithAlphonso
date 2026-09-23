@@ -164,6 +164,78 @@ async function main() {
     } else {
       printResult("list-price-points", result);
     }
+  } else if (cmd === "equalize-prices") {
+    const subId = process.argv[3];
+    const sourcePricePointId = process.argv[4];
+    const limit = process.argv[5] ? Number(process.argv[5]) : Infinity;
+    if (!subId || !sourcePricePointId) {
+      console.error(
+        "Usage: equalize-prices <subscriptionId> <sourcePricePointId> [limit for testing]",
+      );
+      process.exit(1);
+    }
+    // The USA-only price doesn't auto-propagate to other territories --
+    // found live 2026-09-22 attempting a Canada intro offer ("You need
+    // to set up availabilities first"): only 1 price existed
+    // (paging.total: 1). The real per-territory-equalized price points
+    // come from GET /v1/subscriptionPricePoints/{id}/equalizations,
+    // seeded from the one real price we already set (USA, $9.99).
+    const equalizations: { id: string }[] = [];
+    let path: string | null =
+      `/subscriptionPricePoints/${sourcePricePointId}/equalizations?limit=200`;
+    while (path) {
+      const page = await api(path);
+      if (!page.ok) {
+        printResult("equalize-prices: fetching equalizations failed", page);
+        process.exit(1);
+      }
+      const data = page.json as { data: { id: string }[]; links?: { next?: string } };
+      equalizations.push(...data.data);
+      path = data.links?.next ? data.links.next.replace(/^.*\/v1/, "") : null;
+    }
+    console.log(`Fetched ${equalizations.length} equalized price point(s) across all territories.`);
+    const toProcess = Number.isFinite(limit) ? equalizations.slice(0, limit) : equalizations;
+    if (toProcess.length < equalizations.length) {
+      console.log(`Testing mode: only processing the first ${toProcess.length}.`);
+    }
+
+    const outcomes: { pricePointId: string; status: number; note: string }[] = [];
+    for (const pp of toProcess) {
+      const localId = `\${${randomUUID()}}`;
+      const result = await api(`/subscriptions/${subId}`, "PATCH", {
+        data: {
+          type: "subscriptions",
+          id: subId,
+          relationships: { prices: { data: [{ type: "subscriptionPrices", id: localId }] } },
+        },
+        included: [
+          {
+            type: "subscriptionPrices",
+            id: localId,
+            attributes: { preserveCurrentPrice: false },
+            relationships: {
+              subscriptionPricePoint: { data: { type: "subscriptionPricePoints", id: pp.id } },
+            },
+          },
+        ],
+      });
+      let note = result.ok ? "created" : "FAILED";
+      if (!result.ok) {
+        const errJson = result.json as { errors?: { detail?: string }[] };
+        note = `FAILED: ${errJson.errors?.[0]?.detail ?? JSON.stringify(result.json)}`;
+      }
+      outcomes.push({ pricePointId: pp.id, status: result.status, note });
+      console.log(`${pp.id}: ${result.status} ${note}`);
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
+    const succeeded = outcomes.filter((o) => o.status === 200).length;
+    const failed = outcomes.filter((o) => o.status !== 200);
+    console.log(`\n=== equalize-prices summary: ${succeeded}/${outcomes.length} succeeded ===`);
+    if (failed.length > 0) {
+      console.log("Failures:");
+      for (const f of failed) console.log(`  ${f.pricePointId}: ${f.note}`);
+    }
   } else if (cmd === "set-price") {
     const subId = process.argv[3];
     const pricePointId = process.argv[4];

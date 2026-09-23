@@ -21,13 +21,18 @@ on:
           - list-price-points
           - set-price
           - create-intro-offer
+          - equalize-prices
           - status
       subscription_id:
         description: "Subscription id (from create-subscription's output) -- required for every job except create-subscription"
         required: false
         type: string
       price_point_id:
-        description: "For set-price: price point id (from list-price-points' output). For create-intro-offer: territory id, defaults to USA if left blank."
+        description: "For set-price/equalize-prices: price point id. For create-intro-offer: territory id, CSV, or ALL (defaults to USA if left blank)."
+        required: false
+        type: string
+      extra_arg:
+        description: "For equalize-prices only: optional limit (number) to process only the first N territories, for testing"
         required: false
         type: string
 
@@ -45,7 +50,8 @@ jobs:
           bunx tsx scripts/create-subscription-product.ts \
             "${{ github.event.inputs.job }}" \
             "${{ github.event.inputs.subscription_id }}" \
-            "${{ github.event.inputs.price_point_id }}"
+            "${{ github.event.inputs.price_point_id }}" \
+            "${{ github.event.inputs.extra_arg }}"
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
