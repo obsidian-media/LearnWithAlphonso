@@ -123,3 +123,6 @@ ios/LearnWithAlphonso/LearnWithAlphonsoWidget/*.entitlements
 *.njsproj
 *.sln
 *.sw?
+
+# Phase 1 content-audit dumps (regenerate with scripts/dump-english-questions.ts)
+/.audit/

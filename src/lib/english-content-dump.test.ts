@@ -1,0 +1,56 @@
+import { describe, expect, it } from "vitest";
+import { buildEnglishDump } from "./english-content-dump";
+import { PLACEMENT_QUESTIONS } from "@/data/placement";
+
+describe("buildEnglishDump", () => {
+  it("dumps every curriculum question keyed as lessonId:questionId", () => {
+    const dump = buildEnglishDump();
+    const all = Object.values(dump.byLevel).flat();
+    expect(all.length).toBe(dump.totals.curriculum);
+    expect(all.length).toBeGreaterThan(2000);
+    for (const q of all) {
+      expect(q.key).toBe(`${q.lessonId}:${q.questionId}`);
+      expect(q.prompt.trim()).not.toBe("");
+    }
+  });
+
+  it("includes placement questions, which are absent from questionIndex", () => {
+    const dump = buildEnglishDump();
+    expect(dump.placement.length).toBe(45);
+    expect(dump.totals.placement).toBe(45);
+    // Review Focus #4: placement lives outside questionIndex entirely.
+    for (const q of dump.placement) {
+      expect(q.choices?.length).toBeGreaterThan(0);
+      expect(q.answer.trim()).not.toBe("");
+    }
+  });
+
+  // placement.ts is NOT covered by curriculum-consistency.test.ts (it lives
+  // outside questionIndex), so without this guard Task 5's placement edits
+  // would have no automated safety net at all.
+  it("keeps placement questions structurally valid", () => {
+    for (const p of PLACEMENT_QUESTIONS) {
+      expect(p.answer, `${p.id} answer index out of range`).toBeGreaterThanOrEqual(0);
+      expect(p.answer, `${p.id} answer index out of range`).toBeLessThan(p.choices.length);
+      expect(p.prompt.trim(), `${p.id} has an empty prompt`).not.toBe("");
+      for (const c of p.choices) {
+        expect(c.trim(), `${p.id} has an empty choice`).not.toBe("");
+      }
+      const lowered = p.choices.map((c) => c.trim().toLowerCase());
+      expect(new Set(lowered).size, `${p.id} has duplicate choices`).toBe(p.choices.length);
+    }
+  });
+
+  it("surfaces the fill bank so an auditor can see answer-in-bank violations", () => {
+    const dump = buildEnglishDump();
+    const fills = Object.values(dump.byLevel)
+      .flat()
+      .filter((q) => q.type === "fill");
+    expect(fills.length).toBeGreaterThan(0);
+    // Review Focus #5: answer must be present in its own bank.
+    for (const q of fills) {
+      expect(q.bank).toBeDefined();
+      expect(q.bank).toContain(q.answer);
+    }
+  });
+});
