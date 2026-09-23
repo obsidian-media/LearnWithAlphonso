@@ -177,7 +177,7 @@ public final class AlphonsoThemeManager {
            let id = AlphonsoThemeID(rawValue: saved) {
             themeID = id
         } else {
-            themeID = .meadow
+            themeID = .canopy
         }
     }
 
