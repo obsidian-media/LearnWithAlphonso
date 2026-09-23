@@ -107,6 +107,27 @@ describe("updateProfile", () => {
       updateProfile({ context: ctx(supabase), data: { display_name: "x".repeat(41) } }),
     ).rejects.toThrow();
   });
+
+  it("accepts the canopy theme", async () => {
+    const supabase = createSupabaseMock();
+    const updateChain = chainable({});
+    supabase.from.mockReturnValueOnce(updateChain);
+    const result = await updateProfile({
+      context: ctx(supabase),
+      data: { theme: "canopy" },
+    });
+    expect(result).toEqual({ ok: true });
+    expect(updateChain.calls.find((c) => c.method === "update")?.args[0]).toEqual({
+      theme: "canopy",
+    });
+  });
+
+  it("still rejects a theme value that isn't in the enum", async () => {
+    const supabase = createSupabaseMock();
+    await expect(
+      updateProfile({ context: ctx(supabase), data: { theme: "solarized" as never } }),
+    ).rejects.toThrow();
+  });
 });
 
 describe("getMyProfile", () => {
