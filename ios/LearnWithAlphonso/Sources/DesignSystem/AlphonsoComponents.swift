@@ -11,6 +11,7 @@ import LearnWithAlphonsoKit
 struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     var tint: Color = AlphonsoColor.moss
     var shadow: Color = AlphonsoColor.mossDeep
+    var foreground: Color = AlphonsoColor.surface
     /// false for inline/chip usage (e.g. a word-bank token) where the
     /// button should size to its label instead of filling its container.
     var fullWidth: Bool = true
@@ -18,7 +19,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AlphonsoFont.sans(17, weight: .semiBold))
-            .foregroundStyle(AlphonsoColor.surface)
+            .foregroundStyle(foreground)
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)
             .frame(maxWidth: fullWidth ? .infinity : nil)
@@ -63,12 +64,14 @@ struct AlphonsoSecondaryButtonStyle: ButtonStyle {
 }
 
 extension ButtonStyle where Self == AlphonsoPrimaryButtonStyle {
-    static var alphonsoPrimary: AlphonsoPrimaryButtonStyle { AlphonsoPrimaryButtonStyle() }
+    static var alphonsoPrimary: AlphonsoPrimaryButtonStyle {
+        AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
+    }
     static var alphonsoEmber: AlphonsoPrimaryButtonStyle {
-        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65))
+        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65), foreground: AlphonsoColor.onAccent)
     }
     static func alphonsoPrimary(fullWidth: Bool) -> AlphonsoPrimaryButtonStyle {
-        AlphonsoPrimaryButtonStyle(fullWidth: fullWidth)
+        AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary, fullWidth: fullWidth)
     }
 }
 

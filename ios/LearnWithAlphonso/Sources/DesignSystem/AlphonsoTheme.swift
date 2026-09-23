@@ -217,6 +217,8 @@ public enum AlphonsoColor {
     public static var emberSoft: Color { AlphonsoThemeManager.shared.palette.emberSoft }
     public static var destructive: Color { AlphonsoThemeManager.shared.palette.destructive }
     public static var hairline: Color { AlphonsoThemeManager.shared.palette.hairline }
+    public static var onPrimary: Color { AlphonsoThemeManager.shared.palette.onPrimary }
+    public static var onAccent: Color { AlphonsoThemeManager.shared.palette.onAccent }
 }
 
 /// Spacing scale, 4pt base (mirrors the web app's Tailwind spacing scale,
