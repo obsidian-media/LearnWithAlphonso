@@ -82,6 +82,12 @@ docs/BACKLOG.md
 # shared history until it ships.
 /docs/superpowers/specs/2026-09-20-hector-weakness-detection-design.md
 
+# V5 kickoff docs -- same pattern as the V2/V3/V4 kickoff docs above
+# (2026-09-23): local-only briefing docs for handing off two parallel
+# isolated-worktree initiatives (UI/UX polish, English content overhaul)
+# to fresh Claude Code sessions. Not committed for the same reason.
+/docs/v5-kickoffs/
+
 # Playwright
 /test-results/
 /playwright-report/
