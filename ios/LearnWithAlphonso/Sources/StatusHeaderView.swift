@@ -15,36 +15,50 @@ struct StatusHeaderView: View {
 
     var body: some View {
         if let progress {
-            HStack(spacing: AlphonsoSpacing.sm) {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .foregroundStyle(AlphonsoColor.ember)
-                        .pulsingGlow()
-                    Text("\(progress.streak)")
-                        .font(AlphonsoFont.sans(15, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.ink)
-                }
-                .padding(.horizontal, AlphonsoSpacing.sm + 2)
-                .padding(.vertical, 6)
-                .background(AlphonsoColor.parchment, in: Capsule())
-                .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
-
-                statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
-
-                Spacer()
-
-                Text(LeagueTierPalette.label(for: progress.leagueTier))
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .foregroundStyle(.white)
+            VStack(spacing: AlphonsoSpacing.sm) {
+                HStack(spacing: AlphonsoSpacing.sm) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                            .foregroundStyle(AlphonsoColor.ember)
+                            .pulsingGlow()
+                        Text("\(progress.streak)")
+                            .font(AlphonsoFont.sans(15, weight: .bold))
+                            .foregroundStyle(AlphonsoColor.ink)
+                    }
                     .padding(.horizontal, AlphonsoSpacing.sm + 2)
                     .padding(.vertical, 6)
-                    .background(LeagueTierPalette.color(for: progress.leagueTier), in: Capsule())
+                    .background(AlphonsoColor.parchment, in: Capsule())
+                    .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+
+                    statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                    statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+
+                    Spacer()
+
+                    Text(LeagueTierPalette.label(for: progress.leagueTier))
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, AlphonsoSpacing.sm + 2)
+                        .padding(.vertical, 6)
+                        .background(LeagueTierPalette.color(for: progress.leagueTier), in: Capsule())
+                }
+
+                // Direct user feedback (see this file's own header doc
+                // comment) was that the Learn tab "feels like an empty
+                // piece of background with some written knowledge on
+                // it" -- this banner is the fix for the top of that
+                // screen specifically (LessonBrowserView's row-card
+                // work below addresses the rest of it).
+                AlphonsoMascotBanner(mascot: .alphonso, message: greeting(streak: progress.streak))
             }
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.vertical, AlphonsoSpacing.sm)
             .springEntrance(response: 0.55, dampingFraction: 0.7, minScale: 0.9)
         }
+    }
+
+    private func greeting(streak: Int) -> String {
+        streak > 0 ? "Nice \(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"
     }
 
     private func statPill(icon: String, value: String, tint: Color) -> some View {
