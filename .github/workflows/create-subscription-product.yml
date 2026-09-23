@@ -22,6 +22,7 @@ on:
           - set-price
           - create-intro-offer
           - equalize-prices
+          - check-screenshot
           - status
       subscription_id:
         description: "Subscription id (from create-subscription's output) -- required for every job except create-subscription"

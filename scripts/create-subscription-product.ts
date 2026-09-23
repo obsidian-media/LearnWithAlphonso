@@ -356,9 +356,27 @@ async function main() {
       `/subscriptions/${subId}?include=subscriptionLocalizations,prices&fields[subscriptions]=name,productId,subscriptionPeriod,state,groupLevel`,
     );
     printResult(`status (subscription ${subId})`, result);
+  } else if (cmd === "check-screenshot") {
+    const subId = process.argv[3];
+    if (!subId) {
+      console.error("Usage: check-screenshot <subscriptionId>");
+      process.exit(1);
+    }
+    // Shipaton: subscription state stuck at MISSING_METADATA even with a
+    // real product, localization, and price -- checking directly whether
+    // the App Store Review Screenshot (a real image, not code/config) is
+    // the specific missing piece, per Apple's own subscription-readiness
+    // requirements.
+    const result = await api(`/subscriptions/${subId}/appStoreReviewScreenshot`);
+    printResult(`check-screenshot (subscription ${subId})`, result);
+    if (result.status === 404 || (result.ok && (result.json as { data: null }).data === null)) {
+      console.log(
+        "\nNo App Store Review Screenshot exists for this subscription -- this is very likely the specific missing metadata blocking MISSING_METADATA -> READY_TO_SUBMIT.",
+      );
+    }
   } else {
     console.error(
-      "Usage: create-subscription | create-localization <id> | list-price-points <id> | set-price <id> <pricePointId> | status <id>",
+      "Usage: create-subscription | create-localization <id> | list-price-points <id> | set-price <id> <pricePointId> | check-screenshot <id> | status <id>",
     );
     process.exit(1);
   }
