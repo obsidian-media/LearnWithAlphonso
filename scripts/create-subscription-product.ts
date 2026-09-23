@@ -210,7 +210,7 @@ async function main() {
     printResult(`set-price (subscription ${subId}, price point ${pricePointId})`, result);
   } else if (cmd === "create-intro-offer") {
     const subId = process.argv[3];
-    const territory = process.argv[4] ?? "USA";
+    const territory = process.argv[4] || "USA";
     if (!subId) {
       console.error("Usage: create-intro-offer <subscriptionId> [territory=USA]");
       process.exit(1);
