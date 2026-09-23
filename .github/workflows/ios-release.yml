@@ -80,9 +80,17 @@ jobs:
         env:
           PROFILE_UUID: ${{ secrets.IOS_PROVISIONING_PROFILE_UUID }}
           WIDGET_PROFILE_UUID: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_UUID }}
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
         run: |
           sed -i '' "s/PLACEHOLDER_PROVISIONING_PROFILE_UUID/$PROFILE_UUID/" project.yml
           sed -i '' "s/PLACEHOLDER_WIDGET_PROVISIONING_PROFILE_UUID/$WIDGET_PROFILE_UUID/" project.yml
+          # Baked in as a literal value, not resolved via xcodebuild's
+          # $(VAR) indirection -- found live 2026-09-23 (build 15) that
+          # Xcode's synthesized-Info.plist substitution doesn't reliably
+          # resolve a command-line-override value, same root cause as the
+          # provisioning-profile-UUID fix above. See project.yml's own
+          # comment on INFOPLIST_KEY_RCApiKey for the full writeup.
+          sed -i '' "s/PLACEHOLDER_REVENUECAT_API_KEY/$REVENUECAT_API_KEY/" project.yml
           xcodegen generate
 
       - name: Write App Store Connect API key
@@ -162,15 +170,13 @@ jobs:
         working-directory: ios/LearnWithAlphonso
         env:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
         run: |
           xcodebuild archive \
             -project LearnWithAlphonso.xcodeproj \
             -scheme LearnWithAlphonso \
             -destination 'generic/platform=iOS' \
             -archivePath build/LearnWithAlphonso.xcarchive \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            REVENUECAT_API_KEY="$REVENUECAT_API_KEY"
+            DEVELOPMENT_TEAM="$TEAM_ID"
 
       - name: Debug -- verify RCApiKey landed in the archived Info.plist
         working-directory: ios/LearnWithAlphonso

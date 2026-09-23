@@ -114,16 +114,26 @@ targets:
           # code-signing-specific attributes like PROVISIONING_PROFILE_SPECIFIER
           # don't reliably resolve that way, unlike plain string settings.
           PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_PROVISIONING_PROFILE_UUID"
-          # Resolved from the REVENUECAT_API_KEY repo secret at archive time
-          # (ios-release.yml passes it as an xcodebuild command-line
-          # setting, same pattern as DEVELOPMENT_TEAM). Empty until that
-          # secret is set -- AppConfig.revenueCatAPIKey/EntitlementStore
-          # both treat empty as "Pro purchases unavailable this launch," not
-          # a crash. Never default this to the Debug key: a Test Store key
-          # in a TestFlight/App-Store-distributed build is exactly what
-          # crashed every tester's launch on 2026-09-19 (RevenueCat's SDK
-          # asserts on it deliberately).
-          INFOPLIST_KEY_RCApiKey: "$(REVENUECAT_API_KEY)"
+          # Placeholder -- ios-release.yml's "Generate Xcode project" step
+          # substitutes the real value (from the REVENUECAT_API_KEY secret)
+          # into this file with `sed` before `xcodegen generate` runs, same
+          # pattern as PROVISIONING_PROFILE_SPECIFIER above. NOT resolved
+          # via xcodebuild's $(VAR) command-line-override indirection --
+          # tried that first (build 15, 2026-09-23): the command-line value
+          # was confirmed correctly passed to xcodebuild (masked as *** in
+          # its own log), but the archived Info.plist's RCApiKey key was
+          # entirely ABSENT (verified two independent ways: `plutil -p` and
+          # `PlistBuddy -c Print`, both confirming no such key, not just an
+          # empty one) -- Xcode's synthesized-Info.plist $(VAR) substitution
+          # does not reliably resolve a value supplied only as a command-line
+          # override, same root class of bug as PROVISIONING_PROFILE_SPECIFIER
+          # above. AppConfig.revenueCatAPIKey/EntitlementStore both treat a
+          # missing/empty key as "Pro purchases unavailable this launch," not
+          # a crash -- but never default this placeholder to the Debug key:
+          # a Test Store key in a TestFlight/App-Store-distributed build is
+          # exactly what crashed every tester's launch on 2026-09-19
+          # (RevenueCat's SDK asserts on it deliberately).
+          INFOPLIST_KEY_RCApiKey: "PLACEHOLDER_REVENUECAT_API_KEY"
           # V4 candidate #2 (real push) -- wired in 2026-09-22 once the
           # Push Notifications capability was confirmed enabled on the
           # App ID and the Distribution provisioning profile was
