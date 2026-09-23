@@ -56,7 +56,15 @@ final class EntitlementStore {
             packages = offerings.current?.availablePackages ?? []
         } catch {
             packages = []
-            errorMessage = "Couldn't load subscription options. Try again later."
+            // TEMPORARY debug instrumentation (2026-09-23) -- surfaces the
+            // real underlying RevenueCat/StoreKit error in the UI itself,
+            // since there's no Mac available to read Xcode's device
+            // console for this TestFlight build. Revert to the plain
+            // "Couldn't load subscription options. Try again later."
+            // message once the real offerings() failure is diagnosed.
+            let nsError = error as NSError
+            errorMessage =
+                "Couldn't load subscription options: \(nsError.domain) code \(nsError.code): \(error.localizedDescription)"
         }
     }
 
