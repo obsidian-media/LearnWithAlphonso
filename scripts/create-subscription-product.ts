@@ -210,9 +210,9 @@ async function main() {
     printResult(`set-price (subscription ${subId}, price point ${pricePointId})`, result);
   } else if (cmd === "create-intro-offer") {
     const subId = process.argv[3];
-    const territory = process.argv[4] || "USA";
+    const territoriesArg = process.argv[4] || "USA";
     if (!subId) {
-      console.error("Usage: create-intro-offer <subscriptionId> [territory=USA]");
+      console.error("Usage: create-intro-offer <subscriptionId> <territory|CSV|ALL> (default USA)");
       process.exit(1);
     }
     // Apple's API requires one call per territory for introductory
@@ -220,21 +220,60 @@ async function main() {
     // forum reports of doing this 175 times, once per territory). A
     // pure FREE_TRIAL offer needs no subscriptionPricePoint (it's free)
     // -- only PAY_UP_FRONT/PAY_AS_YOU_GO discount offers need one.
-    const result = await api("/subscriptionIntroductoryOffers", "POST", {
-      data: {
-        type: "subscriptionIntroductoryOffers",
-        attributes: {
-          duration: "TWO_WEEKS",
-          offerMode: "FREE_TRIAL",
-          numberOfPeriods: 1,
+    // Looping every territory inside ONE script run (instead of one
+    // GitHub Actions dispatch per territory) avoids ~175 separate CI
+    // round trips for what is otherwise the exact same call repeated.
+    let territories: string[];
+    if (territoriesArg.toUpperCase() === "ALL") {
+      const allTerritories: { id: string }[] = [];
+      let path: string | null = "/territories?limit=200";
+      while (path) {
+        const page = await api(path);
+        if (!page.ok) {
+          printResult("create-intro-offer: fetching /territories failed", page);
+          process.exit(1);
+        }
+        const data = page.json as { data: { id: string }[]; links?: { next?: string } };
+        allTerritories.push(...data.data);
+        path = data.links?.next ? data.links.next.replace(/^.*\/v1/, "") : null;
+      }
+      territories = allTerritories.map((t) => t.id);
+      console.log(`Fetched ${territories.length} territories from Apple's own list.`);
+    } else {
+      territories = territoriesArg.split(",").map((t) => t.trim().toUpperCase());
+    }
+
+    const outcomes: { territory: string; status: number; note: string }[] = [];
+    for (const territory of territories) {
+      const result = await api("/subscriptionIntroductoryOffers", "POST", {
+        data: {
+          type: "subscriptionIntroductoryOffers",
+          attributes: { duration: "TWO_WEEKS", offerMode: "FREE_TRIAL", numberOfPeriods: 1 },
+          relationships: {
+            subscription: { data: { type: "subscriptions", id: subId } },
+            territory: { data: { type: "territories", id: territory } },
+          },
         },
-        relationships: {
-          subscription: { data: { type: "subscriptions", id: subId } },
-          territory: { data: { type: "territories", id: territory } },
-        },
-      },
-    });
-    printResult(`create-intro-offer (subscription ${subId}, territory ${territory})`, result);
+      });
+      let note = result.ok ? "created" : "FAILED";
+      if (!result.ok) {
+        const errJson = result.json as { errors?: { detail?: string }[] };
+        note = `FAILED: ${errJson.errors?.[0]?.detail ?? JSON.stringify(result.json)}`;
+      }
+      outcomes.push({ territory, status: result.status, note });
+      console.log(`${territory}: ${result.status} ${note}`);
+      // Small delay between writes -- polite to Apple's API, no documented
+      // rate limit hit yet but no reason to hammer 175 calls back-to-back.
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
+    const succeeded = outcomes.filter((o) => o.status === 201).length;
+    const failed = outcomes.filter((o) => o.status !== 201);
+    console.log(`\n=== create-intro-offer summary: ${succeeded}/${outcomes.length} succeeded ===`);
+    if (failed.length > 0) {
+      console.log("Failures:");
+      for (const f of failed) console.log(`  ${f.territory}: ${f.note}`);
+    }
   } else if (cmd === "status") {
     const subId = process.argv[3];
     if (!subId) {
