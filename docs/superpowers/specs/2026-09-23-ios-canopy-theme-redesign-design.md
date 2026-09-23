@@ -69,6 +69,14 @@ into a concrete scope:
   new art-commissioning effort.)
 - No change to the liveliness/animation *system* itself (`SpringEntrance`,
   `PulsingGlow`) — Canopy reuses it, retinted, rather than replacing it.
+- **Redesigning `PaywallView` does not fix or depend on the subscription
+  flow actually working.** RevenueCat is still on a Test Store key with no
+  real Offering configured (per `AGENTS.md`), and separately, the Shipaton
+  workspace's status log (2026-09-23) found the first subscription can't
+  work at all until a real App Store Connect submission happens — an
+  explicitly deferred, unrelated decision. This pass makes the paywall
+  *look* right in every state (including "not available yet"); it doesn't
+  change when purchasing actually becomes possible.
 
 ## Design
 
@@ -94,10 +102,18 @@ existing themes were; the target colors validated during brainstorming are:
 | `hairline` | borders | `ink` at existing ~10% opacity, same pattern as other themes |
 | `destructive` | errors | unchanged — shared across all themes already |
 
-**Contrast is a hard requirement, not a nice-to-have**: every text/background
-pairing above must meet at least the same contrast bar the existing three
-themes already meet (verify via computed lightness, same rigor as the
-existing oklch-based system — this is not optional polish).
+**Contrast is a hard requirement, not a nice-to-have** — and the target
+colors above, as validated in the brainstorming mockups, do **not** all
+pass on their own: checked against real WCAG numbers, white text on the
+coral fill (`#FF6F59`) is 2.74:1 (fails even the 3:1 large-text bar), and
+white text on the emerald fill (`#1F9D70`) is 3.43:1 (passes only for
+large/bold text, fails 4.5:1 for normal button-label sizes). Dark `ink`
+text (`#173328`) on that same coral is 4.98:1 and passes comfortably. **So:
+button/badge labels on coral or emerald fills use dark `ink` text by
+default, not white** — white-on-accent is only acceptable where the
+specific computed oklch fill is verified dark/saturated enough to clear
+4.5:1 (normal text) or 3:1 (large/bold text, 18pt+ or 14pt+bold), checked
+per instance, not assumed from the palette in general.
 
 ### Typography
 
@@ -109,14 +125,16 @@ serif entirely**: a rounded, friendly sans for display (headlines, large
 numerals like the streak count), and reuses **Geist** (already bundled for
 Meadow, avoids a redundant font dependency) for body text.
 
-Recommended display font: **Baloo 2** (Google Fonts, OFL-licensed, rounded
-and warm without being a novelty/childish typeface) — bundled and resolved
-the same way as every other theme's fonts (`Sources/Fonts/*.ttf`, CoreText
-`kCTFontVariationAttribute` resolution via `AlphonsoFont.swift`, `Info.plist`
-`UIAppFonts` registration). Confirm the OFL license and variable-font
-availability at implementation time before bundling, same diligence as the
-existing three font pairs; if Baloo 2 turns out not to ship a usable
-variable instance, fall back to a comparable rounded OFL sans (e.g. Fredoka)
+Recommended display font: **Baloo 2** (Google Fonts, believed OFL-licensed
+and rounded/warm without being a novelty/childish typeface) — bundled and
+resolved the same way as every other theme's fonts (`Sources/Fonts/*.ttf`,
+CoreText `kCTFontVariationAttribute` resolution via `AlphonsoFont.swift`,
+`Info.plist` `UIAppFonts` registration). **This is an unverified
+recommendation, not a confirmed one** — unlike the existing three font
+pairs, its license and variable-font axis availability have not actually
+been checked yet. Implementation must verify both before bundling; if
+Baloo 2 doesn't ship a usable variable instance or its license doesn't
+check out, fall back to a comparable rounded OFL sans (e.g. Fredoka)
 rather than blocking on this specific choice.
 
 ### New shared components
@@ -131,13 +149,40 @@ screens rather than redesigned per-screen:
 - **Row card** — replaces plain `List` text rows (lesson units, review
   queue items, etc.) with a rounded card row (colored status dot/icon +
   title + subtitle), addressing the "empty piece of background" complaint
-  app-wide, not just the three screens mocked during brainstorming.
+  app-wide, not just the three screens mocked during brainstorming. Stays
+  as row *content* inside the existing `List`/`Section` structure (don't
+  migrate to `LazyVStack`/plain `ScrollView` — that would lose `List`'s
+  lazy loading and touch every navigation/toolbar/searchable integration
+  point for no reason). **This is exactly the kind of edit that has
+  triggered the documented `Section { content } header: { header }`
+  brace-misparse bug before** (`ARCHITECTURE.md`'s "Known rough edges" —
+  a bare `ForEach` as a `Section`'s sole content, one closing brace short
+  before `header:`, compiles but misattaches) — since this pass touches
+  nearly every `List`-based screen, assign each section's `ForEach` to a
+  named `let` first, per that doc's own recommended fix, rather than
+  risking it recurring a third time.
 - **Canopy button styles** — coral primary CTA, emerald secondary, same
   `.hard-shadow` pressed-effect mechanics as existing button styles, just
   retinted.
 - `SpringEntrance`/`PulsingGlow` are reused as-is; `PulsingGlow`'s accent
   may retint to Canopy's coral where it's used against Canopy screens, no
   change to the modifier itself.
+- **SF Symbols** (sparkles, flame, heart, star, gearshape, etc.) stay as
+  system icons, just retinted to Canopy's palette — replacing them with
+  custom iconography is a separate, much larger undertaking and explicitly
+  out of scope here. Named as a residual risk: retinted system icons may
+  still read as slightly generic even once everything else is redesigned;
+  that's an accepted trade-off for this pass, not an oversight.
+- **Accessibility, concretely, not just "keep it accessible":** every new
+  mascot banner image needs a real `accessibilityLabel` (not decorative —
+  it's communicating something, e.g. "Alphonso: nice streak, ready for
+  today's lesson?"), Dynamic Type must be checked against the new Baloo 2
+  display sizes (rounded display fonts can clip at larger accessibility
+  text sizes more easily than the existing serif/sans pairs did), and
+  swapping `List` rows for row-card content must preserve the row's
+  existing tap-target size and accessibility traits (`List`/`NavigationLink`
+  give you sensible defaults for free — a custom row view inside the same
+  `NavigationLink` should keep them, verify rather than assume).
 
 ### Screen inventory (all in scope)
 
@@ -214,6 +259,23 @@ device-testing pass at the very end.
   real compile verification available (no local Xcode/macOS).
 - Real-device TestFlight verification per screen, per the section above —
   this is the verification step CI cannot substitute for.
+
+### Verification cadence — an explicit, informed decision
+
+A self-critique of this spec flagged a real risk: there is no local
+Xcode/macOS in this environment, so no screen in this redesign can be
+visually confirmed except via CI compile + a real device. This project has
+hit CI-green-but-device-broken bugs three separate times already
+(`docs/BACKLOG.md` §1.5 items 11/12/13), and this pass touches every
+screen plus a new font. Offered the choice between one interim
+real-device checkpoint after the foundation + flagship screens versus
+fully autonomous execution across all 17 screens with no interim check,
+**the account owner explicitly chose fully autonomous, accepting that
+risk.** Implementation should still phase itself internally (foundation →
+shared components → screens) and treat CI + careful self-review as the
+only available gate per phase, but should not wait on or expect a
+real-device check partway through — the account owner will review the
+finished result on TestFlight at the end, not mid-stream.
 
 ## Risks / open items for implementation to resolve, not re-litigate
 
