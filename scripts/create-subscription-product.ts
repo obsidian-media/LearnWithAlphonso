@@ -208,6 +208,33 @@ async function main() {
       ],
     });
     printResult(`set-price (subscription ${subId}, price point ${pricePointId})`, result);
+  } else if (cmd === "create-intro-offer") {
+    const subId = process.argv[3];
+    const territory = process.argv[4] ?? "USA";
+    if (!subId) {
+      console.error("Usage: create-intro-offer <subscriptionId> [territory=USA]");
+      process.exit(1);
+    }
+    // Apple's API requires one call per territory for introductory
+    // offers (no bulk/all-territories mode -- confirmed via developer
+    // forum reports of doing this 175 times, once per territory). A
+    // pure FREE_TRIAL offer needs no subscriptionPricePoint (it's free)
+    // -- only PAY_UP_FRONT/PAY_AS_YOU_GO discount offers need one.
+    const result = await api("/subscriptionIntroductoryOffers", "POST", {
+      data: {
+        type: "subscriptionIntroductoryOffers",
+        attributes: {
+          duration: "TWO_WEEKS",
+          offerMode: "FREE_TRIAL",
+          numberOfPeriods: 1,
+        },
+        relationships: {
+          subscription: { data: { type: "subscriptions", id: subId } },
+          territory: { data: { type: "territories", id: territory } },
+        },
+      },
+    });
+    printResult(`create-intro-offer (subscription ${subId}, territory ${territory})`, result);
   } else if (cmd === "status") {
     const subId = process.argv[3];
     if (!subId) {

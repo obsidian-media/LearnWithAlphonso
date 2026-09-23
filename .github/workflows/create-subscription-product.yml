@@ -20,13 +20,14 @@ on:
           - create-localization
           - list-price-points
           - set-price
+          - create-intro-offer
           - status
       subscription_id:
         description: "Subscription id (from create-subscription's output) -- required for every job except create-subscription"
         required: false
         type: string
       price_point_id:
-        description: "Price point id (from list-price-points' output) -- required only for set-price"
+        description: "For set-price: price point id (from list-price-points' output). For create-intro-offer: territory id, defaults to USA if left blank."
         required: false
         type: string
 
