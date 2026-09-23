@@ -394,12 +394,22 @@ struct AlphonsoRowCard: View {
     /// is different per screen (lesson unlock order vs. review-queue
     /// due date vs. leaderboard rank).
     var accent: Color = AlphonsoColor.moss
+    /// An emoji shown in place of the accent dot when present -- used by
+    /// scenario/campaign pickers where the emoji itself is the
+    /// meaningful visual (a specific scene's character), not just a
+    /// status indicator. `nil` (the default) keeps every existing call
+    /// site's plain accent-dot appearance unchanged.
+    var leadingEmoji: String? = nil
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 2) {
-            Circle()
-                .fill(accent)
-                .frame(width: 8, height: 8)
+            if let leadingEmoji {
+                Text(leadingEmoji).font(.largeTitle)
+            } else {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 8, height: 8)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

@@ -14,32 +14,22 @@ struct CampaignPickerSection: View {
     let session: Session
 
     var body: some View {
-        Section {
-            ForEach(campaigns) { campaign in
-                NavigationLink {
-                    CampaignSessionView(campaign: campaign, session: session)
-                } label: {
-                    HStack(spacing: AlphonsoSpacing.sm + 4) {
-                        Text(campaign.emoji).font(.largeTitle)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(campaign.title)
-                                .font(AlphonsoFont.sans(16, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Text(campaign.blurb)
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
+        let rows = ForEach(campaigns) { campaign in
+            NavigationLink {
+                CampaignSessionView(campaign: campaign, session: session)
+            } label: {
+                AlphonsoRowCard(title: campaign.title, subtitle: campaign.blurb, leadingEmoji: campaign.emoji)
             }
+        }
+        Section {
+            rows
         } header: {
             Text("Campaigns")
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .tracking(0.4)
                 .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(AlphonsoColor.parchment)
+        .listRowBackground(Color.clear)
     }
 }
 
@@ -166,9 +156,7 @@ private struct CampaignSessionView: View {
 
     private var completionCard: some View {
         VStack(spacing: 8) {
-            Text("Nice work — campaign complete!")
-                .font(AlphonsoFont.display(19, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+            AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work — campaign complete!")
             Text("You made it through all \(campaign.scenes.count) scenes of \(campaign.title).")
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)
