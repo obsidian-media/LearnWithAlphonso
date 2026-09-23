@@ -63,6 +63,17 @@ Two phases, in order, both required:
   **Practical consequence for this spec: phase 1's audit of English
   content only needs to touch `lesson-bank.ts`'s copy.** Consolidation
   is explicitly *not* part of the audit — see below.
+- `src/data/placement.ts` — the English **placement-test** pool: 45
+  hand-authored questions (9 per CEFR band, 3 sampled per attempt), each
+  with hand-written `choices`. This is shipped English content with
+  exactly the distractor-quality surface this audit targets, and it is
+  **in scope**. It sits outside `curriculum`/`questionIndex` entirely
+  (it is reached via `getCourse("en").placementPool`), so a
+  curriculum-only audit would miss it completely. It already shows
+  plausible instances of the reported bug class — e.g. "Choose the
+  polite greeting:" offering `["Oi you", "Good morning", "What",
+  "Give"]`, where "What"/"Give" are unrelated bare words rather than
+  wrong-but-plausible greetings.
 - `src/data/curriculum-consistency.test.ts` — CI-enforced structural
   checks (duplicate ids, out-of-range answers, duplicate choice text,
   orphaned image refs, fill/reorder reconstructability). **Does not and
@@ -203,10 +214,11 @@ seeing how much the per-pack pool-curation pass alone fixes.
 "Genuinely done" is checkable, not a judgement call. All of these must
 hold:
 
-1. Every pack in `lesson-bank.ts` and every hand-written unit in
-   `curriculum.ts` / `levels.ts` has an entry in the audit log —
-   including packs where the finding was "no issues found." Coverage is
-   provable by enumeration, not by sampling.
+1. Every pack in `lesson-bank.ts`, every hand-written unit in
+   `curriculum.ts` / `levels.ts`, and all 45 placement questions in
+   `placement.ts` have an entry in the audit log — including ones where
+   the finding was "no issues found." Coverage is provable by
+   enumeration, not by sampling.
 2. `curriculum-consistency.test.ts` passes (scoped run).
 3. The id-parity check shows **zero** unintended `lessonId:questionId`
    changes; any intended ones are explicitly listed and accepted.
