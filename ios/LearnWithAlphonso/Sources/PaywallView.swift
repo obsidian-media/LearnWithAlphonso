@@ -11,12 +11,11 @@ struct PaywallView: View {
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.lg) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 48))
-                .foregroundStyle(AlphonsoColor.ember)
-            Text("Alphonso Pro")
-                .font(AlphonsoFont.display(28, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
+            // This is the exact screen the account owner pointed at
+            // during brainstorming as "everything wrong with how it
+            // looks" -- an SF Symbol and plain text, despite Hector's
+            // real bundled portrait existing. This banner is that fix.
+            AlphonsoMascotBanner(mascot: .hector, message: "Meet Hector, your AI tutor")
             Text("Unlock Hector, your personal AI tutor, for $9.99/month.")
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)
