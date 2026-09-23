@@ -176,19 +176,23 @@ jobs:
         working-directory: ios/LearnWithAlphonso
         run: |
           PLIST="build/LearnWithAlphonso.xcarchive/Products/Applications/LearnWithAlphonso.app/Info.plist"
-          if [ -f "$PLIST" ]; then
-            VALUE=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" "$PLIST" 2>&1 || echo "KEY_NOT_FOUND")
-            if [ "$VALUE" = "KEY_NOT_FOUND" ]; then
-              echo "RCApiKey: NOT PRESENT in Info.plist at all"
-            else
-              echo "RCApiKey present, length=${#VALUE}"
-              echo "RCApiKey starts with 'appl_': $([[ "$VALUE" == appl_* ]] && echo yes || echo no)"
-              echo "RCApiKey is literal unresolved '\$(REVENUECAT_API_KEY)': $([[ "$VALUE" == *REVENUECAT_API_KEY* ]] && echo yes || echo no)"
-            fi
-          else
+          if [ ! -f "$PLIST" ]; then
             echo "Archived Info.plist not found at expected path -- listing what exists:"
             find build/LearnWithAlphonso.xcarchive -name "Info.plist"
+            exit 0
           fi
+          echo "=== Full plutil dump, RCApiKey line only (cross-check #1) ==="
+          plutil -p "$PLIST" | grep -i "RCApiKey" || echo "(no RCApiKey line found via plutil)"
+          echo "=== PlistBuddy Print, using real exit code not string match (cross-check #2) ==="
+          if VALUE=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" "$PLIST" 2>/tmp/plistbuddy_err.txt); then
+            echo "RCApiKey PRESENT, length=${#VALUE}"
+            echo "starts with 'appl_': $([[ "$VALUE" == appl_* ]] && echo yes || echo no)"
+          else
+            echo "RCApiKey NOT PRESENT -- PlistBuddy error was:"
+            cat /tmp/plistbuddy_err.txt
+          fi
+          echo "=== All top-level Info.plist keys (sanity check the file itself is real) ==="
+          plutil -p "$PLIST" | head -20
 
       - name: Export signed .ipa
         working-directory: ios/LearnWithAlphonso
