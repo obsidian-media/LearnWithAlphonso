@@ -10,6 +10,7 @@ public enum AlphonsoThemeID: String, CaseIterable, Identifiable, Sendable {
     case meadow
     case studioInk = "studio-ink"
     case manuscript
+    case canopy
 
     public var id: String { rawValue }
 
@@ -18,6 +19,7 @@ public enum AlphonsoThemeID: String, CaseIterable, Identifiable, Sendable {
         case .meadow: return "Meadow"
         case .studioInk: return "Studio Ink"
         case .manuscript: return "Manuscript"
+        case .canopy: return "Canopy"
         }
     }
 }
@@ -43,6 +45,20 @@ public struct AlphonsoPalette: Sendable {
     public let emberSoft: Color
     public let destructive: Color
     public let hairline: Color
+    /// Text/label color to render on top of a `moss`-filled surface
+    /// (e.g. `AlphonsoPrimaryButtonStyle`'s default tint). Equals
+    /// `surface` for every theme where moss/ember are dark/saturated
+    /// enough for light text to read clearly -- which is every theme
+    /// except where a specific theme's accent is deliberately bright
+    /// (see `onAccent`, and the design spec's contrast math for why
+    /// these two tokens exist instead of one shared one).
+    public let onPrimary: Color
+    /// Text/label color to render on top of an `ember`-filled surface
+    /// (`.alphonsoEmber` button usage). Distinct from `onPrimary`
+    /// because a theme's `moss` and `ember` are not guaranteed to need
+    /// the same contrast direction -- Canopy's bright coral `ember`
+    /// needs dark text while its dark emerald `moss` needs light text.
+    public let onAccent: Color
     public let colorScheme: ColorScheme
 
     /// PostScript name of the bundled font file to resolve a weight/
@@ -73,6 +89,8 @@ enum AlphonsoPaletteCatalog {
             emberSoft: Color(hex: 0xF6_CF_B0),
             destructive: Color(hex: 0xE7_00_0B),
             hairline: Color(hex: 0x11_24_18, opacity: 0.1),
+            onPrimary: Color(hex: 0xF5_F0_E8),
+            onAccent: Color(hex: 0xF5_F0_E8),
             colorScheme: .light,
             displayFontBaseName: "Fraunces-Regular",
             displayFontOpszRange: 9...144,
@@ -89,6 +107,8 @@ enum AlphonsoPaletteCatalog {
             emberSoft: Color(hex: 0x00_2E_5D),
             destructive: Color(hex: 0xE7_00_0B),
             hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
+            onPrimary: Color(hex: 0x0B_0D_12),
+            onAccent: Color(hex: 0x0B_0D_12),
             colorScheme: .dark,
             displayFontBaseName: "InstrumentSerif-Regular",
             displayFontOpszRange: nil,
@@ -105,10 +125,30 @@ enum AlphonsoPaletteCatalog {
             emberSoft: Color(hex: 0xED_C1_C0),
             destructive: Color(hex: 0xE7_00_0B),
             hairline: Color(hex: 0x0F_12_16, opacity: 0.12),
+            onPrimary: Color(hex: 0xF3_F5_F8),
+            onAccent: Color(hex: 0xF3_F5_F8),
             colorScheme: .light,
             displayFontBaseName: "Newsreader16pt-Regular",
             displayFontOpszRange: 6...72,
             sansFontBaseName: "SourceSans3-Roman"
+        ),
+        .canopy: AlphonsoPalette(
+            surface: Color(hex: 0xEF_FA_F4),
+            parchment: Color(hex: 0xDC_F3_E8),
+            ink: Color(hex: 0x05_26_1A),
+            inkSoft: Color(hex: 0x40_60_52),
+            moss: Color(hex: 0x0C_69_44),
+            mossDeep: Color(hex: 0x13_3F_2B),
+            ember: Color(hex: 0xE4_57_3F),
+            emberSoft: Color(hex: 0xFD_D3_CA),
+            destructive: Color(hex: 0xE7_00_0B),
+            hairline: Color(hex: 0x05_26_1A, opacity: 0.1),
+            onPrimary: Color(hex: 0xEF_FA_F4),
+            onAccent: Color(hex: 0x05_26_1A),
+            colorScheme: .light,
+            displayFontBaseName: "Baloo2-Regular",
+            displayFontOpszRange: nil,
+            sansFontBaseName: "Geist-Regular"
         ),
     ]
 }
