@@ -372,6 +372,52 @@ struct AlphonsoMascotBanner: View {
     }
 }
 
+// MARK: - Row card
+
+/// A rounded card row (status dot + title + subtitle) for use as `List`
+/// row *content* -- deliberately not a replacement for `List`/`Section`
+/// itself (keeps lazy loading, `.searchable`, toolbar/navigation
+/// integration all working exactly as they do today; see the design
+/// spec's "New shared components" section for why this stays row content
+/// rather than migrating to a `LazyVStack`). Replaces the current
+/// plain-`Text`-only row pattern (e.g. `LessonBrowserView`'s lesson
+/// rows) that's part of what read as "an empty piece of background with
+/// some written knowledge on it" (the real user quote already in
+/// `StatusHeaderView.swift`'s doc comment).
+struct AlphonsoRowCard: View {
+    let title: String
+    let subtitle: String
+    /// Status-dot color -- e.g. `.moss` for available, `.ember` for
+    /// today's/next recommended item, `AlphonsoColor.hairline` for
+    /// locked/dimmed. Callers pass an explicit color rather than this
+    /// component inferring state, since "what counts as next/locked"
+    /// is different per screen (lesson unlock order vs. review-queue
+    /// due date vs. leaderboard rank).
+    var accent: Color = AlphonsoColor.moss
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.sm + 2) {
+            Circle()
+                .fill(accent)
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AlphonsoFont.sans(16, weight: .medium))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(subtitle)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, AlphonsoSpacing.sm)
+        .padding(.horizontal, AlphonsoSpacing.sm + 4)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+    }
+}
+
 // MARK: - Mascot
 
 /// A rounded speech-bubble outline with a small tail pointing out its
