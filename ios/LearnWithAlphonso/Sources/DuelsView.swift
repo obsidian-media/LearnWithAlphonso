@@ -186,15 +186,7 @@ struct DuelsView: View {
 
     private var pastDuelsSection: some View {
         let content = ForEach(finished) { d in
-            HStack {
-                Text(d.course)
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Spacer()
-                Text(resultLabel(d))
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            }
+            AlphonsoRowCard(title: d.course, subtitle: resultLabel(d))
         }
         return Section {
             content
@@ -204,7 +196,7 @@ struct DuelsView: View {
                 .tracking(0.4)
                 .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(AlphonsoColor.parchment)
+        .listRowBackground(Color.clear)
     }
 
     private func resultLabel(_ d: Duel) -> String {
