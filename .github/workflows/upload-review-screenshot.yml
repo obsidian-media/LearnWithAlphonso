@@ -1,0 +1,34 @@
+name: Upload App Store Review Screenshot
+
+# Manual only -- Shipaton: uploads the account-owner-approved App Store
+# Review Screenshot for the "Alphonso Pro Monthly" subscription, to
+# resolve its MISSING_METADATA state. The real image lives at
+# .github/scratch/review-screenshot.png on this same branch, added and
+# explicitly approved by the account owner before this workflow exists.
+on:
+  workflow_dispatch:
+    inputs:
+      subscription_id:
+        description: "Subscription id"
+        required: true
+        type: string
+        default: "6815009725"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Upload review screenshot
+        run: |
+          bunx tsx scripts/upload-review-screenshot.ts \
+            "${{ github.event.inputs.subscription_id }}" \
+            .github/scratch/review-screenshot.png
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
