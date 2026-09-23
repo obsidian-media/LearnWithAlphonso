@@ -90,10 +90,11 @@ struct FriendsView: View {
                     .listRowBackground(AlphonsoColor.parchment)
 
                     if !activityEvents.isEmpty {
+                        let activityRows = ForEach(activityEvents) { event in
+                            ActivityEventRow(event: event, displayName: displayName(for: event.userID))
+                        }
                         Section {
-                            ForEach(activityEvents) { event in
-                                ActivityEventRow(event: event, displayName: displayName(for: event.userID))
-                            }
+                            activityRows
                         } header: {
                             Text("Activity")
                                 .font(AlphonsoFont.sans(12, weight: .semiBold))
