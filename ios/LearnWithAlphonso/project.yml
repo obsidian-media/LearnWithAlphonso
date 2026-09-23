@@ -114,26 +114,19 @@ targets:
           # code-signing-specific attributes like PROVISIONING_PROFILE_SPECIFIER
           # don't reliably resolve that way, unlike plain string settings.
           PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_PROVISIONING_PROFILE_UUID"
-          # Placeholder -- ios-release.yml's "Generate Xcode project" step
-          # substitutes the real value (from the REVENUECAT_API_KEY secret)
-          # into this file with `sed` before `xcodegen generate` runs, same
-          # pattern as PROVISIONING_PROFILE_SPECIFIER above. NOT resolved
-          # via xcodebuild's $(VAR) command-line-override indirection --
-          # tried that first (build 15, 2026-09-23): the command-line value
-          # was confirmed correctly passed to xcodebuild (masked as *** in
-          # its own log), but the archived Info.plist's RCApiKey key was
-          # entirely ABSENT (verified two independent ways: `plutil -p` and
-          # `PlistBuddy -c Print`, both confirming no such key, not just an
-          # empty one) -- Xcode's synthesized-Info.plist $(VAR) substitution
-          # does not reliably resolve a value supplied only as a command-line
-          # override, same root class of bug as PROVISIONING_PROFILE_SPECIFIER
-          # above. AppConfig.revenueCatAPIKey/EntitlementStore both treat a
-          # missing/empty key as "Pro purchases unavailable this launch," not
-          # a crash -- but never default this placeholder to the Debug key:
-          # a Test Store key in a TestFlight/App-Store-distributed build is
-          # exactly what crashed every tester's launch on 2026-09-19
-          # (RevenueCat's SDK asserts on it deliberately).
-          INFOPLIST_KEY_RCApiKey: "PLACEHOLDER_REVENUECAT_API_KEY"
+          # RCApiKey moved to ../Info.plist directly on 2026-09-23 --
+          # neither this per-config INFOPLIST_KEY_RCApiKey setting NOR a
+          # $(VAR)-indirected version of it ever actually reached the
+          # built app's Info.plist, despite both resolving correctly in
+          # xcodebuild's own effective build settings and the generated
+          # .pbxproj (confirmed via `xcodebuild -showBuildSettings` and a
+          # direct `.pbxproj` grep) -- Xcode's Info.plist-synthesis-merged-
+          # with-a-real-INFOPLIST_FILE mode (this target uses both) only
+          # merges Apple's own well-known keys via INFOPLIST_KEY_*, not
+          # arbitrary custom ones like this. See ../Info.plist's own
+          # comment on its RCApiKey entry for the full writeup and the
+          # working fix (same pattern CFBundleURLTypes already used there
+          # for the same class of limitation).
           # V4 candidate #2 (real push) -- wired in 2026-09-22 once the
           # Push Notifications capability was confirmed enabled on the
           # App ID and the Distribution provisioning profile was
@@ -144,10 +137,6 @@ targets:
           # LearnWithAlphonso-Release.entitlements' own header comment).
           CODE_SIGN_ENTITLEMENTS: LearnWithAlphonso-Release.entitlements
         Debug:
-          # RevenueCat Test Store key -- local/simulator builds only. Safe
-          # to commit (RevenueCat's public-key model, same as the Supabase
-          # keys above) and deliberately never used for a Release archive.
-          INFOPLIST_KEY_RCApiKey: "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq"
           # V4 candidate #2 (real push) -- Debug/Simulator only. NOT set
           # for Release yet -- see LearnWithAlphonso-Release.entitlements'
           # own comment for why (would break the manual-signing archive
