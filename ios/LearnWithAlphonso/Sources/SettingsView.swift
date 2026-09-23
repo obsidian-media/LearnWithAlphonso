@@ -15,25 +15,26 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    ForEach(AlphonsoThemeID.allCases) { themeID in
-                        Button {
-                            select(themeID)
-                        } label: {
-                            HStack(spacing: AlphonsoSpacing.sm + 4) {
-                                ThemeSwatch(themeID: themeID)
-                                Text(themeID.displayName)
-                                    .font(AlphonsoFont.sans(15, weight: .medium))
-                                    .foregroundStyle(AlphonsoColor.ink)
-                                Spacer()
-                                if selectedTheme == themeID {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(AlphonsoColor.moss)
-                                }
-                            }
+            let themeRows = ForEach(AlphonsoThemeID.allCases) { themeID in
+                Button {
+                    select(themeID)
+                } label: {
+                    HStack(spacing: AlphonsoSpacing.sm + 4) {
+                        ThemeSwatch(themeID: themeID)
+                        Text(themeID.displayName)
+                            .font(AlphonsoFont.sans(15, weight: .medium))
+                            .foregroundStyle(AlphonsoColor.ink)
+                        Spacer()
+                        if selectedTheme == themeID {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(AlphonsoColor.moss)
                         }
                     }
+                }
+            }
+            List {
+                Section {
+                    themeRows
                 } header: {
                     Text("Theme")
                         .font(AlphonsoFont.sans(12, weight: .semiBold))
