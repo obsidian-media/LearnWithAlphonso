@@ -83,37 +83,57 @@ into a concrete scope:
 ### Color tokens
 
 Following the same pattern as Meadow/Studio Ink/Manuscript: colors are
-**computed** (a standard OKLab conversion from a chosen sRGB/hex target),
-not eyeballed, and expressed as `oklch(...)` in both `AlphonsoPalette`
-(iOS) and — since this is iOS-only — nowhere in `styles.css`. The specific
-oklch triples should be computed at implementation time the same way the
-existing themes were; the target colors validated during brainstorming are:
+**computed** (a standard OKLab→sRGB conversion, done for real with a
+verified script — not the informal hex targets from the brainstorming
+mockups, and not eyeballed), gamut-checked (no channel clipping), and
+contrast-audited against every real pairing this app's existing code
+actually uses (text, icons, button fills), not just assumed safe. Final,
+locked values:
 
-| Token | Role | Target (validated in mockups) |
-|---|---|---|
-| `surface` | screen background | near-white, faint green cast (`#F7FBF9`-ish) |
-| `parchment` (card/row fill) | section/card backgrounds | pale mint (`#EAF5EF`-ish, matches the validated mockups exactly) |
-| `ink` | primary text | deep forest green-black (`#173328`-ish) |
-| `inkSoft` | secondary text | muted sage (`#4B6B5E`-ish) |
-| `moss` (primary accent) | buttons, links, tint, active states | emerald (`#1F9D70`-ish) |
-| `mossDeep` | `.hard-shadow` underlay for primary buttons | darker emerald (`#157A57`-ish) |
-| `ember` (secondary accent) | CTA highlight, streak flame, league badges | coral (`#FF6F59`-ish) |
-| `emberSoft` | soft coral backgrounds/badges | pale coral tint |
-| `hairline` | borders | `ink` at existing ~10% opacity, same pattern as other themes |
-| `destructive` | errors | unchanged — shared across all themes already |
+| Token | oklch | sRGB hex | Role |
+|---|---|---|---|
+| `surface` | `oklch(0.975 0.014 165)` | `#EFFAF4` | screen background |
+| `parchment` | `oklch(0.945 0.028 165)` | `#DCF3E8` | card/row/section fill |
+| `ink` | `oklch(0.24 0.045 165)` | `#05261A` | primary text |
+| `inkSoft` | `oklch(0.46 0.045 165)` | `#406052` | secondary text |
+| `moss` (primary accent) | `oklch(0.46 0.10 160)` | `#0C6944` | buttons, tint, active states |
+| `mossDeep` | `oklch(0.33 0.06 160)` | `#133F2B` | `.hard-shadow` underlay for moss buttons |
+| `ember` (secondary accent) | `oklch(0.64 0.18 32)` | `#E4573F` | CTA highlight, streak flame, badges |
+| `emberSoft` | `oklch(0.90 0.05 32)` | `#FDD3CA` | soft coral badge/wash backgrounds |
+| `hairline` | `ink` at 10% opacity | — | borders, same pattern as other themes |
+| `destructive` | unchanged | `#E7000B` | errors — shared across all four themes |
 
-**Contrast is a hard requirement, not a nice-to-have** — and the target
-colors above, as validated in the brainstorming mockups, do **not** all
-pass on their own: checked against real WCAG numbers, white text on the
-coral fill (`#FF6F59`) is 2.74:1 (fails even the 3:1 large-text bar), and
-white text on the emerald fill (`#1F9D70`) is 3.43:1 (passes only for
-large/bold text, fails 4.5:1 for normal button-label sizes). Dark `ink`
-text (`#173328`) on that same coral is 4.98:1 and passes comfortably. **So:
-button/badge labels on coral or emerald fills use dark `ink` text by
-default, not white** — white-on-accent is only acceptable where the
-specific computed oklch fill is verified dark/saturated enough to clear
-4.5:1 (normal text) or 3:1 (large/bold text, 18pt+ or 14pt+bold), checked
-per instance, not assumed from the palette in general.
+**Two new palette tokens, `onPrimary` and `onAccent`** (text color to use
+*on top of* the moss fill and the ember fill respectively) are required —
+and this is a real architectural finding, not a stylistic nicety.
+`AlphonsoPrimaryButtonStyle` currently hardcodes
+`.foregroundStyle(AlphonsoColor.surface)` for every button regardless of
+tint. That accidentally works for the existing three themes because their
+`moss`/`ember` are both dark/saturated enough for their light `surface`
+text to read clearly. **Canopy breaks that assumption on purpose**: `moss`
+stays dark (matches the existing successful pattern — `surface`-colored
+text on it hits **6.33:1**, better than Meadow's own primary button), but
+`ember` is a genuinely bright coral (matching what was visually approved in
+the mockups) that cannot simultaneously be bright *and* pass 4.5:1 with
+light text — the darkest coral that would (checked by sweeping the actual
+oklch space) reads as a burnt rust, not the coral that was approved. The
+real fix is per-fill text color, not a darker coral: `ink`-colored text on
+`ember` hits **4.44:1** (vs. 2.70:1 if it wrongly reused `surface`-colored
+text) — nearly a full point better than Meadow's own existing
+`alphonsoEmber` button (**3.46:1**, already shipped). `ember` used as
+small accent text/icons (section eyebrows, "Alphonso says") lands at
+**3.41:1 against surface** — slightly below the 4.5 ideal but matching,
+not regressing, Meadow's own already-shipped precedent (3.46:1) for that
+exact role; not a new problem this redesign introduces.
+
+For the existing three themes, `onPrimary` and `onAccent` both simply
+equal `surface` (their current hardcoded behavior, zero visual change).
+For Canopy: `onPrimary = surface` (`#EFFAF4`), `onAccent = ink` (`#05261A`).
+`AlphonsoPrimaryButtonStyle` gets a `foreground: Color` parameter
+(default `AlphonsoColor.surface`, preserving today's behavior everywhere);
+its two static extensions pass the theme-resolved token explicitly
+(`alphonsoPrimary` → `AlphonsoColor.onPrimary`, `alphonsoEmber` →
+`AlphonsoColor.onAccent`) instead of relying on the hardcoded default.
 
 ### Typography
 
@@ -125,17 +145,18 @@ serif entirely**: a rounded, friendly sans for display (headlines, large
 numerals like the streak count), and reuses **Geist** (already bundled for
 Meadow, avoids a redundant font dependency) for body text.
 
-Recommended display font: **Baloo 2** (Google Fonts, believed OFL-licensed
-and rounded/warm without being a novelty/childish typeface) — bundled and
-resolved the same way as every other theme's fonts (`Sources/Fonts/*.ttf`,
-CoreText `kCTFontVariationAttribute` resolution via `AlphonsoFont.swift`,
-`Info.plist` `UIAppFonts` registration). **This is an unverified
-recommendation, not a confirmed one** — unlike the existing three font
-pairs, its license and variable-font axis availability have not actually
-been checked yet. Implementation must verify both before bundling; if
-Baloo 2 doesn't ship a usable variable instance or its license doesn't
-check out, fall back to a comparable rounded OFL sans (e.g. Fredoka)
-rather than blocking on this specific choice.
+Display font: **Baloo 2**, now actually verified (not just recommended) —
+downloaded from `google/fonts`' `ofl/baloo2/` (OFL-1.1 licensed, confirmed
+via its own `OFL.txt`), a true variable font (`fvar` axis `wght` 400-800,
+named instances Regular/Medium/SemiBold/Bold/ExtraBold), no `opsz` axis
+(same as Instrument Serif — skip that axis entirely, don't pass a
+meaningless range). PostScript base name confirmed via `fontTools`
+inspection of its `name` table: **`Baloo2-Regular`**. Bundled the same way
+as every other theme's fonts: `ios/LearnWithAlphonso/Sources/Fonts/
+Baloo2-Variable.ttf` + `Baloo2-OFL.txt`, registered in `Info.plist`'s
+`UIAppFonts` array, resolved via `AlphonsoFont.swift`'s existing
+`kCTFontVariationAttribute` mechanism (no changes needed to that file —
+it's already fully generic over the active theme's palette).
 
 ### New shared components
 
@@ -279,11 +300,10 @@ finished result on TestFlight at the end, not mid-stream.
 
 ## Risks / open items for implementation to resolve, not re-litigate
 
-- Confirm Baloo 2's exact OFL variable-font availability before bundling;
-  fall back to a comparable rounded OFL sans if it doesn't ship one, per
-  the Typography section above.
-- Exact oklch values are computed at implementation time (OKLab conversion
-  from the validated target colors), not re-decided.
+- Font and color values above are final, verified, and locked — not
+  starting points for further redesign during implementation. (Baloo 2's
+  license/axes and the full oklch/contrast table were both already
+  resolved for real, not deferred — see Typography and Color tokens above.)
 - No collision expected with the parallel `english-content-overhaul`
   worktree (that session touches `src/data/lesson-bank.ts`/`curriculum.ts`/
   `bank-engine.ts`; this touches `ios/` and, minimally, the shared theme
