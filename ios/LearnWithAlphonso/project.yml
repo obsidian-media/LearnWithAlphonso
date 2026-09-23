@@ -80,13 +80,16 @@ targets:
         # Bumped past the last TestFlight upload (build 13, uploaded
         # 2026-09-22T ~18:12 UTC, the speech-bubble redesign + course-picker
         # .menu-style fix, PR #72/#73) -- Apple rejects a re-upload of an
-        # already-used build number. Build 14 covers PR #76 (generative
-        # sentence-content pilot) -- note: that PR is backend/authoring
-        # tooling (scripts/pack-tool.ts, src/data/generative/*) with no
-        # iOS-app-visible change; this build exists for build-number
-        # continuity/CI validation, not because there's anything new to
-        # see on-device.
-        CURRENT_PROJECT_VERSION: "14"
+        # already-used build number. Build 15: the real production
+        # RevenueCat public API key (REVENUECAT_API_KEY repo secret) is
+        # now wired in for the first time -- this is the first build
+        # where PaywallView can show a real, purchasable $9.99/month
+        # "Alphonso Pro" offer instead of "not available yet." See
+        # docs/BACKLOG.md's §1.1 and
+        # D:\AgentDevWork\repos\Hackaton\Shipaton\02-launch-checklist\
+        # execution-record.md for the full RevenueCat/App Store Connect
+        # wiring this build depends on.
+        CURRENT_PROJECT_VERSION: "15"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -187,7 +190,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "14"
+        CURRENT_PROJECT_VERSION: "15"
         SKIP_INSTALL: true
       configs:
         Release:
