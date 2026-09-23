@@ -40,19 +40,9 @@ struct HectorView: View {
 
     private var signInBody: some View {
         VStack(spacing: AlphonsoSpacing.md) {
-            // Hector's own visual presence -- previously text/voice-only
-            // everywhere in the app despite being a fully-named persona.
-            Image("Hector")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 96, height: 96)
-                .clipShape(Circle())
-                .overlay(Circle().strokeBorder(AlphonsoColor.ember, lineWidth: 3))
-                .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.7)
+            AlphonsoMascotBanner(mascot: .hector, message: "Sign in to Hector")
+                .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.9)
 
-            Text("Sign in to Hector")
-                .font(AlphonsoFont.display(22, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
             Text("Hector uses a separate account from your main Learn with Alphonso sign-in.")
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)
