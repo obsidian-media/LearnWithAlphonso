@@ -93,6 +93,14 @@ jobs:
           sed -i '' "s/PLACEHOLDER_REVENUECAT_API_KEY/$REVENUECAT_API_KEY/" project.yml
           xcodegen generate
 
+      - name: Debug -- check generated .pbxproj for RCApiKey (pre-build)
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          echo "=== grep RCApiKey in generated .pbxproj ==="
+          grep -n "RCApiKey" LearnWithAlphonso.xcodeproj/project.pbxproj || echo "(not found in .pbxproj at all)"
+          echo "=== Effective build settings for Release config, app target (xcodebuild -showBuildSettings) ==="
+          xcodebuild -showBuildSettings -project LearnWithAlphonso.xcodeproj -scheme LearnWithAlphonso -configuration Release 2>&1 | grep -i "RCApiKey" || echo "(RCApiKey not in effective build settings either)"
+
       - name: Write App Store Connect API key
         working-directory: ios/LearnWithAlphonso
         env:
