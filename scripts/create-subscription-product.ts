@@ -143,6 +143,27 @@ async function main() {
       },
     });
     printResult(`create-localization (en-US, subscription ${subId})`, result);
+  } else if (cmd === "check-group-localization") {
+    // Subscription stuck at MISSING_METADATA even with a real product,
+    // localization, price, and review screenshot -- multiple independent
+    // developer reports (Apple forums, RevenueCat community) confirm the
+    // SUBSCRIPTION GROUP itself also needs its own localization (a
+    // separate resource from the subscription's own localization),
+    // distinct from the group's plain `referenceName` (internal-only)
+    // set at creation. Checking whether one exists.
+    const result = await api(`/subscriptionGroups/${GROUP_ID}/subscriptionGroupLocalizations`);
+    printResult(`check-group-localization (group ${GROUP_ID})`, result);
+  } else if (cmd === "create-group-localization") {
+    const result = await api("/subscriptionGroupLocalizations", "POST", {
+      data: {
+        type: "subscriptionGroupLocalizations",
+        attributes: { name: "Alphonso Pro", locale: "en-US" },
+        relationships: {
+          subscriptionGroup: { data: { type: "subscriptionGroups", id: GROUP_ID } },
+        },
+      },
+    });
+    printResult(`create-group-localization (group ${GROUP_ID})`, result);
   } else if (cmd === "list-price-points") {
     const subId = process.argv[3];
     if (!subId) {
@@ -376,7 +397,7 @@ async function main() {
     }
   } else {
     console.error(
-      "Usage: create-subscription | create-localization <id> | list-price-points <id> | set-price <id> <pricePointId> | check-screenshot <id> | status <id>",
+      "Usage: create-subscription | create-localization <id> | list-price-points <id> | set-price <id> <pricePointId> | check-screenshot <id> | check-group-localization | create-group-localization | status <id>",
     );
     process.exit(1);
   }

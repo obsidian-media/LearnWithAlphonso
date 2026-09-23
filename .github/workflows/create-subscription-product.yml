@@ -23,6 +23,8 @@ on:
           - create-intro-offer
           - equalize-prices
           - check-screenshot
+          - check-group-localization
+          - create-group-localization
           - status
       subscription_id:
         description: "Subscription id (from create-subscription's output) -- required for every job except create-subscription"
