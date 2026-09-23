@@ -303,6 +303,75 @@ extension View {
     }
 }
 
+// MARK: - Mascot banner
+
+/// Which named mascot a banner shows -- keeps call sites from passing a
+/// raw asset-name string (a typo there fails silently at runtime, not at
+/// compile time, since `Image(_:)` has no compile-time asset checking).
+enum AlphonsoMascot {
+    case alphonso
+    case hector
+
+    var assetName: String {
+        switch self {
+        case .alphonso: return "Alphonso"
+        case .hector: return "Hector"
+        }
+    }
+
+    /// VoiceOver needs a real description, not just a decorative image --
+    /// the portrait is communicating something (who's "speaking"), not
+    /// just decoration. Combined with `message` at the call site for the
+    /// full accessibility label (see `AlphonsoMascotBanner.body`).
+    var accessibilityName: String {
+        switch self {
+        case .alphonso: return "Alphonso"
+        case .hector: return "Hector"
+        }
+    }
+}
+
+/// A mascot portrait + a short line of copy on a colored/gradient card --
+/// the shared replacement for the "plain text, no imagery" pattern found
+/// on the paywall, auth, and Learn-tab-home hero spots (see the design
+/// spec's Background section: the concrete before/after example was
+/// PaywallView showing an SF Symbol instead of Hector's actual bundled
+/// portrait). Not Canopy-specific -- any theme can use this, it just
+/// reads `AlphonsoColor.moss`/`.parchment` like everything else here.
+struct AlphonsoMascotBanner: View {
+    let mascot: AlphonsoMascot
+    let message: String
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.sm + 4) {
+            Image(mascot.assetName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                        .strokeBorder(.white.opacity(0.6), lineWidth: 2)
+                )
+
+            Text(message)
+                .font(AlphonsoFont.sans(14, weight: .bold))
+                .foregroundStyle(AlphonsoColor.onPrimary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(AlphonsoSpacing.md)
+        .background(
+            LinearGradient(colors: [AlphonsoColor.moss, AlphonsoColor.mossDeep], startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(mascot.accessibilityName): \(message)")
+    }
+}
+
 // MARK: - Mascot
 
 /// A rounded speech-bubble outline with a small tail pointing out its
