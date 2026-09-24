@@ -118,10 +118,37 @@ a French infinitive hint can equal a French infinitive answer).
 in phase 1 touched `bank-engine.ts`'s `pickDistractors` — the one placement
 fix that happened to be self-ref-type (`fp4`) was fixed by rewording the
 *prompt*, not by ranking. **24 remains the ceiling a ranking layer would
-need to address**, out of 2,500 questions — call it a rate of ~1.0%, against
-English's pre-fix rate of 12/1,387 ≈ 0.9%. The rates are close; the raw
-count is different mostly because of denominator size, not because French's
-underlying problem is worse or better than English's was.
+need to address.**
+
+> **Correction, recorded rather than silently edited (2026-09-24).** The
+> figure above originally read "~1.0% of questions, close to English's
+> pre-fix ~0.9%," dividing 24 by all 2,500 French questions. That's not
+> comparable to English's denominator: self-referential distractors can
+> only occur where there's a choice/bank pool to draw from, and English's
+> 12 was measured across its 1,387 MC questions specifically, not all
+> question types. Re-denominated:
+>
+> | Measure | Value |
+> |---|---|
+> | 24 ÷ all French questions (2,500) | 0.96% (the original, wrong comparison) |
+> | 24 ÷ French MC only (1,303) | 1.84% |
+> | English pre-fix: 12 ÷ 1,387 MC | 0.87% |
+>
+> **Like for like, French is roughly twice English's pre-fix rate** — this
+> strengthens the case for a ranking layer, not weakens it.
+>
+> **A further refinement on top of that correction**, found while verifying
+> it: this tool's `choicesOf()` treats a `fill` question's word bank the
+> same as an `mc` question's choices (both are "the pool a wrong answer
+> could leak from"), so not all 24 flags are actually on MC questions —
+> checked directly against the dump: **21 are on `mc`, 3 are on `fill`**.
+> The precise MC-only rate is therefore 21/1,303 ≈ 1.61%, not 24/1,303 =
+> 1.84%. (English's own original log has the identical imprecision in the
+> other direction — its post-fix "5" is stated as "1 multiple-choice, 4
+> fill banks," mixed into a count divided by an MC-only denominator — so
+> 1.84% is the number that's actually consistent with how English's own
+> figure was computed; 1.61% is the more precise MC-only figure. Both are
+> reported here rather than picking one silently.)
 
 The 59 (now 4) **answer**-leak instances are a separate, French-specific
 phenomenon with no English analog to compare against — the bare-infinitive-
@@ -175,6 +202,53 @@ persons (je/tu/il/nous/vous/ils) = 120 data points.
   as cloze-pack hints across `lesson-bank-fr.ts` today was found in the
   Lefff lexicon — **117/117 (100%)**.
 
+### 3.2a Extended to every mood/tense the bank actually uses
+
+The first pass above covered présent and imparfait only. The bank's cloze
+packs also exercise futur (`frb1p4`), conditionnel présent (`frb1p6`) and
+passé (`frb2p7`), subjonctif présent (`frb2p1`, including the bank's own
+`"Il est important que nous ___ (prendre) une décision.|prenions"` line —
+verified directly) and passé (`frc1p6`), and plus-que-parfait (`frb2p6`) —
+none of which the first pass verified. "100% coverage of 117 infinitives"
+is coverage, not correctness; it says the library knows the verbs, not
+that it conjugates them correctly in these specific moods. Closed by
+re-running the same methodology (hand-built known-correct tables, same
+20-verb set — 10 verbs for the three compound tenses, to keep the sample
+proportionate) against every remaining tense:
+
+| Tense                                          | Result                  |
+| ----------------------------------------------- | ----------------------- |
+| Futur simple (20 verbs × 6 persons)             | 120/120                 |
+| Conditionnel présent (20 verbs × 6 persons)     | 120/120                 |
+| Subjonctif présent (20 verbs × 6 persons)       | 120/120                 |
+| Passé composé, avoir-verbs (18 verbs × 6)       | 108/108                 |
+| Passé composé, être-verbs (2 verbs × 6)         | 12/12 (see gotcha below) |
+| Plus-que-parfait (10 verbs × 6 persons)         | 60/60                   |
+| Conditionnel passé (10 verbs × 6 persons)       | 60/60                   |
+| Subjonctif passé (10 verbs × 6 persons)         | 60/60                   |
+| **Combined with présent/imparfait, all tenses** | **809/810 (99.9%)**     |
+
+**One real gotcha, found in the process — not a footnote.** The first
+run of the être-auxiliary passé composé check scored 8/12 (66.7%), not
+12/12: requesting `nous`/`ils` with only `agreeGender: "M"` set returned
+the **singular** participle (`sommes allé` instead of `sommes allés`) —
+a plausible-looking wrong answer, not a thrown error. The library's own
+docs are explicit that gender agreement isn't automatic, but say nothing
+about number, and number silently defaults to singular unless
+`agreeNumber` is also passed. Every mismatch was this one caller-side
+omission — passing `agreeNumber: "P"` for the plural persons fixed all
+four instantly, and the library's underlying conjugation data was never
+wrong. This doesn't reverse the recommendation, but it is a concrete
+integration requirement for whoever implements this: **`agreeNumber` must
+be derived from the subject and passed explicitly; it will not be
+inferred from the person index.** This is a different failure mode than
+"fails loudly on an unknown verb" — it's a silent wrong answer on a
+*known* verb when the caller under-specifies agreement, and is exactly
+the kind of thing spec section 8.3's "must be the sole authority"
+requirement should be read to include: the library is authoritative on
+conjugation, but the caller is still responsible for telling it who and
+how many.
+
 ### 3.3 The architectural point this spike surfaces
 
 This is the load-bearing finding, not just the accuracy number: **English's
@@ -211,13 +285,18 @@ design option for whoever picks up section 8.3, not a decision made here.
 
 ### 3.4 Recommendation (the account owner's call to make)
 
-**Primary**: `french-verbs` + `french-verbs-lefff` — 99–100% accurate on a
-20-verb, 2-tense spike, 100% coverage against real production vocabulary,
-Apache-2.0 (no licensing friction), actively maintained (published
-2024-12-27), and fails loudly rather than guessing on an unknown verb. Use
-it **generatively** in `bank-engine.ts` for the 19 verb-conjugation cloze
-packs — produce a line's distractors from its own hinted verb's other
-forms, rather than pooling from the pack's other answers.
+**Primary**: `french-verbs` + `french-verbs-lefff` — 809/810 (99.9%) across
+every mood/tense the bank's cloze packs actually use (§3.2a), 100% coverage
+against real production vocabulary, Apache-2.0 (no licensing friction),
+actively maintained (published 2024-12-27), and fails loudly (throws)
+rather than guessing on an unknown verb. Its one real integration
+requirement — `agreeNumber` must be passed explicitly for être-auxiliary
+compound tenses, it is not inferred from the person index (§3.2a) — is a
+caller-side detail to get right during implementation, not a reason to
+reconsider the library. Use it **generatively** in `bank-engine.ts` for
+the 19 verb-conjugation cloze packs — produce a line's distractors from
+its own hinted verb's other forms, rather than pooling from the pack's
+other answers.
 
 **Secondary, needs its own scoping**: the 15 mixed-class packs and any
 answer-pool contamination between verb and non-verb answers still need a

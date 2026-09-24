@@ -478,6 +478,40 @@ pilot verified 7 verbs and its own review flagged that as insufficient;
 20 verbs in one tense is better, but it is not yet evidence for the
 tenses that carry the risk.
 
+**Gap closed 2026-09-24.** Extended the spike to every mood/tense the
+bank's cloze packs actually use, same 20-verb table (10 verbs for the
+three compound tenses, to keep the sample proportionate), hand-verified
+known-correct forms:
+
+| Tense                            | Result        |
+| --------------------------------- | ------------- |
+| Présent                          | 119/120 (99.2%; the 1 "miss" is a valid formal-register alternate — `puis` for `pouvoir`, je) |
+| Imparfait                        | 30/30         |
+| Futur simple                     | 120/120       |
+| Conditionnel présent             | 120/120       |
+| Subjonctif présent (incl. the bank's own `prenions` line) | 120/120 |
+| Passé composé, avoir-verbs       | 108/108       |
+| Passé composé, être-verbs        | 12/12 — **only once `agreeNumber` is passed alongside `agreeGender`** (see gotcha below) |
+| Plus-que-parfait                 | 60/60         |
+| Conditionnel passé               | 60/60         |
+| Subjonctif passé                 | 60/60         |
+| **Total**                        | **809/810 (99.9%)** |
+
+**A real usability gotcha, not covered by "fails loudly on an unknown
+verb"**: for être-auxiliary compound tenses, the library does **not**
+infer number agreement from the person index. Requesting `nous`/`ils`
+with only `agreeGender: "M"` silently returns the **singular** participle
+(`sommes allé`, not `sommes allés`) — a plausible-looking wrong answer,
+not a thrown error. Whoever implements this must pass `agreeNumber`
+explicitly per person; it will not be inferred. This doesn't reverse the
+recommendation (every mismatch in this spike was this one caller-side
+omission, corrected once `agreeNumber` was passed — the library's actual
+conjugation data was never wrong), but it is a real integration detail,
+not a footnote.
+
+Full methodology and the extended per-verb tables:
+`docs/superpowers/french-distractor-quality-evidence.md`.
+
 ---
 
 ## 9. Tooling — generalise, do not fork
