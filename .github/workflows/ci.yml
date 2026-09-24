@@ -231,14 +231,15 @@ jobs:
             echo "::warning::SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set -- skipping curriculum data seed (see this job's header comment)."
             exit 0
           fi
-          # bunx (not node_modules/.bin/tsx): tsx is NOT a dependency of this
-          # project, so the local path does not exist and this command would
-          # fail the moment SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY are set.
-          # It has never run -- those secrets are unset, so the guard above
-          # exits first -- which is exactly why the break went unnoticed: it
-          # was primed to fire on the day someone finished the setup. Every
-          # other workflow here already uses `bunx tsx`, which fetches it.
-          bunx tsx scripts/seed-curriculum-db.ts
+          # `bun`, not tsx. tsx is NOT a dependency of this project, so the
+          # original node_modules/.bin/tsx path did not exist and would have
+          # failed the moment these secrets were set -- a break primed to fire
+          # on the day someone finished the setup. `bunx tsx` fixed that by
+          # fetching tsx at runtime, but bun runs TypeScript directly and is
+          # already what the iOS export step above uses, so there is nothing to
+          # fetch and one less way for a step that has NEVER executed to fail
+          # on its first real run.
+          bun scripts/seed-curriculum-db.ts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

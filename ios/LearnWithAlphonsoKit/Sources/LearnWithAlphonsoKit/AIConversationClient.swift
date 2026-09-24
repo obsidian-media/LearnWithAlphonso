@@ -10,6 +10,18 @@ import FoundationNetworking
 /// access token as a Bearer header -- these routes verify it via
 /// ai-quota.server.ts's consumeQuota, which also enforces the same daily/
 /// per-minute AI-usage caps the web app is subject to.
+/// What /api/grade-translation decided about one written translation.
+public struct TranslationVerdict: Sendable, Equatable {
+    public let correct: Bool
+    /// One short sentence for the learner, when the grader gave one.
+    public let reason: String?
+
+    public init(correct: Bool, reason: String?) {
+        self.correct = correct
+        self.reason = reason
+    }
+}
+
 public struct ChatMessage: Sendable, Encodable, Equatable {
     public let role: String
     public let content: String
@@ -80,6 +92,41 @@ public final class AIConversationClient: Sendable {
             throw AIConversationError.invalidPayload
         }
         return content
+    }
+
+    /// POST /api/grade-translation -- a second opinion on a written translation
+    /// the question's curated phrasings did not accept.
+    ///
+    /// Returns `nil` for EVERY failure: offline, non-2xx, a body that does not
+    /// parse. `nil` means "no second opinion", and the caller keeps the local
+    /// verdict it already has. It deliberately does not throw, unlike the other
+    /// methods here, because there is no useful way for a player to handle a
+    /// thrown error except to treat it as a wrong answer -- and being offline
+    /// is not evidence about the learner's English.
+    public func gradeTranslation(
+        lessonId: String, questionId: String, submission: String, course: String
+    ) async -> TranslationVerdict? {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/grade-translation"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        let payload: [String: Any] = [
+            "lessonId": lessonId,
+            "questionId": questionId,
+            "submission": submission,
+            "course": course,
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+
+        // Destructured on its own line rather than inside the guard: optional
+        // binding wants a plain identifier, not a tuple pattern.
+        guard let result = try? await requester(request) else { return nil }
+        let (data, response) = result
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let correct = object["correct"] as? Bool
+        else { return nil }
+        return TranslationVerdict(correct: correct, reason: object["reason"] as? String)
     }
 
     /// POST /api/analyze-weaknesses -- best-effort, fire-and-forget from

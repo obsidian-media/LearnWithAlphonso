@@ -26,6 +26,11 @@ struct LessonPlayerView: View {
     @State private var correctCount = 0
     @State private var missedQuestionIDs: [String] = []
     @State private var picked: String?
+    // A translation's verdict is settled by TranslateQuestionCard (locally,
+    // then by the server when it can be reached) rather than derived here, so
+    // that what the learner is shown and what is scored are the same value.
+    @State private var translationVerdict: TranslationVerdict?
+    @State private var isCheckingTranslation = false
     @State private var checked = false
     @State private var isSubmitting = false
     @State private var result: LessonCompletionResult?
@@ -105,17 +110,38 @@ struct LessonPlayerView: View {
             // per question -- without it, SwiftUI would keep reusing the
             // same view identity across questions and a reorder question's
             // tapped-token state would leak into the next question.
-            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked)
+            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
                 .id(questionID(currentQuestion))
 
             Spacer()
 
             if isSubmitting {
                 ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
+            } else if isCheckingTranslation {
+                ProgressView("Checking...").tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
             } else if !checked {
-                Button("Check") { checked = true; recordAnswer() }
+                Button("Check") {
+                    // Every other type grades synchronously. A translation has
+                    // to settle first, because the curated phrasings are only a
+                    // floor and the second opinion that can lift them is a
+                    // network call -- scoring before it lands would record a
+                    // miss the learner is then told they did not make.
+                    if case .translate = currentQuestion {
+                        isCheckingTranslation = true
+                        Task {
+                            await settleTranslationVerdict()
+                            isCheckingTranslation = false
+                            checked = true
+                            recordAnswer()
+                        }
+                    } else {
+                        checked = true
+                        recordAnswer()
+                    }
+                }
                     .buttonStyle(.alphonsoPrimary)
-                    .disabled(picked == nil)
+                    // Whitespace is not an answer.
+                    .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } else {
                 Button(isReinforcing || pendingReinforcement != nil || idx < total - 1 ? "Continue" : "Finish") {
                     if let pendingReinforcement {
@@ -123,6 +149,7 @@ struct LessonPlayerView: View {
                         self.pendingReinforcement = nil
                         picked = nil
                         checked = false
+                        translationVerdict = nil
                         return
                     }
                     if activeReinforcement != nil {
@@ -145,12 +172,33 @@ struct LessonPlayerView: View {
         .background(AlphonsoColor.surface)
     }
 
+    /// Settles the current translation's verdict before it is scored.
+    private func settleTranslationVerdict() async {
+        guard case .translate(let q) = currentQuestion else { return }
+        translationVerdict = await settledTranslationVerdict(
+            question: q,
+            lessonId: lesson.id,
+            course: course,
+            session: session,
+            isConnected: networkMonitor.isConnected,
+            submission: picked)
+    }
+
     private func recordAnswer() {
         // Reinforcement rounds are supplementary practice only -- they
         // never touch correctCount/missedQuestionIDs/hearts/XP.
         guard !isReinforcing else { return }
         let question = lesson.questions[idx]
-        if isAnswerCorrect(question, picked: picked) {
+        // For a translation the settled verdict outranks the local match: it is
+        // what the learner was just shown, and isAnswerCorrect only knows the
+        // curated phrasings.
+        let correct: Bool
+        if case .translate = question, let translationVerdict {
+            correct = translationVerdict.correct
+        } else {
+            correct = isAnswerCorrect(question, picked: picked)
+        }
+        if correct {
             correctCount += 1
         } else {
             missedQuestionIDs.append(questionID(question))
@@ -275,6 +323,7 @@ private func questionID(_ question: Question) -> String {
     case .reorder(let q): return q.id
     case .listening(let q): return q.id
     case .speak(let q): return q.id
+    case .translate(let q): return q.id
     }
 }
 
@@ -315,9 +364,14 @@ private struct QuestionCard: View {
     // A speaking question needs a token to transcribe with, and needs to know
     // whether transcription can happen at all -- see SpeakQuestionCard.
     let session: Session
+    /// Which lesson this question belongs to, for /api/grade-translation's
+    /// server-side question lookup.
+    let lessonId: String
     let isConnected: Bool
     let checked: Bool
     @Binding var picked: String?
+    /// Settled by the player before it scores -- see settledTranslationVerdict.
+    @Binding var translationVerdict: TranslationVerdict?
 
     // "reorder" questions accumulate tapped token *indices* (not values,
     // since a sentence can repeat a word) -- reset automatically per
@@ -412,6 +466,10 @@ private struct QuestionCard: View {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
+            case .translate(let q):
+                TranslateQuestionCard(
+                    question: q, checked: checked, picked: $picked,
+                    verdict: $translationVerdict)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,
