@@ -289,7 +289,7 @@ horse|le cheval
 cow|la vache
 pig|le cochon
 sheep|le mouton
-chicken|la poule
+hen (chicken)|la poule
 duck|le canard
 rabbit|le lapin
 mouse|la souris
@@ -317,7 +317,7 @@ spider|l'araignée`,
     note: "Common jobs and professions.",
     data: `doctor|le médecin
 nurse|l'infirmier
-teacher|le professeur
+teacher (profession)|le professeur
 engineer|l'ingénieur
 lawyer|l'avocat
 police officer|le policier
@@ -461,8 +461,8 @@ market|le marché
 cashier|le caissier
 discount|la réduction
 sale|les soldes
-to buy|acheter
-to sell|vendre
+to buy (shopping)|acheter
+to sell (shopping)|vendre
 customer|le client
 bag|le sac
 wallet|le portefeuille
@@ -481,9 +481,9 @@ to cost|coûter`,
     prompt: 'The French word for "%s" is…',
     note: "Restaurant vocabulary and useful phrases.",
     data: `menu|le menu
-waiter|le serveur
+waiter (in a restaurant)|le serveur
 waitress|la serveuse
-table|la table
+table (restaurant)|la table
 reservation|la réservation
 starter|l'entrée
 main course|le plat principal
@@ -520,7 +520,7 @@ notebook|le cahier
 eraser|la gomme
 ruler|la règle
 desk|le bureau
-chair|la chaise
+chair (classroom)|la chaise
 board|le tableau
 chalk|la craie
 school bag|le sac
@@ -579,13 +579,13 @@ to save (a file)|enregistrer`,
     kind: "pair",
     prompt: 'The French word for "%s" is…',
     note: "Common hobbies and leisure vocabulary.",
-    data: `to read|lire
+    data: `to read (for pleasure)|lire
 to draw|dessiner
 to paint|peindre
 to sing|chanter
 to dance|danser
 to travel|voyager
-to cook|cuisiner
+to cook (a meal)|cuisiner
 to fish|pêcher
 to garden|jardiner
 to sew|coudre
@@ -660,11 +660,11 @@ ticket|le billet
 station|la gare
 airport|l'aéroport
 platform|le quai
-driver|le conducteur
+driver (of a vehicle)|le conducteur
 passenger|le passager
 to drive|conduire
 to fly|voler
-to travel|voyager
+to travel (on a trip)|voyager
 road|la route
 traffic|la circulation
 traffic light|le feu
@@ -726,7 +726,7 @@ sugar|le sucre
 salt|le sel
 meat|la viande
 chicken|le poulet
-fish|le poisson
+fish (to eat)|le poisson
 vegetable|le légume
 fruit|le fruit
 apple|la pomme
@@ -988,7 +988,7 @@ Je confirme notre ___ de demain.|rendez-vous
 Peux-tu ___ l'heure ?|confirmer
 On se donne ___ à midi.|rendez-vous
 J'ai déjà quelque chose de ___.|prévu
-Avec ___, je viendrai avec grand plaisir.|plaisir
+Avec ___, je viendrai volontiers.|plaisir
 Je te ___ un message plus tard.|enverrai
 On peut se voir un autre ___ ?|jour
 Je suis ___ toute la semaine.|occupé
@@ -1264,14 +1264,14 @@ to lose|perdre`,
     note: "Everyday office and workplace vocabulary.",
     data: `office|le bureau
 meeting|la réunion
-colleague|le collègue
+colleague (at work)|le collègue
 boss|le patron
 employee|l'employé
 salary|le salaire
-schedule|l'horaire
+schedule (work hours)|l'horaire
 deadline|la date limite
 project|le projet
-email|le courriel
+email (at work)|le courriel
 report|le rapport
 contract|le contrat
 interview|l'entretien
@@ -1280,11 +1280,11 @@ promotion|la promotion
 vacation|les vacances
 break|la pause
 task|la tâche
-team|l'équipe
+team (at work)|l'équipe
 client|le client
 presentation|la présentation
-computer|l'ordinateur
-printer|l'imprimante
+computer (at the office)|l'ordinateur
+printer (at the office)|l'imprimante
 to hire|embaucher
 to resign|démissionner`,
   },
@@ -1303,17 +1303,17 @@ bridge|le pont
 building|le bâtiment
 neighbourhood|le quartier
 sidewalk|le trottoir
-traffic light|le feu
+traffic light (in the city)|le feu
 roundabout|le rond-point
 bus stop|l'arrêt de bus
 subway station|la station de métro
 ticket machine|le distributeur de billets
-map|le plan
+map (street plan)|le plan
 town hall|la mairie
 park|le parc
 library|la bibliothèque
 church|l'église
-market|le marché
+market (marketplace)|le marché
 suburb|la banlieue
 downtown|le centre-ville
 traffic jam|l'embouteillage
@@ -1336,7 +1336,7 @@ Il ___ (parler) avec son ami.|a parlé
 Nous ___ (finir) le projet.|avons fini
 Vous ___ (choisir) le menu.|avez choisi
 Elles ___ (vendre) leur maison.|ont vendu
-Je ___ (aller) au marché.|suis allé
+Hier, je ___ (aller) au marché.|suis allé
 Tu ___ (venir) chez moi hier soir.|es venu
 Il ___ (partir) tôt ce matin.|est parti
 Nous ___ (arriver) en retard.|sommes arrivés
@@ -1363,8 +1363,8 @@ J'___ (perdre) mes clés.|ai perdu`,
     kind: "pair",
     prompt: 'The French word for "%s" is…',
     note: "Common descriptive adjectives (masculine form).",
-    data: `happy|content
-sad|triste
+    data: `happy (satisfied)|content
+sad (feeling)|triste
 tall|grand
 short|petit
 beautiful (feminine)|belle
@@ -1557,23 +1557,23 @@ C'est une histoire ___ je me souviens bien.|dont`,
     note: "Direct and indirect object pronouns.",
     data: `Je ___ vois tous les jours (mon frère).|le
 Je ___ vois tous les jours (ma sœur).|la
-Je ___ vois tous les jours (mes amis).|les
+Je ___ vois chaque jour (mes amis).|les
 Il ___ parle souvent (à moi).|me
 Il ___ parle souvent (à toi).|te
-Il ___ parle souvent (à lui/elle).|lui
-Il ___ parle souvent (à nous).|nous
+Il ___ parle souvent (à son collègue).|lui
+Il ___ parle souvent (à ma sœur et moi).|nous
 Il ___ parle souvent (à eux/elles).|leur
 Je ___ aime beaucoup (ce livre).|l'
 Je ___ ai vu hier (mes parents).|les
 Tu ___ as dit la vérité (à moi) ?|m'
 Nous ___ avons offert un cadeau (à elle).|lui
-Vous ___ avez appelé (nous) hier.|nous
+Vous ___ avez appelé (ma sœur et moi) hier.|nous
 Elle ___ a envoyé une lettre (à eux).|leur
 Je vais ___ acheter (ce pull).|l'
 Il va ___ inviter (ses amis).|les
 Peux-tu ___ aider (moi) ?|m'
 Je ___ ai donné mon numéro (à toi).|t'
-Elle ___ a présenté son projet (à nous).|nous
+Elle ___ a présenté son projet (à mes collègues et moi).|nous
 Ils ___ ont remercié (moi) chaleureusement.|m'
 Je ___ trouve intéressant (ce sujet).|le
 Nous ___ avons rencontrée hier (elle).|l'
@@ -1675,7 +1675,7 @@ computer virus|le virus
 security|la sécurité
 backup|la sauvegarde
 device|l'appareil
-screen|l'écran
+screen (display)|l'écran
 app|l'application
 setting|le paramètre`,
   },
@@ -1723,10 +1723,10 @@ contentment|le contentement`,
 newspaper|le journal
 magazine|le magazine
 article|l'article
-journalist|le journaliste
+journalist (media)|le journaliste
 headline|le titre
-report|le reportage
-interview|l'interview
+report (news)|le reportage
+interview (media)|l'interview
 broadcast|la diffusion
 channel|la chaîne
 radio|la radio
@@ -1759,18 +1759,18 @@ degree|le diplôme
 course|le cours
 subject|la matière
 grade|la note
-exam|l'examen
-homework|les devoirs
-teacher|l'enseignant
-student|l'étudiant
-classroom|la salle de classe
+exam (education system)|l'examen
+homework (education system)|les devoirs
+teacher (in the education system)|l'enseignant
+student (university)|l'étudiant
+classroom (education system)|la salle de classe
 scholarship|la bourse
 curriculum|le programme
 semester|le semestre
 lecture|le cours magistral
 tuition|les frais de scolarité
 graduation|la remise des diplômes
-library|la bibliothèque
+library (education system)|la bibliothèque
 research|la recherche
 thesis|la thèse
 literacy|l'alphabétisation
@@ -1829,7 +1829,7 @@ unfurnished|non meublé
 studio apartment|le studio
 roommate|le colocataire
 to move (relocate)|déménager
-neighbourhood|le quartier
+neighbourhood (housing)|le quartier
 real estate agency|l'agence immobilière
 mortgage|le prêt immobilier
 insurance|l'assurance
@@ -1856,7 +1856,7 @@ Il continue ___ travailler.|à
 Elle a décidé ___ partir.|de
 Nous commençons ___ comprendre.|à
 Vous avez oublié ___ fermer la porte.|de
-Ils réussissent ___ finir à temps.|à
+Ils réussissent ___ finir dans les délais.|à
 Je rêve ___ voyager un jour.|de
 Tu apprends ___ conduire.|à
 Elle a peur ___ échouer.|de
@@ -1949,28 +1949,28 @@ Je le connais ___ mon enfance.|depuis`,
     data: `Tu ___ (devoir) te reposer un peu.|devrais
 Si j'étais toi, je ___ (partir) tôt.|partirais
 On ___ (pouvoir) aller au cinéma ce soir.|pourrait
-Pourquoi ne pas ___ (prendre) un peu de repos ?|prendre
-Il vaudrait mieux ___ (partir) maintenant.|partir
-Je te conseille de ___ (rester) prudent.|rester
-Tu devrais ___ (consulter) un médecin.|consulter
-Ça vaudrait la peine d'___ (essayer).|essayer
+Pourquoi ne pas ___ (to take) un peu de repos ?|prendre
+Il vaudrait mieux ___ (to leave) maintenant.|partir
+Je te conseille de ___ (to stay) prudent.|rester
+Tu devrais ___ (to see) un médecin.|consulter
+Ça vaudrait la peine d'___ (to try).|essayer
 À ta place, je ne ___ (dire) rien.|dirais
-Il serait sage de ___ (faire) des économies.|faire
-Tu ferais mieux de ___ (dormir) tôt ce soir.|dormir
-Je te suggère de ___ (prendre) une pause.|prendre
+Il serait sage de ___ (to save) des économies.|faire
+Tu ferais mieux de ___ (to sleep) tôt ce soir.|dormir
+Je te suggère de ___ (to take) une pause.|prendre
 Et si on ___ (essayer) autre chose ?|essayait
-Il faudrait ___ (être) plus attentif.|être
-Tu devrais vraiment ___ (lire) ce livre.|lire
-Pourquoi ne pas ___ (partir) un peu plus tôt ?|partir
-Je te recommande de ___ (essayer) ce restaurant.|essayer
-Il serait préférable de ___ (attendre) demain.|attendre
-On devrait ___ (prendre) une décision rapidement.|prendre
-Ça serait une bonne idée de ___ (faire) un plan.|faire
-Tu pourrais ___ (demander) à quelqu'un d'autre.|demander
+Il faudrait ___ (to be) plus attentif.|être
+Tu devrais vraiment ___ (to read) ce livre.|lire
+Pourquoi ne pas ___ (to leave) un peu plus tôt ?|partir
+Je te recommande de ___ (to try) ce restaurant.|essayer
+Il serait préférable de ___ (to wait until) demain.|attendre
+On devrait ___ (to make) une décision rapidement.|prendre
+Ça serait une bonne idée de ___ (to make) un plan.|faire
+Tu pourrais ___ (to ask) à quelqu'un d'autre.|demander
 Si j'étais à ta place, je ___ (accepter) cette offre.|accepterais
-Il vaut mieux ___ (prévenir) que guérir.|prévenir
-Je te conseille vivement de ___ (suivre) ce cours.|suivre
-Tu devrais peut-être ___ (prendre) un peu de repos.|prendre`,
+Il vaut mieux ___ (to prevent) que guérir.|prévenir
+Je te conseille vivement de ___ (to take) ce cours.|suivre
+Tu devrais peut-être ___ (to take) un peu de repos.|prendre`,
   },
 ];
 
@@ -2354,11 +2354,11 @@ drought|la sécheresse
 flood|l'inondation
 extinction|l'extinction
 conservation|la conservation
-recycling|le recyclage
+recycling (waste)|le recyclage
 plastic waste|les déchets plastiques
 endangered species|l'espèce en voie de disparition
 natural resource|la ressource naturelle
-pollution|la pollution
+pollution (climate)|la pollution
 ecology|l'écologie
 ozone layer|la couche d'ozone
 sea level|le niveau de la mer
@@ -2371,10 +2371,10 @@ carbon neutral|neutre en carbone`,
     kind: "pair",
     prompt: 'The French word for "%s" is…',
     note: "Law and justice vocabulary.",
-    data: `law|la loi
+    data: `law (legal)|la loi
 court|le tribunal
 judge|le juge
-lawyer|l'avocat
+lawyer (in court)|l'avocat
 trial|le procès
 crime|le crime
 witness|le témoin
@@ -2384,9 +2384,9 @@ sentence (verdict)|la peine
 prison|la prison
 verdict|le verdict
 lawsuit|le procès
-contract|le contrat
-rights|les droits
-justice|la justice
+contract (legal)|le contrat
+rights (legal)|les droits
+justice (legal)|la justice
 guilty|coupable
 innocent|innocent
 appeal|l'appel
@@ -2406,13 +2406,13 @@ legislation|la législation`,
     note: "Economics and finance vocabulary.",
     data: `economy|l'économie
 inflation|l'inflation
-market|le marché
+market (economic)|le marché
 investment|l'investissement
 stock|l'action
 budget|le budget
 debt|la dette
 income|le revenu
-tax|l'impôt
+tax (on income)|l'impôt
 growth|la croissance
 recession|la récession
 unemployment|le chômage
@@ -2422,7 +2422,7 @@ bank|la banque
 loan|le prêt
 interest rate|le taux d'intérêt
 profit|le profit
-salary|le salaire
+salary (wages)|le salaire
 consumer|le consommateur
 supply and demand|l'offre et la demande
 shares (stocks)|les actions
@@ -2442,16 +2442,16 @@ painting|la peinture
 sculpture|la sculpture
 museum|le musée
 exhibition|l'exposition
-artist|l'artiste
+artist (performing arts)|l'artiste
 masterpiece|le chef-d'œuvre
 literature|la littérature
 poetry|la poésie
 novel|le roman
-theater|le théâtre
+theater (performing arts)|le théâtre
 play (theater)|la pièce
-cinema|le cinéma
+cinema (arts)|le cinéma
 film director|le réalisateur
-music|la musique
+music (as an art form)|la musique
 composer|le compositeur
 dance|la danse
 architecture|l'architecture
@@ -2534,11 +2534,11 @@ Ce sont ces raisons ___ expliquent son départ.|qui`,
     subtitle: "Combining two pronouns",
     kind: "cloze",
     note: "Combining two object pronouns in one sentence.",
-    data: `Je te ___ donne (le livre).|le
+    data: `Je te ___ donne (ce livre).|le
 Il me ___ envoie (la lettre).|l'
-Nous vous ___ offrons (les fleurs).|les
+Nous vous ___ offrons (ces fleurs).|les
 Elle nous ___ a montré (la photo).|l'
-Je le ___ ai déjà dit (à lui).|lui
+Je le ___ ai déjà dit (à mon collègue).|lui
 Tu me l'___ (dire) hier.|as dit
 Il nous les ___ (envoyer) hier.|a envoyés
 Je te la ___ (donner) demain.|donnerai
@@ -2566,31 +2566,31 @@ Je vous le ___ (confirmer) par écrit.|confirme`,
     subtitle: "Faire + infinitive",
     kind: "cloze",
     note: "The causative construction: faire + infinitive.",
-    data: `Je fais ___ (réparer) ma voiture.|réparer
-Elle fait ___ (construire) une maison.|construire
-Il fait ___ (nettoyer) son costume.|nettoyer
-Nous faisons ___ (livrer) les meubles.|livrer
-Vous faites ___ (couper) vos cheveux.|couper
-Ils font ___ (peindre) leur maison.|peindre
-Je me fais ___ (couper) les cheveux.|couper
-Elle se fait ___ (faire) une manucure.|faire
-Il fait ___ (installer) une nouvelle cuisine.|installer
-Nous faisons ___ (traduire) ce document.|traduire
-Vous faites ___ (réviser) votre voiture.|réviser
-Ils font ___ (livrer) le colis.|livrer
-Je fais ___ (faire) mes devoirs par mon frère.|faire
-Elle fait ___ (envoyer) un cadeau à sa mère.|envoyer
-Il fait ___ (savoir) la nouvelle à tout le monde.|savoir
-Nous faisons ___ (réparer) le toit.|réparer
-Vous faites ___ (imprimer) les documents.|imprimer
-Ils font ___ (agrandir) leur maison.|agrandir
-Je fais ___ (venir) le plombier.|venir
-Elle fait ___ (visiter) la ville à ses invités.|visiter
-Il fait ___ (rire) tout le monde.|rire
-Nous faisons ___ (comprendre) la situation.|comprendre
-Vous faites ___ (remarquer) le problème.|remarquer
-Ils font ___ (payer) la note à leur client.|payer
-Je fais ___ (attendre) mes amis.|attendre`,
+    data: `Je fais ___ (to repair) ma voiture.|réparer
+Elle fait ___ (to build) une maison.|construire
+Il fait ___ (to clean) son costume.|nettoyer
+Nous faisons ___ (to deliver) les meubles.|livrer
+Vous faites ___ (to cut) vos cheveux.|couper
+Ils font ___ (to paint) leur maison.|peindre
+Je me fais ___ (to cut) les cheveux.|couper
+Elle se fait ___ (to have done) une manucure.|faire
+Il fait ___ (to install) une nouvelle cuisine.|installer
+Nous faisons ___ (to translate) ce document.|traduire
+Vous faites ___ (to service) votre voiture.|réviser
+Ils font ___ (to deliver) le colis.|livrer
+Je fais ___ (to have done) mes devoirs par mon frère.|faire
+Elle fait ___ (to send) un cadeau à sa mère.|envoyer
+Il fait ___ (to let know) la nouvelle à tout le monde.|savoir
+Nous faisons ___ (to repair) le toit.|réparer
+Vous faites ___ (to print) les documents.|imprimer
+Ils font ___ (to enlarge) leur maison.|agrandir
+Je fais ___ (to send for) le plombier.|venir
+Elle fait ___ (to tour) la ville à ses invités.|visiter
+Il fait ___ (to laugh) tout le monde.|rire
+Nous faisons ___ (to understand) la situation.|comprendre
+Vous faites ___ (to notice) le problème.|remarquer
+Ils font ___ (to pay) la note à leur client.|payer
+Je fais ___ (to wait) mes amis.|attendre`,
   },
   {
     id: "frb2p20",
@@ -2876,11 +2876,11 @@ meaning|le sens
 reason|la raison
 logic|la logique
 belief|la croyance
-doubt|le doute
+doubt (philosophical)|le doute
 perception|la perception
 wisdom|la sagesse
 virtue|la vertu
-justice|la justice
+justice (as a concept)|la justice
 the absolute|l'absolu
 the relative|le relatif
 paradox|le paradoxe
@@ -2898,11 +2898,11 @@ contradiction|la contradiction`,
     note: "Advanced science and technology vocabulary.",
     data: `artificial intelligence|l'intelligence artificielle
 algorithm|l'algorithme
-data|les données
-research|la recherche
+data (research)|les données
+research (scientific)|la recherche
 innovation|l'innovation
 experiment|l'expérience
-hypothesis|l'hypothèse
+hypothesis (scientific)|l'hypothèse
 molecule|la molécule
 gene|le gène
 laboratory|le laboratoire
@@ -2911,7 +2911,7 @@ robotics|la robotique
 quantum|quantique
 biotechnology|la biotechnologie
 nanotechnology|la nanotechnologie
-sustainability|la durabilité
+sustainability (economic)|la durabilité
 innovation hub|le pôle d'innovation
 patent|le brevet
 prototype|le prototype
@@ -2943,7 +2943,7 @@ Cette clause est ___ dans le contrat.|stipulée
 Le ministère public a requis une ___ sévère.|peine
 Le tribunal administratif a statué en ___ instance.|première
 Les héritiers doivent régler les droits de ___.|succession
-Le juge a prononcé un ___ de non-lieu.|non-lieu
+Le juge a prononcé un ___.|non-lieu
 Cette loi ___ les droits des consommateurs.|protège
 L'avocat a plaidé la ___ de son client.|défense
 Le contrat doit être ___ par les deux parties.|signé
@@ -2969,7 +2969,7 @@ embassy|l'ambassade
 alliance|l'alliance
 sanctions|les sanctions
 ceasefire|le cessez-le-feu
-diplomacy|la diplomatie
+diplomacy (in political discourse)|la diplomatie
 resolution|la résolution
 delegation|la délégation
 summit meeting|la réunion au sommet
@@ -2977,7 +2977,7 @@ bilateral|bilatéral
 multilateral|multilatéral
 accord|l'accord
 mediation|la médiation
-sovereignty|la souveraineté
+sovereignty (in political discourse)|la souveraineté
 territorial integrity|l'intégrité territoriale
 international law|le droit international
 diplomatic relations|les relations diplomatiques
@@ -3001,7 +3001,7 @@ hyperbole|l'hyperbole
 euphemism|l'euphémisme
 alliteration|l'allitération
 rhetorical question|la question rhétorique
-paradox|le paradoxe
+paradox (rhetorical)|le paradoxe
 personification|la personnification
 antithesis|l'antithèse
 allegory|l'allégorie

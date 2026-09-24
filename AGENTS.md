@@ -74,15 +74,20 @@ column, kept in sync):
 
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
-| English | 122 | 104 | 104 | 102 | 102 | **534**       |
+| English | 132 | 114 | 114 | 112 | 112 | **584**       |
 | French  | 100 | 100 | 100 | 100 | 100 | **500**       |
 | Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
-All three courses are now at full parity (French and Spanish both grew
-from a 25-pack/125-lesson starting point this session, reusing the same
-bank-engine pack pipeline). Content correctness (grammar, natural
-phrasing) for French and Spanish still needs native-speaker review —
-not done for either, just structurally complete.
+English is now ahead of structural parity — it gained the `listening` and
+`speak` question types (125 questions each), which French and Spanish
+don't have. French and Spanish are structurally complete among
+themselves (French and Spanish both grew from a 25-pack/125-lesson
+starting point, reusing the same bank-engine pack pipeline) but still
+need native-speaker linguistic review — not done for either. French's
+phase 1 structural audit (`docs/superpowers/french-content-audit-log.md`)
+covers only the mechanical axis (malformed content, duplicate/self-
+referential prompts, encoding integrity); it is not a substitute for that
+review.
 
 - **SM-2 spaced repetition** for missed items (all levels, both courses)
 
