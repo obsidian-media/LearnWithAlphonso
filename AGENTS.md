@@ -6,7 +6,8 @@ Learn with Alphonso (repo internal name `english-buddy-app-33`, now at
 `github.com/obsidian-media/LearnWithAlphonso`) is a mobile-first English
 learning app with 5 CEFR levels (A1-C1), spaced repetition review, AI
 conversation practice, and gamification. Also ships French and Spanish
-courses at full parity with English (see Content Structure below). A
+courses, structurally complete but no longer at parity with English (see
+Content Structure below). A
 native iOS app (`ios/`) shares the same Supabase backend/account and
 has grown a substantial V2 feature set of its own — see the Key Files
 table and `ARCHITECTURE.md`'s "Native iOS app" section.
@@ -74,13 +75,31 @@ column, kept in sync):
 
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
-| English | 122 | 104 | 104 | 102 | 102 | **534**       |
+| English | 132 | 114 | 114 | 112 | 112 | **584**       |
 | French  | 100 | 100 | 100 | 100 | 100 | **500**       |
 | Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
-All three courses are now at full parity (French and Spanish both grew
-from a 25-pack/125-lesson starting point this session, reusing the same
-bank-engine pack pipeline). Content correctness (grammar, natural
+French and Spanish reached structural parity with English on 2026-09-21
+(both grew from a 25-pack/125-lesson starting point, reusing the same
+bank-engine pack pipeline). **English has since pulled ahead and they are
+no longer at parity**, in two ways that matter:
+
+- **Lesson count**: English 584, French 500, Spanish 508.
+- **Question types**: English has five (`mc`, `fill`, `reorder`,
+  `listening`, `speak`); French and Spanish have the first three. The
+  listening (2026-09-24) and speaking (2026-09-24) types are
+  English-only.
+
+What a port would actually need, verified rather than assumed: the
+players, grading (`deriveAnswerCorrectness`) and the iOS decoder all
+switch on question *type*, not course, so they need no change. The
+**generator does**: French and Spanish are built by `bank-engine.ts`,
+whose `Pack.kind` is `"pair" | "cloze"` — listening and speaking
+generation lives in English's own `lesson-bank.ts` (see the duplicated
+distractor logic noted in `docs/BACKLOG.md`). So a port is a content job
+*and* a generator-consolidation job, plus a native speaker to author the
+phrases. `localeForCourse` already supplies the right TTS/STT locale.
+Not scheduled. Content correctness (grammar, natural
 phrasing) for French and Spanish still needs native-speaker review —
 not done for either, just structurally complete.
 
