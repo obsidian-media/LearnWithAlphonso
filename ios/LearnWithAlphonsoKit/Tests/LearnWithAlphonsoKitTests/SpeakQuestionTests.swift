@@ -58,6 +58,19 @@ final class SpeakQuestionTests: XCTestCase {
             SpokenAnswer.normalise("  good   morning "), SpokenAnswer.normalise("good morning"))
     }
 
+    /// /api/stt calls Deepgram with smart_format=true, which renders spoken
+    /// numbers as numerals -- so "the bus leaves at nine" comes back as "the bus
+    /// leaves at 9". The A1 speaking pack contains that exact phrase.
+    func testMatchesANumberWordAgainstTheNumeralReturned() {
+        XCTAssertTrue(
+            SpokenAnswer.matches(
+                transcript: "the bus leaves at 9", expected: "The bus leaves at nine."))
+        XCTAssertTrue(
+            SpokenAnswer.matches(transcript: "I have 2 brothers", expected: "I have two brothers."))
+        XCTAssertFalse(
+            SpokenAnswer.matches(transcript: "I have 3 brothers", expected: "I have two brothers."))
+    }
+
     /// A speaking lesson has no vocabulary step: the answer is a whole phrase,
     /// which would make a nonsense vocab card. Same as listening and reorder,
     /// and same as the web's deriveVocab.

@@ -46,4 +46,18 @@ describe("matchesSpokenAnswer", () => {
     expect(matchesSpokenAnswer("", "She's a doctor")).toBe(false);
     expect(matchesSpokenAnswer("   ", "She's a doctor")).toBe(false);
   });
+
+  it("matches a number said as a word against the numeral Deepgram returns", () => {
+    // /api/stt calls Deepgram with smart_format=true, which renders spoken
+    // numbers as numerals. Without collapsing the two forms, "the bus leaves at
+    // nine" -- transcribed "the bus leaves at 9" -- is a wrong answer for a
+    // perfect utterance, and the A1 speaking pack contains exactly that phrase.
+    expect(matchesSpokenAnswer("the bus leaves at 9", "The bus leaves at nine.")).toBe(true);
+    expect(matchesSpokenAnswer("I have 2 brothers", "I have two brothers.")).toBe(true);
+    expect(matchesSpokenAnswer("I have two brothers", "I have two brothers.")).toBe(true);
+  });
+
+  it("still tells two different numbers apart", () => {
+    expect(matchesSpokenAnswer("I have 3 brothers", "I have two brothers.")).toBe(false);
+  });
 });

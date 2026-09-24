@@ -69,6 +69,23 @@ enum SpokenAnswer {
     /// Hesitation noises the recogniser transcribes but nobody means to say.
     private static let filler = "\\b(?:um|uh|erm|er|ah)\\b"
 
+    /// Number words collapsed onto digits, because /api/stt calls Deepgram with
+    /// `smart_format=true`, which returns spoken numbers as numerals: say "the
+    /// bus leaves at nine" and the transcript reads "the bus leaves at 9".
+    /// Single words only -- compound numbers cannot be reconciled this way, so
+    /// spoken content avoids them.
+    private static let numberWords: [(String, String)] = [
+        ("\\bzero\\b", "0"), ("\\bone\\b", "1"), ("\\btwo\\b", "2"), ("\\bthree\\b", "3"),
+        ("\\bfour\\b", "4"), ("\\bfive\\b", "5"), ("\\bsix\\b", "6"), ("\\bseven\\b", "7"),
+        ("\\beight\\b", "8"), ("\\bnine\\b", "9"), ("\\bten\\b", "10"), ("\\beleven\\b", "11"),
+        ("\\btwelve\\b", "12"), ("\\bthirteen\\b", "13"), ("\\bfourteen\\b", "14"),
+        ("\\bfifteen\\b", "15"), ("\\bsixteen\\b", "16"), ("\\bseventeen\\b", "17"),
+        ("\\beighteen\\b", "18"), ("\\bnineteen\\b", "19"), ("\\btwenty\\b", "20"),
+        ("\\bthirty\\b", "30"), ("\\bforty\\b", "40"), ("\\bfifty\\b", "50"),
+        ("\\bsixty\\b", "60"), ("\\bseventy\\b", "70"), ("\\beighty\\b", "80"),
+        ("\\bninety\\b", "90"),
+    ]
+
     private static func replacing(_ input: String, _ pattern: String, with replacement: String)
         -> String
     {
@@ -92,6 +109,9 @@ enum SpokenAnswer {
             s = replacing(s, pattern, with: replacement)
         }
         s = replacing(s, filler, with: " ")
+        for (pattern, replacement) in numberWords {
+            s = replacing(s, pattern, with: replacement)
+        }
         s = replacing(s, "[^a-z0-9\\s]", with: " ")
         s = replacing(s, "\\s+", with: " ")
         return s.trimmingCharacters(in: .whitespaces)

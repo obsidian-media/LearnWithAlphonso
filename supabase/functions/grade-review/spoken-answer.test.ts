@@ -44,3 +44,9 @@ Deno.test("matchesSpokenAnswer treats an empty transcript as no answer", () => {
   assertEquals(matchesSpokenAnswer("", "She's a doctor"), false);
   assertEquals(matchesSpokenAnswer("   ", "She's a doctor"), false);
 });
+
+Deno.test("matchesSpokenAnswer matches a number word against the numeral Deepgram returns", () => {
+  assertEquals(matchesSpokenAnswer("the bus leaves at 9", "The bus leaves at nine."), true);
+  assertEquals(matchesSpokenAnswer("I have 2 brothers", "I have two brothers."), true);
+  assertEquals(matchesSpokenAnswer("I have 3 brothers", "I have two brothers."), false);
+});

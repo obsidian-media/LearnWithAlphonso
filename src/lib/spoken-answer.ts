@@ -83,6 +83,48 @@ const APOSTROPHE_LESS: [RegExp, string][] = [
 /** Hesitation noises Deepgram transcribes but nobody means to say. */
 const FILLER = /\b(?:um|uh|erm|er|ah)\b/g;
 
+/**
+ * Number words collapsed onto digits, because /api/stt calls Deepgram with
+ * `smart_format=true`, which returns spoken numbers as numerals: say "the bus
+ * leaves at nine" and the transcript reads "the bus leaves at 9". Without this
+ * the two spellings of the same utterance never match and a learner who said
+ * the phrase perfectly is marked wrong.
+ *
+ * Single words only. Compound numbers cannot be reconciled this way --
+ * "twenty one" is two words here and "21" is one in the transcript -- so
+ * spoken content avoids them rather than pretending this handles them.
+ */
+const NUMBER_WORDS: [RegExp, string][] = [
+  [/\bzero\b/g, "0"],
+  [/\bone\b/g, "1"],
+  [/\btwo\b/g, "2"],
+  [/\bthree\b/g, "3"],
+  [/\bfour\b/g, "4"],
+  [/\bfive\b/g, "5"],
+  [/\bsix\b/g, "6"],
+  [/\bseven\b/g, "7"],
+  [/\beight\b/g, "8"],
+  [/\bnine\b/g, "9"],
+  [/\bten\b/g, "10"],
+  [/\beleven\b/g, "11"],
+  [/\btwelve\b/g, "12"],
+  [/\bthirteen\b/g, "13"],
+  [/\bfourteen\b/g, "14"],
+  [/\bfifteen\b/g, "15"],
+  [/\bsixteen\b/g, "16"],
+  [/\bseventeen\b/g, "17"],
+  [/\beighteen\b/g, "18"],
+  [/\bnineteen\b/g, "19"],
+  [/\btwenty\b/g, "20"],
+  [/\bthirty\b/g, "30"],
+  [/\bforty\b/g, "40"],
+  [/\bfifty\b/g, "50"],
+  [/\bsixty\b/g, "60"],
+  [/\bseventy\b/g, "70"],
+  [/\beighty\b/g, "80"],
+  [/\bninety\b/g, "90"],
+];
+
 export function normaliseSpoken(input: string): string {
   let s = input.toLowerCase();
   // Expand while the apostrophes are still present...
@@ -91,6 +133,7 @@ export function normaliseSpoken(input: string): string {
   // ...then again for the apostrophe-less spellings speech recognition emits.
   for (const [pattern, replacement] of APOSTROPHE_LESS) s = s.replace(pattern, replacement);
   s = s.replace(FILLER, " ");
+  for (const [pattern, replacement] of NUMBER_WORDS) s = s.replace(pattern, replacement);
   s = s.replace(/[^a-z0-9\s]/g, " ");
   return s.replace(/\s+/g, " ").trim();
 }
