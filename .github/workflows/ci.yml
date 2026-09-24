@@ -104,6 +104,11 @@ jobs:
       - name: Test grade-review's translation-answer.ts port
         run: deno test supabase/functions/grade-review/translation-answer.test.ts
 
+      - name: Test grade-review's answer-correctness rule
+        # --allow-env: the translate branch reads NVIDIA_API_KEY to decide
+        # whether an AI second opinion is even available.
+        run: deno test --allow-env supabase/functions/grade-review/answer-correctness.test.ts
+
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
 

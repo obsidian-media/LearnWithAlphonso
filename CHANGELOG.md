@@ -72,6 +72,21 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
+**Deploy pipeline repair (2026-09-24)** — `supabase db push` started failing on
+every push to `main` (the `#93` and `#94` merges both show it), with "Remote
+migration versions not found in local migrations directory". Cause: the
+speaking migration was applied to the live project through the Supabase
+management API rather than by the CLI, which recorded it in
+`supabase_migrations.schema_migrations` under a generated version
+(`20260924081755`) that no local filename matched. The local file has been
+renamed to that version, which is what `supabase migration repair` would have
+achieved from the other direction.
+
+Worth knowing because of what else that job does: it is the step that deploys
+the Edge Functions. While it was red, **no function redeployed** — so a
+`grade-review` change merged during that window was live in the repo and not on
+the server.
+
 **Speaking practice question type (#TBD)** — a fifth question type, `speak`:
 the learner is shown a phrase, records themselves saying it, and the
 speech-to-text transcript is graded. 125 questions across all five CEFR bands
@@ -113,7 +128,7 @@ own:
 Also: the capture flow was extracted from the conversation route into
 `use-speech-capture.ts` rather than copied, both web players now grade through
 `deriveAnswerCorrectness` instead of their own inline copies of the rule, and
-`20260925010000_v5_speaking_question_type.sql` adds a **fourth** allowed row
+`20260924081755_v5_speaking_question_type.sql` adds a **fourth** allowed row
 shape to `question_shape_matches_type` (answer text, no choices, no bank, no
 answer index) — without it every speaking row would be rejected.
 
