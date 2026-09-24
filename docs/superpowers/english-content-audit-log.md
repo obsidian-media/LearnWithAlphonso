@@ -38,6 +38,7 @@
 | `a1p21` | pack | Parts of the Body | 25 | ☑ | No issues found. |
 | `a1p22` | pack | Hobbies & Free Time | 25 | ☑ | No issues found. |
 | `a1p23` | pack | Listening: Everyday Sentences | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
+| `a1p24` | pack | Speaking: Everyday Phrases | 25 | ☑ | NEW in phase 2B (speaking type). Every line is the same text twice, so what is shown is exactly what must be said; there are no distractors to audit. Checked instead for the failure modes that are specific to grading a transcript: each phrase is sayable in one breath, and compound numbers and currency are avoided because Deepgram's `smart_format` renders them in a form the normaliser cannot reconcile (number WORDS are handled -- "nine" matches the "9" it transcribes to). |
 | `a2p1` | pack | Irregular Past | 25 | ☑ | No issues found. |
 | `a2p2` | pack | Talking About the Past | 25 | ☑ | No issues found. |
 | `a2p3` | pack | Comparatives | 25 | ☑ | No issues found. |
@@ -59,6 +60,7 @@
 | `a2p19` | pack | Modal Verbs — Ability & Permission | 25 | ☑ | No issues found. |
 | `a2p20` | pack | Comparisons — As...As | 25 | ☑ | No issues found. |
 | `a2p21` | pack | Listening: Plans & Past Events | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
+| `a2p22` | pack | Speaking: Getting Things Done | 25 | ☑ | NEW in phase 2B (speaking type). Every line is the same text twice, so what is shown is exactly what must be said; there are no distractors to audit. Checked instead for the failure modes that are specific to grading a transcript: each phrase is sayable in one breath, and compound numbers and currency are avoided because Deepgram's `smart_format` renders them in a form the normaliser cannot reconcile (number WORDS are handled -- "nine" matches the "9" it transcribes to). |
 | `b1p1` | pack | Phrasal Verbs | 25 | ☑ | No issues found. |
 | `b1p2` | pack | Conditionals | 25 | ☑ | No issues found. |
 | `b1p3` | pack | Modal Verbs | 25 | ☑ | No issues found. |
@@ -80,6 +82,7 @@
 | `b1p19` | pack | Weather & Natural Events | 25 | ☑ | No issues found. |
 | `b1p20` | pack | Describing a Process | 25 | ☑ | No issues found. |
 | `b1p21` | pack | Listening: Opinions & Explanations | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
+| `b1p22` | pack | Speaking: Saying What You Think | 25 | ☑ | NEW in phase 2B (speaking type). Every line is the same text twice, so what is shown is exactly what must be said; there are no distractors to audit. Checked instead for the failure modes that are specific to grading a transcript: each phrase is sayable in one breath, and compound numbers and currency are avoided because Deepgram's `smart_format` renders them in a form the normaliser cannot reconcile (number WORDS are handled -- "nine" matches the "9" it transcribes to). |
 | `b2p1` | pack | The Passive | 25 | ☑ | No issues found. |
 | `b2p2` | pack | Confusable Words | 25 | ☑ | No issues found. |
 | `b2p3` | pack | Linking Ideas | 25 | ☑ | No issues found. |
@@ -101,6 +104,7 @@
 | `b2p19` | pack | Wish & If Only | 25 | ☑ | No issues found. |
 | `b2p20` | pack | Food & Cooking | 25 | ☑ | No issues found. |
 | `b2p21` | pack | Listening: Reports & Arguments | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
+| `b2p22` | pack | Speaking: Longer Turns | 25 | ☑ | NEW in phase 2B (speaking type). Every line is the same text twice, so what is shown is exactly what must be said; there are no distractors to audit. Checked instead for the failure modes that are specific to grading a transcript: each phrase is sayable in one breath, and compound numbers and currency are avoided because Deepgram's `smart_format` renders them in a form the normaliser cannot reconcile (number WORDS are handled -- "nine" matches the "9" it transcribes to). |
 | `c1p1` | pack | Idioms | 25 | ☑ | No issues found. |
 | `c1p2` | pack | Register | 25 | ☑ | No issues found. |
 | `c1p3` | pack | Inversion & Emphasis | 25 | ☑ | No issues found. |
@@ -122,6 +126,7 @@
 | `c1p19` | pack | Contrast & Concession | 25 | ☑ | No issues found. |
 | `c1p20` | pack | Academic Cohesion | 25 | ☑ | No issues found. |
 | `c1p21` | pack | Listening: Academic & Professional Register | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
+| `c1p22` | pack | Speaking: Register and Nuance | 25 | ☑ | NEW in phase 2B (speaking type). Every line is the same text twice, so what is shown is exactly what must be said; there are no distractors to audit. Checked instead for the failure modes that are specific to grading a transcript: each phrase is sayable in one breath, and compound numbers and currency are avoided because Deepgram's `smart_format` renders them in a form the normaliser cannot reconcile (number WORDS are handled -- "nine" matches the "9" it transcribes to). |
 | `u1` | hand-written unit | Everyday Basics | 35 | ☑ | No issues found. |
 | `u2` | hand-written unit | The Daily Routine | 32 | ☑ | No issues found. |
 | `u3` | hand-written unit | Polite Requests | 32 | ☑ | No issues found. |
@@ -218,7 +223,15 @@ offers meet/meat/met/meeting). The defect is specific to generated pack content.
 
 Every content edit replaced a line in place, preserving each pack's line count
 and order. `src/lib/english-id-parity.test.ts` compares the live course against
-a committed 2,721-id baseline and passes, so no saved review item was repointed.
+the committed id baseline and passes, so no saved review item was repointed.
+
+The baseline has been re-taken twice since, each time for appended content only:
+2,721 ids -> 2,846 (phase 2A, listening) -> 2,971 (phase 2B, speaking). Both
+re-baselines were checked to be **insertions only** in the diff before being
+committed, which is what makes them safe: ids are index-derived, so appending a
+pack cannot move an existing question, while inserting or removing a line
+inside one moves every id after it and silently repoints real learners' saved
+review items.
 
 
 ## Deferred structural changes
