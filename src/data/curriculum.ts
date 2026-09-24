@@ -46,6 +46,22 @@ export type Question =
     }
   | {
       id: string;
+      type: "speak";
+      /** Shown on screen; the learner reads it aloud. Unlike `listening`
+       * there is nothing to hide — the exercise is production, not
+       * comprehension. */
+      prompt: string;
+      /** The phrase the learner is expected to say, compared against the
+       * speech-to-text transcript. Stored as text like fill/reorder/listening,
+       * and matched with `matchesSpokenAnswer` rather than a bare trim, since
+       * a transcript legitimately varies ("she is" vs "she's"). That rule
+       * lives in srs.ts's deriveAnswerCorrectness so the review server reaches
+       * the same verdict the player showed. */
+      answer: string;
+      explanation: string;
+    }
+  | {
+      id: string;
       type: "fill";
       prompt: string; // uses ___ for blank
       bank: string[];

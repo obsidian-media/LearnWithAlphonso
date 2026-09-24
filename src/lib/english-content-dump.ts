@@ -58,7 +58,9 @@ export function buildEnglishDump(): EnglishDump {
             answer: q.choices[q.answer] ?? "",
             imageKey: q.imageKey,
           }
-        : q.type === "listening"
+        : q.type === "speak"
+          ? { ...base, answer: q.answer }
+          : q.type === "listening"
           ? { ...base, choices: q.choices, answer: q.answer, audioText: q.audioText }
           : q.type === "fill"
             ? { ...base, bank: q.bank, answer: q.answer }

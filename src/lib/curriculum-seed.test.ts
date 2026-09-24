@@ -72,6 +72,13 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
         expect(q.answer_index).not.toBeNull();
         expect(q.bank).toBeNull();
         expect(q.answer_text).toBeNull();
+      } else if (q.type === "speak") {
+        // A fourth shape: answer_text alone. Nothing to choose between and no
+        // word bank -- just the phrase the learner has to say.
+        expect(q.answer_text).not.toBeNull();
+        expect(q.choices).toBeNull();
+        expect(q.bank).toBeNull();
+        expect(q.answer_index).toBeNull();
       } else if (q.type === "listening") {
         // A third shape: choices like mc, but answer_text like fill, because
         // the variant stores the correct choice's text rather than its index.
