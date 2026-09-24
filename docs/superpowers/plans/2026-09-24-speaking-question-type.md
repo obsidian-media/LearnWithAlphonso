@@ -10,6 +10,53 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-23-english-content-overhaul-design.md` (Phase 2, "Speaking/pronunciation practice")
 
+## Self-critique corrections (made before execution)
+
+Six problems found reviewing this plan against the code. Two were serious.
+
+**1. CRITICAL — the client and the server would have disagreed about whether
+the learner was right.** `grade-review/index.ts:81-85` grades a review answer
+with an exact trimmed/lowercased comparison against `answer_text`, and
+`srs.ts`'s `deriveAnswerCorrectness` does the same. Tolerant matching living
+only in the player means: learner says "she is a doctor" for "She's a doctor.",
+the client shows *Still got it*, sends that transcript, and the server marks it
+**wrong** — the item lapses and its repetitions halve. The learner is told they
+passed and silently penalised. That is the same shape as the listening bug
+(complete the lesson, receive nothing).
+
+So the normalisation belongs in the shared grading path, not the UI:
+`src/lib/srs.ts` AND its hand-synced Deno mirror in
+`supabase/functions/grade-review/index.ts`. `ARCHITECTURE.md` documents that
+these must stay byte-for-byte in step, and CI's `deno-tests` job exists
+specifically to catch drift, mirroring `src/lib`'s own test vectors — so the
+vectors must be updated in both places too. This is now Task 3.
+
+Note the asymmetry, so nobody over-engineers the other path: **lesson**
+completion is client-authoritative for correctness. `deriveLessonCompletion`
+validates the question *count* and that missed ids are real; it never
+re-derives per-answer text. Only the review path re-grades.
+
+**2. A whole task was missing: the generator.** `Pack.kind` is
+`"pair" | "cloze" | "listening"` and `packQuestions` has no speak branch, so
+Task 7 could not have authored any content. Added as Task 2, including that
+`pickDistractors` and the `useMc` fill/mc split must both be skipped — a speak
+question has no choices and no word bank.
+
+**3.** Task 1 asserted a speak row exists in the seed before any content
+existed, leaving a knowingly-red test across five tasks. Same mistake as the
+listening round; fixed the same way — one real pack lands with the generator.
+
+**4.** The confidence feedback had no threshold, which is a placeholder wearing
+a sentence. Fixed below with a concrete number and the reasoning for it.
+
+**5.** Extracting the capture hook edits a working feature
+(`converse_.$scenarioId.tsx`). Its existing tests are the regression net and
+must stay green; that is now explicit in the task.
+
+**6.** `gen-answer-pos.ts` only tags cloze lines, so a speak pack is skipped
+rather than mis-tagged. No change needed — recorded so the next reader does not
+re-investigate.
+
 ## Measured blast radius (probed, not assumed)
 
 Added the variant and ran `bunx tsc --noEmit`: **4 errors across 3 files** — `bank-engine.ts` (2), `curriculum-seed.ts` (1), `english-content-dump.ts` (1). All the same shape as last time: code that narrows other types away and assumes the remainder is `fill` or `reorder`.
@@ -31,11 +78,11 @@ Added the variant and ran `bunx tsc --noEmit`: **4 errors across 3 files** — `
 
 ## Review Focus
 
-1. **A `speak` question rendering as a blank card on web.** Both players fall through to `null` for an unhandled type, with no compile error (measured above). Pinned in Tasks 4 and 5.
-2. **A failed recording costing the learner a heart.** Denied mic permission, no device, offline, or a Deepgram error all produce "no transcript" — which must never be graded as a wrong answer. This is the same class as the listening no-audio defect, where a 1-in-4 guess cost a heart. Pinned in Task 3.
-3. **A device with no microphone at all.** `getUserMedia` is absent in insecure contexts and some browsers. The question must be skippable without penalty rather than unanswerable. Pinned in Task 4.
-4. **Low confidence marking a correct answer wrong.** The spec is explicit: confidence is feedback, never a gate. A learner with an accent or a cheap mic must not be failed for words the transcript got right. Pinned in Task 3.
-5. **A speaking question reaching the offline review queue on iOS.** Grading needs a network round-trip, so an offline attempt must not be silently marked wrong. Pinned in Task 6.
+1. **A `speak` question rendering as a blank card on web.** Both players fall through to `null` for an unhandled type, with no compile error (measured above). Pinned in Tasks 5 and 6.
+2. **A failed recording costing the learner a heart.** Denied mic permission, no device, offline, or a Deepgram error all produce "no transcript" — which must never be graded as a wrong answer. This is the same class as the listening no-audio defect, where a 1-in-4 guess cost a heart. Pinned in Task 4.
+3. **A device with no microphone at all.** `getUserMedia` is absent in insecure contexts and some browsers. The question must be skippable without penalty rather than unanswerable. Pinned in Task 5.
+4. **Low confidence marking a correct answer wrong.** The spec is explicit: confidence is feedback, never a gate. A learner with an accent or a cheap mic must not be failed for words the transcript got right. Pinned in Task 5.
+5. **A speaking question reaching the offline review queue on iOS.** Grading needs a network round-trip, so an offline attempt must not be silently marked wrong. Pinned in Task 7.
 
 ---
 
@@ -142,7 +189,7 @@ ALTER TABLE public.questions ADD CONSTRAINT question_shape_matches_type CHECK (
 
 - [ ] **Step 6: Update the seed shape test**
 
-`src/lib/curriculum-seed.test.ts` is the local stand-in for that constraint. Add a `speak` branch asserting the fourth shape, and assert at least one speak row exists once Task 7 adds content.
+`src/lib/curriculum-seed.test.ts` is the local stand-in for that constraint. Add a `speak` branch asserting the fourth shape. Do NOT yet assert that a speak row exists — no content exists until Task 2, and a knowingly-red test left standing across several tasks stops being informative.
 
 - [ ] **Step 7: Verify and commit**
 
@@ -155,16 +202,92 @@ git commit -m "feat: add speak question variant and its row shape"
 
 ---
 
-### Task 2: Tolerant transcript matching
+### Task 2: Generate speak questions, with one real pack
 
 **Files:**
-- Create: `src/lib/spoken-answer.ts`
-- Create: `src/lib/spoken-answer.test.ts`
+- Modify: `src/data/lesson-bank.ts` (the `Pack` type, `packQuestions`, and one A1 pack)
+- Create: `src/data/lesson-bank-speaking.test.ts`
 
 **Interfaces:**
-- Produces: `matchesSpokenAnswer(transcript: string, expected: string): boolean` and `normaliseSpoken(s: string): string`. Task 3 consumes both; the later translation type reuses them.
+- Consumes: the `speak` variant (Task 1).
+- Produces: `kind: "speak"` packs. A speak pack's `data` lines are `phrase|phrase` — the same text twice, because what is shown is what must be said. The pack's `prompt` is the instruction ("Say this aloud:").
 
-Exact matching is wrong here: Deepgram returns "She's a doctor" or "she is a doctor" or "Shes a doctor." for the same utterance. Grading must forgive punctuation, casing, contraction expansion and filler, while still rejecting a genuinely different sentence.
+One real pack lands here so Tasks 5-7 verify against live questions rather than behind skipped tests.
+
+- [ ] **Step 1: Write the failing test**
+
+```ts
+// src/data/lesson-bank-speaking.test.ts
+import { describe, expect, it } from "vitest";
+import { getCourse } from "./courses";
+
+function speakQuestions() {
+  return Object.entries(getCourse("en").questionIndex).filter(
+    ([, ref]) => ref.question.type === "speak",
+  );
+}
+
+describe("speak questions", () => {
+  it("exist in the course", () => {
+    expect(speakQuestions().length).toBeGreaterThan(0);
+  });
+
+  it("always carry a sayable phrase", () => {
+    for (const [key, ref] of speakQuestions()) {
+      const q = ref.question;
+      if (q.type !== "speak") continue;
+      expect(q.answer.trim(), `${key} has no phrase to say`).not.toBe("");
+      // Short enough to say in one breath; long phrases transcribe unreliably
+      // and turn a pronunciation exercise into a memory test.
+      expect(q.answer.split(/\s+/).length, `${key} is too long to say`).toBeLessThanOrEqual(12);
+    }
+  });
+});
+```
+
+- [ ] **Step 2: RED** — `bun run vitest run src/data/lesson-bank-speaking.test.ts` fails on "exist in the course".
+
+- [ ] **Step 3: Widen the Pack type and generator**
+
+`kind: "pair" | "cloze" | "listening" | "speak";`
+
+In `packQuestions`, branch before the distractor work. A speak question has no choices and no bank, so `pickDistractors` and the `useMc` split are both skipped entirely — calling them would be meaningless work whose result is discarded:
+
+```ts
+    if (pack.kind === "speak") {
+      return {
+        id: `${pack.id}q${i}`,
+        type: "speak",
+        prompt: pack.prompt ?? "Say this aloud:",
+        answer: left!,
+        explanation: `You said: "${left}". ${pack.note}`,
+      };
+    }
+```
+
+Place it above the `const distractors = ...` line so no pool work happens for speak packs.
+
+- [ ] **Step 4: Author one A1 pack** (25 short phrases, one breath each, avoiding homophone-heavy wording that transcribes inconsistently).
+
+- [ ] **Step 5: GREEN**, then re-baseline ids deliberately and confirm an insertions-only diff.
+
+- [ ] **Step 6: Commit**
+
+---
+
+### Task 3: Tolerant matching, in the SHARED grading path
+
+The correctness rule must be one rule. If it lives only in the player, the
+review server re-grades the same transcript and disagrees — see Self-critique #1.
+
+**Files:**
+- Create: `src/lib/spoken-answer.ts`, `src/lib/spoken-answer.test.ts`
+- Modify: `src/lib/srs.ts` (`deriveAnswerCorrectness`)
+- Modify: `supabase/functions/grade-review/index.ts` (its hand-synced mirror)
+- Modify: the mirrored Deno test vectors under `supabase/functions/grade-review/`
+
+**Interfaces:**
+- Produces: `matchesSpokenAnswer(transcript, expected)` and `normaliseSpoken(s)`, used by `deriveAnswerCorrectness` on both sides and reused later by the translation type.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -177,7 +300,6 @@ describe("normaliseSpoken", () => {
   it("strips punctuation and case", () => {
     expect(normaliseSpoken("She's a Doctor!")).toBe(normaliseSpoken("shes a doctor"));
   });
-
   it("treats a contraction and its expansion as the same", () => {
     expect(normaliseSpoken("she is a doctor")).toBe(normaliseSpoken("she's a doctor"));
   });
@@ -188,21 +310,15 @@ describe("matchesSpokenAnswer", () => {
     expect(matchesSpokenAnswer("She's a doctor.", "She is a doctor")).toBe(true);
     expect(matchesSpokenAnswer("she is a DOCTOR", "She's a doctor")).toBe(true);
   });
-
   it("forgives a leading filler word", () => {
-    // Deepgram routinely prefixes "um"/"uh" from a held mic.
     expect(matchesSpokenAnswer("um, she's a doctor", "She's a doctor")).toBe(true);
   });
-
   it("rejects a different sentence", () => {
     expect(matchesSpokenAnswer("he is a driver", "She's a doctor")).toBe(false);
   });
-
   it("rejects a partial attempt", () => {
-    // Saying half the phrase is not saying the phrase.
     expect(matchesSpokenAnswer("she is", "She's a doctor")).toBe(false);
   });
-
   it("treats an empty transcript as no answer, not a wrong one", () => {
     expect(matchesSpokenAnswer("", "She's a doctor")).toBe(false);
     expect(matchesSpokenAnswer("   ", "She's a doctor")).toBe(false);
@@ -210,27 +326,40 @@ describe("matchesSpokenAnswer", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [ ] **Step 2: RED**, then implement.
 
-Run: `bun run vitest run src/lib/spoken-answer.test.ts`
-Expected: FAIL — module not found.
+Lowercase, expand a small contraction list, strip punctuation and leading filler, collapse whitespace, compare for equality. Do NOT use edit-distance: a threshold loose enough to accept contraction variants also accepts "he is a driver" for "she is a doctor", which is worse than strictness on phrases this short.
 
-- [ ] **Step 3: Implement**
+- [ ] **Step 3: Use it in `deriveAnswerCorrectness`**
 
-Normalise by lowercasing, expanding a small set of contractions, stripping punctuation and filler, and collapsing whitespace. Match on the normalised strings being equal. Do NOT reach for fuzzy distance here: a Levenshtein threshold that accepts "he is a driver" for "she is a doctor" is worse than a strict comparison, and this content is short phrases where exactness is the point.
+```ts
+export function deriveAnswerCorrectness(question: Question, answer: string): boolean {
+  if (question.type === "mc") return question.choices[question.answer] === answer;
+  // A spoken answer arrives as an STT transcript, so it is compared with the
+  // spoken normaliser rather than a bare trim/lowercase -- otherwise the
+  // server would mark "she is a doctor" wrong for "She's a doctor." after the
+  // player had already told the learner it was right.
+  if (question.type === "speak") return matchesSpokenAnswer(answer, question.answer);
+  return answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
+}
+```
 
-- [ ] **Step 4: Verify and commit**
+- [ ] **Step 4: Mirror it in the Deno copy**
 
-Run: `bun run vitest run src/lib/spoken-answer.test.ts` → PASS.
+`supabase/functions/grade-review/index.ts` grades against the DB row shape. Port the same rule and the same normaliser (inline it — Deno functions bundle independently and cannot import from `src/`). Update the mirrored test vectors so CI's `deno-tests` parity job passes; that job exists precisely to catch this drift.
+
+- [ ] **Step 5: Verify both**
 
 ```bash
-git add src/lib/spoken-answer.ts src/lib/spoken-answer.test.ts
-git commit -m "feat: add tolerant matching for spoken answers"
+bun run vitest run src/lib/spoken-answer.test.ts src/lib/srs.test.ts
+deno test supabase/functions/grade-review/
 ```
+
+- [ ] **Step 6: Commit**
 
 ---
 
-### Task 3: The recording hook
+### Task 4: The recording hook
 
 **Files:**
 - Create: `src/lib/use-speech-capture.ts`
@@ -261,7 +390,7 @@ git commit -m "feat: extract the microphone capture flow into a reusable hook"
 
 ---
 
-### Task 4: Render and grade speaking in the lesson player
+### Task 5: Render and grade speaking in the lesson player
 
 **Files:**
 - Modify: `src/routes/_authenticated/lesson.$id.tsx`
@@ -277,7 +406,14 @@ Run the file's tests; the new one fails because the type renders nothing.
 
 - [ ] **Step 3: Implement**
 
-Add a `speak` branch: the phrase in the question heading, a hold-to-record control, transcript shown back after recording, and a "Check" that grades via `matchesSpokenAnswer`. Confidence renders as a secondary note only ("Clear" / "A little unclear — try again slower"), never affecting correctness (Review Focus #4).
+Add a `speak` branch: the phrase in the question heading, a hold-to-record control, transcript shown back after recording, and a "Check" that grades via `matchesSpokenAnswer`. Confidence renders as a secondary note only, never affecting correctness
+(Review Focus #4). Threshold: below **0.7** show "That was a little unclear —
+try saying it again a bit slower"; at or above it show nothing rather than
+praise, since a "Clear" badge on every pass is noise. 0.7 is chosen because
+Deepgram's utterance confidence sits well above it for clean speech and this
+is advisory copy, not a gate — being wrong here costs a learner one unnecessary
+hint, not a mark. If it proves noisy in practice, move it, and do not be tempted
+to start gating on it.
 
 Use Canopy tokens; if any control sits on `bg-ember`, use `text-ink-on-ember`.
 
@@ -291,7 +427,7 @@ Use Canopy tokens; if any control sits on `bg-ember`, use `text-ink-on-ember`.
 
 ---
 
-### Task 5: Render and grade speaking in the review player
+### Task 6: Render and grade speaking in the review player
 
 `review.tsx` is a second renderer with its own grading site. Review Focus #1.
 
@@ -303,7 +439,7 @@ Mirror Task 4 exactly. Seed the review queue with a speak item, assert it render
 
 ---
 
-### Task 6: iOS
+### Task 7: iOS
 
 **Files:**
 - Modify: `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/CurriculumModels.swift`, `QuestionGrading.swift`, `VocabDerivation.swift`
@@ -330,7 +466,7 @@ Grading needs the network. An offline attempt must not be marked wrong — skip 
 
 ---
 
-### Task 7: Content, artifacts and docs
+### Task 8: Remaining content, artifacts and docs
 
 - [ ] **Step 1: Author one speaking pack per CEFR band**
 
