@@ -104,6 +104,29 @@ describe("Lesson page", () => {
     expect(screen.getByRole("link", { name: "Back to learn" })).toHaveAttribute("href", "/learn");
   });
 
+  it("renders a play control and answerable choices for a listening question", async () => {
+    // Speech synthesis may be unavailable -- `speak` returns silently in that
+    // case -- so this asserts the question is answerable without audio, not
+    // that anything played. It also pins the format label, since a listening
+    // question must not look like an ordinary multiple choice.
+    const user = userEvent.setup();
+    currentLessonId = "a1p23l1";
+    renderPage();
+    // No vocabulary step here: listening answers are whole sentences, which
+    // deriveVocab deliberately skips (see vocab.ts), so "Begin lesson" goes
+    // straight to the quiz rather than via "Start practice".
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
+    expect(screen.getByText("Listening")).toBeInTheDocument();
+    expect(screen.getByText("What did you hear?")).toBeInTheDocument();
+    // The choices are full sentences from the same pack, and picking one must
+    // be possible with no audio played.
+    const choice = screen.getByRole("button", { name: "She is a doctor." });
+    await user.click(choice);
+    expect(screen.getByRole("button", { name: "Check" })).toBeEnabled();
+  });
+
   it("walks overview -> vocab -> quiz for a lesson with derived vocabulary", async () => {
     const user = userEvent.setup();
     renderPage();
