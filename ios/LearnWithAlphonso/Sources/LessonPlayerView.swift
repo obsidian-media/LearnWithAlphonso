@@ -105,7 +105,7 @@ struct LessonPlayerView: View {
             // per question -- without it, SwiftUI would keep reusing the
             // same view identity across questions and a reorder question's
             // tapped-token state would leak into the next question.
-            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
+            QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked)
                 .id(questionID(currentQuestion))
 
             Spacer()
@@ -274,6 +274,7 @@ private func questionID(_ question: Question) -> String {
     case .fillInBlank(let q): return q.id
     case .reorder(let q): return q.id
     case .listening(let q): return q.id
+    case .speak(let q): return q.id
     }
 }
 
@@ -311,6 +312,10 @@ private struct QuestionCard: View {
     let question: Question
     let course: Course
     let vocabImages: [String: VocabImageRef]
+    // A speaking question needs a token to transcribe with, and needs to know
+    // whether transcription can happen at all -- see SpeakQuestionCard.
+    let session: Session
+    let isConnected: Bool
     let checked: Bool
     @Binding var picked: String?
 
@@ -407,6 +412,10 @@ private struct QuestionCard: View {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
+            case .speak(let q):
+                SpeakQuestionCard(
+                    question: q, course: course, session: session,
+                    isConnected: isConnected, checked: checked, picked: $picked)
             }
         }
         // Drives ExplanationView's AlphonsoTipCard .transition -- without

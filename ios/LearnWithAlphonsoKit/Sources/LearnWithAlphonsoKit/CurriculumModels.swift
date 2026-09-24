@@ -10,6 +10,7 @@ public enum Question: Decodable, Sendable {
     case fillInBlank(FillInBlank)
     case reorder(Reorder)
     case listening(Listening)
+    case speak(Speak)
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -55,6 +56,25 @@ public enum Question: Decodable, Sendable {
         public let explanation: String
     }
 
+    /// Mirrors curriculum.ts's "speak" variant: the learner says `answer`
+    /// aloud and a speech-to-text transcript is graded against it. There are no
+    /// choices -- `answer` is both what is shown to say and what is compared,
+    /// which is why the row-shape check in the database has a fourth shape for
+    /// it (answer text, no choices, no bank, no answer index).
+    public struct Speak: Decodable, Sendable {
+        public let id: String
+        public let prompt: String
+        public let answer: String
+        public let explanation: String
+
+        public init(id: String, prompt: String, answer: String, explanation: String) {
+            self.id = id
+            self.prompt = prompt
+            self.answer = answer
+            self.explanation = explanation
+        }
+    }
+
     public struct FillInBlank: Decodable, Sendable {
         public let id: String
         public let prompt: String
@@ -91,6 +111,8 @@ public enum Question: Decodable, Sendable {
             self = .reorder(try Reorder(from: decoder))
         case "listening":
             self = .listening(try Listening(from: decoder))
+        case "speak":
+            self = .speak(try Speak(from: decoder))
         default:
             // Deliberately fails loudly. A lenient version of this was tried
             // and reverted: content ships inside the same binary (CI fails the
