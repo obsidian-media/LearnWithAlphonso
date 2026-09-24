@@ -55,15 +55,19 @@ session:
 
 | Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
-| **English** | 122 | 104 | 104 | 102 | 102 | **534**       | 2,721           |
+| **English** | 127 | 109 | 109 | 107 | 107 | **559**       | 2,846           |
 | **French**  | 100 | 100 | 100 | 100 | 100 | **500**       | 2,500           |
 | **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
 
-All three courses are now at full structural parity. Content correctness
-(grammar, natural phrasing) for French and Spanish still needs a real
-native-speaker review pass — not done for either, just structurally
-complete (see `docs/BACKLOG.md`, gitignored/local, for the full open-items
-list).
+English pulled ahead of parity on 2026-09-24: it gained a fourth question
+type, **listening comprehension**, and 125 listening questions (one pack
+per CEFR band, 25 lessons). French and Spanish have the other three types
+only.
+
+Content correctness (grammar, natural phrasing) for French and Spanish
+still needs a real native-speaker review pass — not done for either, just
+structurally complete (see `docs/BACKLOG.md`, gitignored/local, for the
+full open-items list).
 
 ## Spaced Repetition System
 

@@ -10585,6 +10585,400 @@
       ]
     },
     {
+      "id": "a1p23u1",
+      "level": "A1",
+      "eyebrow": "Unit 26",
+      "title": "Listening: Everyday Sentences",
+      "description": "Hear it, then choose — Short statements at natural speed.",
+      "lessons": [
+        {
+          "id": "a1p23l1",
+          "title": "Listening: Everyday Sentences 1",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a1p23q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She is a doctor.",
+              "choices": [
+                "They visit us in August.",
+                "The children play outside.",
+                "She is a doctor.",
+                "My sister plays the piano."
+              ],
+              "answer": "She is a doctor.",
+              "explanation": "The audio says \"She is a doctor.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He works at the airport.",
+              "choices": [
+                "He works at the airport.",
+                "He drinks tea with milk.",
+                "The cat sleeps on the chair.",
+                "The train leaves at nine."
+              ],
+              "answer": "He works at the airport.",
+              "explanation": "The audio says \"He works at the airport.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They live near the park.",
+              "choices": [
+                "I take the metro to school.",
+                "They live near the park.",
+                "They travel by bus.",
+                "We eat dinner at seven."
+              ],
+              "answer": "They live near the park.",
+              "explanation": "The audio says \"They live near the park.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I have two brothers.",
+              "choices": [
+                "She reads before bed.",
+                "He walks to work every day.",
+                "They live near the park.",
+                "I have two brothers."
+              ],
+              "answer": "I have two brothers.",
+              "explanation": "The audio says \"I have two brothers.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We eat dinner at seven.",
+              "choices": [
+                "He walks to work every day.",
+                "They live near the park.",
+                "The library closes at six.",
+                "We eat dinner at seven."
+              ],
+              "answer": "We eat dinner at seven.",
+              "explanation": "The audio says \"We eat dinner at seven.\". Short statements at natural speed."
+            }
+          ]
+        },
+        {
+          "id": "a1p23l2",
+          "title": "Listening: Everyday Sentences 2",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a1p23q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The train leaves at nine.",
+              "choices": [
+                "They visit us in August.",
+                "The children play outside.",
+                "Her birthday is in June.",
+                "The train leaves at nine."
+              ],
+              "answer": "The train leaves at nine.",
+              "explanation": "The audio says \"The train leaves at nine.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "My sister plays the piano.",
+              "choices": [
+                "The shop opens on Monday.",
+                "She is a doctor.",
+                "We live in a small flat.",
+                "My sister plays the piano."
+              ],
+              "answer": "My sister plays the piano.",
+              "explanation": "The audio says \"My sister plays the piano.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "This coffee is very hot.",
+              "choices": [
+                "I take the metro to school.",
+                "This coffee is very hot.",
+                "They travel by bus.",
+                "My sister plays the piano."
+              ],
+              "answer": "This coffee is very hot.",
+              "explanation": "The audio says \"This coffee is very hot.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The shop opens on Monday.",
+              "choices": [
+                "The shop opens on Monday.",
+                "They travel by bus.",
+                "My brother works in a bank.",
+                "My sister plays the piano."
+              ],
+              "answer": "The shop opens on Monday.",
+              "explanation": "The audio says \"The shop opens on Monday.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Her birthday is in June.",
+              "choices": [
+                "I study English in the evening.",
+                "They live near the park.",
+                "Her birthday is in June.",
+                "The library closes at six."
+              ],
+              "answer": "Her birthday is in June.",
+              "explanation": "The audio says \"Her birthday is in June.\". Short statements at natural speed."
+            }
+          ]
+        },
+        {
+          "id": "a1p23l3",
+          "title": "Listening: Everyday Sentences 3",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a1p23q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He walks to work every day.",
+              "choices": [
+                "We watch films on Sunday.",
+                "I take the metro to school.",
+                "I have two brothers.",
+                "He walks to work every day."
+              ],
+              "answer": "He walks to work every day.",
+              "explanation": "The audio says \"He walks to work every day.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We watch films on Sunday.",
+              "choices": [
+                "We watch films on Sunday.",
+                "She writes letters to her aunt.",
+                "My father cooks on Saturday.",
+                "This coffee is very hot."
+              ],
+              "answer": "We watch films on Sunday.",
+              "explanation": "The audio says \"We watch films on Sunday.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The cat sleeps on the chair.",
+              "choices": [
+                "He drinks tea with milk.",
+                "The cat sleeps on the chair.",
+                "The shop opens on Monday.",
+                "He works at the airport."
+              ],
+              "answer": "The cat sleeps on the chair.",
+              "explanation": "The audio says \"The cat sleeps on the chair.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I study English in the evening.",
+              "choices": [
+                "The cat sleeps on the chair.",
+                "The train leaves at nine.",
+                "I study English in the evening.",
+                "The library closes at six."
+              ],
+              "answer": "I study English in the evening.",
+              "explanation": "The audio says \"I study English in the evening.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They travel by bus.",
+              "choices": [
+                "They travel by bus.",
+                "My father cooks on Saturday.",
+                "She is a doctor.",
+                "This coffee is very hot."
+              ],
+              "answer": "They travel by bus.",
+              "explanation": "The audio says \"They travel by bus.\". Short statements at natural speed."
+            }
+          ]
+        },
+        {
+          "id": "a1p23l4",
+          "title": "Listening: Everyday Sentences 4",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a1p23q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "My father cooks on Saturday.",
+              "choices": [
+                "He drinks tea with milk.",
+                "We watch films on Sunday.",
+                "He works at the airport.",
+                "My father cooks on Saturday."
+              ],
+              "answer": "My father cooks on Saturday.",
+              "explanation": "The audio says \"My father cooks on Saturday.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The children play outside.",
+              "choices": [
+                "The cat sleeps on the chair.",
+                "The train leaves at nine.",
+                "The children play outside.",
+                "They visit us in August."
+              ],
+              "answer": "The children play outside.",
+              "explanation": "The audio says \"The children play outside.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She reads before bed.",
+              "choices": [
+                "My brother works in a bank.",
+                "The children play outside.",
+                "Her birthday is in June.",
+                "She reads before bed."
+              ],
+              "answer": "She reads before bed.",
+              "explanation": "The audio says \"She reads before bed.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We live in a small flat.",
+              "choices": [
+                "The cat sleeps on the chair.",
+                "They live near the park.",
+                "The library closes at six.",
+                "We live in a small flat."
+              ],
+              "answer": "We live in a small flat.",
+              "explanation": "The audio says \"We live in a small flat.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He drinks tea with milk.",
+              "choices": [
+                "My sister plays the piano.",
+                "He drinks tea with milk.",
+                "My brother works in a bank.",
+                "I study English in the evening."
+              ],
+              "answer": "He drinks tea with milk.",
+              "explanation": "The audio says \"He drinks tea with milk.\". Short statements at natural speed."
+            }
+          ]
+        },
+        {
+          "id": "a1p23l5",
+          "title": "Listening: Everyday Sentences 5",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a1p23q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The library closes at six.",
+              "choices": [
+                "The library closes at six.",
+                "The shop opens on Monday.",
+                "He works at the airport.",
+                "My father cooks on Saturday."
+              ],
+              "answer": "The library closes at six.",
+              "explanation": "The audio says \"The library closes at six.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I take the metro to school.",
+              "choices": [
+                "I take the metro to school.",
+                "They live near the park.",
+                "He drinks tea with milk.",
+                "The cat sleeps on the chair."
+              ],
+              "answer": "I take the metro to school.",
+              "explanation": "The audio says \"I take the metro to school.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She writes letters to her aunt.",
+              "choices": [
+                "She reads before bed.",
+                "He walks to work every day.",
+                "She writes letters to her aunt.",
+                "I have two brothers."
+              ],
+              "answer": "She writes letters to her aunt.",
+              "explanation": "The audio says \"She writes letters to her aunt.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They visit us in August.",
+              "choices": [
+                "They visit us in August.",
+                "I take the metro to school.",
+                "We eat dinner at seven.",
+                "They travel by bus."
+              ],
+              "answer": "They visit us in August.",
+              "explanation": "The audio says \"They visit us in August.\". Short statements at natural speed."
+            },
+            {
+              "id": "a1p23q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "My brother works in a bank.",
+              "choices": [
+                "I take the metro to school.",
+                "We eat dinner at seven.",
+                "My brother works in a bank.",
+                "We watch films on Sunday."
+              ],
+              "answer": "My brother works in a bank.",
+              "explanation": "The audio says \"My brother works in a bank.\". Short statements at natural speed."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "a2p1u1",
       "level": "A2",
       "eyebrow": "Unit 3",
@@ -17947,6 +18341,400 @@
       ]
     },
     {
+      "id": "a2p21u1",
+      "level": "A2",
+      "eyebrow": "Unit 23",
+      "title": "Listening: Plans & Past Events",
+      "description": "Hear it, then choose — Everyday statements in the past and future.",
+      "lessons": [
+        {
+          "id": "a2p21l1",
+          "title": "Listening: Plans & Past Events 1",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a2p21q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We went to the coast last weekend.",
+              "choices": [
+                "We went to the coast last weekend.",
+                "He was cycling home in the rain.",
+                "We have lived here for six years.",
+                "She spoke to the manager yesterday."
+              ],
+              "answer": "We went to the coast last weekend.",
+              "explanation": "The audio says \"We went to the coast last weekend.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She has already finished her report.",
+              "choices": [
+                "They were waiting outside the station.",
+                "We are thinking of moving abroad.",
+                "She is better at maths than me.",
+                "She has already finished her report."
+              ],
+              "answer": "She has already finished her report.",
+              "explanation": "The audio says \"She has already finished her report.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They were waiting outside the station.",
+              "choices": [
+                "They were waiting outside the station.",
+                "I will call you as soon as I land.",
+                "The parcel has not arrived yet.",
+                "He bought a second-hand bicycle."
+              ],
+              "answer": "They were waiting outside the station.",
+              "explanation": "The audio says \"They were waiting outside the station.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I am going to visit my cousin in May.",
+              "choices": [
+                "He used to play rugby at school.",
+                "We are meeting her at the airport.",
+                "I am going to visit my cousin in May.",
+                "He forgot to lock the back door."
+              ],
+              "answer": "I am going to visit my cousin in May.",
+              "explanation": "The audio says \"I am going to visit my cousin in May.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He bought a second-hand bicycle.",
+              "choices": [
+                "I did not hear the alarm this morning.",
+                "He bought a second-hand bicycle.",
+                "She is better at maths than me.",
+                "She has already finished her report."
+              ],
+              "answer": "He bought a second-hand bicycle.",
+              "explanation": "The audio says \"He bought a second-hand bicycle.\". Everyday statements in the past and future."
+            }
+          ]
+        },
+        {
+          "id": "a2p21l2",
+          "title": "Listening: Plans & Past Events 2",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a2p21q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The meeting was moved to Thursday.",
+              "choices": [
+                "They have just moved into a new flat.",
+                "The meeting was moved to Thursday.",
+                "They will arrive before lunch.",
+                "I have never tried Thai food."
+              ],
+              "answer": "The meeting was moved to Thursday.",
+              "explanation": "The audio says \"The meeting was moved to Thursday.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We have lived here for six years.",
+              "choices": [
+                "We are meeting her at the airport.",
+                "She was reading when the phone rang.",
+                "We have lived here for six years.",
+                "He forgot to lock the back door."
+              ],
+              "answer": "We have lived here for six years.",
+              "explanation": "The audio says \"We have lived here for six years.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She was reading when the phone rang.",
+              "choices": [
+                "The shop was closed when we got there.",
+                "The meeting was moved to Thursday.",
+                "She was reading when the phone rang.",
+                "She spoke to the manager yesterday."
+              ],
+              "answer": "She was reading when the phone rang.",
+              "explanation": "The audio says \"She was reading when the phone rang.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They will arrive before lunch.",
+              "choices": [
+                "The film had already started.",
+                "I will call you as soon as I land.",
+                "They will arrive before lunch.",
+                "We have lived here for six years."
+              ],
+              "answer": "They will arrive before lunch.",
+              "explanation": "The audio says \"They will arrive before lunch.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I did not hear the alarm this morning.",
+              "choices": [
+                "He used to play rugby at school.",
+                "The shop was closed when we got there.",
+                "They were waiting outside the station.",
+                "I did not hear the alarm this morning."
+              ],
+              "answer": "I did not hear the alarm this morning.",
+              "explanation": "The audio says \"I did not hear the alarm this morning.\". Everyday statements in the past and future."
+            }
+          ]
+        },
+        {
+          "id": "a2p21l3",
+          "title": "Listening: Plans & Past Events 3",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a2p21q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He used to play rugby at school.",
+              "choices": [
+                "She has already finished her report.",
+                "They will arrive before lunch.",
+                "He used to play rugby at school.",
+                "They are staying with friends tonight."
+              ],
+              "answer": "He used to play rugby at school.",
+              "explanation": "The audio says \"He used to play rugby at school.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The parcel has not arrived yet.",
+              "choices": [
+                "She spoke to the manager yesterday.",
+                "The shop was closed when we got there.",
+                "They were waiting outside the station.",
+                "The parcel has not arrived yet."
+              ],
+              "answer": "The parcel has not arrived yet.",
+              "explanation": "The audio says \"The parcel has not arrived yet.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We are thinking of moving abroad.",
+              "choices": [
+                "We booked the tickets in advance.",
+                "We are thinking of moving abroad.",
+                "He used to play rugby at school.",
+                "I am going to visit my cousin in May."
+              ],
+              "answer": "We are thinking of moving abroad.",
+              "explanation": "The audio says \"We are thinking of moving abroad.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She spoke to the manager yesterday.",
+              "choices": [
+                "He bought a second-hand bicycle.",
+                "She spoke to the manager yesterday.",
+                "They have just moved into a new flat.",
+                "I have never tried Thai food."
+              ],
+              "answer": "She spoke to the manager yesterday.",
+              "explanation": "The audio says \"She spoke to the manager yesterday.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The film had already started.",
+              "choices": [
+                "He bought a second-hand bicycle.",
+                "The film had already started.",
+                "The parcel has not arrived yet.",
+                "They have just moved into a new flat."
+              ],
+              "answer": "The film had already started.",
+              "explanation": "The audio says \"The film had already started.\". Everyday statements in the past and future."
+            }
+          ]
+        },
+        {
+          "id": "a2p21l4",
+          "title": "Listening: Plans & Past Events 4",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a2p21q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I have never tried Thai food.",
+              "choices": [
+                "They will arrive before lunch.",
+                "They are staying with friends tonight.",
+                "I have never tried Thai food.",
+                "He was cycling home in the rain."
+              ],
+              "answer": "I have never tried Thai food.",
+              "explanation": "The audio says \"I have never tried Thai food.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They are staying with friends tonight.",
+              "choices": [
+                "She spoke to the manager yesterday.",
+                "We are meeting her at the airport.",
+                "We have lived here for six years.",
+                "They are staying with friends tonight."
+              ],
+              "answer": "They are staying with friends tonight.",
+              "explanation": "The audio says \"They are staying with friends tonight.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He forgot to lock the back door.",
+              "choices": [
+                "We booked the tickets in advance.",
+                "He forgot to lock the back door.",
+                "He used to play rugby at school.",
+                "We went to the coast last weekend."
+              ],
+              "answer": "He forgot to lock the back door.",
+              "explanation": "The audio says \"He forgot to lock the back door.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We booked the tickets in advance.",
+              "choices": [
+                "We booked the tickets in advance.",
+                "The meeting was moved to Thursday.",
+                "He was cycling home in the rain.",
+                "I have never tried Thai food."
+              ],
+              "answer": "We booked the tickets in advance.",
+              "explanation": "The audio says \"We booked the tickets in advance.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She is better at maths than me.",
+              "choices": [
+                "He bought a second-hand bicycle.",
+                "We booked the tickets in advance.",
+                "The parcel has not arrived yet.",
+                "She is better at maths than me."
+              ],
+              "answer": "She is better at maths than me.",
+              "explanation": "The audio says \"She is better at maths than me.\". Everyday statements in the past and future."
+            }
+          ]
+        },
+        {
+          "id": "a2p21l5",
+          "title": "Listening: Plans & Past Events 5",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "a2p21q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The shop was closed when we got there.",
+              "choices": [
+                "We booked the tickets in advance.",
+                "The shop was closed when we got there.",
+                "The parcel has not arrived yet.",
+                "He bought a second-hand bicycle."
+              ],
+              "answer": "The shop was closed when we got there.",
+              "explanation": "The audio says \"The shop was closed when we got there.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I will call you as soon as I land.",
+              "choices": [
+                "We went to the coast last weekend.",
+                "She was reading when the phone rang.",
+                "I will call you as soon as I land.",
+                "He forgot to lock the back door."
+              ],
+              "answer": "I will call you as soon as I land.",
+              "explanation": "The audio says \"I will call you as soon as I land.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They have just moved into a new flat.",
+              "choices": [
+                "She spoke to the manager yesterday.",
+                "The shop was closed when we got there.",
+                "We have lived here for six years.",
+                "They have just moved into a new flat."
+              ],
+              "answer": "They have just moved into a new flat.",
+              "explanation": "The audio says \"They have just moved into a new flat.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He was cycling home in the rain.",
+              "choices": [
+                "He was cycling home in the rain.",
+                "She is better at maths than me.",
+                "They were waiting outside the station.",
+                "I did not hear the alarm this morning."
+              ],
+              "answer": "He was cycling home in the rain.",
+              "explanation": "The audio says \"He was cycling home in the rain.\". Everyday statements in the past and future."
+            },
+            {
+              "id": "a2p21q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We are meeting her at the airport.",
+              "choices": [
+                "We went to the coast last weekend.",
+                "She was reading when the phone rang.",
+                "The film had already started.",
+                "We are meeting her at the airport."
+              ],
+              "answer": "We are meeting her at the airport.",
+              "explanation": "The audio says \"We are meeting her at the airport.\". Everyday statements in the past and future."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "b1p1u1",
       "level": "B1",
       "eyebrow": "Unit 3",
@@ -25271,6 +26059,400 @@
               ],
               "answer": "rest",
               "explanation": "\"rest\" is correct here. B1-level sequencing language for describing steps."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b1p21u1",
+      "level": "B1",
+      "eyebrow": "Unit 23",
+      "title": "Listening: Opinions & Explanations",
+      "description": "Hear it, then choose — Longer statements with reasons and opinions.",
+      "lessons": [
+        {
+          "id": "b1p21l1",
+          "title": "Listening: Opinions & Explanations 1",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b1p21q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I would rather work from home on Fridays.",
+              "choices": [
+                "I would rather work from home on Fridays.",
+                "He admitted that he had made a mistake.",
+                "They are considering a move to Manchester.",
+                "She used to commute two hours a day."
+              ],
+              "answer": "I would rather work from home on Fridays.",
+              "explanation": "The audio says \"I would rather work from home on Fridays.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The course was harder than I expected.",
+              "choices": [
+                "They have agreed to share the costs.",
+                "The course was harder than I expected.",
+                "She has been learning Japanese since March.",
+                "She managed to finish despite the delays."
+              ],
+              "answer": "The course was harder than I expected.",
+              "explanation": "The audio says \"The course was harder than I expected.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She turned down the offer because of the hours.",
+              "choices": [
+                "She turned down the offer because of the hours.",
+                "I am looking forward to the weekend.",
+                "The course was harder than I expected.",
+                "We ought to leave a little earlier."
+              ],
+              "answer": "She turned down the offer because of the hours.",
+              "explanation": "The audio says \"She turned down the offer because of the hours.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "If I had known, I would have waited.",
+              "choices": [
+                "They decided to postpone the launch.",
+                "If I had known, I would have waited.",
+                "The results were better than last year.",
+                "The instructions were not very clear."
+              ],
+              "answer": "If I had known, I would have waited.",
+              "explanation": "The audio says \"If I had known, I would have waited.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They are considering a move to Manchester.",
+              "choices": [
+                "I would rather work from home on Fridays.",
+                "She has been learning Japanese since March.",
+                "They are considering a move to Manchester.",
+                "She managed to finish despite the delays."
+              ],
+              "answer": "They are considering a move to Manchester.",
+              "explanation": "The audio says \"They are considering a move to Manchester.\". Longer statements with reasons and opinions."
+            }
+          ]
+        },
+        {
+          "id": "b1p21l2",
+          "title": "Listening: Opinions & Explanations 2",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b1p21q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He apologised for missing the deadline.",
+              "choices": [
+                "I am looking forward to the weekend.",
+                "The course was harder than I expected.",
+                "It depends on how much time we have.",
+                "He apologised for missing the deadline."
+              ],
+              "answer": "He apologised for missing the deadline.",
+              "explanation": "The audio says \"He apologised for missing the deadline.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The results were better than last year.",
+              "choices": [
+                "They decided to postpone the launch.",
+                "The results were better than last year.",
+                "It would be sensible to check first.",
+                "He apologised for missing the deadline."
+              ],
+              "answer": "The results were better than last year.",
+              "explanation": "The audio says \"The results were better than last year.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I am not entirely convinced by that argument.",
+              "choices": [
+                "He regrets not taking the opportunity.",
+                "The flat is within walking distance of work.",
+                "The report suggests prices will rise.",
+                "I am not entirely convinced by that argument."
+              ],
+              "answer": "I am not entirely convinced by that argument.",
+              "explanation": "The audio says \"I am not entirely convinced by that argument.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She has been learning Japanese since March.",
+              "choices": [
+                "I am looking forward to the weekend.",
+                "It depends on how much time we have.",
+                "She has been learning Japanese since March.",
+                "They are considering a move to Manchester."
+              ],
+              "answer": "She has been learning Japanese since March.",
+              "explanation": "The audio says \"She has been learning Japanese since March.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We ought to leave a little earlier.",
+              "choices": [
+                "We ought to leave a little earlier.",
+                "It would be sensible to check first.",
+                "He apologised for missing the deadline.",
+                "We were told to wait in the corridor."
+              ],
+              "answer": "We ought to leave a little earlier.",
+              "explanation": "The audio says \"We ought to leave a little earlier.\". Longer statements with reasons and opinions."
+            }
+          ]
+        },
+        {
+          "id": "b1p21l3",
+          "title": "Listening: Opinions & Explanations 3",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b1p21q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The report suggests prices will rise.",
+              "choices": [
+                "He insisted on paying for the meal.",
+                "The report suggests prices will rise.",
+                "If I had known, I would have waited.",
+                "He admitted that he had made a mistake."
+              ],
+              "answer": "The report suggests prices will rise.",
+              "explanation": "The audio says \"The report suggests prices will rise.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He admitted that he had made a mistake.",
+              "choices": [
+                "They have agreed to share the costs.",
+                "They are considering a move to Manchester.",
+                "She managed to finish despite the delays.",
+                "He admitted that he had made a mistake."
+              ],
+              "answer": "He admitted that he had made a mistake.",
+              "explanation": "The audio says \"He admitted that he had made a mistake.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "It depends on how much time we have.",
+              "choices": [
+                "We were told to wait in the corridor.",
+                "The course was harder than I expected.",
+                "She has been learning Japanese since March.",
+                "It depends on how much time we have."
+              ],
+              "answer": "It depends on how much time we have.",
+              "explanation": "The audio says \"It depends on how much time we have.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They decided to postpone the launch.",
+              "choices": [
+                "She turned down the offer because of the hours.",
+                "They decided to postpone the launch.",
+                "It depends on how much time we have.",
+                "The instructions were not very clear."
+              ],
+              "answer": "They decided to postpone the launch.",
+              "explanation": "The audio says \"They decided to postpone the launch.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I found the ending rather disappointing.",
+              "choices": [
+                "I found the ending rather disappointing.",
+                "The results were better than last year.",
+                "They decided to postpone the launch.",
+                "He regrets not taking the opportunity."
+              ],
+              "answer": "I found the ending rather disappointing.",
+              "explanation": "The audio says \"I found the ending rather disappointing.\". Longer statements with reasons and opinions."
+            }
+          ]
+        },
+        {
+          "id": "b1p21l4",
+          "title": "Listening: Opinions & Explanations 4",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b1p21q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She managed to finish despite the delays.",
+              "choices": [
+                "He insisted on paying for the meal.",
+                "The report suggests prices will rise.",
+                "I would rather work from home on Fridays.",
+                "She managed to finish despite the delays."
+              ],
+              "answer": "She managed to finish despite the delays.",
+              "explanation": "The audio says \"She managed to finish despite the delays.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "We were told to wait in the corridor.",
+              "choices": [
+                "They have agreed to share the costs.",
+                "We were told to wait in the corridor.",
+                "They are considering a move to Manchester.",
+                "He admitted that he had made a mistake."
+              ],
+              "answer": "We were told to wait in the corridor.",
+              "explanation": "The audio says \"We were told to wait in the corridor.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The flat is within walking distance of work.",
+              "choices": [
+                "The flat is within walking distance of work.",
+                "It would be sensible to check first.",
+                "She managed to finish despite the delays.",
+                "She has been learning Japanese since March."
+              ],
+              "answer": "The flat is within walking distance of work.",
+              "explanation": "The audio says \"The flat is within walking distance of work.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He insisted on paying for the meal.",
+              "choices": [
+                "He insisted on paying for the meal.",
+                "The course was harder than I expected.",
+                "I am looking forward to the weekend.",
+                "He admitted that he had made a mistake."
+              ],
+              "answer": "He insisted on paying for the meal.",
+              "explanation": "The audio says \"He insisted on paying for the meal.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "I am looking forward to the weekend.",
+              "choices": [
+                "He apologised for missing the deadline.",
+                "It would be sensible to check first.",
+                "I am looking forward to the weekend.",
+                "It depends on how much time we have."
+              ],
+              "answer": "I am looking forward to the weekend.",
+              "explanation": "The audio says \"I am looking forward to the weekend.\". Longer statements with reasons and opinions."
+            }
+          ]
+        },
+        {
+          "id": "b1p21l5",
+          "title": "Listening: Opinions & Explanations 5",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b1p21q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The instructions were not very clear.",
+              "choices": [
+                "I would rather work from home on Fridays.",
+                "The instructions were not very clear.",
+                "The flat is within walking distance of work.",
+                "The report suggests prices will rise."
+              ],
+              "answer": "The instructions were not very clear.",
+              "explanation": "The audio says \"The instructions were not very clear.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She used to commute two hours a day.",
+              "choices": [
+                "He regrets not taking the opportunity.",
+                "She used to commute two hours a day.",
+                "They decided to postpone the launch.",
+                "The results were better than last year."
+              ],
+              "answer": "She used to commute two hours a day.",
+              "explanation": "The audio says \"She used to commute two hours a day.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They have agreed to share the costs.",
+              "choices": [
+                "They have agreed to share the costs.",
+                "She managed to finish despite the delays.",
+                "It would be sensible to check first.",
+                "She has been learning Japanese since March."
+              ],
+              "answer": "They have agreed to share the costs.",
+              "explanation": "The audio says \"They have agreed to share the costs.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "It would be sensible to check first.",
+              "choices": [
+                "They are considering a move to Manchester.",
+                "She used to commute two hours a day.",
+                "He admitted that he had made a mistake.",
+                "It would be sensible to check first."
+              ],
+              "answer": "It would be sensible to check first.",
+              "explanation": "The audio says \"It would be sensible to check first.\". Longer statements with reasons and opinions."
+            },
+            {
+              "id": "b1p21q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He regrets not taking the opportunity.",
+              "choices": [
+                "He regrets not taking the opportunity.",
+                "They are considering a move to Manchester.",
+                "She used to commute two hours a day.",
+                "I found the ending rather disappointing."
+              ],
+              "answer": "He regrets not taking the opportunity.",
+              "explanation": "The audio says \"He regrets not taking the opportunity.\". Longer statements with reasons and opinions."
             }
           ]
         }
@@ -32657,6 +33839,400 @@
       ]
     },
     {
+      "id": "b2p21u1",
+      "level": "B2",
+      "eyebrow": "Unit 22",
+      "title": "Listening: Reports & Arguments",
+      "description": "Hear it, then choose — Complex statements with hedging and reported speech.",
+      "lessons": [
+        {
+          "id": "b2p21l1",
+          "title": "Listening: Reports & Arguments 1",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b2p21q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The findings appear to contradict earlier research.",
+              "choices": [
+                "They have been accused of withholding information.",
+                "The proposal would require substantial investment.",
+                "They were reportedly unaware of the change.",
+                "The findings appear to contradict earlier research."
+              ],
+              "answer": "The findings appear to contradict earlier research.",
+              "explanation": "The audio says \"The findings appear to contradict earlier research.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He claimed the delay was beyond his control.",
+              "choices": [
+                "He claimed the delay was beyond his control.",
+                "The company denied any wrongdoing.",
+                "The trial was halted on medical advice.",
+                "The data suggests a modest but steady decline."
+              ],
+              "answer": "He claimed the delay was beyond his control.",
+              "explanation": "The audio says \"He claimed the delay was beyond his control.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Had we acted sooner, the outcome might differ.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "The results have not yet been independently verified.",
+                "She was appointed despite limited experience.",
+                "She is widely regarded as the leading expert."
+              ],
+              "answer": "Had we acted sooner, the outcome might differ.",
+              "explanation": "The audio says \"Had we acted sooner, the outcome might differ.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The proposal was rejected on financial grounds.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "The scheme was abandoned after two years.",
+                "The policy is due to be reviewed next year.",
+                "The proposal was rejected on financial grounds."
+              ],
+              "answer": "The proposal was rejected on financial grounds.",
+              "explanation": "The audio says \"The proposal was rejected on financial grounds.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She is widely regarded as the leading expert.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "Funding was withdrawn without prior warning.",
+                "The scheme was abandoned after two years.",
+                "She is widely regarded as the leading expert."
+              ],
+              "answer": "She is widely regarded as the leading expert.",
+              "explanation": "The audio says \"She is widely regarded as the leading expert.\". Complex statements with hedging and reported speech."
+            }
+          ]
+        },
+        {
+          "id": "b2p21l2",
+          "title": "Listening: Reports & Arguments 2",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b2p21q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The data suggests a modest but steady decline.",
+              "choices": [
+                "They have been accused of withholding information.",
+                "His account differs considerably from hers.",
+                "The proposal would require substantial investment.",
+                "The data suggests a modest but steady decline."
+              ],
+              "answer": "The data suggests a modest but steady decline.",
+              "explanation": "The audio says \"The data suggests a modest but steady decline.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They were reportedly unaware of the change.",
+              "choices": [
+                "He conceded that the criticism was justified.",
+                "They were reportedly unaware of the change.",
+                "The findings appear to contradict earlier research.",
+                "The committee has yet to reach a decision."
+              ],
+              "answer": "They were reportedly unaware of the change.",
+              "explanation": "The audio says \"They were reportedly unaware of the change.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "It remains unclear who authorised the payment.",
+              "choices": [
+                "The results have not yet been independently verified.",
+                "It remains unclear who authorised the payment.",
+                "She was appointed despite limited experience.",
+                "They were reportedly unaware of the change."
+              ],
+              "answer": "It remains unclear who authorised the payment.",
+              "explanation": "The audio says \"It remains unclear who authorised the payment.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The committee has yet to reach a decision.",
+              "choices": [
+                "Their conclusions rest on a single assumption.",
+                "She was appointed despite limited experience.",
+                "They were reportedly unaware of the change.",
+                "The committee has yet to reach a decision."
+              ],
+              "answer": "The committee has yet to reach a decision.",
+              "explanation": "The audio says \"The committee has yet to reach a decision.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "His account differs considerably from hers.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "His account differs considerably from hers.",
+                "Funding was withdrawn without prior warning.",
+                "Attendance has fallen sharply since April."
+              ],
+              "answer": "His account differs considerably from hers.",
+              "explanation": "The audio says \"His account differs considerably from hers.\". Complex statements with hedging and reported speech."
+            }
+          ]
+        },
+        {
+          "id": "b2p21l3",
+          "title": "Listening: Reports & Arguments 3",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b2p21q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The scheme was abandoned after two years.",
+              "choices": [
+                "The scheme was abandoned after two years.",
+                "The company denied any wrongdoing.",
+                "The trial was halted on medical advice.",
+                "She is widely regarded as the leading expert."
+              ],
+              "answer": "The scheme was abandoned after two years.",
+              "explanation": "The audio says \"The scheme was abandoned after two years.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Critics argue the measures do not go far enough.",
+              "choices": [
+                "The findings appear to contradict earlier research.",
+                "He conceded that the criticism was justified.",
+                "It remains unclear who authorised the payment.",
+                "Critics argue the measures do not go far enough."
+              ],
+              "answer": "Critics argue the measures do not go far enough.",
+              "explanation": "The audio says \"Critics argue the measures do not go far enough.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The company denied any wrongdoing.",
+              "choices": [
+                "The results have not yet been independently verified.",
+                "She was appointed despite limited experience.",
+                "The company denied any wrongdoing.",
+                "They were reportedly unaware of the change."
+              ],
+              "answer": "The company denied any wrongdoing.",
+              "explanation": "The audio says \"The company denied any wrongdoing.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Attendance has fallen sharply since April.",
+              "choices": [
+                "His account differs considerably from hers.",
+                "Funding was withdrawn without prior warning.",
+                "Attendance has fallen sharply since April.",
+                "Had we acted sooner, the outcome might differ."
+              ],
+              "answer": "Attendance has fallen sharply since April.",
+              "explanation": "The audio says \"Attendance has fallen sharply since April.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She was appointed despite limited experience.",
+              "choices": [
+                "The findings appear to contradict earlier research.",
+                "She was appointed despite limited experience.",
+                "The evidence is largely circumstantial.",
+                "It remains unclear who authorised the payment."
+              ],
+              "answer": "She was appointed despite limited experience.",
+              "explanation": "The audio says \"She was appointed despite limited experience.\". Complex statements with hedging and reported speech."
+            }
+          ]
+        },
+        {
+          "id": "b2p21l4",
+          "title": "Listening: Reports & Arguments 4",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b2p21q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The evidence is largely circumstantial.",
+              "choices": [
+                "The results have not yet been independently verified.",
+                "The evidence is largely circumstantial.",
+                "The proposal was rejected on financial grounds.",
+                "Attendance has fallen sharply since April."
+              ],
+              "answer": "The evidence is largely circumstantial.",
+              "explanation": "The audio says \"The evidence is largely circumstantial.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "They have been accused of withholding information.",
+              "choices": [
+                "His account differs considerably from hers.",
+                "The policy is due to be reviewed next year.",
+                "They have been accused of withholding information.",
+                "Had we acted sooner, the outcome might differ."
+              ],
+              "answer": "They have been accused of withholding information.",
+              "explanation": "The audio says \"They have been accused of withholding information.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The policy is due to be reviewed next year.",
+              "choices": [
+                "The policy is due to be reviewed next year.",
+                "The proposal would require substantial investment.",
+                "The evidence is largely circumstantial.",
+                "The data suggests a modest but steady decline."
+              ],
+              "answer": "The policy is due to be reviewed next year.",
+              "explanation": "The audio says \"The policy is due to be reviewed next year.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "He conceded that the criticism was justified.",
+              "choices": [
+                "He conceded that the criticism was justified.",
+                "Funding was withdrawn without prior warning.",
+                "The company denied any wrongdoing.",
+                "Had we acted sooner, the outcome might differ."
+              ],
+              "answer": "He conceded that the criticism was justified.",
+              "explanation": "The audio says \"He conceded that the criticism was justified.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The trial was halted on medical advice.",
+              "choices": [
+                "He claimed the delay was beyond his control.",
+                "The evidence is largely circumstantial.",
+                "The committee has yet to reach a decision.",
+                "The trial was halted on medical advice."
+              ],
+              "answer": "The trial was halted on medical advice.",
+              "explanation": "The audio says \"The trial was halted on medical advice.\". Complex statements with hedging and reported speech."
+            }
+          ]
+        },
+        {
+          "id": "b2p21l5",
+          "title": "Listening: Reports & Arguments 5",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "b2p21q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Funding was withdrawn without prior warning.",
+              "choices": [
+                "The evidence is largely circumstantial.",
+                "The data suggests a modest but steady decline.",
+                "The proposal would require substantial investment.",
+                "Funding was withdrawn without prior warning."
+              ],
+              "answer": "Funding was withdrawn without prior warning.",
+              "explanation": "The audio says \"Funding was withdrawn without prior warning.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The results have not yet been independently verified.",
+              "choices": [
+                "The results have not yet been independently verified.",
+                "Critics argue the measures do not go far enough.",
+                "He conceded that the criticism was justified.",
+                "She is widely regarded as the leading expert."
+              ],
+              "answer": "The results have not yet been independently verified.",
+              "explanation": "The audio says \"The results have not yet been independently verified.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "She maintains that the decision was unanimous.",
+              "choices": [
+                "Attendance has fallen sharply since April.",
+                "The proposal was rejected on financial grounds.",
+                "She maintains that the decision was unanimous.",
+                "Funding was withdrawn without prior warning."
+              ],
+              "answer": "She maintains that the decision was unanimous.",
+              "explanation": "The audio says \"She maintains that the decision was unanimous.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The proposal would require substantial investment.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "They have been accused of withholding information.",
+                "The proposal would require substantial investment.",
+                "His account differs considerably from hers."
+              ],
+              "answer": "The proposal would require substantial investment.",
+              "explanation": "The audio says \"The proposal would require substantial investment.\". Complex statements with hedging and reported speech."
+            },
+            {
+              "id": "b2p21q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Their conclusions rest on a single assumption.",
+              "choices": [
+                "Had we acted sooner, the outcome might differ.",
+                "Their conclusions rest on a single assumption.",
+                "His account differs considerably from hers.",
+                "The trial was halted on medical advice."
+              ],
+              "answer": "Their conclusions rest on a single assumption.",
+              "explanation": "The audio says \"Their conclusions rest on a single assumption.\". Complex statements with hedging and reported speech."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "c1p1u1",
       "level": "C1",
       "eyebrow": "Unit 2",
@@ -40029,6 +41605,400 @@
               ],
               "answer": 2,
               "explanation": "\"other\" is correct here. C1-level cohesive devices for academic writing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c1p21u1",
+      "level": "C1",
+      "eyebrow": "Unit 22",
+      "title": "Listening: Academic & Professional Register",
+      "description": "Hear it, then choose — Formal register with nominalisation and hedging.",
+      "lessons": [
+        {
+          "id": "c1p21l1",
+          "title": "Listening: Academic & Professional Register 1",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "c1p21q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The implementation was contingent on further funding.",
+              "choices": [
+                "Not until the audit did the discrepancy emerge.",
+                "Considerable weight was attached to her testimony.",
+                "The committee refrained from issuing a recommendation.",
+                "The implementation was contingent on further funding."
+              ],
+              "answer": "The implementation was contingent on further funding.",
+              "explanation": "The audio says \"The implementation was contingent on further funding.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Her argument hinges on a contested premise.",
+              "choices": [
+                "Their reasoning rests on an untested assumption.",
+                "Her argument hinges on a contested premise.",
+                "The framework accommodates competing interpretations.",
+                "The implementation was contingent on further funding."
+              ],
+              "answer": "Her argument hinges on a contested premise.",
+              "explanation": "The audio says \"Her argument hinges on a contested premise.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Not until the audit did the discrepancy emerge.",
+              "choices": [
+                "Not until the audit did the discrepancy emerge.",
+                "Notwithstanding these caveats, the trend is unmistakable.",
+                "The intervention yielded only marginal improvement.",
+                "Rarely has a reform proved so divisive."
+              ],
+              "answer": "Not until the audit did the discrepancy emerge.",
+              "explanation": "The audio says \"Not until the audit did the discrepancy emerge.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The correlation should not be read as causation.",
+              "choices": [
+                "The exemption applies only in exceptional circumstances.",
+                "The correlation should not be read as causation.",
+                "The proposal was withdrawn prior to ratification.",
+                "Such an approach is arguably counterproductive."
+              ],
+              "answer": "The correlation should not be read as causation.",
+              "explanation": "The audio says \"The correlation should not be read as causation.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Preliminary findings warrant a degree of caution.",
+              "choices": [
+                "Preliminary findings warrant a degree of caution.",
+                "Their reasoning rests on an untested assumption.",
+                "The framework accommodates competing interpretations.",
+                "Her critique dismantles the prevailing consensus."
+              ],
+              "answer": "Preliminary findings warrant a degree of caution.",
+              "explanation": "The audio says \"Preliminary findings warrant a degree of caution.\". Formal register with nominalisation and hedging."
+            }
+          ]
+        },
+        {
+          "id": "c1p21l2",
+          "title": "Listening: Academic & Professional Register 2",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "c1p21q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The methodology has been scrutinised at length.",
+              "choices": [
+                "The methodology has been scrutinised at length.",
+                "The correlation should not be read as causation.",
+                "The terminology is used inconsistently across studies.",
+                "The evidence is suggestive rather than conclusive."
+              ],
+              "answer": "The methodology has been scrutinised at length.",
+              "explanation": "The audio says \"The methodology has been scrutinised at length.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Such an approach is arguably counterproductive.",
+              "choices": [
+                "Any inference drawn must remain provisional.",
+                "The methodology has been scrutinised at length.",
+                "The proposal was withdrawn prior to ratification.",
+                "Such an approach is arguably counterproductive."
+              ],
+              "answer": "Such an approach is arguably counterproductive.",
+              "explanation": "The audio says \"Such an approach is arguably counterproductive.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The distinction is subtle but consequential.",
+              "choices": [
+                "The committee refrained from issuing a recommendation.",
+                "The provision was subsequently deemed unenforceable.",
+                "Her argument hinges on a contested premise.",
+                "The distinction is subtle but consequential."
+              ],
+              "answer": "The distinction is subtle but consequential.",
+              "explanation": "The audio says \"The distinction is subtle but consequential.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Their reasoning rests on an untested assumption.",
+              "choices": [
+                "Any inference drawn must remain provisional.",
+                "Not until the audit did the discrepancy emerge.",
+                "Their reasoning rests on an untested assumption.",
+                "Rarely has a reform proved so divisive."
+              ],
+              "answer": "Their reasoning rests on an untested assumption.",
+              "explanation": "The audio says \"Their reasoning rests on an untested assumption.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The provision was subsequently deemed unenforceable.",
+              "choices": [
+                "The exemption applies only in exceptional circumstances.",
+                "Their reasoning rests on an untested assumption.",
+                "The provision was subsequently deemed unenforceable.",
+                "His conclusions have since been substantially revised."
+              ],
+              "answer": "The provision was subsequently deemed unenforceable.",
+              "explanation": "The audio says \"The provision was subsequently deemed unenforceable.\". Formal register with nominalisation and hedging."
+            }
+          ]
+        },
+        {
+          "id": "c1p21l3",
+          "title": "Listening: Academic & Professional Register 3",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "c1p21q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Rarely has a reform proved so divisive.",
+              "choices": [
+                "Rarely has a reform proved so divisive.",
+                "The framework accommodates competing interpretations.",
+                "The distinction is subtle but consequential.",
+                "The implementation was contingent on further funding."
+              ],
+              "answer": "Rarely has a reform proved so divisive.",
+              "explanation": "The audio says \"Rarely has a reform proved so divisive.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The evidence is suggestive rather than conclusive.",
+              "choices": [
+                "The evidence is suggestive rather than conclusive.",
+                "The terminology is used inconsistently across studies.",
+                "The correlation should not be read as causation.",
+                "It is widely acknowledged that the data are incomplete."
+              ],
+              "answer": "The evidence is suggestive rather than conclusive.",
+              "explanation": "The audio says \"The evidence is suggestive rather than conclusive.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Considerable weight was attached to her testimony.",
+              "choices": [
+                "Considerable weight was attached to her testimony.",
+                "The intervention yielded only marginal improvement.",
+                "The provision was subsequently deemed unenforceable.",
+                "Not until the audit did the discrepancy emerge."
+              ],
+              "answer": "Considerable weight was attached to her testimony.",
+              "explanation": "The audio says \"Considerable weight was attached to her testimony.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The proposal was withdrawn prior to ratification.",
+              "choices": [
+                "The proposal was withdrawn prior to ratification.",
+                "The exemption applies only in exceptional circumstances.",
+                "The methodology has been scrutinised at length.",
+                "His conclusions have since been substantially revised."
+              ],
+              "answer": "The proposal was withdrawn prior to ratification.",
+              "explanation": "The audio says \"The proposal was withdrawn prior to ratification.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "It is widely acknowledged that the data are incomplete.",
+              "choices": [
+                "The evidence is suggestive rather than conclusive.",
+                "The committee refrained from issuing a recommendation.",
+                "Preliminary findings warrant a degree of caution.",
+                "It is widely acknowledged that the data are incomplete."
+              ],
+              "answer": "It is widely acknowledged that the data are incomplete.",
+              "explanation": "The audio says \"It is widely acknowledged that the data are incomplete.\". Formal register with nominalisation and hedging."
+            }
+          ]
+        },
+        {
+          "id": "c1p21l4",
+          "title": "Listening: Academic & Professional Register 4",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "c1p21q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The framework accommodates competing interpretations.",
+              "choices": [
+                "The framework accommodates competing interpretations.",
+                "The distinction is subtle but consequential.",
+                "The implementation was contingent on further funding.",
+                "Compliance remains largely a matter of discretion."
+              ],
+              "answer": "The framework accommodates competing interpretations.",
+              "explanation": "The audio says \"The framework accommodates competing interpretations.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "His conclusions have since been substantially revised.",
+              "choices": [
+                "The proposal was withdrawn prior to ratification.",
+                "Such an approach is arguably counterproductive.",
+                "The terminology is used inconsistently across studies.",
+                "His conclusions have since been substantially revised."
+              ],
+              "answer": "His conclusions have since been substantially revised.",
+              "explanation": "The audio says \"His conclusions have since been substantially revised.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The intervention yielded only marginal improvement.",
+              "choices": [
+                "The intervention yielded only marginal improvement.",
+                "Not until the audit did the discrepancy emerge.",
+                "The provision was subsequently deemed unenforceable.",
+                "Any inference drawn must remain provisional."
+              ],
+              "answer": "The intervention yielded only marginal improvement.",
+              "explanation": "The audio says \"The intervention yielded only marginal improvement.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Compliance remains largely a matter of discretion.",
+              "choices": [
+                "Notwithstanding these caveats, the trend is unmistakable.",
+                "Such an approach is arguably counterproductive.",
+                "His conclusions have since been substantially revised.",
+                "Compliance remains largely a matter of discretion."
+              ],
+              "answer": "Compliance remains largely a matter of discretion.",
+              "explanation": "The audio says \"Compliance remains largely a matter of discretion.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The committee refrained from issuing a recommendation.",
+              "choices": [
+                "Considerable weight was attached to her testimony.",
+                "The methodology has been scrutinised at length.",
+                "The committee refrained from issuing a recommendation.",
+                "Any inference drawn must remain provisional."
+              ],
+              "answer": "The committee refrained from issuing a recommendation.",
+              "explanation": "The audio says \"The committee refrained from issuing a recommendation.\". Formal register with nominalisation and hedging."
+            }
+          ]
+        },
+        {
+          "id": "c1p21l5",
+          "title": "Listening: Academic & Professional Register 5",
+          "subtitle": "Hear it, then choose",
+          "questions": [
+            {
+              "id": "c1p21q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Any inference drawn must remain provisional.",
+              "choices": [
+                "Rarely has a reform proved so divisive.",
+                "The correlation should not be read as causation.",
+                "The intervention yielded only marginal improvement.",
+                "Any inference drawn must remain provisional."
+              ],
+              "answer": "Any inference drawn must remain provisional.",
+              "explanation": "The audio says \"Any inference drawn must remain provisional.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The terminology is used inconsistently across studies.",
+              "choices": [
+                "Notwithstanding these caveats, the trend is unmistakable.",
+                "Such an approach is arguably counterproductive.",
+                "The terminology is used inconsistently across studies.",
+                "His conclusions have since been substantially revised."
+              ],
+              "answer": "The terminology is used inconsistently across studies.",
+              "explanation": "The audio says \"The terminology is used inconsistently across studies.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Her critique dismantles the prevailing consensus.",
+              "choices": [
+                "The framework accommodates competing interpretations.",
+                "Her argument hinges on a contested premise.",
+                "Her critique dismantles the prevailing consensus.",
+                "Their reasoning rests on an untested assumption."
+              ],
+              "answer": "Her critique dismantles the prevailing consensus.",
+              "explanation": "The audio says \"Her critique dismantles the prevailing consensus.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "The exemption applies only in exceptional circumstances.",
+              "choices": [
+                "Preliminary findings warrant a degree of caution.",
+                "It is widely acknowledged that the data are incomplete.",
+                "The exemption applies only in exceptional circumstances.",
+                "The terminology is used inconsistently across studies."
+              ],
+              "answer": "The exemption applies only in exceptional circumstances.",
+              "explanation": "The audio says \"The exemption applies only in exceptional circumstances.\". Formal register with nominalisation and hedging."
+            },
+            {
+              "id": "c1p21q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Notwithstanding these caveats, the trend is unmistakable.",
+              "choices": [
+                "Notwithstanding these caveats, the trend is unmistakable.",
+                "Such an approach is arguably counterproductive.",
+                "The exemption applies only in exceptional circumstances.",
+                "The proposal was withdrawn prior to ratification."
+              ],
+              "answer": "Notwithstanding these caveats, the trend is unmistakable.",
+              "explanation": "The audio says \"Notwithstanding these caveats, the trend is unmistakable.\". Formal register with nominalisation and hedging."
             }
           ]
         }

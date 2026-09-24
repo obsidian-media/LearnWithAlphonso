@@ -1425,6 +1425,39 @@ This wine is as ___ as the other bottle.|sweet
 Her plan is as ___ as mine.|simple
 The bridge is as ___ as the old one.|sturdy`,
   },
+  {
+    id: "a2p21",
+    title: "Listening: Plans & Past Events",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Everyday statements in the past and future.",
+    data: `We went to the coast last weekend.|We went to the coast last weekend.
+She has already finished her report.|She has already finished her report.
+They were waiting outside the station.|They were waiting outside the station.
+I am going to visit my cousin in May.|I am going to visit my cousin in May.
+He bought a second-hand bicycle.|He bought a second-hand bicycle.
+The meeting was moved to Thursday.|The meeting was moved to Thursday.
+We have lived here for six years.|We have lived here for six years.
+She was reading when the phone rang.|She was reading when the phone rang.
+They will arrive before lunch.|They will arrive before lunch.
+I did not hear the alarm this morning.|I did not hear the alarm this morning.
+He used to play rugby at school.|He used to play rugby at school.
+The parcel has not arrived yet.|The parcel has not arrived yet.
+We are thinking of moving abroad.|We are thinking of moving abroad.
+She spoke to the manager yesterday.|She spoke to the manager yesterday.
+The film had already started.|The film had already started.
+I have never tried Thai food.|I have never tried Thai food.
+They are staying with friends tonight.|They are staying with friends tonight.
+He forgot to lock the back door.|He forgot to lock the back door.
+We booked the tickets in advance.|We booked the tickets in advance.
+She is better at maths than me.|She is better at maths than me.
+The shop was closed when we got there.|The shop was closed when we got there.
+I will call you as soon as I land.|I will call you as soon as I land.
+They have just moved into a new flat.|They have just moved into a new flat.
+He was cycling home in the rain.|He was cycling home in the rain.
+We are meeting her at the airport.|We are meeting her at the airport.`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -2071,6 +2104,39 @@ Once complete, you can ___ the finished product.|use
 The process ___ with a simple inspection.|starts
 After preparation, the next ___ is mixing.|step
 Lastly, allow the mixture to ___ overnight.|rest`,
+  },
+  {
+    id: "b1p21",
+    title: "Listening: Opinions & Explanations",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Longer statements with reasons and opinions.",
+    data: `I would rather work from home on Fridays.|I would rather work from home on Fridays.
+The course was harder than I expected.|The course was harder than I expected.
+She turned down the offer because of the hours.|She turned down the offer because of the hours.
+If I had known, I would have waited.|If I had known, I would have waited.
+They are considering a move to Manchester.|They are considering a move to Manchester.
+He apologised for missing the deadline.|He apologised for missing the deadline.
+The results were better than last year.|The results were better than last year.
+I am not entirely convinced by that argument.|I am not entirely convinced by that argument.
+She has been learning Japanese since March.|She has been learning Japanese since March.
+We ought to leave a little earlier.|We ought to leave a little earlier.
+The report suggests prices will rise.|The report suggests prices will rise.
+He admitted that he had made a mistake.|He admitted that he had made a mistake.
+It depends on how much time we have.|It depends on how much time we have.
+They decided to postpone the launch.|They decided to postpone the launch.
+I found the ending rather disappointing.|I found the ending rather disappointing.
+She managed to finish despite the delays.|She managed to finish despite the delays.
+We were told to wait in the corridor.|We were told to wait in the corridor.
+The flat is within walking distance of work.|The flat is within walking distance of work.
+He insisted on paying for the meal.|He insisted on paying for the meal.
+I am looking forward to the weekend.|I am looking forward to the weekend.
+The instructions were not very clear.|The instructions were not very clear.
+She used to commute two hours a day.|She used to commute two hours a day.
+They have agreed to share the costs.|They have agreed to share the costs.
+It would be sensible to check first.|It would be sensible to check first.
+He regrets not taking the opportunity.|He regrets not taking the opportunity.`,
   },
 ];
 
@@ -2721,6 +2787,39 @@ He likes to ___ the meat in breadcrumbs before frying.|coat
 You need to ___ the vegetables into small pieces.|dice
 Let the meat ___ overnight in the fridge.|chill
 The sauce needs to ___ before you can serve it.|thicken`,
+  },
+  {
+    id: "b2p21",
+    title: "Listening: Reports & Arguments",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Complex statements with hedging and reported speech.",
+    data: `The findings appear to contradict earlier research.|The findings appear to contradict earlier research.
+He claimed the delay was beyond his control.|He claimed the delay was beyond his control.
+Had we acted sooner, the outcome might differ.|Had we acted sooner, the outcome might differ.
+The proposal was rejected on financial grounds.|The proposal was rejected on financial grounds.
+She is widely regarded as the leading expert.|She is widely regarded as the leading expert.
+The data suggests a modest but steady decline.|The data suggests a modest but steady decline.
+They were reportedly unaware of the change.|They were reportedly unaware of the change.
+It remains unclear who authorised the payment.|It remains unclear who authorised the payment.
+The committee has yet to reach a decision.|The committee has yet to reach a decision.
+His account differs considerably from hers.|His account differs considerably from hers.
+The scheme was abandoned after two years.|The scheme was abandoned after two years.
+Critics argue the measures do not go far enough.|Critics argue the measures do not go far enough.
+The company denied any wrongdoing.|The company denied any wrongdoing.
+Attendance has fallen sharply since April.|Attendance has fallen sharply since April.
+She was appointed despite limited experience.|She was appointed despite limited experience.
+The evidence is largely circumstantial.|The evidence is largely circumstantial.
+They have been accused of withholding information.|They have been accused of withholding information.
+The policy is due to be reviewed next year.|The policy is due to be reviewed next year.
+He conceded that the criticism was justified.|He conceded that the criticism was justified.
+The trial was halted on medical advice.|The trial was halted on medical advice.
+Funding was withdrawn without prior warning.|Funding was withdrawn without prior warning.
+The results have not yet been independently verified.|The results have not yet been independently verified.
+She maintains that the decision was unanimous.|She maintains that the decision was unanimous.
+The proposal would require substantial investment.|The proposal would require substantial investment.
+Their conclusions rest on a single assumption.|Their conclusions rest on a single assumption.`,
   },
 ];
 
@@ -3373,6 +3472,39 @@ The closing chapter will ___ these concerns in detail.|address
 Consistent ___ with prior research, the findings confirm the theory.|with
 In ___ words, the results were not as expected.|other`,
   },
+  {
+    id: "c1p21",
+    title: "Listening: Academic & Professional Register",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Formal register with nominalisation and hedging.",
+    data: `The implementation was contingent on further funding.|The implementation was contingent on further funding.
+Her argument hinges on a contested premise.|Her argument hinges on a contested premise.
+Not until the audit did the discrepancy emerge.|Not until the audit did the discrepancy emerge.
+The correlation should not be read as causation.|The correlation should not be read as causation.
+Preliminary findings warrant a degree of caution.|Preliminary findings warrant a degree of caution.
+The methodology has been scrutinised at length.|The methodology has been scrutinised at length.
+Such an approach is arguably counterproductive.|Such an approach is arguably counterproductive.
+The distinction is subtle but consequential.|The distinction is subtle but consequential.
+Their reasoning rests on an untested assumption.|Their reasoning rests on an untested assumption.
+The provision was subsequently deemed unenforceable.|The provision was subsequently deemed unenforceable.
+Rarely has a reform proved so divisive.|Rarely has a reform proved so divisive.
+The evidence is suggestive rather than conclusive.|The evidence is suggestive rather than conclusive.
+Considerable weight was attached to her testimony.|Considerable weight was attached to her testimony.
+The proposal was withdrawn prior to ratification.|The proposal was withdrawn prior to ratification.
+It is widely acknowledged that the data are incomplete.|It is widely acknowledged that the data are incomplete.
+The framework accommodates competing interpretations.|The framework accommodates competing interpretations.
+His conclusions have since been substantially revised.|His conclusions have since been substantially revised.
+The intervention yielded only marginal improvement.|The intervention yielded only marginal improvement.
+Compliance remains largely a matter of discretion.|Compliance remains largely a matter of discretion.
+The committee refrained from issuing a recommendation.|The committee refrained from issuing a recommendation.
+Any inference drawn must remain provisional.|Any inference drawn must remain provisional.
+The terminology is used inconsistently across studies.|The terminology is used inconsistently across studies.
+Her critique dismantles the prevailing consensus.|Her critique dismantles the prevailing consensus.
+The exemption applies only in exceptional circumstances.|The exemption applies only in exceptional circumstances.
+Notwithstanding these caveats, the trend is unmistakable.|Notwithstanding these caveats, the trend is unmistakable.`,
+  },
 ];
 
 export const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
@@ -3454,9 +3586,7 @@ function packQuestions(pack: Pack): Question[] {
     if (pack.kind === "listening") {
       // Order is cosmetic here: `answer` is the choice text, so there is no
       // index to keep in sync with the shuffle.
-      const choices = [answer, ...distractors].sort(
-        (a, b) => hash(a + seed) - hash(b + seed),
-      );
+      const choices = [answer, ...distractors].sort((a, b) => hash(a + seed) - hash(b + seed));
       return {
         id: `${pack.id}q${i}`,
         type: "listening",

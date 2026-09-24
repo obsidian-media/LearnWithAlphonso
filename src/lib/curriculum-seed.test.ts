@@ -37,7 +37,7 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
   it("every lesson row's unit_id references a real English unit row", () => {
     const unitIds = new Set(buildUnitRows("en").map((u) => u.id));
     const lessons = buildLessonRows("en");
-    expect(lessons.length).toBe(534); // matches ios-content-export.test.ts's known English lesson count
+    expect(lessons.length).toBe(559); // matches ios-content-export.test.ts's known English lesson count
     for (const l of lessons) expect(unitIds.has(l.unit_id)).toBe(true);
   });
 
@@ -57,18 +57,28 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
     for (const q of questions) expect(lessonIds.has(q.lesson_id)).toBe(true);
   });
 
-  it("shapes every mc/fill question row exactly like the DB's question_shape_matches_type CHECK constraint requires", () => {
+  it("shapes every question row exactly like the DB's question_shape_matches_type CHECK constraint requires", () => {
+    // The constraint (see supabase/migrations/, most recently
+    // 20260924010000_v5_listening_question_type.sql) permits exactly three
+    // shapes. A row matching none of them is rejected outright by Postgres, so
+    // this test is the local stand-in for that constraint.
     const questions = [...buildQuestionRows("en"), ...buildQuestionRows("fr")];
-    const hasMc = questions.some((q) => q.type === "mc");
-    const hasFill = questions.some((q) => q.type === "fill");
-    expect(hasMc).toBe(true);
-    expect(hasFill).toBe(true);
+    expect(questions.some((q) => q.type === "mc")).toBe(true);
+    expect(questions.some((q) => q.type === "fill")).toBe(true);
+    expect(questions.some((q) => q.type === "listening")).toBe(true);
     for (const q of questions) {
       if (q.type === "mc") {
         expect(q.choices).not.toBeNull();
         expect(q.answer_index).not.toBeNull();
         expect(q.bank).toBeNull();
         expect(q.answer_text).toBeNull();
+      } else if (q.type === "listening") {
+        // A third shape: choices like mc, but answer_text like fill, because
+        // the variant stores the correct choice's text rather than its index.
+        expect(q.choices).not.toBeNull();
+        expect(q.answer_text).not.toBeNull();
+        expect(q.bank).toBeNull();
+        expect(q.answer_index).toBeNull();
       } else {
         expect(q.bank).not.toBeNull();
         expect(q.answer_text).not.toBeNull();
@@ -131,7 +141,7 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    expect(seed.lessons.length).toBe(534 + 500 + 508);
+    expect(seed.lessons.length).toBe(559 + 500 + 508);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +

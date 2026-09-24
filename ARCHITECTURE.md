@@ -131,12 +131,42 @@ placement pool) for `"en"`, `"fr"`, or `"es"`. Each course pairs
 hand-written units (`curriculum.ts` / `curriculum-fr.ts` / `curriculum-es.ts`)
 with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
-counts, verified 2026-09-22 (re-run the count rather than trusting this
+counts, verified 2026-09-24 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 534 lessons / 2,721 questions, French 500 lessons
-/ 2,500 questions, Spanish 508 lessons / 2,540 questions. All three at
-full structural parity; French/Spanish still need a native-speaker
-review pass for grammar/naturalness (`docs/BACKLOG.md`, gitignored).
+kept in sync): English 559 lessons / 2,846 questions, French 500 lessons
+/ 2,500 questions, Spanish 508 lessons / 2,540 questions. English is now
+ahead of structural parity (it gained the listening type and 125 listening
+questions); French/Spanish still need a native-speaker review pass for
+grammar/naturalness (`docs/BACKLOG.md`, gitignored).
+
+**There are four question types**, not three: `mc`, `fill`, `reorder`, and
+`listening`. `listening` (added 2026-09-24) plays `audioText` via TTS and
+asks the learner to choose what they heard. Two things about it are load
+bearing:
+
+- Its `answer` is the correct choice's **text**, not an index like `mc`'s.
+  That matches `fill`/`reorder` and is why `srs.ts`'s
+  `deriveAnswerCorrectness` — and both web players' non-`mc` comparison —
+  grade it with no type-specific code. Adding a variant with a numeric
+  answer would break that, since several call sites narrow `mc` away and
+  then assume the remainder has a string answer.
+- A new question type must be wired into **both** players on **both**
+  platforms: `lesson.$id.tsx` AND `review.tsx` on web,
+  `LessonPlayerView.swift` AND `ReviewQueueView.swift` on iOS, plus
+  `QuestionGrading.swift` and `VocabDerivation.swift` (three switches) in
+  the Kit. A type handled only in the lesson player renders as a blank card
+  in spaced review — silently on web, as a compile error on iOS.
+
+`Question` decoding on iOS is deliberately lenient: an unrecognised `type`
+decodes to `Question.unsupported`, which `Lesson`'s decoder filters out.
+Before this, the decoder threw, and because the whole `ContentBundle`
+decodes at once, an app older than its bundled JSON would show the learner
+**no content at all**. The cost of a version skew is now one question.
+
+Listening questions contribute no vocabulary (`deriveVocab` skips them,
+same as `reorder` — a whole-sentence answer makes a nonsense vocab card),
+so a listening lesson goes straight from overview to quiz with no
+vocabulary step.
 
 Server-side score validation (`completeLessonRemote` in
 `src/lib/sync.functions.ts`) looks lessons up through this same
