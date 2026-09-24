@@ -728,6 +728,97 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertNil(level)
     }
 
+    // MARK: - fetchProgress (progress-not-shown-after-update fix, 2026-09-24)
+
+    func testFetchProgressComposesBothTables() async throws {
+        var paths: [String] = []
+        let client = makeClient { request in
+            let url = request.url!
+            paths.append(url.path)
+            if url.path.contains("language_progress") {
+                return self.jsonResponse(for: url, body: [["xp": 1234, "league_tier": "gold"]])
+            }
+            return self.jsonResponse(for: url, body: [[
+                "streak": 7,
+                "longest_streak": 9,
+                "last_active_date": "2026-09-24",
+                "hearts": 3,
+                "hearts_refill_at": "2026-09-24T01:23:45.678901+00:00",
+                "streak_freezes": 2,
+            ]])
+        }
+
+        // Awaited into a local first: XCTUnwrap takes an autoclosure, and an
+        // `async` call cannot appear inside one.
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
+
+        // xp/leagueTier must come from language_progress -- user_progress.xp
+        // has been frozen since the 2026-09-08 multi-course migration.
+        XCTAssertEqual(progress.xp, 1234)
+        XCTAssertEqual(progress.leagueTier, "gold")
+        XCTAssertEqual(progress.streak, 7)
+        XCTAssertEqual(progress.longestStreak, 9)
+        XCTAssertEqual(progress.hearts, 3)
+        XCTAssertEqual(progress.streakFreezes, 2)
+        XCTAssertEqual(progress.lastActiveDate, "2026-09-24")
+        // PostgREST returns fractional-second timestamps; heartsRefillAt is
+        // epoch milliseconds. 2026-09-24T01:23:45.678901Z is 1790213025678.901
+        // ms; ISO8601DateFormatter truncates below the millisecond, so the
+        // parsed value lands on ...678.0 -- hence the 1ms accuracy rather
+        // than an exact match.
+        XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 1790213025678, accuracy: 1)
+        XCTAssertEqual(paths.count, 2)
+    }
+
+    func testFetchProgressAsksForTheMostRecentlyUpdatedCourse() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            if request.url!.path.contains("language_progress"), captured == nil {
+                captured = request
+            }
+            return self.jsonResponse(for: request.url!, body: [["xp": 1, "league_tier": "bronze"]])
+        }
+
+        _ = try await client.fetchProgress()
+
+        // Must not hardcode a course: a French-only learner would otherwise
+        // be shown their empty English numbers.
+        let query = try XCTUnwrap(captured?.url?.query)
+        XCTAssertFalse(query.contains("language=eq."))
+        XCTAssertTrue(query.contains("order=updated_at.desc"))
+        XCTAssertTrue(query.contains("limit=1"))
+    }
+
+    func testFetchProgressReturnsNilWhenNoCourseRowExists() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        let progress = try await client.fetchProgress()
+        XCTAssertNil(progress)
+    }
+
+    func testFetchProgressDefaultsHeartsToFullWhenUserProgressRowIsMissing() async throws {
+        let client = makeClient { request in
+            let url = request.url!
+            if url.path.contains("language_progress") {
+                return self.jsonResponse(for: url, body: [["xp": 10, "league_tier": "bronze"]])
+            }
+            return self.jsonResponse(for: url, body: [] as [[String: Any]])
+        }
+
+        // Awaited into a local first: XCTUnwrap takes an autoclosure, and an
+        // `async` call cannot appear inside one.
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
+
+        // The schema default is 5. Showing 0 hearts to someone who has all
+        // of them would read as a bug.
+        XCTAssertEqual(progress.hearts, 5)
+        XCTAssertEqual(progress.streak, 0)
+        XCTAssertNil(progress.heartsRefillAt)
+    }
+
     // MARK: - fetchWeaknessTrend (V3 package 3b)
 
     func testFetchWeaknessTrendAggregatesPerCategory() async throws {
