@@ -40,12 +40,22 @@ export type LessonRow = {
 export type QuestionRow = {
   lesson_id: string;
   id: string;
-  type: "mc" | "fill" | "reorder";
+  type: "mc" | "fill" | "reorder" | "listening";
   prompt: string;
   choices: string[] | null;
   bank: string[] | null;
   answer_index: number | null;
   answer_text: string | null;
+  /**
+   * NOTE: there is no audio_text column, so a question's spoken text is NOT
+   * persisted by the seed -- a "listening" row arrives in the DB answerable
+   * only by reading its choices. This is a pre-existing gap, not new with the
+   * listening type: the three legacy `mc` questions carrying `audioText`
+   * already lose it here. It is harmless today because both clients read
+   * content from the bundled course (getCourse / the iOS JSON), never from
+   * these tables. Closing it needs a migration adding the column, which is
+   * deliberately out of scope for the listening type itself.
+   */
   explanation: string;
   sort_order: number;
 };
@@ -125,6 +135,18 @@ function questionRow(lessonId: string, q: Question, sortOrder: number): Question
       type: "reorder",
       choices: null,
       bank: q.tokens,
+      answer_index: null,
+      answer_text: q.answer,
+    };
+  }
+  if (q.type === "listening") {
+    // Stored like an mc row (it has `choices`) but with answer_text rather
+    // than answer_index, matching the variant's text answer.
+    return {
+      ...base,
+      type: "listening",
+      choices: q.choices,
+      bank: null,
       answer_index: null,
       answer_text: q.answer,
     };

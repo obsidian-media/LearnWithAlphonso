@@ -10,6 +10,19 @@
  * can mock this module instead of shimming SpeechSynthesisUtterance,
  * which jsdom doesn't implement.
  */
+/**
+ * Whether this browser can speak at all.
+ *
+ * Callers need this because `speak` failing is invisible: it returns silently,
+ * leaving an inert play button. That was survivable while one question used
+ * audio as a garnish, but a `listening` question is unanswerable without it --
+ * the learner would be guessing one-in-four and losing a heart for it. UI that
+ * depends on audio must offer a readable fallback when this is false.
+ */
+export function canSpeak(): boolean {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
 export function speak(text: string, lang: string): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const utterance = new SpeechSynthesisUtterance(text);

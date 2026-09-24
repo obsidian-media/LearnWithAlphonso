@@ -273,6 +273,7 @@ private func questionID(_ question: Question) -> String {
     case .multipleChoice(let q): return q.id
     case .fillInBlank(let q): return q.id
     case .reorder(let q): return q.id
+    case .listening(let q): return q.id
     }
 }
 
@@ -382,6 +383,29 @@ private struct QuestionCard: View {
                 picked = orderPicks.count == q.tokens.count
                     ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
                     : nil
+            }
+        case .listening(let q):
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                // Audio-led and labelled, so it does not read as an ordinary
+                // multiple choice that happens to have a speaker button.
+                Text("LISTENING")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Button {
+                    speak(q.audioText, languageCode: course.speechLanguageCode)
+                } label: {
+                    Label("Play audio", systemImage: "speaker.wave.2.fill")
+                }
+                .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                Text(q.prompt).font(AlphonsoFont.display(22, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                ForEach(q.choices, id: \.self) { choice in
+                    // `answer` is the choice text, not an index.
+                    choiceButton(choice, isCorrectChoice: q.answer == choice)
+                }
+                if checked {
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                }
             }
             }
         }

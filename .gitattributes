@@ -1,0 +1,26 @@
+# Normalise line endings in the repository to LF.
+#
+# Added after a real incident: editing files with a script on Windows rewrote
+# them CRLF, so a one-line change to CHANGELOG.md showed as the whole file
+# rewritten and the actual edit was unreviewable. Without this, whether a diff
+# is readable depends on which tool last touched the file.
+#
+# `text=auto` lets git decide what is text and stores it as LF; `eol=lf` keeps
+# the working copy LF too, so a Windows editor does not reintroduce CRLF.
+* text=auto eol=lf
+
+# Binary files git should never try to normalise or diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.mp4 binary
+*.zip binary
+*.xcassets binary

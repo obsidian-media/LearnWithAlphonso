@@ -55,6 +55,19 @@ explicit applied/declined decision before phase 1 exits._
 `;
 
 const out = path.resolve(import.meta.dirname, "../docs/superpowers/english-content-audit-log.md");
+
+// This script SCAFFOLDS the log; it does not maintain it. Once the audit has
+// filled in verdicts, regenerating would silently discard all of them -- which
+// happened once during phase 2A and had to be recovered from git. Refuse
+// instead, and let the caller add new pack rows by hand.
+if (fs.existsSync(out) && fs.readFileSync(out, "utf8").includes("| ☑ |")) {
+  console.error(`Refusing to overwrite ${out}: it already contains filled-in verdicts.`);
+  console.error(
+    "Add new packs as rows by hand, or delete the file first if you truly want a reset.",
+  );
+  process.exit(1);
+}
+
 fs.writeFileSync(out, body);
 console.log(`Wrote ${out}`);
 console.log(

@@ -129,6 +129,26 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     expect(offenders, offenders.join("\n")).toEqual([]);
   });
 
+  it("listening questions: have spoken audio, and the answer is among the choices", () => {
+    const offenders: string[] = [];
+    for (const { lesson, question } of allQuestions(units)) {
+      if (question.type !== "listening") continue;
+      if (!question.audioText.trim()) {
+        offenders.push(`${lesson.id}:${question.id}: empty audioText -- unanswerable`);
+      }
+      if (!question.choices.includes(question.answer)) {
+        offenders.push(
+          `${lesson.id}:${question.id}: answer "${question.answer}" not present in choices [${question.choices.join(", ")}]`,
+        );
+      }
+      const lowered = question.choices.map((c) => c.trim().toLowerCase());
+      if (new Set(lowered).size !== question.choices.length) {
+        offenders.push(`${lesson.id}:${question.id}: duplicate choices`);
+      }
+    }
+    expect(offenders, offenders.join("\n")).toEqual([]);
+  });
+
   it("fill questions: prompt contains a blank, and bank has no duplicate/empty entries", () => {
     const offenders: string[] = [];
     for (const { lesson, question } of allQuestions(units)) {

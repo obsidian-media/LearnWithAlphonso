@@ -182,6 +182,9 @@ export function previewPack(pack: Pack): string {
     } else if (q.type === "fill") {
       out.push(`      bank: ${q.bank.join(", ")}`);
       out.push(`      answer: ${q.answer}`);
+    } else if (q.type === "listening") {
+      out.push(`      audio: ${q.audioText}`);
+      q.choices.forEach((c) => out.push(`      ${c === q.answer ? "*" : " "} ${c}`));
     } else {
       out.push(`      answer: ${q.answer}`);
     }

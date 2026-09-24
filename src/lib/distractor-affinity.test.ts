@@ -1,5 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { orderDistractorCandidates } from "./distractor-affinity";
+import { orderByLexicalSimilarity, orderDistractorCandidates } from "./distractor-affinity";
+
+describe("orderByLexicalSimilarity", () => {
+  it("puts the most confusable sentence first", () => {
+    // For a listening question the best wrong answer is the one the learner
+    // could mishear the right one as -- the opposite of the word-class rule,
+    // which is about whether a word can occupy the slot at all.
+    const ordered = orderByLexicalSimilarity("We eat dinner at seven.", [
+      "The shop opens on Monday.",
+      "We eat dinner at eight.",
+      "I can't find my keys.",
+    ]);
+    expect(ordered[0]).toBe("We eat dinner at eight.");
+  });
+
+  it("never drops a candidate — only reorders them", () => {
+    const candidates = ["a b c", "a b d", "x y z"];
+    const ordered = orderByLexicalSimilarity("a b c", candidates);
+    expect([...ordered].sort()).toEqual([...candidates].sort());
+  });
+
+  it("is stable among equally similar candidates", () => {
+    const ordered = orderByLexicalSimilarity("one two", ["nine ten", "eight nine"]);
+    expect(ordered).toEqual(["nine ten", "eight nine"]);
+  });
+
+  it("ignores function words when judging similarity", () => {
+    // "of the" overlap must not outrank a real content-word match.
+    const ordered = orderByLexicalSimilarity("The end of the film was good.", [
+      "The top of the hill was cold.",
+      "The end of the film was bad.",
+    ]);
+    expect(ordered[0]).toBe("The end of the film was bad.");
+  });
+
+  it("handles an empty candidate list", () => {
+    expect(orderByLexicalSimilarity("anything", [])).toEqual([]);
+  });
+});
 
 describe("orderDistractorCandidates", () => {
   it("puts candidates sharing the answer's part of speech first", () => {

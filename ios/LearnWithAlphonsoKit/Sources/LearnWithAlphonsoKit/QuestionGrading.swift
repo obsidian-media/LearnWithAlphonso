@@ -19,6 +19,11 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
     case .reorder(let q):
         return picked.trimmingCharacters(in: .whitespaces).lowercased()
             == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+    case .listening(let q):
+        // `answer` is the choice text, so this is the same comparison
+        // fill-in-blank uses rather than an index lookup.
+        return picked.trimmingCharacters(in: .whitespaces).lowercased()
+            == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
     }
 }
 

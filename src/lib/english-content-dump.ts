@@ -56,12 +56,13 @@ export function buildEnglishDump(): EnglishDump {
             ...base,
             choices: q.choices,
             answer: q.choices[q.answer] ?? "",
-            audioText: q.audioText,
             imageKey: q.imageKey,
           }
-        : q.type === "fill"
-          ? { ...base, bank: q.bank, answer: q.answer }
-          : { ...base, tokens: q.tokens, answer: q.answer };
+        : q.type === "listening"
+          ? { ...base, choices: q.choices, answer: q.answer, audioText: q.audioText }
+          : q.type === "fill"
+            ? { ...base, bank: q.bank, answer: q.answer }
+            : { ...base, tokens: q.tokens, answer: q.answer };
     byLevel[ref.level].push(dumped);
     curriculumCount++;
   }

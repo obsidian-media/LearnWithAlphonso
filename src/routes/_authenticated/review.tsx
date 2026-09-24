@@ -9,7 +9,7 @@ import { MascotBanner } from "../../components/MascotBanner";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
-import { speak } from "../../lib/speech";
+import { canSpeak, speak } from "../../lib/speech";
 import {
   fetchDueReviews,
   gradeReview,
@@ -224,10 +224,26 @@ function ReviewPage() {
             }}
           />
         )}
-        {q.type === "mc" && q.audioText && (
+        {q.type === "listening" && (
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Listening
+          </p>
+        )}
+        {/* A listening question is unanswerable without audio, so when the
+            browser cannot speak, the sentence is shown instead -- same
+            reasoning as the lesson player's identical fallback. */}
+        {q.type === "listening" && !canSpeak() && (
+          <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
+            <p className="text-xs text-ink-soft">
+              Audio is unavailable on this device — here is what you would hear:
+            </p>
+            <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
+          </div>
+        )}
+        {q.type === "listening" && canSpeak() && (
           <button
             type="button"
-            onClick={() => speak(q.audioText!, localeForCourse(course))}
+            onClick={() => speak(q.audioText, localeForCourse(course))}
             className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
           >
             🔊 Play audio
@@ -238,14 +254,15 @@ function ReviewPage() {
         </h2>
 
         <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
-          {q.type === "mc" ? (
+          {q.type === "mc" || q.type === "listening" ? (
             q.choices.map((c) => (
               <AnswerOption
                 key={c}
                 label={c}
                 checked={checked}
                 isPicked={picked === c}
-                isRight={q.choices[q.answer] === c}
+                // mc stores the answer's index, listening its text.
+                isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
                 disabled={checked}
                 onClick={() => setPicked(c)}
               />
@@ -285,7 +302,7 @@ function ReviewPage() {
                 )}
               </div>
             </div>
-          ) : (
+          ) : q.type === "fill" ? (
             <div>
               <input
                 type="text"
@@ -308,7 +325,7 @@ function ReviewPage() {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {checked && (

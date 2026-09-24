@@ -72,6 +72,32 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
+**Listening comprehension question type (#88)** — a fourth question type
+(`mc`/`fill`/`reorder`/`listening`), replacing the hidden `audioText`-on-`mc`
+format that only 3 questions used. 125 questions across all five CEFR bands
+(one pack each), taking English to 559 lessons / 2,846 questions.
+
+Its `answer` is the correct choice's **text**, not an index like `mc`'s. That
+was chosen on evidence — a probe of both shapes against `tsc` gave 14 errors
+across 6 files for an index versus 8 across 4 for text — and it means **no
+grading code changed on either platform**, since `srs.ts` and both web players
+already compare `answer.trim()` for non-`mc` types.
+
+Two things it forced that were not obvious up front. A new question type has to
+be wired into *both* players on *both* platforms plus three Kit switches — six
+exhaustive switches on iOS, including `ReviewQueueView.swift`, a second iOS
+player; a type handled only in the lesson player renders a blank card in spaced
+review (silently on web, as a compile error on iOS). And it needed a migration:
+`questions.question_shape_matches_type` allowed exactly two row shapes, and
+listening is a third (`choices` like mc, `answer_text` like fill), so every row
+would have been rejected — `20260924010000_v5_listening_question_type.sql`,
+following the same widening done for `reorder`.
+
+iOS `Question` decoding is now lenient: an unknown `type` decodes to a filtered
+`.unsupported` case. It previously threw, and because the whole `ContentBundle`
+decodes at once, an app older than its bundled JSON would have shown the learner
+no content at all.
+
 ## V4 — Spanish course, remote push, placement, campaigns, content tooling, widget, deeper gamification (2026-09-21 – in progress)
 
 Batch of independent V4 candidates from `docs/v4-kickoffs/00-INDEX.md`,

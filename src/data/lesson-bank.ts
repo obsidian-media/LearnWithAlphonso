@@ -1,6 +1,6 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
-import { orderDistractorCandidates } from "@/lib/distractor-affinity";
+import { orderByLexicalSimilarity, orderDistractorCandidates } from "@/lib/distractor-affinity";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -13,8 +13,13 @@ type Pack = {
   title: string;
   subtitle: string;
   note: string;
-  /** "pair" lines: "left|right" — prompt asks for the right side. */
-  kind: "pair" | "cloze";
+  /**
+   * "pair" lines: "left|right" — prompt asks for the right side.
+   * "cloze" lines: the left side carries the "___" blank.
+   * "listening" lines: "audioText|answer" — the left side is spoken aloud and
+   * the pack's own `prompt` is the stem shown after playback.
+   */
+  kind: "pair" | "cloze" | "listening";
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -735,6 +740,43 @@ volunteering|in the community
 learning|a new language
 meditating|for relaxation`,
   },
+  {
+    id: "a1p23",
+    title: "Listening: Everyday Sentences",
+    subtitle: "Everyday statements",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Short statements at natural speed, in near-identical pairs.",
+    // Every line is a short statement of similar length and register, so
+    // neither sentence length nor tone gives the answer away -- the learner
+    // has to actually listen. Distractors are the other sentences in this
+    // pack, which is what keeps them plausible.
+    data: `She's a doctor.|She's a doctor.
+She's a teacher.|She's a teacher.
+He's a bus driver.|He's a bus driver.
+He works at the airport.|He works at the airport.
+He works at the hospital.|He works at the hospital.
+They live near the park.|They live near the park.
+They live near the station.|They live near the station.
+I've got two brothers.|I've got two brothers.
+I've got two sisters.|I've got two sisters.
+We eat dinner at seven.|We eat dinner at seven.
+We eat lunch at seven.|We eat lunch at seven.
+We eat dinner at eight.|We eat dinner at eight.
+The train leaves at nine.|The train leaves at nine.
+The train leaves at five.|The train leaves at five.
+The bus leaves at nine.|The bus leaves at nine.
+She doesn't drink coffee.|She doesn't drink coffee.
+He doesn't drink tea.|He doesn't drink tea.
+My sister plays the piano.|My sister plays the piano.
+My brother plays the guitar.|My brother plays the guitar.
+It's very cold today.|It's very cold today.
+It's very hot today.|It's very hot today.
+The shop opens on Monday.|The shop opens on Monday.
+The shop closes on Sunday.|The shop closes on Sunday.
+I can't find my keys.|I can't find my keys.
+I can't find my phone.|I can't find my phone.`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1383,6 +1425,39 @@ This wine is as ___ as the other bottle.|sweet
 Her plan is as ___ as mine.|simple
 The bridge is as ___ as the old one.|sturdy`,
   },
+  {
+    id: "a2p21",
+    title: "Listening: Plans & Past Events",
+    subtitle: "Plans and past events",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Past and future statements that differ by a single word.",
+    data: `We went to the coast last weekend.|We went to the coast last weekend.
+We went to the coast last summer.|We went to the coast last summer.
+She's already finished her report.|She's already finished her report.
+She hasn't finished her report.|She hasn't finished her report.
+He'd already left when I called.|He'd already left when I called.
+They were waiting outside the station.|They were waiting outside the station.
+They were waiting outside the cinema.|They were waiting outside the cinema.
+I'm going to visit my cousin in May.|I'm going to visit my cousin in May.
+I'm going to visit my cousin in June.|I'm going to visit my cousin in June.
+He bought a second-hand bicycle.|He bought a second-hand bicycle.
+He bought a second-hand car.|He bought a second-hand car.
+The meeting's been moved to Thursday.|The meeting's been moved to Thursday.
+The meeting's been moved to Tuesday.|The meeting's been moved to Tuesday.
+We've lived here for six years.|We've lived here for six years.
+We've lived here for sixteen years.|We've lived here for sixteen years.
+She was reading when the phone rang.|She was reading when the phone rang.
+She was cooking when the phone rang.|She was cooking when the phone rang.
+They'll arrive before lunch.|They'll arrive before lunch.
+They'll arrive after lunch.|They'll arrive after lunch.
+I didn't hear the alarm this morning.|I didn't hear the alarm this morning.
+I didn't hear the doorbell this morning.|I didn't hear the doorbell this morning.
+He used to play rugby at school.|He used to play rugby at school.
+He used to play cricket at school.|He used to play cricket at school.
+The parcel hasn't arrived yet.|The parcel hasn't arrived yet.
+The parcel arrived yesterday.|The parcel arrived yesterday.`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -2029,6 +2104,39 @@ Once complete, you can ___ the finished product.|use
 The process ___ with a simple inspection.|starts
 After preparation, the next ___ is mixing.|step
 Lastly, allow the mixture to ___ overnight.|rest`,
+  },
+  {
+    id: "b1p21",
+    title: "Listening: Opinions & Explanations",
+    subtitle: "Opinions and explanations",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Opinions and explanations in closely-matched pairs.",
+    data: `I'd rather work from home on Fridays.|I'd rather work from home on Fridays.
+I'd rather work from home on Mondays.|I'd rather work from home on Mondays.
+The course was harder than I'd expected.|The course was harder than I'd expected.
+The course was easier than I'd expected.|The course was easier than I'd expected.
+She turned down the offer because of the hours.|She turned down the offer because of the hours.
+She turned down the offer because of the salary.|She turned down the offer because of the salary.
+If I'd known, I would've waited.|If I'd known, I would've waited.
+If I'd known, I wouldn't have waited.|If I'd known, I wouldn't have waited.
+They're considering a move to Manchester.|They're considering a move to Manchester.
+They're considering a move to Edinburgh.|They're considering a move to Edinburgh.
+He apologised for missing the deadline.|He apologised for missing the deadline.
+He apologised for missing the meeting.|He apologised for missing the meeting.
+The results were better than last year.|The results were better than last year.
+The results were worse than last year.|The results were worse than last year.
+I'm not entirely convinced by that argument.|I'm not entirely convinced by that argument.
+I'm not entirely convinced by that explanation.|I'm not entirely convinced by that explanation.
+She's been learning Japanese since March.|She's been learning Japanese since March.
+She's been learning Japanese since May.|She's been learning Japanese since May.
+We ought to leave a little earlier.|We ought to leave a little earlier.
+We ought to leave a little later.|We ought to leave a little later.
+He admitted that he'd made a mistake.|He admitted that he'd made a mistake.
+He denied that he'd made a mistake.|He denied that he'd made a mistake.
+It depends on how much time we've got.|It depends on how much time we've got.
+It depends on how much money we've got.|It depends on how much money we've got.
+I found the ending rather disappointing.|I found the ending rather disappointing.`,
   },
 ];
 
@@ -2679,6 +2787,39 @@ He likes to ___ the meat in breadcrumbs before frying.|coat
 You need to ___ the vegetables into small pieces.|dice
 Let the meat ___ overnight in the fridge.|chill
 The sauce needs to ___ before you can serve it.|thicken`,
+  },
+  {
+    id: "b2p21",
+    title: "Listening: Reports & Arguments",
+    subtitle: "Reports and arguments",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Hedged reportage where one word reverses the meaning.",
+    data: `The findings appear to contradict earlier research.|The findings appear to contradict earlier research.
+The findings appear to confirm earlier research.|The findings appear to confirm earlier research.
+He claimed the delay was beyond his control.|He claimed the delay was beyond his control.
+He claimed the delay was within his control.|He claimed the delay was within his control.
+Had we acted sooner, the outcome might have been different.|Had we acted sooner, the outcome might have been different.
+The proposal was rejected on financial grounds.|The proposal was rejected on financial grounds.
+The proposal was accepted on financial grounds.|The proposal was accepted on financial grounds.
+She's widely regarded as the leading expert.|She's widely regarded as the leading expert.
+She was widely regarded as the leading expert.|She was widely regarded as the leading expert.
+The figures suggest a modest but steady decline.|The figures suggest a modest but steady decline.
+The figures suggest a modest but steady increase.|The figures suggest a modest but steady increase.
+They were reportedly unaware of the change.|They were reportedly unaware of the change.
+They were reportedly aware of the change.|They were reportedly aware of the change.
+It remains unclear who authorised the payment.|It remains unclear who authorised the payment.
+It's now clear who authorised the payment.|It's now clear who authorised the payment.
+The committee hasn't yet reached a decision.|The committee hasn't yet reached a decision.
+The committee has finally reached a decision.|The committee has finally reached a decision.
+His account differs considerably from hers.|His account differs considerably from hers.
+His account differs slightly from hers.|His account differs slightly from hers.
+The scheme was abandoned after two years.|The scheme was abandoned after two years.
+The scheme was extended after two years.|The scheme was extended after two years.
+Critics argue the measures don't go far enough.|Critics argue the measures don't go far enough.
+Critics argue the measures go too far.|Critics argue the measures go too far.
+Attendance has fallen sharply since April.|Attendance has fallen sharply since April.
+Attendance has risen sharply since April.|Attendance has risen sharply since April.`,
   },
 ];
 
@@ -3331,6 +3472,39 @@ The closing chapter will ___ these concerns in detail.|address
 Consistent ___ with prior research, the findings confirm the theory.|with
 In ___ words, the results were not as expected.|other`,
   },
+  {
+    id: "c1p21",
+    title: "Listening: Academic & Professional Register",
+    subtitle: "Academic and professional register",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Formal register where one word reverses the claim.",
+    data: `The implementation was contingent on further funding.|The implementation was contingent on further funding.
+The implementation was contingent on further approval.|The implementation was contingent on further approval.
+Her argument hinges on a contested premise.|Her argument hinges on a contested premise.
+Her argument hinges on an accepted premise.|Her argument hinges on an accepted premise.
+Not until the audit did the discrepancy emerge.|Not until the audit did the discrepancy emerge.
+Not until the enquiry did the discrepancy emerge.|Not until the enquiry did the discrepancy emerge.
+The correlation shouldn't be read as causation.|The correlation shouldn't be read as causation.
+The correlation may well indicate causation.|The correlation may well indicate causation.
+Preliminary findings warrant a degree of caution.|Preliminary findings warrant a degree of caution.
+Preliminary findings warrant a degree of optimism.|Preliminary findings warrant a degree of optimism.
+The methodology has been scrutinised at length.|The methodology has been scrutinised at length.
+The methodology hasn't been scrutinised at all.|The methodology hasn't been scrutinised at all.
+Such an approach is arguably counterproductive.|Such an approach is arguably counterproductive.
+Such an approach is arguably indispensable.|Such an approach is arguably indispensable.
+Their reasoning rests on an untested assumption.|Their reasoning rests on an untested assumption.
+Their reasoning rests on a well-tested assumption.|Their reasoning rests on a well-tested assumption.
+The provision was subsequently deemed unenforceable.|The provision was subsequently deemed unenforceable.
+The provision was subsequently deemed binding.|The provision was subsequently deemed binding.
+Rarely has a reform proved so divisive.|Rarely has a reform proved so divisive.
+Rarely has a reform proved so popular.|Rarely has a reform proved so popular.
+The evidence is suggestive rather than conclusive.|The evidence is suggestive rather than conclusive.
+The evidence is conclusive rather than suggestive.|The evidence is conclusive rather than suggestive.
+The intervention yielded only marginal improvement.|The intervention yielded only marginal improvement.
+The intervention yielded substantial improvement.|The intervention yielded substantial improvement.
+Compliance remains largely a matter of discretion.|Compliance remains largely a matter of discretion.`,
+  },
 ];
 
 export const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
@@ -3344,7 +3518,13 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string, prompt?: string) {
+function pickDistractors(
+  answer: string,
+  pool: string[],
+  seed: string,
+  prompt?: string,
+  preferConfusable = false,
+) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
   // Walk the pool from a per-question hashed offset first, so each question in
@@ -3361,7 +3541,14 @@ function pickDistractors(answer: string, pool: string[], seed: string, prompt?: 
     const cand = others[(start + i * 7) % others.length];
     if (cand) walk.push(cand);
   }
-  const ordered = orderDistractorCandidates(answer, walk, prompt);
+  // Listening ranks by confusability instead: the whole sentence is the answer,
+  // so the useful wrong answers are the ones it could be misheard as, not the
+  // ones that could grammatically fill a blank. Without this the hashed walk
+  // strides past a sentence's near-twin and every question becomes
+  // word-spotting.
+  const ordered = preferConfusable
+    ? orderByLexicalSimilarity(answer, walk)
+    : orderDistractorCandidates(answer, walk, prompt);
   const out: string[] = [];
   // Dedupe case-insensitively -- see bank-engine.ts's pickDistractors
   // (duplicated here; English's generator predates the shared engine and
@@ -3392,12 +3579,39 @@ function packQuestions(pack: Pack): Question[] {
     const seed = `${pack.id}-${i}`;
     // Built before the distractors so they can be ranked against it -- a
     // candidate already present in the prompt makes a poor wrong answer.
-    const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
-    const distractors = pickDistractors(answer, pool, seed, prompt);
+    const prompt =
+      pack.kind === "pair"
+        ? (pack.prompt ?? "%s").replace("%s", left!)
+        : pack.kind === "listening"
+          ? // Substituted like a pair prompt so a template reused from one does
+            // not ship a literal "%s" on screen. The audio is heard, not read,
+            // so the sentence is only ever the fallback for a template that
+            // asks for it explicitly.
+            (pack.prompt ?? "What did you hear?").replace("%s", left!)
+          : left!;
+    const distractors = pickDistractors(answer, pool, seed, prompt, pack.kind === "listening");
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
-        : `"${answer}" is correct here. ${pack.note}`;
+        : pack.kind === "listening"
+          ? // The audio sentence already ends in its own punctuation, so quoting
+            // it and adding a full stop produced `"... rise.". note`.
+            `The audio says "${left}" ${pack.note}`
+          : `"${answer}" is correct here. ${pack.note}`;
+    if (pack.kind === "listening") {
+      // Order is cosmetic here: `answer` is the choice text, so there is no
+      // index to keep in sync with the shuffle.
+      const choices = [answer, ...distractors].sort((a, b) => hash(a + seed) - hash(b + seed));
+      return {
+        id: `${pack.id}q${i}`,
+        type: "listening",
+        prompt,
+        audioText: left!,
+        choices,
+        answer,
+        explanation,
+      };
+    }
     const useMc = (hash(seed) & 1) === 0 || distractors.length < 3;
     if (useMc) {
       const choices = [answer, ...distractors];

@@ -9,6 +9,7 @@ public enum Question: Decodable, Sendable {
     case multipleChoice(MultipleChoice)
     case fillInBlank(FillInBlank)
     case reorder(Reorder)
+    case listening(Listening)
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -38,6 +39,20 @@ public enum Question: Decodable, Sendable {
             self.imageKey = imageKey
             self.audioText = audioText
         }
+    }
+
+    /// Mirrors curriculum.ts's "listening" variant. `answer` is the correct
+    /// choice's TEXT rather than an index (deliberately unlike multipleChoice,
+    /// and matching fillInBlank/reorder), which is what lets `isAnswerCorrect`
+    /// grade it with the same comparison fill-in-blank uses.
+    public struct Listening: Decodable, Sendable {
+        public let id: String
+        public let prompt: String
+        /// Spoken via AVSpeechSynthesizer before the learner answers.
+        public let audioText: String
+        public let choices: [String]
+        public let answer: String
+        public let explanation: String
     }
 
     public struct FillInBlank: Decodable, Sendable {
@@ -74,7 +89,20 @@ public enum Question: Decodable, Sendable {
             self = .fillInBlank(try FillInBlank(from: decoder))
         case "reorder":
             self = .reorder(try Reorder(from: decoder))
+        case "listening":
+            self = .listening(try Listening(from: decoder))
         default:
+            // Deliberately fails loudly. A lenient version of this was tried
+            // and reverted: content ships inside the same binary (CI fails the
+            // build if the exported JSON drifts from source), so an app older
+            // than its own bundle cannot happen, and there is no
+            // over-the-air content. Meanwhile skipping an unknown question
+            // silently would leave the lesson with fewer questions than the
+            // server's copy, and `deriveLessonCompletion` throws on that
+            // mismatch (progress-math.ts:89) -- so the learner would finish the
+            // lesson and get no XP, no streak credit and no error. A hard
+            // failure at decode time is the better trade until OTA content
+            // exists, and then this needs a real migration story, not leniency.
             throw DecodingError.dataCorruptedError(
                 forKey: .type,
                 in: container,
@@ -89,6 +117,14 @@ public struct Lesson: Decodable, Identifiable, Sendable {
     public let title: String
     public let subtitle: String
     public let questions: [Question]
+
+    public init(id: String, title: String, subtitle: String, questions: [Question]) {
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+        self.questions = questions
+    }
+
 }
 
 public struct Unit: Decodable, Identifiable, Sendable {

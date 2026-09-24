@@ -113,6 +113,12 @@ export function reshuffleQuestion(q: Question, seed: string): Question {
     const tokens = [...q.tokens].sort((a, b) => hash(seed + a) - hash(seed + b));
     return { ...q, tokens };
   }
+  if (q.type === "listening") {
+    // Reshuffling the choices is safe here precisely because `answer` is the
+    // choice text rather than an index -- there is nothing to keep in sync.
+    const choices = [...q.choices].sort((a, b) => hash(seed + a) - hash(seed + b));
+    return { ...q, choices };
+  }
   const bank = [...q.bank].sort((a, b) => hash(seed + a) - hash(seed + b));
   return { ...q, bank };
 }
