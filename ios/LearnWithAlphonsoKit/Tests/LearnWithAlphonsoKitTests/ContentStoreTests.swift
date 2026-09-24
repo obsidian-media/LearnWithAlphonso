@@ -9,7 +9,12 @@ final class ContentStoreTests: XCTestCase {
         // curriculum-seed.test.ts and ios-content-export.test.ts -- adding a
         // pack is never only a content change.
         XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 609)
-        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 500) // V3 pkg 4a: closed the 125 -> ~500 French content gap
+        // 525 = 500 + the 25 translate lessons added 2026-09-24 (French phase 2,
+        // 5 packs x 5 lessons). Same point as the English comment above: this
+        // count is hardcoded in more than one place, so adding a pack is never
+        // only a content change. Kept as a literal deliberately -- it is the
+        // thing under test, and it caught this addition exactly as intended.
+        XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 525)
     }
 
     func testFindsLessonById() throws {
