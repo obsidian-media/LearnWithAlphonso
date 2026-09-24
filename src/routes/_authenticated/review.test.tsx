@@ -90,6 +90,30 @@ describe("Review page", () => {
     expect(await screen.findByText(/1 correct · 0 to revisit/)).toBeInTheDocument();
   });
 
+  it("renders and grades a listening question rather than a blank card", async () => {
+    // review.tsx is a SECOND renderer with its own render and grading sites.
+    // A question type wired only into the lesson player renders as an empty
+    // card here and the learner cannot clear their queue.
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "a1p23l1:a1p23q0" }],
+      total: 1,
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("What did you hear?")).toBeInTheDocument();
+    expect(screen.getByText("Listening")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /play audio/i })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "She is a doctor." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "a1p23l1:a1p23q0", answer: "She is a doctor.", course: "en" },
+    });
+  });
+
   it("marks a wrong answer and shows the retired count when the item is retired", async () => {
     gradeReview.mockResolvedValue({ retired: true, dueOn: "2026-09-19" });
     fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });

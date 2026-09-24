@@ -224,7 +224,12 @@ function ReviewPage() {
             }}
           />
         )}
-        {q.type === "mc" && q.audioText && (
+        {q.type === "listening" && (
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Listening
+          </p>
+        )}
+        {(q.type === "listening" || (q.type === "mc" && q.audioText)) && (
           <button
             type="button"
             onClick={() => speak(q.audioText!, localeForCourse(course))}
@@ -238,14 +243,15 @@ function ReviewPage() {
         </h2>
 
         <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
-          {q.type === "mc" ? (
+          {q.type === "mc" || q.type === "listening" ? (
             q.choices.map((c) => (
               <AnswerOption
                 key={c}
                 label={c}
                 checked={checked}
                 isPicked={picked === c}
-                isRight={q.choices[q.answer] === c}
+                // mc stores the answer's index, listening its text.
+                isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
                 disabled={checked}
                 onClick={() => setPicked(c)}
               />
