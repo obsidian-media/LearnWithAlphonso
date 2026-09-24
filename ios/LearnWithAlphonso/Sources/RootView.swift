@@ -28,21 +28,28 @@ struct RootView: View {
             case .signedOut, .awaitingCode:
                 AuthView(session: session)
             case .signedIn:
+                // Exactly five tabs, deliberately. iPhone renders five and
+                // collapses the rest into a system "More" list, so the
+                // seven declared here previously meant Achievements was
+                // already buried before Listen needed a slot. League,
+                // Friends and Achievements now live behind Profile; Review
+                // is reachable from a row at the top of Learn, which is
+                // also what the badge below points at.
+                //
+                // Every tab's SF Symbol is distinct -- League and
+                // Achievements both used "trophy.fill" before this change.
                 TabView {
                     LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
                         .tabItem { Label("Learn", systemImage: "book.fill") }
-                    ReviewQueueView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                        .tabItem { Label("Review", systemImage: "arrow.clockwise") }
-                    LeaderboardView(session: session)
-                        .tabItem { Label("League", systemImage: "trophy.fill") }
-                    FriendsView(session: session)
-                        .tabItem { Label("Friends", systemImage: "person.2.fill") }
+                        .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
+                    ListenView()
+                        .tabItem { Label("Listen", systemImage: "headphones") }
                     ConversationView(contentStore: contentStore, session: session)
                         .tabItem { Label("Practice", systemImage: "mic.fill") }
                     HectorView(session: session, entitlementStore: entitlementStore)
                         .tabItem { Label("Hector", systemImage: "sparkles") }
-                    AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
-                        .tabItem { Label("Achievements", systemImage: "trophy.fill") }
+                    ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+                        .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                 }
                 // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
                 // for selected tab items, parchment tab-bar background instead

@@ -14,6 +14,22 @@ struct LessonBrowserView: View {
 
     @State private var course: Course = .english
     @State private var showingSettings = false
+    @State private var showingReview = false
+
+    /// Due reviews from the offline cache -- no network call, same posture
+    /// as StatusHeaderView above. See ReviewBadge's doc comment for why a
+    /// stale cache under-reports rather than over-reports.
+    private var dueReviewCount: Int {
+        syncQueueStore.lastKnownDueReviews().count
+    }
+
+    private var reviewSubtitle: String {
+        switch dueReviewCount {
+        case 0: return "Nothing due right now"
+        case 1: return "1 item ready to review"
+        default: return "\(dueReviewCount) items ready to review"
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -22,6 +38,30 @@ struct LessonBrowserView: View {
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+
+                // The way into the review queue. Before Phase 0 this was a
+                // tab of its own and ReviewQueueView was instantiated in
+                // exactly one place -- the tab bar -- so this row is what
+                // keeps the queue reachable, not a convenience shortcut.
+                //
+                // Shown even when nothing is due, rather than hidden: a row
+                // that vanishes at zero would make the queue unreachable in
+                // the very change meant to keep it reachable. The tab badge
+                // is the thing that hides at zero; this is the door.
+                //
+                // Presented rather than pushed, because ReviewQueueView owns
+                // its own NavigationStack -- pushing it would nest two.
+                Button {
+                    showingReview = true
+                } label: {
+                    AlphonsoRowCard(
+                        title: "Review",
+                        subtitle: reviewSubtitle,
+                        accent: dueReviewCount > 0 ? AlphonsoColor.ember : AlphonsoColor.hairline
+                    )
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.clear)
 
                 WeeklyChallengesSection(session: session)
 
@@ -78,6 +118,15 @@ struct LessonBrowserView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView(session: session)
+            }
+            .sheet(isPresented: $showingReview) {
+                ReviewQueueView(
+                    contentStore: contentStore,
+                    session: session,
+                    notificationScheduler: notificationScheduler,
+                    networkMonitor: networkMonitor,
+                    syncQueueStore: syncQueueStore
+                )
             }
         }
         .tint(AlphonsoColor.moss)
