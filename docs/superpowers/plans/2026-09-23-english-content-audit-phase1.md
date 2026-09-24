@@ -6,7 +6,7 @@
 
 **Architecture:** Build read-only tooling first — a renderer that dumps every *compiled* English question (the audit must review generated output, not raw pack source, because the reported bug lives in generated distractors) and an id-parity checker. Then audit in parallel by CEFR level (read-only, producing findings), apply edits serially (one file, no write contention), and verify id parity plus the consistency test after each application. Finish by pushing fixes to both shipped surfaces (Supabase seed, iOS export).
 
-**Tech Stack:** TypeScript, Vitest, `tsx` scripts, Bun as runner. No new dependencies.
+**Tech Stack:** TypeScript, Vitest, Bun as both runner and TS script executor (`bun run scripts/foo.ts` — `tsx` is NOT installed in this repo despite some existing script docstrings referencing it). No new dependencies.
 
 **Spec:** `docs/superpowers/specs/2026-09-23-english-content-overhaul-design.md`
 
@@ -227,7 +227,7 @@ If the `fill`-bank test fails, that is a **real content bug already in the repo*
  * audit. The audit reviews generated output (real distractors), not raw
  * pack source, because pickDistractors is what produces the wrong answers.
  *
- * Usage: node_modules/.bin/tsx scripts/dump-english-questions.ts
+ * Usage: bun run scripts/dump-english-questions.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -250,7 +250,7 @@ console.log(`Totals: ${dump.totals.curriculum} curriculum, ${dump.totals.placeme
 
 - [ ] **Step 6: Run the script and confirm output**
 
-Run: `node_modules/.bin/tsx scripts/dump-english-questions.ts`
+Run: `bun run scripts/dump-english-questions.ts`
 Expected: writes `.audit/english-A1.json` … `english-C1.json` plus `english-placement.json`; totals print `2721 curriculum, 45 placement` (re-verify the exact curriculum number — the spec's count may have drifted; use the printed value as truth and note it in the log).
 
 - [ ] **Step 7: Ignore the generated dump directory**
@@ -398,7 +398,7 @@ If `packLineStats` reports malformed lines, that is a **real pre-existing conten
  * parity check -- a failure means real users' review items would be
  * repointed (see the design doc's id-stability constraint).
  *
- * Usage: node_modules/.bin/tsx scripts/snapshot-english-ids.ts
+ * Usage: bun run scripts/snapshot-english-ids.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -414,22 +414,34 @@ console.log(`Wrote ${out} (${ids.length} ids)`);
 
 - [ ] **Step 6: Generate and commit the baseline**
 
-Run: `node_modules/.bin/tsx scripts/snapshot-english-ids.ts`
+Run: `bun run scripts/snapshot-english-ids.ts`
 Expected: writes `.audit-baseline/english-ids.json` with the full id list.
 
 - [ ] **Step 7: Add the parity regression test that guards every later task**
 
+Read the baseline with `fs`, NOT `import ... from "*.json"` — this repo's
+`tsconfig.json` does not set `resolveJsonModule`, so a JSON import fails
+CI's `bunx tsc --noEmit` step.
+
 ```ts
 // append to src/lib/english-id-parity.test.ts
-import baseline from "../../.audit-baseline/english-ids.json";
+// (add these two imports alongside the existing ones at the top of the file)
+import fs from "node:fs";
+import path from "node:path";
 
 describe("id parity against committed baseline", () => {
   it("has not added or removed any question id", () => {
-    const { added, removed } = diffIds(baseline as string[], collectEnglishIds());
+    const baselinePath = path.resolve(__dirname, "../../.audit-baseline/english-ids.json");
+    const baseline = JSON.parse(fs.readFileSync(baselinePath, "utf8")) as string[];
+    const { added, removed } = diffIds(baseline, collectEnglishIds());
     expect({ added, removed }).toEqual({ added: [], removed: [] });
   });
 });
 ```
+
+If `__dirname` is unavailable (ESM), use
+`path.resolve(import.meta.dirname, "../../.audit-baseline/english-ids.json")` —
+match whichever form the repo's existing test files already use.
 
 - [ ] **Step 8: Run the parity test**
 
@@ -467,7 +479,7 @@ Exit criterion #1 requires coverage provable by enumeration. This generates the 
  * enumeration -- every row must end the audit with a verdict, including
  * "no issues found".
  *
- * Usage: node_modules/.bin/tsx scripts/init-audit-log.ts
+ * Usage: bun run scripts/init-audit-log.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -524,7 +536,7 @@ console.log(`Rows: ${packRows.length} packs, ${handWritten.length} hand-written 
 
 - [ ] **Step 2: Run the generator**
 
-Run: `node_modules/.bin/tsx scripts/init-audit-log.ts`
+Run: `bun run scripts/init-audit-log.ts`
 Expected: writes the log; prints roughly `Rows: 102 packs, …` (use actual output as truth).
 
 - [ ] **Step 3: Verify every pack appears exactly once**
@@ -674,7 +686,7 @@ Expected: PASS (33 tests). This is Review Focus #2 — it catches an edit that b
 
 - [ ] **Step 4: Re-dump and spot-check the fixed questions**
 
-Run: `node_modules/.bin/tsx scripts/dump-english-questions.ts`
+Run: `bun run scripts/dump-english-questions.ts`
 Then re-read the specific keys that were edited in `.audit/english-<LEVEL>.json` and confirm the compiled choices now read sensibly. Editing a pool line changes distractors for *other* questions drawing on that pool — confirm those didn't regress.
 
 - [ ] **Step 5: Update the audit log**
@@ -713,7 +725,7 @@ Each item gets `applied` or `declined` plus one line of reasoning. No item may r
 - [ ] **Step 3: If any change was accepted, apply it and re-baseline deliberately**
 
 ```bash
-node_modules/.bin/tsx scripts/snapshot-english-ids.ts
+bun run scripts/snapshot-english-ids.ts
 bun run vitest run src/lib/english-id-parity.test.ts
 ```
 
@@ -750,7 +762,7 @@ Source fixes do not reach users by themselves. Exit criterion #5.
 
 - [ ] **Step 1: Re-export iOS content**
 
-Run: `node_modules/.bin/tsx scripts/export-ios-content.ts`
+Run: `bun run scripts/export-ios-content.ts`
 Expected: writes `curriculum-en.json` (and siblings) into both iOS resource directories.
 
 - [ ] **Step 2: Confirm the iOS diff contains only English changes**
@@ -762,7 +774,7 @@ Expected: `curriculum-en.json` changed in both directories; `curriculum-fr.json`
 
 Review `scripts/seed-curriculum-db.ts` for which project/credentials it targets, then **confirm with the account owner before running it** — this writes to a shared, live environment.
 
-Run (after confirmation): `node_modules/.bin/tsx scripts/seed-curriculum-db.ts`
+Run (after confirmation): `bun run scripts/seed-curriculum-db.ts`
 
 - [ ] **Step 4: Ask about the iOS build**
 
