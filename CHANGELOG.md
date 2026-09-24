@@ -72,6 +72,45 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
+**Free-form translation question type (#TBD)** — a sixth question type,
+`translate`: the learner is shown an idea to express ("Ask someone their name")
+and writes it in English themselves. 125 questions across all five CEFR bands
+(one pack each), taking English to 609 lessons / 3,096 questions.
+
+Grading is hybrid and local-first. A curated list of acceptable wordings settles
+most answers for free and works offline; only what it rejects is put to an AI
+grader (NVIDIA NIM, via the existing `resolveNvidiaChatModel`), which can
+upgrade a local miss but never the reverse. The AI verdict is never written back
+into the content — what counts as correct stays a content decision rather than a
+side effect of someone's answer.
+
+The design decision that shaped everything else: **a translate answer is graded
+in three places**, and they have to agree. `/api/grade-translation` serves the
+lesson player, `gradeReview` serves web review, and the `grade-review` Edge
+Function serves iOS review. Putting the AI half in only one of them would
+recreate the bug the speaking type was already bitten by — a wording accepted on
+screen and re-derived by string comparison in the scheduler, so the learner
+reads "Still got it" on an item that was just lapsed. The review players now
+**display the server's verdict** instead of computing their own, which makes
+that disagreement impossible rather than merely unlikely.
+
+Two rules the whole feature rests on:
+
+- **`null` is not `false`.** Vendor down, key missing, quota spent, model
+  replying in prose — all mean "no opinion", and the local verdict stands. A
+  learner is never marked wrong because a vendor was unavailable.
+- **Offline still grades.** The acceptable wordings are bundled content, so a
+  translation resolves with no network — stricter, but resolvable. The spec had
+  said to skip speaking and translation questions when offline; that would break
+  `deriveLessonCompletion`'s count check, which is how a learner finishes a
+  lesson and silently receives no XP, no streak and no unlock.
+
+Also in this phase: the deploy pipeline was repaired (see above), CI's
+never-executed curriculum-seed step was switched from `bunx tsx` to `bun` so its
+first real run is not also the first test of its command, and AGENTS.md stopped
+claiming three-course parity — English is now 609 lessons to French's 500 and
+Spanish's 508, with three English-only question types.
+
 **Deploy pipeline repair (2026-09-24)** — `supabase db push` started failing on
 every push to `main` (the `#93` and `#94` merges both show it), with "Remote
 migration versions not found in local migrations directory". Cause: the

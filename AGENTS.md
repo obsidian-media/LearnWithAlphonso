@@ -75,7 +75,7 @@ column, kept in sync):
 
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
-| English | 132 | 114 | 114 | 112 | 112 | **584**       |
+| English | 137 | 119 | 119 | 117 | 117 | **609**       |
 | French  | 100 | 100 | 100 | 100 | 100 | **500**       |
 | Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
@@ -84,11 +84,11 @@ French and Spanish reached structural parity with English on 2026-09-21
 bank-engine pack pipeline). **English has since pulled ahead and they are
 no longer at parity**, in two ways that matter:
 
-- **Lesson count**: English 584, French 500, Spanish 508.
-- **Question types**: English has five (`mc`, `fill`, `reorder`,
-  `listening`, `speak`); French and Spanish have the first three. The
-  listening (2026-09-24) and speaking (2026-09-24) types are
-  English-only.
+- **Lesson count**: English 609, French 500, Spanish 508.
+- **Question types**: English has six (`mc`, `fill`, `reorder`,
+  `listening`, `speak`, `translate`); French and Spanish have the first
+  three. The listening, speaking and translation types (all 2026-09-24)
+  are English-only.
 
 What a port would actually need, verified rather than assumed: the
 players, grading (`deriveAnswerCorrectness`) and the iOS decoder all
