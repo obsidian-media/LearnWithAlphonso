@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -7,7 +8,21 @@ import { describe, expect, it } from "vitest";
  * repo has no containerised Postgres in CI -- the same reason
  * curriculum-consistency.test.ts checks shapes rather than querying.
  */
-const sql = readFileSync("supabase/migrations/20260926010000_podcast_library.sql", "utf8");
+// Located by NAME, not by version prefix. Migration versions get renumbered
+// -- this one moved from 20260926010000 to 20260926030000 within hours of
+// landing, because another PR had independently claimed the same version and
+// broke `supabase db push` on main. A hardcoded version here turns that
+// routine repair into a failing test suite.
+const MIGRATIONS_DIR = "supabase/migrations";
+const podcastMigration = readdirSync(MIGRATIONS_DIR)
+  .filter((f) => f.endsWith("_podcast_library.sql"))
+  .sort();
+if (podcastMigration.length !== 1) {
+  throw new Error(
+    `expected exactly one *_podcast_library.sql in ${MIGRATIONS_DIR}, found ${podcastMigration.length}`,
+  );
+}
+const sql = readFileSync(path.join(MIGRATIONS_DIR, podcastMigration[0]!), "utf8");
 
 describe("podcast library migration", () => {
   it("constrains sibling slugs for non-root folders", () => {
