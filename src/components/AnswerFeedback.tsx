@@ -27,6 +27,9 @@ export function AnswerFeedback({
           <img
             src="/mascots/alphonso.png"
             alt="Alphonso"
+            width={40}
+            height={40}
+            decoding="async"
             className="size-10 shrink-0 rounded-lg object-cover"
           />
         )}
@@ -50,6 +53,9 @@ export function AnswerFeedback({
         <img
           src="/mascots/alphonso.png"
           alt="Alphonso"
+          width={40}
+          height={40}
+          decoding="async"
           className="size-10 shrink-0 rounded-lg object-cover"
         />
       )}

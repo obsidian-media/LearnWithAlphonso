@@ -27,6 +27,9 @@ export function MascotBanner({
       <img
         src={MASCOT_SRC[mascot]}
         alt={MASCOT_NAME[mascot]}
+        width={52}
+        height={52}
+        decoding="async"
         className="size-13 shrink-0 rounded-xl border-2 border-white/60 object-cover"
       />
       <p className="text-sm font-bold text-primary-foreground">{message}</p>
