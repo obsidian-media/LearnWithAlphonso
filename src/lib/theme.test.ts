@@ -29,18 +29,22 @@ describe("resolveInitialTheme", () => {
     expect(resolveInitialTheme("studio-ink", "not-a-theme")).toBe("studio-ink");
   });
 
-  it("falls back to the meadow default when both are invalid or missing", () => {
-    expect(resolveInitialTheme(null, null)).toBe("meadow");
-    expect(resolveInitialTheme("garbage", undefined)).toBe("meadow");
+  it("falls back to the canopy default when both are invalid or missing", () => {
+    expect(resolveInitialTheme(null, null)).toBe("canopy");
+    expect(resolveInitialTheme("garbage", undefined)).toBe("canopy");
   });
 });
 
-describe("canopy (iOS-only theme)", () => {
-  it("is not a valid web theme name", () => {
-    expect(isThemeName("canopy")).toBe(false);
+describe("canopy", () => {
+  it("is a valid web theme name", () => {
+    expect(isThemeName("canopy")).toBe(true);
   });
 
-  it("falls back to meadow if the server reports canopy", () => {
-    expect(resolveInitialTheme(null, "canopy")).toBe("meadow");
+  it("is preferred over localStorage when the server reports it", () => {
+    expect(resolveInitialTheme("meadow", "canopy")).toBe("canopy");
+  });
+
+  it("is used as localStorage's fallback when the server value is invalid", () => {
+    expect(resolveInitialTheme("canopy", null)).toBe("canopy");
   });
 });

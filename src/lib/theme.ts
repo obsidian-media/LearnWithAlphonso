@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { updateProfile } from "./leaderboard.functions";
 
-export const THEME_NAMES = ["meadow", "studio-ink", "manuscript"] as const;
+export const THEME_NAMES = ["meadow", "studio-ink", "manuscript", "canopy"] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
 
 export function isThemeName(value: unknown): value is ThemeName {
@@ -16,7 +16,7 @@ export function isThemeName(value: unknown): value is ThemeName {
 export function resolveInitialTheme(localStorageValue: unknown, serverValue: unknown): ThemeName {
   if (isThemeName(serverValue)) return serverValue;
   if (isThemeName(localStorageValue)) return localStorageValue;
-  return "meadow";
+  return "canopy";
 }
 
 type ThemeState = {
