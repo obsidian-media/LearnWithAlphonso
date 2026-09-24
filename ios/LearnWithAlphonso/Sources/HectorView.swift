@@ -40,7 +40,11 @@ struct HectorView: View {
 
     private var signInBody: some View {
         VStack(spacing: AlphonsoSpacing.md) {
-            AlphonsoMascotBanner(mascot: .hector, message: "Sign in to Hector")
+            Text("Sign in to Hector")
+                .font(AlphonsoFont.display(22, weight: .semiBold))
+                .foregroundStyle(AlphonsoColor.ink)
+
+            AlphonsoMascotBanner(mascot: .hector, message: "Your personal AI tutor")
                 .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.9)
 
             Text("Hector uses a separate account from your main Learn with Alphonso sign-in.")
@@ -223,7 +227,7 @@ private struct HectorConversationView: View {
             }
             Text(turn.content)
                 .font(AlphonsoFont.sans(15))
-                .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)
+                .foregroundStyle(turn.role == "user" ? AlphonsoColor.onAccent : AlphonsoColor.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(

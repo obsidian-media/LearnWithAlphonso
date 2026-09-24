@@ -189,7 +189,7 @@ private struct LeaderboardRowView: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(AlphonsoColor.ember)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(AlphonsoColor.onAccent)
                             .clipShape(Capsule())
                     }
                 }

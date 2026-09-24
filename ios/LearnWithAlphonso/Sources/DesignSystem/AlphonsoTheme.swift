@@ -59,6 +59,18 @@ public struct AlphonsoPalette: Sendable {
     /// the same contrast direction -- Canopy's bright coral `ember`
     /// needs dark text while its dark emerald `moss` needs light text.
     public let onAccent: Color
+    /// Text color for `AlphonsoMascotBanner`'s `moss`->`mossDeep`
+    /// gradient background specifically -- distinct from `onPrimary`
+    /// because a solid single-color button fill and a two-stop gradient
+    /// don't share a contrast-safe answer for every theme. Found in code
+    /// review: Studio Ink's `moss`/`mossDeep` are a medium-bright blue,
+    /// not dark, so `onPrimary` (= Studio Ink's own near-black `surface`,
+    /// correct for its *button* fill) drops to 2.16:1 against
+    /// `mossDeep` -- its light `ink` token measures 7.98:1 there
+    /// instead. Equals `onPrimary` for every theme except Studio Ink;
+    /// adding this token changes no existing screen's rendered output
+    /// (nothing else reads it), only the new banner component.
+    public let onMossGradient: Color
     public let colorScheme: ColorScheme
 
     /// PostScript name of the bundled font file to resolve a weight/
@@ -91,6 +103,7 @@ enum AlphonsoPaletteCatalog {
             hairline: Color(hex: 0x11_24_18, opacity: 0.1),
             onPrimary: Color(hex: 0xF5_F0_E8),
             onAccent: Color(hex: 0xF5_F0_E8),
+            onMossGradient: Color(hex: 0xF5_F0_E8),
             colorScheme: .light,
             displayFontBaseName: "Fraunces-Regular",
             displayFontOpszRange: 9...144,
@@ -109,6 +122,12 @@ enum AlphonsoPaletteCatalog {
             hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
             onPrimary: Color(hex: 0x0B_0D_12),
             onAccent: Color(hex: 0x0B_0D_12),
+            // Deliberately `ink` (light), not `surface` like every other
+            // theme's onMossGradient -- Studio Ink's moss/mossDeep are a
+            // medium-bright blue, not dark, so near-black `surface` text
+            // (correct for its button fill) drops to 2.16:1 against
+            // mossDeep; `ink` measures 7.98:1 there instead.
+            onMossGradient: Color(hex: 0xF5_F1_EA),
             colorScheme: .dark,
             displayFontBaseName: "InstrumentSerif-Regular",
             displayFontOpszRange: nil,
@@ -127,6 +146,7 @@ enum AlphonsoPaletteCatalog {
             hairline: Color(hex: 0x0F_12_16, opacity: 0.12),
             onPrimary: Color(hex: 0xF3_F5_F8),
             onAccent: Color(hex: 0xF3_F5_F8),
+            onMossGradient: Color(hex: 0xF3_F5_F8),
             colorScheme: .light,
             displayFontBaseName: "Newsreader16pt-Regular",
             displayFontOpszRange: 6...72,
@@ -145,6 +165,7 @@ enum AlphonsoPaletteCatalog {
             hairline: Color(hex: 0x05_26_1A, opacity: 0.1),
             onPrimary: Color(hex: 0xEF_FA_F4),
             onAccent: Color(hex: 0x05_26_1A),
+            onMossGradient: Color(hex: 0xEF_FA_F4),
             colorScheme: .light,
             displayFontBaseName: "Baloo2-Regular",
             displayFontOpszRange: nil,
@@ -219,6 +240,7 @@ public enum AlphonsoColor {
     public static var hairline: Color { AlphonsoThemeManager.shared.palette.hairline }
     public static var onPrimary: Color { AlphonsoThemeManager.shared.palette.onPrimary }
     public static var onAccent: Color { AlphonsoThemeManager.shared.palette.onAccent }
+    public static var onMossGradient: Color { AlphonsoThemeManager.shared.palette.onMossGradient }
 }
 
 /// Spacing scale, 4pt base (mirrors the web app's Tailwind spacing scale,

@@ -356,7 +356,7 @@ struct AlphonsoMascotBanner: View {
 
             Text(message)
                 .font(AlphonsoFont.sans(14, weight: .bold))
-                .foregroundStyle(AlphonsoColor.onPrimary)
+                .foregroundStyle(AlphonsoColor.onMossGradient)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
