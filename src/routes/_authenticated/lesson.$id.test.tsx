@@ -28,6 +28,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 // reason: most tests below are about the core quiz flow, not V3 pkg 4b's
 // in-lesson reinforcement, which gets its own dedicated tests further
 // down overriding this mock's return value.
+// jsdom implements neither speechSynthesis nor SpeechSynthesisUtterance, and
+// `canSpeak` gates a readable fallback for listening questions, so it is mocked
+// rather than shimmed. Defaults to available; the fallback test flips it.
+const canSpeak = vi.fn(() => true);
+vi.mock("../../lib/speech", () => ({
+  speak: vi.fn(),
+  canSpeak: () => canSpeak(),
+}));
+
 const pickReinforcementQuestion = vi.fn((_params: unknown) => null as unknown);
 vi.mock("../../data/bank-engine", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../data/bank-engine")>();
@@ -82,6 +91,7 @@ async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
 }
 
 beforeEach(() => {
+  canSpeak.mockReturnValue(true);
   currentLessonId = "u1l1";
   navigate.mockClear();
   startLessonSession.mockReset();
@@ -122,9 +132,24 @@ describe("Lesson page", () => {
     expect(screen.getByText("What did you hear?")).toBeInTheDocument();
     // The choices are full sentences from the same pack, and picking one must
     // be possible with no audio played.
-    const choice = screen.getByRole("button", { name: "She is a doctor." });
+    const choice = screen.getByRole("button", { name: "She's a doctor." });
     await user.click(choice);
     expect(screen.getByRole("button", { name: "Check" })).toBeEnabled();
+  });
+
+  it("shows the transcript for a listening question when speech is unavailable", async () => {
+    // `speak` fails silently on a browser with no speechSynthesis, leaving an
+    // inert button. For a listening question that is unanswerable -- a
+    // one-in-four guess that costs a heart -- so the sentence must be readable
+    // instead. 125 questions depend on this, not the 1 that did before.
+    canSpeak.mockReturnValue(false);
+    const user = userEvent.setup();
+    currentLessonId = "a1p23l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    expect(await screen.findByText(/audio is unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
   });
 
   it("walks overview -> vocab -> quiz for a lesson with derived vocabulary", async () => {

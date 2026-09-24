@@ -37,7 +37,7 @@
 | `a1p20` | pack | Transport & Travel Basics | 25 | ☑ | No issues found. |
 | `a1p21` | pack | Parts of the Body | 25 | ☑ | No issues found. |
 | `a1p22` | pack | Hobbies & Free Time | 25 | ☑ | No issues found. |
-| `a1p23` | pack | Listening: Everyday Sentences | 25 | ☑ | NEW in phase 2A (listening type). Authored to the audit's own rules: answers share a domain and a similar length within the pack, so neither topic nor sentence length leaks the answer. |
+| `a1p23` | pack | Listening: Everyday Sentences | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
 | `a2p1` | pack | Irregular Past | 25 | ☑ | No issues found. |
 | `a2p2` | pack | Talking About the Past | 25 | ☑ | No issues found. |
 | `a2p3` | pack | Comparatives | 25 | ☑ | No issues found. |
@@ -58,7 +58,7 @@
 | `a2p18` | pack | Past Continuous | 25 | ☑ | No issues found. |
 | `a2p19` | pack | Modal Verbs — Ability & Permission | 25 | ☑ | No issues found. |
 | `a2p20` | pack | Comparisons — As...As | 25 | ☑ | No issues found. |
-| `a2p21` | pack | Listening: Plans & Past Events | 25 | ☑ | NEW in phase 2A (listening type). Authored to the audit's own rules: answers share a domain and a similar length within the pack, so neither topic nor sentence length leaks the answer. |
+| `a2p21` | pack | Listening: Plans & Past Events | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
 | `b1p1` | pack | Phrasal Verbs | 25 | ☑ | No issues found. |
 | `b1p2` | pack | Conditionals | 25 | ☑ | No issues found. |
 | `b1p3` | pack | Modal Verbs | 25 | ☑ | No issues found. |
@@ -79,7 +79,7 @@
 | `b1p18` | pack | Health & Fitness | 25 | ☑ | No issues found. |
 | `b1p19` | pack | Weather & Natural Events | 25 | ☑ | No issues found. |
 | `b1p20` | pack | Describing a Process | 25 | ☑ | No issues found. |
-| `b1p21` | pack | Listening: Opinions & Explanations | 25 | ☑ | NEW in phase 2A (listening type). Authored to the audit's own rules: answers share a domain and a similar length within the pack, so neither topic nor sentence length leaks the answer. |
+| `b1p21` | pack | Listening: Opinions & Explanations | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
 | `b2p1` | pack | The Passive | 25 | ☑ | No issues found. |
 | `b2p2` | pack | Confusable Words | 25 | ☑ | No issues found. |
 | `b2p3` | pack | Linking Ideas | 25 | ☑ | No issues found. |
@@ -100,7 +100,7 @@
 | `b2p18` | pack | Mixed Conditionals | 25 | ☑ | No issues found. |
 | `b2p19` | pack | Wish & If Only | 25 | ☑ | No issues found. |
 | `b2p20` | pack | Food & Cooking | 25 | ☑ | No issues found. |
-| `b2p21` | pack | Listening: Reports & Arguments | 25 | ☑ | NEW in phase 2A (listening type). Authored to the audit's own rules: answers share a domain and a similar length within the pack, so neither topic nor sentence length leaks the answer. |
+| `b2p21` | pack | Listening: Reports & Arguments | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
 | `c1p1` | pack | Idioms | 25 | ☑ | No issues found. |
 | `c1p2` | pack | Register | 25 | ☑ | No issues found. |
 | `c1p3` | pack | Inversion & Emphasis | 25 | ☑ | No issues found. |
@@ -121,7 +121,7 @@
 | `c1p18` | pack | Euphemisms & Indirect Language | 25 | ☑ | No issues found. |
 | `c1p19` | pack | Contrast & Concession | 25 | ☑ | No issues found. |
 | `c1p20` | pack | Academic Cohesion | 25 | ☑ | No issues found. |
-| `c1p21` | pack | Listening: Academic & Professional Register | 25 | ☑ | NEW in phase 2A (listening type). Authored to the audit's own rules: answers share a domain and a similar length within the pack, so neither topic nor sentence length leaks the answer. |
+| `c1p21` | pack | Listening: Academic & Professional Register | 25 | ☑ | NEW in phase 2A (listening type). Sentences are authored in near-identical pairs differing by one word, so the distractor is a genuine mishearing rather than a different topic; 91% of listening questions have a distractor sharing at least half the answer's content words, pinned by a test. Reviewed independently, not self-certified. |
 | `u1` | hand-written unit | Everyday Basics | 35 | ☑ | No issues found. |
 | `u2` | hand-written unit | The Daily Routine | 32 | ☑ | No issues found. |
 | `u3` | hand-written unit | Polite Requests | 32 | ☑ | No issues found. |
@@ -144,6 +144,24 @@ read in full, supported by `scripts/audit-scan.ts` (flagging only) and by
 spot-checking compiled output from `scripts/dump-english-questions.ts`.
 Hand-written units and the placement pool were reviewed directly, since their
 choices are authored rather than generated.
+
+### Correction: the phase 2A listening verdicts
+
+The five listening rows were first self-marked with the rationale "answers share
+a domain and a similar length within the pack". Whole-branch review measured
+that and found the domain half **false** (a1p23 mixed jobs, transport, family,
+pets, timetables and food) — and that was the load-bearing half, since it was
+the stated reason the distractors were not guessable. Measurement showed the
+real figure: **0 of 125** questions had a distractor sharing even half the
+answer's content words, i.e. every one was winnable by catching a single word.
+
+The packs were re-authored as minimal pairs and the distractor selection was
+changed to rank listening candidates by confusability, taking that to 91%. The
+verdicts above now state the measured property rather than an assumed one.
+
+Two process notes worth keeping: a verdict written by the same pass that authored
+the content is not a review, and a claim of this kind should be measured before
+it is written down.
 
 ### How much "No issues found" is worth
 

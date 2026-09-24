@@ -40,8 +40,6 @@ private func answerOf(_ question: Question) -> String {
         // A whole-sentence answer, same as reorder -- it would make a nonsense
         // vocab card, so a listening lesson has no vocabulary step.
         return ""
-    case .unsupported:
-        return ""
     }
 }
 
@@ -66,7 +64,7 @@ private func exampleOf(_ question: Question) -> String {
         return filled == q.prompt ? "\(q.prompt) \(answer)" : filled
     case .multipleChoice(let q):
         return "\(stripTrailingColon(q.prompt)) \u{2192} \(answer)"
-    case .reorder, .listening, .unsupported:
+    case .reorder, .listening:
         // Unreachable in practice -- deriveVocab skips all three via
         // answerOf's empty term.
         return ""
@@ -93,8 +91,6 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
         case .fillInBlank(let q): explanation = q.explanation
         case .reorder(let q): explanation = q.explanation
         case .listening(let q): explanation = q.explanation
-        // Unreachable: the empty-term guard above already skipped it.
-        case .unsupported: explanation = ""
         }
         items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question), image: images[key]))
     }

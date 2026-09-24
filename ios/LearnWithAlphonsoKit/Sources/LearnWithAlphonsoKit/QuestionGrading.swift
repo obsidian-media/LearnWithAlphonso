@@ -24,9 +24,6 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
         // fill-in-blank uses rather than an index lookup.
         return picked.trimmingCharacters(in: .whitespaces).lowercased()
             == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
-    case .unsupported:
-        // Filtered out at decode time, so unreachable; never mark it correct.
-        return false
     }
 }
 

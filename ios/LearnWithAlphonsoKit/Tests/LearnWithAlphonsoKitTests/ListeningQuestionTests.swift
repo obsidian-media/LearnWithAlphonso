@@ -43,22 +43,25 @@ final class ListeningQuestionTests: XCTestCase {
         XCTAssertTrue(deriveVocab(lesson: lesson, images: [:]).isEmpty)
     }
 
-    /// The whole ContentBundle decodes at once, so a question type this build
-    /// does not know must degrade to "one fewer question", never "no content
-    /// at all". Content ships inside the app bundle, so without this an app
-    /// older than its JSON would show a learner nothing.
-    func testSkipsUnknownQuestionTypesInsteadOfFailingTheLesson() throws {
+    /// An unknown question type fails the decode loudly, and that is the
+    /// deliberate choice.
+    ///
+    /// A lenient version was written and reverted. Skipping the unknown
+    /// question would leave the lesson with fewer questions than the server's
+    /// copy of the same lesson, and `deriveLessonCompletion` throws on that
+    /// mismatch -- so the learner would complete the lesson and silently
+    /// receive no XP, no streak credit and no unlock, with no error shown.
+    /// Failing at decode time is the better trade while content ships inside
+    /// the app binary (CI fails the build if the exported JSON drifts from
+    /// source, so a bundle newer than its app cannot happen). If
+    /// over-the-air content ever lands, this needs a real migration story
+    /// rather than silent skipping.
+    func testRejectsUnknownQuestionTypes() throws {
         let json = """
             {"id":"l1","title":"T","subtitle":"S","questions":[
-              {"id":"q1","type":"from_the_future","prompt":"?","answer":"x","explanation":"e"},
-              {"id":"q2","type":"fill","prompt":"a ___","bank":["b"],"answer":"b","explanation":"e"}
+              {"id":"q1","type":"from_the_future","prompt":"?","answer":"x","explanation":"e"}
             ]}
             """
-        let lesson = try JSONDecoder().decode(Lesson.self, from: Data(json.utf8))
-        XCTAssertEqual(lesson.questions.count, 1)
-        guard case .fillInBlank(let q) = lesson.questions[0] else {
-            return XCTFail("expected the known fill question to survive")
-        }
-        XCTAssertEqual(q.id, "q2")
+        XCTAssertThrowsError(try JSONDecoder().decode(Lesson.self, from: Data(json.utf8)))
     }
 }

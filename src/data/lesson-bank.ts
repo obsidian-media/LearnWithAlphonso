@@ -1,6 +1,6 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
-import { orderDistractorCandidates } from "@/lib/distractor-affinity";
+import { orderByLexicalSimilarity, orderDistractorCandidates } from "@/lib/distractor-affinity";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -746,36 +746,36 @@ meditating|for relaxation`,
     subtitle: "Hear it, then choose",
     kind: "listening",
     prompt: "What did you hear?",
-    note: "Short statements at natural speed.",
+    note: "Short statements at natural speed, in near-identical pairs.",
     // Every line is a short statement of similar length and register, so
     // neither sentence length nor tone gives the answer away -- the learner
     // has to actually listen. Distractors are the other sentences in this
     // pack, which is what keeps them plausible.
-    data: `She is a doctor.|She is a doctor.
+    data: `She's a doctor.|She's a doctor.
+She's a teacher.|She's a teacher.
+He's a bus driver.|He's a bus driver.
 He works at the airport.|He works at the airport.
+He works at the hospital.|He works at the hospital.
 They live near the park.|They live near the park.
-I have two brothers.|I have two brothers.
+They live near the station.|They live near the station.
+I've got two brothers.|I've got two brothers.
+I've got two sisters.|I've got two sisters.
 We eat dinner at seven.|We eat dinner at seven.
+We eat lunch at seven.|We eat lunch at seven.
+We eat dinner at eight.|We eat dinner at eight.
 The train leaves at nine.|The train leaves at nine.
+The train leaves at five.|The train leaves at five.
+The bus leaves at nine.|The bus leaves at nine.
+She doesn't drink coffee.|She doesn't drink coffee.
+He doesn't drink tea.|He doesn't drink tea.
 My sister plays the piano.|My sister plays the piano.
-This coffee is very hot.|This coffee is very hot.
+My brother plays the guitar.|My brother plays the guitar.
+It's very cold today.|It's very cold today.
+It's very hot today.|It's very hot today.
 The shop opens on Monday.|The shop opens on Monday.
-Her birthday is in June.|Her birthday is in June.
-He walks to work every day.|He walks to work every day.
-We watch films on Sunday.|We watch films on Sunday.
-The cat sleeps on the chair.|The cat sleeps on the chair.
-I study English in the evening.|I study English in the evening.
-They travel by bus.|They travel by bus.
-My father cooks on Saturday.|My father cooks on Saturday.
-The children play outside.|The children play outside.
-She reads before bed.|She reads before bed.
-We live in a small flat.|We live in a small flat.
-He drinks tea with milk.|He drinks tea with milk.
-The library closes at six.|The library closes at six.
-I take the metro to school.|I take the metro to school.
-She writes letters to her aunt.|She writes letters to her aunt.
-They visit us in August.|They visit us in August.
-My brother works in a bank.|My brother works in a bank.`,
+The shop closes on Sunday.|The shop closes on Sunday.
+I can't find my keys.|I can't find my keys.
+I can't find my phone.|I can't find my phone.`,
   },
 ];
 
@@ -1431,32 +1431,32 @@ The bridge is as ___ as the old one.|sturdy`,
     subtitle: "Hear it, then choose",
     kind: "listening",
     prompt: "What did you hear?",
-    note: "Everyday statements in the past and future.",
+    note: "Past and future statements that differ by a single word.",
     data: `We went to the coast last weekend.|We went to the coast last weekend.
-She has already finished her report.|She has already finished her report.
+We went to the coast last summer.|We went to the coast last summer.
+She's already finished her report.|She's already finished her report.
+She hasn't finished her report.|She hasn't finished her report.
+He'd already left when I called.|He'd already left when I called.
 They were waiting outside the station.|They were waiting outside the station.
-I am going to visit my cousin in May.|I am going to visit my cousin in May.
+They were waiting outside the cinema.|They were waiting outside the cinema.
+I'm going to visit my cousin in May.|I'm going to visit my cousin in May.
+I'm going to visit my cousin in June.|I'm going to visit my cousin in June.
 He bought a second-hand bicycle.|He bought a second-hand bicycle.
-The meeting was moved to Thursday.|The meeting was moved to Thursday.
-We have lived here for six years.|We have lived here for six years.
+He bought a second-hand car.|He bought a second-hand car.
+The meeting's been moved to Thursday.|The meeting's been moved to Thursday.
+The meeting's been moved to Tuesday.|The meeting's been moved to Tuesday.
+We've lived here for six years.|We've lived here for six years.
+We've lived here for sixteen years.|We've lived here for sixteen years.
 She was reading when the phone rang.|She was reading when the phone rang.
-They will arrive before lunch.|They will arrive before lunch.
-I did not hear the alarm this morning.|I did not hear the alarm this morning.
+She was cooking when the phone rang.|She was cooking when the phone rang.
+They'll arrive before lunch.|They'll arrive before lunch.
+They'll arrive after lunch.|They'll arrive after lunch.
+I didn't hear the alarm this morning.|I didn't hear the alarm this morning.
+I didn't hear the doorbell this morning.|I didn't hear the doorbell this morning.
 He used to play rugby at school.|He used to play rugby at school.
-The parcel has not arrived yet.|The parcel has not arrived yet.
-We are thinking of moving abroad.|We are thinking of moving abroad.
-She spoke to the manager yesterday.|She spoke to the manager yesterday.
-The film had already started.|The film had already started.
-I have never tried Thai food.|I have never tried Thai food.
-They are staying with friends tonight.|They are staying with friends tonight.
-He forgot to lock the back door.|He forgot to lock the back door.
-We booked the tickets in advance.|We booked the tickets in advance.
-She is better at maths than me.|She is better at maths than me.
-The shop was closed when we got there.|The shop was closed when we got there.
-I will call you as soon as I land.|I will call you as soon as I land.
-They have just moved into a new flat.|They have just moved into a new flat.
-He was cycling home in the rain.|He was cycling home in the rain.
-We are meeting her at the airport.|We are meeting her at the airport.`,
+He used to play cricket at school.|He used to play cricket at school.
+The parcel hasn't arrived yet.|The parcel hasn't arrived yet.
+The parcel arrived yesterday.|The parcel arrived yesterday.`,
   },
 ];
 
@@ -2111,32 +2111,32 @@ Lastly, allow the mixture to ___ overnight.|rest`,
     subtitle: "Hear it, then choose",
     kind: "listening",
     prompt: "What did you hear?",
-    note: "Longer statements with reasons and opinions.",
-    data: `I would rather work from home on Fridays.|I would rather work from home on Fridays.
-The course was harder than I expected.|The course was harder than I expected.
+    note: "Opinions and explanations in closely-matched pairs.",
+    data: `I'd rather work from home on Fridays.|I'd rather work from home on Fridays.
+I'd rather work from home on Mondays.|I'd rather work from home on Mondays.
+The course was harder than I'd expected.|The course was harder than I'd expected.
+The course was easier than I'd expected.|The course was easier than I'd expected.
 She turned down the offer because of the hours.|She turned down the offer because of the hours.
-If I had known, I would have waited.|If I had known, I would have waited.
-They are considering a move to Manchester.|They are considering a move to Manchester.
+She turned down the offer because of the salary.|She turned down the offer because of the salary.
+If I'd known, I would've waited.|If I'd known, I would've waited.
+If I'd known, I wouldn't have waited.|If I'd known, I wouldn't have waited.
+They're considering a move to Manchester.|They're considering a move to Manchester.
+They're considering a move to Edinburgh.|They're considering a move to Edinburgh.
 He apologised for missing the deadline.|He apologised for missing the deadline.
+He apologised for missing the meeting.|He apologised for missing the meeting.
 The results were better than last year.|The results were better than last year.
-I am not entirely convinced by that argument.|I am not entirely convinced by that argument.
-She has been learning Japanese since March.|She has been learning Japanese since March.
+The results were worse than last year.|The results were worse than last year.
+I'm not entirely convinced by that argument.|I'm not entirely convinced by that argument.
+I'm not entirely convinced by that explanation.|I'm not entirely convinced by that explanation.
+She's been learning Japanese since March.|She's been learning Japanese since March.
+She's been learning Japanese since May.|She's been learning Japanese since May.
 We ought to leave a little earlier.|We ought to leave a little earlier.
-The report suggests prices will rise.|The report suggests prices will rise.
-He admitted that he had made a mistake.|He admitted that he had made a mistake.
-It depends on how much time we have.|It depends on how much time we have.
-They decided to postpone the launch.|They decided to postpone the launch.
-I found the ending rather disappointing.|I found the ending rather disappointing.
-She managed to finish despite the delays.|She managed to finish despite the delays.
-We were told to wait in the corridor.|We were told to wait in the corridor.
-The flat is within walking distance of work.|The flat is within walking distance of work.
-He insisted on paying for the meal.|He insisted on paying for the meal.
-I am looking forward to the weekend.|I am looking forward to the weekend.
-The instructions were not very clear.|The instructions were not very clear.
-She used to commute two hours a day.|She used to commute two hours a day.
-They have agreed to share the costs.|They have agreed to share the costs.
-It would be sensible to check first.|It would be sensible to check first.
-He regrets not taking the opportunity.|He regrets not taking the opportunity.`,
+We ought to leave a little later.|We ought to leave a little later.
+He admitted that he'd made a mistake.|He admitted that he'd made a mistake.
+He denied that he'd made a mistake.|He denied that he'd made a mistake.
+It depends on how much time we've got.|It depends on how much time we've got.
+It depends on how much money we've got.|It depends on how much money we've got.
+I found the ending rather disappointing.|I found the ending rather disappointing.`,
   },
 ];
 
@@ -2794,32 +2794,32 @@ The sauce needs to ___ before you can serve it.|thicken`,
     subtitle: "Hear it, then choose",
     kind: "listening",
     prompt: "What did you hear?",
-    note: "Complex statements with hedging and reported speech.",
+    note: "Hedged reportage where one word reverses the meaning.",
     data: `The findings appear to contradict earlier research.|The findings appear to contradict earlier research.
+The findings appear to confirm earlier research.|The findings appear to confirm earlier research.
 He claimed the delay was beyond his control.|He claimed the delay was beyond his control.
-Had we acted sooner, the outcome might differ.|Had we acted sooner, the outcome might differ.
+He claimed the delay was within his control.|He claimed the delay was within his control.
+Had we acted sooner, the outcome might have been different.|Had we acted sooner, the outcome might have been different.
 The proposal was rejected on financial grounds.|The proposal was rejected on financial grounds.
-She is widely regarded as the leading expert.|She is widely regarded as the leading expert.
-The data suggests a modest but steady decline.|The data suggests a modest but steady decline.
+The proposal was accepted on financial grounds.|The proposal was accepted on financial grounds.
+She's widely regarded as the leading expert.|She's widely regarded as the leading expert.
+She was widely regarded as the leading expert.|She was widely regarded as the leading expert.
+The figures suggest a modest but steady decline.|The figures suggest a modest but steady decline.
+The figures suggest a modest but steady increase.|The figures suggest a modest but steady increase.
 They were reportedly unaware of the change.|They were reportedly unaware of the change.
+They were reportedly aware of the change.|They were reportedly aware of the change.
 It remains unclear who authorised the payment.|It remains unclear who authorised the payment.
-The committee has yet to reach a decision.|The committee has yet to reach a decision.
+It's now clear who authorised the payment.|It's now clear who authorised the payment.
+The committee hasn't yet reached a decision.|The committee hasn't yet reached a decision.
+The committee has finally reached a decision.|The committee has finally reached a decision.
 His account differs considerably from hers.|His account differs considerably from hers.
+His account differs slightly from hers.|His account differs slightly from hers.
 The scheme was abandoned after two years.|The scheme was abandoned after two years.
-Critics argue the measures do not go far enough.|Critics argue the measures do not go far enough.
-The company denied any wrongdoing.|The company denied any wrongdoing.
+The scheme was extended after two years.|The scheme was extended after two years.
+Critics argue the measures don't go far enough.|Critics argue the measures don't go far enough.
+Critics argue the measures go too far.|Critics argue the measures go too far.
 Attendance has fallen sharply since April.|Attendance has fallen sharply since April.
-She was appointed despite limited experience.|She was appointed despite limited experience.
-The evidence is largely circumstantial.|The evidence is largely circumstantial.
-They have been accused of withholding information.|They have been accused of withholding information.
-The policy is due to be reviewed next year.|The policy is due to be reviewed next year.
-He conceded that the criticism was justified.|He conceded that the criticism was justified.
-The trial was halted on medical advice.|The trial was halted on medical advice.
-Funding was withdrawn without prior warning.|Funding was withdrawn without prior warning.
-The results have not yet been independently verified.|The results have not yet been independently verified.
-She maintains that the decision was unanimous.|She maintains that the decision was unanimous.
-The proposal would require substantial investment.|The proposal would require substantial investment.
-Their conclusions rest on a single assumption.|Their conclusions rest on a single assumption.`,
+Attendance has risen sharply since April.|Attendance has risen sharply since April.`,
   },
 ];
 
@@ -3478,32 +3478,32 @@ In ___ words, the results were not as expected.|other`,
     subtitle: "Hear it, then choose",
     kind: "listening",
     prompt: "What did you hear?",
-    note: "Formal register with nominalisation and hedging.",
+    note: "Formal register where one word reverses the claim.",
     data: `The implementation was contingent on further funding.|The implementation was contingent on further funding.
+The implementation was contingent on further approval.|The implementation was contingent on further approval.
 Her argument hinges on a contested premise.|Her argument hinges on a contested premise.
+Her argument hinges on an accepted premise.|Her argument hinges on an accepted premise.
 Not until the audit did the discrepancy emerge.|Not until the audit did the discrepancy emerge.
-The correlation should not be read as causation.|The correlation should not be read as causation.
+Not until the enquiry did the discrepancy emerge.|Not until the enquiry did the discrepancy emerge.
+The correlation shouldn't be read as causation.|The correlation shouldn't be read as causation.
+The correlation may well indicate causation.|The correlation may well indicate causation.
 Preliminary findings warrant a degree of caution.|Preliminary findings warrant a degree of caution.
+Preliminary findings warrant a degree of optimism.|Preliminary findings warrant a degree of optimism.
 The methodology has been scrutinised at length.|The methodology has been scrutinised at length.
+The methodology hasn't been scrutinised at all.|The methodology hasn't been scrutinised at all.
 Such an approach is arguably counterproductive.|Such an approach is arguably counterproductive.
-The distinction is subtle but consequential.|The distinction is subtle but consequential.
+Such an approach is arguably indispensable.|Such an approach is arguably indispensable.
 Their reasoning rests on an untested assumption.|Their reasoning rests on an untested assumption.
+Their reasoning rests on a well-tested assumption.|Their reasoning rests on a well-tested assumption.
 The provision was subsequently deemed unenforceable.|The provision was subsequently deemed unenforceable.
+The provision was subsequently deemed binding.|The provision was subsequently deemed binding.
 Rarely has a reform proved so divisive.|Rarely has a reform proved so divisive.
+Rarely has a reform proved so popular.|Rarely has a reform proved so popular.
 The evidence is suggestive rather than conclusive.|The evidence is suggestive rather than conclusive.
-Considerable weight was attached to her testimony.|Considerable weight was attached to her testimony.
-The proposal was withdrawn prior to ratification.|The proposal was withdrawn prior to ratification.
-It is widely acknowledged that the data are incomplete.|It is widely acknowledged that the data are incomplete.
-The framework accommodates competing interpretations.|The framework accommodates competing interpretations.
-His conclusions have since been substantially revised.|His conclusions have since been substantially revised.
+The evidence is conclusive rather than suggestive.|The evidence is conclusive rather than suggestive.
 The intervention yielded only marginal improvement.|The intervention yielded only marginal improvement.
-Compliance remains largely a matter of discretion.|Compliance remains largely a matter of discretion.
-The committee refrained from issuing a recommendation.|The committee refrained from issuing a recommendation.
-Any inference drawn must remain provisional.|Any inference drawn must remain provisional.
-The terminology is used inconsistently across studies.|The terminology is used inconsistently across studies.
-Her critique dismantles the prevailing consensus.|Her critique dismantles the prevailing consensus.
-The exemption applies only in exceptional circumstances.|The exemption applies only in exceptional circumstances.
-Notwithstanding these caveats, the trend is unmistakable.|Notwithstanding these caveats, the trend is unmistakable.`,
+The intervention yielded substantial improvement.|The intervention yielded substantial improvement.
+Compliance remains largely a matter of discretion.|Compliance remains largely a matter of discretion.`,
   },
 ];
 
@@ -3518,7 +3518,13 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string, prompt?: string) {
+function pickDistractors(
+  answer: string,
+  pool: string[],
+  seed: string,
+  prompt?: string,
+  preferConfusable = false,
+) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
   // Walk the pool from a per-question hashed offset first, so each question in
@@ -3535,7 +3541,14 @@ function pickDistractors(answer: string, pool: string[], seed: string, prompt?: 
     const cand = others[(start + i * 7) % others.length];
     if (cand) walk.push(cand);
   }
-  const ordered = orderDistractorCandidates(answer, walk, prompt);
+  // Listening ranks by confusability instead: the whole sentence is the answer,
+  // so the useful wrong answers are the ones it could be misheard as, not the
+  // ones that could grammatically fill a blank. Without this the hashed walk
+  // strides past a sentence's near-twin and every question becomes
+  // word-spotting.
+  const ordered = preferConfusable
+    ? orderByLexicalSimilarity(answer, walk)
+    : orderDistractorCandidates(answer, walk, prompt);
   const out: string[] = [];
   // Dedupe case-insensitively -- see bank-engine.ts's pickDistractors
   // (duplicated here; English's generator predates the shared engine and
@@ -3570,18 +3583,20 @@ function packQuestions(pack: Pack): Question[] {
       pack.kind === "pair"
         ? (pack.prompt ?? "%s").replace("%s", left!)
         : pack.kind === "listening"
-          ? (pack.prompt ?? "What did you hear?")
+          ? // Substituted like a pair prompt so a template reused from one does
+            // not ship a literal "%s" on screen. The audio is heard, not read,
+            // so the sentence is only ever the fallback for a template that
+            // asks for it explicitly.
+            (pack.prompt ?? "What did you hear?").replace("%s", left!)
           : left!;
-    // For a listening question the learner hears `left` rather than reading
-    // it, so that -- not the on-screen stem -- is what a distractor must not
-    // echo.
-    const echoContext = pack.kind === "listening" ? left! : prompt;
-    const distractors = pickDistractors(answer, pool, seed, echoContext);
+    const distractors = pickDistractors(answer, pool, seed, prompt, pack.kind === "listening");
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
         : pack.kind === "listening"
-          ? `The audio says "${left}". ${pack.note}`
+          ? // The audio sentence already ends in its own punctuation, so quoting
+            // it and adding a full stop produced `"... rise.". note`.
+            `The audio says "${left}" ${pack.note}`
           : `"${answer}" is correct here. ${pack.note}`;
     if (pack.kind === "listening") {
       // Order is cosmetic here: `answer` is the choice text, so there is no

@@ -253,8 +253,6 @@ private func questionID(_ question: Question) -> String {
     case .fillInBlank(let q): return q.id
     case .reorder(let q): return q.id
     case .listening(let q): return q.id
-    // Filtered out when the lesson decodes, so unreachable here.
-    case .unsupported: return ""
     }
 }
 
@@ -405,9 +403,6 @@ private struct ReviewQuestionCard: View {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
-        case .unsupported:
-            // Filtered out when the lesson decodes, so this never renders.
-            EmptyView()
             }
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)

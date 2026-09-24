@@ -477,7 +477,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         );
         const transcriptMessages = missedQuestions.map((q) => ({
           role: "user" as const,
-          content: `Question: ${q.prompt} — I answered incorrectly. The correct answer was: ${
+          // A listening question's stem is a constant ("What did you hear?"),
+          // so the spoken sentence is the only part with any signal in it --
+          // without this the classifier sees the same prompt for every miss.
+          content: `Question: ${
+            q.type === "listening" ? `${q.prompt} (heard: "${q.audioText}")` : q.prompt
+          } — I answered incorrectly. The correct answer was: ${
             q.type === "mc" ? q.choices[q.answer] : q.answer
           }.`,
         }));

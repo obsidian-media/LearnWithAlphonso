@@ -11,7 +11,7 @@ import { getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
-import { speak } from "../../lib/speech";
+import { canSpeak, speak } from "../../lib/speech";
 import { useProgress } from "../../lib/progress";
 import {
   completeLessonRemote,
@@ -355,14 +355,25 @@ function LessonPage() {
               Listening
             </p>
           )}
-          {(q.type === "listening" || (q.type === "mc" && q.audioText)) && (
+          {q.type === "listening" && canSpeak() && (
             <button
               type="button"
-              onClick={() => speak(q.audioText!, localeForCourse(course))}
+              onClick={() => speak(q.audioText, localeForCourse(course))}
               className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
             >
               🔊 Play audio
             </button>
+          )}
+          {/* A listening question is unanswerable without audio, so when the
+              browser cannot speak, the sentence is shown instead. Guessing
+              one-in-four costs a heart; reading it does not. */}
+          {q.type === "listening" && !canSpeak() && (
+            <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
+              <p className="text-xs text-ink-soft">
+                Audio is unavailable on this device — here is what you would hear:
+              </p>
+              <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
+            </div>
           )}
           <h2 className="font-display text-[25px] font-semibold leading-tight text-ink">
             {q.prompt}

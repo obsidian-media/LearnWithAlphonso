@@ -19,10 +19,11 @@ export type Question =
        * photo above the prompt, turning this into an "image matching"
        * format question. */
       imageKey?: string;
-      /** Text spoken via on-device TTS before the prompt is shown, turning
-       * this into a "listening comprehension" format question. `prompt`
-       * should ask about audioText's content rather than restate it. */
-      audioText?: string;
+      // NB: there is deliberately no `audioText` here any more. Listening was
+      // once a format layered onto `mc` via an optional `audioText`, used by a
+      // single question; it is now its own variant (below), and that question
+      // was converted. Keeping both would have left two representations of one
+      // concept, with only one of them labelled as listening in the UI.
     }
   | {
       id: string;
@@ -243,12 +244,12 @@ const foundationUnits: Unit[] = [
           },
           {
             id: "q10",
-            type: "mc",
+            type: "listening",
             prompt: "What is her job?",
-            choices: ["Teacher", "Doctor", "Driver", "Chef"],
-            answer: 1,
-            explanation: 'The audio says "She is a doctor."',
             audioText: "She is a doctor. She works at the hospital every day.",
+            choices: ["Teacher", "Doctor", "Driver", "Chef"],
+            answer: "Doctor",
+            explanation: 'The audio says "She is a doctor."',
           },
           {
             id: "q11",

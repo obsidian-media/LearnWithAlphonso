@@ -55,6 +55,81 @@ export function orderDistractorCandidates(
     .map((entry) => entry.candidate);
 }
 
+/**
+ * Function words carry no discriminating power when judging how confusable two
+ * sentences are -- every sentence shares them.
+ */
+const FUNCTION_WORDS = new Set([
+  "the",
+  "a",
+  "an",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "to",
+  "of",
+  "and",
+  "or",
+  "in",
+  "on",
+  "at",
+  "it",
+  "its",
+  "this",
+  "that",
+  "with",
+  "has",
+  "have",
+  "had",
+  "for",
+  "i",
+  "we",
+  "they",
+  "he",
+  "she",
+  "my",
+  "his",
+  "her",
+  "their",
+]);
+
+function contentWords(sentence: string): string[] {
+  return [...wordsIn(sentence)].filter((w) => !FUNCTION_WORDS.has(w));
+}
+
+/**
+ * Orders candidates so the sentence most easily confused with `answer` comes
+ * first, measured by shared content words.
+ *
+ * This is for listening questions, and it is the OPPOSITE aim of
+ * `orderDistractorCandidates`. There, a good distractor is one that could
+ * grammatically occupy the blank; here the whole sentence is the answer, and a
+ * good distractor is one the learner might mishear it as. Four unrelated
+ * sentences make a word-spotting exercise -- catching one content word decides
+ * it without parsing anything -- which is what this repo's listening content
+ * measured as before this existed: 0 of 125 questions had a distractor sharing
+ * even half the answer's content words.
+ *
+ * Reorders and never drops, like its sibling, so it cannot change a question's
+ * choice count. Ties keep the caller's order, preserving the hashed walk's
+ * variety between questions.
+ */
+export function orderByLexicalSimilarity(answer: string, candidates: string[]): string[] {
+  const target = contentWords(answer);
+  if (target.length === 0) return candidates;
+  return candidates
+    .map((candidate, index) => {
+      const words = contentWords(candidate);
+      const shared = target.filter((w) => words.includes(w)).length;
+      return { candidate, index, shared };
+    })
+    .sort((a, b) => b.shared - a.shared || a.index - b.index)
+    .map((entry) => entry.candidate);
+}
+
 function wordsIn(prompt: string): Set<string> {
   return new Set(
     prompt

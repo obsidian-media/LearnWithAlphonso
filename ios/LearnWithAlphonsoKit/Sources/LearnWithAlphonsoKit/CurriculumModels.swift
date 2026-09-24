@@ -10,11 +10,6 @@ public enum Question: Decodable, Sendable {
     case fillInBlank(FillInBlank)
     case reorder(Reorder)
     case listening(Listening)
-    /// A question type this build does not recognise. `Lesson` filters these
-    /// out at decode time, so it never reaches the UI -- it exists so that a
-    /// content bundle newer than the app degrades to "one fewer question"
-    /// rather than failing the whole decode. Switches still have to handle it.
-    case unsupported
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -97,11 +92,22 @@ public enum Question: Decodable, Sendable {
         case "listening":
             self = .listening(try Listening(from: decoder))
         default:
-            // Deliberately not a throw. Content is bundled inside the app, so
-            // an app older than its JSON would otherwise fail the whole
-            // ContentBundle decode and show the learner no content at all.
-            // `Lesson` drops these, so an unknown type costs one question.
-            self = .unsupported
+            // Deliberately fails loudly. A lenient version of this was tried
+            // and reverted: content ships inside the same binary (CI fails the
+            // build if the exported JSON drifts from source), so an app older
+            // than its own bundle cannot happen, and there is no
+            // over-the-air content. Meanwhile skipping an unknown question
+            // silently would leave the lesson with fewer questions than the
+            // server's copy, and `deriveLessonCompletion` throws on that
+            // mismatch (progress-math.ts:89) -- so the learner would finish the
+            // lesson and get no XP, no streak credit and no error. A hard
+            // failure at decode time is the better trade until OTA content
+            // exists, and then this needs a real migration story, not leniency.
+            throw DecodingError.dataCorruptedError(
+                forKey: .type,
+                in: container,
+                debugDescription: "Unknown question type: \(type)"
+            )
         }
     }
 }
@@ -119,26 +125,6 @@ public struct Lesson: Decodable, Identifiable, Sendable {
         self.questions = questions
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case id, title, subtitle, questions
-    }
-
-    /// Decodes questions leniently: any whose `type` this build does not
-    /// recognise is dropped here rather than failing the lesson. Content is
-    /// bundled with the app, so a JSON bundle newer than the binary would
-    /// otherwise take down the entire ContentBundle decode and leave the
-    /// learner with no content at all.
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        title = try container.decode(String.self, forKey: .title)
-        subtitle = try container.decode(String.self, forKey: .subtitle)
-        questions = try container.decode([Question].self, forKey: .questions)
-            .filter { question in
-                if case .unsupported = question { return false }
-                return true
-            }
-    }
 }
 
 public struct Unit: Decodable, Identifiable, Sendable {

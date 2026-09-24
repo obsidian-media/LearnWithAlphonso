@@ -15,7 +15,16 @@ import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 function sampleAnswer(q: Question): string | null {
   if (q.type === "mc") return q.choices[q.answer] ?? null;
   if (q.type === "fill") return q.answer;
-  return null; // reorder: a whole-sentence answer isn't a good short example
+  // reorder and listening both answer with a whole sentence, which makes a poor
+  // short example. Callers must check `hasUsableSamples` BEFORE spending quota:
+  // a lesson of only these types yields nothing, and paying an AI call to learn
+  // that is pure waste.
+  return null;
+}
+
+/** Whether any of `questions` can produce a usable practice sample. */
+export function hasUsableSamples(questions: Question[]): boolean {
+  return questions.some((q) => sampleAnswer(q) !== null);
 }
 
 export const Route = createFileRoute("/api/generate-practice")({
@@ -25,10 +34,6 @@ export const Route = createFileRoute("/api/generate-practice")({
         const key = process.env.NVIDIA_API_KEY;
         if (!key)
           return Response.json({ error: "Practice generation is not configured" }, { status: 500 });
-
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "chat");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
 
         let body: { lessonId?: string; course?: string };
         try {
@@ -43,6 +48,24 @@ export const Route = createFileRoute("/api/generate-practice")({
 
         const found = getCourse(course).findLesson(lessonId);
         if (!found) return Response.json({ error: "Unknown lesson" }, { status: 400 });
+
+        // Resolved BEFORE spending quota. A lesson whose questions all answer
+        // with whole sentences (reorder, listening) can produce no sample, so
+        // the AI call is skipped -- but the quota used to be decremented first,
+        // which charged the learner for a guaranteed-empty result. That was
+        // unreachable in English until listening lessons existed.
+        //
+        // The two checks above only reveal whether a lesson id exists and
+        // whether it has practiceable questions, both derivable from the
+        // publicly bundled course data, so running them before the auth check
+        // in consumeQuota leaks nothing new.
+        if (!hasUsableSamples(found.lesson.questions)) {
+          return Response.json({ questions: [] });
+        }
+
+        const { consumeQuota } = await import("@/lib/ai-quota.server");
+        const quota = await consumeQuota(request, "chat");
+        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
 
         const sampleQuestions = found.lesson.questions
           .map((q) => ({ prompt: q.prompt, answer: sampleAnswer(q) }))
