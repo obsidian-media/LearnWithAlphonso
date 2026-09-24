@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useProgress } from "../lib/progress";
 import { FlameIcon, BoltIcon, HeartIcon } from "./icons";
+import { PodcastPlayer } from "./PodcastPlayer";
 import { LeagueTierBadge } from "./LeagueTierBadge";
 
 function StatPill({
@@ -188,6 +189,11 @@ export function MobileFrame({ children }: { children: ReactNode }) {
         <main id="main-content" className="flex-1">
           {children}
         </main>
+        {/* Above BottomTabs and outside <main>: the audio element lives
+            here, in the shell, so walking from a folder into a subfolder
+            re-renders the page without unmounting the player and killing
+            playback. */}
+        <PodcastPlayer />
         <BottomTabs />
       </div>
     </div>
