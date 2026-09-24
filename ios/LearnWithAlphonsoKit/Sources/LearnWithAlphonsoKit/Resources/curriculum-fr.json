@@ -13046,8 +13046,8 @@
               "choices": [
                 "as vu",
                 "Est",
-                "est",
-                "viennent"
+                "viennent",
+                "a"
               ],
               "answer": 0,
               "explanation": "\"as vu\" is correct here. Forming questions with est-ce que and inversion."
@@ -13118,8 +13118,8 @@
               "choices": [
                 "sommes",
                 "Est",
-                "est",
-                "viennent"
+                "viennent",
+                "a"
               ],
               "answer": 0,
               "explanation": "\"sommes\" is correct here. Forming questions with est-ce que and inversion."

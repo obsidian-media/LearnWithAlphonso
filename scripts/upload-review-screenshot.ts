@@ -128,9 +128,7 @@ async function main() {
     const headers: Record<string, string> = {};
     for (const h of op.requestHeaders) headers[h.name] = h.value;
     const res = await fetch(op.url, { method: op.method, headers, body: chunk });
-    console.log(
-      `PUT offset=${op.offset} length=${op.length} -> ${res.status} ${res.statusText}`,
-    );
+    console.log(`PUT offset=${op.offset} length=${op.length} -> ${res.status} ${res.statusText}`);
     if (!res.ok) {
       console.log("❌ FAILED at upload step.");
       console.log(await res.text());
