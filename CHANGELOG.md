@@ -72,6 +72,51 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
+**Speaking practice question type (#TBD)** — a fifth question type, `speak`:
+the learner is shown a phrase, records themselves saying it, and the
+speech-to-text transcript is graded. 125 questions across all five CEFR bands
+(one pack each), taking English to 584 lessons / 2,971 questions.
+
+Grading a transcript strictly does not work: the same utterance comes back
+spelled differently run to run ("She's a doctor", "she is a doctor", "shes a
+doctor", "um, she's a doctor"). `src/lib/spoken-answer.ts` normalises
+contractions, apostrophe-less spellings, fillers and punctuation and then
+compares exactly — deliberately **not** edit distance, since a threshold loose
+enough to forgive "she's"/"she is" also accepts "he is a driver" for "she is a
+doctor".
+
+The rule lives in `deriveAnswerCorrectness`, not in the players, because
+`grade-review` re-derives correctness server-side; a client-only rule would show
+"Still got it" and lapse the item anyway. It therefore exists in three
+hand-kept copies (TypeScript, the Deno mirror, `SpokenAnswer.swift`) with the
+same vectors in all three test suites.
+
+Three things found while building it that tests could not have caught on their
+own:
+
+- Deepgram is called with `smart_format=true`, which returns spoken numbers as
+  **numerals**. "The bus leaves at nine" transcribes as "…at 9", so a learner
+  saying it perfectly was marked wrong — and that phrase was already in the
+  authored A1 pack. Number words now collapse onto digits in all three copies.
+- Nothing captured must never be graded. A denied microphone, a too-short clip
+  and silence all reach the player looking identical to a wrong answer, so the
+  capture layer reports **only** a real non-empty transcript and every failure
+  path surfaces an error instead. Otherwise the learner loses a heart for a
+  microphone problem.
+- Where speech cannot be captured, the control degrades to typing the phrase —
+  driven by actual failure, not only by feature detection. A denied microphone,
+  a dead network, a failing `/api/stt`, silence, and (on iOS) being offline all
+  reach it. A question the learner cannot answer is a lesson they cannot
+  complete, which means no XP, no streak and no unlock, with nothing on screen
+  explaining why.
+
+Also: the capture flow was extracted from the conversation route into
+`use-speech-capture.ts` rather than copied, both web players now grade through
+`deriveAnswerCorrectness` instead of their own inline copies of the rule, and
+`20260925010000_v5_speaking_question_type.sql` adds a **fourth** allowed row
+shape to `question_shape_matches_type` (answer text, no choices, no bank, no
+answer index) — without it every speaking row would be rejected.
+
 **Listening comprehension question type (#88)** — a fourth question type
 (`mc`/`fill`/`reorder`/`listening`), replacing the hidden `audioText`-on-`mc`
 format that only 3 questions used. 125 questions across all five CEFR bands
@@ -93,10 +138,15 @@ listening is a third (`choices` like mc, `answer_text` like fill), so every row
 would have been rejected — `20260924010000_v5_listening_question_type.sql`,
 following the same widening done for `reorder`.
 
-iOS `Question` decoding is now lenient: an unknown `type` decodes to a filtered
-`.unsupported` case. It previously threw, and because the whole `ContentBundle`
-decodes at once, an app older than its bundled JSON would have shown the learner
-no content at all.
+iOS `Question` decoding was made lenient (an unknown `type` decoding to a
+filtered `.unsupported` case) and then **reverted to throwing** before the PR
+landed — this entry described the wrong end state until 2026-09-24. Skipping an
+unknown question leaves the lesson with fewer questions than the server's copy,
+and `deriveLessonCompletion` throws on that mismatch, so the learner would have
+finished the lesson and silently received no XP, no streak credit and no error.
+Content ships inside the same binary and CI fails the build if the exported JSON
+drifts from source, so the version skew leniency was protecting against cannot
+happen yet.
 
 ## V4 — Spanish course, remote push, placement, campaigns, content tooling, widget, deeper gamification (2026-09-21 – in progress)
 

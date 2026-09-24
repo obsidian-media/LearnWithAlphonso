@@ -113,6 +113,9 @@ export function reshuffleQuestion(q: Question, seed: string): Question {
     const tokens = [...q.tokens].sort((a, b) => hash(seed + a) - hash(seed + b));
     return { ...q, tokens };
   }
+  // A speaking question has no choices, bank or tokens -- there is nothing to
+  // reshuffle, so it is returned untouched.
+  if (q.type === "speak") return q;
   if (q.type === "listening") {
     // Reshuffling the choices is safe here precisely because `answer` is the
     // choice text rather than an index -- there is nothing to keep in sync.

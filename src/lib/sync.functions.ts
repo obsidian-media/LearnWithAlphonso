@@ -480,8 +480,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           // A listening question's stem is a constant ("What did you hear?"),
           // so the spoken sentence is the only part with any signal in it --
           // without this the classifier sees the same prompt for every miss.
+          // A speaking question's stem is a constant for the same reason ("Say
+          // this aloud:"), and it also needs saying that the miss was a spoken
+          // attempt: otherwise a pronunciation or microphone problem is
+          // classified into the grammar/vocabulary taxonomy and the learner
+          // gets a review item for a weakness they may not have.
           content: `Question: ${
-            q.type === "listening" ? `${q.prompt} (heard: "${q.audioText}")` : q.prompt
+            q.type === "listening"
+              ? `${q.prompt} (heard: "${q.audioText}")`
+              : q.type === "speak"
+                ? `${q.prompt} (said aloud: "${q.answer}")`
+                : q.prompt
           } — I answered incorrectly. The correct answer was: ${
             q.type === "mc" ? q.choices[q.answer] : q.answer
           }.`,

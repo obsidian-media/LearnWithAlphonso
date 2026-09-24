@@ -10979,6 +10979,225 @@
       ]
     },
     {
+      "id": "a1p24u1",
+      "level": "A1",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Everyday Phrases",
+      "description": "Say it out loud — Short everyday phrases to practise saying.",
+      "lessons": [
+        {
+          "id": "a1p24l1",
+          "title": "Speaking: Everyday Phrases 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a1p24q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Good morning.",
+              "explanation": "Target phrase: \"Good morning.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nice to meet you.",
+              "explanation": "Target phrase: \"Nice to meet you.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "How are you today?",
+              "explanation": "Target phrase: \"How are you today?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "My name is Anna.",
+              "explanation": "Target phrase: \"My name is Anna.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would like a coffee.",
+              "explanation": "Target phrase: \"I would like a coffee.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "a1p24l2",
+          "title": "Speaking: Everyday Phrases 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a1p24q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Where is the station?",
+              "explanation": "Target phrase: \"Where is the station?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Thank you very much.",
+              "explanation": "Target phrase: \"Thank you very much.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Can you help me?",
+              "explanation": "Target phrase: \"Can you help me?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am from Spain.",
+              "explanation": "Target phrase: \"I am from Spain.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "See you tomorrow.",
+              "explanation": "Target phrase: \"See you tomorrow.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "a1p24l3",
+          "title": "Speaking: Everyday Phrases 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a1p24q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The weather is lovely.",
+              "explanation": "Target phrase: \"The weather is lovely.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I have two brothers.",
+              "explanation": "Target phrase: \"I have two brothers.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "What time is it?",
+              "explanation": "Target phrase: \"What time is it?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Excuse me, please.",
+              "explanation": "Target phrase: \"Excuse me, please.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I work in a bank.",
+              "explanation": "Target phrase: \"I work in a bank.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "a1p24l4",
+          "title": "Speaking: Everyday Phrases 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a1p24q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "She is my sister.",
+              "explanation": "Target phrase: \"She is my sister.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We live in London.",
+              "explanation": "Target phrase: \"We live in London.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I do not understand.",
+              "explanation": "Target phrase: \"I do not understand.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Could you repeat that?",
+              "explanation": "Target phrase: \"Could you repeat that?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The bus leaves at nine.",
+              "explanation": "Target phrase: \"The bus leaves at nine.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "a1p24l5",
+          "title": "Speaking: Everyday Phrases 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a1p24q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am very hungry.",
+              "explanation": "Target phrase: \"I am very hungry.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "He plays the guitar.",
+              "explanation": "Target phrase: \"He plays the guitar.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Have a good evening.",
+              "explanation": "Target phrase: \"Have a good evening.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am learning English.",
+              "explanation": "Target phrase: \"I am learning English.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "a1p24q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "See you next week.",
+              "explanation": "Target phrase: \"See you next week.\" Short everyday phrases to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "a2p1u1",
       "level": "A2",
       "eyebrow": "Unit 3",
@@ -18735,6 +18954,225 @@
       ]
     },
     {
+      "id": "a2p22u1",
+      "level": "A2",
+      "eyebrow": "Unit 24",
+      "title": "Speaking: Getting Things Done",
+      "description": "Say it out loud — Everyday phrases for asking, arranging and explaining.",
+      "lessons": [
+        {
+          "id": "a2p22l1",
+          "title": "Speaking: Getting Things Done 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a2p22q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I went to the market yesterday.",
+              "explanation": "Target phrase: \"I went to the market yesterday.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Could you speak a little slower?",
+              "explanation": "Target phrase: \"Could you speak a little slower?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am looking for the post office.",
+              "explanation": "Target phrase: \"I am looking for the post office.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "She moved here ten years ago.",
+              "explanation": "Target phrase: \"She moved here ten years ago.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We are meeting at the cafe later.",
+              "explanation": "Target phrase: \"We are meeting at the cafe later.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "a2p22l2",
+          "title": "Speaking: Getting Things Done 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a2p22q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I forgot to bring my umbrella.",
+              "explanation": "Target phrase: \"I forgot to bring my umbrella.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Do you know when the shop opens?",
+              "explanation": "Target phrase: \"Do you know when the shop opens?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "My flight was delayed by an hour.",
+              "explanation": "Target phrase: \"My flight was delayed by an hour.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would rather stay at home tonight.",
+              "explanation": "Target phrase: \"I would rather stay at home tonight.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "He finished his homework already.",
+              "explanation": "Target phrase: \"He finished his homework already.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "a2p22l3",
+          "title": "Speaking: Getting Things Done 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a2p22q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Can I pay by card here?",
+              "explanation": "Target phrase: \"Can I pay by card here?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The film was better than I expected.",
+              "explanation": "Target phrase: \"The film was better than I expected.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am trying to eat less sugar.",
+              "explanation": "Target phrase: \"I am trying to eat less sugar.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We walked all the way to the river.",
+              "explanation": "Target phrase: \"We walked all the way to the river.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "She is studying to be a nurse.",
+              "explanation": "Target phrase: \"She is studying to be a nurse.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "a2p22l4",
+          "title": "Speaking: Getting Things Done 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a2p22q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I have never been to Italy.",
+              "explanation": "Target phrase: \"I have never been to Italy.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Would you like to join us?",
+              "explanation": "Target phrase: \"Would you like to join us?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The train was completely full.",
+              "explanation": "Target phrase: \"The train was completely full.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I need to book a room for one night.",
+              "explanation": "Target phrase: \"I need to book a room for one night.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "He works from home on Fridays.",
+              "explanation": "Target phrase: \"He works from home on Fridays.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "a2p22l5",
+          "title": "Speaking: Getting Things Done 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "a2p22q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We should leave before it gets dark.",
+              "explanation": "Target phrase: \"We should leave before it gets dark.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I left my bag on the bus.",
+              "explanation": "Target phrase: \"I left my bag on the bus.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "This jacket is a little too small.",
+              "explanation": "Target phrase: \"This jacket is a little too small.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "They are building a new library.",
+              "explanation": "Target phrase: \"They are building a new library.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "a2p22q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I will call you when I arrive.",
+              "explanation": "Target phrase: \"I will call you when I arrive.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "b1p1u1",
       "level": "B1",
       "eyebrow": "Unit 3",
@@ -26453,6 +26891,225 @@
               ],
               "answer": "I found the ending rather disappointing.",
               "explanation": "The audio says \"I found the ending rather disappointing.\" Opinions and explanations in closely-matched pairs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b1p22u1",
+      "level": "B1",
+      "eyebrow": "Unit 24",
+      "title": "Speaking: Saying What You Think",
+      "description": "Say it out loud — Opinions, reasons and comparisons said out loud.",
+      "lessons": [
+        {
+          "id": "b1p22l1",
+          "title": "Speaking: Saying What You Think 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b1p22q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I think the other option makes more sense.",
+              "explanation": "Target phrase: \"I think the other option makes more sense.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Personally, I would handle it differently.",
+              "explanation": "Target phrase: \"Personally, I would handle it differently.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The main problem is the cost.",
+              "explanation": "Target phrase: \"The main problem is the cost.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It depends on how much time we have.",
+              "explanation": "Target phrase: \"It depends on how much time we have.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am not entirely convinced by that argument.",
+              "explanation": "Target phrase: \"I am not entirely convinced by that argument.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "b1p22l2",
+          "title": "Speaking: Saying What You Think 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b1p22q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "On the whole, the changes have helped.",
+              "explanation": "Target phrase: \"On the whole, the changes have helped.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would rather discuss this in person.",
+              "explanation": "Target phrase: \"I would rather discuss this in person.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That is a fair point, but I disagree.",
+              "explanation": "Target phrase: \"That is a fair point, but I disagree.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The results were better than we hoped.",
+              "explanation": "Target phrase: \"The results were better than we hoped.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I have been thinking about it all week.",
+              "explanation": "Target phrase: \"I have been thinking about it all week.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "b1p22l3",
+          "title": "Speaking: Saying What You Think 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b1p22q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "There is no easy answer to that.",
+              "explanation": "Target phrase: \"There is no easy answer to that.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We could try a completely different approach.",
+              "explanation": "Target phrase: \"We could try a completely different approach.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am afraid I cannot agree with that.",
+              "explanation": "Target phrase: \"I am afraid I cannot agree with that.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It would make sense to wait a little.",
+              "explanation": "Target phrase: \"It would make sense to wait a little.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The sooner we decide, the better.",
+              "explanation": "Target phrase: \"The sooner we decide, the better.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "b1p22l4",
+          "title": "Speaking: Saying What You Think 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b1p22q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I used to feel the same way.",
+              "explanation": "Target phrase: \"I used to feel the same way.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Let me explain what I mean by that.",
+              "explanation": "Target phrase: \"Let me explain what I mean by that.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am fairly sure we can manage it.",
+              "explanation": "Target phrase: \"I am fairly sure we can manage it.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That would take far too long.",
+              "explanation": "Target phrase: \"That would take far too long.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would like to hear your opinion on this.",
+              "explanation": "Target phrase: \"I would like to hear your opinion on this.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "b1p22l5",
+          "title": "Speaking: Saying What You Think 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b1p22q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The difference is smaller than it looks.",
+              "explanation": "Target phrase: \"The difference is smaller than it looks.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We need to be realistic about this.",
+              "explanation": "Target phrase: \"We need to be realistic about this.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I can see why you would think that.",
+              "explanation": "Target phrase: \"I can see why you would think that.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "In my experience, that rarely works.",
+              "explanation": "Target phrase: \"In my experience, that rarely works.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "b1p22q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It is worth trying at least once.",
+              "explanation": "Target phrase: \"It is worth trying at least once.\" Opinions, reasons and comparisons said out loud."
             }
           ]
         }
@@ -34233,6 +34890,225 @@
       ]
     },
     {
+      "id": "b2p22u1",
+      "level": "B2",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Longer Turns",
+      "description": "Say it out loud — Multi-clause sentences to say in one breath.",
+      "lessons": [
+        {
+          "id": "b2p22l1",
+          "title": "Speaking: Longer Turns 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b2p22q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "If I had known earlier, I would have said something.",
+              "explanation": "Target phrase: \"If I had known earlier, I would have said something.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The report suggests that demand is falling.",
+              "explanation": "Target phrase: \"The report suggests that demand is falling.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "What surprised me most was the reaction.",
+              "explanation": "Target phrase: \"What surprised me most was the reaction.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Having read the whole thing, I changed my mind.",
+              "explanation": "Target phrase: \"Having read the whole thing, I changed my mind.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It is not so much the price as the timing.",
+              "explanation": "Target phrase: \"It is not so much the price as the timing.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "b2p22l2",
+          "title": "Speaking: Longer Turns 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b2p22q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We are under no obligation to accept it.",
+              "explanation": "Target phrase: \"We are under no obligation to accept it.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The sooner this is resolved, the less it will cost.",
+              "explanation": "Target phrase: \"The sooner this is resolved, the less it will cost.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would appreciate it if you could confirm.",
+              "explanation": "Target phrase: \"I would appreciate it if you could confirm.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "There is a strong case for waiting.",
+              "explanation": "Target phrase: \"There is a strong case for waiting.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That rather depends on what we agree today.",
+              "explanation": "Target phrase: \"That rather depends on what we agree today.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "b2p22l3",
+          "title": "Speaking: Longer Turns 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b2p22q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am inclined to think it was a mistake.",
+              "explanation": "Target phrase: \"I am inclined to think it was a mistake.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "By the time we arrived, everyone had left.",
+              "explanation": "Target phrase: \"By the time we arrived, everyone had left.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The decision was made without consulting us.",
+              "explanation": "Target phrase: \"The decision was made without consulting us.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I take your point, although I still have doubts.",
+              "explanation": "Target phrase: \"I take your point, although I still have doubts.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We will need far more evidence than that.",
+              "explanation": "Target phrase: \"We will need far more evidence than that.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "b2p22l4",
+          "title": "Speaking: Longer Turns 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b2p22q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It turned out to be much simpler than expected.",
+              "explanation": "Target phrase: \"It turned out to be much simpler than expected.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The whole process took longer than planned.",
+              "explanation": "Target phrase: \"The whole process took longer than planned.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am not sure that follows from what you said.",
+              "explanation": "Target phrase: \"I am not sure that follows from what you said.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We should weigh the risks before committing.",
+              "explanation": "Target phrase: \"We should weigh the risks before committing.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Given the circumstances, that seems reasonable.",
+              "explanation": "Target phrase: \"Given the circumstances, that seems reasonable.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "b2p22l5",
+          "title": "Speaking: Longer Turns 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "b2p22q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It would be unwise to rush the decision.",
+              "explanation": "Target phrase: \"It would be unwise to rush the decision.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The proposal has been revised several times.",
+              "explanation": "Target phrase: \"The proposal has been revised several times.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "What matters most is that it actually works.",
+              "explanation": "Target phrase: \"What matters most is that it actually works.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would be reluctant to change it now.",
+              "explanation": "Target phrase: \"I would be reluctant to change it now.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "b2p22q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Had we acted sooner, this could have been avoided.",
+              "explanation": "Target phrase: \"Had we acted sooner, this could have been avoided.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "c1p1u1",
       "level": "C1",
       "eyebrow": "Unit 2",
@@ -41999,6 +42875,225 @@
               ],
               "answer": "Compliance remains largely a matter of discretion.",
               "explanation": "The audio says \"Compliance remains largely a matter of discretion.\" Formal register where one word reverses the claim."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c1p22u1",
+      "level": "C1",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Register and Nuance",
+      "description": "Say it out loud — Idiomatic and formal phrasing said aloud.",
+      "lessons": [
+        {
+          "id": "c1p22l1",
+          "title": "Speaking: Register and Nuance 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "c1p22q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am afraid that rather misses the point.",
+              "explanation": "Target phrase: \"I am afraid that rather misses the point.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Let me argue the other side for a moment.",
+              "explanation": "Target phrase: \"Let me argue the other side for a moment.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That is easier said than done.",
+              "explanation": "Target phrase: \"That is easier said than done.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We are splitting hairs over the wording.",
+              "explanation": "Target phrase: \"We are splitting hairs over the wording.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The argument does not really hold water.",
+              "explanation": "Target phrase: \"The argument does not really hold water.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "c1p22l2",
+          "title": "Speaking: Register and Nuance 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "c1p22q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would hesitate to draw that conclusion.",
+              "explanation": "Target phrase: \"I would hesitate to draw that conclusion.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "This has been on the back burner for months.",
+              "explanation": "Target phrase: \"This has been on the back burner for months.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "In hindsight, the warning signs were obvious.",
+              "explanation": "Target phrase: \"In hindsight, the warning signs were obvious.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We are talking at cross purposes here.",
+              "explanation": "Target phrase: \"We are talking at cross purposes here.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That would set an unfortunate precedent.",
+              "explanation": "Target phrase: \"That would set an unfortunate precedent.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "c1p22l3",
+          "title": "Speaking: Register and Nuance 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "c1p22q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I am inclined to give them the benefit of the doubt.",
+              "explanation": "Target phrase: \"I am inclined to give them the benefit of the doubt.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The proposal is ambitious, to put it mildly.",
+              "explanation": "Target phrase: \"The proposal is ambitious, to put it mildly.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We should not throw the baby out with the bathwater.",
+              "explanation": "Target phrase: \"We should not throw the baby out with the bathwater.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That is a distinction without a difference.",
+              "explanation": "Target phrase: \"That is a distinction without a difference.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would go so far as to call it reckless.",
+              "explanation": "Target phrase: \"I would go so far as to call it reckless.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "c1p22l4",
+          "title": "Speaking: Register and Nuance 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "c1p22q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The findings are suggestive rather than conclusive.",
+              "explanation": "Target phrase: \"The findings are suggestive rather than conclusive.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It is a question of priorities, not resources.",
+              "explanation": "Target phrase: \"It is a question of priorities, not resources.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We have painted ourselves into a corner.",
+              "explanation": "Target phrase: \"We have painted ourselves into a corner.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "That interpretation strikes me as a stretch.",
+              "explanation": "Target phrase: \"That interpretation strikes me as a stretch.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Let us not lose sight of the original aim.",
+              "explanation": "Target phrase: \"Let us not lose sight of the original aim.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "c1p22l5",
+          "title": "Speaking: Register and Nuance 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "c1p22q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "The tone of the letter was unmistakable.",
+              "explanation": "Target phrase: \"The tone of the letter was unmistakable.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "I would put it slightly more carefully than that.",
+              "explanation": "Target phrase: \"I would put it slightly more carefully than that.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "This is where the argument starts to unravel.",
+              "explanation": "Target phrase: \"This is where the argument starts to unravel.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "We are effectively back where we started.",
+              "explanation": "Target phrase: \"We are effectively back where we started.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "c1p22q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "It bears repeating that nothing was agreed.",
+              "explanation": "Target phrase: \"It bears repeating that nothing was agreed.\" Idiomatic and formal phrasing said aloud."
             }
           ]
         }

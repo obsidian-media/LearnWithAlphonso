@@ -8,7 +8,7 @@ final class ContentStoreTests: XCTestCase {
         // This is the third place an English lesson count is hardcoded, after
         // curriculum-seed.test.ts and ios-content-export.test.ts -- adding a
         // pack is never only a content change.
-        XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 559)
+        XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 584)
         XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 500) // V3 pkg 4a: closed the 125 -> ~500 French content gap
     }
 

@@ -92,7 +92,7 @@ struct ReviewQueueView: View {
                     // .id() forces a fresh ReviewQuestionCard (and its
                     // reorder @State) per item -- same reasoning as
                     // LessonPlayerView's identical pattern.
-                    ReviewQuestionCard(question: question, course: course, vocabImages: contentStore.vocabImages, checked: checked, picked: $picked)
+                    ReviewQuestionCard(question: question, course: course, vocabImages: contentStore.vocabImages, session: session, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked)
                         .id(currentItem.itemKey)
 
                     Spacer()
@@ -253,6 +253,7 @@ private func questionID(_ question: Question) -> String {
     case .fillInBlank(let q): return q.id
     case .reorder(let q): return q.id
     case .listening(let q): return q.id
+    case .speak(let q): return q.id
     }
 }
 
@@ -314,6 +315,10 @@ private struct ReviewQuestionCard: View {
     let question: Question
     let course: Course
     let vocabImages: [String: VocabImageRef]
+    // A speaking item needs a token to transcribe with, and needs to know
+    // whether transcription can happen at all -- see SpeakQuestionCard.
+    let session: Session
+    let isConnected: Bool
     let checked: Bool
     @Binding var picked: String?
 
@@ -403,6 +408,10 @@ private struct ReviewQuestionCard: View {
                     ExplanationView(question: question, picked: picked, explanation: q.explanation)
                 }
             }
+            case .speak(let q):
+                SpeakQuestionCard(
+                    question: q, course: course, session: session,
+                    isConnected: isConnected, checked: checked, picked: $picked)
             }
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)

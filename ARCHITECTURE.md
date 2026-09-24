@@ -133,18 +133,21 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
 counts, verified 2026-09-24 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 559 lessons / 2,846 questions, French 500 lessons
+kept in sync): English 584 lessons / 2,971 questions, French 500 lessons
 / 2,500 questions, Spanish 508 lessons / 2,540 questions. English is now
-ahead of structural parity (it gained the listening type and 125 listening
-questions); French/Spanish still need a native-speaker review pass for
-grammar/naturalness (`docs/BACKLOG.md`, gitignored).
+ahead of structural parity (it gained the listening and speaking types,
+with 125 questions each); French/Spanish still need a native-speaker review
+pass for grammar/naturalness (`docs/BACKLOG.md`, gitignored).
 
-**There are four question types**, not three: `mc`, `fill`, `reorder`, and
-`listening`. `listening` (added 2026-09-24) plays `audioText` via TTS and
-asks the learner to choose what they heard. Two things about it are load
-bearing:
+**There are five question types**, not three: `mc`, `fill`, `reorder`,
+`listening`, and `speak`. `listening` (added 2026-09-24) plays `audioText`
+via TTS and asks the learner to choose what they heard; `speak` (added
+2026-09-24) shows a phrase, records the learner saying it, and grades the
+speech-to-text transcript. Three things about them are load bearing:
 
-- Its `answer` is the correct choice's **text**, not an index like `mc`'s.
+- Every type except `mc` carries its answer as **text**, not as an index
+  (`listening` stores the correct choice's text; `speak` stores the phrase and
+  has no choices at all).
   That matches `fill`/`reorder` and is why `srs.ts`'s
   `deriveAnswerCorrectness` — and both web players' non-`mc` comparison —
   grade it with no type-specific code. Adding a variant with a numeric
@@ -156,17 +159,47 @@ bearing:
   `QuestionGrading.swift` and `VocabDerivation.swift` (three switches) in
   the Kit. A type handled only in the lesson player renders as a blank card
   in spaced review — silently on web, as a compile error on iOS.
+- Anything graded with a rule of its own needs that rule in
+  `deriveAnswerCorrectness` (`src/lib/srs.ts`), not in the player. The
+  review server re-derives correctness independently, so a rule that lives
+  only client-side shows the learner "Still got it" and then lapses the item
+  behind their back. `speak` is the case in point: its tolerant transcript
+  match (`src/lib/spoken-answer.ts`) exists in **three** hand-kept copies —
+  TypeScript, the `grade-review` Deno mirror, and `SpokenAnswer.swift` — with
+  the same test vectors in all three suites, which is the only thing keeping
+  them honest.
 
-`Question` decoding on iOS is deliberately lenient: an unrecognised `type`
-decodes to `Question.unsupported`, which `Lesson`'s decoder filters out.
-Before this, the decoder threw, and because the whole `ContentBundle`
-decodes at once, an app older than its bundled JSON would show the learner
-**no content at all**. The cost of a version skew is now one question.
+`Question` decoding on iOS **fails loudly** on an unrecognised `type`. A
+lenient version (decoding to a filtered `.unsupported` case) was tried and
+reverted: content ships inside the same binary and CI fails the build if the
+exported JSON drifts from source, so an app older than its own bundle cannot
+happen — while skipping a question leaves the lesson with fewer questions than
+the server's copy, and `deriveLessonCompletion` throws on that mismatch, so the
+learner finishes and silently receives no XP, no streak and no unlock. When
+over-the-air content exists this needs a real migration story, not leniency.
 
-Listening questions contribute no vocabulary (`deriveVocab` skips them,
-same as `reorder` — a whole-sentence answer makes a nonsense vocab card),
-so a listening lesson goes straight from overview to quiz with no
-vocabulary step.
+Listening and speaking questions contribute no vocabulary (`deriveVocab` skips
+them, same as `reorder` — a whole-sentence answer makes a nonsense vocab card),
+so those lessons go straight from overview to quiz with no vocabulary step.
+
+Speech capture is one implementation, not one per feature:
+`src/lib/use-speech-capture.ts` on web (used by the conversation route and
+`SpeakAnswer.tsx`) and `SpeakQuestionCard.swift` on iOS. Both only report a
+transcript that still says something once normalised — hesitation noise ("Um.")
+is non-empty but normalises to nothing, and every failure path surfaces an error
+and reports nothing, because a grading caller handed "nothing" would take a
+heart for a microphone problem.
+
+Whenever speech cannot be captured the control degrades to **typing the
+phrase** — and that is driven by actual failure, not only by feature detection.
+A denied microphone, a dead network, a failing `/api/stt` and silence all reach
+it, as does the absence of `getUserMedia` (and, on iOS, being offline, since
+transcription is a network call). Feature detection alone was not enough: a
+learner who denied the microphone kept a mic button that could never produce an
+answer, on a question with no skip, which makes the lesson unfinishable — no
+XP, no streak, no unlock, and nothing on screen explaining why. iOS asks for
+microphone permission **explicitly** for the same reason: a denial does not
+throw, `AVAudioRecorder.record()` simply returns false and records silence.
 
 Server-side score validation (`completeLessonRemote` in
 `src/lib/sync.functions.ts`) looks lessons up through this same

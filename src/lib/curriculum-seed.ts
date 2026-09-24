@@ -40,7 +40,7 @@ export type LessonRow = {
 export type QuestionRow = {
   lesson_id: string;
   id: string;
-  type: "mc" | "fill" | "reorder" | "listening";
+  type: "mc" | "fill" | "reorder" | "listening" | "speak";
   prompt: string;
   choices: string[] | null;
   bank: string[] | null;
@@ -135,6 +135,18 @@ function questionRow(lessonId: string, q: Question, sortOrder: number): Question
       type: "reorder",
       choices: null,
       bank: q.tokens,
+      answer_index: null,
+      answer_text: q.answer,
+    };
+  }
+  if (q.type === "speak") {
+    // A fourth row shape: answer_text alone. No options to choose between and
+    // no word bank -- only the phrase the learner is expected to say.
+    return {
+      ...base,
+      type: "speak",
+      choices: null,
+      bank: null,
       answer_index: null,
       answer_text: q.answer,
     };

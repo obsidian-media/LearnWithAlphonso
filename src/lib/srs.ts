@@ -3,6 +3,7 @@
  * rows and computing the actual due date from `intervalDays`. */
 
 import type { Question } from "../data/curriculum";
+import { matchesSpokenAnswer } from "./spoken-answer";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -15,9 +16,16 @@ import type { Question } from "../data/curriculum";
  * lesson.$id.tsx.
  */
 export function deriveAnswerCorrectness(question: Question, answer: string): boolean {
-  return question.type === "mc"
-    ? question.choices[question.answer] === answer
-    : answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
+  if (question.type === "mc") return question.choices[question.answer] === answer;
+  // A spoken answer arrives as a speech-to-text transcript, whose spelling of
+  // the same utterance varies run to run ("she is"/"she's"/"shes"). It needs
+  // the spoken normaliser rather than a bare trim -- and it needs it HERE,
+  // in the shared helper, because the review server re-derives correctness
+  // from this same rule. If the tolerant match lived only in the player, the
+  // learner would be shown "Still got it" and then have the item lapsed
+  // behind their back.
+  if (question.type === "speak") return matchesSpokenAnswer(answer, question.answer);
+  return answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
 }
 
 export type ReviewGradeInput = {

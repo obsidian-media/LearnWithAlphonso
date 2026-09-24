@@ -18,8 +18,11 @@ type Pack = {
    * "cloze" lines: the left side carries the "___" blank.
    * "listening" lines: "audioText|answer" — the left side is spoken aloud and
    * the pack's own `prompt` is the stem shown after playback.
+   * "speak" lines: "phrase|phrase" — the same text twice, because what is
+   * shown is exactly what the learner must say. The pack's `prompt` is the
+   * instruction ("Say this aloud:").
    */
-  kind: "pair" | "cloze" | "listening";
+  kind: "pair" | "cloze" | "listening" | "speak";
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -777,6 +780,50 @@ The shop closes on Sunday.|The shop closes on Sunday.
 I can't find my keys.|I can't find my keys.
 I can't find my phone.|I can't find my phone.`,
   },
+  {
+    id: "a1p24",
+    title: "Speaking: Everyday Phrases",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Short everyday phrases to practise saying.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `Good morning.|Good morning.
+Nice to meet you.|Nice to meet you.
+How are you today?|How are you today?
+My name is Anna.|My name is Anna.
+I would like a coffee.|I would like a coffee.
+Where is the station?|Where is the station?
+Thank you very much.|Thank you very much.
+Can you help me?|Can you help me?
+I am from Spain.|I am from Spain.
+See you tomorrow.|See you tomorrow.
+The weather is lovely.|The weather is lovely.
+I have two brothers.|I have two brothers.
+What time is it?|What time is it?
+Excuse me, please.|Excuse me, please.
+I work in a bank.|I work in a bank.
+She is my sister.|She is my sister.
+We live in London.|We live in London.
+I do not understand.|I do not understand.
+Could you repeat that?|Could you repeat that?
+The bus leaves at nine.|The bus leaves at nine.
+I am very hungry.|I am very hungry.
+He plays the guitar.|He plays the guitar.
+Have a good evening.|Have a good evening.
+I am learning English.|I am learning English.
+See you next week.|See you next week.`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1458,6 +1505,50 @@ He used to play cricket at school.|He used to play cricket at school.
 The parcel hasn't arrived yet.|The parcel hasn't arrived yet.
 The parcel arrived yesterday.|The parcel arrived yesterday.`,
   },
+  {
+    id: "a2p22",
+    title: "Speaking: Getting Things Done",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Everyday phrases for asking, arranging and explaining.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `I went to the market yesterday.|I went to the market yesterday.
+Could you speak a little slower?|Could you speak a little slower?
+I am looking for the post office.|I am looking for the post office.
+She moved here ten years ago.|She moved here ten years ago.
+We are meeting at the cafe later.|We are meeting at the cafe later.
+I forgot to bring my umbrella.|I forgot to bring my umbrella.
+Do you know when the shop opens?|Do you know when the shop opens?
+My flight was delayed by an hour.|My flight was delayed by an hour.
+I would rather stay at home tonight.|I would rather stay at home tonight.
+He finished his homework already.|He finished his homework already.
+Can I pay by card here?|Can I pay by card here?
+The film was better than I expected.|The film was better than I expected.
+I am trying to eat less sugar.|I am trying to eat less sugar.
+We walked all the way to the river.|We walked all the way to the river.
+She is studying to be a nurse.|She is studying to be a nurse.
+I have never been to Italy.|I have never been to Italy.
+Would you like to join us?|Would you like to join us?
+The train was completely full.|The train was completely full.
+I need to book a room for one night.|I need to book a room for one night.
+He works from home on Fridays.|He works from home on Fridays.
+We should leave before it gets dark.|We should leave before it gets dark.
+I left my bag on the bus.|I left my bag on the bus.
+This jacket is a little too small.|This jacket is a little too small.
+They are building a new library.|They are building a new library.
+I will call you when I arrive.|I will call you when I arrive.`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -2137,6 +2228,50 @@ He denied that he'd made a mistake.|He denied that he'd made a mistake.
 It depends on how much time we've got.|It depends on how much time we've got.
 It depends on how much money we've got.|It depends on how much money we've got.
 I found the ending rather disappointing.|I found the ending rather disappointing.`,
+  },
+  {
+    id: "b1p22",
+    title: "Speaking: Saying What You Think",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Opinions, reasons and comparisons said out loud.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `I think the other option makes more sense.|I think the other option makes more sense.
+Personally, I would handle it differently.|Personally, I would handle it differently.
+The main problem is the cost.|The main problem is the cost.
+It depends on how much time we have.|It depends on how much time we have.
+I am not entirely convinced by that argument.|I am not entirely convinced by that argument.
+On the whole, the changes have helped.|On the whole, the changes have helped.
+I would rather discuss this in person.|I would rather discuss this in person.
+That is a fair point, but I disagree.|That is a fair point, but I disagree.
+The results were better than we hoped.|The results were better than we hoped.
+I have been thinking about it all week.|I have been thinking about it all week.
+There is no easy answer to that.|There is no easy answer to that.
+We could try a completely different approach.|We could try a completely different approach.
+I am afraid I cannot agree with that.|I am afraid I cannot agree with that.
+It would make sense to wait a little.|It would make sense to wait a little.
+The sooner we decide, the better.|The sooner we decide, the better.
+I used to feel the same way.|I used to feel the same way.
+Let me explain what I mean by that.|Let me explain what I mean by that.
+I am fairly sure we can manage it.|I am fairly sure we can manage it.
+That would take far too long.|That would take far too long.
+I would like to hear your opinion on this.|I would like to hear your opinion on this.
+The difference is smaller than it looks.|The difference is smaller than it looks.
+We need to be realistic about this.|We need to be realistic about this.
+I can see why you would think that.|I can see why you would think that.
+In my experience, that rarely works.|In my experience, that rarely works.
+It is worth trying at least once.|It is worth trying at least once.`,
   },
 ];
 
@@ -2820,6 +2955,50 @@ Critics argue the measures don't go far enough.|Critics argue the measures don't
 Critics argue the measures go too far.|Critics argue the measures go too far.
 Attendance has fallen sharply since April.|Attendance has fallen sharply since April.
 Attendance has risen sharply since April.|Attendance has risen sharply since April.`,
+  },
+  {
+    id: "b2p22",
+    title: "Speaking: Longer Turns",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Multi-clause sentences to say in one breath.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `If I had known earlier, I would have said something.|If I had known earlier, I would have said something.
+The report suggests that demand is falling.|The report suggests that demand is falling.
+What surprised me most was the reaction.|What surprised me most was the reaction.
+Having read the whole thing, I changed my mind.|Having read the whole thing, I changed my mind.
+It is not so much the price as the timing.|It is not so much the price as the timing.
+We are under no obligation to accept it.|We are under no obligation to accept it.
+The sooner this is resolved, the less it will cost.|The sooner this is resolved, the less it will cost.
+I would appreciate it if you could confirm.|I would appreciate it if you could confirm.
+There is a strong case for waiting.|There is a strong case for waiting.
+That rather depends on what we agree today.|That rather depends on what we agree today.
+I am inclined to think it was a mistake.|I am inclined to think it was a mistake.
+By the time we arrived, everyone had left.|By the time we arrived, everyone had left.
+The decision was made without consulting us.|The decision was made without consulting us.
+I take your point, although I still have doubts.|I take your point, although I still have doubts.
+We will need far more evidence than that.|We will need far more evidence than that.
+It turned out to be much simpler than expected.|It turned out to be much simpler than expected.
+The whole process took longer than planned.|The whole process took longer than planned.
+I am not sure that follows from what you said.|I am not sure that follows from what you said.
+We should weigh the risks before committing.|We should weigh the risks before committing.
+Given the circumstances, that seems reasonable.|Given the circumstances, that seems reasonable.
+It would be unwise to rush the decision.|It would be unwise to rush the decision.
+The proposal has been revised several times.|The proposal has been revised several times.
+What matters most is that it actually works.|What matters most is that it actually works.
+I would be reluctant to change it now.|I would be reluctant to change it now.
+Had we acted sooner, this could have been avoided.|Had we acted sooner, this could have been avoided.`,
   },
 ];
 
@@ -3505,6 +3684,50 @@ The intervention yielded only marginal improvement.|The intervention yielded onl
 The intervention yielded substantial improvement.|The intervention yielded substantial improvement.
 Compliance remains largely a matter of discretion.|Compliance remains largely a matter of discretion.`,
   },
+  {
+    id: "c1p22",
+    title: "Speaking: Register and Nuance",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Idiomatic and formal phrasing said aloud.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `I am afraid that rather misses the point.|I am afraid that rather misses the point.
+Let me argue the other side for a moment.|Let me argue the other side for a moment.
+That is easier said than done.|That is easier said than done.
+We are splitting hairs over the wording.|We are splitting hairs over the wording.
+The argument does not really hold water.|The argument does not really hold water.
+I would hesitate to draw that conclusion.|I would hesitate to draw that conclusion.
+This has been on the back burner for months.|This has been on the back burner for months.
+In hindsight, the warning signs were obvious.|In hindsight, the warning signs were obvious.
+We are talking at cross purposes here.|We are talking at cross purposes here.
+That would set an unfortunate precedent.|That would set an unfortunate precedent.
+I am inclined to give them the benefit of the doubt.|I am inclined to give them the benefit of the doubt.
+The proposal is ambitious, to put it mildly.|The proposal is ambitious, to put it mildly.
+We should not throw the baby out with the bathwater.|We should not throw the baby out with the bathwater.
+That is a distinction without a difference.|That is a distinction without a difference.
+I would go so far as to call it reckless.|I would go so far as to call it reckless.
+The findings are suggestive rather than conclusive.|The findings are suggestive rather than conclusive.
+It is a question of priorities, not resources.|It is a question of priorities, not resources.
+We have painted ourselves into a corner.|We have painted ourselves into a corner.
+That interpretation strikes me as a stretch.|That interpretation strikes me as a stretch.
+Let us not lose sight of the original aim.|Let us not lose sight of the original aim.
+The tone of the letter was unmistakable.|The tone of the letter was unmistakable.
+I would put it slightly more carefully than that.|I would put it slightly more carefully than that.
+This is where the argument starts to unravel.|This is where the argument starts to unravel.
+We are effectively back where we started.|We are effectively back where we started.
+It bears repeating that nothing was agreed.|It bears repeating that nothing was agreed.`,
+  },
 ];
 
 export const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
@@ -3577,6 +3800,18 @@ function packQuestions(pack: Pack): Question[] {
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
+    // Returned before any distractor work: a speaking question has no choices
+    // and no word bank, so picking distractors would be effort whose result is
+    // discarded, and the mc/fill split below does not apply to it either.
+    if (pack.kind === "speak") {
+      return {
+        id: `${pack.id}q${i}`,
+        type: "speak",
+        prompt: pack.prompt ?? "Say this aloud:",
+        answer: left!,
+        explanation: `Target phrase: "${left}" ${pack.note}`,
+      };
+    }
     // Built before the distractors so they can be ranked against it -- a
     // candidate already present in the prompt makes a poor wrong answer.
     const prompt =

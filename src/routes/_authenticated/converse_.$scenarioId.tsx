@@ -4,6 +4,7 @@ import { LessonFrame } from "../../components/AppShell";
 import { getScenario } from "../../data/scenarios";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
+import { useSpeechCapture } from "../../lib/use-speech-capture";
 import { fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
@@ -56,8 +57,6 @@ function ConverseChatPage() {
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ttsOn, setTtsOn] = useState(true);
   // Adaptive difficulty (V3 package 3a): scenarios are English-only, so
@@ -78,15 +77,6 @@ function ConverseChatPage() {
   }, []);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  // getUserMedia is async, so a release (mouseup/touchend/keyup) can land
-  // before the MediaRecorder even exists -- stopRecording() would then be
-  // a no-op and the mic would stay hot with no way to stop it. This flag
-  // records "the user already asked to stop" so startRecording can honor
-  // it the moment the recorder is actually created.
-  const stopRequestedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -172,80 +162,31 @@ function ConverseChatPage() {
     [messages, scenario.systemPrompt, cefrLevel, sending, speak],
   );
 
-  const startRecording = useCallback(async () => {
+  // The capture flow lives in useSpeechCapture so the speaking question type
+  // uses the same implementation rather than a second copy of it. The hook
+  // only calls back on a real transcript; every failure path surfaces through
+  // `captureError` instead.
+  const {
+    state: captureState,
+    error: captureError,
+    start: beginCapture,
+    stop: stopRecording,
+  } = useSpeechCapture({
+    onTranscript: (text, confidence) => send(text, confidence ?? undefined),
+  });
+  // Before the hook existed, startRecording began with setError(null). The hook
+  // clears only its OWN error, so without this a stale send failure
+  // ("Something went wrong.") kept winning the `error ?? captureError` display
+  // and masked every later capture message.
+  const startRecording = useCallback(() => {
     setError(null);
-    stopRequestedRef.current = false;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // The user already released/cancelled while permission was pending --
-      // don't start recording at all, just release the mic immediately.
-      if (stopRequestedRef.current) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      streamRef.current = stream;
-      const mime = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-          ? "audio/mp4"
-          : "";
-      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      chunksRef.current = [];
-      rec.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      rec.onstop = async () => {
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-        const type = rec.mimeType || mime || "audio/webm";
-        const ext = type.includes("mp4") ? "mp4" : type.includes("mpeg") ? "mp3" : "webm";
-        const blob = new Blob(chunksRef.current, { type });
-        if (blob.size < 1024) {
-          setError("That was too short — try again.");
-          return;
-        }
-        setTranscribing(true);
-        try {
-          const fd = new FormData();
-          fd.append("file", blob, `recording.${ext}`);
-          const resp = await fetch("/api/stt", {
-            method: "POST",
-            headers: await authHeaders(),
-            body: fd,
-          });
-          if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
-          const data = (await resp.json()) as { text?: string; confidence?: number | null };
-          const text = (data.text ?? "").trim();
-          if (!text) {
-            setError("Didn't catch that — try again.");
-          } else {
-            await send(text, data.confidence);
-          }
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Transcription failed.");
-        } finally {
-          setTranscribing(false);
-        }
-      };
-      recorderRef.current = rec;
-      rec.start();
-      setRecording(true);
-    } catch {
-      setError("Microphone access is needed to speak.");
-      setRecording(false);
-    }
-  }, [send]);
-
-  const stopRecording = useCallback(() => {
-    stopRequestedRef.current = true;
-    const rec = recorderRef.current;
-    if (rec && rec.state !== "inactive") rec.stop();
-    setRecording(false);
-  }, []);
+    return beginCapture();
+  }, [beginCapture]);
+  const recording = captureState === "recording";
+  const transcribing = captureState === "transcribing";
 
   useEffect(() => {
     return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
       audioRef.current?.pause();
     };
   }, []);
@@ -369,12 +310,12 @@ function ConverseChatPage() {
               <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
             </div>
           )}
-          {error && (
+          {(error ?? captureError) && (
             <div
               role="alert"
               className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
             >
-              {error}
+              {error ?? captureError}
             </div>
           )}
         </div>

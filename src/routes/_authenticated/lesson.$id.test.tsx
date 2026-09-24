@@ -152,6 +152,49 @@ describe("Lesson page", () => {
     expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
   });
 
+  it("renders a speaking question with the phrase to say and a way to hear it", async () => {
+    // jsdom has no MediaRecorder, so this exercises the no-microphone path --
+    // which is the important one to pin: a speaking question the learner cannot
+    // answer is a lesson they cannot complete, and completion is what pays out
+    // XP, the streak and the next unlock.
+    const user = userEvent.setup();
+    currentLessonId = "a1p24l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    expect(await screen.findByText("Speaking")).toBeInTheDocument();
+    expect(screen.getByText("Say this aloud:")).toBeInTheDocument();
+    expect(screen.getByText("Good morning.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /hear it first/i })).toBeInTheDocument();
+    expect(screen.getByText(/recording isn't available/i)).toBeInTheDocument();
+  });
+
+  it("grades a spoken answer tolerantly rather than character by character", async () => {
+    // What reaches grading is a speech-to-text transcript, so it arrives
+    // without capitalisation or final punctuation. Grading it strictly would
+    // fail a learner who said the phrase perfectly.
+    const user = userEvent.setup();
+    currentLessonId = "a1p24l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Type the phrase"), "good morning");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("marks a different phrase wrong on a speaking question", async () => {
+    const user = userEvent.setup();
+    currentLessonId = "a1p24l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Type the phrase"), "good night");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(loseHeartRemote).toHaveBeenCalled();
+  });
+
   it("walks overview -> vocab -> quiz for a lesson with derived vocabulary", async () => {
     const user = userEvent.setup();
     renderPage();

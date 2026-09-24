@@ -16,6 +16,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { computeReviewOutcome } from "./srs.ts";
+import { matchesSpokenAnswer } from "./spoken-answer.ts";
 
 const courseSchema = z.enum(["en", "fr"]);
 const itemKeySchema = z
@@ -81,6 +82,16 @@ type QuestionRow = {
 function deriveAnswerCorrectness(question: QuestionRow, answer: string): boolean {
   if (question.type === "mc") {
     return (question.choices ?? [])[question.answer_index ?? -1] === answer;
+  }
+  // A "speak" answer is a speech-to-text transcript, so it is compared with
+  // the spoken normaliser rather than a bare trim. This MUST agree with
+  // src/lib/spoken-answer.ts: the player grades with that copy and shows the
+  // learner a verdict, and this function then re-derives it. If the two
+  // disagreed, the learner would see "Still got it" and have the item lapsed
+  // anyway. srs.test.ts here mirrors the source's vectors, and CI's deno-tests
+  // job is what catches drift.
+  if (question.type === "speak") {
+    return matchesSpokenAnswer(answer, question.answer_text ?? "");
   }
   return answer.trim().toLowerCase() === (question.answer_text ?? "").trim().toLowerCase();
 }

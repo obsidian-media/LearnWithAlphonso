@@ -24,6 +24,13 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
         // fill-in-blank uses rather than an index lookup.
         return picked.trimmingCharacters(in: .whitespaces).lowercased()
             == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+    case .speak(let q):
+        // `picked` is a speech-to-text transcript, whose spelling of the same
+        // utterance varies run to run, so it needs the tolerant match rather
+        // than the comparison above -- and it needs the SAME tolerant match the
+        // server uses, or the learner is told "Nice" and then has the item
+        // lapsed. See SpokenAnswer.swift's note on the three copies.
+        return SpokenAnswer.matches(transcript: picked, expected: q.answer)
     }
 }
 
