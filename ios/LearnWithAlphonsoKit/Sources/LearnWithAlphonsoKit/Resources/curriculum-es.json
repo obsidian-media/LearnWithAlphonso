@@ -9999,11 +9999,10 @@
               "type": "mc",
               "prompt": "Está ___ (raining) ahora.",
               "choices": [
-                "Hay",
                 "lloviendo",
-                "hay"
+                "Hay"
               ],
-              "answer": 1,
+              "answer": 0,
               "explanation": "\"lloviendo\" is correct here. Common weather expressions using hacer/estar/haber."
             }
           ]
