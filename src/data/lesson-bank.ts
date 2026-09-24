@@ -1,5 +1,6 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
+import { orderDistractorCandidates } from "@/lib/distractor-affinity";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -3343,9 +3344,24 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string) {
+function pickDistractors(answer: string, pool: string[], seed: string, prompt?: string) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
+  // Walk the pool from a per-question hashed offset first, so each question in
+  // a pack sees a different candidate order, then let part-of-speech affinity
+  // reorder that walk. Doing it in this order keeps the variety the offset
+  // provides while preferring wrong answers that are at least grammatically
+  // possible in the blank -- a cloze pack's pool mixes word classes, so an
+  // unordered walk offered nouns for verb slots ("I need to ___ some money"
+  // -> "money"). The affinity pass reorders and never drops, so the count
+  // below is unchanged and `useMc`'s `distractors.length < 3` branch cannot
+  // flip a question between fill and mc.
+  const walk: string[] = [];
+  for (let i = 0; i < others.length; i++) {
+    const cand = others[(start + i * 7) % others.length];
+    if (cand) walk.push(cand);
+  }
+  const ordered = orderDistractorCandidates(answer, walk, prompt);
   const out: string[] = [];
   // Dedupe case-insensitively -- see bank-engine.ts's pickDistractors
   // (duplicated here; English's generator predates the shared engine and
@@ -3353,8 +3369,8 @@ function pickDistractors(answer: string, pool: string[], seed: string) {
   // rationale. Same fix applied to both, found via an automated
   // content-consistency scan (2026-09-22).
   const seen = new Set<string>([answer.toLowerCase()]);
-  for (let i = 0; out.length < 3 && i < others.length; i++) {
-    const cand = others[(start + i * 7) % others.length];
+  for (let i = 0; out.length < 3 && i < ordered.length; i++) {
+    const cand = ordered[i];
     const key = cand?.toLowerCase();
     if (cand && key && !seen.has(key)) {
       out.push(cand);
@@ -3374,8 +3390,10 @@ function packQuestions(pack: Pack): Question[] {
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
-    const distractors = pickDistractors(answer, pool, seed);
+    // Built before the distractors so they can be ranked against it -- a
+    // candidate already present in the prompt makes a poor wrong answer.
     const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
+    const distractors = pickDistractors(answer, pool, seed, prompt);
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
