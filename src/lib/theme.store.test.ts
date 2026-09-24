@@ -41,9 +41,18 @@ describe("useTheme.hydrateFromServer", () => {
     expect(useTheme.getState().theme).toBe("studio-ink");
   });
 
-  it("leaves the DOM untouched when the resolved theme matches the current one", () => {
+  it("still applies the resolved theme to the DOM even when it matches the store's current guess", () => {
+    // Regression: the store's initial `theme` is itself a *guess*
+    // (resolveInitialTheme run at module-init, before any DOM write
+    // happens) -- for a brand-new visitor that guess is "canopy" with
+    // nothing yet applied to the DOM. A guard that skipped writing
+    // whenever `resolved === get().theme` treated "the guess agrees
+    // with itself" as "the DOM already reflects it", which isn't true
+    // the first time hydrateFromServer runs. Always applying is what
+    // fixes that, at the (harmless) cost of a redundant write on the
+    // one path where the DOM genuinely already matches.
     useTheme.getState().hydrateFromServer("meadow");
-    expect(document.documentElement.dataset.theme).toBe("");
+    expect(document.documentElement.dataset.theme).toBe("meadow");
     expect(useTheme.getState().hydrated).toBe(true);
   });
 });

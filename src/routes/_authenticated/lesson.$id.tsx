@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { MascotBanner } from "../../components/MascotBanner";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 import { getCourse, localeForCourse, type Course } from "../../data/courses";
@@ -456,7 +457,7 @@ function LessonPage() {
             ) : (
               <button
                 onClick={next}
-                className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+                className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
               >
                 {isReinforcing || pendingReinforcement || idx < total - 1 ? "Continue" : "Finish"}
               </button>
@@ -645,7 +646,7 @@ function OverviewScreen({
   );
 }
 
-function FinishScreen({
+export function FinishScreen({
   xp,
   unlocked,
   heartsBonus,
@@ -670,20 +671,12 @@ function FinishScreen({
   return (
     <div className="flex flex-1 flex-col items-center px-6 pb-8 pt-6 text-center">
       <motion.div
-        initial={{ scale: 0.6, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        className="mb-6 grid size-24 place-items-center rounded-full bg-moss text-surface hard-shadow"
+        className="mb-6 w-full"
       >
-        <svg viewBox="0 0 24 24" className="size-12" fill="none" aria-hidden="true">
-          <path
-            d="m6 12 4 4 8-9"
-            stroke="white"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <MascotBanner mascot="alphonso" message="Nice work — lesson complete!" />
       </motion.div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember">
         Lesson complete
@@ -756,7 +749,7 @@ function FinishScreen({
                       : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
                   }
                 >
-                  <span className="grid size-8 place-items-center rounded-full bg-ember text-surface text-xs">
+                  <span className="grid size-8 place-items-center rounded-full bg-ember text-ink-on-ember text-xs">
                     ★
                   </span>
                   <div>

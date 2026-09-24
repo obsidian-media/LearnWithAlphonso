@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { updateProfile } from "./leaderboard.functions";
 
-export const THEME_NAMES = ["meadow", "studio-ink", "manuscript"] as const;
+export const THEME_NAMES = ["meadow", "studio-ink", "manuscript", "canopy"] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
 
 export function isThemeName(value: unknown): value is ThemeName {
@@ -16,7 +16,7 @@ export function isThemeName(value: unknown): value is ThemeName {
 export function resolveInitialTheme(localStorageValue: unknown, serverValue: unknown): ThemeName {
   if (isThemeName(serverValue)) return serverValue;
   if (isThemeName(localStorageValue)) return localStorageValue;
-  return "meadow";
+  return "canopy";
 }
 
 type ThemeState = {
@@ -53,10 +53,15 @@ export const useTheme = create<ThemeState>()((set, get) => ({
   },
   hydrateFromServer: (serverValue) => {
     const resolved = resolveInitialTheme(readLocalTheme(), serverValue);
-    if (resolved !== get().theme) {
-      document.documentElement.dataset.theme = resolved;
-      writeLocalTheme(resolved);
-    }
+    // Always apply, not just when it differs from the store's own
+    // current guess -- the store's initial `theme` (line above) is
+    // computed the same way, so for a brand-new visitor (no
+    // localStorage) both already agree on "canopy" before this ever
+    // runs, and a guard here would skip writing it to the DOM/
+    // localStorage entirely, leaving the page rendered against
+    // :root (Meadow) while the store silently disagrees.
+    document.documentElement.dataset.theme = resolved;
+    writeLocalTheme(resolved);
     set({ theme: resolved, hydrated: true });
   },
 }));

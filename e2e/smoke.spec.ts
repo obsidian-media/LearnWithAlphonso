@@ -47,10 +47,17 @@ test("unknown route shows the 404 page", async ({ page }) => {
   await expect(page).toHaveURL("/");
 });
 
-test("defaults to the meadow theme with no stored preference", async ({ page }) => {
+test("defaults to the canopy theme with no stored preference", async ({ page }) => {
   await page.goto("/");
-  const theme = await page.evaluate(() => document.documentElement.dataset.theme);
-  expect(theme).toBeUndefined();
+  // Canopy became the web default alongside iOS's (resolveInitialTheme in
+  // src/lib/theme.ts), so a fresh visitor now gets an explicit
+  // data-theme="canopy" rather than falling through to :root's Meadow with
+  // no attribute at all -- which is what this test used to assert.
+  //
+  // toHaveAttribute rather than a one-shot page.evaluate: the attribute is
+  // written during hydration, so reading it immediately after goto() is a
+  // race. This matches the studio-ink test below.
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "canopy");
 });
 
 test("applies the studio-ink theme from localStorage before first paint", async ({ page }) => {

@@ -30,4 +30,20 @@ describe("AnswerFeedback", () => {
     render(<AnswerFeedback correct headline="Nice!" explanation="e" />);
     expect(screen.getByRole("status")).toHaveClass("border-l-moss");
   });
+
+  it("shows Alphonso when the answer is incorrect", () => {
+    render(<AnswerFeedback correct={false} headline="Not quite" explanation="e" />);
+    expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
+
+  it("does not show Alphonso when the answer is correct", () => {
+    render(<AnswerFeedback correct headline="Nice!" explanation="e" />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("shows Alphonso on wrong answers in the Studio Ink theme too", () => {
+    useTheme.setState({ theme: "studio-ink" });
+    render(<AnswerFeedback correct={false} headline="Not quite" explanation="e" />);
+    expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
 });

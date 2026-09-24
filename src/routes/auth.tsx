@@ -258,7 +258,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
             >
               {busy
                 ? "Please wait…"

@@ -123,7 +123,7 @@ function ResetPasswordPage() {
             <button
               type="submit"
               disabled={busy || !ready}
-              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
             >
               {busy ? "Saving…" : "Update password"}
             </button>

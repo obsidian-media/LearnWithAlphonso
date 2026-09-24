@@ -113,6 +113,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap",
+      },
+      {
+        rel: "stylesheet",
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
@@ -136,7 +140,14 @@ function RootShell({ children }: { children: ReactNode }) {
           // Runs before first paint to avoid a flash of the wrong theme.
           // Kept inline (not an external file) so it blocks nothing.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="studio-ink"||t==="manuscript")document.documentElement.dataset.theme=t;}catch(e){}})();`,
+            // "canopy" is the default now (see theme.ts's
+            // resolveInitialTheme) -- a visitor with NO stored theme
+            // must get the same first-paint result the client store
+            // will compute a moment later, or the picker will say
+            // Canopy while the page renders Meadow (:root). Only an
+            // explicit "meadow" string (or nothing) skips setting
+            // data-theme at all, since :root already is Meadow.
+            __html: `(function(){try{var t=localStorage.getItem("theme")||"canopy";if(t==="studio-ink"||t==="manuscript"||t==="canopy")document.documentElement.dataset.theme=t;}catch(e){}})();`,
           }}
         />
         <HeadContent />
