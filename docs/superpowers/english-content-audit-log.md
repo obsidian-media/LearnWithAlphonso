@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|
 | `a1p1` | pack | Plurals | 25 | ☑ | No issues found. |
 | `a1p2` | pack | To Be & Present Simple | 25 | ☑ | No issues found. |
-| `a1p3` | pack | Opposites | 25 | ☑ | No issues found. |
+| `a1p3` | pack | Opposites | 25 | ☑ | FIXED BY RANKING LAYER: pool holds both `young` (old|young) and `old` (new|old), so "Opposite of 'old':" could offer "old". The prompt-overlap rule now demotes it. No content edit needed. |
 | `a1p4` | pack | Time & Place | 25 | ☑ | No issues found. |
 | `a1p5` | pack | Everyday Verbs | 25 | ☑ | No issues found. |
 | `a1p6` | pack | Questions | 25 | ☑ | No issues found. |
@@ -20,7 +20,7 @@
 | `a1p8` | pack | Food & Drink | 25 | ☑ | No issues found. |
 | `a1p9` | pack | Clothes & Colours | 25 | ☑ | No issues found. |
 | `a1p10` | pack | Weather & Seasons | 25 | ☑ | No issues found. |
-| `a1p11` | pack | Numbers & Money | 25 | ☑ | No issues found. |
+| `a1p11` | pack | Numbers & Money | 25 | ☑ | DEFECTS FOUND + FIXED: "Can I pay in ___ instead of cash?"->coins had two defensible answers (change/notes are cash) - re-clued to a one-pound coins jar. "Could you ___ this note"->change also accepted "save" - stem now says "for smaller ones". Verb slots additionally had noun distractors; fixed by the ranking layer. |
 | `a1p12` | pack | Jobs & Occupations | 25 | ☑ | No issues found. |
 | `a1p13` | pack | Animals | 25 | ☑ | FIXED x2: "very large grey animal with tusks"->"elephant seal" re-clued to walrus (the clue described an elephant, already in the pool); turtle/snail clues were near-identical, snail re-clued. |
 | `a1p14` | pack | Days, Months & Time | 25 | ☑ | FIXED: answer "flowers" (a Valentine's line) polluted a time-word pool; replaced with a "noon" line. Was producing [January, flowers, time, year]. |
@@ -60,7 +60,7 @@
 | `b1p6` | pack | Relative Clauses | 25 | ☑ | No issues found. |
 | `b1p7` | pack | Travel & Tourism | 25 | ☑ | No issues found. |
 | `b1p8` | pack | Feelings & Emotions | 25 | ☑ | No issues found. |
-| `b1p9` | pack | Money & Shopping | 25 | ☑ | No issues found. |
+| `b1p9` | pack | Money & Shopping | 25 | ☑ | DEFECT FOUND: verb slots were offered nouns from the same pack ("He's ___ into debt" offering debt/spending/refund/guarantee). Fixed by the ranking layer, not by curation - the pool legitimately mixes word classes. |
 | `b1p10` | pack | Environment | 25 | ☑ | No issues found. |
 | `b1p11` | pack | Education & Learning | 25 | ☑ | No issues found. |
 | `b1p12` | pack | Describing Trends | 25 | ☑ | No issues found. |
@@ -135,6 +135,19 @@ spot-checking compiled output from `scripts/dump-english-questions.ts`.
 Hand-written units and the placement pool were reviewed directly, since their
 choices are authored rather than generated.
 
+### How much "No issues found" is worth
+
+Read those rows as "no pool-level or systemic defect found", not as
+certification that every question in the pack is perfect. The audit's strength
+is pool composition, which is where the reported bug lives and which it covers
+exhaustively. Its weakness is per-question semantics.
+
+This limit is measured, not hypothetical: during whole-branch review, two packs
+marked clean were spot-checked and both held real two-defensible-answer
+defects (both in `a1p11`, now fixed and re-marked). A reviewer should assume
+similar defects remain in other packs and treat a "no issues" row as
+"unexamined at that depth" rather than "verified clean".
+
 ### Systemic finding (applies to every generated pack)
 
 The reported bug has two distinct causes, and pool curation only addresses one:
@@ -148,10 +161,24 @@ The reported bug has two distinct causes, and pool curation only addresses one:
 
 Cause 2 was fixed in code by ranking candidates on part-of-speech affinity and
 prompt overlap before they are taken (`src/lib/distractor-affinity.ts`).
-Measured across all 1,387 English multiple-choice questions: part-of-speech
-mismatched distractors fell from **40.1% to 6.3%**, and distractors echoing a
-prompt word fell to **6** (all in grammar packs that have no same-class
-alternative, where offering one is the correct pedagogy).
+Measured across all 1,387 English multiple-choice questions: distractors echoing a
+prompt word fell from 12 to **5** (1 multiple-choice, 4 fill banks).
+
+A part-of-speech ratio is also tracked, but it is a smoke test, not evidence of
+quality: the ranking layer sorts by the same map the ratio is measured with, so
+it can only detect the layer being removed, never a wrong tag. Independent
+evidence is the hand-labelled accuracy check in `src/data/answer-pos.test.ts`,
+which the first (bare-word) version of the tag map failed at 62%; the current
+contextual map scores 88% on that sample.
+
+**A defect was found here during whole-branch review and corrected.** The first
+version of the tag map was built by tagging bare words, which `compromise` does
+confidently and often wrongly -- it tagged 44.8% of the bank "Verb", including
+`tax`, `card`, `discount`, `balance` and `refund`. The ranking layer therefore
+promoted those nouns into verb slots, the exact defect it exists to remove, and
+the map-relative metric could not see it. Tags are now read from each answer's
+own sentence, only where every occurrence agrees; answers seen solely in "pair"
+packs are left untagged rather than guessed.
 
 ### Hand-written content
 
@@ -172,8 +199,12 @@ a committed 2,721-id baseline and passes, so no saved review item was repointed.
   shape nouns (triangle, hexagon) with size adjectives (huge, tiny), so a shape
   question can draw an adjective distractor. Splitting it adds or removes lines,
   which shifts every later question id in the pack and repoints real users'
-  saved review items. The distractor ranking layer already demotes the
-  cross-class options, so the remaining cost is cosmetic. Revisit only as part
-  of a deliberate, migrated content change.
+  saved review items. Note the ranking layer does NOT mitigate this pack: its
+  answers appear only in "pair" lines, which carry no sentence, so they are
+  deliberately left untagged and no preference is expressed. Live output still
+  mixes classes -- "has four equal sides" offers [triangle, square, huge,
+  heavy]. The defect is real and remains open; it is deferred because splitting
+  the pack shifts ids, not because it is harmless. Revisit as a deliberate,
+  migrated content change.
 
 No pack re-levelling was proposed: no pack was found materially mis-levelled.

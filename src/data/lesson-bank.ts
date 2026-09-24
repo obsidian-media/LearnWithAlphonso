@@ -352,10 +352,10 @@ Bring a jacket — it's ___ this evening.|chilly`,
     kind: "cloze",
     note: "Everyday number and money vocabulary.",
     data: `This shirt costs ___ dollars.|twenty
-Can I pay in ___ instead of cash?|coins
+I keep a jar of one-pound ___ on the shelf.|coins
 I'd like to ___ some money from the machine.|withdraw
 The bill comes to ___ euros.|fifteen
-Could you ___ this note, please?|change
+Could you ___ this twenty-pound note for smaller ones?|change
 I need to ___ some money for the trip.|save
 She ___ ten dollars on the gift.|spent
 He asked for a ___ on the price.|discount
@@ -2472,7 +2472,7 @@ The exhibition features works by local ___.|artists
 The band's latest album was a huge commercial ___.|success
 Critics praised the film's stunning ___.|cinematography
 The theatre company is famous for its innovative ___.|productions
-The painting is the centrepiece of the gallery's new ___.|collection
+The museum acquired a private ___ of Impressionist works.|collection
 The festival celebrates classical and contemporary ___.|music
 The actor gave a deeply moving ___.|performance
 The sculpture was carved from a single block of ___.|marble
@@ -2482,7 +2482,7 @@ The documentary sheds light on an overlooked ___ movement.|artistic
 The opera house is renowned for its stunning ___.|acoustics
 The mural depicts the city's rich cultural ___.|heritage
 The critics called the performance a true work of ___.|art
-The exhibition received widespread critical ___.|acclaim
+The young pianist won critical ___ for her debut.|acclaim
 The novel won several literary ___ this year.|awards`,
   },
   {

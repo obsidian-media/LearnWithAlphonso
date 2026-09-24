@@ -31,14 +31,13 @@ describe("orderDistractorCandidates", () => {
   });
 
   it("deprioritises a candidate that already appears in the prompt", () => {
-    // "He's ___ into debt because of his spending." -- offering "spending"
-    // echoes the sentence back at the learner instead of testing anything.
+    // Echoing a word from the sentence back at the learner tests nothing.
     const ordered = orderDistractorCandidates(
-      "falling",
-      ["spending", "rising", "sinking"],
-      "He's ___ into debt because of his spending.",
+      "save",
+      ["spend", "withdraw"],
+      "Should I spend it, or ___ it?",
     );
-    expect(ordered).toEqual(["rising", "sinking", "spending"]);
+    expect(ordered).toEqual(["withdraw", "spend"]);
   });
 
   it("still offers a prompt word when there is nothing else of its class", () => {
@@ -49,13 +48,26 @@ describe("orderDistractorCandidates", () => {
     expect(ordered).toEqual(["had"]);
   });
 
-  it("ranks same-class-and-not-in-prompt above same-class-in-prompt", () => {
+  it("ranks by word class first and prompt overlap second", () => {
+    // Best: right class, not echoed. Then: right class but echoed. Worst:
+    // wrong class, which is the ungrammatical-distractor case this exists for.
+    const ordered = orderDistractorCandidates(
+      "save",
+      ["spend", "money", "withdraw"],
+      "Should I spend it, or ___ it?",
+    );
+    expect(ordered[0]).toBe("withdraw");
+    expect(ordered.indexOf("spend")).toBeLessThan(ordered.indexOf("money"));
+  });
+
+  it("ranks a candidate that is both wrong-class and echoed last of all", () => {
+    // "He's ___ into debt because of his spending." -- "spending" reads as a
+    // noun there, so for a verb slot it is both ungrammatical and an echo.
     const ordered = orderDistractorCandidates(
       "falling",
-      ["spending", "wallet", "rising"],
+      ["spending", "withdraw"],
       "He's ___ into debt because of his spending.",
     );
-    expect(ordered[0]).toBe("rising");
-    expect(ordered.indexOf("spending")).toBeLessThan(ordered.indexOf("wallet"));
+    expect(ordered).toEqual(["withdraw", "spending"]);
   });
 });
