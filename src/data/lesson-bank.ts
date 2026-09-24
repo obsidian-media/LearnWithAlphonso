@@ -1595,6 +1595,46 @@ This jacket is a little too small.|This jacket is a little too small.
 They are building a new library.|They are building a new library.
 I will call you when I arrive.|I will call you when I arrive.`,
   },
+  {
+    id: "a2p23",
+    title: "Say It Your Way: Getting Things Done",
+    subtitle: "Write the idea in English",
+    kind: "translate",
+    prompt: "Write this in English:",
+    note: "Everyday errands and arrangements, more than one wording.",
+    // The left side describes the idea rather than giving the sentence away --
+    // otherwise this is a copying exercise, not a producing one. Each line
+    // lists three wordings a learner plausibly reaches for; anything else valid
+    // is caught by the AI grader, which is the fallback, not the plan. Avoids
+    // the traps the speaking packs documented (compound numbers, ordinals,
+    // contracted "has", possessive 's, undisambiguated names), because the same
+    // normaliser runs underneath.
+    data: `Ask what time a shop opens.|What time does the shop open?;When does the shop open?;Could you tell me what time the shop opens?
+Say you went to the market yesterday.|I went to the market yesterday.;Yesterday I went to the market.;I was at the market yesterday.
+Ask someone to speak more slowly.|Could you speak more slowly?;Can you speak slower, please?;Please speak a little slower.
+Say you have never been to Italy.|I have never been to Italy.;I've never been to Italy.;I have not been to Italy before.
+Ask whether you can pay by card.|Can I pay by card?;Do you take cards?;Is it possible to pay by card?
+Say your train was delayed.|My train was delayed.;The train was late.;My train ran late.
+Offer to help someone with their bags.|Can I help you with your bags?;Would you like some help with your bags?;Let me help you with those bags.
+Say you would rather stay at home tonight.|I would rather stay at home tonight.;I'd rather stay in tonight.;I would prefer to stay home tonight.
+Ask where you can find a pharmacy.|Where can I find a pharmacy?;Is there a pharmacy near here?;Could you tell me where the pharmacy is?
+Say you forgot your umbrella.|I forgot my umbrella.;I left my umbrella behind.;I have forgotten my umbrella.
+Ask someone to call you later.|Could you call me later?;Can you ring me later?;Please call me later.
+Say the film was better than you expected.|The film was better than I expected.;The film was better than I thought.;I enjoyed the film more than I expected.
+Say you are looking for the post office.|I am looking for the post office.;I'm looking for the post office.;I am trying to find the post office.
+Ask how long the journey takes.|How long does the journey take?;How long is the journey?;How much time does the trip take?
+Say you booked a room for one night.|I booked a room for one night.;I have booked a room for one night.;I reserved a room for one night.
+Apologise for arriving late.|I am sorry I am late.;Sorry for being late.;I apologise for arriving late.
+Ask whether the seat is free.|Is this seat free?;Is anyone sitting here?;May I sit here?
+Say you are trying to eat less sugar.|I am trying to eat less sugar.;I'm trying to cut down on sugar.;I am eating less sugar these days.
+Ask someone what they did at the weekend.|What did you do at the weekend?;How was your weekend?;What did you get up to at the weekend?
+Say the jacket is a little too small.|This jacket is a little too small.;The jacket is slightly too small.;This jacket is a bit small for me.
+Say you will call when you arrive.|I will call you when I arrive.;I'll call when I get there.;I am going to call you when I arrive.
+Ask whether breakfast is included.|Is breakfast included?;Does the price include breakfast?;Is breakfast part of the price?
+Say you walked all the way to the river.|We walked all the way to the river.;I walked as far as the river.;We went on foot to the river.
+Ask someone to repeat the address.|Could you repeat the address?;Can you say the address again?;Please repeat the address.
+Say you are studying to be a nurse.|I am studying to be a nurse.;I'm training to be a nurse.;I am studying nursing.`,
+  },
 ];
 
 const B1: Pack[] = [
@@ -2318,6 +2358,46 @@ We need to be realistic about this.|We need to be realistic about this.
 I can see why you would think that.|I can see why you would think that.
 In my experience, that rarely works.|In my experience, that rarely works.
 It is worth trying at least once.|It is worth trying at least once.`,
+  },
+  {
+    id: "b1p23",
+    title: "Say It Your Way: Opinions",
+    subtitle: "Write the idea in English",
+    kind: "translate",
+    prompt: "Write this in English:",
+    note: "Opinions, reasons and comparisons, written in your own words.",
+    // The left side describes the idea rather than giving the sentence away --
+    // otherwise this is a copying exercise, not a producing one. Each line
+    // lists three wordings a learner plausibly reaches for; anything else valid
+    // is caught by the AI grader, which is the fallback, not the plan. Avoids
+    // the traps the speaking packs documented (compound numbers, ordinals,
+    // contracted "has", possessive 's, undisambiguated names), because the same
+    // normaliser runs underneath.
+    data: `Say the main problem is the cost.|The main problem is the cost.;The biggest problem is the cost.;Cost is the main issue.
+Say it depends how much time you have.|It depends on how much time we have.;That depends on the time available.;It depends how much time there is.
+Disagree politely with an argument.|I am afraid I do not agree.;I'm not sure I agree with that.;I see it differently.
+Say you would handle it differently.|I would handle it differently.;Personally, I'd do it another way.;I would approach it differently.
+Say the results were better than hoped.|The results were better than we hoped.;The results beat our expectations.;The results were better than expected.
+Say there is no easy answer.|There is no easy answer to that.;There's no simple answer.;That question has no easy answer.
+Suggest trying a different approach.|We could try a different approach.;Perhaps we should try another way.;Let us try a different approach.
+Say you have been thinking about it all week.|I have been thinking about it all week.;I've been thinking about this all week.;It has been on my mind all week.
+Say it would make sense to wait.|It would make sense to wait.;I think we should wait.;Waiting would make more sense.
+Say you used to feel the same way.|I used to feel the same way.;I felt the same way once.;I used to think that too.
+Ask someone to explain what they mean.|Could you explain what you mean?;What do you mean by that?;Can you say more about that?
+Say the difference is smaller than it looks.|The difference is smaller than it looks.;The gap is smaller than it seems.;It is a smaller difference than it appears.
+Say you need to be realistic about this.|We need to be realistic about this.;Let us be realistic here.;We should be realistic about it.
+Say you can see why someone thinks that.|I can see why you think that.;I understand why you would say that.;I can see where you are coming from.
+Say that in your experience it rarely works.|In my experience, that rarely works.;From what I have seen, it seldom works.;That has rarely worked in my experience.
+Say it is worth trying at least once.|It is worth trying at least once.;It's worth a try.;I think it deserves one try.
+Say the sooner you decide the better.|The sooner we decide, the better.;It is better to decide soon.;The sooner a decision is made, the better.
+Say you would like to hear their opinion.|I would like to hear your opinion.;I'd like to know what you think.;What is your view on it?
+Say that would take far too long.|That would take far too long.;That would take too much time.;It would take far too long.
+Say you are fairly sure it can be managed.|I am fairly sure we can manage it.;I'm reasonably confident we can do it.;I think we can manage it.
+Say on the whole the changes have helped.|On the whole, the changes have helped.;Overall, the changes helped.;By and large the changes have helped.
+Say you would rather discuss it in person.|I would rather discuss this in person.;I'd prefer to talk about it face to face.;Let us discuss it in person.
+Concede a point while still disagreeing.|That is a fair point, but I still disagree.;You have a point, though I do not agree.;I take your point, but I disagree.
+Say the second option makes more sense.|The other option makes more sense.;I think the alternative makes more sense.;The other choice seems more sensible.
+Say you are not entirely convinced.|I am not entirely convinced.;I'm not completely convinced.;I have my doubts about that.`,
   },
 ];
 
@@ -3046,6 +3126,46 @@ What matters most is that it actually works.|What matters most is that it actual
 I would be reluctant to change it now.|I would be reluctant to change it now.
 Had we acted sooner, this could have been avoided.|Had we acted sooner, this could have been avoided.`,
   },
+  {
+    id: "b2p23",
+    title: "Say It Your Way: Longer Turns",
+    subtitle: "Write the idea in English",
+    kind: "translate",
+    prompt: "Write this in English:",
+    note: "Multi-clause ideas, written in your own words.",
+    // The left side describes the idea rather than giving the sentence away --
+    // otherwise this is a copying exercise, not a producing one. Each line
+    // lists three wordings a learner plausibly reaches for; anything else valid
+    // is caught by the AI grader, which is the fallback, not the plan. Avoids
+    // the traps the speaking packs documented (compound numbers, ordinals,
+    // contracted "has", possessive 's, undisambiguated names), because the same
+    // normaliser runs underneath.
+    data: `Say that if you had known, you would have said something.|If I had known, I would have said something.;Had I known, I would have spoken up.;I would have said something if I had known.
+Say what surprised you most was the reaction.|What surprised me most was the reaction.;The reaction was what surprised me most.;It was the reaction that surprised me most.
+Say the report suggests demand is falling.|The report suggests that demand is falling.;According to the report, demand is falling.;The report indicates falling demand.
+Say it is not the price so much as the timing.|It is not so much the price as the timing.;The issue is the timing rather than the price.;It's less about price than timing.
+Say you are under no obligation to accept.|We are under no obligation to accept it.;We do not have to accept it.;There is no obligation to accept.
+Say the sooner it is resolved the less it costs.|The sooner this is resolved, the less it will cost.;Resolving it sooner will cost less.;The longer it takes, the more it costs.
+Ask someone politely to confirm.|I would appreciate it if you could confirm.;Could you please confirm?;Please confirm when you can.
+Say there is a strong case for waiting.|There is a strong case for waiting.;A good argument can be made for waiting.;There are strong reasons to wait.
+Say you are inclined to think it was a mistake.|I am inclined to think it was a mistake.;I tend to think it was a mistake.;My feeling is that it was a mistake.
+Say that by the time you arrived everyone had left.|By the time we arrived, everyone had left.;Everyone had gone by the time we got there.;When we arrived, everyone had already left.
+Say the decision was made without consulting you.|The decision was made without consulting us.;Nobody consulted us about the decision.;They decided without asking us.
+Concede a point while keeping your doubts.|I take your point, although I still have doubts.;I accept that, but I remain unconvinced.;Fair enough, though I still have reservations.
+Say far more evidence is needed.|We will need far more evidence than that.;That is nowhere near enough evidence.;Much more evidence is needed.
+Say it turned out simpler than expected.|It turned out to be much simpler than expected.;It was far simpler than we thought.;In the end it was simpler than expected.
+Say the process took longer than planned.|The whole process took longer than planned.;It took longer than we had planned.;The process ran over schedule.
+Say you are not sure that follows.|I am not sure that follows.;I don't think that follows.;That does not necessarily follow.
+Say the risks should be weighed before committing.|We should weigh the risks before committing.;Let us consider the risks first.;The risks need weighing before we commit.
+Say that given the circumstances it seems reasonable.|Given the circumstances, that seems reasonable.;In the circumstances, it seems fair enough.;That seems reasonable given the situation.
+Say it would be unwise to rush.|It would be unwise to rush the decision.;Rushing this would be a mistake.;We should not rush the decision.
+Say the proposal has been revised several times.|The proposal has been revised several times.;There have been several revisions to the proposal.;The proposal went through several revisions.
+Say what matters most is that it works.|What matters most is that it actually works.;The important thing is that it works.;Above all, it has to work.
+Say you would be reluctant to change it now.|I would be reluctant to change it now.;I'd rather not change it at this stage.;I am hesitant to change it now.
+Say that acting sooner would have avoided it.|Had we acted sooner, this could have been avoided.;If we had acted earlier, this would not have happened.;Acting sooner would have prevented this.
+Say having read it all you changed your mind.|Having read the whole thing, I changed my mind.;After reading all of it, I changed my mind.;Reading it in full changed my view.
+Say that rather depends on what is agreed today.|That rather depends on what we agree today.;It depends what gets agreed today.;That hinges on today's decision.`,
+  },
 ];
 
 const C1: Pack[] = [
@@ -3773,6 +3893,46 @@ I would put it slightly more carefully than that.|I would put it slightly more c
 This is where the argument starts to unravel.|This is where the argument starts to unravel.
 We are effectively back where we started.|We are effectively back where we started.
 It bears repeating that nothing was agreed.|It bears repeating that nothing was agreed.`,
+  },
+  {
+    id: "c1p23",
+    title: "Say It Your Way: Register and Nuance",
+    subtitle: "Write the idea in English",
+    kind: "translate",
+    prompt: "Write this in English:",
+    note: "Idiomatic and formal phrasing, written in your own words.",
+    // The left side describes the idea rather than giving the sentence away --
+    // otherwise this is a copying exercise, not a producing one. Each line
+    // lists three wordings a learner plausibly reaches for; anything else valid
+    // is caught by the AI grader, which is the fallback, not the plan. Avoids
+    // the traps the speaking packs documented (compound numbers, ordinals,
+    // contracted "has", possessive 's, undisambiguated names), because the same
+    // normaliser runs underneath.
+    data: `Say politely that an argument misses the point.|I am afraid that rather misses the point.;With respect, that misses the point.;That rather misses the point, I think.
+Offer to argue the opposing side for a moment.|Let me argue the other side for a moment.;Allow me to take the opposing view.;Let me put the opposite case.
+Say something is easier said than done.|That is easier said than done.;Easier said than done.;Saying it is easier than doing it.
+Say you are arguing over trivial wording.|We are splitting hairs over the wording.;This is a quibble about wording.;We are arguing over details of wording.
+Say an argument does not stand up.|The argument does not hold water.;That argument does not stand up.;The argument falls apart under scrutiny.
+Say you would hesitate to draw that conclusion.|I would hesitate to draw that conclusion.;I'd be cautious about concluding that.;I am reluctant to conclude that.
+Say something has been postponed for months.|This has been on the back burner for months.;It has been postponed for months.;This has been set aside for months.
+Say that in hindsight the warnings were obvious.|In hindsight, the warning signs were obvious.;Looking back, the signs were clear.;With hindsight the warnings were plain.
+Say two people are misunderstanding each other.|We are talking at cross purposes.;We are misunderstanding each other.;I think we are at cross purposes.
+Say something would set a bad precedent.|That would set an unfortunate precedent.;That would set a bad precedent.;It would establish an unwelcome precedent.
+Say you are inclined to give them the benefit of the doubt.|I am inclined to give them the benefit of the doubt.;I'd give them the benefit of the doubt.;I am willing to assume good faith.
+Say a proposal is ambitious, understating it.|The proposal is ambitious, to put it mildly.;To say the proposal is ambitious is an understatement.;The proposal is, to put it mildly, ambitious.
+Warn against discarding the good with the bad.|We should not throw the baby out with the bathwater.;Let us not discard what works along with what does not.;We should keep what is good here.
+Say a distinction makes no real difference.|That is a distinction without a difference.;That distinction makes no real difference.;There is no practical difference there.
+Say you would go so far as to call it reckless.|I would go so far as to call it reckless.;I'd even call it reckless.;I would describe it as reckless.
+Say findings are suggestive rather than conclusive.|The findings are suggestive rather than conclusive.;The evidence suggests but does not prove.;These findings point a way without settling it.
+Say it is about priorities, not resources.|It is a question of priorities, not resources.;This is about priorities rather than resources.;The issue is priorities, not money.
+Say you have left yourselves no options.|We have painted ourselves into a corner.;We have left ourselves no room to move.;We are out of options now.
+Say an interpretation seems like a stretch.|That interpretation strikes me as a stretch.;That reading seems like a stretch.;I find that interpretation strained.
+Urge people not to lose sight of the original aim.|Let us not lose sight of the original aim.;We should keep the original aim in view.;Let's remember what we set out to do.
+Say the tone of a letter was unmistakable.|The tone of the letter was unmistakable.;There was no mistaking the tone of the letter.;The letter's tone was quite clear.
+Say you would put something more carefully.|I would put it more carefully than that.;I'd phrase that more carefully.;I would be more careful in how I said that.
+Say this is where an argument starts to fall apart.|This is where the argument starts to unravel.;The argument begins to break down here.;Here is where it falls apart.
+Say you are effectively back where you started.|We are effectively back where we started.;We have come full circle.;We are essentially back at the beginning.
+Say it bears repeating that nothing is agreed.|It bears repeating that nothing was agreed.;It is worth saying again that nothing was agreed.;Let me repeat that nothing was agreed.`,
   },
 ];
 
