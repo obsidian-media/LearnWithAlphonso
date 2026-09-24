@@ -1,5 +1,6 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
+import { orderDistractorCandidates } from "@/lib/distractor-affinity";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -351,10 +352,10 @@ Bring a jacket — it's ___ this evening.|chilly`,
     kind: "cloze",
     note: "Everyday number and money vocabulary.",
     data: `This shirt costs ___ dollars.|twenty
-Can I pay in ___ instead of cash?|coins
+I keep a jar of one-pound ___ on the shelf.|coins
 I'd like to ___ some money from the machine.|withdraw
 The bill comes to ___ euros.|fifteen
-Could you ___ this note, please?|change
+Could you ___ this twenty-pound note for smaller ones?|change
 I need to ___ some money for the trip.|save
 She ___ ten dollars on the gift.|spent
 He asked for a ___ on the price.|discount
@@ -433,12 +434,12 @@ has stripes like a cat|tiger
 climbs trees and eats bananas|monkey
 is black and white and eats bamboo|panda
 hops on strong back legs|kangaroo
-is a very large grey animal with tusks|elephant seal
+is a large sea animal with tusks and whiskers|walrus
 lives in a hive and makes honey|bee
 spins a web|spider
 is a fast desert animal with a hump|camel
 swims and is the largest animal|whale
-has a shell and moves slowly|snail
+is a small garden creature that leaves a slimy trail|snail
 barks like a dog but is wild|fox
 flies at night and sleeps upside down|bat`,
   },
@@ -470,7 +471,7 @@ New Year's Eve is on the last day of the ___.|year
 There are sixty minutes in an ___.|hour
 There are sixty seconds in a ___.|minute
 The middle day of the week is ___.|Wednesday
-Valentine's Day is celebrated with cards and ___.|flowers
+Twelve o'clock in the middle of the day is called ___.|noon
 We often relax on the ___.|weekend
 The day after Thursday is ___.|Friday`,
   },
@@ -2464,14 +2465,14 @@ The novel was later ___ into a successful film.|adapted
 The orchestra gave a ___ performance last night.|stunning
 The museum's new wing displays ___ artefacts.|ancient
 The play explores themes of loss and ___.|identity
-Tickets for the concert sold out within ___.|minutes
+The concert was performed to a sold-out ___.|audience
 The director is known for his unique visual ___.|style
 The choreography was both bold and ___.|graceful
 The exhibition features works by local ___.|artists
 The band's latest album was a huge commercial ___.|success
 Critics praised the film's stunning ___.|cinematography
 The theatre company is famous for its innovative ___.|productions
-The painting sold at auction for a record ___.|price
+The museum acquired a private ___ of Impressionist works.|collection
 The festival celebrates classical and contemporary ___.|music
 The actor gave a deeply moving ___.|performance
 The sculpture was carved from a single block of ___.|marble
@@ -2481,7 +2482,7 @@ The documentary sheds light on an overlooked ___ movement.|artistic
 The opera house is renowned for its stunning ___.|acoustics
 The mural depicts the city's rich cultural ___.|heritage
 The critics called the performance a true work of ___.|art
-The exhibition runs until the end of the ___.|month
+The young pianist won critical ___ for her debut.|acclaim
 The novel won several literary ___ this year.|awards`,
   },
   {
@@ -3332,7 +3333,7 @@ In ___ words, the results were not as expected.|other`,
   },
 ];
 
-const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
+export const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
 
 function hash(s: string) {
   let h = 2166136261;
@@ -3343,9 +3344,24 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string) {
+function pickDistractors(answer: string, pool: string[], seed: string, prompt?: string) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
+  // Walk the pool from a per-question hashed offset first, so each question in
+  // a pack sees a different candidate order, then let part-of-speech affinity
+  // reorder that walk. Doing it in this order keeps the variety the offset
+  // provides while preferring wrong answers that are at least grammatically
+  // possible in the blank -- a cloze pack's pool mixes word classes, so an
+  // unordered walk offered nouns for verb slots ("I need to ___ some money"
+  // -> "money"). The affinity pass reorders and never drops, so the count
+  // below is unchanged and `useMc`'s `distractors.length < 3` branch cannot
+  // flip a question between fill and mc.
+  const walk: string[] = [];
+  for (let i = 0; i < others.length; i++) {
+    const cand = others[(start + i * 7) % others.length];
+    if (cand) walk.push(cand);
+  }
+  const ordered = orderDistractorCandidates(answer, walk, prompt);
   const out: string[] = [];
   // Dedupe case-insensitively -- see bank-engine.ts's pickDistractors
   // (duplicated here; English's generator predates the shared engine and
@@ -3353,8 +3369,8 @@ function pickDistractors(answer: string, pool: string[], seed: string) {
   // rationale. Same fix applied to both, found via an automated
   // content-consistency scan (2026-09-22).
   const seen = new Set<string>([answer.toLowerCase()]);
-  for (let i = 0; out.length < 3 && i < others.length; i++) {
-    const cand = others[(start + i * 7) % others.length];
+  for (let i = 0; out.length < 3 && i < ordered.length; i++) {
+    const cand = ordered[i];
     const key = cand?.toLowerCase();
     if (cand && key && !seen.has(key)) {
       out.push(cand);
@@ -3374,8 +3390,10 @@ function packQuestions(pack: Pack): Question[] {
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
-    const distractors = pickDistractors(answer, pool, seed);
+    // Built before the distractors so they can be ranked against it -- a
+    // candidate already present in the prompt makes a poor wrong answer.
     const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
+    const distractors = pickDistractors(answer, pool, seed, prompt);
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
