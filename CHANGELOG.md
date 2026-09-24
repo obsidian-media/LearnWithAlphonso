@@ -8,6 +8,70 @@ file itself won't be kept perfectly current — treat entries as a guide
 to *when* something shipped, and re-check the actual code for *how it
 works now*.
 
+## V5 — iOS Canopy theme, English content quality, GDPR export fix (2026-09-23 – in progress)
+
+V5 work runs as parallel isolated worktrees, one per feature, kicked off
+from `docs/v5-kickoffs/` (gitignored). Three PRs merged 2026-09-24 in
+one sitting (#84 → #83 → #85, in that order and for a reason — see
+"Merge sequencing" below).
+
+**Canopy theme (#83, iOS)** — a fourth, iOS-only theme (emerald/coral,
+mascot-forward), now the default for installs/accounts with no saved
+theme preference, rolled out across all ~17 already-styled screens.
+Prompted by direct feedback that the original three themes read "too
+much like a book and wordish", plus a real usage gap (mascot art was
+bundled but barely used). Meadow/Studio Ink/Manuscript are unchanged.
+`canopy` is a deliberate exception to the "themes stay in sync with the
+web's `THEME_NAMES`" rule — it is in `AlphonsoThemeID` and the
+`profiles.theme` CHECK constraint but absent from `THEME_NAMES`, since
+web has no CSS for it; `resolveInitialTheme` already falls back to
+`meadow` for unknown values, so web is unaffected. A subagent review
+caught a Critical bug pre-merge: `profiles.theme`'s `NOT NULL DEFAULT
+'meadow'` silently defeated the new default for every signed-in user,
+fixed by a follow-up migration making the column nullable.
+
+**English content quality (#84)** — plausible-distractor fix plus an
+audit of all 534 English lessons. Adds `src/data/answer-pos.ts`
+(part-of-speech data), `src/lib/distractor-affinity.ts`, an audit
+baseline (`.audit-baseline/english-ids.json`) and scanning tooling
+(`scripts/audit-scan.ts`, `snapshot-english-ids.ts`,
+`gen-answer-pos.ts`), with ID-parity and distractor-quality tests.
+Lesson *counts* are unchanged — this changed question quality, not
+structure.
+
+**GDPR export fix + lint scope (#85)** — `exportMyData` had been
+returning **incomplete** data. It listed 9 tables keyed by `user_id`
+while the migrations define 18: the gamification (#64–67) and push
+(#59) batches each added user-scoped tables that were never registered,
+so every "download my data" file had been missing 9 tables since those
+landed. It also missed `nudges`/`duels`, which are user-owned but keyed
+by `sender_id`/`challenger_id`. **Account deletion was never affected** —
+all of them cascade from `auth.users`. The one list became three
+(`USER_ID_EXPORT_TABLES`, `OTHER_OWNED_EXPORT_TABLES`,
+`USER_DELETE_TABLES`), because export and deletion genuinely need
+different sets: deletion runs as the caller and only `device_tokens`
+among the new tables grants DELETE to `authenticated`. Since this list
+had now drifted four times, always silently, a test parses
+`supabase/migrations/` and fails the build on drift.
+
+Same PR scoped ESLint to the live tree: `.claude/worktrees/**` (full
+checkouts of other branches, nested inside the repo) was never ignored,
+so `eslint .` linted all 15 of them — 3,632 problems, of which 3,630
+were other branches' code and 2 were real.
+
+**Merge sequencing** — worth remembering, because the symptom was
+misleading. #83 and #85 both showed `lint-and-typecheck` failing, which
+looked like two broken PRs. Neither was: a pre-existing
+`prettier/prettier` break in `scripts/upload-review-screenshot.ts`
+(landed in `566b71c`) was failing CI on *every* PR, and #84 happened to
+contain the fix. Merging #84 first turned both others green with no
+work. #83 and #85 both touched `ARCHITECTURE.md` but in different
+sections, so they auto-merged with zero conflicts (verified by
+`git merge-tree` dry-run before merging, rather than discovering it
+mid-merge). #83/#84's branches were updated via `gh pr update-branch`
+rather than a rebase force-push, since live sessions were still working
+in those worktrees.
+
 ## V4 — Spanish course, remote push, placement, campaigns, content tooling, widget, deeper gamification (2026-09-21 – in progress)
 
 Batch of independent V4 candidates from `docs/v4-kickoffs/00-INDEX.md`,

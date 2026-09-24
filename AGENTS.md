@@ -65,7 +65,9 @@ table and `ARCHITECTURE.md`'s "Native iOS app" section.
 ## Content Structure
 
 Counted directly from `curriculum` / `curriculumFr` / `curriculumEs`,
-re-verified 2026-09-22 (do not trust a stale number here — re-run the
+re-verified 2026-09-24 — unchanged by PR #84's English content
+overhaul, which rewrote question *quality* (distractors) rather than
+adding or removing lessons (do not trust a stale number here — re-run the
 count if this drifts; ARCHITECTURE.md's "Content model" section and
 README.md's Content table carry the same numbers plus a question-count
 column, kept in sync):
@@ -118,31 +120,41 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (94 test files as of 2026-09-22 -- test *count*
-                      # not re-verified via a full-suite run this session; the
-                      # full suite has been unreliable in this sandbox lately,
-                      # see ARCHITECTURE.md's "Known rough edges" -- every
-                      # touched file's own scoped run passed clean instead)
+bun run test         # Vitest (102 test files / 805 tests, full-suite run
+                      # verified 2026-09-24 — the suite ran clean three times
+                      # in a row that day on this Windows sandbox, so the
+                      # earlier "full suite is unreliable here" caveat is
+                      # retired; re-add it only if it actually recurs)
 bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
 ```
 
-**Coverage as of 2026-09-20** (`bun run test:coverage`, don't trust this
-without re-running — re-run rather than assuming it holds after further
-changes; the test *count* above was re-verified 2026-09-21 alongside a
-clean `tsc --noEmit`, but coverage percentages were not re-run): 90.55%
-statements / 79.24% branches / 89.02% functions / 91.56% lines overall.
-Notably thinner spots: `HeartsModal.tsx` (~70%),
-`src/routes/__root.tsx` (~18% — mostly error-boundary paths), and
-`src/routes/api/analyze-weaknesses.ts` (~8% — no dedicated unit tests,
-matching the established pattern that server routes adjacent to Edge
-Functions in this codebase are verified via CI + manual smoke-testing,
-not unit tests; `api/chat.ts`/`stt.ts`/`tts.ts` are in the same boat).
+**Coverage as of 2026-09-24** (`bun run test:coverage`, re-run rather
+than assuming it holds after further changes — these numbers came from a
+real full run that day, not carried forward): 89.87% statements / 78.10%
+branches / 86.27% functions / 91.11% lines overall. Slightly *down* from
+the 2026-09-20 figures (90.55/79.24/89.02/91.56) because several batches
+of feature code landed since without matching test growth — not a
+regression in any one file.
+
+Notably thinner spots: `src/routes/__root.tsx` (18.36% statements /
+21.42% lines — mostly error-boundary paths) and `HeartsModal.tsx`
+(68.62% statements / 70.21% lines). **Corrected 2026-09-24**:
+`src/routes/api/analyze-weaknesses.ts` was listed here for a long time
+as "~8%, because server routes adjacent to Edge Functions aren't
+unit-tested here as a matter of established pattern". It is now at
+**91.17%**, as are its siblings (`chat.ts` 96.29%, `stt.ts` 95.65%,
+`tts.ts` 95.23%). That stated pattern no longer describes the codebase —
+don't cite it to justify skipping tests on a new server route.
 
 ## Assets
 
-See `LESSON_ASSETS.md` for the complete list of assets needed for all 300 lessons (audio, images, icons, animations).
+See `LESSON_ASSETS.md` for the asset list (audio, images, icons,
+animations) — but read that file's own status banner first: it was
+written against a 300-lesson premise that is long stale. The real total
+is **1,542 lessons** across the three courses (see Content Structure
+above), and its image-assets section is superseded.
 
 ## Deployment
 
