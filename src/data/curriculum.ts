@@ -26,6 +26,25 @@ export type Question =
     }
   | {
       id: string;
+      type: "listening";
+      /** What the learner must decide AFTER hearing `audioText`. Must not
+       * restate the audio: if the prompt contains it, the question is
+       * solvable by reading and tests nothing. */
+      prompt: string;
+      /** Spoken via TTS before the learner answers. Required -- a listening
+       * question without audio is unanswerable, which is why this is its own
+       * variant rather than the optional `audioText` layered onto `mc`. */
+      audioText: string;
+      choices: string[];
+      /** The correct choice's TEXT, not its index. Deliberately unlike `mc`:
+       * it matches `fill`/`reorder`, and it lets every existing grading path
+       * (srs.ts's deriveAnswerCorrectness, and both web players' non-mc
+       * comparison) handle listening with no change at all. */
+      answer: string;
+      explanation: string;
+    }
+  | {
+      id: string;
       type: "fill";
       prompt: string; // uses ___ for blank
       bank: string[];

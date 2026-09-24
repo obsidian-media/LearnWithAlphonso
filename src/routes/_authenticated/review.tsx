@@ -285,7 +285,7 @@ function ReviewPage() {
                 )}
               </div>
             </div>
-          ) : (
+          ) : q.type === "fill" ? (
             <div>
               <input
                 type="text"
@@ -308,7 +308,7 @@ function ReviewPage() {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {checked && (

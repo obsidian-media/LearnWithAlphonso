@@ -411,7 +411,7 @@ function LessonPage() {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : q.type === "fill" ? (
               <div>
                 <input
                   type="text"
@@ -434,7 +434,7 @@ function LessonPage() {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
           {checked && (
