@@ -1,5 +1,35 @@
 # Listening Question Type (Phase 2, Plan A) Implementation Plan
 
+> **STATUS: executed, PR #88.** Four things this plan got wrong, recorded here
+> because the next question type will hit the same ground:
+>
+> 1. **It said two exhaustive switches over `Question` on iOS. There are six** —
+>    and one of them, `ReviewQueueView.swift`, is an entire second iOS player.
+>    That is the same "second renderer" trap the plan *did* catch for the web
+>    (`review.tsx`) and still missed for iOS. Swift saved it: exhaustive
+>    switches fail to compile, where the web fails silently with a blank card.
+>    Also `QuestionGrading.swift` (grading is not inherited on iOS the way it
+>    is on web) and `VocabDerivation.swift` (three switches, the third only
+>    surfaced after the first two were fixed).
+> 2. **A Postgres migration was required, and the plan explicitly ruled schema
+>    work out of scope.** `questions.question_shape_matches_type` permits
+>    exactly two row shapes; listening is a third (`choices` like mc, but
+>    `answer_text` like fill). Every listening row would have been rejected.
+>    `curriculum-seed.test.ts` is the local stand-in for that constraint and
+>    caught it; `20260921010000_v5_...` (the same widening for `reorder`) was
+>    the precedent. See `20260924010000_v5_listening_question_type.sql`.
+> 3. **Re-running `scripts/init-audit-log.ts` destroyed the phase 1 audit log**
+>    — all 112 verdicts, recovered from git. That script scaffolds, it does not
+>    maintain; it now refuses to overwrite a filled log.
+> 4. **Two hardcoded lesson counts needed updating** beyond the content itself:
+>    `curriculum-seed.test.ts` and `ios-content-export.test.ts` both assert
+>    English's lesson count (534 → 559). Adding a pack is never only a content
+>    change.
+>
+> What the plan got right and is worth repeating: probing the type change with
+> `tsc` before committing to a shape (which is how the text-vs-index decision
+> was made on evidence), and re-baselining ids early rather than at the end.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship listening comprehension as a first-class question type — its own `Question` variant, its own distinguished UI on web and iOS, and real authored content — replacing the hidden `audioText`-on-`mc` format that exists today and is used in 3 questions.
