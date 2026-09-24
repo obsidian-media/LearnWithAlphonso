@@ -51,6 +51,14 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
 - **Themes**: 3 user-selectable themes on web (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
+- **iOS navigation** (Phase 0, 2026-09-24): five tabs — **Learn · Listen · Practice ·
+  Hector · Profile**. It was seven, and iPhone renders five before collapsing the rest
+  into the system "More" list, so Achievements was already buried. League, Friends and
+  Achievements now live behind **Profile**; the **review queue** is a row at the top of
+  Learn with a due-count badge on the tab (Settings also keeps its gear on Learn).
+  **Listen is a placeholder until Phase 1b** — no App Store release should ship between
+  the two, or users get a tab that does nothing. See
+  `docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md`.
 - **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 4 themes: the three web themes ported over (Meadow/Studio Ink/Manuscript — fonts, oklch-accurate palette, the hard-shadow pressed-button effect) plus a fourth, iOS-only "Canopy" theme (2026-09-23) not mirrored on web, applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
 
 ## Content
