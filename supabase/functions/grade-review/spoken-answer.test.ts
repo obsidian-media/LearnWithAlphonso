@@ -50,3 +50,31 @@ Deno.test("matchesSpokenAnswer matches a number word against the numeral Deepgra
   assertEquals(matchesSpokenAnswer("I have 2 brothers", "I have two brothers."), true);
   assertEquals(matchesSpokenAnswer("I have 3 brothers", "I have two brothers."), false);
 });
+
+Deno.test("matchesSpokenAnswer expands let's like its apostrophe-less spelling", () => {
+  assertEquals(
+    matchesSpokenAnswer("Let's not lose sight of it", "Let us not lose sight of it"),
+    true,
+  );
+  assertEquals(normaliseSpoken("let's"), normaliseSpoken("lets"));
+});
+
+Deno.test("matchesSpokenAnswer treats cannot and can't as the same word", () => {
+  assertEquals(matchesSpokenAnswer("I am afraid I can't agree", "I am afraid I cannot agree"), true);
+});
+
+Deno.test("matchesSpokenAnswer expands negated contractions outside the bare list", () => {
+  assertEquals(matchesSpokenAnswer("I mustn't forget", "I must not forget"), true);
+  assertEquals(matchesSpokenAnswer("You needn't wait", "You need not wait"), true);
+});
+
+Deno.test("matchesSpokenAnswer folds accents rather than deleting them", () => {
+  assertEquals(
+    matchesSpokenAnswer("we are meeting at the caf\u00e9 later", "We are meeting at the cafe later"),
+    true,
+  );
+});
+
+Deno.test("matchesSpokenAnswer does not accept a contracted has as a contracted is", () => {
+  assertEquals(matchesSpokenAnswer("he's already finished", "He has already finished"), false);
+});

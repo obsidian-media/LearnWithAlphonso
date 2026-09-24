@@ -12,8 +12,15 @@
 
 const CONTRACTIONS: [RegExp, string][] = [
   [/\bcan't\b/g, "can not"],
+  // "cannot" is one word and never contracts by the rule below.
+  [/\bcannot\b/g, "can not"],
   [/\bwon't\b/g, "will not"],
-  [/\bn't\b/g, " not"],
+  // "let's" is "let us", not "let is" -- before the generic 's rule, and
+  // agreeing with APOSTROPHE_LESS's bare "lets".
+  [/\blet's\b/g, "let us"],
+  // No \b before n't -- anchored it never fires (the preceding letter is a word
+  // char). Unanchored it covers "mustn't", "needn't", "shan't", "oughtn't".
+  [/n't\b/g, " not"],
   [/\b'll\b/g, " will"],
   [/\b're\b/g, " are"],
   [/\b've\b/g, " have"],
@@ -102,7 +109,12 @@ const NUMBER_WORDS: [RegExp, string][] = [
 ];
 
 export function normaliseSpoken(input: string): string {
-  let s = input.toLowerCase();
+  // Fold accents first: the punctuation strip below would otherwise turn "café"
+  // into "caf" and stop it matching "cafe".
+  let s = input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
   for (const [pattern, replacement] of CONTRACTIONS) s = s.replace(pattern, replacement);
   s = s.replace(/['’]/g, "");
   for (const [pattern, replacement] of APOSTROPHE_LESS) s = s.replace(pattern, replacement);

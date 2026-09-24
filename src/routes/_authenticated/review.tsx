@@ -312,6 +312,9 @@ function ReviewPage() {
             </div>
           ) : q.type === "speak" ? (
             <SpeakAnswer
+              // Fresh capture state per item -- same reasoning as the lesson
+              // player's identical key.
+              key={q.id}
               target={q.answer}
               locale={localeForCourse(course)}
               value={picked}

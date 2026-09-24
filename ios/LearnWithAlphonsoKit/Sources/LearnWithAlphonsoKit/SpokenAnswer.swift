@@ -14,19 +14,27 @@ import Foundation
 ///
 /// Deliberately NOT edit distance: a threshold loose enough to forgive
 /// "she is"/"she's" also accepts "he is a driver" for "she is a doctor".
-enum SpokenAnswer {
+public enum SpokenAnswer {
     /// Expanded rather than contracted, so "don't" and "do not" converge.
     private static let contractions: [(String, String)] = [
         ("\\bcan't\\b", "can not"),
+        // "cannot" is one word and never contracts by the rule below.
+        ("\\bcannot\\b", "can not"),
         ("\\bwon't\\b", "will not"),
-        ("\\bn't\\b", " not"),
+        // "let's" is "let us", not "let is" -- before the generic 's rule, and
+        // agreeing with apostropheLess's bare "lets".
+        ("\\blet's\\b", "let us"),
+        // No \b before n't -- anchored it never fires (the preceding letter is
+        // a word char). Unanchored it covers "mustn't", "needn't", "shan't".
+        ("n't\\b", " not"),
         ("\\b'll\\b", " will"),
         ("\\b're\\b", " are"),
         ("\\b've\\b", " have"),
         ("\\b'd\\b", " would"),
-        // Possessive and "is" share this form; spoken practice uses it as "is",
-        // and treating a possessive as "is" only ever makes two spellings of
-        // the same utterance agree.
+        // AMBIGUOUS, knowingly: 's is "is", "has" and the possessive at once,
+        // and nothing here can tell them apart. Expanding to "is" is right for
+        // the case a speaking question actually uses ("she's a doctor"), so the
+        // rule stays and the CONTENT avoids the other two.
         ("\\b's\\b", " is"),
         ("\\b'm\\b", " am"),
     ]
@@ -97,8 +105,13 @@ enum SpokenAnswer {
         )
     }
 
-    static func normalise(_ input: String) -> String {
-        var s = input.lowercased()
+    public static func normalise(_ input: String) -> String {
+        // Fold accents first: the punctuation strip below would otherwise turn
+        // "café" into "caf" and stop it matching "cafe". folding(options:) with
+        // .diacriticInsensitive is the Foundation equivalent of the web copy's
+        // NFD-then-strip-combining-marks.
+        var s = input.folding(options: .diacriticInsensitive, locale: Locale(identifier: "en_US"))
+            .lowercased()
         // Expand while the apostrophes are still present...
         for (pattern, replacement) in contractions {
             s = replacing(s, pattern, with: replacement)
@@ -123,7 +136,7 @@ enum SpokenAnswer {
     /// not "said it wrong", and callers must not spend a heart on it. Recording
     /// failures reach here looking identical to silence, which is why the
     /// speaking UI never submits one.
-    static func matches(transcript: String, expected: String) -> Bool {
+    public static func matches(transcript: String, expected: String) -> Bool {
         let said = normalise(transcript)
         if said.isEmpty { return false }
         return said == normalise(expected)

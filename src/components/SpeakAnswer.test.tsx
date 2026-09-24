@@ -6,6 +6,7 @@ import { SpeakAnswer } from "./SpeakAnswer";
 const capture = vi.hoisted(() => ({
   state: "idle" as "idle" | "recording" | "transcribing",
   error: null as string | null,
+  failed: false,
   canRecord: true,
   start: vi.fn(),
   stop: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock("../lib/speech", () => ({
 beforeEach(() => {
   capture.state = "idle";
   capture.error = null;
+  capture.failed = false;
   capture.canRecord = true;
   capture.start.mockClear();
   capture.stop.mockClear();
@@ -154,5 +156,31 @@ describe("SpeakAnswer", () => {
     expect(
       screen.getByRole("button", { name: /record your answer/i }).hasAttribute("disabled"),
     ).toBe(true);
+  });
+
+  it("offers typing once capture has failed, even where the browser can record", () => {
+    // The learner denied the microphone (or the network died, or /api/stt
+    // failed). Feature detection still says "you have getUserMedia", so before
+    // this they kept a mic button that could never produce an answer, with
+    // Check disabled and no skip -- an unfinishable lesson.
+    capture.canRecord = true;
+    capture.failed = true;
+    capture.error = "Microphone access is needed to speak.";
+    const onChange = vi.fn();
+    render(
+      <SpeakAnswer
+        target="Good morning."
+        locale="en-US"
+        value={null}
+        onChange={onChange}
+        checked={false}
+      />,
+    );
+
+    const input = screen.getByLabelText("Type the phrase");
+    fireEvent.change(input, { target: { value: "good morning" } });
+    expect(onChange).toHaveBeenCalledWith("good morning");
+    expect(screen.getByRole("alert").textContent).toMatch(/microphone/i);
+    expect(screen.queryByRole("button", { name: /record your answer/i })).toBeNull();
   });
 });

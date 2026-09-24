@@ -169,11 +169,19 @@ function ConverseChatPage() {
   const {
     state: captureState,
     error: captureError,
-    start: startRecording,
+    start: beginCapture,
     stop: stopRecording,
   } = useSpeechCapture({
     onTranscript: (text, confidence) => send(text, confidence ?? undefined),
   });
+  // Before the hook existed, startRecording began with setError(null). The hook
+  // clears only its OWN error, so without this a stale send failure
+  // ("Something went wrong.") kept winning the `error ?? captureError` display
+  // and masked every later capture message.
+  const startRecording = useCallback(() => {
+    setError(null);
+    return beginCapture();
+  }, [beginCapture]);
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
 

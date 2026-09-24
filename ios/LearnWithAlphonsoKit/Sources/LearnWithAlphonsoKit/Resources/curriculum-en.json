@@ -11015,8 +11015,8 @@
               "id": "a1p24q3",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "My name is Sara.",
-              "explanation": "Target phrase: \"My name is Sara.\" Short everyday phrases to practise saying."
+              "answer": "My name is Anna.",
+              "explanation": "Target phrase: \"My name is Anna.\" Short everyday phrases to practise saying."
             },
             {
               "id": "a1p24q4",
@@ -18990,8 +18990,8 @@
               "id": "a2p22q3",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "She has lived here for ten years.",
-              "explanation": "Target phrase: \"She has lived here for ten years.\" Everyday phrases for asking, arranging and explaining."
+              "answer": "She moved here ten years ago.",
+              "explanation": "Target phrase: \"She moved here ten years ago.\" Everyday phrases for asking, arranging and explaining."
             },
             {
               "id": "a2p22q4",
@@ -19039,8 +19039,8 @@
               "id": "a2p22q9",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "He has already finished his homework.",
-              "explanation": "Target phrase: \"He has already finished his homework.\" Everyday phrases for asking, arranging and explaining."
+              "answer": "He finished his homework already.",
+              "explanation": "Target phrase: \"He finished his homework already.\" Everyday phrases for asking, arranging and explaining."
             }
           ]
         },
@@ -26912,8 +26912,8 @@
               "id": "b1p22q0",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "I think the second option makes more sense.",
-              "explanation": "Target phrase: \"I think the second option makes more sense.\" Opinions, reasons and comparisons said out loud."
+              "answer": "I think the other option makes more sense.",
+              "explanation": "Target phrase: \"I think the other option makes more sense.\" Opinions, reasons and comparisons said out loud."
             },
             {
               "id": "b1p22q1",
@@ -27066,8 +27066,8 @@
               "id": "b1p22q19",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "I would like to hear your opinion first.",
-              "explanation": "Target phrase: \"I would like to hear your opinion first.\" Opinions, reasons and comparisons said out loud."
+              "answer": "I would like to hear your opinion on this.",
+              "explanation": "Target phrase: \"I would like to hear your opinion on this.\" Opinions, reasons and comparisons said out loud."
             }
           ]
         },
@@ -42903,8 +42903,8 @@
               "id": "c1p22q1",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "Let me play devil's advocate for a moment.",
-              "explanation": "Target phrase: \"Let me play devil's advocate for a moment.\" Idiomatic and formal phrasing said aloud."
+              "answer": "Let me argue the other side for a moment.",
+              "explanation": "Target phrase: \"Let me argue the other side for a moment.\" Idiomatic and formal phrasing said aloud."
             },
             {
               "id": "c1p22q2",
@@ -43092,8 +43092,8 @@
               "id": "c1p22q24",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "It bears repeating that nothing has been agreed.",
-              "explanation": "Target phrase: \"It bears repeating that nothing has been agreed.\" Idiomatic and formal phrasing said aloud."
+              "answer": "It bears repeating that nothing was agreed.",
+              "explanation": "Target phrase: \"It bears repeating that nothing was agreed.\" Idiomatic and formal phrasing said aloud."
             }
           ]
         }

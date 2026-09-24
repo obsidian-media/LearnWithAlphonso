@@ -13,12 +13,12 @@ export type VocabItem = {
   image?: { url: string; alt: string; credit: string };
 };
 
-/** "reorder" and "listening" questions are about sentence structure and
- * comprehension, not a single vocabulary term -- their (whole-sentence)
- * answer would make a nonsense vocab card, so they contribute nothing here
- * (the empty-term guard in deriveVocab below skips them). A listening lesson
- * therefore has no vocabulary step and goes straight from overview to quiz,
- * which is deliberate rather than a gap. */
+/** "reorder", "listening" and "speak" questions are about sentence structure,
+ * comprehension and production, not a single vocabulary term -- their
+ * (whole-sentence) answer would make a nonsense vocab card, so they contribute
+ * nothing here (the empty-term guard in deriveVocab below skips them). A
+ * listening or speaking lesson therefore has no vocabulary step and goes
+ * straight from overview to quiz, which is deliberate rather than a gap. */
 function answerOf(q: Question): string {
   if (q.type === "mc") return q.choices[q.answer] ?? "";
   if (q.type === "fill") return q.answer;

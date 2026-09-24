@@ -187,4 +187,50 @@ describe("useSpeechCapture", () => {
 
     expect(track.stop).toHaveBeenCalled();
   });
+
+  it("treats hesitation noise as nothing captured, not as an answer", async () => {
+    // Deepgram returns "Um." as real text. It is non-empty, but it normalises
+    // to nothing at the grading site -- so a raw-text gate handed it to the
+    // caller as an answer and the learner lost a heart for clearing their
+    // throat.
+    installMediaMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: true, json: async () => ({ text: "Um.", confidence: 0.2 }) })),
+    );
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript }));
+
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.stop();
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(onTranscript).not.toHaveBeenCalled();
+  });
+
+  it("reports a sticky failure so a caller can offer a way that is not the microphone", async () => {
+    // canRecord only says the browser HAS the API. A denied permission leaves a
+    // learner staring at a mic button that can never produce an answer, on a
+    // question with no skip -- which makes the lesson unfinishable.
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn(async () => {
+          throw new Error("denied");
+        }),
+      },
+    });
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    expect(result.current.failed).toBe(false);
+
+    await act(async () => {
+      await result.current.start();
+    });
+
+    expect(result.current.failed).toBe(true);
+  });
 });

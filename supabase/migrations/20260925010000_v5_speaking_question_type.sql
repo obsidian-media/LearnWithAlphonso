@@ -6,8 +6,9 @@
 -- compared against a speech-to-text transcript.
 --
 -- grade-review's Deno function grades any non-'mc' row against answer_text, so
--- a speak row grades there without a new branch. It does need the SPOKEN
--- comparison rather than a bare trim/lowercase, though: a transcript
+-- a speak row needs no new ROW-SHAPE handling there -- but it does need its own
+-- grading branch, added in the same commit, because it needs the SPOKEN
+-- comparison rather than a bare trim/lowercase: a transcript
 -- legitimately varies ("she is a doctor" for "She's a doctor."), and without
 -- that the server would mark wrong what the player had already told the learner
 -- was right, lapsing the item. That change ships in the same commit as this

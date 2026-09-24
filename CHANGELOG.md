@@ -103,10 +103,12 @@ own:
   capture layer reports **only** a real non-empty transcript and every failure
   path surfaces an error instead. Otherwise the learner loses a heart for a
   microphone problem.
-- Where speech cannot be captured at all, the control degrades to typing the
-  phrase — including **offline on iOS**, since transcription is a network call.
-  A question the learner cannot answer is a lesson they cannot complete, which
-  means no XP, no streak and no unlock, with nothing on screen explaining why.
+- Where speech cannot be captured, the control degrades to typing the phrase —
+  driven by actual failure, not only by feature detection. A denied microphone,
+  a dead network, a failing `/api/stt`, silence, and (on iOS) being offline all
+  reach it. A question the learner cannot answer is a lesson they cannot
+  complete, which means no XP, no streak and no unlock, with nothing on screen
+  explaining why.
 
 Also: the capture flow was extracted from the conversation route into
 `use-speech-capture.ts` rather than copied, both web players now grade through

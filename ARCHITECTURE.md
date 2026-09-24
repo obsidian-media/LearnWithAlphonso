@@ -145,7 +145,9 @@ via TTS and asks the learner to choose what they heard; `speak` (added
 2026-09-24) shows a phrase, records the learner saying it, and grades the
 speech-to-text transcript. Three things about them are load bearing:
 
-- Its `answer` is the correct choice's **text**, not an index like `mc`'s.
+- Every type except `mc` carries its answer as **text**, not as an index
+  (`listening` stores the correct choice's text; `speak` stores the phrase and
+  has no choices at all).
   That matches `fill`/`reorder` and is why `srs.ts`'s
   `deriveAnswerCorrectness` — and both web players' non-`mc` comparison —
   grade it with no type-specific code. Adding a variant with a numeric
@@ -183,12 +185,21 @@ so those lessons go straight from overview to quiz with no vocabulary step.
 Speech capture is one implementation, not one per feature:
 `src/lib/use-speech-capture.ts` on web (used by the conversation route and
 `SpeakAnswer.tsx`) and `SpeakQuestionCard.swift` on iOS. Both only report a
-**real, non-empty transcript** — every failure path surfaces an error and
-reports nothing, because a grading caller handed "nothing" would take a heart
-for a microphone problem. Where speech cannot be captured at all (no
-`getUserMedia`, denied microphone, or — on iOS — being offline, since
-transcription is a network call) the control degrades to typing the phrase: a
-question the learner cannot answer is a lesson they cannot complete.
+transcript that still says something once normalised — hesitation noise ("Um.")
+is non-empty but normalises to nothing, and every failure path surfaces an error
+and reports nothing, because a grading caller handed "nothing" would take a
+heart for a microphone problem.
+
+Whenever speech cannot be captured the control degrades to **typing the
+phrase** — and that is driven by actual failure, not only by feature detection.
+A denied microphone, a dead network, a failing `/api/stt` and silence all reach
+it, as does the absence of `getUserMedia` (and, on iOS, being offline, since
+transcription is a network call). Feature detection alone was not enough: a
+learner who denied the microphone kept a mic button that could never produce an
+answer, on a question with no skip, which makes the lesson unfinishable — no
+XP, no streak, no unlock, and nothing on screen explaining why. iOS asks for
+microphone permission **explicitly** for the same reason: a denial does not
+throw, `AVAudioRecorder.record()` simply returns false and records silence.
 
 Server-side score validation (`completeLessonRemote` in
 `src/lib/sync.functions.ts`) looks lessons up through this same

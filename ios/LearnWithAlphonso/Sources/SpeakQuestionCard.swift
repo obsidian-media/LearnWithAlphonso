@@ -172,15 +172,44 @@ struct SpeakQuestionCard: View {
 
     private func startRecording() {
         errorMessage = nil
-        do {
-            try recorder.start()
-            phase = .recording
-        } catch {
-            // Falls back to typing rather than stranding the learner on a
-            // control that cannot work.
-            micUnavailable = true
-            phase = .idle
-            errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+        // Permission is asked for EXPLICITLY rather than left to the implicit
+        // prompt AVAudioRecorder.record() raises. A denied microphone does not
+        // make start() throw -- record() just returns false and the file stays
+        // empty -- so the catch below never ran for the one case that matters,
+        // and the learner was left holding a mic button that could never
+        // produce an answer, with Check permanently disabled and no skip. That
+        // is an unfinishable lesson: no XP, no streak, no unlock.
+        requestMicrophonePermission { granted in
+            guard granted else {
+                micUnavailable = true
+                phase = .idle
+                errorMessage =
+                    "Microphone access is off. Turn it on in Settings > Privacy > Microphone, or type the phrase."
+                return
+            }
+            do {
+                try recorder.start()
+                phase = .recording
+            } catch {
+                micUnavailable = true
+                phase = .idle
+                errorMessage = "Couldn't access the microphone -- type the phrase instead."
+            }
+        }
+    }
+
+    /// Calls back on the main actor whether or not permission was granted. Uses
+    /// the iOS 17+ API where available and the older session call below it,
+    /// since the deployment target still includes iOS 16.
+    private func requestMicrophonePermission(_ completion: @escaping @MainActor (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
         }
     }
 
@@ -188,7 +217,11 @@ struct SpeakQuestionCard: View {
         guard phase == .recording else { return }
         phase = .idle
         guard let audio = recorder.stop() else {
-            errorMessage = "That was too short -- try again."
+            // Nothing captured is not a wrong answer: `picked` is left alone so
+            // Check cannot submit silence. Typing opens up too, because a
+            // recorder that produced no file will usually keep doing so.
+            errorMessage = "Didn't catch that -- try again, or type the phrase."
+            micUnavailable = true
             return
         }
         guard let accessToken = session.accessToken else {
@@ -206,8 +239,13 @@ struct SpeakQuestionCard: View {
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
             let text = result.text.trimmingCharacters(in: .whitespaces)
             // Nothing captured is NOT a wrong answer: `picked` stays as it was
-            // so Check cannot submit silence and spend a heart on it.
-            if text.isEmpty {
+            // so Check cannot submit silence and spend a heart on it. The gate
+            // is on the NORMALISED text, because hesitation noise comes back as
+            // real words ("Um.") that are non-empty here and normalise to
+            // nothing at the grading site -- a raw-text gate let those through
+            // as an answer and cost the learner a heart for clearing their
+            // throat.
+            if SpokenAnswer.normalise(text).isEmpty {
                 errorMessage = "Didn't catch that -- try again."
             } else {
                 picked = text
@@ -232,7 +270,15 @@ final class SpeakTurnRecorder {
 
     func start() throws {
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .default)
+        // .defaultToSpeaker matters here in a way it does not on the
+        // conversation screen: AVAudioSession is process-wide, and plain
+        // .playAndRecord routes playback to the receiver. Without it, one
+        // speaking question left "Hear it first", a listening question's TTS
+        // and every other sound in the app playing quietly out of the earpiece
+        // for the rest of the session -- and a review queue interleaves
+        // speaking and listening items, so the learner meets that in one
+        // sitting.
+        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
         try audioSession.setActive(true)
 
         let url = FileManager.default.temporaryDirectory
@@ -252,6 +298,10 @@ final class SpeakTurnRecorder {
     func stop() -> Data? {
         recorder?.stop()
         recorder = nil
+        // Hand the session back rather than leaving the app in a recording
+        // category it no longer needs. .notifyOthersOnDeactivation lets
+        // whatever was playing before resume.
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
         defer { fileURL = nil }
         guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)

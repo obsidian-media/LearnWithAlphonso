@@ -26,15 +26,33 @@
  */
 const CONTRACTIONS: [RegExp, string][] = [
   [/\bcan't\b/g, "can not"],
+  // "cannot" is one word and never contracts to "can't" by the rule below, so
+  // without this a learner saying "I can't agree" is marked wrong for a phrase
+  // written "I cannot agree" -- which b1p22 contains.
+  [/\bcannot\b/g, "can not"],
   [/\bwon't\b/g, "will not"],
-  [/\bn't\b/g, " not"],
+  // "let's" is "let us", NOT "let is" -- it must be expanded before the generic
+  // 's rule below gets to it. Without this the apostrophe-ful and
+  // apostrophe-less spellings of the SAME word disagree, because
+  // APOSTROPHE_LESS already maps bare "lets" to "let us".
+  [/\blet's\b/g, "let us"],
+  // No \b before n't: the boundary needs a non-word char there, and in "don't"
+  // the preceding "o" is a word char, so an anchored version never fires at all
+  // (it looked like it worked only because APOSTROPHE_LESS catches the common
+  // words after the apostrophes are stripped). Unanchored, this covers the ones
+  // that are not in that list -- "mustn't", "needn't", "shan't", "oughtn't".
+  [/n't\b/g, " not"],
   [/\b'll\b/g, " will"],
   [/\b're\b/g, " are"],
   [/\b've\b/g, " have"],
   [/\b'd\b/g, " would"],
-  // Possessive and "is" share this form; spoken practice phrases use it as
-  // "is" ("she's a doctor"), and treating a possessive as "is" only ever makes
-  // two spellings of the same utterance agree.
+  // AMBIGUOUS, and knowingly so: 's is "is", "has" and the possessive at once,
+  // and nothing here can tell them apart ("he's finished" is "he has
+  // finished"). Expanding to "is" is right for the common case a speaking
+  // question actually uses ("she's a doctor"), so the rule stays -- and the
+  // CONTENT avoids the other two, because a phrase written "He has already
+  // finished" would be marked wrong for a learner who said it perfectly and
+  // contracted it. See the pack comments in lesson-bank.ts.
   [/\b's\b/g, " is"],
   [/\b'm\b/g, " am"],
 ];
@@ -126,7 +144,11 @@ const NUMBER_WORDS: [RegExp, string][] = [
 ];
 
 export function normaliseSpoken(input: string): string {
-  let s = input.toLowerCase();
+  // Fold accents to their base letters FIRST. The punctuation strip below
+  // deletes anything outside [a-z0-9\s], so without this "café" becomes "caf"
+  // and no longer matches "cafe" -- and speech recognition returns the
+  // accented spelling for loanwords whichever way the phrase was written.
+  let s = input.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   // Expand while the apostrophes are still present...
   for (const [pattern, replacement] of CONTRACTIONS) s = s.replace(pattern, replacement);
   s = s.replace(/['’]/g, "");

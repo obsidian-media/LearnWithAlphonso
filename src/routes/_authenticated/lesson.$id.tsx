@@ -434,6 +434,11 @@ function LessonPage() {
               </div>
             ) : q.type === "speak" ? (
               <SpeakAnswer
+                // Fresh capture state per question: without it a "Didn't catch
+                // that" error (and an in-flight recorder) survives into the
+                // next speaking question, shown over one the learner has not
+                // touched. The iOS players key their cards for the same reason.
+                key={q.id}
                 target={q.answer}
                 locale={localeForCourse(course)}
                 value={picked}

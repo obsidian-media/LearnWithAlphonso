@@ -71,6 +71,35 @@ final class SpeakQuestionTests: XCTestCase {
             SpokenAnswer.matches(transcript: "I have 3 brothers", expected: "I have two brothers."))
     }
 
+    /// Vectors the TypeScript suite had and this one was missing -- a parity
+    /// guard with holes in it guards nothing.
+    func testForgivesALeadingFillerAndRejectsAPartialAttempt() {
+        XCTAssertTrue(SpokenAnswer.matches(transcript: "uh good morning", expected: "Good morning."))
+        XCTAssertFalse(SpokenAnswer.matches(transcript: "good", expected: "Good morning."))
+    }
+
+    /// The remaining shared vectors, all of which were wrong before review:
+    /// "let's" became "let is"; "cannot" never matched "can't"; the n't rule
+    /// was anchored and never fired; accents were deleted rather than folded.
+    func testNormalisationFixesFoundInReview() {
+        XCTAssertTrue(
+            SpokenAnswer.matches(
+                transcript: "Let's not lose sight of it", expected: "Let us not lose sight of it"))
+        XCTAssertEqual(SpokenAnswer.normalise("let's"), SpokenAnswer.normalise("lets"))
+        XCTAssertTrue(
+            SpokenAnswer.matches(
+                transcript: "I am afraid I can't agree", expected: "I am afraid I cannot agree"))
+        XCTAssertTrue(
+            SpokenAnswer.matches(transcript: "I mustn't forget", expected: "I must not forget"))
+        XCTAssertTrue(
+            SpokenAnswer.matches(
+                transcript: "we are meeting at the café later",
+                expected: "We are meeting at the cafe later"))
+        XCTAssertFalse(
+            SpokenAnswer.matches(
+                transcript: "he's already finished", expected: "He has already finished"))
+    }
+
     /// A speaking lesson has no vocabulary step: the answer is a whole phrase,
     /// which would make a nonsense vocab card. Same as listening and reorder,
     /// and same as the web's deriveVocab.

@@ -11,11 +11,17 @@ import { useSpeechCapture } from "../lib/use-speech-capture";
  * see "we heard X" before committing can simply say it again instead of losing
  * a heart to the microphone.
  *
- * Where the browser cannot record at all (insecure context, embedded webview,
- * no microphone), the control degrades to typing the phrase. That keeps the
- * lesson answerable: question counts are fixed server-side, so a question the
- * learner cannot answer is a lesson they cannot complete -- no XP, no streak,
- * no unlock, and nothing on screen explaining why.
+ * Whenever speech cannot be captured, the control degrades to typing the
+ * phrase. That covers the browser having no microphone API at all (insecure
+ * context, embedded webview) AND every runtime failure: a denied permission, a
+ * dead network, a failing /api/stt, silence. Feature detection alone was not
+ * enough -- a learner who denied the microphone kept a mic button that could
+ * never produce an answer, with Check disabled and no skip.
+ *
+ * That keeps the lesson answerable, which is the whole point: question counts
+ * are fixed server-side, so a question the learner cannot answer is a lesson
+ * they cannot complete -- no XP, no streak, no unlock, and nothing on screen
+ * explaining why.
  */
 export function SpeakAnswer({
   target,
@@ -30,11 +36,17 @@ export function SpeakAnswer({
   onChange: (text: string) => void;
   checked: boolean;
 }) {
-  const { state, error, canRecord, start, stop } = useSpeechCapture({
+  const { state, error, failed, canRecord, start, stop } = useSpeechCapture({
     onTranscript: (text) => onChange(text),
   });
   const recording = state === "recording";
   const transcribing = state === "transcribing";
+  // Typing appears when speech cannot be captured -- which is NOT only "this
+  // browser has no microphone API". A denied permission, a dead network and a
+  // failing /api/stt all leave a learner who can see a mic button that will
+  // never produce an answer, and Check stays disabled because `picked` is
+  // still null. There is no skip: the lesson would be unfinishable.
+  const showTyping = !canRecord || failed;
 
   return (
     <div>
@@ -54,7 +66,7 @@ export function SpeakAnswer({
         )}
       </div>
 
-      {canRecord ? (
+      {!showTyping ? (
         <div className="flex flex-col items-center gap-3">
           <button
             type="button"
@@ -118,8 +130,18 @@ export function SpeakAnswer({
       ) : (
         <div>
           <p className="mb-2 text-xs text-ink-soft">
-            Recording isn&apos;t available on this device — type the phrase instead.
+            {canRecord
+              ? "Speech couldn't be checked just now — type the phrase instead."
+              : "Recording isn't available on this device — type the phrase instead."}
           </p>
+          {error && (
+            <p
+              role="alert"
+              className="mb-2 w-fit rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            >
+              {error}
+            </p>
+          )}
           <input
             type="text"
             disabled={checked}

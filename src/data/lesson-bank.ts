@@ -788,12 +788,20 @@ I can't find my phone.|I can't find my phone.`,
     prompt: "Say this aloud:",
     note: "Short everyday phrases to practise saying.",
     // Each line is the same text twice: what is shown is what must be said.
-    // Kept to one breath and to words that transcribe unambiguously -- a
-    // homophone-heavy phrase would be marked wrong for a correct utterance.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
     data: `Good morning.|Good morning.
 Nice to meet you.|Nice to meet you.
 How are you today?|How are you today?
-My name is Sara.|My name is Sara.
+My name is Anna.|My name is Anna.
 I would like a coffee.|I would like a coffee.
 Where is the station?|Where is the station?
 Thank you very much.|Thank you very much.
@@ -1505,20 +1513,26 @@ The parcel arrived yesterday.|The parcel arrived yesterday.`,
     prompt: "Say this aloud:",
     note: "Everyday phrases for asking, arranging and explaining.",
     // Each line is the same text twice: what is shown is what must be said.
-    // Kept to one breath, and to phrasing that transcribes predictably --
-    // compound numbers and currency are avoided because Deepgram's
-    // smart_format renders them in a form the normaliser cannot reconcile
-    // (see spoken-answer.ts).
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
     data: `I went to the market yesterday.|I went to the market yesterday.
 Could you speak a little slower?|Could you speak a little slower?
 I am looking for the post office.|I am looking for the post office.
-She has lived here for ten years.|She has lived here for ten years.
+She moved here ten years ago.|She moved here ten years ago.
 We are meeting at the cafe later.|We are meeting at the cafe later.
 I forgot to bring my umbrella.|I forgot to bring my umbrella.
 Do you know when the shop opens?|Do you know when the shop opens?
 My flight was delayed by an hour.|My flight was delayed by an hour.
 I would rather stay at home tonight.|I would rather stay at home tonight.
-He has already finished his homework.|He has already finished his homework.
+He finished his homework already.|He finished his homework already.
 Can I pay by card here?|Can I pay by card here?
 The film was better than I expected.|The film was better than I expected.
 I am trying to eat less sugar.|I am trying to eat less sugar.
@@ -2223,11 +2237,17 @@ I found the ending rather disappointing.|I found the ending rather disappointing
     prompt: "Say this aloud:",
     note: "Opinions, reasons and comparisons said out loud.",
     // Each line is the same text twice: what is shown is what must be said.
-    // Kept to one breath, and to phrasing that transcribes predictably --
-    // compound numbers and currency are avoided because Deepgram's
-    // smart_format renders them in a form the normaliser cannot reconcile
-    // (see spoken-answer.ts).
-    data: `I think the second option makes more sense.|I think the second option makes more sense.
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
+    data: `I think the other option makes more sense.|I think the other option makes more sense.
 Personally, I would handle it differently.|Personally, I would handle it differently.
 The main problem is the cost.|The main problem is the cost.
 It depends on how much time we have.|It depends on how much time we have.
@@ -2246,7 +2266,7 @@ I used to feel the same way.|I used to feel the same way.
 Let me explain what I mean by that.|Let me explain what I mean by that.
 I am fairly sure we can manage it.|I am fairly sure we can manage it.
 That would take far too long.|That would take far too long.
-I would like to hear your opinion first.|I would like to hear your opinion first.
+I would like to hear your opinion on this.|I would like to hear your opinion on this.
 The difference is smaller than it looks.|The difference is smaller than it looks.
 We need to be realistic about this.|We need to be realistic about this.
 I can see why you would think that.|I can see why you would think that.
@@ -2944,10 +2964,16 @@ Attendance has risen sharply since April.|Attendance has risen sharply since Apr
     prompt: "Say this aloud:",
     note: "Multi-clause sentences to say in one breath.",
     // Each line is the same text twice: what is shown is what must be said.
-    // Kept to one breath, and to phrasing that transcribes predictably --
-    // compound numbers and currency are avoided because Deepgram's
-    // smart_format renders them in a form the normaliser cannot reconcile
-    // (see spoken-answer.ts).
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
     data: `If I had known earlier, I would have said something.|If I had known earlier, I would have said something.
 The report suggests that demand is falling.|The report suggests that demand is falling.
 What surprised me most was the reaction.|What surprised me most was the reaction.
@@ -3666,12 +3692,18 @@ Compliance remains largely a matter of discretion.|Compliance remains largely a 
     prompt: "Say this aloud:",
     note: "Idiomatic and formal phrasing said aloud.",
     // Each line is the same text twice: what is shown is what must be said.
-    // Kept to one breath, and to phrasing that transcribes predictably --
-    // compound numbers and currency are avoided because Deepgram's
-    // smart_format renders them in a form the normaliser cannot reconcile
-    // (see spoken-answer.ts).
+    // Kept to one breath, and to phrasing the normaliser can actually reconcile
+    // with a transcript (see spoken-answer.ts). Five things are avoided on
+    // purpose, each of which marked a PERFECT utterance wrong when it slipped
+    // through:
+    //   - compound numbers and currency ("twenty one" vs smart_format's "21")
+    //   - ordinals, for the same reason ("second" vs "2nd")
+    //   - a contracted "has" ("He has finished" said as "He's finished", which
+    //     normalises to "he is")
+    //   - possessive 's ("devil's" normalises to "devil is")
+    //   - names and homophones with no disambiguating context ("Sara"/"Sarah")
     data: `I am afraid that rather misses the point.|I am afraid that rather misses the point.
-Let me play devil's advocate for a moment.|Let me play devil's advocate for a moment.
+Let me argue the other side for a moment.|Let me argue the other side for a moment.
 That is easier said than done.|That is easier said than done.
 We are splitting hairs over the wording.|We are splitting hairs over the wording.
 The argument does not really hold water.|The argument does not really hold water.
@@ -3694,7 +3726,7 @@ The tone of the letter was unmistakable.|The tone of the letter was unmistakable
 I would put it slightly more carefully than that.|I would put it slightly more carefully than that.
 This is where the argument starts to unravel.|This is where the argument starts to unravel.
 We are effectively back where we started.|We are effectively back where we started.
-It bears repeating that nothing has been agreed.|It bears repeating that nothing has been agreed.`,
+It bears repeating that nothing was agreed.|It bears repeating that nothing was agreed.`,
   },
 ];
 
