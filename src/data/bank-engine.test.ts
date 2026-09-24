@@ -55,10 +55,101 @@ const clozePack: Pack = {
   `,
 };
 
+const listeningPack: Pack = {
+  id: "p3",
+  title: "Minimal pairs",
+  subtitle: "Listen closely",
+  note: "Sounds that are easy to confuse.",
+  kind: "listening",
+  prompt: "What did you hear?",
+  data: `Le dessus est propre.|Le dessus est propre.
+Le dessous est propre.|Le dessous est propre.
+Il achète un poisson.|Il achète un poisson.
+Il boit un poison.|Il boit un poison.
+Ces livres sont à moi.|Ces livres sont à moi.
+Ses livres sont à moi.|Ses livres sont à moi.`,
+};
+
+const speakPack: Pack = {
+  id: "p4",
+  title: "Say it aloud",
+  subtitle: "Practice speaking",
+  note: "Everyday phrases.",
+  kind: "speak",
+  prompt: "Say this aloud:",
+  data: `Bonjour, comment allez-vous ?|Bonjour, comment allez-vous ?
+Merci beaucoup.|Merci beaucoup.
+À bientôt.|À bientôt.`,
+};
+
+const translatePack: Pack = {
+  id: "p5",
+  title: "Write it your way",
+  subtitle: "Translate the idea",
+  note: "More than one wording is right.",
+  kind: "translate",
+  prompt: "Write this in French:",
+  data: `Greet someone in the morning.|Bonjour.;Bonjour à vous.;Salut.
+Thank someone warmly.|Merci beaucoup.;Merci infiniment.;Je vous remercie.`,
+};
+
 describe("packQuestions", () => {
   it("produces one question per data line", () => {
     const qs = packQuestions(pairPack);
     expect(qs.length).toBe(5);
+  });
+
+  it("'speak' questions have no choices/bank -- prompt is the pack instruction, answer is the phrase", () => {
+    const qs = packQuestions(speakPack);
+    expect(qs.length).toBe(3);
+    for (const q of qs) {
+      expect(q.type).toBe("speak");
+      if (q.type === "speak") {
+        expect(q.prompt).toBe("Say this aloud:");
+        expect(q.answer.length).toBeGreaterThan(0);
+      }
+    }
+    expect(qs[0].type === "speak" && qs[0].answer).toBe("Bonjour, comment allez-vous ?");
+  });
+
+  it("'translate' questions split the right side on ';' into acceptableAnswers, prompt is the left side", () => {
+    const qs = packQuestions(translatePack);
+    expect(qs.length).toBe(2);
+    const first = qs[0];
+    expect(first.type).toBe("translate");
+    if (first.type === "translate") {
+      expect(first.prompt).toBe("Greet someone in the morning.");
+      expect(first.acceptableAnswers).toEqual(["Bonjour.", "Bonjour à vous.", "Salut."]);
+    }
+  });
+
+  it("'listening' questions carry audioText separately from the prompt, and the answer is always among the choices", () => {
+    const qs = packQuestions(listeningPack);
+    expect(qs.length).toBe(6);
+    for (const q of qs) {
+      expect(q.type).toBe("listening");
+      if (q.type === "listening") {
+        expect(q.prompt).toBe("What did you hear?");
+        expect(q.audioText.length).toBeGreaterThan(0);
+        expect(q.choices).toContain(q.answer);
+      }
+    }
+  });
+
+  it("'listening' distractors prefer the accented minimal-pair sibling over an unrelated line (Unicode-aware overlap)", () => {
+    // dessus/dessous share every content word except the one that
+    // distinguishes them -- an accent-blind [a-z]-only tokenizer would
+    // silently drop "dessus"/"dessous" entirely (non-ASCII-free words here
+    // are still plain ASCII, but "à moi" and other accented content in the
+    // pool must not be dropped either); this pins that the accented pool
+    // members remain eligible distractors at all, and that content-word
+    // overlap still finds the closer sibling over a random pick.
+    const qs = packQuestions(listeningPack);
+    const dessus = qs.find((q) => q.type === "listening" && q.audioText.includes("dessus"));
+    expect(dessus?.type).toBe("listening");
+    if (dessus?.type === "listening") {
+      expect(dessus.choices.some((c) => c.includes("dessous"))).toBe(true);
+    }
   });
 
   it("every question's id is prefixed with the pack id", () => {

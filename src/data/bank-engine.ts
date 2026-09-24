@@ -11,9 +11,22 @@ export type Pack = {
   title: string;
   subtitle: string;
   note: string;
-  /** "pair" lines: "left|right" — prompt asks for the right side. */
-  kind: "pair" | "cloze";
-  /** prompt template for pair packs, `%s` is the left side. */
+  /**
+   * "pair" lines: "left|right" — prompt asks for the right side.
+   * "cloze" lines: the left side carries the "___" blank.
+   * "listening" lines: "audioText|answer" — the left side is spoken aloud and
+   * the pack's own `prompt` is the stem shown after playback.
+   * "speak" lines: "phrase|phrase" — the same text twice, because what is
+   * shown is exactly what the learner must say. The pack's `prompt` is the
+   * instruction ("Say this aloud:").
+   * "translate" lines: "idea|phrasing;phrasing;phrasing" — the left side
+   * describes what to express WITHOUT giving the sentence away, and the right
+   * side is the semicolon-separated list of wordings that count, most
+   * canonical first. Mirrors lesson-bank.ts's (English's) pack format exactly
+   * — see that file's comment for the full authoring rationale.
+   */
+  kind: "pair" | "cloze" | "listening" | "speak" | "translate";
+  /** prompt template for pair/listening packs, `%s` is the left side. */
   prompt?: string;
   data: string;
 };
@@ -27,9 +40,28 @@ export function hash(s: string) {
   return Math.abs(h);
 }
 
-function pickDistractors(answer: string, pool: string[], seed: string) {
+function pickDistractors(answer: string, pool: string[], seed: string, preferConfusable = false) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
+  const walk: string[] = [];
+  for (let i = 0; i < others.length; i++) {
+    const cand = others[(start + i * 7) % others.length];
+    if (cand) walk.push(cand);
+  }
+  // Listening ranks by confusability instead of the hashed walk's raw order:
+  // the whole sentence is the answer, so a good distractor is one the learner
+  // might mishear it as, not one that could grammatically fill a blank (there
+  // is no blank). This is deliberately NOT `src/lib/distractor-affinity.ts`'s
+  // `orderDistractorCandidates` -- that ranks by part-of-speech affinity via
+  // `compromise`, an English-only NLP library (spec
+  // docs/superpowers/specs/2026-09-24-french-content-audit-design.md section
+  // 2.1), and stays out of this shared engine until the morphology decision in
+  // that spec's section 8.3 is made. `orderByLexicalSimilarity` there is a
+  // *different*, language-neutral function (pure content-word overlap, no POS
+  // tagging) -- reimplemented here with a Unicode-aware tokenizer instead of
+  // its `[a-z]`-only one, which would otherwise silently drop every accented
+  // French/Spanish content word from the comparison.
+  const ordered = preferConfusable ? orderByContentWordOverlap(answer, walk) : walk;
   const out: string[] = [];
   // Dedupe case-insensitively -- a cloze pack legitimately reuses the same
   // word as the correct answer for two different lines with different
@@ -39,8 +71,8 @@ function pickDistractors(answer: string, pool: string[], seed: string) {
   // identical to the learner. Found via an automated content-consistency
   // scan (2026-09-22) across all 3 course content banks.
   const seen = new Set<string>([answer.toLowerCase()]);
-  for (let i = 0; out.length < 3 && i < others.length; i++) {
-    const cand = others[(start + i * 7) % others.length];
+  for (let i = 0; out.length < 3 && i < ordered.length; i++) {
+    const cand = ordered[i];
     const key = cand?.toLowerCase();
     if (cand && key && !seen.has(key)) {
       out.push(cand);
@@ -48,6 +80,116 @@ function pickDistractors(answer: string, pool: string[], seed: string) {
     }
   }
   return out;
+}
+
+// English never reaches this function -- it has its own generator and its
+// own full-English stopword list in distractor-affinity.ts's contentWords.
+// This engine currently serves French and Spanish, so the list is theirs;
+// extend it if/when a third language's content flows through `listening`.
+const STOP_WORDS = new Set([
+  // French
+  "le",
+  "la",
+  "les",
+  "l'",
+  "un",
+  "une",
+  "des",
+  "de",
+  "du",
+  "et",
+  "à",
+  "en",
+  "est",
+  "sont",
+  "il",
+  "elle",
+  "ils",
+  "elles",
+  "je",
+  "tu",
+  "nous",
+  "vous",
+  "que",
+  "qui",
+  "pas",
+  "ne",
+  "pour",
+  "avec",
+  "sur",
+  "dans",
+  "ce",
+  "cette",
+  "ces",
+  "son",
+  "sa",
+  "ses",
+  "au",
+  "aux",
+  // Spanish
+  "el",
+  "los",
+  "las",
+  "unos",
+  "unas",
+  "del",
+  "y",
+  "a",
+  "es",
+  "son",
+  "yo",
+  "él",
+  "ella",
+  "ellos",
+  "ellas",
+  "tú",
+  "nosotros",
+  "vosotros",
+  "no",
+  "para",
+  "con",
+  "sobre",
+  "este",
+  "esta",
+  "estos",
+  "estas",
+  "su",
+  "sus",
+]);
+
+/**
+ * `\p{L}`/`\p{N}` (Unicode property escapes) match any letter/number in any
+ * script, so this tokenizer works unchanged for French, Spanish, or a future
+ * language, unlike an `[a-z]`-only pattern that silently strips accented
+ * content words before they can ever be compared.
+ */
+function contentWordsUnicode(text: string): string[] {
+  const words = text
+    .toLowerCase()
+    .replace(/_+/g, " ")
+    .replace(/[^\p{L}\p{N}\s'-]/gu, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  return words.filter((w) => !STOP_WORDS.has(w));
+}
+
+/**
+ * Orders candidates so the sentence most easily confused with `answer` comes
+ * first, measured by shared content words. Used only for `listening` (see
+ * `pickDistractors`'s `preferConfusable`) -- reorders and never drops, so it
+ * cannot change a question's choice count.
+ */
+function orderByContentWordOverlap(answer: string, candidates: string[]): string[] {
+  const target = contentWordsUnicode(answer);
+  if (target.length === 0) return candidates;
+  return candidates
+    .map((candidate, index) => {
+      const words = contentWordsUnicode(candidate);
+      const shared = target.filter((w) => words.includes(w)).length;
+      return { candidate, index, shared };
+    })
+    .sort((a, b) => b.shared - a.shared || a.index - b.index)
+    .map((entry) => entry.candidate);
 }
 
 export function packQuestions(pack: Pack): Question[] {
@@ -60,12 +202,68 @@ export function packQuestions(pack: Pack): Question[] {
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
-    const distractors = pickDistractors(answer, pool, seed);
-    const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
+    // Returned before any distractor work: a speaking question has no choices
+    // and no word bank, so picking distractors would be effort whose result is
+    // discarded, and the mc/fill split below does not apply to it either.
+    if (pack.kind === "speak") {
+      return {
+        id: `${pack.id}q${i}`,
+        type: "speak",
+        prompt: pack.prompt ?? "Say this aloud:",
+        answer: left!,
+        explanation: `Target phrase: "${left}" ${pack.note}`,
+      };
+    }
+    // Same reasoning as speak: a translate question has no choices and no word
+    // bank, so the distractor work below is effort whose result is discarded.
+    if (pack.kind === "translate") {
+      const answers = right!
+        .split(";")
+        .map((a) => a.trim())
+        .filter(Boolean);
+      return {
+        id: `${pack.id}q${i}`,
+        type: "translate",
+        prompt: left!,
+        acceptableAnswers: answers,
+        explanation: `One way to say it: "${answers[0]}" ${pack.note}`,
+      };
+    }
+    // Built before the distractors so they can be ranked against it -- a
+    // candidate already present in the prompt makes a poor wrong answer.
+    const prompt =
+      pack.kind === "pair"
+        ? (pack.prompt ?? "%s").replace("%s", left!)
+        : pack.kind === "listening"
+          ? // Substituted like a pair prompt so a template reused from one does
+            // not ship a literal "%s" on screen. The audio is heard, not read,
+            // so the sentence is only ever the fallback for a template that
+            // asks for it explicitly.
+            (pack.prompt ?? "What did you hear?").replace("%s", left!)
+          : left!;
+    const distractors = pickDistractors(answer, pool, seed, pack.kind === "listening");
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
-        : `"${answer}" is correct here. ${pack.note}`;
+        : pack.kind === "listening"
+          ? // The audio sentence already ends in its own punctuation, so quoting
+            // it and adding a full stop produced `"... rise.". note`.
+            `The audio says "${left}" ${pack.note}`
+          : `"${answer}" is correct here. ${pack.note}`;
+    if (pack.kind === "listening") {
+      // Order is cosmetic here: `answer` is the choice text, so there is no
+      // index to keep in sync with the shuffle.
+      const choices = [answer, ...distractors].sort((a, b) => hash(a + seed) - hash(b + seed));
+      return {
+        id: `${pack.id}q${i}`,
+        type: "listening",
+        prompt,
+        audioText: left!,
+        choices,
+        answer,
+        explanation,
+      };
+    }
     const useMc = (hash(seed) & 1) === 0 || distractors.length < 3;
     if (useMc) {
       const choices = [answer, ...distractors];
