@@ -5,6 +5,7 @@ import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
+import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { MascotBanner } from "../../components/MascotBanner";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
@@ -21,6 +22,8 @@ import {
 } from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
 import { deriveAnswerCorrectness } from "../../lib/srs";
+import { requestTranslationVerdict } from "../../lib/grade-translation.client";
+import type { TranslationVerdict } from "../api/grade-translation";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
@@ -88,6 +91,14 @@ function LessonPage() {
   // `picked` directly -- see submittedAnswer below for where these unify.
   const [orderPicks, setOrderPicks] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
+  // A translation's verdict can outrank the local one: the curated phrasings
+  // are a floor, and /api/grade-translation is asked about anything they
+  // reject. Held in state because `answered` below and the miss bookkeeping in
+  // checkAnswer must both use the SETTLED verdict, not the local guess.
+  const [translationVerdict, setTranslationVerdict] = useState<TranslationVerdict | null>(null);
+  // Only true while that second opinion is in flight, so Check can say so
+  // rather than looking frozen.
+  const [checking, setChecking] = useState(false);
   // V3 pkg 4b: in-lesson reinforcement, staged in two steps so the
   // learner sees the *missed* question's own feedback first, then the
   // reinforcement question fresh on the next "Continue" -- never affects
@@ -149,12 +160,35 @@ function LessonPage() {
   const submittedAnswer =
     q.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
 
-  function checkAnswer() {
+  async function checkAnswer() {
     if (!submittedAnswer) return;
     // Graded through the shared helper rather than inline, because the review
     // server re-derives correctness from that same helper. A spoken answer in
     // particular needs its tolerant transcript match here and there alike.
-    const isCorrect = deriveAnswerCorrectness(q, submittedAnswer);
+    let isCorrect = deriveAnswerCorrectness(q, submittedAnswer);
+    // A written translation gets a second opinion when the curated phrasings
+    // do not already accept it -- there are more right ways to say a thing
+    // than any list anticipates. A null verdict (offline, vendor down, quota
+    // spent) leaves the local answer standing rather than failing the learner
+    // for something that is not about their English.
+    if (!isCorrect && q.type === "translate") {
+      setChecking(true);
+      const verdict = await requestTranslationVerdict({
+        lessonId: lesson.id,
+        questionId: q.id,
+        submission: submittedAnswer,
+        course,
+      });
+      setChecking(false);
+      if (verdict) {
+        setTranslationVerdict(verdict);
+        isCorrect = verdict.correct;
+      } else {
+        setTranslationVerdict({ correct: false, reason: null, source: "local" });
+      }
+    } else if (q.type === "translate") {
+      setTranslationVerdict({ correct: true, reason: null, source: "local" });
+    }
     setChecked(true);
     // Reinforcement rounds are supplementary practice only -- they never
     // touch correct/missed/hearts/XP, regardless of outcome.
@@ -192,6 +226,7 @@ function LessonPage() {
       setPicked(null);
       setOrderPicks([]);
       setChecked(false);
+      setTranslationVerdict(null);
       return;
     }
     if (activeReinforcement) {
@@ -204,6 +239,10 @@ function LessonPage() {
       setPicked(null);
       setOrderPicks([]);
       setChecked(false);
+      // Without this the previous translation's verdict -- including its
+      // revealed phrasing -- shows over the next question, which the learner
+      // has not answered yet.
+      setTranslationVerdict(null);
       return;
     }
     if (missed.length) {
@@ -253,7 +292,10 @@ function LessonPage() {
     }
   }
 
-  const answered = deriveAnswerCorrectness(q, submittedAnswer ?? "");
+  const answered =
+    q.type === "translate" && translationVerdict
+      ? translationVerdict.correct
+      : deriveAnswerCorrectness(q, submittedAnswer ?? "");
 
   return (
     <LessonFrame>
@@ -445,6 +487,15 @@ function LessonPage() {
                 onChange={setPicked}
                 checked={checked}
               />
+            ) : q.type === "translate" ? (
+              <TranslateAnswer
+                key={q.id}
+                question={q}
+                value={picked}
+                onChange={setPicked}
+                checked={checked}
+                verdict={translationVerdict}
+              />
             ) : q.type === "fill" ? (
               <div>
                 <input
@@ -482,11 +533,18 @@ function LessonPage() {
           <div className="mt-auto pt-6">
             {!checked ? (
               <button
-                disabled={q.type === "reorder" ? orderPicks.length !== q.tokens.length : !picked}
-                onClick={checkAnswer}
+                disabled={
+                  checking ||
+                  (q.type === "reorder"
+                    ? orderPicks.length !== q.tokens.length
+                    : // Whitespace is not an answer: gating on the trimmed text
+                      // keeps it out of the score and spends no quota on it.
+                      !picked?.trim())
+                }
+                onClick={() => void checkAnswer()}
                 className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
               >
-                Check
+                {checking ? "Checking…" : "Check"}
               </button>
             ) : (
               <button
