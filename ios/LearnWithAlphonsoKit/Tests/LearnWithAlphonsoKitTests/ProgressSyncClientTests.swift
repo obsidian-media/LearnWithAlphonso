@@ -748,7 +748,10 @@ final class ProgressSyncClientTests: XCTestCase {
             ]])
         }
 
-        let progress = try XCTUnwrap(try await client.fetchProgress())
+        // Awaited into a local first: XCTUnwrap takes an autoclosure, and an
+        // `async` call cannot appear inside one.
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
 
         // xp/leagueTier must come from language_progress -- user_progress.xp
         // has been frozen since the 2026-09-08 multi-course migration.
@@ -801,7 +804,10 @@ final class ProgressSyncClientTests: XCTestCase {
             return self.jsonResponse(for: url, body: [] as [[String: Any]])
         }
 
-        let progress = try XCTUnwrap(try await client.fetchProgress())
+        // Awaited into a local first: XCTUnwrap takes an autoclosure, and an
+        // `async` call cannot appear inside one.
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
 
         // The schema default is 5. Showing 0 hearts to someone who has all
         // of them would read as a bug.
