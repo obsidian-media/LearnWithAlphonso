@@ -40,8 +40,8 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
-- **Themes**: 3 user-selectable themes (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
-- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) porting all three of the web app's themes (Meadow/Studio Ink/Manuscript — fonts, oklch-accurate palette, the hard-shadow pressed-button effect), applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md`
+- **Themes**: 3 user-selectable themes on web (Meadow, Studio Ink, Manuscript — `/profile`), synced to the account and persisted locally
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 4 themes: the three web themes ported over (Meadow/Studio Ink/Manuscript — fonts, oklch-accurate palette, the hard-shadow pressed-button effect) plus a fourth, iOS-only "Canopy" theme (2026-09-23) not mirrored on web, applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
 
 ## Content
 
@@ -158,13 +158,14 @@ runner, `ios-app-build` in `.github/workflows/ci.yml` — there is no local
 Xcode/macOS in this development environment, so that CI job is the only
 compile verification that exists):
 
-- **Theme system** (`Sources/DesignSystem/`): the app's own port of all
-  three web themes (Meadow/Studio Ink/Manuscript) — bundled variable
-  fonts per theme resolved to a specific weight/optical-size via
-  CoreText rather than static files (none of the six font families ship
-  those), oklch-accurate color palettes, and the `.hard-shadow`
-  pressed-button effect — applied across every screen, switchable
-  in-app (Settings, from the Learn tab) and synced to `profiles.theme`.
+- **Theme system** (`Sources/DesignSystem/`): the app's own port of the
+  three web themes (Meadow/Studio Ink/Manuscript) plus a fourth,
+  iOS-only theme (Canopy) — bundled variable fonts per theme resolved
+  to a specific weight/optical-size via CoreText rather than static
+  files (none of the seven font families ship those), oklch-accurate
+  color palettes, and the `.hard-shadow` pressed-button effect —
+  applied across every screen, switchable in-app (Settings, from the
+  Learn tab) and synced to `profiles.theme`.
   `.preferredColorScheme` is pinned to whichever theme is active so
   system-styled chrome (nav titles, empty states) stays legible
   regardless of the device's own Dark Mode setting. Before this, the

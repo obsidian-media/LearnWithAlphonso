@@ -34,3 +34,13 @@ describe("resolveInitialTheme", () => {
     expect(resolveInitialTheme("garbage", undefined)).toBe("meadow");
   });
 });
+
+describe("canopy (iOS-only theme)", () => {
+  it("is not a valid web theme name", () => {
+    expect(isThemeName("canopy")).toBe(false);
+  });
+
+  it("falls back to meadow if the server reports canopy", () => {
+    expect(resolveInitialTheme(null, "canopy")).toBe("meadow");
+  });
+});

@@ -644,12 +644,14 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(AlphonsoColor.moss)
                 Text("Lesson complete")
                     .font(AlphonsoFont.display(21, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.ink)
+
+                // The exact "no imagery, just text/icon" pattern the
+                // spec's Background section calls out on PaywallView
+                // shows up here too -- same fix.
+                AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work!")
                 Text("+\(result.xpGain) XP")
                     .font(AlphonsoFont.display(32, weight: .bold))
                     .foregroundStyle(AlphonsoColor.moss)
@@ -880,10 +882,7 @@ private struct LeaguePromotionOverlay: View {
                 Text("League up!")
                     .font(AlphonsoFont.display(34, weight: .bold))
                     .foregroundStyle(AlphonsoColor.ink)
-                Text("You've been promoted to \(LeagueTierPalette.label(for: tier))")
-                    .font(AlphonsoFont.sans(17))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .multilineTextAlignment(.center)
+                AlphonsoMascotBanner(mascot: .alphonso, message: "You've been promoted to \(LeagueTierPalette.label(for: tier))!")
                     .padding(.horizontal)
                 Spacer()
                 Button("Continue", action: onContinue)

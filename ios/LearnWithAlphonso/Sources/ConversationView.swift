@@ -18,25 +18,15 @@ struct ConversationView: View {
                 if !contentStore.campaigns.isEmpty {
                     CampaignPickerSection(campaigns: contentStore.campaigns, session: session)
                 }
-                Section {
-                    ForEach(contentStore.scenarios) { scenario in
-                        NavigationLink {
-                            ConversationSessionView(scenario: scenario, session: session)
-                        } label: {
-                            HStack(spacing: AlphonsoSpacing.sm + 4) {
-                                Text(scenario.emoji).font(.largeTitle)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(scenario.title)
-                                        .font(AlphonsoFont.sans(16, weight: .semiBold))
-                                        .foregroundStyle(AlphonsoColor.ink)
-                                    Text(scenario.blurb)
-                                        .font(AlphonsoFont.sans(12))
-                                        .foregroundStyle(AlphonsoColor.inkSoft)
-                                }
-                            }
-                            .padding(.vertical, 4)
-                        }
+                let scenarioRows = ForEach(contentStore.scenarios) { scenario in
+                    NavigationLink {
+                        ConversationSessionView(scenario: scenario, session: session)
+                    } label: {
+                        AlphonsoRowCard(title: scenario.title, subtitle: scenario.blurb, leadingEmoji: scenario.emoji)
                     }
+                }
+                Section {
+                    scenarioRows
                 } header: {
                     if !contentStore.campaigns.isEmpty {
                         Text("Scenarios")
@@ -45,7 +35,7 @@ struct ConversationView: View {
                             .foregroundStyle(AlphonsoColor.ember)
                     }
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
             .background(AlphonsoColor.surface)

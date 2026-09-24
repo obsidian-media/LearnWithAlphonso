@@ -61,15 +61,7 @@ struct TeamsView: View {
                     ProgressView().tint(AlphonsoColor.moss)
                 } else {
                     ForEach(Array(leaderboard.enumerated()), id: \.element.teamID) { i, team in
-                        HStack {
-                            Text("\(i + 1). \(team.name)")
-                                .font(AlphonsoFont.sans(14, weight: .medium))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Spacer()
-                            Text("\(team.weeklyXP) XP")
-                                .font(AlphonsoFont.sans(14, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        }
+                        AlphonsoRowCard(title: "\(i + 1). \(team.name)", subtitle: "\(team.weeklyXP) XP this week")
                     }
                 }
             } header: {
@@ -78,7 +70,7 @@ struct TeamsView: View {
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .listRowBackground(Color.clear)
 
             if let errorMessage {
                 Text(errorMessage).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)

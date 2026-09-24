@@ -11,6 +11,7 @@ import LearnWithAlphonsoKit
 struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     var tint: Color = AlphonsoColor.moss
     var shadow: Color = AlphonsoColor.mossDeep
+    var foreground: Color = AlphonsoColor.surface
     /// false for inline/chip usage (e.g. a word-bank token) where the
     /// button should size to its label instead of filling its container.
     var fullWidth: Bool = true
@@ -18,7 +19,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AlphonsoFont.sans(17, weight: .semiBold))
-            .foregroundStyle(AlphonsoColor.surface)
+            .foregroundStyle(foreground)
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)
             .frame(maxWidth: fullWidth ? .infinity : nil)
@@ -63,12 +64,14 @@ struct AlphonsoSecondaryButtonStyle: ButtonStyle {
 }
 
 extension ButtonStyle where Self == AlphonsoPrimaryButtonStyle {
-    static var alphonsoPrimary: AlphonsoPrimaryButtonStyle { AlphonsoPrimaryButtonStyle() }
+    static var alphonsoPrimary: AlphonsoPrimaryButtonStyle {
+        AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
+    }
     static var alphonsoEmber: AlphonsoPrimaryButtonStyle {
-        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65))
+        AlphonsoPrimaryButtonStyle(tint: AlphonsoColor.ember, shadow: AlphonsoColor.ember.opacity(0.65), foreground: AlphonsoColor.onAccent)
     }
     static func alphonsoPrimary(fullWidth: Bool) -> AlphonsoPrimaryButtonStyle {
-        AlphonsoPrimaryButtonStyle(fullWidth: fullWidth)
+        AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary, fullWidth: fullWidth)
     }
 }
 
@@ -297,6 +300,131 @@ struct PulsingGlow: ViewModifier {
 extension View {
     func pulsingGlow(scale: CGFloat = 1.12, duration: Double = 1.4) -> some View {
         modifier(PulsingGlow(scale: scale, duration: duration))
+    }
+}
+
+// MARK: - Mascot banner
+
+/// Which named mascot a banner shows -- keeps call sites from passing a
+/// raw asset-name string (a typo there fails silently at runtime, not at
+/// compile time, since `Image(_:)` has no compile-time asset checking).
+enum AlphonsoMascot {
+    case alphonso
+    case hector
+
+    var assetName: String {
+        switch self {
+        case .alphonso: return "Alphonso"
+        case .hector: return "Hector"
+        }
+    }
+
+    /// VoiceOver needs a real description, not just a decorative image --
+    /// the portrait is communicating something (who's "speaking"), not
+    /// just decoration. Combined with `message` at the call site for the
+    /// full accessibility label (see `AlphonsoMascotBanner.body`).
+    var accessibilityName: String {
+        switch self {
+        case .alphonso: return "Alphonso"
+        case .hector: return "Hector"
+        }
+    }
+}
+
+/// A mascot portrait + a short line of copy on a colored/gradient card --
+/// the shared replacement for the "plain text, no imagery" pattern found
+/// on the paywall, auth, and Learn-tab-home hero spots (see the design
+/// spec's Background section: the concrete before/after example was
+/// PaywallView showing an SF Symbol instead of Hector's actual bundled
+/// portrait). Not Canopy-specific -- any theme can use this, it just
+/// reads `AlphonsoColor.moss`/`.parchment` like everything else here.
+struct AlphonsoMascotBanner: View {
+    let mascot: AlphonsoMascot
+    let message: String
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.sm + 4) {
+            Image(mascot.assetName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
+                        .strokeBorder(.white.opacity(0.6), lineWidth: 2)
+                )
+
+            Text(message)
+                .font(AlphonsoFont.sans(14, weight: .bold))
+                .foregroundStyle(AlphonsoColor.onMossGradient)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(AlphonsoSpacing.md)
+        .background(
+            LinearGradient(colors: [AlphonsoColor.moss, AlphonsoColor.mossDeep], startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(mascot.accessibilityName): \(message)")
+    }
+}
+
+// MARK: - Row card
+
+/// A rounded card row (status dot + title + subtitle) for use as `List`
+/// row *content* -- deliberately not a replacement for `List`/`Section`
+/// itself (keeps lazy loading, `.searchable`, toolbar/navigation
+/// integration all working exactly as they do today; see the design
+/// spec's "New shared components" section for why this stays row content
+/// rather than migrating to a `LazyVStack`). Replaces the current
+/// plain-`Text`-only row pattern (e.g. `LessonBrowserView`'s lesson
+/// rows) that's part of what read as "an empty piece of background with
+/// some written knowledge on it" (the real user quote already in
+/// `StatusHeaderView.swift`'s doc comment).
+struct AlphonsoRowCard: View {
+    let title: String
+    let subtitle: String
+    /// Status-dot color -- e.g. `.moss` for available, `.ember` for
+    /// today's/next recommended item, `AlphonsoColor.hairline` for
+    /// locked/dimmed. Callers pass an explicit color rather than this
+    /// component inferring state, since "what counts as next/locked"
+    /// is different per screen (lesson unlock order vs. review-queue
+    /// due date vs. leaderboard rank).
+    var accent: Color = AlphonsoColor.moss
+    /// An emoji shown in place of the accent dot when present -- used by
+    /// scenario/campaign pickers where the emoji itself is the
+    /// meaningful visual (a specific scene's character), not just a
+    /// status indicator. `nil` (the default) keeps every existing call
+    /// site's plain accent-dot appearance unchanged.
+    var leadingEmoji: String? = nil
+
+    var body: some View {
+        HStack(spacing: AlphonsoSpacing.sm + 2) {
+            if let leadingEmoji {
+                Text(leadingEmoji).font(.largeTitle)
+            } else {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 8, height: 8)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AlphonsoFont.sans(16, weight: .medium))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(subtitle)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, AlphonsoSpacing.sm)
+        .padding(.horizontal, AlphonsoSpacing.sm + 4)
+        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
     }
 }
 

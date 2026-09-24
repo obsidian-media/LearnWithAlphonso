@@ -303,7 +303,7 @@ perspective.
 
 ## Themes
 
-Three user-selectable themes (`meadow` default, `studio-ink`,
+Three user-selectable themes on web (`meadow` default, `studio-ink`,
 `manuscript`), defined as CSS custom properties per `[data-theme="..."]`
 block in `src/styles.css` plus a design-tokens JSON per theme
 (`src/design-tokens/*.json`, currently informational/export-only — the
@@ -316,6 +316,9 @@ Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
 `CHECK` constraint — both need updating together when a theme is added
 (see `supabase/migrations/20260918140000_add_manuscript_theme.sql` for the
 pattern: drop and re-add the constraint, since it isn't named per-value).
+**As of 2026-09-23, iOS has a fourth theme, `canopy`, that is deliberately
+NOT in this rule's scope** — see the "Native iOS app" section's Design
+system paragraph below for why.
 
 ## Native iOS app (`ios/`)
 
@@ -376,13 +379,19 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 `9Y6GYPM3K5`.
 
 **Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
-2026-09-22, extended to a full theme system 2026-09-22): ports all
-three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
+2026-09-22, extended to a full theme system 2026-09-22, extended again
+2026-09-23 with a fourth, iOS-only theme — see below): originally ported
+all three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
 `[data-theme="studio-ink"]`, `[data-theme="manuscript"]` blocks) rather
 than inventing a separate native-only look, so web and iOS read as one
-product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` (raw values
-match the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
-exactly), `AlphonsoPalette` (colors converted from each theme's oklch
+product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` — **raw values
+matched the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
+exactly until 2026-09-23; `canopy` is now a real exception, present in
+`AlphonsoThemeID` and the CHECK constraint but deliberately absent from
+`THEME_NAMES`** (web has no CSS for it and never offers it as a picker
+option; `resolveInitialTheme` already falls back safely to `meadow` for
+any value not in `THEME_NAMES`, so this doesn't break web) —
+`AlphonsoPalette` (colors converted from each theme's oklch
 values to sRGB via a standard OKLab conversion — computed, not
 eyeballed — plus each theme's font base names/optical-size range and a
 `ColorScheme`), and `AlphonsoThemeManager` (an `@Observable` singleton,
@@ -506,6 +515,23 @@ because the user's own mockup had Alphonso's cape covering the Check
 button — this can't repeat that regardless of portrait size. The
 card's public API (`explanation:` only) didn't change, so no call site
 needed touching.
+
+**Canopy theme (2026-09-23)**: a fourth, iOS-only theme — emerald/coral,
+mascot-forward — added as the new default for installs/accounts with no
+saved theme preference, following direct feedback ("too much like a
+book and wordish") that the original three themes' serif-display
+pattern and a real usage gap (mascot art bundled but barely used, e.g.
+`PaywallView` was an SF Symbol and plain text) read as generic and
+lifeless. Meadow/Studio Ink/Manuscript are unchanged. New shared
+components: `AlphonsoMascotBanner` (mascot portrait + message on a
+`moss`→`mossDeep` gradient) and `AlphonsoRowCard` (replaces plain
+`List` text rows). Two new per-theme tokens, `onPrimary`/`onAccent`,
+fix a real contrast bug (Canopy's bright coral `ember` fails WCAG with
+light text); a third, `onMossGradient`, fixes a second one found in
+review (Studio Ink's `moss`/`mossDeep` are medium-bright, not dark, so
+`onPrimary` — correct for its solid-fill button — drops to 2.16:1
+against `mossDeep` in the new banner's two-stop gradient). Full design:
+`docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md`.
 
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
 original design (note: that doc's plan to reuse Cloud Voice for *all* AI

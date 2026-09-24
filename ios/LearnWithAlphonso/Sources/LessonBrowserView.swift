@@ -26,34 +26,31 @@ struct LessonBrowserView: View {
                 WeeklyChallengesSection(session: session)
 
                 ForEach(contentStore.bundle(for: course).units) { unit in
-                    Section {
-                        ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
-                            NavigationLink(value: lesson.id) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(lesson.title)
-                                        .font(AlphonsoFont.sans(16, weight: .medium))
-                                        .foregroundStyle(AlphonsoColor.ink)
-                                    Text(lesson.subtitle)
-                                        .font(AlphonsoFont.sans(13))
-                                        .foregroundStyle(AlphonsoColor.inkSoft)
-                                }
-                                .padding(.vertical, 2)
-                            }
-                            // Lazy List rows already fire onAppear as they
-                            // scroll into view, so this cascades naturally
-                            // rather than animating the whole (possibly
-                            // 100+ row) list at once -- a small index-based
-                            // delay just makes the *first* screenful cascade
-                            // in visibly instead of popping in together.
-                            .springEntrance(delay: Double(index % 8) * 0.04)
+                    let lessonRows = ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
+                        NavigationLink(value: lesson.id) {
+                            AlphonsoRowCard(
+                                title: lesson.title,
+                                subtitle: lesson.subtitle,
+                                accent: index == 0 ? AlphonsoColor.ember : AlphonsoColor.moss
+                            )
                         }
+                        // Lazy List rows already fire onAppear as they
+                        // scroll into view, so this cascades naturally
+                        // rather than animating the whole (possibly
+                        // 100+ row) list at once -- a small index-based
+                        // delay just makes the *first* screenful cascade
+                        // in visibly instead of popping in together.
+                        .springEntrance(delay: Double(index % 8) * 0.04)
+                    }
+                    Section {
+                        lessonRows
                     } header: {
                         Text("\(unit.eyebrow) · \(unit.title)")
                             .font(AlphonsoFont.sans(12, weight: .semiBold))
                             .tracking(0.4)
                             .foregroundStyle(AlphonsoColor.ember)
                     }
-                    .listRowBackground(AlphonsoColor.parchment)
+                    .listRowBackground(Color.clear)
                 }
             }
             .scrollContentBackground(.hidden)
