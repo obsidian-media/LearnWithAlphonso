@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { PlacementQuestion } from "../../data/placement";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -41,13 +42,16 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+const canSpeak = vi.fn(() => true);
+vi.mock("../../lib/speech", () => ({ speak: vi.fn(), canSpeak: () => canSpeak() }));
+
 const savePlacementResult = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ savePlacementResult }));
 
 // A fixed, deterministic 2-question A1 set instead of the real random
 // 15-question pool, so the placement flow (score -> next-level placement)
 // is exercised without depending on which questions get sampled.
-const FIXED_QUESTIONS = [
+const FIXED_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p1",
     level: "A1",
@@ -65,11 +69,23 @@ const FIXED_QUESTIONS = [
     answer: 3,
   },
 ];
+const LISTENING_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "p50",
+    level: "A1",
+    type: "listening" as const,
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher."],
+    answer: "She's a doctor.",
+  },
+];
+
 // Three real bands (A1, B1, C1) with A2/B2 deliberately absent -- exercises
 // the adaptive skip-ahead path (acing a band skips the next one, credited
 // synthetically, and resumes on the one after) without needing the full
 // 15-question shape.
-const MULTI_BAND_QUESTIONS = [
+const MULTI_BAND_QUESTIONS: PlacementQuestion[] = [
   {
     id: "m-a1-1",
     level: "A1",
@@ -144,7 +160,9 @@ const MULTI_BAND_QUESTIONS = [
   },
 ];
 
-const pickPlacement = vi.fn(() => FIXED_QUESTIONS);
+// Typed as the union rather than inferred from the first fixture, so a
+// listening or translate set can be injected too.
+const pickPlacement = vi.fn((): PlacementQuestion[] => FIXED_QUESTIONS);
 vi.mock("../../data/courses", () => ({ getCourse: () => ({ pickPlacement }) }));
 
 /** Answers the current question and advances, regardless of which label ("Continue" / "See my level") the submit button currently shows. */
@@ -162,6 +180,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  canSpeak.mockReturnValue(true);
   navigate.mockClear();
   savePlacementResult.mockReset();
   savePlacementResult.mockResolvedValue({});
@@ -295,5 +314,28 @@ describe("Adaptive band sequencing", () => {
     expect(await screen.findByText("A1")).toBeInTheDocument();
     expect(screen.getByText("0 of 3 correct")).toBeInTheDocument();
     expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+  });
+
+  it("plays a listening placement question and grades the choice by its text", async () => {
+    pickPlacement.mockReturnValue([...LISTENING_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "She's a doctor." }));
+    expect(screen.getByRole("button", { name: /Continue|See my level/ })).toBeEnabled();
+  });
+
+  it("shows the sentence when the browser cannot speak", async () => {
+    // A placement question nobody can answer mis-places the learner DOWNWARD,
+    // and unlike a lesson question that sets their whole course. `speak` fails
+    // silently where speechSynthesis is missing, so the button alone is not
+    // enough.
+    canSpeak.mockReturnValue(false);
+    pickPlacement.mockReturnValue([...LISTENING_QUESTIONS]);
+    renderPage();
+
+    expect(await screen.findByText(/audio is unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
   });
 });

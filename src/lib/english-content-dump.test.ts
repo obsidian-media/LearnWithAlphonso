@@ -16,10 +16,19 @@ describe("buildCourseDump", () => {
 
   it("includes placement questions, which are absent from questionIndex", () => {
     const dump = buildCourseDump("en");
-    expect(dump.placement.length).toBe(45);
-    expect(dump.totals.placement).toBe(45);
+    // Derived from the pool rather than pinned: this asserts that the dump
+    // carries every placement question, which is the actual claim. A hardcoded
+    // count says the same thing until someone adds content, and then says
+    // something false.
+    expect(dump.placement.length).toBe(PLACEMENT_QUESTIONS.length);
+    expect(dump.totals.placement).toBe(PLACEMENT_QUESTIONS.length);
     // Review Focus #4: placement lives outside questionIndex entirely.
     for (const q of dump.placement) {
+      // A translate entry has no choices -- its wordings are the answers.
+      if (q.type === "translate") {
+        expect(q.bank?.length).toBeGreaterThan(0);
+        continue;
+      }
       expect(q.choices?.length).toBeGreaterThan(0);
       expect(q.answer.trim()).not.toBe("");
     }

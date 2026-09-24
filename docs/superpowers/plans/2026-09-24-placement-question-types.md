@@ -48,6 +48,17 @@ Checked against the code rather than against itself. Four corrections:
 
 - **English only.** `placement-fr.ts` and `placement-es.ts` are untouched; their pools stay mc-only and must keep type-checking against the widened union.
 - **Placement ids are not review-item keys** (review keys are `lessonId:questionId`), so editing the pool in place is safe — unlike lesson content. Do not add the append-only ceremony here; it does not apply.
+- **Migration filenames carry REAL seconds, never a rounded `HHmmss` of zeros.**
+  `20260926010000` collided with the podcast session's independently-chosen
+  `20260926010000` — git cannot see a duplicate version across two filenames,
+  both PRs went green, and `main`'s deploy broke when the second merged, taking
+  the Edge Function deploy, the APNs sync and the curriculum seed down with it.
+  Round numbers are exactly what two sessions working the same day both reach
+  for. CI now fails on duplicate versions (`ci.yml`), which is a backstop, not
+  a licence to keep picking round numbers.
+- **Never pin a migration version in a test.** Locate migrations by name or by
+  content; a rename then cannot break the test at module load, as it did to
+  `podcast-schema.test.ts`.
 - **`bun run build` is part of verification**, not just tsc/lint/tests: it is the only check that exercises TanStack's import-protection plugin, which is what caught a bad module name in Phase 4.
 - **Run one vitest at a time.** Concurrent instances silently drop test files and produce phantom failures — this cost real time in Phase 4.
 - **Canopy tokens:** on an ember background use `text-ink-on-ember`, never `text-surface`.
@@ -224,7 +235,7 @@ Textarea, Check disabled on whitespace, and the same await-then-score flow the l
 ### Task 4: The mirror table
 
 **Files:**
-- Create: `supabase/migrations/20260927010000_placement_question_types.sql`
+- Create: `supabase/migrations/20260927215427_placement_question_types.sql`
 - Modify: `src/lib/curriculum-seed.ts` (`buildPlacementQuestionRows`)
 - Test: `src/lib/curriculum-seed.test.ts`
 

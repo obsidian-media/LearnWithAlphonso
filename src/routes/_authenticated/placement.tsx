@@ -11,7 +11,8 @@ import {
   scorePlacement,
   type PlacementQuestion,
 } from "../../data/placement";
-import { getCourse } from "../../data/courses";
+import { getCourse, localeForCourse } from "../../data/courses";
+import { canSpeak, speak } from "../../lib/speech";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
@@ -283,6 +284,33 @@ function PlacementPage() {
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           >
+            {q.type === "listening" && (
+              <div className="mb-4">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+                  Listening
+                </p>
+                {canSpeak() ? (
+                  <button
+                    type="button"
+                    onClick={() => speak(q.audioText, localeForCourse(course))}
+                    className="flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+                  >
+                    🔊 Play audio
+                  </button>
+                ) : (
+                  // Same reasoning as the lesson player's fallback, and more
+                  // load-bearing here: an unanswerable placement question does
+                  // not cost one heart, it mis-places the learner downward and
+                  // sets the level their whole course starts from.
+                  <div className="rounded-2xl border border-hairline bg-parchment px-4 py-3">
+                    <p className="text-xs text-ink-soft">
+                      Audio is unavailable on this device — here is what you would hear:
+                    </p>
+                    <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
+                  </div>
+                )}
+              </div>
+            )}
             <h1 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
               {q.prompt}
             </h1>

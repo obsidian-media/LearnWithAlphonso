@@ -424,6 +424,117 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     ],
     answer: 1,
   },
+  // --- Listening (added with phase 5) ---------------------------------
+  // Two per band. Spoken via TTS, with the sentence shown instead where
+  // the browser cannot speak, so the question always has an answer.
+  {
+    id: "p50",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher."],
+    answer: "She's a doctor.",
+  },
+  {
+    id: "p51",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "I can't find my keys.",
+    choices: ["I can't find my keys.", "I can't find my phone."],
+    answer: "I can't find my keys.",
+  },
+  {
+    id: "p52",
+    level: "A2",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "We went to the coast last weekend.",
+    choices: ["We went to the coast last weekend.", "We went to the coast last summer."],
+    answer: "We went to the coast last weekend.",
+  },
+  {
+    id: "p53",
+    level: "A2",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She hasn't finished her report.",
+    choices: ["She hasn't finished her report.", "She's already finished her report."],
+    answer: "She hasn't finished her report.",
+  },
+  {
+    id: "p54",
+    level: "B1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "The course was harder than I'd expected.",
+    choices: [
+      "The course was harder than I'd expected.",
+      "The course was easier than I'd expected.",
+    ],
+    answer: "The course was harder than I'd expected.",
+  },
+  {
+    id: "p55",
+    level: "B1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "They're considering a move to Edinburgh.",
+    choices: [
+      "They're considering a move to Edinburgh.",
+      "They're considering a move to Manchester.",
+    ],
+    answer: "They're considering a move to Edinburgh.",
+  },
+  {
+    id: "p56",
+    level: "B2",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "The findings appear to contradict earlier research.",
+    choices: [
+      "The findings appear to contradict earlier research.",
+      "The findings appear to confirm earlier research.",
+    ],
+    answer: "The findings appear to contradict earlier research.",
+  },
+  {
+    id: "p57",
+    level: "B2",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "He claimed the delay was beyond his control.",
+    choices: [
+      "He claimed the delay was beyond his control.",
+      "He claimed the delay was within his control.",
+    ],
+    answer: "He claimed the delay was beyond his control.",
+  },
+  {
+    id: "p58",
+    level: "C1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "The evidence is suggestive rather than conclusive.",
+    choices: [
+      "The evidence is suggestive rather than conclusive.",
+      "The evidence is conclusive rather than suggestive.",
+    ],
+    answer: "The evidence is suggestive rather than conclusive.",
+  },
+  {
+    id: "p59",
+    level: "C1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "Their reasoning rests on an untested assumption.",
+    choices: [
+      "Their reasoning rests on an untested assumption.",
+      "Their reasoning rests on a well-tested assumption.",
+    ],
+    answer: "Their reasoning rests on an untested assumption.",
+  },
 ];
 
 export const PLACEMENT_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1"];
