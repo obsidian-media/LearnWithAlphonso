@@ -10,6 +10,16 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Podcast play events are written through a validating function** — `podcast_play_events`
+shipped with a direct INSERT grant to `authenticated`, so any signed-in client could write
+arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including
+unpublished ones (foreign keys do not consult RLS). It is the one table Phase 2's XP and
+SRS wiring is meant to trust, and Phase 1a was already live and accumulating rows, so this
+bounds how much data of uncertain provenance exists rather than only protecting future
+rows. Same shape as the gamification hardening in `20260920050000`. The web client moved
+to the function in the same change — revoking the grant alone would have failed silently
+inside a fire-and-forget call, stopping play recording with no error anywhere.
+
 **Podcast library Phase 0 — iOS tab consolidation** — five tabs (**Learn · Listen ·
 Practice · Hector · Profile**), down from seven. This fixed a live defect rather than
 only making room for Listen: iPhone renders five tabs and collapses the rest into the

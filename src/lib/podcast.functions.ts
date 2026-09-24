@@ -193,10 +193,15 @@ export const recordPlayEvent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<void> => {
     const db = untyped(context.supabase);
-    const { error } = await db.from("podcast_play_events").insert({
-      user_id: context.userId,
-      episode_id: data.episodeId,
-      seconds_listened: Math.round(data.secondsListened),
+    // Through the SECURITY DEFINER function, never a direct insert:
+    // `authenticated` no longer holds INSERT on this table (see
+    // supabase/migrations/20260926223031_podcast_play_event_rpc.sql). The
+    // function takes the user from auth.uid() and the timestamp from
+    // now(), and bounds seconds_listened by the episode's real duration,
+    // so none of those three can be dictated by a client.
+    const { error } = await db.rpc("record_podcast_play_event", {
+      _episode_id: data.episodeId,
+      _seconds_listened: Math.round(data.secondsListened),
     });
     if (error) throw new Error(error.message);
   });
