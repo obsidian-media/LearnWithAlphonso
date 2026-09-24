@@ -659,24 +659,44 @@ note in README.md's Documentation section for why.)
   dashboard SQL editor / Supabase MCP `apply_migration`) is still the
   fallback, and the same "feature works in code but 500s in prod" symptom
   is the tell that it has lapsed.
-- **`scripts/export-ios-content.ts` and `scripts/seed-curriculum-db.ts` are
-  both still manual** ("someone has to remember to run this," the exact
-  class of gap `deploy-supabase` was created to close for
-  migrations/functions above) — and this bit for real during V3 package
-  4a: package 2's expanded achievement catalog (18 -> 24) shipped to web
-  and prod's curriculum-data tables, but nobody re-ran
-  `export-ios-content.ts`, so the iOS-bundled `achievements.json` (and a
-  Kit test asserting its count) silently stayed at 18 until this was
-  caught while regenerating it for pkg 4a's new question formats. A CI
-  step for `seed-curriculum-db.ts` now exists (`deploy-supabase` job,
-  no-ops until `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` repo secrets are
-  added), but `export-ios-content.ts`'s output is *committed* JSON, not a
-  DB write, so it can't be a silent CI step the same way -- it still needs
-  a human to run it and commit the diff after any change to
-  `curriculum.ts`/`curriculum-fr.ts`/`scenarios.ts`/`achievements.ts`/
-  `vocab-images.ts`, and there's no test that fails loudly if it's
-  forgotten (only a symptom: iOS shows stale/missing content the web app
-  already has).
+- **`scripts/export-ios-content.ts` was manual; CI-enforced since
+  2026-09-24.** Both it and `scripts/seed-curriculum-db.ts` used to be
+  "someone has to remember to run this" — the exact class of gap
+  `deploy-supabase` was created to close for migrations/functions above —
+  and it bit for real during V3 package 4a: package 2's expanded
+  achievement catalog (18 -> 24) shipped to web and prod's
+  curriculum-data tables, but nobody re-ran `export-ios-content.ts`, so
+  the iOS-bundled `achievements.json` (and a Kit test asserting its
+  count) silently stayed at 18 until it was caught while regenerating for
+  pkg 4a's new question formats.
+  `seed-curriculum-db.ts` got a CI step first (`deploy-supabase` job,
+  no-ops without `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`). This entry
+  used to argue that `export-ios-content.ts` *couldn't* have one, because
+  its output is committed JSON rather than a DB write — **that reasoning
+  was wrong**, and the fix is the standard generated-artifact pattern:
+  `ci.yml`'s "Bundled iOS content is up to date" step regenerates and
+  fails on any diff. A forgotten re-export now breaks the PR instead of
+  silently shipping stale content. The fix when it fails is always to run
+  the script and commit the result, never to hand-edit the JSON.
+  The script's own documented invocation was also wrong until the same
+  date — it said `node_modules/.bin/tsx …`, but `tsx` is not and never
+  has been a dependency here. Use `bun scripts/export-ios-content.ts`.
+- **A new Edge Function directory needs its own `deno.json` import map**,
+  and until 2026-09-24 nothing caught a missing one until the real
+  deploy — found 2026-09-22 shipping `get-season-status`. `deno check`
+  and `deno test` both pass without it (they resolve `npm:`/bare
+  specifiers differently), but `supabase functions deploy` (the Supabase
+  CLI's own bundler, used by the `deploy-supabase` job) fails with
+  `Relative import path "@supabase/supabase-js" not prefixed with / or
+  ./ or ../`. The fix is a `deno.json` with
+  `{"imports": {"@supabase/supabase-js": "npm:@supabase/supabase-js@2"}}`,
+  matching every sibling function directory — copy one of theirs when
+  creating a new Edge Function.
+  **CI-enforced since 2026-09-24**: the deno-tests job checks that every
+  `supabase/functions/*/` directory except `_shared` has a `deno.json`.
+  This mattered more than it looks: `deploy-supabase` runs on `main`
+  *after* merge, so a missing import map used to break `main` rather than
+  the PR that introduced it.
 - **`eslint .` used to lint every other branch's code** (fixed 2026-09-24,
   PR #85). `.claude/worktrees/` holds full checkouts of other branches
   physically nested inside this repo, and the root ESLint config never
