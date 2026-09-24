@@ -156,6 +156,19 @@ describe("Profile page", () => {
     );
   });
 
+  it("offers Canopy as a theme option and can switch to it", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByLabelText("Display name");
+
+    await user.click(screen.getByRole("tab", { name: "Canopy" }));
+
+    expect(useTheme.getState().theme).toBe("canopy");
+    await waitFor(() =>
+      expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "canopy" } }),
+    );
+  });
+
   it("signs out: cancels queries, clears the cache, and navigates to /auth", async () => {
     const user = userEvent.setup();
     renderPage();

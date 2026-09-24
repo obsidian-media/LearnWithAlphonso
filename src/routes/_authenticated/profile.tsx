@@ -178,6 +178,7 @@ function ProfilePage() {
               { value: "meadow", label: "Meadow" },
               { value: "studio-ink", label: "Studio Ink" },
               { value: "manuscript", label: "Manuscript" },
+              { value: "canopy", label: "Canopy" },
             ]}
           />
         </div>
