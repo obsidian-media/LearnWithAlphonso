@@ -10,6 +10,26 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Podcast library Phase 0 — iOS tab consolidation** — five tabs (**Learn · Listen ·
+Practice · Hector · Profile**), down from seven. This fixed a live defect rather than
+only making room for Listen: iPhone renders five tabs and collapses the rest into the
+system "More" list, so Achievements was already buried, and League and Achievements were
+both using `trophy.fill`.
+
+League, Friends and Achievements moved behind a new `ProfileHubView`. They are presented
+rather than pushed, because each owns its own `NavigationStack` (and two of them push
+Teams/Season/Duels through it) — nesting stacks compiles cleanly and gives two navigation
+bars on a real screen.
+
+The review queue needed an entry point built, not moved. The Phase 1 spec had claimed
+Learn already carried a due-count badge; that is true on web and was false on iOS, where
+`ReviewQueueView` was instantiated in exactly one place — the tab bar. Learn now has a
+review row (visible even at zero, so the queue is never unreachable) and a tab badge that
+hides at zero. The badge rule lives in `LearnWithAlphonsoKit` so it is unit-tested; the
+app target has no test coverage anywhere in this repo, only `xcodebuild` in CI.
+
+**Listen is a placeholder until Phase 1b. No App Store release may ship between them.**
+
 **Podcast/audio library, Phase 1a (web)** — a Listen tab: a folder tree of
 short audio episodes, browsable at any depth through one splat route, with a
 mini-player mounted in the app shell so playback survives navigation between
