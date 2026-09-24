@@ -164,9 +164,7 @@ describe("Profile page", () => {
     await user.click(screen.getByRole("tab", { name: "Canopy" }));
 
     expect(useTheme.getState().theme).toBe("canopy");
-    await waitFor(() =>
-      expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "canopy" } }),
-    );
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "canopy" } }));
   });
 
   it("signs out: cancels queries, clears the cache, and navigates to /auth", async () => {
