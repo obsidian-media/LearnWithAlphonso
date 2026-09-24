@@ -2,150 +2,181 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship listening comprehension as a first-class question type — its own `Question` variant, its own distinguished UI on web and iOS, and real authored content — rather than the hidden `audioText`-on-`mc` format that exists today and is used in 3 questions.
+**Goal:** Ship listening comprehension as a first-class question type — its own `Question` variant, its own distinguished UI on web and iOS, and real authored content — replacing the hidden `audioText`-on-`mc` format that exists today and is used in 3 questions.
 
-**Architecture:** Add a `listening` variant to the TypeScript `Question` union, teach the two web players (lesson + review) and the iOS player to render and grade it, and make the iOS decoder tolerate unknown question types so content and app builds can ship independently. Audio playback already exists on both platforms (`src/lib/speech.ts` on web, `AVSpeechSynthesizer` on iOS); this plan adds the type, the UI, and the content.
+**Architecture:** Add a `listening` variant to the TypeScript `Question` union whose `answer` is the correct choice **text**, not an index. That one decision makes every existing grading path work unchanged (`srs.ts`'s `deriveAnswerCorrectness`, and both web players' fallback comparison), so this plan is almost entirely rendering plus content. Then teach the iOS model and player about it, and make the iOS decoder tolerate unknown question types so content and app builds can ship independently.
 
 **Tech Stack:** TypeScript, React (TanStack Start), Vitest, Swift/SwiftUI (LearnWithAlphonsoKit + app target), Bun as runner and TS script executor (`tsx` is NOT installed).
 
-**Spec:** `docs/superpowers/specs/2026-09-23-english-content-overhaul-design.md` (Phase 2, section "Listening comprehension — first-class type")
+**Spec:** `docs/superpowers/specs/2026-09-23-english-content-overhaul-design.md` (Phase 2, "Listening comprehension — first-class type")
 
 ## Why this plan is first
 
-It is the cheapest of the three new types (audio playback already exists on both platforms), and it establishes the end-to-end pathway every later type reuses: TS union → engine → web lesson player → web review player → Swift model → Swift player → content → export. Speaking and translation each add a *new* dependency (microphone capture, LLM grading) on top of that same pathway, so proving the pathway once de-risks both.
+It is the cheapest of the three new types — audio playback already exists on both platforms — and it establishes the end-to-end pathway every later type reuses: TS union → engine → both web players → Swift model → Swift player → content → export. Speaking and translation each add one new dependency (microphone capture, LLM grading) on top of that same pathway, so proving it once de-risks both.
+
+## Measured blast radius (verified, not assumed)
+
+A probe added the variant and ran `bunx tsc --noEmit`. With `answer: number` (mirroring `mc`) it produced **14 errors across 6 files**, because several call sites narrow `mc` away and then assume the remainder has a string `answer` and a `bank`. With `answer: string` it produces **8 errors across 4 files**, all of one shape: code that excludes `mc`/`reorder` and treats the rest as `fill`.
+
+So `answer` is a **string**. Consequences, all verified by the probe:
+
+- `src/lib/srs.ts`'s `deriveAnswerCorrectness` needs **no change** — its non-`mc` branch compares `answer.trim().toLowerCase()` against `question.answer.trim().toLowerCase()`, which is exactly right for listening. This is the shared helper behind review grading, so listening grades correctly server-side and in review for free.
+- Neither web player needs a **grading** change: both already fall through to that same string comparison for non-`mc` types.
+- `fill` and `reorder` also use string answers, so `mc`'s index is the outlier, not the convention.
+
+The 4 sites that DO need a guard (each excludes `mc`/`reorder` then assumes `fill`):
+
+| File | Line | What it assumes |
+|---|---|---|
+| `src/data/bank-engine.ts` | 116-117 | `q.bank` exists on the remainder |
+| `src/lib/curriculum-seed.ts` | 136 | `q.bank` exists on the remainder |
+| `src/routes/_authenticated/lesson.$id.tsx` | 424 | `q.bank` exists on the remainder |
+| `src/routes/_authenticated/review.tsx` | 298 | `q.bank` exists on the remainder |
+
+`src/lib/english-content-dump.ts` (line 64) also needs a branch, since its `else` assumes `reorder` and reads `tokens`.
 
 ## Global Constraints
 
-- **English only for content.** Do not add listening content to `lesson-bank-fr.ts`, `lesson-bank-es.ts`, `curriculum-fr.ts`, `curriculum-es.ts`, `placement-fr.ts`, `placement-es.ts`. Shared *code* (the `Question` union, the players) is necessarily touched, and that is expected — only content stays English-only.
-- **Id stability.** Question ids are `${pack.id}q${i}` from the line index, and users' saved review items key on `` `${lessonId}:${questionId}` ``. Adding a NEW pack appends new ids and does not move existing ones — that is safe. Do NOT add or remove lines inside an existing pack. `src/lib/english-id-parity.test.ts` diffs against a committed baseline; new packs will require regenerating that baseline **deliberately**, in its own commit, with the added ids listed.
-- **Never run the bare full test suite** (`bun run vitest run` with no args) — it hangs in this Windows sandbox. Always scope: `bun run vitest run <paths>`.
-- **No Swift toolchain locally.** Swift RED/GREEN is verified by CI (`ios-swift-tests`, `ios-app-build` on macOS runners), not on this machine. Write the Swift test first anyway and let the CI run be the evidence; say so in the task report rather than claiming a local run.
-- **iOS UI must use the Canopy design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoComponents.swift`, `AlphonsoTheme.swift`) added in PR #83. Do not hand-roll colors, fonts, or card chrome.
-- `src/integrations/supabase/types.ts` is stale (7 tables missing). Do not add a typed `supabase.from()` call against those tables in this plan.
-- If this plan ever adds a user-scoped table, it must be added to `USER_ID_EXPORT_TABLES` — `account.functions.test.ts` parses migrations and fails the build otherwise. This plan adds none.
+- **English only for content.** Do not add listening content to `lesson-bank-fr.ts`, `lesson-bank-es.ts`, `curriculum-fr.ts`, `curriculum-es.ts`, `placement-fr.ts`, `placement-es.ts`. Shared *code* (the union, the players, `bank-engine.ts`) is necessarily touched — that is expected and different from content.
+- **Id stability.** Ids are `${pack.id}q${i}` / `${pack.id}l${n}` / `${pack.id}u${n}`, all derived from `pack.id` and the line index — never from global position. So **appending a new pack adds new ids without moving existing ones** (verified by reading `buildLevel`). Do NOT add or remove lines inside an existing pack. `.audit-baseline/english-ids.json` must be regenerated deliberately, in its own commit, and its diff must be insertions-only.
+- **Never run the bare full test suite** (`bun run vitest run` with no args) — it hangs in this Windows sandbox. Always scope.
+- **No Swift toolchain locally.** Swift RED/GREEN is verified by CI (`ios-swift-tests`, `ios-app-build` on macOS runners). Write the test first anyway, push, and report that the evidence was CI rather than claiming a local run.
+- **iOS UI must use the Canopy design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoComponents.swift`, `AlphonsoTheme.swift`, PR #83). Do not hand-roll colors, fonts, or card chrome.
+- `src/integrations/supabase/types.ts` is stale (7 tables missing). Do not add a typed `supabase.from()` against those tables.
+- This plan adds no user-scoped table. If that changes, add it to `USER_ID_EXPORT_TABLES` — `account.functions.test.ts` parses migrations and fails the build otherwise.
+- **`vitest` does not typecheck.** It strips types via esbuild, so a test asserting on a type-level change passes whether or not the type exists. Type-level work is verified with `bunx tsc --noEmit`, never with a test run.
 
 ## Review Focus
 
-Conditions the spec implies but that no task's tests would otherwise exercise:
-
-1. **A listening question reaching the spaced-repetition review player.** `review.tsx` is a second, separate renderer — a type handled only in `lesson.$id.tsx` renders as a blank card in review. Pinned in Task 4.
-2. **An iOS build whose bundled JSON contains a type its decoder does not know.** Today `CurriculumModels.swift:77` throws, and because the whole `ContentBundle` decodes at once, one unknown type means the app loads *no content at all*. Pinned in Task 5.
-3. **A listening question with empty or missing `audioText`.** The learner gets a play button that says nothing and an unanswerable question. Pinned in Task 2.
-4. **A listening question whose `prompt` restates the audio.** Defeats the exercise — the answer is readable without listening. Pinned in Task 6 as an authoring rule with a test.
-5. **A device with no speech synthesis available.** `speak()` returns silently (`src/lib/speech.ts:14`), so the learner sees a play button that does nothing and no way to answer. Pinned in Task 3.
+1. **A listening question reaching the spaced-repetition review player.** `review.tsx` is a second renderer with its own render site; a type wired only into the lesson player renders as a blank card. Pinned in Task 5.
+2. **An iOS build whose bundled JSON contains a type its decoder does not know.** Today `CurriculumModels.swift:77` throws, and the whole `ContentBundle` decodes at once, so one unknown type means the app loads *no content at all*. Pinned in Task 6.
+3. **A listening question with empty `audioText`.** The learner gets a silent play button and an unanswerable question. Pinned in Task 2.
+4. **A listening question whose `prompt` restates the audio.** Solvable without listening, so it tests nothing. Pinned in Task 3.
+5. **A device with no speech synthesis.** `speak()` returns silently (`src/lib/speech.ts:14`), so the choices must remain answerable with no audio. Pinned in Task 4.
 
 ---
 
-### Task 1: Add the `listening` variant to the Question union
+### Task 1: Add the variant and guard the four narrowing sites
 
 **Files:**
-- Modify: `src/data/curriculum.ts` (the `Question` union, around line 6-42)
-- Modify: `src/lib/curriculum-seed.ts` (the literal union at line 43, and the mapping around line 122)
-- Test: `src/data/curriculum-seed.test.ts` (create if absent)
+- Modify: `src/data/curriculum.ts` (the `Question` union, ~line 6-42)
+- Modify: `src/data/bank-engine.ts` (~line 116)
+- Modify: `src/lib/curriculum-seed.ts` (~line 43 and ~line 136)
+- Modify: `src/lib/english-content-dump.ts` (~line 53-64)
+- Modify: `src/routes/_authenticated/lesson.$id.tsx` (~line 424)
+- Modify: `src/routes/_authenticated/review.tsx` (~line 298)
 
 **Interfaces:**
-- Consumes: nothing from earlier tasks.
-- Produces: the `listening` variant, shaped
-  `{ id: string; type: "listening"; prompt: string; audioText: string; choices: string[]; answer: number; explanation: string }`.
-  Tasks 2-6 all consume this shape. `audioText` is REQUIRED here (unlike the optional `audioText` on `mc`), which is what makes the type self-describing.
+- Produces: `{ id: string; type: "listening"; prompt: string; audioText: string; choices: string[]; answer: string; explanation: string }` — `answer` is the correct choice TEXT. Tasks 2-6 consume this shape.
 
-- [ ] **Step 1: Write the failing test**
+This task is type-level, so its gate is `bunx tsc --noEmit`, not a test run (see Global Constraints).
 
-```ts
-// src/data/curriculum-seed.test.ts
-import { describe, expect, it } from "vitest";
-import { buildFullSeed } from "@/lib/curriculum-seed";
+- [ ] **Step 1: Record the clean baseline**
 
-describe("curriculum seed rows", () => {
-  it("carries listening questions through with their audio text", () => {
-    const seed = buildFullSeed();
-    const listening = seed.questions.filter((q) => q.type === "listening");
-    // There is no listening content yet (Task 6 authors it), so this asserts
-    // the seed mapper does not silently drop the type when it arrives.
-    for (const q of listening) {
-      expect(q.audioText, `${q.id} lost its audioText in the seed mapping`).toBeTruthy();
-    }
-    expect(seed.questions.length).toBeGreaterThan(2000);
-  });
-});
-```
+Run: `bunx tsc --noEmit`
+Expected: exit 0, no output. If this is already failing, stop — you are not on a clean base.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Add the variant**
 
-Run: `bun run vitest run src/data/curriculum-seed.test.ts`
-Expected: FAIL — TypeScript rejects `q.type === "listening"` because the union has no such member (`This comparison appears to be unintentional`), or the import path does not resolve.
-
-- [ ] **Step 3: Add the variant to the union**
-
-In `src/data/curriculum.ts`, add to the `Question` union, after the `mc` member:
+In `src/data/curriculum.ts`, add to the `Question` union immediately before the `fill` member:
 
 ```ts
   | {
       id: string;
       type: "listening";
       /** What the learner must decide AFTER hearing `audioText`. Must not
-       * restate the audio -- if the prompt contains the answer, the question
-       * can be solved without listening, which defeats the exercise. */
+       * restate the audio: if the prompt contains it, the question is solvable
+       * without listening. */
       prompt: string;
-      /** Spoken via TTS. Required: a listening question without audio is
+      /** Spoken via TTS. Required -- a listening question without audio is
        * unanswerable, which is why this is its own variant rather than the
        * optional `audioText` layered onto `mc`. */
       audioText: string;
       choices: string[];
-      answer: number;
+      /** The correct choice's TEXT, not its index. Deliberately unlike `mc`:
+       * it matches `fill`/`reorder`, and it makes every existing grading path
+       * (srs.ts's deriveAnswerCorrectness, and both web players' non-mc
+       * comparison) handle listening with no change. */
+      answer: string;
       explanation: string;
     }
 ```
 
-- [ ] **Step 4: Widen the seed mapper**
+- [ ] **Step 3: Confirm the predicted 8 errors**
 
-In `src/lib/curriculum-seed.ts`, change the literal union at line 43 to include `"listening"`, and extend the mapping near line 122 so a listening question carries `choices`, `answer` and `audioText` through:
+Run: `bunx tsc --noEmit`
+Expected: 8 errors, in `bank-engine.ts` (116, 117), `curriculum-seed.ts` (136), `english-content-dump.ts` (64), `lesson.$id.tsx` (424 twice), `review.tsx` (298 twice). If you see errors in OTHER files, the union shape does not match this plan — stop and reconcile before editing anything else.
+
+- [ ] **Step 4: Guard each site by narrowing to `fill` explicitly**
+
+Each of these excludes `mc`/`reorder` and then assumes `fill`. Make that assumption explicit rather than implicit. In `src/data/bank-engine.ts` at ~116:
+
+```ts
+  if (q.type !== "fill") return q;
+  const bank = [...q.bank].sort((a, b) => hash(seed + a) - hash(seed + b));
+  return { ...q, bank };
+```
+
+In `src/lib/curriculum-seed.ts` at ~136, wrap the `bank` read in a `q.type === "fill"` check and return the listening row before it:
+
+```ts
+  if (q.type === "listening") {
+    return { ...base, type: "listening", choices: q.choices, answer: q.answer, audioText: q.audioText };
+  }
+  if (q.type === "fill") {
+    return { ...base, type: "fill", bank: q.bank, answer: q.answer };
+  }
+```
+
+Also widen the literal union at ~line 43:
 
 ```ts
   type: "mc" | "fill" | "reorder" | "listening";
 ```
 
+In `src/lib/english-content-dump.ts`, replace the two-way ternary's `else` with explicit branches so `listening` records its choices rather than falling into the `reorder` branch:
+
 ```ts
-  if (q.type === "listening") {
-    return {
-      ...base,
-      type: "listening",
-      choices: q.choices,
-      answer: q.answer,
-      audioText: q.audioText,
-    };
-  }
+      q.type === "mc"
+        ? { ...base, choices: q.choices, answer: q.choices[q.answer] ?? "", audioText: q.audioText, imageKey: q.imageKey }
+        : q.type === "listening"
+          ? { ...base, choices: q.choices, answer: q.answer, audioText: q.audioText }
+          : q.type === "fill"
+            ? { ...base, bank: q.bank, answer: q.answer }
+            : { ...base, tokens: q.tokens, answer: q.answer };
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+In `lesson.$id.tsx` (~424) and `review.tsx` (~298), the `bank` read is inside the fill-rendering branch; gate it on `q.type === "fill"` explicitly.
 
-Run: `bun run vitest run src/data/curriculum-seed.test.ts`
-Expected: PASS.
-
-- [ ] **Step 6: Typecheck**
+- [ ] **Step 5: Verify clean**
 
 Run: `bunx tsc --noEmit`
-Expected: exit 0. If it reports non-exhaustive switches in `lesson.$id.tsx` or `review.tsx`, that is expected — Tasks 3 and 4 handle those. Note them and continue only if the errors are confined to those two files.
+Expected: exit 0.
 
-- [ ] **Step 7: Commit**
+Run: `bun run vitest run src/data src/lib`
+Expected: all pass — the guards must not change existing behavior.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/data/curriculum.ts src/lib/curriculum-seed.ts src/data/curriculum-seed.test.ts
-git commit -m "feat: add listening question variant to the curriculum type"
+git add src/data/curriculum.ts src/data/bank-engine.ts src/lib/curriculum-seed.ts src/lib/english-content-dump.ts src/routes/_authenticated/lesson.\$id.tsx src/routes/_authenticated/review.tsx
+git commit -m "feat: add listening question variant with a text answer"
 ```
 
 ---
 
-### Task 2: Generate listening questions from packs
+### Task 2: Generate listening questions, with one real pack
 
 **Files:**
-- Modify: `src/data/lesson-bank.ts` (the `Pack` type and `packQuestions`)
+- Modify: `src/data/lesson-bank.ts` (the `Pack` type, `packQuestions`, and one new A1 pack)
 - Modify: `src/data/curriculum-consistency.test.ts`
 - Test: `src/data/lesson-bank-listening.test.ts` (create)
 
 **Interfaces:**
-- Consumes: the `listening` variant from Task 1.
-- Produces: `kind: "listening"` packs. A listening pack's `data` lines are `audioText|answer`, and the pack's `prompt` field holds the question stem shown after playback (e.g. `"What did you hear?"`). Distractors come from the pack's own answer pool via the existing `pickDistractors`, unchanged.
+- Consumes: the `listening` variant (Task 1).
+- Produces: `kind: "listening"` packs, and one real A1 pack so Tasks 4 and 5 have live content to render in tests. A listening pack's `data` lines are `audioText|answer`; the pack's `prompt` is the stem shown after playback.
+
+Authoring one pack here rather than deferring all content to the end is deliberate: it means Tasks 4 and 5 verify against real questions instead of shipping behind skipped tests.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -154,23 +185,26 @@ git commit -m "feat: add listening question variant to the curriculum type"
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
 
+function listeningQuestions() {
+  return Object.entries(getCourse("en").questionIndex).filter(
+    ([, ref]) => ref.question.type === "listening",
+  );
+}
+
 describe("listening questions", () => {
-  it("always carries non-empty audio text", () => {
-    // Review Focus #3: a listening question without audio is unanswerable.
-    for (const [key, ref] of Object.entries(getCourse("en").questionIndex)) {
+  it("exist in the course", () => {
+    expect(listeningQuestions().length).toBeGreaterThan(0);
+  });
+
+  it("always carry non-empty audio text and a resolvable answer", () => {
+    // Review Focus #3: no audio means an unanswerable question.
+    for (const [key, ref] of listeningQuestions()) {
       const q = ref.question;
       if (q.type !== "listening") continue;
       expect(q.audioText.trim(), `${key} has empty audioText`).not.toBe("");
       expect(q.choices.length, `${key} has too few choices`).toBeGreaterThanOrEqual(2);
-      expect(q.choices[q.answer], `${key} answer index out of range`).toBeDefined();
+      expect(q.choices, `${key} answer is not among its choices`).toContain(q.answer);
     }
-  });
-
-  it("builds listening questions from a listening pack", () => {
-    const listening = Object.values(getCourse("en").questionIndex).filter(
-      (r) => r.question.type === "listening",
-    );
-    expect(listening.length).toBeGreaterThan(0);
   });
 });
 ```
@@ -178,116 +212,195 @@ describe("listening questions", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `bun run vitest run src/data/lesson-bank-listening.test.ts`
-Expected: FAIL on the second test — `expected 0 to be greater than 0`, because no listening pack exists yet. The first test passes vacuously for now; it becomes meaningful in Task 6.
+Expected: FAIL on "exist in the course" — `expected 0 to be greater than 0`.
 
-- [ ] **Step 3: Teach the pack type and generator about listening**
+- [ ] **Step 3: Widen the Pack type and the generator**
 
-In `src/data/lesson-bank.ts`, widen the `Pack` type's `kind`:
+In `src/data/lesson-bank.ts`:
 
 ```ts
   kind: "pair" | "cloze" | "listening";
 ```
 
-and in `packQuestions`, before the existing `useMc` branch, return the listening shape. Note it always emits `type: "listening"` — it never falls through to `fill`, because a bank of words to drag is a different exercise from hearing a sentence:
+In `packQuestions`, before the `useMc` branch, add. Note it stores the answer TEXT, so no index bookkeeping is needed, and it gets its own explanation wording rather than inheriting the cloze template:
 
 ```ts
     if (pack.kind === "listening") {
-      // Same swap-shuffle the mc branch uses: put the answer at a seeded
-      // position and remember that index, so `answer` and `choices` cannot
-      // drift apart.
-      const choices = [answer, ...distractors];
-      const at = hash(seed + "x") % choices.length;
-      choices[0] = choices[at]!;
-      choices[at] = answer;
+      const choices = [answer, ...distractors].sort(
+        (a, b) => hash(a + seed) - hash(b + seed),
+      );
       return {
         id: `${pack.id}q${i}`,
         type: "listening",
         prompt: pack.prompt ?? "What did you hear?",
         audioText: left!,
         choices,
-        answer: at,
-        explanation,
+        answer,
+        explanation: `The audio says "${left}". ${pack.note}`,
       };
     }
 ```
 
 - [ ] **Step 4: Add the consistency-test case**
 
-In `src/data/curriculum-consistency.test.ts`, inside the existing per-question loop, add:
+In `src/data/curriculum-consistency.test.ts`, inside the existing per-question loop:
 
 ```ts
       if (q.type === "listening") {
         expect(q.audioText?.trim(), `${key}: listening question with empty audioText`).toBeTruthy();
+        expect(q.choices, `${key}: listening answer not among its choices`).toContain(q.answer);
       }
 ```
 
-- [ ] **Step 5: Run both tests**
+- [ ] **Step 5: Author one A1 listening pack**
+
+Append to the `A1` array in `lesson-bank.ts`. Answers are full sentences, so the distractors are other sentences from the same pack — which is what keeps them plausible. Keep every sentence the same length and register so length alone does not give the answer away:
+
+```ts
+  {
+    id: "a1p23",
+    title: "Listening: Everyday Sentences",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Short statements at natural speed.",
+    data: `She is a doctor.|She is a doctor.
+He works at the airport.|He works at the airport.
+They live near the park.|They live near the park.
+I have two brothers.|I have two brothers.
+We eat dinner at seven.|We eat dinner at seven.
+The train leaves at nine.|The train leaves at nine.
+My sister plays the piano.|My sister plays the piano.
+This coffee is very hot.|This coffee is very hot.
+The shop opens on Monday.|The shop opens on Monday.
+Her birthday is in June.|Her birthday is in June.
+He walks to work every day.|He walks to work every day.
+We watch films on Sunday.|We watch films on Sunday.
+The cat sleeps on the chair.|The cat sleeps on the chair.
+I study English in the evening.|I study English in the evening.
+They travel by bus.|They travel by bus.
+My father cooks on Saturday.|My father cooks on Saturday.
+The children play outside.|The children play outside.
+She reads before bed.|She reads before bed.
+We live in a small flat.|We live in a small flat.
+He drinks tea with milk.|He drinks tea with milk.
+The library closes at six.|The library closes at six.
+I take the metro to school.|I take the metro to school.
+She writes letters to her aunt.|She writes letters to her aunt.
+They visit us in August.|They visit us in August.
+My brother works in a bank.|My brother works in a bank.`,
+  },
+```
+
+- [ ] **Step 6: Run the tests**
 
 Run: `bun run vitest run src/data/lesson-bank-listening.test.ts src/data/curriculum-consistency.test.ts`
-Expected: the "builds listening questions" test still FAILS (no pack yet — Task 6 adds one); everything else passes. This is the one task that ends with a known-red test, and Task 6 closes it. Record that explicitly in the task report rather than deleting the test.
+Expected: ALL pass, including "exist in the course".
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Note the lesson id for later tasks**
+
+Run: `bun run scripts/dump-english-questions.ts`
+Then find a listening lesson id to use in Tasks 4 and 5's tests:
+
+```bash
+grep -m1 -B6 '"type": "listening"' .audit/english-A1.json
+```
+
+Record the `lessonId` it prints in your task report — Tasks 4 and 5 need it.
+
+- [ ] **Step 8: Commit**
 
 ```bash
 git add src/data/lesson-bank.ts src/data/curriculum-consistency.test.ts src/data/lesson-bank-listening.test.ts
-git commit -m "feat: generate listening questions from listening packs"
+git commit -m "feat: generate listening questions and add the first A1 pack"
 ```
 
 ---
 
-### Task 3: Render and grade listening in the lesson player
+### Task 3: Pin the authoring rule that the prompt must not give the answer away
+
+**Files:**
+- Modify: `src/data/lesson-bank-listening.test.ts`
+
+**Interfaces:**
+- Consumes: the pack from Task 2.
+
+- [ ] **Step 1: Write the test**
+
+```ts
+// add to src/data/lesson-bank-listening.test.ts
+it("never restates the audio in the prompt", () => {
+  // Review Focus #4: if the prompt contains the audio, the learner can answer
+  // by reading and the exercise tests nothing.
+  for (const [key, ref] of listeningQuestions()) {
+    const q = ref.question;
+    if (q.type !== "listening") continue;
+    const prompt = q.prompt.toLowerCase();
+    const audio = q.audioText.toLowerCase().replace(/[.?!]+$/, "");
+    expect(prompt.includes(audio), `${key} restates its audio in the prompt`).toBe(false);
+  }
+});
+```
+
+- [ ] **Step 2: Run it**
+
+Run: `bun run vitest run src/data/lesson-bank-listening.test.ts`
+Expected: PASS — the Task 2 pack uses a generic stem. This test is a guard for future authoring, so it passing now is the correct outcome; it is not vacuous, because it iterates real questions (Task 2 asserts there is at least one).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/data/lesson-bank-listening.test.ts
+git commit -m "test: pin the listening authoring rule against self-answering prompts"
+```
+
+---
+
+### Task 4: Render listening in the lesson player
+
+The player already renders a play button for the legacy `audioText`-on-`mc` format at line 352, and renders choices with `AnswerOption` at line 366. Grading needs NO change — listening's string answer falls through to the existing comparison. The work is two widened conditions, a format label, and a correct `isRight`.
 
 **Files:**
 - Modify: `src/routes/_authenticated/lesson.$id.tsx`
 - Test: `src/routes/_authenticated/lesson.$id.test.tsx`
 
 **Interfaces:**
-- Consumes: the `listening` variant (Task 1), `speak` from `@/lib/speech`.
-- Produces: a listening UI distinguished from ordinary multiple choice — audio-led, with a replay control and a "Listening" label — and grading identical to `mc` (compare the picked choice string to `q.choices[q.answer]`).
-
-This player already renders a play button for the legacy `audioText`-on-`mc`
-format at line 352, and renders choices with `AnswerOption` at line 366. The
-listening type reuses both; the new work is including it in those two
-conditions, adding a format label, and including it in grading.
-
-The test file mounts the REAL route (it mocks `@tanstack/react-router` and
-`../../data/bank-engine`, then renders) — there is no standalone `QuestionView`
-to render. Follow the surrounding tests' pattern: point `currentLessonId` at a
-lesson and assert on what the route renders.
+- Consumes: the variant (Task 1), the real pack and lesson id (Task 2), `speak` and `localeForCourse` (already imported in this file).
 
 - [ ] **Step 1: Write the failing test**
 
+The file mounts the REAL route — it mocks `@tanstack/react-router` and `../../data/bank-engine`, sets `currentLessonId`, then renders. There is no standalone `QuestionView`. Follow that pattern:
+
 ```tsx
-// add to src/routes/_authenticated/lesson.$id.test.tsx, alongside the
-// existing route-rendering tests and using the same harness
-it("renders a play control and choices for a listening question", async () => {
-  // Review Focus #5: speech synthesis may be unavailable -- `speak` returns
-  // silently in that case -- so the choices must be answerable regardless.
-  // This asserts the choices render and are enabled, not that audio played.
-  currentLessonId = LISTENING_LESSON_ID; // a lesson from the Task 6 pack
+// add to src/routes/_authenticated/lesson.$id.test.tsx
+it("renders a play control and answerable choices for a listening question", async () => {
+  // Review Focus #5: speech synthesis may be unavailable and `speak` then
+  // returns silently, so this asserts the choices are answerable, not that
+  // audio played.
+  currentLessonId = "a1p23l1"; // from Task 2's pack
   render(<RouteUnderTest />); // same mount the neighbouring tests use
   expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
-  const choices = await screen.findAllByRole("button");
-  expect(choices.length).toBeGreaterThan(2);
+  expect(screen.getByText(/what did you hear/i)).toBeInTheDocument();
 });
 ```
 
-Until Task 6 authors a listening pack there is no real listening lesson to
-point at. Write this test now and mark it `it.skip` with a comment naming Task
-6; Task 6 Step 4 un-skips it. Do not fabricate a fake lesson id that does not
-resolve — a test that throws on lookup proves nothing.
+Use the exact lesson id Task 2 reported, and the exact mount helper the surrounding tests use.
 
-- [ ] **Step 2: Run test to verify it fails (or is skipped pending Task 6)**
+- [ ] **Step 2: Run test to verify it fails**
 
 Run: `bun run vitest run src/routes/_authenticated/lesson.\$id.test.tsx`
-Expected: the new test is skipped; every existing test in the file still passes. A failure in an EXISTING test means the Task 1 union change broke this player — fix that before continuing.
+Expected: FAIL — no play button renders, because line 352 gates on `q.type === "mc"`.
 
-- [ ] **Step 3: Include listening in the audio control and the choice renderer**
+- [ ] **Step 3: Widen the audio control and add the format label**
 
-At line 352, widen the play-button condition. `listening` always has audio, so
-it needs no truthiness guard of its own:
+At ~line 352. `listening` always has audio, so it needs no truthiness guard:
 
 ```tsx
+          {q.type === "listening" && (
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+              Listening
+            </p>
+          )}
           {(q.type === "listening" || (q.type === "mc" && q.audioText)) && (
             <button
               type="button"
@@ -299,20 +412,9 @@ it needs no truthiness guard of its own:
           )}
 ```
 
-Add the format label directly above that button, so the type reads as
-distinguished rather than as an ordinary multiple choice that happens to have
-audio:
+- [ ] **Step 4: Widen the choice renderer**
 
-```tsx
-          {q.type === "listening" && (
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-              Listening
-            </p>
-          )}
-```
-
-At line 366, include listening in the `AnswerOption` branch — it renders
-choices identically to `mc`:
+At ~line 366. Note `isRight` differs by type: `mc` indexes, `listening` compares text.
 
 ```tsx
             {q.type === "mc" || q.type === "listening" ? (
@@ -322,7 +424,7 @@ choices identically to `mc`:
                   label={c}
                   checked={checked}
                   isPicked={picked === c}
-                  isRight={q.choices[q.answer] === c}
+                  isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
                   disabled={checked}
                   onClick={() => setPicked(c)}
                 />
@@ -330,123 +432,83 @@ choices identically to `mc`:
             ) : q.type === "reorder" ? (
 ```
 
-- [ ] **Step 4: Grade it like multiple choice**
+- [ ] **Step 5: Verify grading needs no change**
 
-At the grading site (`checkAnswer`, near line 151), include `listening` with `mc`:
+Read `checkAnswer` (~line 151). Confirm listening falls into the non-`mc` branch and that the comparison is `submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()`, which is correct for a text answer. Make NO edit here. Note in your report that you verified it rather than changed it.
 
-```ts
-    const isCorrect =
-      q.type === "mc" || q.type === "listening"
-        ? q.choices[q.answer] === submittedAnswer
-        : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
-```
-
-- [ ] **Step 5: Run the file's tests**
+- [ ] **Step 6: Run the tests**
 
 Run: `bun run vitest run src/routes/_authenticated/lesson.\$id.test.tsx`
-Expected: all existing tests pass; the new listening test remains skipped until Task 6 supplies real content.
+Expected: all pass, including the new one.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/routes/_authenticated/lesson.\$id.tsx src/routes/_authenticated/lesson.\$id.test.tsx
-git commit -m "feat: render and grade listening questions in the lesson player"
+git commit -m "feat: render listening questions in the lesson player"
 ```
 
 ---
 
-### Task 4: Render and grade listening in the review player
+### Task 5: Render listening in the review player
 
-`review.tsx` is a SEPARATE renderer for spaced repetition. A type handled only in the lesson player renders as a blank card here — Review Focus #1.
+`review.tsx` mirrors the lesson player: same `AnswerOption` import (line 6), play button gated at line 226, choices at line 240, grading at line 127. Review Focus #1 — a type wired only into the lesson player renders as a blank card here.
 
 **Files:**
 - Modify: `src/routes/_authenticated/review.tsx`
 - Test: `src/routes/_authenticated/review.test.tsx`
 
-**Interfaces:**
-- Consumes: the `listening` variant (Task 1), the rendering approach settled in Task 3.
-- Produces: listening questions that are reviewable, not blank.
-
-`review.tsx` mirrors the lesson player's structure exactly: it imports the same
-`AnswerOption` (line 6), gates the play button on `q.type === "mc" && q.audioText`
-(line 226), renders choices under `q.type === "mc"` (line 240), and grades at
-line 127. Three identical widenings.
-
 - [ ] **Step 1: Write the failing test**
 
 ```tsx
-// add to src/routes/_authenticated/review.test.tsx, using the same harness
-// the neighbouring tests use to seed a review queue
+// add to src/routes/_authenticated/review.test.tsx, using this file's own
+// helper for seeding a review queue
 it("renders a listening question in review rather than a blank card", async () => {
-  // Review Focus #1: review.tsx is a second renderer. A type wired only into
-  // the lesson player renders nothing here, and the learner is stuck.
-  seedReviewQueueWith("listening"); // follow the file's existing seeding helper
+  // Review Focus #1: review.tsx is a second renderer with its own render site.
+  seedReviewQueueWith("a1p23l1:a1p23q0"); // follow the file's existing helper
   render(<RouteUnderTest />);
   expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
-  expect((await screen.findAllByRole("button")).length).toBeGreaterThan(2);
+  expect(screen.getByText(/what did you hear/i)).toBeInTheDocument();
 });
 ```
 
-As in Task 3, mark this `it.skip` until Task 6 authors listening content, with a
-comment naming Task 6. Task 6 Step 4 un-skips it.
+Adapt the seeding call to whatever this file already does; do not invent a new harness.
 
-- [ ] **Step 2: Run test to verify existing tests still pass**
-
-Run: `bun run vitest run src/routes/_authenticated/review.test.tsx`
-Expected: the new test is skipped; every existing test passes.
-
-- [ ] **Step 3: Widen the three sites in review.tsx**
-
-Grading, line 127:
-
-```tsx
-    return q.type === "mc" || q.type === "listening"
-```
-
-Play button, line 226 — same widening as the lesson player, plus the same
-"Listening" label above it:
-
-```tsx
-        {(q.type === "listening" || (q.type === "mc" && q.audioText)) && (
-```
-
-Choice rendering, line 240:
-
-```tsx
-          {q.type === "mc" || q.type === "listening" ? (
-```
-
-Keep these branches structurally identical to the lesson player's. If the pair
-later drifts, extract a shared component rather than maintaining two copies.
-
-- [ ] **Step 4: Run the file's tests**
+- [ ] **Step 2: Run test to verify it fails**
 
 Run: `bun run vitest run src/routes/_authenticated/review.test.tsx`
-Expected: all existing tests pass; the listening test remains skipped until Task 6.
+Expected: FAIL — no play button, because line 226 gates on `q.type === "mc"`.
+
+- [ ] **Step 3: Apply the same two widenings plus the label**
+
+Play button (~line 226) and choice rendering (~line 240): identical to Task 4's Steps 3 and 4, including the type-dependent `isRight`. Grading at line 127 needs NO change for the same reason as the lesson player — verify, do not edit.
+
+Keep both players' listening branches structurally identical. If they later drift, extract a shared component rather than maintaining two copies.
+
+- [ ] **Step 4: Run the tests**
+
+Run: `bun run vitest run src/routes/_authenticated/review.test.tsx`
+Expected: all pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/routes/_authenticated/review.tsx src/routes/_authenticated/review.test.tsx
-git commit -m "feat: render and grade listening questions in the review player"
+git commit -m "feat: render listening questions in the review player"
 ```
 
 ---
 
-### Task 5: Teach iOS the listening type, and make its decoder forward-compatible
+### Task 6: Teach iOS the type, and make its decoder forward-compatible
 
 **Files:**
 - Modify: `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/CurriculumModels.swift`
 - Modify: `ios/LearnWithAlphonso/Sources/LessonPlayerView.swift`
 - Test: `ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/CurriculumModelsTests.swift` (create if absent)
 
-**Interfaces:**
-- Consumes: the JSON shape produced by Task 1 (`type: "listening"` with required `audioText`).
-- Produces: a `Question.listening` case, and a decoder that SKIPS unknown question types instead of throwing.
+Swift cannot be compiled or tested on this machine. Write the test first, push, and let CI be the evidence. Report it as CI-verified.
 
-Swift cannot be compiled or tested on this machine. Write the test first regardless, push, and let CI (`ios-swift-tests`, `ios-app-build`) be the RED/GREEN evidence. Report that the verification was CI, not local.
-
-- [ ] **Step 1: Write the failing Swift test**
+- [ ] **Step 1: Write the Swift tests**
 
 ```swift
 // ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/CurriculumModelsTests.swift
@@ -458,19 +520,18 @@ final class CurriculumModelsTests: XCTestCase {
         let json = """
         {"id":"q1","type":"listening","prompt":"What did you hear?",
          "audioText":"She is a doctor.","choices":["She is a doctor.","He is a driver."],
-         "answer":0,"explanation":"The audio says \\"She is a doctor.\\""}
+         "answer":"She is a doctor.","explanation":"e"}
         """.data(using: .utf8)!
         let question = try JSONDecoder().decode(Question.self, from: json)
         guard case .listening(let listening) = question else {
             return XCTFail("expected a listening question, got \\(question)")
         }
         XCTAssertEqual(listening.audioText, "She is a doctor.")
-        XCTAssertEqual(listening.choices.count, 2)
+        XCTAssertEqual(listening.answer, "She is a doctor.")
     }
 
     // Review Focus #2: the whole ContentBundle decodes at once, so a type this
-    // build does not know must not take the entire course down with it. A
-    // newer content bundle has to degrade to "fewer questions", never "no app".
+    // build does not know must degrade to "fewer questions", never "no app".
     func testSkipsUnknownQuestionTypesInsteadOfFailingTheLesson() throws {
         let json = """
         {"id":"l1","title":"T","subtitle":"S","questions":[
@@ -480,29 +541,13 @@ final class CurriculumModelsTests: XCTestCase {
         """.data(using: .utf8)!
         let lesson = try JSONDecoder().decode(Lesson.self, from: json)
         XCTAssertEqual(lesson.questions.count, 1)
-        XCTAssertEqual(lesson.questions.first?.id, "q2")
     }
 }
 ```
 
-`Question` needs an `id` accessor for that last assertion. Add one if absent:
+- [ ] **Step 2: Add the listening case**
 
-```swift
-extension Question {
-    public var id: String {
-        switch self {
-        case .multipleChoice(let q): return q.id
-        case .fillInBlank(let q): return q.id
-        case .reorder(let q): return q.id
-        case .listening(let q): return q.id
-        }
-    }
-}
-```
-
-- [ ] **Step 2: Add the listening case and the forward-compatible decode**
-
-In `CurriculumModels.swift`, add the case and payload:
+In `CurriculumModels.swift`:
 
 ```swift
     case listening(Listening)
@@ -513,26 +558,33 @@ In `CurriculumModels.swift`, add the case and payload:
         /// Spoken via AVSpeechSynthesizer before the learner answers.
         public let audioText: String
         public let choices: [String]
-        public let answer: Int
+        /// The correct choice's text -- mirrors the TypeScript variant, which
+        /// stores text rather than an index so shared grading works unchanged.
+        public let answer: String
         public let explanation: String
     }
 ```
 
-extend the type switch:
+and in the type switch:
 
 ```swift
         case "listening":
             self = .listening(try Listening(from: decoder))
 ```
 
-and replace the throwing `default` with a sentinel the container can filter:
+- [ ] **Step 3: Replace the throwing default with a skippable sentinel**
+
+Add `case unsupported` to the enum and change the `default`:
 
 ```swift
         default:
+            // Unknown to THIS build. Not fatal: content ships inside the app
+            // bundle, so a JSON/app version skew would otherwise leave the
+            // learner with no content at all. Lesson decoding filters these out.
             self = .unsupported
 ```
 
-adding `case unsupported` to the enum. Then make `Lesson` drop them at decode time:
+Then give `Lesson` a custom decoder that drops them:
 
 ```swift
 public struct Lesson: Decodable, Identifiable, Sendable {
@@ -548,9 +600,6 @@ public struct Lesson: Decodable, Identifiable, Sendable {
         id = try c.decode(String.self, forKey: .id)
         title = try c.decode(String.self, forKey: .title)
         subtitle = try c.decode(String.self, forKey: .subtitle)
-        // A question type this build does not understand is skipped, not
-        // fatal: content ships in the app bundle, so a JSON/app version skew
-        // would otherwise leave the learner with no content at all.
         questions = try c.decode([Question].self, forKey: .questions).filter {
             if case .unsupported = $0 { return false }
             return true
@@ -559,16 +608,18 @@ public struct Lesson: Decodable, Identifiable, Sendable {
 }
 ```
 
-- [ ] **Step 3: Render listening in the iOS player**
+**Adding `case unsupported` makes every exhaustive `switch` over `Question` fail to compile until it handles the case.** `LessonPlayerView.swift` has such switches at ~line 272 and ~line 324. Add an `.unsupported` arm to each that renders nothing (`EmptyView()`) — it is filtered before reaching the UI, so the arm is unreachable, but the compiler requires it. Do not use `@unknown default`; that is for non-frozen library enums, not your own.
 
-In `LessonPlayerView.swift`'s question switch (near line 272 and the `QuestionCard` switch near line 324), add a `.listening` case. Use the Canopy design system from PR #83 (`AlphonsoComponents`, `AlphonsoTheme`) for the card, button and type styles — do not hand-roll colors or fonts. Play audio with `AVSpeechSynthesizer`:
+- [ ] **Step 4: Render listening in the iOS player**
+
+Add a `.listening` arm to the same switches, using the Canopy design system (`AlphonsoComponents`, `AlphonsoTheme`) for the card, button and type styles — read `AlphonsoComponents.swift` for the real initialisers rather than guessing. Play audio with `AVSpeechSynthesizer`:
 
 ```swift
 import AVFoundation
 
 private let synthesizer = AVSpeechSynthesizer()
 
-func speak(_ text: String) {
+private func speak(_ text: String) {
     let utterance = AVSpeechUtterance(string: text)
     utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
     synthesizer.stopSpeaking(at: .immediate)
@@ -576,121 +627,60 @@ func speak(_ text: String) {
 }
 ```
 
-Grade it exactly as the multiple-choice case does: compare the tapped choice against `choices[answer]`.
+Grade by comparing the tapped choice against `listening.answer` (text, not index).
 
-- [ ] **Step 4: Push and let CI verify**
+- [ ] **Step 5: Push and read CI**
 
 ```bash
 git add ios/
 git commit -m "feat: decode and render listening questions on iOS"
 git push
-```
-
-Then read the `ios-swift-tests` and `ios-app-build` results:
-
-```bash
 gh pr checks <PR number>
 ```
 
-Expected: both pass. If `ios-app-build` fails on the Canopy component API, read `AlphonsoComponents.swift` for the actual initialisers rather than guessing at them.
+Expected: `ios-swift-tests` and `ios-app-build` both pass. A failure naming a Canopy initialiser means read that component's real signature; a failure about a non-exhaustive switch means a `.unsupported` arm is still missing.
 
 ---
 
-### Task 6: Author the listening content
+### Task 7: Author the remaining levels, re-baseline, and sweep the docs
 
 **Files:**
-- Modify: `src/data/lesson-bank.ts` (append new `kind: "listening"` packs)
-- Modify: `.audit-baseline/english-ids.json` (regenerate — deliberately, in its own commit)
-- Modify: `docs/superpowers/english-content-audit-log.md`
+- Modify: `src/data/lesson-bank.ts` (one listening pack per remaining band)
+- Modify: `.audit-baseline/english-ids.json` (regenerate deliberately)
+- Modify: `src/data/answer-pos.ts`, `ios/**/curriculum-en.json` (regenerate)
+- Modify: `docs/superpowers/english-content-audit-log.md`, `ARCHITECTURE.md`, `CHANGELOG.md`, `docs/BACKLOG.md`
 
-**Interfaces:**
-- Consumes: `kind: "listening"` packs (Task 2).
-- Produces: real listening content, and an id baseline that includes it.
+- [ ] **Step 1: Author one listening pack per remaining band**
 
-- [ ] **Step 1: Write the authoring-rule test**
+Add packs to `A2`, `B1`, `B2`, `C1` following Task 2's shape and the audit's rules: answers within a pack share a domain and a rough length so neither the topic nor the sentence length leaks the answer. Scale sentence complexity to the band.
 
-```ts
-// add to src/data/lesson-bank-listening.test.ts
-it("never restates the audio in the prompt", () => {
-  // Review Focus #4: if the prompt contains the audio, the question is
-  // solvable without listening and tests nothing.
-  for (const [key, ref] of Object.entries(getCourse("en").questionIndex)) {
-    const q = ref.question;
-    if (q.type !== "listening") continue;
-    const prompt = q.prompt.toLowerCase();
-    const audio = q.audioText.toLowerCase().replace(/[.?!]$/, "");
-    expect(prompt.includes(audio), `${key} restates its audio in the prompt`).toBe(false);
-  }
-});
-```
+- [ ] **Step 2: Run the content tests**
 
-- [ ] **Step 2: Run it**
+Run: `bun run vitest run src/data/lesson-bank-listening.test.ts src/data/curriculum-consistency.test.ts`
+Expected: all pass.
 
-Run: `bun run vitest run src/data/lesson-bank-listening.test.ts`
-Expected: passes vacuously (no listening content yet). It becomes load-bearing after Step 3.
-
-- [ ] **Step 3: Author the packs**
-
-Append listening packs to `lesson-bank.ts`'s level arrays, 25 lines each, in the existing format. Lines are `audioText|answer`, and the pack's `prompt` is the stem shown after playback. Author at least one pack per CEFR band (A1, A2, B1, B2, C1), following the audit's rules: answers within a pack share a semantic domain so the generated distractors stay plausible.
-
-Example shape:
-
-```ts
-  {
-    id: "a1p23",
-    title: "Listening: Everyday Sentences",
-    subtitle: "Hear it, then choose",
-    kind: "listening",
-    prompt: "What did you hear?",
-    note: "Short sentences at natural speed.",
-    data: `She is a doctor.|She is a doctor.
-He works at the airport.|He works at the airport.
-...`,
-  },
-```
-
-For a "what did you hear" pack the answer IS the sentence, so `audioText` and `answer` match and distractors are other sentences from the pack — which is what makes them plausible. For comprehension packs (asking ABOUT the audio), set `prompt` to the question and let `answer` be the fact, e.g. `She is a doctor.|a doctor` with prompt `"What is her job?"`. Do not mix the two styles inside one pack — the distractor pool must stay homogeneous.
-
-- [ ] **Step 4: Un-skip the player tests and run everything**
-
-Real listening content now exists, so the two tests Tasks 3 and 4 left skipped
-become runnable. Remove their `.skip`, and point each at a real lesson id from
-the pack you just authored (find one with
-`bun run scripts/dump-english-questions.ts` and grep the dump for
-`"type": "listening"`).
-
-Run: `bun run vitest run src/data/lesson-bank-listening.test.ts src/data/curriculum-consistency.test.ts src/routes/_authenticated/lesson.\$id.test.tsx src/routes/_authenticated/review.test.tsx`
-Expected: ALL pass — including the "builds listening questions" test Task 2 left red, and both previously-skipped player tests.
-
-- [ ] **Step 5: Regenerate the id baseline deliberately**
-
-New packs append new ids; they must not move existing ones.
+- [ ] **Step 3: Re-baseline ids deliberately**
 
 ```bash
 bun run scripts/snapshot-english-ids.ts
-bun run vitest run src/lib/english-id-parity.test.ts
-```
-
-Before committing, confirm the diff is ADDITIONS ONLY:
-
-```bash
 git diff --stat .audit-baseline/english-ids.json
 ```
 
-Expected: insertions only, zero deletions. A deletion means an existing id moved — stop and find out why; do not commit it.
+Expected: **insertions only, zero deletions.** A deletion means an existing id moved — stop and find out why before committing.
 
-- [ ] **Step 6: Regenerate the POS map and re-export iOS content**
+Then: `bun run vitest run src/lib/english-id-parity.test.ts` → PASS.
+
+- [ ] **Step 4: Regenerate derived artifacts**
 
 ```bash
 bun run scripts/gen-answer-pos.ts
 bun run scripts/export-ios-content.ts
+git diff --stat ios/
 ```
 
-- [ ] **Step 7: Update the audit log**
+Expected: only `curriculum-en.json` changes in both iOS resource directories. If `curriculum-fr.json` or `curriculum-es.json` change, investigate before committing (on this branch they should already be current).
 
-Add the new packs as rows in `docs/superpowers/english-content-audit-log.md`, each with a verdict, so the enumeration stays complete.
-
-- [ ] **Step 8: Full scoped verification**
+- [ ] **Step 5: Full scoped verification**
 
 ```bash
 bunx tsc --noEmit
@@ -700,9 +690,13 @@ bun run vitest run src/lib src/data src/routes
 
 Expected: typecheck exit 0, lint 0 errors, all tests pass.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 6: Sweep the docs**
+
+Add the new packs as rows with verdicts in `docs/superpowers/english-content-audit-log.md`. Then update `ARCHITECTURE.md` (the content-model section now has a fourth question type, and the iOS decoder now skips unknown types — both are architectural facts), `CHANGELOG.md`, and `docs/BACKLOG.md` (listening is no longer a gap; speaking and translation remain).
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/data/lesson-bank.ts src/data/answer-pos.ts .audit-baseline/english-ids.json docs/superpowers/english-content-audit-log.md ios/
-git commit -m "feat: add listening comprehension content packs"
+git add src/data/lesson-bank.ts src/data/answer-pos.ts .audit-baseline/english-ids.json docs/ ARCHITECTURE.md CHANGELOG.md ios/
+git commit -m "feat: add listening packs for every CEFR band"
 ```
