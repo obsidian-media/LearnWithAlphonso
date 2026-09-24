@@ -16,6 +16,8 @@ import {
   claimReviewClearBonusRemote,
 } from "../../lib/review.functions";
 import { useProgress } from "../../lib/progress";
+import { deriveAnswerCorrectness } from "../../lib/srs";
+import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 
@@ -125,9 +127,10 @@ function ReviewPage() {
     q?.type === "reorder" ? orderPicks.map((i) => q.tokens[i]).join(" ") : picked;
   const isCorrect = useMemo(() => {
     if (!q || !submittedAnswer) return false;
-    return q.type === "mc"
-      ? q.choices[q.answer] === submittedAnswer
-      : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+    // The same helper the grade-review server uses, so what the learner is
+    // shown here and what happens to the item's schedule cannot disagree --
+    // which for a spoken answer means the tolerant transcript match.
+    return deriveAnswerCorrectness(q, submittedAnswer);
   }, [q, submittedAnswer]);
 
   function check() {
@@ -229,6 +232,11 @@ function ReviewPage() {
             Listening
           </p>
         )}
+        {q.type === "speak" && (
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Speaking
+          </p>
+        )}
         {/* A listening question is unanswerable without audio, so when the
             browser cannot speak, the sentence is shown instead -- same
             reasoning as the lesson player's identical fallback. */}
@@ -302,6 +310,14 @@ function ReviewPage() {
                 )}
               </div>
             </div>
+          ) : q.type === "speak" ? (
+            <SpeakAnswer
+              target={q.answer}
+              locale={localeForCourse(course)}
+              value={picked}
+              onChange={setPicked}
+              checked={checked}
+            />
           ) : q.type === "fill" ? (
             <div>
               <input
