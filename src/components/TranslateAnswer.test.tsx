@@ -26,12 +26,14 @@ function renderIt(props: Partial<React.ComponentProps<typeof TranslateAnswer>> =
 }
 
 describe("TranslateAnswer", () => {
-  it("shows the idea to express without giving the sentence away", () => {
+  it("keeps the accepted phrasings hidden until the learner has answered", () => {
+    // Showing them up front would make producing English into copying it. The
+    // prompt itself is rendered by the player, as the question heading, like
+    // every other type -- this component deliberately does not repeat it.
     renderIt();
-    expect(screen.getByText("Say you do not understand.")).toBeTruthy();
-    // The canonical phrasing is the answer -- showing it before the learner
-    // has written anything would make this a copying exercise.
+    expect(screen.getByLabelText("Your answer")).toBeTruthy();
     expect(screen.queryByText("I do not understand.")).toBeNull();
+    expect(screen.queryByText("I don't understand.")).toBeNull();
   });
 
   it("reports what the learner types", () => {

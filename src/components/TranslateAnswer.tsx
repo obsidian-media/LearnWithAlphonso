@@ -29,13 +29,8 @@ export function TranslateAnswer({
 }) {
   return (
     <div>
-      <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-          Write this in English
-        </p>
-        <p className="mt-1 text-lg font-medium leading-snug text-ink">{question.prompt}</p>
-      </div>
-
+      {/* The prompt itself is rendered by the player, as the question heading,
+          exactly like every other type -- repeating it here showed it twice. */}
       <textarea
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}

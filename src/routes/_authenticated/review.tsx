@@ -18,6 +18,8 @@ import {
 import { useProgress } from "../../lib/progress";
 import { deriveAnswerCorrectness } from "../../lib/srs";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
+import { TranslateAnswer } from "../../components/TranslateAnswer";
+import type { TranslationVerdict } from "../api/grade-translation";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 
@@ -59,6 +61,13 @@ function ReviewPage() {
   // word, so selection must be by index, not value).
   const [orderPicks, setOrderPicks] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
+  // For a translate item the SERVER decides, and this holds what it decided.
+  // The player displays this rather than computing its own verdict, which is
+  // what makes a disagreement between screen and scheduler impossible rather
+  // than merely unlikely -- the failure mode being "Still got it" on an item
+  // that was just lapsed.
+  const [translationVerdict, setTranslationVerdict] = useState<TranslationVerdict | null>(null);
+  const [checking, setChecking] = useState(false);
   const [stats, setStats] = useState({ right: 0, wrong: 0, retired: 0 });
   const [heartBonusGranted, setHeartBonusGranted] = useState(false);
 
@@ -133,16 +142,53 @@ function ReviewPage() {
     return deriveAnswerCorrectness(q, submittedAnswer);
   }, [q, submittedAnswer]);
 
+  // What the learner is shown. For translate that is the server's verdict,
+  // which is the only one that knows about the AI second opinion.
+  const shownCorrect =
+    q?.type === "translate" && translationVerdict ? translationVerdict.correct : isCorrect;
+
   function check() {
     if (!card || !submittedAnswer) return;
-    setChecked(true);
-    const ok = isCorrect;
-    setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
+
+    // Every type except translate is graded by pure string comparison on both
+    // sides, so the local verdict cannot disagree with the server's and the
+    // feedback can show immediately rather than waiting on the network.
+    if (q?.type !== "translate") {
+      setChecked(true);
+      const ok = isCorrect;
+      setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
+      void grade({ data: { itemKey: card.itemKey, answer: submittedAnswer, course } })
+        .then((r) => {
+          if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
+        })
+        .catch(() => {});
+      return;
+    }
+
+    // A translation waits, because the curated phrasings are only a floor and
+    // the AI second opinion that can lift them runs server-side.
+    setChecking(true);
     void grade({ data: { itemKey: card.itemKey, answer: submittedAnswer, course } })
       .then((r) => {
+        const ok = typeof r.correct === "boolean" ? r.correct : isCorrect;
+        setTranslationVerdict({ correct: ok, reason: null, source: "local" });
+        setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
         if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
       })
-      .catch(() => {});
+      .catch(() => {
+        // Unreachable server: fall back to the local verdict rather than
+        // leaving the learner on a question that will not resolve.
+        setTranslationVerdict({ correct: isCorrect, reason: null, source: "local" });
+        setStats((s) => ({
+          ...s,
+          right: s.right + (isCorrect ? 1 : 0),
+          wrong: s.wrong + (isCorrect ? 0 : 1),
+        }));
+      })
+      .finally(() => {
+        setChecking(false);
+        setChecked(true);
+      });
   }
 
   function next() {
@@ -150,6 +196,7 @@ function ReviewPage() {
     setPicked(null);
     setOrderPicks([]);
     setChecked(false);
+    setTranslationVerdict(null);
   }
 
   if (cards === null) {
@@ -237,6 +284,11 @@ function ReviewPage() {
             Speaking
           </p>
         )}
+        {q.type === "translate" && (
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+            Write it yourself
+          </p>
+        )}
         {/* A listening question is unanswerable without audio, so when the
             browser cannot speak, the sentence is shown instead -- same
             reasoning as the lesson player's identical fallback. */}
@@ -321,6 +373,15 @@ function ReviewPage() {
               onChange={setPicked}
               checked={checked}
             />
+          ) : q.type === "translate" ? (
+            <TranslateAnswer
+              key={q.id}
+              question={q}
+              value={picked}
+              onChange={setPicked}
+              checked={checked}
+              verdict={translationVerdict}
+            />
           ) : q.type === "fill" ? (
             <div>
               <input
@@ -349,8 +410,8 @@ function ReviewPage() {
 
         {checked && (
           <AnswerFeedback
-            correct={isCorrect}
-            headline={isCorrect ? "Still got it." : "Back in the queue."}
+            correct={shownCorrect}
+            headline={shownCorrect ? "Still got it." : "Back in the queue."}
             explanation={q.explanation}
           />
         )}
@@ -362,7 +423,7 @@ function ReviewPage() {
               onClick={check}
               className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
             >
-              Check
+              {checking ? "Checking…" : "Check"}
             </button>
           ) : (
             <button

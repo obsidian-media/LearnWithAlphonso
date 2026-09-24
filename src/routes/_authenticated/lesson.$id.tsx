@@ -401,6 +401,11 @@ function LessonPage() {
               Speaking
             </p>
           )}
+          {q.type === "translate" && (
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+              Write it yourself
+            </p>
+          )}
           {q.type === "listening" && canSpeak() && (
             <button
               type="button"

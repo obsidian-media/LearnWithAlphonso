@@ -172,6 +172,12 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
  * same derive-don't-trust pattern completeLessonRemote already uses. Also
  * rejects grading an item that isn't actually due yet (due_on > today),
  * closing the other half of the same exploit path.
+ *
+ * Returns `correct` as well as the schedule, because for a "translate" item
+ * the server is the only place that knows the answer: the player's local match
+ * is a floor, and the AI second opinion that can lift it runs here. The review
+ * player DISPLAYS this value rather than computing its own, which is what
+ * makes a disagreement between the two impossible rather than merely unlikely.
  */
 export const gradeReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -198,7 +204,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       .eq("item_key", data.itemKey)
       .eq("language", course)
       .maybeSingle();
-    if (!row) return { retired: false, dueOn: today() };
+    if (!row) return { retired: false, dueOn: today(), correct: false };
     if (row.due_on > today()) {
       throw new Error("This item isn't due yet");
     }
@@ -211,6 +217,32 @@ export const gradeReview = createServerFn({ method: "POST" })
       const ref = getCourse(course).questionIndex[data.itemKey];
       if (!ref) throw new Error("Unknown review item");
       correct = deriveAnswerCorrectness(ref.question, data.answer);
+      // A written translation gets the same second opinion the lesson player
+      // asks for. This is the web review path -- the grade-review Edge
+      // Function is iOS's -- and without it a phrasing the player accepted
+      // would be re-derived here by string comparison alone, so the learner
+      // would read "Still got it" while the scheduler lapsed the item.
+      //
+      // The AI verdict can only ever upgrade a local miss. A null (vendor
+      // down, no key, unparseable answer) leaves the local verdict standing:
+      // being offline is not evidence about the learner's English.
+      if (!correct && ref.question.type === "translate") {
+        const apiKey = process.env.NVIDIA_API_KEY;
+        if (apiKey) {
+          const [{ gradeTranslationWithAi }, { resolveNvidiaChatModel }] = await Promise.all([
+            import("./translation-grader.server"),
+            import("./nvidia-chat-model.server"),
+          ]);
+          const verdict = await gradeTranslationWithAi({
+            prompt: ref.question.prompt,
+            acceptableAnswers: ref.question.acceptableAnswers,
+            submission: data.answer,
+            apiKey,
+            model: resolveNvidiaChatModel(),
+          });
+          if (verdict?.correct) correct = true;
+        }
+      }
     }
 
     // Real elapsed time since the item was last actually reviewed (falling
@@ -256,7 +288,7 @@ export const gradeReview = createServerFn({ method: "POST" })
           .from("weakness_events")
           .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
       }
-      return { retired: true, dueOn: outcome.dueOn };
+      return { retired: true, dueOn: outcome.dueOn, correct };
     }
 
     // Same admin-write rationale as recordMisses above -- outcome is
@@ -275,7 +307,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .eq("item_key", data.itemKey)
       .eq("language", course);
-    return { retired: false, dueOn: outcome.dueOn };
+    return { retired: false, dueOn: outcome.dueOn, correct };
   });
 
 /**
