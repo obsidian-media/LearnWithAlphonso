@@ -120,6 +120,29 @@ jobs:
       #   Relative import path "@supabase/supabase-js" not prefixed with / or ./ or ../
       # That is the deploy-supabase job below, i.e. after merge to main -- so
       # the break lands on main rather than on the PR that caused it.
+      # Two migrations sharing a version number is invisible to git -- the
+      # filenames differ, so neither PR conflicts -- but Supabase tracks
+      # migrations BY VERSION, so `supabase db push` cannot disambiguate and
+      # fails. It is not a PR-level failure either: it lands on main, in the
+      # deploy job, attributed to whichever PR merged second.
+      #
+      # Found 2026-09-24 when two parallel sessions independently picked
+      # 20260926010000 (the translate question type and the podcast library).
+      # Both PRs were green; main's deploy broke on merge.
+      - name: Migration versions are unique
+        run: |
+          versions=$(ls supabase/migrations/*.sql | xargs -n1 basename | cut -d_ -f1)
+          dupes=$(echo "$versions" | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "::error::Duplicate migration version(s): $dupes"
+            echo "Supabase keys applied migrations by version, so two files"
+            echo "sharing one version break 'supabase db push' on main."
+            echo "Renumber the NOT-YET-APPLIED migration to a later version."
+            for v in $dupes; do ls supabase/migrations/ | grep "^${v}_"; done
+            exit 1
+          fi
+          echo "All migration versions are unique."
+
       - name: Every Edge Function has a deno.json import map
         run: |
           missing=""
