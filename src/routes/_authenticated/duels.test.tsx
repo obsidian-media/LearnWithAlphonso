@@ -169,4 +169,70 @@ describe("Duels page", () => {
     await waitFor(() => expect(leaveOpenDuelQueue).toHaveBeenCalled());
     expect(screen.queryByText("Waiting for an opponent…")).not.toBeInTheDocument();
   });
+
+  // --- open-queue match path + past duels (coverage gap, 2026-09-24) ---
+
+  it("refetches instead of waiting when the queue matches immediately", async () => {
+    getMyDuels.mockResolvedValue([]);
+    joinOpenDuelQueue.mockResolvedValue({ matched: true, duelId: "d9" });
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Find an open duel" }));
+
+    await waitFor(() => expect(getMyDuels).toHaveBeenCalledTimes(2));
+    // An immediate match must NOT leave the user staring at a waiting
+    // state for an opponent they already have.
+    expect(screen.queryByText("Waiting for an opponent…")).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Find an open duel" })).toBeInTheDocument();
+  });
+
+  it("passes the chosen course and level preference to the queue", async () => {
+    getMyDuels.mockResolvedValue([]);
+    joinOpenDuelQueue.mockResolvedValue({ matched: false, duelId: null });
+    renderPage();
+
+    // Three comboboxes on this page, in DOM order: friend picker,
+    // challenge course, then the OPEN-duel course. The last is the one
+    // the open queue reads.
+    const selects = await screen.findAllByRole("combobox");
+    const openCourseSelect = selects[selects.length - 1]!;
+    fireEvent.change(openCourseSelect, { target: { value: "es" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Find an open duel" }));
+
+    await waitFor(() =>
+      expect(joinOpenDuelQueue).toHaveBeenCalledWith({
+        data: { course: "es", matchByLevel: false },
+      }),
+    );
+  });
+
+  it("lists finished duels under Past duels", async () => {
+    getMyDuels.mockResolvedValue([
+      {
+        duelId: "d1",
+        status: "completed",
+        course: "en",
+        challengerId: "me",
+        opponentId: "them",
+        challengerName: "Me",
+        opponentName: "Them",
+        challengerXp: 120,
+        opponentXp: 90,
+        winnerId: "me",
+        endsAt: "2026-09-20T00:00:00Z",
+      },
+    ]);
+    renderPage();
+
+    expect(await screen.findByText("Past duels")).toBeInTheDocument();
+  });
+
+  it("hides the Past duels section entirely when there are none", async () => {
+    getMyDuels.mockResolvedValue([]);
+    renderPage();
+
+    await screen.findByRole("button", { name: "Find an open duel" });
+    expect(screen.queryByText("Past duels")).not.toBeInTheDocument();
+  });
 });

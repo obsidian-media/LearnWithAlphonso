@@ -120,33 +120,46 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (102 test files / 805 tests, full-suite run
-                      # verified 2026-09-24 — the suite ran clean three times
-                      # in a row that day on this Windows sandbox, so the
-                      # earlier "full suite is unreliable here" caveat is
-                      # retired; re-add it only if it actually recurs)
+bun run test         # Vitest (109 test files / 896 tests, full-suite run
+                      # verified 2026-09-24 — the suite ran clean repeatedly
+                      # that day on this Windows sandbox, so the earlier
+                      # "full suite is unreliable here" caveat is retired;
+                      # re-add it only if it actually recurs)
 bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
 ```
 
 **Coverage as of 2026-09-24** (`bun run test:coverage`, re-run rather
-than assuming it holds after further changes — these numbers came from a
-real full run that day, not carried forward): 89.87% statements / 78.10%
-branches / 86.27% functions / 91.11% lines overall. Slightly *down* from
-the 2026-09-20 figures (90.55/79.24/89.02/91.56) because several batches
-of feature code landed since without matching test growth — not a
-regression in any one file.
+than assuming it holds after further changes): 93.95% statements /
+82.13% branches / 90.36% functions / 95.30% lines overall.
 
-Notably thinner spots: `src/routes/__root.tsx` (18.36% statements /
-21.42% lines — mostly error-boundary paths) and `HeartsModal.tsx`
-(68.62% statements / 70.21% lines). **Corrected 2026-09-24**:
-`src/routes/api/analyze-weaknesses.ts` was listed here for a long time
-as "~8%, because server routes adjacent to Edge Functions aren't
-unit-tested here as a matter of established pattern". It is now at
-**91.17%**, as are its siblings (`chat.ts` 96.29%, `stt.ts` 95.65%,
-`tts.ts` 95.23%). That stated pattern no longer describes the codebase —
-don't cite it to justify skipping tests on a new server route.
+Both long-standing thin spots were closed the same day and are no longer
+thin: `src/routes/__root.tsx` went 18.36% -> **97.95%** statements (100%
+lines, 100% functions) and `HeartsModal.tsx` 68.62% -> **96.07%** (100%
+lines, 100% functions). What had been untested in each was real logic
+rather than boilerplate — `AuthSync`'s session/auth-event handling and
+the first-paint theme script in one, the focus trap and the
+refill-due transition in the other.
+
+The two worst remaining branch-coverage files were also done the same
+day: `campaign_.$campaignId.tsx` 41.53% -> 64.61% branches and
+`duels.tsx` 66% -> 74%, both by covering user-facing failure paths
+(mic permission, transcription failure, queue matching) rather than
+happy paths.
+
+`challenges`/`season`/`teams.functions.ts` also got their first tests
+the same day. They had been the **only** `*.functions.ts` modules
+without a test file — all three arrived in the gamification batch
+(PRs #65–67) without the tests every sibling has.
+
+**Corrected 2026-09-24**: `src/routes/api/analyze-weaknesses.ts` was
+listed here for a long time as "~8%, because server routes adjacent to
+Edge Functions aren't unit-tested here as a matter of established
+pattern". It is at **91.17%**, as are its siblings (`chat.ts` 96.29%,
+`stt.ts` 95.65%, `tts.ts` 95.23%). That stated pattern no longer
+describes the codebase — don't cite it to justify skipping tests on a
+new server route.
 
 ## Assets
 
