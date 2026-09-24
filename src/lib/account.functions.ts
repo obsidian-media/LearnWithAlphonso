@@ -22,6 +22,8 @@ export const USER_ID_EXPORT_TABLES = [
   "friendships",
   "language_progress",
   "lesson_completions",
+  "podcast_play_events",
+  "podcast_playback",
   "review_items",
   "season_cohort_members",
   "season_placements",

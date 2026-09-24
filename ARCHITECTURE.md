@@ -62,6 +62,22 @@ over "what the answer currently is," since the latter goes stale fast.
 | `challenge_templates` / `challenge_completions`      | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `duel_queue`                                          | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch.                                                    |
 
+| `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926010000_podcast_library.sql`. |
+
+**Podcast audio storage.** Episodes live in a **public-read** Supabase
+Storage bucket, `podcast-audio`, with no client write policy — only
+`scripts/podcast-tool.ts` (service role) uploads. Consequence worth
+knowing before anyone builds on it: `podcast_episodes.published` hides
+the **row**, not the **file**, so an unpublished episode's audio is
+still fetchable by anyone with the URL. That is acceptable only while
+this content is free for everyone. **A public bucket cannot enforce a
+Pro entitlement** — if podcasts are ever gated, the move to a private
+bucket with signed URLs must happen first, and it is the expensive,
+hard-to-reverse part of the design. Audio egress is also far heavier
+than this app's existing text-and-thumbnail traffic and Supabase
+bandwidth is metered: a 6-minute 64kbps mono episode is ~2.9 MB, so 100
+episodes played once each by 100 learners is ~29 GB.
+
 RPCs worth knowing (all `SECURITY DEFINER`, all in `supabase/migrations/`):
 `get_leaderboard`, `get_friends_progress`, `accept_friend_invite`,
 `consume_ai_quota`, `consume_ai_rate_limit`, `restore_hearts_if_due`,

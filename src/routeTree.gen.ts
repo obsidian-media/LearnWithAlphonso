@@ -20,6 +20,7 @@ import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
+import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_a
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
 import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
+import { Route as AuthenticatedListenSplatRouteImport } from './routes/_authenticated/listen.$'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 
@@ -90,6 +92,11 @@ const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
 const AuthenticatedLearnRoute = AuthenticatedLearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
+  id: '/listen',
+  path: '/listen',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
@@ -170,6 +177,12 @@ const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
   path: '/lesson/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListenSplatRoute =
+  AuthenticatedListenSplatRouteImport.update({
+    id: '/$',
+    path: '/$',
+    getParentRoute: () => AuthenticatedListenRoute,
+  } as any)
 const AuthenticatedProfileFriendsRoute =
   AuthenticatedProfileFriendsRouteImport.update({
     id: '/profile_/friends',
@@ -194,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/duels': typeof AuthenticatedDuelsRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
@@ -209,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
@@ -223,6 +238,7 @@ export interface FileRoutesByTo {
   '/duels': typeof AuthenticatedDuelsRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
+  '/listen': typeof AuthenticatedListenRouteWithChildren
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/review': typeof AuthenticatedReviewRoute
@@ -238,6 +254,7 @@ export interface FileRoutesByTo {
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
@@ -254,6 +271,7 @@ export interface FileRoutesById {
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
+  '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
@@ -269,6 +287,7 @@ export interface FileRoutesById {
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
+  '/_authenticated/listen/$': typeof AuthenticatedListenSplatRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
 }
@@ -285,6 +304,7 @@ export interface FileRouteTypes {
     | '/duels'
     | '/league'
     | '/learn'
+    | '/listen'
     | '/placement'
     | '/profile'
     | '/review'
@@ -300,6 +320,7 @@ export interface FileRouteTypes {
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
+    | '/listen/$'
     | '/profile/friends'
     | '/teams/$teamId'
   fileRoutesByTo: FileRoutesByTo
@@ -314,6 +335,7 @@ export interface FileRouteTypes {
     | '/duels'
     | '/league'
     | '/learn'
+    | '/listen'
     | '/placement'
     | '/profile'
     | '/review'
@@ -329,6 +351,7 @@ export interface FileRouteTypes {
     | '/converse/$scenarioId'
     | '/invite/$inviterId'
     | '/lesson/$id'
+    | '/listen/$'
     | '/profile/friends'
     | '/teams/$teamId'
   id:
@@ -344,6 +367,7 @@ export interface FileRouteTypes {
     | '/_authenticated/duels'
     | '/_authenticated/league'
     | '/_authenticated/learn'
+    | '/_authenticated/listen'
     | '/_authenticated/placement'
     | '/_authenticated/profile'
     | '/_authenticated/review'
@@ -359,6 +383,7 @@ export interface FileRouteTypes {
     | '/_authenticated/converse_/$scenarioId'
     | '/_authenticated/invite/$inviterId'
     | '/_authenticated/lesson/$id'
+    | '/_authenticated/listen/$'
     | '/_authenticated/profile_/friends'
     | '/_authenticated/teams_/$teamId'
   fileRoutesById: FileRoutesById
@@ -456,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof AuthenticatedLearnRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/listen': {
+      id: '/_authenticated/listen'
+      path: '/listen'
+      fullPath: '/listen'
+      preLoaderRoute: typeof AuthenticatedListenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/placement': {
@@ -563,6 +595,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLessonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/listen/$': {
+      id: '/_authenticated/listen/$'
+      path: '/$'
+      fullPath: '/listen/$'
+      preLoaderRoute: typeof AuthenticatedListenSplatRouteImport
+      parentRoute: typeof AuthenticatedListenRoute
+    }
     '/_authenticated/profile_/friends': {
       id: '/_authenticated/profile_/friends'
       path: '/profile/friends'
@@ -580,11 +619,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedListenRouteChildren {
+  AuthenticatedListenSplatRoute: typeof AuthenticatedListenSplatRoute
+}
+
+const AuthenticatedListenRouteChildren: AuthenticatedListenRouteChildren = {
+  AuthenticatedListenSplatRoute: AuthenticatedListenSplatRoute,
+}
+
+const AuthenticatedListenRouteWithChildren =
+  AuthenticatedListenRoute._addFileChildren(AuthenticatedListenRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseRoute: typeof AuthenticatedConverseRoute
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
+  AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
@@ -603,6 +654,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
+  AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,

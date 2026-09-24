@@ -40,7 +40,24 @@ describe("_authenticated route guard", () => {
   });
 
   it("renders an Outlet as its component", () => {
-    const element = Route.options.component!({} as never) as React.ReactElement;
-    expect(element.type).toBe(Outlet);
+    const element = Route.options.component!({} as never) as React.ReactElement<{
+      children: React.ReactElement[];
+    }>;
+    // The layout is a fragment now, not a bare Outlet: the podcast audio
+    // element is mounted BESIDE the Outlet so playback survives a route
+    // change (a page-owned element unmounts on navigation). What this
+    // test guards is that the layout still renders its children.
+    const children = element.props.children;
+    expect(children.some((child) => child.type === Outlet)).toBe(true);
+  });
+
+  it("mounts the persistent podcast audio element beside the Outlet", () => {
+    const element = Route.options.component!({} as never) as React.ReactElement<{
+      children: React.ReactElement[];
+    }>;
+    const types = element.props.children.map((child) =>
+      typeof child.type === "function" ? child.type.name : child.type,
+    );
+    expect(types).toContain("PodcastAudio");
   });
 });
