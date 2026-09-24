@@ -2,14 +2,51 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// Tables keyed by `user_id`. NOTE: "achievements" is the static catalogue
-// (no user_id column at all -- the user-owned table is "user_achievements",
-// a bug this list previously had); "profiles" is handled separately below
-// since its PK is `id`, not `user_id`. Keep this in sync with new
-// user-scoped tables -- language_progress and ai_rate_limits were both
-// added after this list was first written and were silently missing,
-// which meant exportMyData returned incomplete GDPR exports.
-const USER_ID_TABLES = [
+// Every table with a `user_id` column, exported via `.eq("user_id", ...)`.
+// NOTE: "achievements" is the static catalogue (no user_id column at all --
+// the user-owned table is "user_achievements", a bug this list previously
+// had); "profiles" is handled separately below since its PK is `id`, not
+// `user_id`. Keep this in sync with new user-scoped tables -- this list has
+// silently drifted three times (language_progress/ai_rate_limits, then the
+// whole gamification + push batch), each time producing incomplete GDPR
+// exports with nothing failing. `account.functions.test.ts` now reads the
+// migrations and fails the build instead of relying on remembering.
+export const USER_ID_EXPORT_TABLES = [
+  "activity_days",
+  "ai_rate_limits",
+  "ai_usage",
+  "challenge_completions",
+  "device_tokens",
+  "duel_queue",
+  "friend_activity_events",
+  "friendships",
+  "language_progress",
+  "lesson_completions",
+  "review_items",
+  "season_cohort_members",
+  "season_placements",
+  "team_members",
+  "user_achievements",
+  "user_progress",
+  "user_weekly_quest_claims",
+  "weakness_events",
+] as const;
+
+// User-owned rows that are NOT keyed by `user_id`, so the scan above can't
+// reach them -- both sides of a nudge and both sides of a duel are the
+// account's own data for portability purposes.
+export const OTHER_OWNED_EXPORT_TABLES = [
+  { table: "nudges", columns: ["sender_id", "recipient_id"] },
+  { table: "duels", columns: ["challenger_id", "opponent_id"] },
+] as const;
+
+// deleteMyAccount issues its DELETEs *as the caller*, so this is deliberately
+// only the tables `authenticated` actually holds a DELETE grant on -- the
+// gamification tables revoked direct writes
+// (20260920050000_revoke_direct_gamification_writes.sql) and would just fail
+// silently. Everything else is cleaned up by ON DELETE CASCADE from
+// auth.users when deleteUser() runs below, so nothing is left behind.
+export const USER_DELETE_TABLES = [
   "review_items",
   "lesson_completions",
   "activity_days",
@@ -26,25 +63,36 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    // The 9 tables are independent selects -- batched instead of a
-    // sequential loop, cutting a GDPR export from ~9 round trips to 1.
-    const [rows, { data: profile }] = await Promise.all([
+    // `src/integrations/supabase/types.ts` is stale -- 7 tables added by the
+    // gamification/push batches were never regenerated into it, so `from()`'s
+    // literal-union parameter rejects real, existing table names. Widening the
+    // client here rather than hand-editing a generated file; the per-table
+    // query-builder types never unified across a heterogeneous loop like this
+    // anyway, so nothing is lost that the old per-call cast was providing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const from = (table: string) => (supabase as any).from(table);
+    // Independent selects -- batched instead of a sequential loop, so a GDPR
+    // export stays one round trip's worth of latency rather than one per
+    // table as this list grows.
+    const [userIdRows, otherOwnedRows, { data: profile }] = await Promise.all([
       Promise.all(
-        USER_ID_TABLES.map((table) =>
-          // Table name is a union of literals from a heterogeneous table
-          // list; the generated per-table query builder types don't unify
-          // across the loop, so this cast is the pragmatic escape hatch
-          // rather than a type-safety gap (each name is still a real,
-          // known table).
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (supabase.from(table) as any).select("*").eq("user_id", userId),
+        USER_ID_EXPORT_TABLES.map((table) => from(table).select("*").eq("user_id", userId)),
+      ),
+      Promise.all(
+        OTHER_OWNED_EXPORT_TABLES.map(({ table, columns }) =>
+          from(table)
+            .select("*")
+            .or(columns.map((c) => `${c}.eq.${userId}`).join(",")),
         ),
       ),
       supabase.from("profiles").select("*").eq("id", userId),
     ]);
     const tables: Record<string, unknown[]> = {};
-    USER_ID_TABLES.forEach((table, i) => {
-      tables[table] = (rows[i].data as unknown[]) ?? [];
+    USER_ID_EXPORT_TABLES.forEach((table, i) => {
+      tables[table] = (userIdRows[i].data as unknown[]) ?? [];
+    });
+    OTHER_OWNED_EXPORT_TABLES.forEach(({ table }, i) => {
+      tables[table] = (otherOwnedRows[i].data as unknown[]) ?? [];
     });
     tables.profiles = profile ?? [];
     return {
@@ -67,8 +115,9 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
     await Promise.all(
-      USER_ID_TABLES.map((table) =>
-        // See the matching cast + comment in exportMyData above.
+      USER_DELETE_TABLES.map((table) =>
+        // Same generated-types gap as exportMyData's `from` helper above --
+        // this list is the narrow one, but the cast keeps the loop uniform.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from(table) as any).delete().eq("user_id", userId),
       ),

@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
 
@@ -32,7 +34,18 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: supabaseAdminFrom, auth: { admin: { deleteUser } } },
 }));
 
-const { exportMyData, deleteMyAccount } = asTestFns(await import("./account.functions"));
+const accountModule = await import("./account.functions");
+// asTestFns only accepts a map of server fns, so hand it just those two --
+// the module also exports the plain table constants the coverage guard reads.
+const { exportMyData, deleteMyAccount } = asTestFns({
+  exportMyData: accountModule.exportMyData,
+  deleteMyAccount: accountModule.deleteMyAccount,
+});
+const { OTHER_OWNED_EXPORT_TABLES } = accountModule;
+// Widened from the readonly literal tuples so they can be searched with the
+// arbitrary table names scraped out of the migrations.
+const exportTables: readonly string[] = accountModule.USER_ID_EXPORT_TABLES;
+const deleteTables: readonly string[] = accountModule.USER_DELETE_TABLES;
 
 const USER_ID = "user-1";
 
@@ -108,5 +121,74 @@ describe("deleteMyAccount", () => {
     await expect(
       deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } }),
     ).rejects.toThrow("auth service down");
+  });
+});
+
+// --- GDPR export coverage guard -------------------------------------------
+// This list has silently drifted three times now (see account.functions.ts's
+// own header comment): "achievements" vs "user_achievements", then
+// language_progress/ai_rate_limits, then the whole gamification + push batch.
+// Each time the symptom was the same -- a GDPR data-portability export that
+// quietly returned incomplete data, with nothing failing. This test reads the
+// migrations and fails the build instead.
+//
+// Assumption, verified when written: no migration adds a `user_id` column via
+// ALTER TABLE, and none drops a table, so scanning CREATE TABLE bodies sees
+// every user-scoped table. Re-check that if this ever starts under-reporting.
+describe("GDPR export table coverage", () => {
+  const migrationsDir = path.resolve(import.meta.dirname, "../../supabase/migrations");
+  const sql = readdirSync(migrationsDir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()
+    .map((f) => readFileSync(path.join(migrationsDir, f), "utf8"))
+    .join("\n");
+
+  const createTableBlocks = [
+    ...sql.matchAll(
+      /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z_]+)\s*\(([\s\S]*?)\n\s*\)\s*;/gi,
+    ),
+  ].map(([, table, body]) => ({ table, body }));
+
+  it("finds the migrations (guards against a silently-empty scan)", () => {
+    expect(createTableBlocks.length).toBeGreaterThan(20);
+  });
+
+  it("exports every table that has a user_id column", () => {
+    const withUserId = createTableBlocks
+      .filter(({ body }) => /^\s*user_id\s+uuid/im.test(body))
+      .map(({ table }) => table);
+
+    const missing = withUserId.filter((t) => !exportTables.includes(t));
+    expect(missing).toEqual([]);
+  });
+
+  it("exports every table that references auth.users by some other column", () => {
+    const covered = new Set<string>([
+      ...exportTables,
+      ...OTHER_OWNED_EXPORT_TABLES.map((t) => t.table),
+      // "profiles" is exported too, just keyed by `id` rather than
+      // `user_id`, so it takes its own select below.
+      "profiles",
+      // "teams" is shared group data, not personal data: its only link is
+      // `created_by ... ON DELETE SET NULL`, i.e. a team deliberately
+      // outlives the account that made it.
+      "teams",
+    ]);
+    const referencing = createTableBlocks
+      .filter(({ body }) => /references\s+auth\.users/i.test(body))
+      .map(({ table }) => table);
+
+    const missing = referencing.filter((t) => !covered.has(t));
+    expect(missing).toEqual([]);
+  });
+
+  it("only tries to delete rows the caller's own RLS role can delete", () => {
+    // deleteMyAccount issues DELETEs as the user, not service_role. Every
+    // other user-scoped table is cleaned up by ON DELETE CASCADE from
+    // auth.users when deleteUser() runs, so widening this list would only
+    // add silently-failing requests.
+    for (const table of deleteTables) {
+      expect(exportTables).toContain(table);
+    }
   });
 });
