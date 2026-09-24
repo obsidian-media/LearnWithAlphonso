@@ -234,4 +234,142 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
   });
+
+  it("has no duplicate prompt text across different packs", () => {
+    // spec docs/superpowers/specs/2026-09-24-french-content-audit-design.md
+    // section 6.3 item 3: the same sentence in two packs yields two ids that a
+    // learner experiences as a repeat. Trailing "___" is stripped before
+    // comparing -- the same pack line can compile to an mc question (no
+    // suffix) in one context and a fill question (" ___" appended by
+    // bank-engine.ts) in another, and those must still be recognized as the
+    // same underlying prompt.
+    const byPrompt = new Map<string, { key: string; packId: string; answer: string }[]>();
+    for (const { lesson, question } of allQuestions(units)) {
+      const packId = question.id.replace(/q\d+$/, "");
+      const norm = question.prompt
+        .trim()
+        .replace(/\s*___\s*$/, "")
+        .toLowerCase();
+      if (!byPrompt.has(norm)) byPrompt.set(norm, []);
+      const anyQ = question as unknown as { choices?: string[]; answer: unknown };
+      const answer = Array.isArray(anyQ.choices)
+        ? anyQ.choices[anyQ.answer as number]
+        : String(anyQ.answer);
+      byPrompt
+        .get(norm)!
+        .push({ key: `${lesson.id}:${question.id}`, packId, answer: String(answer) });
+    }
+    const crossPackDupes: string[] = [];
+    for (const [prompt, group] of byPrompt) {
+      const packs = new Set(group.map((g) => g.packId));
+      if (packs.size > 1) {
+        crossPackDupes.push(
+          `"${prompt}" -> ${group.map((g) => `${g.key}(${g.answer})`).join(", ")}`,
+        );
+      }
+    }
+    if (name === "fr") {
+      // French was fully audited and fixed (french-content-audit-log.md) --
+      // hold it at zero so a future content addition can't silently
+      // reintroduce a duplicate.
+      expect(crossPackDupes, crossPackDupes.join("\n")).toEqual([]);
+    } else {
+      // English/Spanish were not audited this session (spec section 11) --
+      // report-only so this test doesn't start gating content nobody has
+      // reviewed for false positives.
+      if (crossPackDupes.length > 0) {
+        console.log(
+          `${name}: ${crossPackDupes.length} cross-pack duplicate prompt groups (not gated):`,
+        );
+        console.log(crossPackDupes.join("\n"));
+      }
+    }
+  });
+
+  it("has no mojibake or replacement characters in any question text", () => {
+    const offenders: string[] = [];
+    for (const { lesson, question } of allQuestions(units)) {
+      const anyQ = question as unknown as {
+        prompt: string;
+        explanation?: string;
+        choices?: string[];
+        bank?: string[];
+      };
+      const texts = [
+        anyQ.prompt,
+        anyQ.explanation ?? "",
+        ...(anyQ.choices ?? []),
+        ...(anyQ.bank ?? []),
+      ];
+      for (const t of texts) {
+        if (t.includes("�")) {
+          offenders.push(`${lesson.id}:${question.id}: replacement char (U+FFFD) in "${t}"`);
+        }
+        // A UTF-8 byte sequence re-decoded as Latin-1 turns e.g. "é" into
+        // "Ã©" -- this pattern is never legitimate content in any of the
+        // three courses.
+        if (/Ã[\x80-\xBF]/.test(t)) {
+          offenders.push(`${lesson.id}:${question.id}: mojibake pattern "Ã." in "${t}"`);
+        }
+      }
+    }
+    expect(offenders, offenders.join("\n")).toEqual([]);
+  });
+
+  if (name === "fr") {
+    it("French: every known accented/typographic character still appears somewhere in the bank", () => {
+      // Verified 2026-09-24 by scanning lesson-bank-fr.ts source directly: 18
+      // distinct non-ASCII characters. This is a floor, not a per-question
+      // check -- it catches a whole character class silently disappearing
+      // (e.g. an export step stripping diacritics), which the mojibake check
+      // above cannot see since a missing character isn't a corrupted one.
+      const expectedChars = [
+        "À",
+        "Ç",
+        "Ê",
+        "à",
+        "â",
+        "ç",
+        "è",
+        "é",
+        "ê",
+        "ë",
+        "î",
+        "ô",
+        "ù",
+        "û",
+        "œ",
+        "–",
+        "—",
+        "…",
+      ];
+      const questionText = allQuestions(units)
+        .map(({ question }) => {
+          const anyQ = question as unknown as {
+            prompt: string;
+            explanation?: string;
+            choices?: string[];
+            bank?: string[];
+          };
+          return [
+            anyQ.prompt,
+            anyQ.explanation ?? "",
+            ...(anyQ.choices ?? []),
+            ...(anyQ.bank ?? []),
+          ].join(" ");
+        })
+        .join(" ");
+      // Ê/– /—/… live mostly in pack titles/subtitles/notes (compiled onto
+      // Unit/Lesson, not Question), not in prompt/answer/choice text -- scan
+      // those too so this floor reflects the bank's real character set.
+      const unitText = units
+        .map((u) =>
+          [u.title, u.description, ...u.lessons.flatMap((l) => [l.title, l.subtitle])].join(" "),
+        )
+        .join(" ");
+      const allText = questionText + " " + unitText;
+      const missing = expectedChars.filter((c) => !allText.includes(c));
+      expect(missing, `missing characters: ${missing.join(" ")}`).toEqual([]);
+    });
+  }
 });

@@ -28,7 +28,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp4",
     level: "A2",
-    prompt: "Hier, je ___ (aller) au marché.",
+    prompt: "Hier, je ___ (to go) au marché.",
     choices: ["vais", "suis allé", "aller", "irai"],
     answer: 1,
   },
@@ -128,7 +128,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp2b",
     level: "A1",
-    prompt: 'Choisissez le bon article pour "chat":',
+    prompt: 'Choisissez l\'article correct pour "chat":',
     choices: ["la", "le", "les", "l'"],
     answer: 1,
   },

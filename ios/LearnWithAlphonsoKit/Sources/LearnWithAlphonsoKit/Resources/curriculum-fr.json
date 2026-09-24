@@ -3066,7 +3066,7 @@
             {
               "id": "fra1p9q7",
               "type": "mc",
-              "prompt": "The French word for \"chicken\" is…",
+              "prompt": "The French word for \"hen (chicken)\" is…",
               "choices": [
                 "la poule",
                 "le chien",
@@ -3074,7 +3074,7 @@
                 "l'éléphant"
               ],
               "answer": 0,
-              "explanation": "chicken → la poule. Everyday animals, pets and wildlife."
+              "explanation": "hen (chicken) → la poule. Everyday animals, pets and wildlife."
             },
             {
               "id": "fra1p9q8",
@@ -3363,7 +3363,7 @@
             {
               "id": "fra1p10q2",
               "type": "fill",
-              "prompt": "The French word for \"teacher\" is… ___",
+              "prompt": "The French word for \"teacher (profession)\" is… ___",
               "bank": [
                 "le soldat",
                 "le professeur",
@@ -3371,7 +3371,7 @@
                 "le dentiste"
               ],
               "answer": "le professeur",
-              "explanation": "teacher → le professeur. Common jobs and professions."
+              "explanation": "teacher (profession) → le professeur. Common jobs and professions."
             },
             {
               "id": "fra1p10q3",
@@ -5009,7 +5009,7 @@
             {
               "id": "fra1p14q14",
               "type": "mc",
-              "prompt": "The French word for \"to buy\" is…",
+              "prompt": "The French word for \"to buy (shopping)\" is…",
               "choices": [
                 "l'argent liquide",
                 "la monnaie",
@@ -5017,7 +5017,7 @@
                 "la réduction"
               ],
               "answer": 2,
-              "explanation": "to buy → acheter. Everyday shopping and money vocabulary."
+              "explanation": "to buy (shopping) → acheter. Everyday shopping and money vocabulary."
             }
           ]
         },
@@ -5029,7 +5029,7 @@
             {
               "id": "fra1p14q15",
               "type": "fill",
-              "prompt": "The French word for \"to sell\" is… ___",
+              "prompt": "The French word for \"to sell (shopping)\" is… ___",
               "bank": [
                 "vendre",
                 "le supermarché",
@@ -5037,7 +5037,7 @@
                 "coûter"
               ],
               "answer": "vendre",
-              "explanation": "to sell → vendre. Everyday shopping and money vocabulary."
+              "explanation": "to sell (shopping) → vendre. Everyday shopping and money vocabulary."
             },
             {
               "id": "fra1p14q16",
@@ -5195,7 +5195,7 @@
             {
               "id": "fra1p15q1",
               "type": "fill",
-              "prompt": "The French word for \"waiter\" is… ___",
+              "prompt": "The French word for \"waiter (in a restaurant)\" is… ___",
               "bank": [
                 "la cuillère",
                 "le serveur",
@@ -5203,7 +5203,7 @@
                 "j'ai soif"
               ],
               "answer": "le serveur",
-              "explanation": "waiter → le serveur. Restaurant vocabulary and useful phrases."
+              "explanation": "waiter (in a restaurant) → le serveur. Restaurant vocabulary and useful phrases."
             },
             {
               "id": "fra1p15q2",
@@ -5221,7 +5221,7 @@
             {
               "id": "fra1p15q3",
               "type": "fill",
-              "prompt": "The French word for \"table\" is… ___",
+              "prompt": "The French word for \"table (restaurant)\" is… ___",
               "bank": [
                 "la fourchette",
                 "la table",
@@ -5229,7 +5229,7 @@
                 "l'allergie"
               ],
               "answer": "la table",
-              "explanation": "table → la table. Restaurant vocabulary and useful phrases."
+              "explanation": "table (restaurant) → la table. Restaurant vocabulary and useful phrases."
             },
             {
               "id": "fra1p15q4",
@@ -5649,7 +5649,7 @@
             {
               "id": "fra1p16q7",
               "type": "mc",
-              "prompt": "The French word for \"chair\" is…",
+              "prompt": "The French word for \"chair (classroom)\" is…",
               "choices": [
                 "la salle de classe",
                 "le papier",
@@ -5657,7 +5657,7 @@
                 "le livre"
               ],
               "answer": 2,
-              "explanation": "chair → la chaise. Everyday classroom and school vocabulary."
+              "explanation": "chair (classroom) → la chaise. Everyday classroom and school vocabulary."
             },
             {
               "id": "fra1p16q8",
@@ -6289,7 +6289,7 @@
             {
               "id": "fra1p18q0",
               "type": "fill",
-              "prompt": "The French word for \"to read\" is… ___",
+              "prompt": "The French word for \"to read (for pleasure)\" is… ___",
               "bank": [
                 "lire",
                 "le camping",
@@ -6297,7 +6297,7 @@
                 "le cinéma"
               ],
               "answer": "lire",
-              "explanation": "to read → lire. Common hobbies and leisure vocabulary."
+              "explanation": "to read (for pleasure) → lire. Common hobbies and leisure vocabulary."
             },
             {
               "id": "fra1p18q1",
@@ -6374,7 +6374,7 @@
             {
               "id": "fra1p18q6",
               "type": "fill",
-              "prompt": "The French word for \"to cook\" is… ___",
+              "prompt": "The French word for \"to cook (a meal)\" is… ___",
               "bank": [
                 "cuisiner",
                 "le théâtre",
@@ -6382,7 +6382,7 @@
                 "voyager"
               ],
               "answer": "cuisiner",
-              "explanation": "to cook → cuisiner. Common hobbies and leisure vocabulary."
+              "explanation": "to cook (a meal) → cuisiner. Common hobbies and leisure vocabulary."
             },
             {
               "id": "fra1p18q7",
@@ -7243,7 +7243,7 @@
             {
               "id": "fra1p20q15",
               "type": "mc",
-              "prompt": "The French word for \"driver\" is…",
+              "prompt": "The French word for \"driver (of a vehicle)\" is…",
               "choices": [
                 "le conducteur",
                 "la circulation",
@@ -7251,7 +7251,7 @@
                 "le camion"
               ],
               "answer": 0,
-              "explanation": "driver → le conducteur. Transport and travel vocabulary."
+              "explanation": "driver (of a vehicle) → le conducteur. Transport and travel vocabulary."
             },
             {
               "id": "fra1p20q16",
@@ -7295,7 +7295,7 @@
             {
               "id": "fra1p20q19",
               "type": "mc",
-              "prompt": "The French word for \"to travel\" is…",
+              "prompt": "The French word for \"to travel (on a trip)\" is…",
               "choices": [
                 "voyager",
                 "la voiture",
@@ -7303,7 +7303,7 @@
                 "le quai"
               ],
               "answer": 0,
-              "explanation": "to travel → voyager. Transport and travel vocabulary."
+              "explanation": "to travel (on a trip) → voyager. Transport and travel vocabulary."
             }
           ]
         },
@@ -7948,7 +7948,7 @@
             {
               "id": "fra2p2q13",
               "type": "fill",
-              "prompt": "The French word for \"fish\" is… ___",
+              "prompt": "The French word for \"fish (to eat)\" is… ___",
               "bank": [
                 "le sel",
                 "le poisson",
@@ -7956,7 +7956,7 @@
                 "le vin"
               ],
               "answer": "le poisson",
-              "explanation": "fish → le poisson. Everyday food and drink vocabulary."
+              "explanation": "fish (to eat) → le poisson. Everyday food and drink vocabulary."
             },
             {
               "id": "fra2p2q14",
@@ -10972,7 +10972,7 @@
             {
               "id": "fra2p10q18",
               "type": "fill",
-              "prompt": "Avec ___, je viendrai avec grand plaisir.",
+              "prompt": "Avec ___, je viendrai volontiers.",
               "bank": [
                 "jour",
                 "toi",
@@ -14064,7 +14064,7 @@
             {
               "id": "fra2p19q2",
               "type": "fill",
-              "prompt": "The French word for \"colleague\" is… ___",
+              "prompt": "The French word for \"colleague (at work)\" is… ___",
               "bank": [
                 "le bureau",
                 "le collègue",
@@ -14072,7 +14072,7 @@
                 "l'équipe"
               ],
               "answer": "le collègue",
-              "explanation": "colleague → le collègue. Everyday office and workplace vocabulary."
+              "explanation": "colleague (at work) → le collègue. Everyday office and workplace vocabulary."
             },
             {
               "id": "fra2p19q3",
@@ -14123,7 +14123,7 @@
             {
               "id": "fra2p19q6",
               "type": "fill",
-              "prompt": "The French word for \"schedule\" is… ___",
+              "prompt": "The French word for \"schedule (work hours)\" is… ___",
               "bank": [
                 "l'ordinateur",
                 "la promotion",
@@ -14131,7 +14131,7 @@
                 "l'horaire"
               ],
               "answer": "l'horaire",
-              "explanation": "schedule → l'horaire. Everyday office and workplace vocabulary."
+              "explanation": "schedule (work hours) → l'horaire. Everyday office and workplace vocabulary."
             },
             {
               "id": "fra2p19q7",
@@ -14162,7 +14162,7 @@
             {
               "id": "fra2p19q9",
               "type": "mc",
-              "prompt": "The French word for \"email\" is…",
+              "prompt": "The French word for \"email (at work)\" is…",
               "choices": [
                 "l'imprimante",
                 "les vacances",
@@ -14170,7 +14170,7 @@
                 "l'employé"
               ],
               "answer": 2,
-              "explanation": "email → le courriel. Everyday office and workplace vocabulary."
+              "explanation": "email (at work) → le courriel. Everyday office and workplace vocabulary."
             }
           ]
         },
@@ -14293,7 +14293,7 @@
             {
               "id": "fra2p19q18",
               "type": "mc",
-              "prompt": "The French word for \"team\" is…",
+              "prompt": "The French word for \"team (at work)\" is…",
               "choices": [
                 "l'imprimante",
                 "la promotion",
@@ -14301,7 +14301,7 @@
                 "l'employé"
               ],
               "answer": 2,
-              "explanation": "team → l'équipe. Everyday office and workplace vocabulary."
+              "explanation": "team (at work) → l'équipe. Everyday office and workplace vocabulary."
             },
             {
               "id": "fra2p19q19",
@@ -14339,7 +14339,7 @@
             {
               "id": "fra2p19q21",
               "type": "mc",
-              "prompt": "The French word for \"computer\" is…",
+              "prompt": "The French word for \"computer (at the office)\" is…",
               "choices": [
                 "le CV",
                 "l'horaire",
@@ -14347,12 +14347,12 @@
                 "la présentation"
               ],
               "answer": 2,
-              "explanation": "computer → l'ordinateur. Everyday office and workplace vocabulary."
+              "explanation": "computer (at the office) → l'ordinateur. Everyday office and workplace vocabulary."
             },
             {
               "id": "fra2p19q22",
               "type": "fill",
-              "prompt": "The French word for \"printer\" is… ___",
+              "prompt": "The French word for \"printer (at the office)\" is… ___",
               "bank": [
                 "le bureau",
                 "la date limite",
@@ -14360,7 +14360,7 @@
                 "l'imprimante"
               ],
               "answer": "l'imprimante",
-              "explanation": "printer → l'imprimante. Everyday office and workplace vocabulary."
+              "explanation": "printer (at the office) → l'imprimante. Everyday office and workplace vocabulary."
             },
             {
               "id": "fra2p19q23",
@@ -14518,7 +14518,7 @@
             {
               "id": "fra2p20q8",
               "type": "fill",
-              "prompt": "The French word for \"traffic light\" is… ___",
+              "prompt": "The French word for \"traffic light (in the city)\" is… ___",
               "bank": [
                 "le feu",
                 "la rue",
@@ -14526,7 +14526,7 @@
                 "la banlieue"
               ],
               "answer": "le feu",
-              "explanation": "traffic light → le feu. City and public-transport vocabulary."
+              "explanation": "traffic light (in the city) → le feu. City and public-transport vocabulary."
             },
             {
               "id": "fra2p20q9",
@@ -14590,7 +14590,7 @@
             {
               "id": "fra2p20q13",
               "type": "fill",
-              "prompt": "The French word for \"map\" is… ___",
+              "prompt": "The French word for \"map (street plan)\" is… ___",
               "bank": [
                 "la station de métro",
                 "la rue",
@@ -14598,7 +14598,7 @@
                 "le plan"
               ],
               "answer": "le plan",
-              "explanation": "map → le plan. City and public-transport vocabulary."
+              "explanation": "map (street plan) → le plan. City and public-transport vocabulary."
             },
             {
               "id": "fra2p20q14",
@@ -14662,7 +14662,7 @@
             {
               "id": "fra2p20q18",
               "type": "mc",
-              "prompt": "The French word for \"market\" is…",
+              "prompt": "The French word for \"market (marketplace)\" is…",
               "choices": [
                 "le piéton",
                 "la mairie",
@@ -14670,7 +14670,7 @@
                 "le pont"
               ],
               "answer": 2,
-              "explanation": "market → le marché. City and public-transport vocabulary."
+              "explanation": "market (marketplace) → le marché. City and public-transport vocabulary."
             },
             {
               "id": "fra2p20q19",
@@ -14861,7 +14861,7 @@
             {
               "id": "frb1p1q6",
               "type": "mc",
-              "prompt": "Je ___ (aller) au marché.",
+              "prompt": "Hier, je ___ (aller) au marché.",
               "choices": [
                 "suis allé",
                 "avez choisi",
@@ -15145,7 +15145,7 @@
             {
               "id": "frb1p2q0",
               "type": "fill",
-              "prompt": "The French word for \"happy\" is… ___",
+              "prompt": "The French word for \"happy (satisfied)\" is… ___",
               "bank": [
                 "jeune",
                 "pauvre",
@@ -15153,12 +15153,12 @@
                 "content"
               ],
               "answer": "content",
-              "explanation": "happy → content. Common descriptive adjectives (masculine form)."
+              "explanation": "happy (satisfied) → content. Common descriptive adjectives (masculine form)."
             },
             {
               "id": "frb1p2q1",
               "type": "mc",
-              "prompt": "The French word for \"sad\" is…",
+              "prompt": "The French word for \"sad (feeling)\" is…",
               "choices": [
                 "triste",
                 "paresseux",
@@ -15166,7 +15166,7 @@
                 "vieux"
               ],
               "answer": 0,
-              "explanation": "sad → triste. Common descriptive adjectives (masculine form)."
+              "explanation": "sad (feeling) → triste. Common descriptive adjectives (masculine form)."
             },
             {
               "id": "frb1p2q2",
@@ -17382,7 +17382,7 @@
             {
               "id": "frb1p8q2",
               "type": "fill",
-              "prompt": "Je ___ vois tous les jours (mes amis).",
+              "prompt": "Je ___ vois chaque jour (mes amis).",
               "bank": [
                 "l'",
                 "t'",
@@ -17428,7 +17428,7 @@
             {
               "id": "frb1p8q5",
               "type": "mc",
-              "prompt": "Il ___ parle souvent (à lui/elle).",
+              "prompt": "Il ___ parle souvent (à son collègue).",
               "choices": [
                 "m'",
                 "nous",
@@ -17441,7 +17441,7 @@
             {
               "id": "frb1p8q6",
               "type": "fill",
-              "prompt": "Il ___ parle souvent (à nous).",
+              "prompt": "Il ___ parle souvent (à ma sœur et moi).",
               "bank": [
                 "l'",
                 "me",
@@ -17526,7 +17526,7 @@
             {
               "id": "frb1p8q12",
               "type": "mc",
-              "prompt": "Vous ___ avez appelé (nous) hier.",
+              "prompt": "Vous ___ avez appelé (ma sœur et moi) hier.",
               "choices": [
                 "nous",
                 "l'",
@@ -17611,7 +17611,7 @@
             {
               "id": "frb1p8q18",
               "type": "mc",
-              "prompt": "Elle ___ a présenté son projet (à nous).",
+              "prompt": "Elle ___ a présenté son projet (à mes collègues et moi).",
               "choices": [
                 "les",
                 "leur",
@@ -18752,7 +18752,7 @@
             {
               "id": "frb1p11q22",
               "type": "fill",
-              "prompt": "The French word for \"screen\" is… ___",
+              "prompt": "The French word for \"screen (display)\" is… ___",
               "bank": [
                 "l'écran",
                 "la notification",
@@ -18760,7 +18760,7 @@
                 "l'application"
               ],
               "answer": "l'écran",
-              "explanation": "screen → l'écran. Internet and computing vocabulary."
+              "explanation": "screen (display) → l'écran. Internet and computing vocabulary."
             },
             {
               "id": "frb1p11q23",
@@ -19228,7 +19228,7 @@
             {
               "id": "frb1p13q4",
               "type": "fill",
-              "prompt": "The French word for \"journalist\" is… ___",
+              "prompt": "The French word for \"journalist (media)\" is… ___",
               "bank": [
                 "la diffusion",
                 "la rumeur",
@@ -19236,7 +19236,7 @@
                 "le journaliste"
               ],
               "answer": "le journaliste",
-              "explanation": "journalist → le journaliste. Media and journalism vocabulary."
+              "explanation": "journalist (media) → le journaliste. Media and journalism vocabulary."
             }
           ]
         },
@@ -19261,7 +19261,7 @@
             {
               "id": "frb1p13q6",
               "type": "fill",
-              "prompt": "The French word for \"report\" is… ___",
+              "prompt": "The French word for \"report (news)\" is… ___",
               "bank": [
                 "le reportage",
                 "le titre",
@@ -19269,12 +19269,12 @@
                 "la liberté d'expression"
               ],
               "answer": "le reportage",
-              "explanation": "report → le reportage. Media and journalism vocabulary."
+              "explanation": "report (news) → le reportage. Media and journalism vocabulary."
             },
             {
               "id": "frb1p13q7",
               "type": "mc",
-              "prompt": "The French word for \"interview\" is…",
+              "prompt": "The French word for \"interview (media)\" is…",
               "choices": [
                 "l'interview",
                 "les dernières nouvelles",
@@ -19282,7 +19282,7 @@
                 "le reportage"
               ],
               "answer": 0,
-              "explanation": "interview → l'interview. Media and journalism vocabulary."
+              "explanation": "interview (media) → l'interview. Media and journalism vocabulary."
             },
             {
               "id": "frb1p13q8",
@@ -19643,7 +19643,7 @@
             {
               "id": "frb1p14q7",
               "type": "fill",
-              "prompt": "The French word for \"exam\" is… ___",
+              "prompt": "The French word for \"exam (education system)\" is… ___",
               "bank": [
                 "l'examen",
                 "la bibliothèque",
@@ -19651,12 +19651,12 @@
                 "le diplôme"
               ],
               "answer": "l'examen",
-              "explanation": "exam → l'examen. Education vocabulary from school to university."
+              "explanation": "exam (education system) → l'examen. Education vocabulary from school to university."
             },
             {
               "id": "frb1p14q8",
               "type": "mc",
-              "prompt": "The French word for \"homework\" is…",
+              "prompt": "The French word for \"homework (education system)\" is…",
               "choices": [
                 "les devoirs",
                 "la remise des diplômes",
@@ -19664,12 +19664,12 @@
                 "la note"
               ],
               "answer": 0,
-              "explanation": "homework → les devoirs. Education vocabulary from school to university."
+              "explanation": "homework (education system) → les devoirs. Education vocabulary from school to university."
             },
             {
               "id": "frb1p14q9",
               "type": "fill",
-              "prompt": "The French word for \"teacher\" is… ___",
+              "prompt": "The French word for \"teacher (in the education system)\" is… ___",
               "bank": [
                 "le programme",
                 "la thèse",
@@ -19677,7 +19677,7 @@
                 "la matière"
               ],
               "answer": "l'enseignant",
-              "explanation": "teacher → l'enseignant. Education vocabulary from school to university."
+              "explanation": "teacher (in the education system) → l'enseignant. Education vocabulary from school to university."
             }
           ]
         },
@@ -19689,7 +19689,7 @@
             {
               "id": "frb1p14q10",
               "type": "fill",
-              "prompt": "The French word for \"student\" is… ___",
+              "prompt": "The French word for \"student (university)\" is… ___",
               "bank": [
                 "l'examen",
                 "la maternelle",
@@ -19697,12 +19697,12 @@
                 "le cours magistral"
               ],
               "answer": "l'étudiant",
-              "explanation": "student → l'étudiant. Education vocabulary from school to university."
+              "explanation": "student (university) → l'étudiant. Education vocabulary from school to university."
             },
             {
               "id": "frb1p14q11",
               "type": "mc",
-              "prompt": "The French word for \"classroom\" is…",
+              "prompt": "The French word for \"classroom (education system)\" is…",
               "choices": [
                 "le lycée",
                 "la recherche",
@@ -19710,7 +19710,7 @@
                 "les devoirs"
               ],
               "answer": 2,
-              "explanation": "classroom → la salle de classe. Education vocabulary from school to university."
+              "explanation": "classroom (education system) → la salle de classe. Education vocabulary from school to university."
             },
             {
               "id": "frb1p14q12",
@@ -19800,7 +19800,7 @@
             {
               "id": "frb1p14q18",
               "type": "fill",
-              "prompt": "The French word for \"library\" is… ___",
+              "prompt": "The French word for \"library (education system)\" is… ___",
               "bank": [
                 "la bibliothèque",
                 "le directeur",
@@ -19808,7 +19808,7 @@
                 "le cours magistral"
               ],
               "answer": "la bibliothèque",
-              "explanation": "library → la bibliothèque. Education vocabulary from school to university."
+              "explanation": "library (education system) → la bibliothèque. Education vocabulary from school to university."
             },
             {
               "id": "frb1p14q19",
@@ -20440,7 +20440,7 @@
             {
               "id": "frb1p16q11",
               "type": "mc",
-              "prompt": "The French word for \"neighbourhood\" is…",
+              "prompt": "The French word for \"neighbourhood (housing)\" is…",
               "choices": [
                 "le quartier",
                 "le préavis",
@@ -20448,7 +20448,7 @@
                 "déménager"
               ],
               "answer": 0,
-              "explanation": "neighbourhood → le quartier. Renting and housing vocabulary."
+              "explanation": "neighbourhood (housing) → le quartier. Renting and housing vocabulary."
             },
             {
               "id": "frb1p16q12",
@@ -20725,7 +20725,7 @@
             {
               "id": "frb1p17q6",
               "type": "mc",
-              "prompt": "Ils réussissent ___ finir à temps.",
+              "prompt": "Ils réussissent ___ finir dans les délais.",
               "choices": [
                 "de",
                 "à"
@@ -21723,7 +21723,7 @@
             {
               "id": "frb1p20q3",
               "type": "mc",
-              "prompt": "Pourquoi ne pas ___ (prendre) un peu de repos ?",
+              "prompt": "Pourquoi ne pas ___ (to take) un peu de repos ?",
               "choices": [
                 "essayer",
                 "suivre",
@@ -21736,7 +21736,7 @@
             {
               "id": "frb1p20q4",
               "type": "fill",
-              "prompt": "Il vaudrait mieux ___ (partir) maintenant.",
+              "prompt": "Il vaudrait mieux ___ (to leave) maintenant.",
               "bank": [
                 "partir",
                 "accepterais",
@@ -21756,7 +21756,7 @@
             {
               "id": "frb1p20q5",
               "type": "mc",
-              "prompt": "Je te conseille de ___ (rester) prudent.",
+              "prompt": "Je te conseille de ___ (to stay) prudent.",
               "choices": [
                 "rester",
                 "faire",
@@ -21769,7 +21769,7 @@
             {
               "id": "frb1p20q6",
               "type": "fill",
-              "prompt": "Tu devrais ___ (consulter) un médecin.",
+              "prompt": "Tu devrais ___ (to see) un médecin.",
               "bank": [
                 "essayer",
                 "prendre",
@@ -21782,7 +21782,7 @@
             {
               "id": "frb1p20q7",
               "type": "mc",
-              "prompt": "Ça vaudrait la peine d'___ (essayer).",
+              "prompt": "Ça vaudrait la peine d'___ (to try).",
               "choices": [
                 "dirais",
                 "devrais",
@@ -21808,7 +21808,7 @@
             {
               "id": "frb1p20q9",
               "type": "mc",
-              "prompt": "Il serait sage de ___ (faire) des économies.",
+              "prompt": "Il serait sage de ___ (to save) des économies.",
               "choices": [
                 "faire",
                 "partirais",
@@ -21828,7 +21828,7 @@
             {
               "id": "frb1p20q10",
               "type": "mc",
-              "prompt": "Tu ferais mieux de ___ (dormir) tôt ce soir.",
+              "prompt": "Tu ferais mieux de ___ (to sleep) tôt ce soir.",
               "choices": [
                 "dormir",
                 "accepterais",
@@ -21841,7 +21841,7 @@
             {
               "id": "frb1p20q11",
               "type": "fill",
-              "prompt": "Je te suggère de ___ (prendre) une pause.",
+              "prompt": "Je te suggère de ___ (to take) une pause.",
               "bank": [
                 "rester",
                 "prendre",
@@ -21867,7 +21867,7 @@
             {
               "id": "frb1p20q13",
               "type": "fill",
-              "prompt": "Il faudrait ___ (être) plus attentif.",
+              "prompt": "Il faudrait ___ (to be) plus attentif.",
               "bank": [
                 "rester",
                 "essayait",
@@ -21880,7 +21880,7 @@
             {
               "id": "frb1p20q14",
               "type": "mc",
-              "prompt": "Tu devrais vraiment ___ (lire) ce livre.",
+              "prompt": "Tu devrais vraiment ___ (to read) ce livre.",
               "choices": [
                 "lire",
                 "devrais",
@@ -21900,7 +21900,7 @@
             {
               "id": "frb1p20q15",
               "type": "fill",
-              "prompt": "Pourquoi ne pas ___ (partir) un peu plus tôt ?",
+              "prompt": "Pourquoi ne pas ___ (to leave) un peu plus tôt ?",
               "bank": [
                 "prévenir",
                 "lire",
@@ -21913,7 +21913,7 @@
             {
               "id": "frb1p20q16",
               "type": "mc",
-              "prompt": "Je te recommande de ___ (essayer) ce restaurant.",
+              "prompt": "Je te recommande de ___ (to try) ce restaurant.",
               "choices": [
                 "consulter",
                 "prendre",
@@ -21926,7 +21926,7 @@
             {
               "id": "frb1p20q17",
               "type": "fill",
-              "prompt": "Il serait préférable de ___ (attendre) demain.",
+              "prompt": "Il serait préférable de ___ (to wait until) demain.",
               "bank": [
                 "attendre",
                 "essayer",
@@ -21939,7 +21939,7 @@
             {
               "id": "frb1p20q18",
               "type": "mc",
-              "prompt": "On devrait ___ (prendre) une décision rapidement.",
+              "prompt": "On devrait ___ (to make) une décision rapidement.",
               "choices": [
                 "prendre",
                 "partirais",
@@ -21952,7 +21952,7 @@
             {
               "id": "frb1p20q19",
               "type": "fill",
-              "prompt": "Ça serait une bonne idée de ___ (faire) un plan.",
+              "prompt": "Ça serait une bonne idée de ___ (to make) un plan.",
               "bank": [
                 "essayait",
                 "pourrait",
@@ -21972,7 +21972,7 @@
             {
               "id": "frb1p20q20",
               "type": "fill",
-              "prompt": "Tu pourrais ___ (demander) à quelqu'un d'autre.",
+              "prompt": "Tu pourrais ___ (to ask) à quelqu'un d'autre.",
               "bank": [
                 "demander",
                 "essayer",
@@ -21998,7 +21998,7 @@
             {
               "id": "frb1p20q22",
               "type": "fill",
-              "prompt": "Il vaut mieux ___ (prévenir) que guérir.",
+              "prompt": "Il vaut mieux ___ (to prevent) que guérir.",
               "bank": [
                 "prévenir",
                 "essayer",
@@ -22011,7 +22011,7 @@
             {
               "id": "frb1p20q23",
               "type": "mc",
-              "prompt": "Je te conseille vivement de ___ (suivre) ce cours.",
+              "prompt": "Je te conseille vivement de ___ (to take) ce cours.",
               "choices": [
                 "être",
                 "consulter",
@@ -22024,7 +22024,7 @@
             {
               "id": "frb1p20q24",
               "type": "fill",
-              "prompt": "Tu devrais peut-être ___ (prendre) un peu de repos.",
+              "prompt": "Tu devrais peut-être ___ (to take) un peu de repos.",
               "bank": [
                 "demander",
                 "essayait",
@@ -26341,7 +26341,7 @@
             {
               "id": "frb2p12q16",
               "type": "mc",
-              "prompt": "The French word for \"recycling\" is…",
+              "prompt": "The French word for \"recycling (waste)\" is…",
               "choices": [
                 "le recyclage",
                 "les déchets plastiques",
@@ -26349,7 +26349,7 @@
                 "l'écosystème"
               ],
               "answer": 0,
-              "explanation": "recycling → le recyclage. Climate and environmental vocabulary."
+              "explanation": "recycling (waste) → le recyclage. Climate and environmental vocabulary."
             },
             {
               "id": "frb2p12q17",
@@ -26400,7 +26400,7 @@
             {
               "id": "frb2p12q20",
               "type": "fill",
-              "prompt": "The French word for \"pollution\" is… ___",
+              "prompt": "The French word for \"pollution (climate)\" is… ___",
               "bank": [
                 "le recyclage",
                 "la pollution",
@@ -26408,7 +26408,7 @@
                 "l'éolienne"
               ],
               "answer": "la pollution",
-              "explanation": "pollution → la pollution. Climate and environmental vocabulary."
+              "explanation": "pollution (climate) → la pollution. Climate and environmental vocabulary."
             },
             {
               "id": "frb2p12q21",
@@ -26481,7 +26481,7 @@
             {
               "id": "frb2p13q0",
               "type": "mc",
-              "prompt": "The French word for \"law\" is…",
+              "prompt": "The French word for \"law (legal)\" is…",
               "choices": [
                 "les droits",
                 "le jury",
@@ -26489,7 +26489,7 @@
                 "l'arrestation"
               ],
               "answer": 2,
-              "explanation": "law → la loi. Law and justice vocabulary."
+              "explanation": "law (legal) → la loi. Law and justice vocabulary."
             },
             {
               "id": "frb2p13q1",
@@ -26520,7 +26520,7 @@
             {
               "id": "frb2p13q3",
               "type": "fill",
-              "prompt": "The French word for \"lawyer\" is… ___",
+              "prompt": "The French word for \"lawyer (in court)\" is… ___",
               "bank": [
                 "l'avocat",
                 "la loi",
@@ -26528,7 +26528,7 @@
                 "l'appel"
               ],
               "answer": "l'avocat",
-              "explanation": "lawyer → l'avocat. Law and justice vocabulary."
+              "explanation": "lawyer (in court) → l'avocat. Law and justice vocabulary."
             },
             {
               "id": "frb2p13q4",
@@ -26664,7 +26664,7 @@
             {
               "id": "frb2p13q13",
               "type": "mc",
-              "prompt": "The French word for \"contract\" is…",
+              "prompt": "The French word for \"contract (legal)\" is…",
               "choices": [
                 "le crime",
                 "la victime",
@@ -26672,12 +26672,12 @@
                 "le procès"
               ],
               "answer": 2,
-              "explanation": "contract → le contrat. Law and justice vocabulary."
+              "explanation": "contract (legal) → le contrat. Law and justice vocabulary."
             },
             {
               "id": "frb2p13q14",
               "type": "fill",
-              "prompt": "The French word for \"rights\" is… ___",
+              "prompt": "The French word for \"rights (legal)\" is… ___",
               "bank": [
                 "les droits",
                 "le procès",
@@ -26685,7 +26685,7 @@
                 "le crime"
               ],
               "answer": "les droits",
-              "explanation": "rights → les droits. Law and justice vocabulary."
+              "explanation": "rights (legal) → les droits. Law and justice vocabulary."
             }
           ]
         },
@@ -26697,7 +26697,7 @@
             {
               "id": "frb2p13q15",
               "type": "mc",
-              "prompt": "The French word for \"justice\" is…",
+              "prompt": "The French word for \"justice (legal)\" is…",
               "choices": [
                 "la justice",
                 "innocent",
@@ -26705,7 +26705,7 @@
                 "le témoin"
               ],
               "answer": 0,
-              "explanation": "justice → la justice. Law and justice vocabulary."
+              "explanation": "justice (legal) → la justice. Law and justice vocabulary."
             },
             {
               "id": "frb2p13q16",
@@ -26876,7 +26876,7 @@
             {
               "id": "frb2p14q2",
               "type": "fill",
-              "prompt": "The French word for \"market\" is… ___",
+              "prompt": "The French word for \"market (economic)\" is… ___",
               "bank": [
                 "le marché",
                 "l'épargne",
@@ -26884,7 +26884,7 @@
                 "la dette"
               ],
               "answer": "le marché",
-              "explanation": "market → le marché. Economics and finance vocabulary."
+              "explanation": "market (economic) → le marché. Economics and finance vocabulary."
             },
             {
               "id": "frb2p14q3",
@@ -26961,7 +26961,7 @@
             {
               "id": "frb2p14q8",
               "type": "fill",
-              "prompt": "The French word for \"tax\" is… ___",
+              "prompt": "The French word for \"tax (on income)\" is… ___",
               "bank": [
                 "l'impôt",
                 "le PIB",
@@ -26969,7 +26969,7 @@
                 "la devise"
               ],
               "answer": "l'impôt",
-              "explanation": "tax → l'impôt. Economics and finance vocabulary."
+              "explanation": "tax (on income) → l'impôt. Economics and finance vocabulary."
             },
             {
               "id": "frb2p14q9",
@@ -27105,7 +27105,7 @@
             {
               "id": "frb2p14q18",
               "type": "mc",
-              "prompt": "The French word for \"salary\" is…",
+              "prompt": "The French word for \"salary (wages)\" is…",
               "choices": [
                 "le salaire",
                 "l'économie",
@@ -27113,7 +27113,7 @@
                 "la banque"
               ],
               "answer": 0,
-              "explanation": "salary → le salaire. Economics and finance vocabulary."
+              "explanation": "salary (wages) → le salaire. Economics and finance vocabulary."
             },
             {
               "id": "frb2p14q19",
@@ -27291,7 +27291,7 @@
             {
               "id": "frb2p15q5",
               "type": "fill",
-              "prompt": "The French word for \"artist\" is… ___",
+              "prompt": "The French word for \"artist (performing arts)\" is… ___",
               "bank": [
                 "le musée",
                 "la galerie",
@@ -27299,7 +27299,7 @@
                 "l'artiste"
               ],
               "answer": "l'artiste",
-              "explanation": "artist → l'artiste. Arts and culture vocabulary."
+              "explanation": "artist (performing arts) → l'artiste. Arts and culture vocabulary."
             },
             {
               "id": "frb2p15q6",
@@ -27363,7 +27363,7 @@
             {
               "id": "frb2p15q10",
               "type": "fill",
-              "prompt": "The French word for \"theater\" is… ___",
+              "prompt": "The French word for \"theater (performing arts)\" is… ___",
               "bank": [
                 "le théâtre",
                 "la sculpture",
@@ -27371,7 +27371,7 @@
                 "le festival"
               ],
               "answer": "le théâtre",
-              "explanation": "theater → le théâtre. Arts and culture vocabulary."
+              "explanation": "theater (performing arts) → le théâtre. Arts and culture vocabulary."
             },
             {
               "id": "frb2p15q11",
@@ -27389,7 +27389,7 @@
             {
               "id": "frb2p15q12",
               "type": "fill",
-              "prompt": "The French word for \"cinema\" is… ___",
+              "prompt": "The French word for \"cinema (arts)\" is… ___",
               "bank": [
                 "la littérature",
                 "le patrimoine",
@@ -27397,7 +27397,7 @@
                 "le cinéma"
               ],
               "answer": "le cinéma",
-              "explanation": "cinema → le cinéma. Arts and culture vocabulary."
+              "explanation": "cinema (arts) → le cinéma. Arts and culture vocabulary."
             },
             {
               "id": "frb2p15q13",
@@ -27415,7 +27415,7 @@
             {
               "id": "frb2p15q14",
               "type": "fill",
-              "prompt": "The French word for \"music\" is… ___",
+              "prompt": "The French word for \"music (as an art form)\" is… ___",
               "bank": [
                 "la représentation",
                 "l'artiste",
@@ -27423,7 +27423,7 @@
                 "la danse"
               ],
               "answer": "la musique",
-              "explanation": "music → la musique. Arts and culture vocabulary."
+              "explanation": "music (as an art form) → la musique. Arts and culture vocabulary."
             }
           ]
         },
@@ -28301,7 +28301,7 @@
             {
               "id": "frb2p18q0",
               "type": "fill",
-              "prompt": "Je te ___ donne (le livre).",
+              "prompt": "Je te ___ donne (ce livre).",
               "bank": [
                 "rendrai",
                 "le",
@@ -28327,7 +28327,7 @@
             {
               "id": "frb2p18q2",
               "type": "fill",
-              "prompt": "Nous vous ___ offrons (les fleurs).",
+              "prompt": "Nous vous ___ offrons (ces fleurs).",
               "bank": [
                 "prêtera",
                 "les",
@@ -28353,7 +28353,7 @@
             {
               "id": "frb2p18q4",
               "type": "fill",
-              "prompt": "Je le ___ ai déjà dit (à lui).",
+              "prompt": "Je le ___ ai déjà dit (à mon collègue).",
               "bank": [
                 "l'",
                 "lui",
@@ -28670,7 +28670,7 @@
             {
               "id": "frb2p19q0",
               "type": "mc",
-              "prompt": "Je fais ___ (réparer) ma voiture.",
+              "prompt": "Je fais ___ (to repair) ma voiture.",
               "choices": [
                 "réparer",
                 "rire",
@@ -28683,7 +28683,7 @@
             {
               "id": "frb2p19q1",
               "type": "fill",
-              "prompt": "Elle fait ___ (construire) une maison.",
+              "prompt": "Elle fait ___ (to build) une maison.",
               "bank": [
                 "couper",
                 "rire",
@@ -28696,7 +28696,7 @@
             {
               "id": "frb2p19q2",
               "type": "mc",
-              "prompt": "Il fait ___ (nettoyer) son costume.",
+              "prompt": "Il fait ___ (to clean) son costume.",
               "choices": [
                 "construire",
                 "visiter",
@@ -28709,7 +28709,7 @@
             {
               "id": "frb2p19q3",
               "type": "fill",
-              "prompt": "Nous faisons ___ (livrer) les meubles.",
+              "prompt": "Nous faisons ___ (to deliver) les meubles.",
               "bank": [
                 "livrer",
                 "réparer",
@@ -28722,7 +28722,7 @@
             {
               "id": "frb2p19q4",
               "type": "mc",
-              "prompt": "Vous faites ___ (couper) vos cheveux.",
+              "prompt": "Vous faites ___ (to cut) vos cheveux.",
               "choices": [
                 "couper",
                 "réparer",
@@ -28742,7 +28742,7 @@
             {
               "id": "frb2p19q5",
               "type": "fill",
-              "prompt": "Ils font ___ (peindre) leur maison.",
+              "prompt": "Ils font ___ (to paint) leur maison.",
               "bank": [
                 "attendre",
                 "réviser",
@@ -28755,7 +28755,7 @@
             {
               "id": "frb2p19q6",
               "type": "mc",
-              "prompt": "Je me fais ___ (couper) les cheveux.",
+              "prompt": "Je me fais ___ (to cut) les cheveux.",
               "choices": [
                 "payer",
                 "imprimer",
@@ -28768,7 +28768,7 @@
             {
               "id": "frb2p19q7",
               "type": "fill",
-              "prompt": "Elle se fait ___ (faire) une manucure.",
+              "prompt": "Elle se fait ___ (to have done) une manucure.",
               "bank": [
                 "savoir",
                 "payer",
@@ -28781,7 +28781,7 @@
             {
               "id": "frb2p19q8",
               "type": "mc",
-              "prompt": "Il fait ___ (installer) une nouvelle cuisine.",
+              "prompt": "Il fait ___ (to install) une nouvelle cuisine.",
               "choices": [
                 "installer",
                 "réparer",
@@ -28794,7 +28794,7 @@
             {
               "id": "frb2p19q9",
               "type": "fill",
-              "prompt": "Nous faisons ___ (traduire) ce document.",
+              "prompt": "Nous faisons ___ (to translate) ce document.",
               "bank": [
                 "savoir",
                 "livrer",
@@ -28814,7 +28814,7 @@
             {
               "id": "frb2p19q10",
               "type": "fill",
-              "prompt": "Vous faites ___ (réviser) votre voiture.",
+              "prompt": "Vous faites ___ (to service) votre voiture.",
               "bank": [
                 "réparer",
                 "venir",
@@ -28827,7 +28827,7 @@
             {
               "id": "frb2p19q11",
               "type": "mc",
-              "prompt": "Ils font ___ (livrer) le colis.",
+              "prompt": "Ils font ___ (to deliver) le colis.",
               "choices": [
                 "rire",
                 "envoyer",
@@ -28840,7 +28840,7 @@
             {
               "id": "frb2p19q12",
               "type": "fill",
-              "prompt": "Je fais ___ (faire) mes devoirs par mon frère.",
+              "prompt": "Je fais ___ (to have done) mes devoirs par mon frère.",
               "bank": [
                 "rire",
                 "faire",
@@ -28853,7 +28853,7 @@
             {
               "id": "frb2p19q13",
               "type": "mc",
-              "prompt": "Elle fait ___ (envoyer) un cadeau à sa mère.",
+              "prompt": "Elle fait ___ (to send) un cadeau à sa mère.",
               "choices": [
                 "envoyer",
                 "installer",
@@ -28866,7 +28866,7 @@
             {
               "id": "frb2p19q14",
               "type": "fill",
-              "prompt": "Il fait ___ (savoir) la nouvelle à tout le monde.",
+              "prompt": "Il fait ___ (to let know) la nouvelle à tout le monde.",
               "bank": [
                 "livrer",
                 "comprendre",
@@ -28886,7 +28886,7 @@
             {
               "id": "frb2p19q15",
               "type": "mc",
-              "prompt": "Nous faisons ___ (réparer) le toit.",
+              "prompt": "Nous faisons ___ (to repair) le toit.",
               "choices": [
                 "savoir",
                 "faire",
@@ -28899,7 +28899,7 @@
             {
               "id": "frb2p19q16",
               "type": "fill",
-              "prompt": "Vous faites ___ (imprimer) les documents.",
+              "prompt": "Vous faites ___ (to print) les documents.",
               "bank": [
                 "payer",
                 "imprimer",
@@ -28912,7 +28912,7 @@
             {
               "id": "frb2p19q17",
               "type": "mc",
-              "prompt": "Ils font ___ (agrandir) leur maison.",
+              "prompt": "Ils font ___ (to enlarge) leur maison.",
               "choices": [
                 "agrandir",
                 "couper",
@@ -28925,7 +28925,7 @@
             {
               "id": "frb2p19q18",
               "type": "fill",
-              "prompt": "Je fais ___ (venir) le plombier.",
+              "prompt": "Je fais ___ (to send for) le plombier.",
               "bank": [
                 "imprimer",
                 "attendre",
@@ -28938,7 +28938,7 @@
             {
               "id": "frb2p19q19",
               "type": "mc",
-              "prompt": "Elle fait ___ (visiter) la ville à ses invités.",
+              "prompt": "Elle fait ___ (to tour) la ville à ses invités.",
               "choices": [
                 "peindre",
                 "payer",
@@ -28958,7 +28958,7 @@
             {
               "id": "frb2p19q20",
               "type": "mc",
-              "prompt": "Il fait ___ (rire) tout le monde.",
+              "prompt": "Il fait ___ (to laugh) tout le monde.",
               "choices": [
                 "agrandir",
                 "réviser",
@@ -28971,7 +28971,7 @@
             {
               "id": "frb2p19q21",
               "type": "fill",
-              "prompt": "Nous faisons ___ (comprendre) la situation.",
+              "prompt": "Nous faisons ___ (to understand) la situation.",
               "bank": [
                 "livrer",
                 "couper",
@@ -28984,7 +28984,7 @@
             {
               "id": "frb2p19q22",
               "type": "mc",
-              "prompt": "Vous faites ___ (remarquer) le problème.",
+              "prompt": "Vous faites ___ (to notice) le problème.",
               "choices": [
                 "remarquer",
                 "faire",
@@ -28997,7 +28997,7 @@
             {
               "id": "frb2p19q23",
               "type": "fill",
-              "prompt": "Ils font ___ (payer) la note à leur client.",
+              "prompt": "Ils font ___ (to pay) la note à leur client.",
               "bank": [
                 "couper",
                 "payer",
@@ -29010,7 +29010,7 @@
             {
               "id": "frb2p19q24",
               "type": "mc",
-              "prompt": "Je fais ___ (attendre) mes amis.",
+              "prompt": "Je fais ___ (to wait) mes amis.",
               "choices": [
                 "comprendre",
                 "savoir",
@@ -32174,7 +32174,7 @@
             {
               "id": "frc1p8q13",
               "type": "mc",
-              "prompt": "The French word for \"doubt\" is…",
+              "prompt": "The French word for \"doubt (philosophical)\" is…",
               "choices": [
                 "le doute",
                 "l'identité",
@@ -32182,7 +32182,7 @@
                 "l'hypothèse"
               ],
               "answer": 0,
-              "explanation": "doubt → le doute. Vocabulary for philosophical and abstract discussion."
+              "explanation": "doubt (philosophical) → le doute. Vocabulary for philosophical and abstract discussion."
             },
             {
               "id": "frc1p8q14",
@@ -32233,7 +32233,7 @@
             {
               "id": "frc1p8q17",
               "type": "mc",
-              "prompt": "The French word for \"justice\" is…",
+              "prompt": "The French word for \"justice (as a concept)\" is…",
               "choices": [
                 "la justice",
                 "la croyance",
@@ -32241,7 +32241,7 @@
                 "l'existence"
               ],
               "answer": 0,
-              "explanation": "justice → la justice. Vocabulary for philosophical and abstract discussion."
+              "explanation": "justice (as a concept) → la justice. Vocabulary for philosophical and abstract discussion."
             },
             {
               "id": "frc1p8q18",
@@ -32386,7 +32386,7 @@
             {
               "id": "frc1p9q2",
               "type": "fill",
-              "prompt": "The French word for \"data\" is… ___",
+              "prompt": "The French word for \"data (research)\" is… ___",
               "bank": [
                 "l'expérience",
                 "quantique",
@@ -32394,12 +32394,12 @@
                 "les données"
               ],
               "answer": "les données",
-              "explanation": "data → les données. Advanced science and technology vocabulary."
+              "explanation": "data (research) → les données. Advanced science and technology vocabulary."
             },
             {
               "id": "frc1p9q3",
               "type": "mc",
-              "prompt": "The French word for \"research\" is…",
+              "prompt": "The French word for \"research (scientific)\" is…",
               "choices": [
                 "le prototype",
                 "la robotique",
@@ -32407,7 +32407,7 @@
                 "l'intelligence artificielle"
               ],
               "answer": 2,
-              "explanation": "research → la recherche. Advanced science and technology vocabulary."
+              "explanation": "research (scientific) → la recherche. Advanced science and technology vocabulary."
             },
             {
               "id": "frc1p9q4",
@@ -32445,7 +32445,7 @@
             {
               "id": "frc1p9q6",
               "type": "fill",
-              "prompt": "The French word for \"hypothesis\" is… ___",
+              "prompt": "The French word for \"hypothesis (scientific)\" is… ___",
               "bank": [
                 "l'algorithme",
                 "le laboratoire",
@@ -32453,7 +32453,7 @@
                 "le pôle d'innovation"
               ],
               "answer": "l'hypothèse",
-              "explanation": "hypothesis → l'hypothèse. Advanced science and technology vocabulary."
+              "explanation": "hypothesis (scientific) → l'hypothèse. Advanced science and technology vocabulary."
             },
             {
               "id": "frc1p9q7",
@@ -32576,7 +32576,7 @@
             {
               "id": "frc1p9q15",
               "type": "fill",
-              "prompt": "The French word for \"sustainability\" is… ___",
+              "prompt": "The French word for \"sustainability (economic)\" is… ___",
               "bank": [
                 "l'innovation",
                 "la robotique",
@@ -32584,7 +32584,7 @@
                 "le réseau de neurones"
               ],
               "answer": "la durabilité",
-              "explanation": "sustainability → la durabilité. Advanced science and technology vocabulary."
+              "explanation": "sustainability (economic) → la durabilité. Advanced science and technology vocabulary."
             },
             {
               "id": "frc1p9q16",
@@ -32945,7 +32945,7 @@
             {
               "id": "frc1p10q15",
               "type": "fill",
-              "prompt": "Le juge a prononcé un ___ de non-lieu.",
+              "prompt": "Le juge a prononcé un ___.",
               "bank": [
                 "non-lieu",
                 "accord",
@@ -33209,7 +33209,7 @@
             {
               "id": "frc1p11q8",
               "type": "mc",
-              "prompt": "The French word for \"diplomacy\" is…",
+              "prompt": "The French word for \"diplomacy (in political discourse)\" is…",
               "choices": [
                 "la diplomatie",
                 "l'ambassade",
@@ -33217,7 +33217,7 @@
                 "les relations diplomatiques"
               ],
               "answer": 0,
-              "explanation": "diplomacy → la diplomatie. Diplomacy and international relations vocabulary."
+              "explanation": "diplomacy (in political discourse) → la diplomatie. Diplomacy and international relations vocabulary."
             },
             {
               "id": "frc1p11q9",
@@ -33327,7 +33327,7 @@
             {
               "id": "frc1p11q16",
               "type": "fill",
-              "prompt": "The French word for \"sovereignty\" is… ___",
+              "prompt": "The French word for \"sovereignty (in political discourse)\" is… ___",
               "bank": [
                 "l'envoyé",
                 "l'ambassade",
@@ -33335,7 +33335,7 @@
                 "la souveraineté"
               ],
               "answer": "la souveraineté",
-              "explanation": "sovereignty → la souveraineté. Diplomacy and international relations vocabulary."
+              "explanation": "sovereignty (in political discourse) → la souveraineté. Diplomacy and international relations vocabulary."
             },
             {
               "id": "frc1p11q17",
@@ -33565,7 +33565,7 @@
             {
               "id": "frc1p12q7",
               "type": "mc",
-              "prompt": "The French word for \"paradox\" is…",
+              "prompt": "The French word for \"paradox (rhetorical)\" is…",
               "choices": [
                 "le paradoxe",
                 "la métaphore",
@@ -33573,7 +33573,7 @@
                 "la litote"
               ],
               "answer": 0,
-              "explanation": "paradox → le paradoxe. Vocabulary for literary and rhetorical analysis."
+              "explanation": "paradox (rhetorical) → le paradoxe. Vocabulary for literary and rhetorical analysis."
             },
             {
               "id": "frc1p12q8",

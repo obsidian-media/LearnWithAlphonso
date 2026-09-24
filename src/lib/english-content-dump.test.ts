@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildEnglishDump } from "./english-content-dump";
+import { buildCourseDump } from "./english-content-dump";
 import { PLACEMENT_QUESTIONS } from "@/data/placement";
 
-describe("buildEnglishDump", () => {
+describe("buildCourseDump", () => {
   it("dumps every curriculum question keyed as lessonId:questionId", () => {
-    const dump = buildEnglishDump();
+    const dump = buildCourseDump("en");
     const all = Object.values(dump.byLevel).flat();
     expect(all.length).toBe(dump.totals.curriculum);
     expect(all.length).toBeGreaterThan(2000);
@@ -15,7 +15,7 @@ describe("buildEnglishDump", () => {
   });
 
   it("includes placement questions, which are absent from questionIndex", () => {
-    const dump = buildEnglishDump();
+    const dump = buildCourseDump("en");
     expect(dump.placement.length).toBe(45);
     expect(dump.totals.placement).toBe(45);
     // Review Focus #4: placement lives outside questionIndex entirely.
@@ -55,7 +55,7 @@ describe("buildEnglishDump", () => {
   });
 
   it("surfaces the fill bank so an auditor can see answer-in-bank violations", () => {
-    const dump = buildEnglishDump();
+    const dump = buildCourseDump("en");
     const fills = Object.values(dump.byLevel)
       .flat()
       .filter((q) => q.type === "fill");
@@ -65,5 +65,19 @@ describe("buildEnglishDump", () => {
       expect(q.bank).toBeDefined();
       expect(q.bank).toContain(q.answer);
     }
+  });
+
+  it("dumps French with a course parameter, same shape as English", () => {
+    const dump = buildCourseDump("fr");
+    const all = Object.values(dump.byLevel).flat();
+    expect(all.length).toBe(dump.totals.curriculum);
+    expect(all.length).toBeGreaterThan(2000);
+    for (const q of all) {
+      expect(q.key).toBe(`${q.lessonId}:${q.questionId}`);
+      expect(q.prompt.trim()).not.toBe("");
+    }
+    // French's placement pool lives in placement-fr.ts, separate from English's --
+    // getCourse("fr").placementPool routes there rather than to PLACEMENT_QUESTIONS.
+    expect(dump.placement.length).toBeGreaterThan(0);
   });
 });

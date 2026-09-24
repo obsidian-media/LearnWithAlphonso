@@ -1,5 +1,4 @@
-import { getCourse } from "@/data/courses";
-import { PLACEMENT_QUESTIONS } from "@/data/placement";
+import { getCourse, type Course } from "@/data/courses";
 import type { Level } from "@/data/levels";
 
 // NB: `LEVELS` in levels.ts is `{ id, name, blurb }[]`, NOT `Level[]` --
@@ -24,14 +23,14 @@ export type DumpedQuestion = {
   imageKey?: string;
 };
 
-export type EnglishDump = {
+export type CourseDump = {
   byLevel: Record<Level, DumpedQuestion[]>;
   placement: DumpedQuestion[];
   totals: { curriculum: number; placement: number };
 };
 
-export function buildEnglishDump(): EnglishDump {
-  const { questionIndex } = getCourse("en");
+export function buildCourseDump(course: Course = "en"): CourseDump {
+  const { questionIndex, placementPool } = getCourse(course);
   const byLevel = Object.fromEntries(ALL_LEVELS.map((l) => [l, [] as DumpedQuestion[]])) as Record<
     Level,
     DumpedQuestion[]
@@ -75,7 +74,7 @@ export function buildEnglishDump(): EnglishDump {
     byLevel[level].sort((a, b) => a.key.localeCompare(b.key));
   }
 
-  const placement: DumpedQuestion[] = PLACEMENT_QUESTIONS.map((p) => ({
+  const placement: DumpedQuestion[] = placementPool.map((p) => ({
     key: `placement:${p.id}`,
     level: p.level,
     unitId: "placement",

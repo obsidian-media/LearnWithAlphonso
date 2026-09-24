@@ -368,6 +368,152 @@ languages and two backlog items.
 
 ---
 
+## 8.5 Phase 1.5 — evidence gathering (DONE 2026-09-24)
+
+Added after phase 1, to stop the blocked decisions in 8.3 from being
+made on opinion. The rule was **recommend, do not implement**: no
+ranking layer, no `bank-engine.ts` change, no new dependency. That was
+honoured.
+
+Full evidence: `docs/superpowers/french-distractor-quality-evidence.md`.
+
+### 8.5.1 Cloze pack classification — all 42 read, not sampled
+
+| Category              | Packs | Share |
+| --------------------- | ----- | ----- |
+| Single-verb           | 1     | 2%    |
+| Mixed-verb            | 18    | 43%   |
+| Single-class non-verb | 8     | 19%   |
+| Mixed-class           | 15    | 36%   |
+
+This settles the question §8.1 raised and could not answer:
+
+- **45% (19 packs) are verb-conjugation drills.** Their distractors are
+  already all verbs, so a word-class ranking layer has nothing to filter
+  — confirming §8.1's hypothesis. These need _generated_ distractors
+  (other forms of the line's own verb), not classification.
+- **36% (15 packs) are genuinely mixed-class** — the case English's
+  ranking layer exists for, and the only share of French where porting
+  that approach would help.
+- **19% (8 packs) are small closed classes** (pronouns, prepositions)
+  carrying a structural collocation risk that no ranking layer can fix.
+  `frb2p17` is the concrete case, with 17 self-references.
+
+### 8.5.2 Self-reference rate — measured, and worse than first reported
+
+Two distinct metrics were conflated at first and must stay separate:
+
+- **Answer-leak** (the answer visible in its own prompt): **59 → 4**,
+  fixed by phase 1 content edits. No English analogue; not
+  ranking-layer territory.
+- **Prompt-echo** (a distractor echoing a prompt word): **25 → 24**,
+  essentially untouched, because nothing in phase 1 added a ranking
+  layer. 24 is the standing ceiling such a layer would have to address.
+
+**Correction to the first reading of this number.** It was reported as
+"~1.0% of questions, close to English's pre-fix ~0.9%". Those figures
+use different denominators. Self-referential distractors can only occur
+on multiple-choice questions — a `fill` question has no distractors —
+and English's 12 was measured across its 1,387 MC questions.
+
+| Measure                           | Value     |
+| --------------------------------- | --------- |
+| 24 ÷ all French questions (2,500) | 0.96%     |
+| 24 ÷ French MC only (1,303)       | **1.84%** |
+| English pre-fix: 12 ÷ 1,387 MC    | 0.87%     |
+
+Like for like, **French is roughly twice English's pre-fix rate**, not
+comparable to it. Use the MC denominator for any future comparison.
+
+### 8.5.3 Morphology spike — recommendation
+
+**Recommended: `french-verbs` + `french-verbs-lefff`** (Apache-2.0,
+actively maintained).
+
+| Check                                           | Result                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| 20 verbs × 6 persons, present                   | 119/120 (the one miss is a valid formal-register alternate) |
+| Imparfait spot-check                            | 30/30                                                       |
+| Coverage of the bank's 117 distinct infinitives | 100%                                                        |
+| Unknown verb                                    | throws rather than guessing                                 |
+
+Rejected, with reasons worth keeping: **`conjugation-fr`** is GPL-2.0,
+which is a licensing problem for this private commercial codebase, and
+**`nlp-js-tools-french`** has been unmaintained since 2017.
+
+Failing loudly on an unknown verb is the right property and directly
+answers §8.3's "the validator must be the sole authority".
+
+**The architectural finding is the valuable part:** French's fix should
+be **generative** — produce a line's distractors from its own hinted
+verb — rather than **tagging**, as English does. That sidesteps
+English's exact failure mode, where a tagger confidently mislabelled
+44.8% of the bank as "Verb" and the map-relative metric could not see
+it. A generator asked for "the other present-tense forms of _parler_"
+either returns them or throws; there is no silent wrong answer.
+
+### 8.5.4 Open gap in the spike — verify before adopting
+
+The spike covers **present** and **imparfait**. The French bank's own
+pack notes exercise more than that: Present (5 packs), past (5),
+**subjunctive (2)**, **futur (2)**, **conditional (2)**, **passé
+composé (1)**.
+
+Subjunctive, conditional, futur and passé composé are **unverified**,
+and they are both the tenses a conjugator is most likely to get wrong
+and the ones the harder B2/C1 packs use. A real unverified line from the
+bank:
+
+```
+Il est important que nous ___ (prendre) une décision.|prenions
+```
+
+That is present subjunctive of _prendre_. 100% coverage of 117
+infinitives is **coverage, not correctness** — it says the library knows
+the verbs, not that it conjugates them correctly in these moods.
+
+**Before adopting: extend the spike to every mood and tense the bank
+actually uses, against a known-correct reference table.** The English
+pilot verified 7 verbs and its own review flagged that as insufficient;
+20 verbs in one tense is better, but it is not yet evidence for the
+tenses that carry the risk.
+
+**Gap closed 2026-09-24.** Extended the spike to every mood/tense the
+bank's cloze packs actually use, same 20-verb table (10 verbs for the
+three compound tenses, to keep the sample proportionate), hand-verified
+known-correct forms:
+
+| Tense                            | Result        |
+| --------------------------------- | ------------- |
+| Présent                          | 119/120 (99.2%; the 1 "miss" is a valid formal-register alternate — `puis` for `pouvoir`, je) |
+| Imparfait                        | 30/30         |
+| Futur simple                     | 120/120       |
+| Conditionnel présent             | 120/120       |
+| Subjonctif présent (incl. the bank's own `prenions` line) | 120/120 |
+| Passé composé, avoir-verbs       | 108/108       |
+| Passé composé, être-verbs        | 12/12 — **only once `agreeNumber` is passed alongside `agreeGender`** (see gotcha below) |
+| Plus-que-parfait                 | 60/60         |
+| Conditionnel passé               | 60/60         |
+| Subjonctif passé                 | 60/60         |
+| **Total**                        | **809/810 (99.9%)** |
+
+**A real usability gotcha, not covered by "fails loudly on an unknown
+verb"**: for être-auxiliary compound tenses, the library does **not**
+infer number agreement from the person index. Requesting `nous`/`ils`
+with only `agreeGender: "M"` silently returns the **singular** participle
+(`sommes allé`, not `sommes allés`) — a plausible-looking wrong answer,
+not a thrown error. Whoever implements this must pass `agreeNumber`
+explicitly per person; it will not be inferred. This doesn't reverse the
+recommendation (every mismatch in this spike was this one caller-side
+omission, corrected once `agreeNumber` was passed — the library's actual
+conjugation data was never wrong), but it is a real integration detail,
+not a footnote.
+
+Full methodology and the extended per-verb tables:
+`docs/superpowers/french-distractor-quality-evidence.md`.
+
+---
+
 ## 9. Tooling — generalise, do not fork
 
 The audit tooling is English-shaped by name and by type:
@@ -421,7 +567,11 @@ baseline stays valid.
 1. **Is French meant to reach parity with English?** English now has
    listening and speaking; French has neither. The answer decides
    whether this audit is "harden what exists" or "step one of catching
-   up".
+   up". **Answered 2026-09-24: yes, French is meant to reach parity.**
+   This unblocks planning for listening/speaking and further pack
+   expansion, but does not itself start that work — it's a separate,
+   gated initiative. See
+   `docs/superpowers/french-distractor-quality-evidence.md` section 0.
 2. **Will a native-speaker review be commissioned?** If not, the
    mechanical axes are the ceiling, and the documentation should say so
    plainly rather than implying French content has been verified.
