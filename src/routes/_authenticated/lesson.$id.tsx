@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { MascotBanner } from "../../components/MascotBanner";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
@@ -19,6 +20,7 @@ import {
   startLessonSession,
 } from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
+import { deriveAnswerCorrectness } from "../../lib/srs";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
@@ -149,10 +151,10 @@ function LessonPage() {
 
   function checkAnswer() {
     if (!submittedAnswer) return;
-    const isCorrect =
-      q.type === "mc"
-        ? q.choices[q.answer] === submittedAnswer
-        : submittedAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+    // Graded through the shared helper rather than inline, because the review
+    // server re-derives correctness from that same helper. A spoken answer in
+    // particular needs its tolerant transcript match here and there alike.
+    const isCorrect = deriveAnswerCorrectness(q, submittedAnswer);
     setChecked(true);
     // Reinforcement rounds are supplementary practice only -- they never
     // touch correct/missed/hearts/XP, regardless of outcome.
@@ -251,10 +253,7 @@ function LessonPage() {
     }
   }
 
-  const answered =
-    q.type === "mc"
-      ? picked === q.choices[q.answer]
-      : (submittedAnswer ?? "").trim().toLowerCase() === q.answer.trim().toLowerCase();
+  const answered = deriveAnswerCorrectness(q, submittedAnswer ?? "");
 
   return (
     <LessonFrame>
@@ -355,6 +354,11 @@ function LessonPage() {
               Listening
             </p>
           )}
+          {q.type === "speak" && (
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+              Speaking
+            </p>
+          )}
           {q.type === "listening" && canSpeak() && (
             <button
               type="button"
@@ -428,6 +432,14 @@ function LessonPage() {
                   )}
                 </div>
               </div>
+            ) : q.type === "speak" ? (
+              <SpeakAnswer
+                target={q.answer}
+                locale={localeForCourse(course)}
+                value={picked}
+                onChange={setPicked}
+                checked={checked}
+              />
             ) : q.type === "fill" ? (
               <div>
                 <input
