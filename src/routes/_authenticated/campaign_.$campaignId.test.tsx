@@ -183,4 +183,165 @@ describe("Campaign chat page", () => {
     // The composer is gone once the campaign is finished.
     expect(screen.queryByPlaceholderText("Type or tap the mic")).not.toBeInTheDocument();
   });
+
+  // --- voice + error paths (coverage gap, 2026-09-24) ---
+  // These were the bulk of what was untested here (41.5% branch coverage):
+  // every one is a user-facing failure message, i.e. exactly the code a
+  // user only ever meets when something has already gone wrong.
+
+  /** Installs a controllable MediaRecorder and returns the live instance. */
+  function stubMediaRecorder() {
+    const instances: FakeRecorder[] = [];
+    class FakeRecorder {
+      state = "inactive";
+      mimeType: string;
+      ondataavailable: ((e: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      constructor(_stream: unknown, opts?: { mimeType?: string }) {
+        this.mimeType = opts?.mimeType ?? "";
+        instances.push(this);
+      }
+      start() {
+        this.state = "recording";
+      }
+      stop() {
+        this.state = "inactive";
+        this.onstop?.();
+      }
+      static isTypeSupported() {
+        return true;
+      }
+    }
+    vi.stubGlobal("MediaRecorder", FakeRecorder);
+    return instances;
+  }
+
+  function stubMicrophone(granted: boolean) {
+    const track = { stop: vi.fn() };
+    Object.defineProperty(global.navigator, "mediaDevices", {
+      value: {
+        getUserMedia: granted
+          ? vi.fn().mockResolvedValue({ getTracks: () => [track] })
+          : vi.fn().mockRejectedValue(new Error("denied")),
+      },
+      configurable: true,
+    });
+  }
+
+  it("explains that the mic is needed when permission is refused", async () => {
+    const user = userEvent.setup();
+    stubMicrophone(false);
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
+
+    expect(await screen.findByText("Microphone access is needed to speak.")).toBeInTheDocument();
+    // The button must fall back out of the recording state, or the user is
+    // stuck looking at a Stop button that can never stop anything.
+    expect(
+      await screen.findByRole("button", { name: "Record a voice message" }),
+    ).toBeInTheDocument();
+  });
+
+  it("rejects a clip too short to be speech instead of sending it", async () => {
+    const user = userEvent.setup();
+    stubMicrophone(true);
+    const recorders = stubMediaRecorder();
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
+    await waitFor(() => expect(recorders.length).toBe(1));
+    recorders[0]!.ondataavailable?.({ data: new Blob(["x"]) });
+    recorders[0]!.stop();
+
+    expect(await screen.findByText("That was too short — try again.")).toBeInTheDocument();
+  });
+
+  it("says it didn't catch anything when transcription comes back empty", async () => {
+    const user = userEvent.setup();
+    stubMicrophone(true);
+    const recorders = stubMediaRecorder();
+    const realFetch = global.fetch;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/api/stt")) return jsonResponse({ text: "   " });
+      return realFetch(input, init);
+    }) as typeof fetch;
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
+    await waitFor(() => expect(recorders.length).toBe(1));
+    recorders[0]!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
+    recorders[0]!.stop();
+
+    expect(await screen.findByText("Didn't catch that — try again.")).toBeInTheDocument();
+  });
+
+  it("surfaces the server's message when transcription fails outright", async () => {
+    const user = userEvent.setup();
+    stubMicrophone(true);
+    const recorders = stubMediaRecorder();
+    const realFetch = global.fetch;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/api/stt")) {
+        return jsonResponse({ error: "Speech service unavailable" }, 503);
+      }
+      return realFetch(input, init);
+    }) as typeof fetch;
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
+    await waitFor(() => expect(recorders.length).toBe(1));
+    recorders[0]!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
+    recorders[0]!.stop();
+
+    expect(await screen.findByText("Speech service unavailable")).toBeInTheDocument();
+  });
+
+  it("stops requesting speech audio once voice is muted", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    // The opener is spoken on a timer after mount; wait for that first so
+    // the assertion below is about the mute, not about timing.
+    await waitFor(() =>
+      expect(
+        (global.fetch as ReturnType<typeof vi.fn>).mock.calls.some((c) =>
+          String(c[0]).includes("/api/tts"),
+        ),
+      ).toBe(true),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Mute voice" }));
+    (global.fetch as ReturnType<typeof vi.fn>).mockClear();
+
+    await sendAndAwaitReply(user, "hello there", "Reply 1");
+
+    const ttsCalls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter((c) =>
+      String(c[0]).includes("/api/tts"),
+    );
+    expect(ttsCalls).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "Unmute voice" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("shows an error when the reply request fails, without losing the transcript", async () => {
+    const user = userEvent.setup();
+    const realFetch = global.fetch;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/api/chat")) {
+        return jsonResponse({ error: "Model is busy" }, 503);
+      }
+      return realFetch(input, init);
+    }) as typeof fetch;
+    renderPage();
+
+    await user.type(await screen.findByPlaceholderText("Type or tap the mic"), "bonjour");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+
+    expect(await screen.findByText("Model is busy")).toBeInTheDocument();
+    // The user's own turn stays on screen -- losing it would make the
+    // failure look like the message was never sent.
+    expect(screen.getByText("bonjour")).toBeInTheDocument();
+  });
 });
