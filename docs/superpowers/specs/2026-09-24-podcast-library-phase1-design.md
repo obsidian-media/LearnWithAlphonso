@@ -306,5 +306,31 @@ the only compile verification for the iOS app in this environment.
 
 ## Open questions
 
-1. Chunk-joining (above) — resolve by probe before building the TTS path.
+1. **Chunk-joining — still open.** The probe was not run: no
+   `DEEPGRAM_API_KEY` was reachable from the implementation environment,
+   and the probe is only meaningful against real Deepgram output. The CLI
+   ships with byte concatenation behind a single function,
+   `joinMp3Chunks` in `scripts/podcast-tool.ts`. Run the probe before
+   publishing a real multi-chunk TTS episode; if durations or seeking
+   misbehave, that one function becomes an `ffmpeg -f concat` call.
 2. Target bitrate/encoding for published audio, pending the cost check.
+3. **Captions/transcripts are an accessibility gap, not just a Phase 2
+   feature.** The web player currently has no `<track>`, so episodes are
+   inaccessible to deaf and hard-of-hearing learners. `jsx-a11y/media-has-caption`
+   is disabled on that one line with a comment; Phase 2's transcripts are
+   the real fix, and should be treated as an accessibility obligation
+   rather than an enhancement.
+
+## Implementation status (2026-09-24)
+
+Phase 1a is implemented on `worktree-podcast-library` except for two
+steps that need credentials this environment does not have:
+
+- The migration has **not** been applied to the live Supabase project,
+  and the `podcast-audio` bucket has **not** been created.
+- `src/integrations/supabase/types.ts` has **not** been regenerated, so
+  `podcast.functions.ts` talks to the client through a documented
+  one-line `untyped()` cast. Delete that helper once types are
+  regenerated.
+
+Until both are done the Listen tab renders but has no data to show.

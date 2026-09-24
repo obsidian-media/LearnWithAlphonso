@@ -32,6 +32,16 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 
 ## Features
 
+- **Listen** (web, Phase 1a — 2026-09-24): a browsable folder tree of short audio
+  episodes with a persistent mini-player that survives navigation and resumes
+  where you left off, across devices. Episodes are published by the account
+  owner with `scripts/podcast-tool.ts` — either an MP3 you recorded or a script
+  spoken by Deepgram — so the library grows without a deploy or an App Store
+  release. **Not live yet**: the migration still has to be applied and the
+  `podcast-audio` bucket created (see the spec's "Implementation status").
+  Transcripts, comprehension questions, XP and SRS wiring are Phase 2; the iOS
+  client is Phase 1b. See
+  `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page

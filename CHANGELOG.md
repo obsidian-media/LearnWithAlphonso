@@ -8,7 +8,32 @@ file itself won't be kept perfectly current — treat entries as a guide
 to *when* something shipped, and re-check the actual code for *how it
 works now*.
 
-## V5 — iOS Canopy theme, English content quality, GDPR export fix (2026-09-23 – in progress)
+## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
+
+**Podcast/audio library, Phase 1a (web)** — a Listen tab: a folder tree of
+short audio episodes, browsable at any depth through one splat route, with a
+mini-player mounted in the app shell so playback survives navigation between
+folders, and a per-user resume position that syncs across devices.
+
+Four new tables (`podcast_folders`, `podcast_episodes`, `podcast_playback`,
+`podcast_play_events`) plus a public-read `podcast-audio` Storage bucket — the
+first binary-media subsystem in the app; everything before this was live
+Deepgram TTS and stock-image URLs. Content is published by the account owner
+via `scripts/podcast-tool.ts`, which takes either a recorded MP3 or a script it
+has Deepgram speak, so the library grows without a deploy or an App Store
+release.
+
+Two things this work turned up elsewhere: the GDPR export list had to learn the
+two new per-user tables (`account.functions.test.ts` caught it, which is exactly
+the drift that test was added for), and mounting a component in `AppShell` that
+statically imports server functions pulls the Supabase auth middleware into
+every page's import graph — now imported lazily.
+
+**Not live yet**: the migration has not been applied to the live project and the
+bucket has not been created, so the tab renders with no data. iOS is Phase 1b;
+transcripts, questions, XP and SRS are Phase 2. Spec:
+`docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
+
 
 V5 work runs as parallel isolated worktrees, one per feature, kicked off
 from `docs/v5-kickoffs/` (gitignored). Three PRs merged 2026-09-24 in
