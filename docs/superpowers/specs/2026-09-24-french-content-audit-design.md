@@ -336,7 +336,40 @@ log's phrase — which curation fixes per pack and which no ranking layer
 can fix. Expect this, not word class, to be the bulk of French's
 distractor work.
 
-### 8.3 The blocking decision
+### 8.3 The blocking decision — **DECIDED 2026-09-24: adopt**
+
+> **Account owner's ruling, 2026-09-24: adopt `french-verbs` +
+> `french-verbs-lefff`.** This section is kept as written because the
+> constraints below are what the implementation must still satisfy —
+> the decision removes the gate, not the requirements.
+>
+> **Three conditions on the adoption**, all from evidence already
+> gathered in §8.5:
+>
+> 1. **It goes in `bank-engine.ts`, not `lesson-bank-fr.ts`.** The
+>    shared engine serves French _and_ Spanish, so Spanish inherits it;
+>    putting it in the French bank would deepen the duplication
+>    `docs/BACKLOG.md` already wants removed. See §2.2.
+> 2. **Generative, not tagging.** §8.5.3's architectural finding is the
+>    point of adopting this library at all: produce a line's distractors
+>    from its own hinted verb, rather than tagging a pool the way
+>    English does. That sidesteps English's failure mode, where a tagger
+>    mislabelled 44.8% of the bank as "Verb" and the map-relative metric
+>    could not see it.
+> 3. **`agreeNumber` must be passed explicitly** for être-auxiliary
+>    compound tenses, or the library silently returns a singular
+>    participle for plural persons (§8.5.4). A caller-side integration
+>    requirement, not a library defect — and exactly the class of silent
+>    wrong answer this repo keeps getting bitten by, so it needs a test
+>    rather than a comment.
+>
+> **Still not decided, and deliberately separate:** the generative
+> distractor _design_ — how many variants, which persons, how they are
+> ranked against the existing pool. That is a real design pass, not a
+> library swap, and it should be specced before it is built.
+>
+> This also answers `docs/BACKLOG.md` §0.6.2 (extending generative
+> content to French and Spanish), which was waiting on the same choice.
 
 If a POS or morphology layer is wanted for French, it needs a source.
 `compromise` is English-only. This is the **same blocker** as
@@ -483,19 +516,19 @@ bank's cloze packs actually use, same 20-verb table (10 verbs for the
 three compound tenses, to keep the sample proportionate), hand-verified
 known-correct forms:
 
-| Tense                            | Result        |
-| --------------------------------- | ------------- |
-| Présent                          | 119/120 (99.2%; the 1 "miss" is a valid formal-register alternate — `puis` for `pouvoir`, je) |
-| Imparfait                        | 30/30         |
-| Futur simple                     | 120/120       |
-| Conditionnel présent             | 120/120       |
-| Subjonctif présent (incl. the bank's own `prenions` line) | 120/120 |
-| Passé composé, avoir-verbs       | 108/108       |
-| Passé composé, être-verbs        | 12/12 — **only once `agreeNumber` is passed alongside `agreeGender`** (see gotcha below) |
-| Plus-que-parfait                 | 60/60         |
-| Conditionnel passé               | 60/60         |
-| Subjonctif passé                 | 60/60         |
-| **Total**                        | **809/810 (99.9%)** |
+| Tense                                                     | Result                                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Présent                                                   | 119/120 (99.2%; the 1 "miss" is a valid formal-register alternate — `puis` for `pouvoir`, je) |
+| Imparfait                                                 | 30/30                                                                                         |
+| Futur simple                                              | 120/120                                                                                       |
+| Conditionnel présent                                      | 120/120                                                                                       |
+| Subjonctif présent (incl. the bank's own `prenions` line) | 120/120                                                                                       |
+| Passé composé, avoir-verbs                                | 108/108                                                                                       |
+| Passé composé, être-verbs                                 | 12/12 — **only once `agreeNumber` is passed alongside `agreeGender`** (see gotcha below)      |
+| Plus-que-parfait                                          | 60/60                                                                                         |
+| Conditionnel passé                                        | 60/60                                                                                         |
+| Subjonctif passé                                          | 60/60                                                                                         |
+| **Total**                                                 | **809/810 (99.9%)**                                                                           |
 
 **A real usability gotcha, not covered by "fails loudly on an unknown
 verb"**: for être-auxiliary compound tenses, the library does **not**
