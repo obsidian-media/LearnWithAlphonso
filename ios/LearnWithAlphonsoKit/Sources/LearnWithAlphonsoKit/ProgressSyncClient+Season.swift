@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// V4 candidate #7 (deeper gamification) -- season ladder. In its own
 /// extension file, not added to ProgressSyncClient.swift directly, so
