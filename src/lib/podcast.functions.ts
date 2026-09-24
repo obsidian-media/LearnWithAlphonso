@@ -195,7 +195,7 @@ export const recordPlayEvent = createServerFn({ method: "POST" })
     const db = untyped(context.supabase);
     // Through the SECURITY DEFINER function, never a direct insert:
     // `authenticated` no longer holds INSERT on this table (see
-    // supabase/migrations/20260924223031_podcast_play_event_rpc.sql). The
+    // supabase/migrations/20260926223031_podcast_play_event_rpc.sql). The
     // function takes the user from auth.uid() and the timestamp from
     // now(), and bounds seconds_listened by the episode's real duration,
     // so none of those three can be dictated by a client.
