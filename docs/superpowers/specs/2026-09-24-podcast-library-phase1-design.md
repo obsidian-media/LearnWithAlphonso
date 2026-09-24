@@ -313,6 +313,16 @@ the only compile verification for the iOS app in this environment.
    `joinMp3Chunks` in `scripts/podcast-tool.ts`. Run the probe before
    publishing a real multi-chunk TTS episode; if durations or seeking
    misbehave, that one function becomes an `ffmpeg -f concat` call.
+
+   **Blast radius if the join reports a wrong duration** (larger than the
+   "one-function change" this was first scoped as): `durationSecondsOf`
+   writes that value to `duration_seconds`, which the scrubber displays
+   and which `clampPosition` measures resume positions against. A
+   7-minute episode stored as 40 seconds would silently send *every*
+   learner's resume position to 0, permanently. The web player mitigates
+   this by clamping against the media element's own duration at seek
+   time, but the stored value is still wrong on screen — so run the
+   probe before bulk-publishing TTS episodes, not after.
 2. Target bitrate/encoding for published audio, pending the cost check.
 3. **Captions/transcripts are an accessibility gap, not just a Phase 2
    feature.** The web player currently has no `<track>`, so episodes are
@@ -326,8 +336,10 @@ the only compile verification for the iOS app in this environment.
 Phase 1a is implemented on `worktree-podcast-library` except for two
 steps that need credentials this environment does not have:
 
-- The migration has **not** been applied to the live Supabase project,
-  and the `podcast-audio` bucket has **not** been created.
+- The migration has **not** been applied to the live Supabase project.
+  The `podcast-audio` bucket and its read-only `storage.objects` policy
+  are created **by the migration** rather than by hand, so applying it
+  is the only step needed.
 - `src/integrations/supabase/types.ts` has **not** been regenerated, so
   `podcast.functions.ts` talks to the client through a documented
   one-line `untyped()` cast. Delete that helper once types are

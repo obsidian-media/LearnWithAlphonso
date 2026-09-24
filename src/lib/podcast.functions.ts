@@ -99,25 +99,46 @@ export const listEpisodes = createServerFn({ method: "GET" })
     const db = untyped(context.supabase);
     const { userId } = context;
 
-    const [episodesRes, playbackRes] = await Promise.all([
-      db
-        .from("podcast_episodes")
-        .select("id, folder_id, slug, title, description, audio_path, duration_seconds")
-        .eq("folder_id", data.folderId)
-        .order("sort_order", { ascending: true }),
-      db.from("podcast_playback").select("episode_id, position_seconds").eq("user_id", userId),
-    ]);
+    const episodesRes = await db
+      .from("podcast_episodes")
+      .select("id, folder_id, slug, title, description, audio_path, duration_seconds")
+      .eq("folder_id", data.folderId)
+      .order("sort_order", { ascending: true });
     if (episodesRes.error) throw new Error(episodesRes.error.message);
 
-    // A failed playback read is not worth failing the whole listing over:
-    // the episodes still play, they just start from the beginning.
+    const episodes = (episodesRes.data ?? []) as EpisodeRow[];
+
+    // Scoped to the episodes actually being shown. An unfiltered read
+    // returns one row per episode this user has ever started, which
+    // grows without bound for an engaged learner while the result is
+    // only used as a lookup over the dozen ids on screen.
+    const playbackRes = episodes.length
+      ? await db
+          .from("podcast_playback")
+          .select("episode_id, position_seconds")
+          .eq("user_id", userId)
+          .in(
+            "episode_id",
+            episodes.map((row) => row.id),
+          )
+          .then(
+            (result) => result,
+            // A failed playback read is not worth failing the whole
+            // listing over: the episodes still play, they just start
+            // from the beginning. Catching the rejection matters --
+            // inside a Promise.all a transport failure took the entire
+            // folder listing down with it.
+            () => ({ data: [] as { episode_id: string; position_seconds: number }[] }),
+          )
+      : { data: [] as { episode_id: string; position_seconds: number }[] };
+
     const positions = new Map<string, number>(
       ((playbackRes.data ?? []) as { episode_id: string; position_seconds: number }[]).map(
         (row) => [row.episode_id, row.position_seconds],
       ),
     );
 
-    return ((episodesRes.data ?? []) as EpisodeRow[]).map((row) => ({
+    return episodes.map((row) => ({
       id: row.id,
       folderId: row.folder_id,
       slug: row.slug,
@@ -132,7 +153,13 @@ export const listEpisodes = createServerFn({ method: "GET" })
 export const savePlaybackPosition = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({ episodeId: z.string().uuid(), positionSeconds: z.number().min(0) }).parse(d),
+    z
+      .object({
+        episodeId: z.string().uuid(),
+        positionSeconds: z.number().min(0),
+        completed: z.boolean().default(false),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ positionSeconds: number }> => {
     const db = untyped(context.supabase);
@@ -142,6 +169,10 @@ export const savePlaybackPosition = createServerFn({ method: "POST" })
         user_id: context.userId,
         episode_id: data.episodeId,
         position_seconds: positionSeconds,
+        // completed_at exists precisely to record completion; without
+        // this it was never written by anything, and completion was
+        // being inferred from the play-events table instead.
+        ...(data.completed ? { completed_at: new Date().toISOString() } : {}),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id,episode_id" },

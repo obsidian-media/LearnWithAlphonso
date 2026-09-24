@@ -70,6 +70,29 @@ ALTER TABLE public.podcast_episodes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "podcast_episodes_select_published" ON public.podcast_episodes
   FOR SELECT TO authenticated USING (published = true);
 
+-- Audio objects live in their own bucket, created here rather than by
+-- hand in the dashboard: this is the one surface where a wrong click
+-- grants the public write access, and CLAUDE.md asks for
+-- infrastructure-as-code.
+--
+-- public = true is deliberate (see the spec's Storage section): learning
+-- audio is free for everyone, public URLs let the CDN cache properly and
+-- let a native AVPlayer stream without token-refresh plumbing. The cost,
+-- recorded here so nobody rediscovers it the hard way: a public bucket
+-- CANNOT enforce a Pro entitlement, and `podcast_episodes.published`
+-- hides the row, not the file.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('podcast-audio', 'podcast-audio', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Read-only for clients, and no INSERT/UPDATE/DELETE policy exists for
+-- anon or authenticated anywhere -- only the service-role CLI
+-- (scripts/podcast-tool.ts) writes objects. Without this, a learner
+-- could overwrite published audio.
+CREATE POLICY "podcast_audio_public_read" ON storage.objects
+  FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'podcast-audio');
+
 CREATE TABLE public.podcast_playback (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   episode_id uuid NOT NULL REFERENCES public.podcast_episodes(id) ON DELETE CASCADE,

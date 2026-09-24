@@ -358,11 +358,18 @@ async function cmdValidate(flags: Flags) {
   console.log(`  audio:     ${BUCKET}/${episode.audio_path}`);
   console.log(`  published: ${episode.published ? "yes" : "no"}`);
 
-  const { error: headError } = await db.storage
+  // list() on the object's prefix, not download() -- the latter pulls the
+  // whole multi-megabyte MP3 across the network just to throw it away.
+  const lastSlash = episode.audio_path.lastIndexOf("/");
+  const prefix = lastSlash === -1 ? "" : episode.audio_path.slice(0, lastSlash);
+  const name = episode.audio_path.slice(lastSlash + 1);
+  const { data: objects, error: listError } = await db.storage
     .from(BUCKET)
-    .download(episode.audio_path, { transform: undefined });
-  if (headError) console.error(`  [ERROR] audio object is missing: ${headError.message}`);
-  else console.log("  audio object exists.");
+    .list(prefix, { search: name });
+  if (listError) console.error(`  [ERROR] could not check the audio object: ${listError.message}`);
+  else if (!objects?.some((object) => object.name === name)) {
+    console.error(`  [ERROR] audio object is missing: ${episode.audio_path}`);
+  } else console.log("  audio object exists.");
 }
 
 async function cmdPublish(flags: Flags) {

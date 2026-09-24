@@ -34,6 +34,24 @@ describe("podcast library migration", () => {
     );
   });
 
+  it("creates the storage bucket in the migration rather than by hand", () => {
+    // The bucket is the one surface where a wrong click in a dashboard
+    // grants the public write access. CLAUDE.md asks for
+    // infrastructure-as-code; a security claim that lives only in prose
+    // has nothing enforcing it.
+    expect(sql).toMatch(/INSERT INTO storage\.buckets[\s\S]*?'podcast-audio'/);
+  });
+
+  it("grants no client write on the audio bucket's objects", () => {
+    // Read is public by design (the bucket is public-read). Any INSERT,
+    // UPDATE or DELETE policy for authenticated/anon on storage.objects
+    // would let a learner overwrite published audio.
+    const objectPolicies = sql.match(/CREATE POLICY[^;]*ON storage\.objects[^;]*;/g) ?? [];
+    for (const policy of objectPolicies) {
+      expect(policy).not.toMatch(/FOR (INSERT|UPDATE|DELETE|ALL)/);
+    }
+  });
+
   it("scopes per-user playback and play events to their owner", () => {
     expect(sql).toMatch(/podcast_playback_own[\s\S]*?\(SELECT auth\.uid\(\)\) = user_id/);
     expect(sql).toMatch(/podcast_play_events_own[\s\S]*?\(SELECT auth\.uid\(\)\) = user_id/);

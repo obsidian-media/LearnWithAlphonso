@@ -1,14 +1,9 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { PodcastPlayer } from "./PodcastPlayer";
 import { usePodcastPlayer } from "../lib/podcast-player";
-
-vi.mock("../lib/podcast.functions", () => ({
-  savePlaybackPosition: vi.fn(async () => ({ positionSeconds: 0 })),
-  recordPlayEvent: vi.fn(async () => undefined),
-}));
 
 const episode = {
   id: "11111111-1111-1111-1111-111111111111",
@@ -22,23 +17,16 @@ const episode = {
 };
 
 beforeEach(() => {
-  usePodcastPlayer.setState({ episode: null, isPlaying: false, positionSeconds: 0 });
-  // jsdom implements neither play() nor pause() and logs "Not implemented"
-  // for both. Stubbing them keeps the output pristine -- and play() is
-  // stubbed to return undefined on purpose, which is what old browsers
-  // and jsdom both do, so the component's guard against calling .catch()
-  // on a non-Promise stays exercised rather than mocked away.
-  vi.spyOn(HTMLMediaElement.prototype, "play").mockReturnValue(
-    undefined as unknown as Promise<void>,
-  );
-  vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+  usePodcastPlayer.setState({
+    episode: null,
+    isPlaying: false,
+    elapsedSeconds: 0,
+    failed: false,
+    retryToken: 0,
+  });
 });
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
-describe("PodcastPlayer", () => {
+describe("PodcastPlayer (mini-bar)", () => {
   it("renders nothing until an episode is playing", () => {
     const { container } = render(<PodcastPlayer />);
     expect(container).toBeEmptyDOMElement();
@@ -50,10 +38,11 @@ describe("PodcastPlayer", () => {
     expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
   });
 
-  it("resumes from the saved position rather than the start", () => {
-    usePodcastPlayer.getState().play({ ...episode, positionSeconds: 90 });
+  it("shows elapsed time against the episode length", () => {
+    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setElapsed(65);
     render(<PodcastPlayer />);
-    expect(screen.getByTestId("podcast-audio")).toHaveAttribute("data-start-at", "90");
+    expect(screen.getByText("1:05 / 5:00")).toBeInTheDocument();
   });
 
   it("exposes a labelled play/pause control", async () => {
@@ -64,25 +53,26 @@ describe("PodcastPlayer", () => {
     expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
   });
 
-  // Review Focus #5: the single most common way this class of feature
-  // breaks. The audio element belongs to the shell, so re-rendering the
-  // surrounding page must not swap it for a new one.
-  it("keeps the same audio element across a re-render of the surrounding page", () => {
+  it("shows an error with a retry when playback has failed", () => {
     usePodcastPlayer.getState().play(episode);
-    const { rerender } = render(<PodcastPlayer />);
-    const before = screen.getByTestId("podcast-audio");
-    rerender(<PodcastPlayer />);
-    expect(screen.getByTestId("podcast-audio")).toBe(before);
-  });
-
-  it("shows an error with a retry when the audio fails to load", () => {
-    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setFailed(true);
     render(<PodcastPlayer />);
-    // fireEvent, not dispatchEvent: the latter is not wrapped in act(),
-    // so React never flushes the resulting state update.
-    fireEvent.error(screen.getByTestId("podcast-audio"));
     expect(screen.getByText(/couldn't play/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it("retrying clears the error and asks for playback again", async () => {
+    usePodcastPlayer.getState().play(episode);
+    usePodcastPlayer.getState().setFailed(true);
+    render(<PodcastPlayer />);
+    const before = usePodcastPlayer.getState().retryToken;
+
+    await userEvent.click(screen.getByRole("button", { name: /try again/i }));
+
+    expect(usePodcastPlayer.getState().failed).toBe(false);
+    // The token is what makes the audio element re-run play(); clearing
+    // the flag alone would hide the error while nothing played.
+    expect(usePodcastPlayer.getState().retryToken).toBe(before + 1);
   });
 
   it("closing the player clears the episode", async () => {
