@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PlacementQuestion } from "../../data/placement";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const navigate = vi.fn();
@@ -78,6 +78,32 @@ const LISTENING_QUESTIONS: PlacementQuestion[] = [
     audioText: "She's a doctor.",
     choices: ["She's a doctor.", "She's a teacher."],
     answer: "She's a doctor.",
+  },
+];
+
+// A full A1 band: the exam passes a band on 2 of 3, so a one-question fixture
+// could never demonstrate acceptance -- it would score A1 whatever was typed.
+const TRANSLATE_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "p60",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+  {
+    id: "p60b",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning, again.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+  {
+    id: "p60c",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning, once more.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
   },
 ];
 
@@ -337,5 +363,64 @@ describe("Adaptive band sequencing", () => {
 
     expect(await screen.findByText(/audio is unavailable/i)).toBeInTheDocument();
     expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
+  });
+
+  it("accepts a curated wording for a translation without asking the server", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      // fireEvent.change, not user.type: the answer field is controlled, and a
+      // per-keystroke path left only the last character in state here.
+      fireEvent.change(await screen.findByLabelText("Your answer"), {
+        target: { value: "good morning" },
+      });
+      await user.click(screen.getByRole("button", { name: /See my level|Continue/ }));
+    }
+
+    // A curated wording is settled locally, so the exam never touches the
+    // network -- which is also what keeps it usable offline.
+    expect(fetchSpy).not.toHaveBeenCalled();
+    // Three locally-accepted translations pass the A1 band, which places the
+    // learner in the band above it.
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+  });
+
+  it("keeps the exam moving when the grader cannot be reached", async () => {
+    // There is no skip in this exam. A translation that never resolves is an
+    // exam that cannot finish, which leaves the learner unplaced entirely --
+    // worse than being placed a band low.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline");
+      }),
+    );
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      fireEvent.change(await screen.findByLabelText("Your answer"), {
+        target: { value: "nowhere near it" },
+      });
+      await user.click(screen.getByRole("button", { name: /See my level|Continue/ }));
+    }
+
+    // The exam finished and placed them, which is the point: an unresolvable
+    // question would leave them with no level at all.
+    expect(await screen.findByText("A1")).toBeInTheDocument();
+  });
+
+  it("does not let whitespace advance the exam", async () => {
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    fireEvent.change(await screen.findByLabelText("Your answer"), { target: { value: "   " } });
+    expect(screen.getByRole("button", { name: /See my level|Continue/ })).toBeDisabled();
   });
 });

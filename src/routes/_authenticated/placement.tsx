@@ -13,6 +13,7 @@ import {
 } from "../../data/placement";
 import { getCourse, localeForCourse } from "../../data/courses";
 import { canSpeak, speak } from "../../lib/speech";
+import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
@@ -79,6 +80,9 @@ function PlacementPage() {
   // the choice's text and a translation with a whole sentence, and one grading
   // helper serves all three only if they speak the same language.
   const [picked, setPicked] = useState<string | null>(null);
+  // Only true while a translation's second opinion is in flight, so the
+  // advance button can say so rather than looking frozen.
+  const [checking, setChecking] = useState(false);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
   const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
@@ -122,9 +126,25 @@ function PlacementPage() {
     void savePlacement({ data: { level, score, course } }).catch(() => {});
   }
 
-  function submit() {
+  async function submit() {
     if (picked === null || !q) return;
-    const next = [...answers, isPlacementAnswerCorrect(q, picked)];
+    let correct = isPlacementAnswerCorrect(q, picked);
+    // A translation gets the same second opinion it would get in a lesson: the
+    // curated wordings are a floor, and marking a valid-but-unlisted answer
+    // wrong here does not cost a heart, it places the learner a band lower.
+    // A null verdict (offline, vendor down, quota spent) leaves the local
+    // answer standing rather than stalling an exam that has no skip.
+    if (!correct && q.type === "translate") {
+      setChecking(true);
+      const verdict = await requestTranslationVerdict({
+        placementId: q.id,
+        submission: picked,
+        course,
+      });
+      setChecking(false);
+      if (verdict?.correct) correct = true;
+    }
+    const next = [...answers, correct];
     setPicked(null);
     setAnswers(next);
 
@@ -315,6 +335,16 @@ function PlacementPage() {
               {q.prompt}
             </h1>
             <div className={isStudioInk ? "mt-7" : "mt-7 flex flex-col gap-2.5"}>
+              {q.type === "translate" && (
+                <textarea
+                  value={picked ?? ""}
+                  onChange={(e) => setPicked(e.target.value)}
+                  rows={3}
+                  placeholder="Write your answer"
+                  aria-label="Your answer"
+                  className="w-full resize-none rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
+                />
+              )}
               {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c) =>
                 isStudioInk ? (
                   <button
@@ -349,11 +379,11 @@ function PlacementPage() {
         <div className="mt-auto pt-8">
           <button
             type="button"
-            disabled={picked === null}
-            onClick={submit}
+            disabled={checking || !picked?.trim()}
+            onClick={() => void submit()}
             className="w-full rounded-full bg-moss px-6 py-3.5 text-sm font-semibold text-surface transition disabled:cursor-not-allowed disabled:bg-hairline disabled:text-ink-soft/50"
           >
-            {isFinalQuestion ? "See my level" : "Continue"}
+            {checking ? "Checking…" : isFinalQuestion ? "See my level" : "Continue"}
           </button>
           <p className="mt-3 text-center text-[11px] text-ink-soft/60">
             No hearts lost — this just finds your starting point.

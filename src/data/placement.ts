@@ -535,6 +535,62 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     ],
     answer: "Their reasoning rests on an untested assumption.",
   },
+  // --- Translation (added with phase 5) -------------------------------
+  // One per band. Graded like every other translation: the curated
+  // wordings decide it locally, and only what they reject is put to the
+  // AI grader -- so an unusual-but-valid answer does not mis-place
+  // someone, and a vendor being down does not either.
+  {
+    id: "p60",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+  {
+    id: "p61",
+    level: "A2",
+    type: "translate",
+    prompt: "Ask what time a shop opens.",
+    acceptableAnswers: [
+      "What time does the shop open?",
+      "When does the shop open?",
+      "Could you tell me what time the shop opens?",
+    ],
+  },
+  {
+    id: "p62",
+    level: "B1",
+    type: "translate",
+    prompt: "Say the answer depends on the time available.",
+    acceptableAnswers: [
+      "It depends how much time we have.",
+      "It depends on the time available.",
+      "That depends how much time there is.",
+    ],
+  },
+  {
+    id: "p63",
+    level: "B2",
+    type: "translate",
+    prompt: "Say nobody is obliged to accept the offer.",
+    acceptableAnswers: [
+      "We are under no obligation to accept it.",
+      "We do not have to accept it.",
+      "There is no obligation to accept.",
+    ],
+  },
+  {
+    id: "p64",
+    level: "C1",
+    type: "translate",
+    prompt: "Dismiss a suggestion as impractical, idiomatically.",
+    acceptableAnswers: [
+      "That is easier said than done.",
+      "Easier said than done.",
+      "Saying it is easier than doing it.",
+    ],
+  },
 ];
 
 export const PLACEMENT_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1"];

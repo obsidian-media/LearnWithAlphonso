@@ -37,6 +37,9 @@ export const Route = createFileRoute("/api/grade-translation")({
         let body: {
           lessonId?: string;
           questionId?: string;
+          /** Alternative to lessonId+questionId: a question from the placement
+           *  pool, which lives outside the curriculum's question index. */
+          placementId?: string;
           submission?: string;
           course?: string;
         };
@@ -48,12 +51,16 @@ export const Route = createFileRoute("/api/grade-translation")({
 
         const lessonId = typeof body.lessonId === "string" ? body.lessonId : "";
         const questionId = typeof body.questionId === "string" ? body.questionId : "";
+        const placementId = typeof body.placementId === "string" ? body.placementId : "";
         const submission = typeof body.submission === "string" ? body.submission.trim() : "";
         const rawCourse = body.course ?? "";
         const course: Course = isCourse(rawCourse) ? rawCourse : "en";
 
-        if (!lessonId || !questionId) {
-          return Response.json({ error: "Missing lessonId or questionId" }, { status: 400 });
+        if (!placementId && (!lessonId || !questionId)) {
+          return Response.json(
+            { error: "Missing placementId, or lessonId and questionId" },
+            { status: 400 },
+          );
         }
         // An empty submission is not an answer. Returning 400 rather than
         // "incorrect" keeps it out of the learner's score and spends nothing.
@@ -65,8 +72,12 @@ export const Route = createFileRoute("/api/grade-translation")({
           return Response.json({ error: "Submission too long" }, { status: 400 });
         }
 
-        const found = getCourse(course).findLesson(lessonId);
-        const question = found?.lesson.questions.find((q) => q.id === questionId);
+        // Resolved from server-side content either way, so a client still
+        // cannot widen what counts as correct by sending its own wordings.
+        const bundle = getCourse(course);
+        const question = placementId
+          ? bundle.placementPool.find((q) => q.id === placementId)
+          : bundle.findLesson(lessonId)?.lesson.questions.find((q) => q.id === questionId);
         if (!question) return Response.json({ error: "Unknown question" }, { status: 400 });
         if (question.type !== "translate") {
           return Response.json({ error: "Not a translation question" }, { status: 400 });

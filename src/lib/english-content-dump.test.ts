@@ -16,12 +16,19 @@ describe("buildCourseDump", () => {
 
   it("includes placement questions, which are absent from questionIndex", () => {
     const dump = buildCourseDump("en");
-    // Derived from the pool rather than pinned: this asserts that the dump
-    // carries every placement question, which is the actual claim. A hardcoded
-    // count says the same thing until someone adds content, and then says
-    // something false.
-    expect(dump.placement.length).toBe(PLACEMENT_QUESTIONS.length);
-    expect(dump.totals.placement).toBe(PLACEMENT_QUESTIONS.length);
+    // Compared as ID SETS, not counts. `dump.placement` is
+    // `placementPool.map(...)` and `placementPool` IS PLACEMENT_QUESTIONS, so
+    // any length comparison between them is a tautology -- .map() preserves
+    // length, and the assertion tests Array.prototype.map rather than
+    // buildCourseDump. (A previous revision of this test did exactly that,
+    // having over-applied "do not pin a magic number": a filename is
+    // incidental to a test, but a content count is the thing under test.)
+    // Keys catch what counts cannot: a dropped, duplicated or mis-keyed
+    // question.
+    expect(dump.placement.map((q) => q.key).sort()).toEqual(
+      PLACEMENT_QUESTIONS.map((p) => `placement:${p.id}`).sort(),
+    );
+    expect(dump.totals.placement).toBe(dump.placement.length);
     // Review Focus #4: placement lives outside questionIndex entirely.
     for (const q of dump.placement) {
       // A translate entry has no choices -- its wordings are the answers.
