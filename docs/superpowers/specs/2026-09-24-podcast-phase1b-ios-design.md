@@ -89,12 +89,31 @@ token, as `RootView.triggerSync` already does.
 
 **Cross-device resume must not move backwards.** Both clients upsert, so
 last-writer-wins lets a stale phone sitting at 5:00 drag a laptop's 0:30
-position backwards when it syncs later. `updated_at` exists and nothing
-reads it. `savePlaybackPosition` therefore guards on the stored value
-rather than overwriting blindly (implementation choice recorded in the
-plan). Without that guard the "resumes across devices" criterion above is
-not actually delivered, and asserting it while not designing it would be
-worse than dropping it.
+position backwards when it syncs later.
+
+The two obvious guards are both wrong, and each fails in a different
+direction:
+
+- **Guard on position magnitude** (accept only a greater value) fixes the
+  stale phone and **breaks deliberate rewind**: a learner at 5:00 who
+  scrubs back to 0:30 to re-listen gets snapped forward again, which reads
+  as "the app won't let me go back."
+- **Guard on server write-time** (`now()`) does not fix the original
+  problem at all. `now()` is evaluated when the write lands, so the stale
+  phone's flush *is* the newest write — newest-write-wins accepts exactly
+  the write being rejected.
+
+What distinguishes them is **observation recency**, not write recency and
+not magnitude. So: optimistic concurrency on the `updated_at` column that
+already exists. The client sends the `updated_at` it last read, and the
+write is rejected if the stored value has moved on since. No client clock
+is trusted, and a rewind is honoured because a rewind is a *fresh*
+observation.
+
+`fetchEpisodes` therefore returns each playback row's `updated_at`
+alongside its position, so the player has something to send back. A
+rejected write means another device has written since this one last
+looked; the player re-reads rather than retrying blindly.
 
 ## What moves into the Kit (so it is tested)
 
@@ -132,15 +151,28 @@ Critical finding possible.
 - `AVAudioSession` category `.playback`, activated when playback starts,
   so audio continues when the screen locks.
 
-  **Category policy with the mic screens.** `SpeakQuestionCard`,
-  `ConversationView`, `HectorView` and `CampaignView` take the session
-  for recording (`.playAndRecord`). When one of them does, this player
-  **pauses and does not auto-resume**; the learner restarts it
-  deliberately. Auto-resuming would talk over someone doing a speaking
-  exercise, and sharing one session between podcast playback and
-  recording is not attempted. This is the most likely thing in the phase
-  to be wrong on a real device with real headphones, and it has no
-  automated coverage.
+  **Interruptions are not all the same, and the difference decides
+  whether resuming is right.** iOS delivers phone calls, alarms, Siri
+  *and* another app or screen taking the session through the same
+  `AVAudioSession.interruptionNotification`, and supplies
+  `.shouldResume` in the options precisely to tell them apart.
+
+  - **System interruptions** (a call, an alarm, Siri): pause on `.began`,
+    and **honour `.shouldResume`** on `.ended`. Never resuming means a
+    podcast silently dies after a phone call, which a user reads as a
+    bug.
+  - **The in-app mic case** — `SpeakQuestionCard`, `ConversationView`,
+    `HectorView` and `CampaignView` taking the session for recording
+    (`.playAndRecord`) — **suppresses resume** even if `.shouldResume`
+    arrives. Resuming a podcast over someone mid-speaking-exercise is
+    exactly the failure to avoid, and sharing one session between
+    playback and recording is not attempted.
+
+  The player distinguishes them by an app-level flag those screens set
+  while recording, not by guessing from the notification alone.
+
+  This is the most likely thing in the phase to be wrong on a real device
+  with real headphones, and it has no automated coverage.
 - `MPNowPlayingInfoCenter` for title and elapsed time;
   `MPRemoteCommandCenter` for play, pause and skip.
 - **`UIBackgroundModes` = `audio`** added to `ios/LearnWithAlphonso/Info.plist`

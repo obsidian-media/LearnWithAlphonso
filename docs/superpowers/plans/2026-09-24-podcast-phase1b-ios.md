@@ -272,9 +272,66 @@ func testRecordPlayEventCallsTheRPCRatherThanInsertingDirectly() async throws {
     XCTAssertFalse(url.path.contains("/rest/v1/podcast_play_events"))
 }
 
-// Review Focus #3: never move a saved position backwards from a stale
-// device. The client sends the newer-wins guard; see step 3.
-func testSavePlaybackPositionAsksTheServerToKeepTheFurthestProgress() async throws { /* asserts the merge/prefer header or conditional */ }
+// Review Focus #3: optimistic concurrency, not magnitude and not now().
+func testSavePlaybackPositionGuardsOnTheUpdatedAtItLastRead() async throws {
+    let box = RequestBox()
+    let client = makeClient { request in
+        await box.record(request)
+        return self.jsonResponse(for: request.url!, body: [["position_seconds": 90]])
+    }
+    try await client.savePlaybackPosition(
+        episodeID: "e1", positionSeconds: 90, completed: false,
+        lastSeenUpdatedAt: "2026-09-24T10:00:00Z"
+    )
+    let request = await box.last!
+    XCTAssertEqual(request.httpMethod, "PATCH")
+    XCTAssertTrue(request.url!.query!.contains("updated_at=eq.2026-09-24T10%3A00%3A00Z"))
+}
+
+// An empty representation means the filter matched nothing: another
+// device wrote since we last read. Must be distinguishable so the
+// player re-reads instead of retrying a write that cannot land.
+func testReportsAStaleWriteWhenAnotherDeviceHasWrittenSince() async throws {
+    let client = makeClient { request in self.jsonResponse(for: request.url!, body: []) }
+    do {
+        try await client.savePlaybackPosition(
+            episodeID: "e1", positionSeconds: 90, completed: false,
+            lastSeenUpdatedAt: "2026-09-24T10:00:00Z"
+        )
+        XCTFail("expected a stale-write error")
+    } catch {
+        XCTAssertEqual(error as? PodcastClientError, .staleWrite)
+    }
+}
+
+// A rewind is a fresh observation, so it must be accepted -- this is the
+// case a magnitude guard would wrongly reject.
+func testAcceptsARewindToAnEarlierPosition() async throws {
+    let box = RequestBox()
+    let client = makeClient { request in
+        await box.record(request)
+        return self.jsonResponse(for: request.url!, body: [["position_seconds": 30]])
+    }
+    try await client.savePlaybackPosition(
+        episodeID: "e1", positionSeconds: 30, completed: false,
+        lastSeenUpdatedAt: "2026-09-24T10:00:00Z"
+    )
+    let body = try JSONSerialization.jsonObject(with: await box.last!.httpBody!) as! [String: Any]
+    XCTAssertEqual(body["position_seconds"] as? Int, 30)
+}
+
+// No row yet: POST rather than a PATCH that would match nothing.
+func testPostsWhenThereIsNoExistingPlaybackRow() async throws {
+    let box = RequestBox()
+    let client = makeClient { request in
+        await box.record(request)
+        return self.jsonResponse(for: request.url!, body: [["position_seconds": 5]])
+    }
+    try await client.savePlaybackPosition(
+        episodeID: "e1", positionSeconds: 5, completed: false, lastSeenUpdatedAt: nil
+    )
+    XCTAssertEqual(await box.last!.httpMethod, "POST")
+}
 ```
 
 - [ ] **Step 2: Run to verify they fail**
@@ -289,7 +346,11 @@ Mirror `ProgressSyncClient`'s request construction exactly: `apikey` header from
 Two Review Focus items are resolved here, and both need a decision recorded in the code:
 
 - **Token expiry (Focus #2):** the client cannot refresh a token it was handed. It surfaces `.unauthorized` distinctly so the app layer can stop pretending the save succeeded. The app layer's response is Task 4: stop issuing position saves for the rest of the session and let the next launch (which builds a client from a fresh token, as `RootView.triggerSync` already does) recover. Silently swallowing 401 is what makes resume mysteriously stop working.
-- **Backwards resume (Focus #3):** `savePlaybackPosition` must not let a stale device drag a position backwards. Implement by sending the upsert with `Prefer: resolution=merge-duplicates` **and** a `position_seconds` guard: issue it as a PATCH filtered on `position_seconds=lt.<new>` first, falling back to an insert when no row exists. If that proves awkward against PostgREST, the alternative is a small SECURITY DEFINER RPC taking the max — record whichever you choose and why in the ledger, since the spec asserts cross-device resume as a success criterion and an unguarded last-writer-wins does not deliver it.
+- **Backwards resume (Focus #3): optimistic concurrency on `updated_at`.** Do **not** guard on position magnitude and do **not** guard on `now()`. Magnitude fixes the stale phone but breaks deliberate rewind — a learner scrubbing back to 0:30 gets snapped forward. `now()` is evaluated at write time, so the stale flush is the newest write and the guard accepts exactly what it should reject. What separates them is *observation* recency.
+
+  So: `savePlaybackPosition(episodeID:positionSeconds:completed:lastSeenUpdatedAt:)` issues a PATCH filtered on `updated_at=eq.<lastSeenUpdatedAt>` with `Prefer: return=representation`, and sets `updated_at` to `now()` in the body. An empty response body means the filter matched nothing — another device has written since this one last read — which surfaces as `PodcastClientError.staleWrite` rather than being retried blindly. When `lastSeenUpdatedAt` is nil (no row yet) it POSTs instead, and treats a unique-violation as the same stale case.
+
+  `fetchEpisodes` must therefore select `updated_at` from `podcast_playback` and carry it on the episode, so the player has something to send back.
 
 - [ ] **Step 4: Run to verify they pass**
 
@@ -338,7 +399,7 @@ An `@Observable` final class owning one `AVPlayer`, exposing `episode`, `isPlayi
 Required behaviour, each of which is a device check:
 
 - **Audio session policy (Review Focus #1).** Set `.playback` when playback starts. The mic screens (`SpeakQuestionCard`, `ConversationView`, `HectorView`, `CampaignView`) set `.playAndRecord` for their own work. Policy: when another screen takes the session for recording, this player **pauses** and does not auto-resume; the learner restarts it deliberately. Auto-resuming into a speaking exercise would talk over the learner. Do not attempt to share the session between podcast playback and recording.
-- **Interruptions.** Observe `AVAudioSession.interruptionNotification`: pause on `.began`; on `.ended`, resume only if the payload carries `.shouldResume`.
+- **Interruptions, by type.** Observe `AVAudioSession.interruptionNotification`: pause on `.began`. On `.ended`, **honour `.shouldResume`** — iOS supplies it precisely to mark a call, alarm or Siri, and never resuming makes a podcast silently die after a phone call, which reads as a bug. **Suppress resume only for the in-app mic case**, detected by an app-level `isRecording` flag the mic screens set (`SpeakQuestionCard`, `ConversationView`, `HectorView`, `CampaignView`), not by guessing from the notification. Resuming over someone mid-speaking-exercise is the failure to avoid.
 - **Route changes.** Observe `routeChangeNotification`: on `.oldDeviceUnavailable` (headphones pulled), pause rather than continuing out of the speaker.
 - **Now Playing.** `MPNowPlayingInfoCenter` title and elapsed/duration; `MPRemoteCommandCenter` play, pause, and ±15s skip.
 - **Position saves.** Periodic time observer, throttled to ~10s, plus on pause and on `scenePhase` background. Use the absolute difference, not a bare subtraction — after a backward skip a plain subtraction stays negative and silently stops saving.
