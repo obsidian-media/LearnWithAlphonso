@@ -27,6 +27,24 @@ jobs:
       - name: Test
         run: bun run test
 
+      # scripts/export-ios-content.ts is a MANUAL step -- the native app
+      # bundles its content as JSON rather than fetching it, so any change to
+      # curriculum*.ts / scenarios.ts / campaigns / achievements.ts /
+      # vocab-images.ts has to be re-exported by hand. Nothing used to catch a
+      # forgotten re-export, and it already bit once: iOS's bundled achievement
+      # count silently stayed stale. Regenerating and diffing is the cheapest
+      # loud failure -- the fix when this fails is to run the command locally
+      # and commit the result, never to edit the JSON by hand.
+      - name: Bundled iOS content is up to date
+        run: |
+          bun scripts/export-ios-content.ts
+          if ! git diff --quiet -- ios/; then
+            echo "::error::Bundled iOS content is stale. Run 'bun scripts/export-ios-content.ts' and commit the result."
+            git diff --stat -- ios/
+            git diff -- ios/ | head -100
+            exit 1
+          fi
+
   e2e:
     runs-on: ubuntu-latest
     steps:
@@ -82,6 +100,31 @@ jobs:
 
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
+
+      # A new Edge Function directory needs its own deno.json import map, and
+      # nothing caught a missing one until the real deploy -- found 2026-09-22
+      # shipping get-season-status. `deno check` and `deno test` both pass
+      # without it (they resolve npm:/bare specifiers differently), but
+      # `supabase functions deploy` fails with:
+      #   Relative import path "@supabase/supabase-js" not prefixed with / or ./ or ../
+      # That is the deploy-supabase job below, i.e. after merge to main -- so
+      # the break lands on main rather than on the PR that caused it.
+      - name: Every Edge Function has a deno.json import map
+        run: |
+          missing=""
+          for dir in supabase/functions/*/; do
+            name=$(basename "$dir")
+            # _shared is a plain module directory, not a deployed function --
+            # it has no deno.json and does not need one.
+            [ "$name" = "_shared" ] && continue
+            [ -f "$dir/deno.json" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Edge Function(s) missing a deno.json import map:$missing"
+            echo "Copy one from a sibling, e.g. supabase/functions/complete-lesson/deno.json"
+            exit 1
+          fi
+          echo "All Edge Functions have a deno.json."
 
   deploy-supabase:
     # Applies pending supabase/migrations/*.sql and redeploys the three

@@ -11,7 +11,14 @@
  * app's design doc, docs/superpowers/specs/2026-09-17-native-ios-app-design.md,
  * for why content is bundled rather than fetched at runtime for V1).
  *
- * Usage: node_modules/.bin/tsx scripts/export-ios-content.ts
+ * Usage: bun scripts/export-ios-content.ts
+ *
+ * (The old `node_modules/.bin/tsx` invocation documented here until
+ * 2026-09-24 never worked -- `tsx` is not a dependency of this project.
+ * CI runs the bun form above in ci.yml's "Bundled iOS content is up to
+ * date" step, which regenerates and fails on any diff, so a forgotten
+ * re-export is now caught on the PR instead of silently shipping stale
+ * content to the app.)
  */
 import fs from "node:fs";
 import path from "node:path";
