@@ -7382,6 +7382,325 @@
       ]
     },
     {
+      "id": "fra1p21u1",
+      "level": "A1",
+      "eyebrow": "Unit 21",
+      "title": "Say It Your Way",
+      "description": "Write the idea in French — Everyday ideas, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "fra1p21l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra1p21q0",
+              "type": "translate",
+              "prompt": "Greet someone in the morning.",
+              "acceptableAnswers": [
+                "Bonjour.",
+                "Salut, ça va ?",
+                "Bonjour à vous."
+              ],
+              "explanation": "One way to say it: \"Bonjour.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q1",
+              "type": "translate",
+              "prompt": "Ask someone their name (informal).",
+              "acceptableAnswers": [
+                "Comment tu t'appelles ?",
+                "Tu t'appelles comment ?",
+                "C'est quoi ton prénom ?"
+              ],
+              "explanation": "One way to say it: \"Comment tu t'appelles ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q2",
+              "type": "translate",
+              "prompt": "Say you do not understand.",
+              "acceptableAnswers": [
+                "Je ne comprends pas.",
+                "Pardon, je ne comprends pas.",
+                "Je n'y comprends rien."
+              ],
+              "explanation": "One way to say it: \"Je ne comprends pas.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q3",
+              "type": "translate",
+              "prompt": "Ask where the train station is.",
+              "acceptableAnswers": [
+                "Où est la gare ?",
+                "Pourriez-vous me dire où est la gare ?",
+                "Comment aller à la gare ?"
+              ],
+              "explanation": "One way to say it: \"Où est la gare ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q4",
+              "type": "translate",
+              "prompt": "Thank someone warmly.",
+              "acceptableAnswers": [
+                "Merci beaucoup.",
+                "Merci mille fois.",
+                "Je vous remercie vraiment."
+              ],
+              "explanation": "One way to say it: \"Merci beaucoup.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra1p21l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra1p21q5",
+              "type": "translate",
+              "prompt": "Ask someone to repeat something.",
+              "acceptableAnswers": [
+                "Pouvez-vous répéter ?",
+                "Vous pouvez répéter, s'il vous plaît ?",
+                "Pardon, vous disiez ?"
+              ],
+              "explanation": "One way to say it: \"Pouvez-vous répéter ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q6",
+              "type": "translate",
+              "prompt": "Say you come from Canada.",
+              "acceptableAnswers": [
+                "Je viens du Canada.",
+                "Je suis originaire du Canada.",
+                "J'arrive du Canada."
+              ],
+              "explanation": "One way to say it: \"Je viens du Canada.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q7",
+              "type": "translate",
+              "prompt": "Order a coffee politely.",
+              "acceptableAnswers": [
+                "Je voudrais un café, s'il vous plaît.",
+                "Un café, s'il vous plaît.",
+                "Puis-je avoir un café ?"
+              ],
+              "explanation": "One way to say it: \"Je voudrais un café, s'il vous plaît.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q8",
+              "type": "translate",
+              "prompt": "Ask how someone is doing.",
+              "acceptableAnswers": [
+                "Comment allez-vous ?",
+                "Comment ça va ?",
+                "Ça va bien ?"
+              ],
+              "explanation": "One way to say it: \"Comment allez-vous ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q9",
+              "type": "translate",
+              "prompt": "Say you are fine, thanks.",
+              "acceptableAnswers": [
+                "Je vais bien, merci.",
+                "Ça va bien, merci.",
+                "Très bien, merci."
+              ],
+              "explanation": "One way to say it: \"Je vais bien, merci.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra1p21l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra1p21q10",
+              "type": "translate",
+              "prompt": "Introduce yourself.",
+              "acceptableAnswers": [
+                "Je m'appelle Julie.",
+                "Moi, c'est Julie.",
+                "Mon nom est Julie."
+              ],
+              "explanation": "One way to say it: \"Je m'appelle Julie.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q11",
+              "type": "translate",
+              "prompt": "Ask for the bill at a restaurant.",
+              "acceptableAnswers": [
+                "L'addition, s'il vous plaît.",
+                "Pouvez-vous apporter l'addition ?",
+                "Je voudrais l'addition, s'il vous plaît."
+              ],
+              "explanation": "One way to say it: \"L'addition, s'il vous plaît.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q12",
+              "type": "translate",
+              "prompt": "Say you would like some water.",
+              "acceptableAnswers": [
+                "Je voudrais de l'eau.",
+                "De l'eau, s'il vous plaît.",
+                "Puis-je avoir de l'eau ?"
+              ],
+              "explanation": "One way to say it: \"Je voudrais de l'eau.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q13",
+              "type": "translate",
+              "prompt": "Ask what time it is.",
+              "acceptableAnswers": [
+                "Quelle heure est-il ?",
+                "Vous avez l'heure ?",
+                "Il est quelle heure, s'il vous plaît ?"
+              ],
+              "explanation": "One way to say it: \"Quelle heure est-il ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q14",
+              "type": "translate",
+              "prompt": "Say goodbye to a friend.",
+              "acceptableAnswers": [
+                "Salut !",
+                "À bientôt !",
+                "Ciao !"
+              ],
+              "explanation": "One way to say it: \"Salut !\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra1p21l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra1p21q15",
+              "type": "translate",
+              "prompt": "Say you are hungry.",
+              "acceptableAnswers": [
+                "J'ai faim.",
+                "Je meurs de faim.",
+                "J'ai vraiment faim."
+              ],
+              "explanation": "One way to say it: \"J'ai faim.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q16",
+              "type": "translate",
+              "prompt": "Ask someone where they live.",
+              "acceptableAnswers": [
+                "Où habitez-vous ?",
+                "Tu habites où ?",
+                "Où est-ce que vous habitez ?"
+              ],
+              "explanation": "One way to say it: \"Où habitez-vous ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q17",
+              "type": "translate",
+              "prompt": "Say you live in Paris.",
+              "acceptableAnswers": [
+                "J'habite à Paris.",
+                "Je vis à Paris.",
+                "Mon domicile est à Paris."
+              ],
+              "explanation": "One way to say it: \"J'habite à Paris.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q18",
+              "type": "translate",
+              "prompt": "Ask for directions to the bathroom.",
+              "acceptableAnswers": [
+                "Où sont les toilettes ?",
+                "Pourriez-vous m'indiquer les toilettes ?",
+                "Les toilettes, s'il vous plaît ?"
+              ],
+              "explanation": "One way to say it: \"Où sont les toilettes ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q19",
+              "type": "translate",
+              "prompt": "Say you are sorry (apologize).",
+              "acceptableAnswers": [
+                "Je suis désolé.",
+                "Je suis désolée.",
+                "Toutes mes excuses."
+              ],
+              "explanation": "One way to say it: \"Je suis désolé.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra1p21l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra1p21q20",
+              "type": "translate",
+              "prompt": "Wish someone a good day.",
+              "acceptableAnswers": [
+                "Bonne journée !",
+                "Passez une bonne journée !",
+                "Je vous souhaite une bonne journée."
+              ],
+              "explanation": "One way to say it: \"Bonne journée !\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q21",
+              "type": "translate",
+              "prompt": "Ask how much something costs.",
+              "acceptableAnswers": [
+                "Combien ça coûte ?",
+                "C'est combien ?",
+                "Quel est le prix, s'il vous plaît ?"
+              ],
+              "explanation": "One way to say it: \"Combien ça coûte ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q22",
+              "type": "translate",
+              "prompt": "Say you don't speak French well.",
+              "acceptableAnswers": [
+                "Je ne parle pas bien français.",
+                "Mon français n'est pas très bon.",
+                "Je parle un peu français."
+              ],
+              "explanation": "One way to say it: \"Je ne parle pas bien français.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q23",
+              "type": "translate",
+              "prompt": "Invite someone for coffee.",
+              "acceptableAnswers": [
+                "Tu veux prendre un café ?",
+                "On va prendre un café ?",
+                "Voulez-vous prendre un café avec moi ?"
+              ],
+              "explanation": "One way to say it: \"Tu veux prendre un café ?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "fra1p21q24",
+              "type": "translate",
+              "prompt": "Wish someone good luck.",
+              "acceptableAnswers": [
+                "Bonne chance !",
+                "Je te souhaite bonne chance !",
+                "Bon courage !"
+              ],
+              "explanation": "One way to say it: \"Bonne chance !\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "fra2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -14762,6 +15081,325 @@
       ]
     },
     {
+      "id": "fra2p21u1",
+      "level": "A2",
+      "eyebrow": "Unit 21",
+      "title": "Say It Your Way",
+      "description": "Write the idea in French — Everyday situations, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "fra2p21l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra2p21q0",
+              "type": "translate",
+              "prompt": "Say what you did yesterday (go to the market).",
+              "acceptableAnswers": [
+                "Hier, je suis allé au marché.",
+                "Hier, je suis allée au marché.",
+                "Je suis allé au marché hier."
+              ],
+              "explanation": "One way to say it: \"Hier, je suis allé au marché.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q1",
+              "type": "translate",
+              "prompt": "Ask someone about their weekend.",
+              "acceptableAnswers": [
+                "Comment s'est passé ton week-end ?",
+                "Tu as passé un bon week-end ?",
+                "Qu'as-tu fait ce week-end ?"
+              ],
+              "explanation": "One way to say it: \"Comment s'est passé ton week-end ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q2",
+              "type": "translate",
+              "prompt": "Say you are going to travel next summer.",
+              "acceptableAnswers": [
+                "Je vais voyager l'été prochain.",
+                "L'été prochain, je pars en voyage.",
+                "Je compte voyager l'été prochain."
+              ],
+              "explanation": "One way to say it: \"Je vais voyager l'été prochain.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q3",
+              "type": "translate",
+              "prompt": "Complain that something is broken.",
+              "acceptableAnswers": [
+                "C'est cassé.",
+                "Ça ne marche pas.",
+                "C'est en panne."
+              ],
+              "explanation": "One way to say it: \"C'est cassé.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q4",
+              "type": "translate",
+              "prompt": "Ask for a table for two.",
+              "acceptableAnswers": [
+                "Une table pour deux, s'il vous plaît.",
+                "Avez-vous une table pour deux ?",
+                "Je voudrais une table pour deux personnes."
+              ],
+              "explanation": "One way to say it: \"Une table pour deux, s'il vous plaît.\" Everyday situations, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra2p21l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra2p21q5",
+              "type": "translate",
+              "prompt": "Say you forgot your keys.",
+              "acceptableAnswers": [
+                "J'ai oublié mes clés.",
+                "J'ai oublié mes clés à la maison.",
+                "Mes clés, je les ai oubliées."
+              ],
+              "explanation": "One way to say it: \"J'ai oublié mes clés.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q6",
+              "type": "translate",
+              "prompt": "Ask if the seat is taken.",
+              "acceptableAnswers": [
+                "Cette place est-elle libre ?",
+                "Est-ce que cette place est prise ?",
+                "La place est libre ?"
+              ],
+              "explanation": "One way to say it: \"Cette place est-elle libre ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q7",
+              "type": "translate",
+              "prompt": "Say you used to live in Lyon.",
+              "acceptableAnswers": [
+                "J'habitais à Lyon avant.",
+                "Avant, j'habitais à Lyon.",
+                "J'ai habité à Lyon pendant longtemps."
+              ],
+              "explanation": "One way to say it: \"J'habitais à Lyon avant.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q8",
+              "type": "translate",
+              "prompt": "Recommend a restaurant to a friend.",
+              "acceptableAnswers": [
+                "Je te recommande ce restaurant.",
+                "Ce restaurant est vraiment bon, essaie-le.",
+                "Tu devrais essayer ce restaurant."
+              ],
+              "explanation": "One way to say it: \"Je te recommande ce restaurant.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q9",
+              "type": "translate",
+              "prompt": "Ask someone what they think of a movie.",
+              "acceptableAnswers": [
+                "Qu'est-ce que tu penses du film ?",
+                "Tu as aimé le film ?",
+                "Comment as-tu trouvé le film ?"
+              ],
+              "explanation": "One way to say it: \"Qu'est-ce que tu penses du film ?\" Everyday situations, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra2p21l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra2p21q10",
+              "type": "translate",
+              "prompt": "Say you need to see a doctor.",
+              "acceptableAnswers": [
+                "Je dois voir un médecin.",
+                "J'ai besoin de consulter un médecin.",
+                "Il faut que je voie un médecin."
+              ],
+              "explanation": "One way to say it: \"Je dois voir un médecin.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q11",
+              "type": "translate",
+              "prompt": "Explain that you missed the bus.",
+              "acceptableAnswers": [
+                "J'ai raté le bus.",
+                "Le bus est parti sans moi.",
+                "J'ai manqué le bus."
+              ],
+              "explanation": "One way to say it: \"J'ai raté le bus.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q12",
+              "type": "translate",
+              "prompt": "Ask how to get to the museum.",
+              "acceptableAnswers": [
+                "Comment va-t-on au musée ?",
+                "Pour aller au musée, s'il vous plaît ?",
+                "Quel chemin faut-il prendre pour le musée ?"
+              ],
+              "explanation": "One way to say it: \"Comment va-t-on au musée ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q13",
+              "type": "translate",
+              "prompt": "Say you are looking for a job.",
+              "acceptableAnswers": [
+                "Je cherche un emploi.",
+                "Je suis à la recherche d'un travail.",
+                "Je cherche du travail."
+              ],
+              "explanation": "One way to say it: \"Je cherche un emploi.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q14",
+              "type": "translate",
+              "prompt": "Ask a colleague for help with a task.",
+              "acceptableAnswers": [
+                "Peux-tu m'aider avec ça ?",
+                "Pourriez-vous m'aider avec cette tâche ?",
+                "J'aurais besoin d'un coup de main."
+              ],
+              "explanation": "One way to say it: \"Peux-tu m'aider avec ça ?\" Everyday situations, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra2p21l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra2p21q15",
+              "type": "translate",
+              "prompt": "Say the weather was terrible yesterday.",
+              "acceptableAnswers": [
+                "Il a fait un temps horrible hier.",
+                "Hier, le temps était affreux.",
+                "Le temps était vraiment mauvais hier."
+              ],
+              "explanation": "One way to say it: \"Il a fait un temps horrible hier.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q16",
+              "type": "translate",
+              "prompt": "Suggest going to the beach.",
+              "acceptableAnswers": [
+                "Et si on allait à la plage ?",
+                "On pourrait aller à la plage.",
+                "Allons à la plage !"
+              ],
+              "explanation": "One way to say it: \"Et si on allait à la plage ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q17",
+              "type": "translate",
+              "prompt": "Say you already ate.",
+              "acceptableAnswers": [
+                "J'ai déjà mangé.",
+                "J'ai déjà pris mon repas.",
+                "J'ai mangé, merci."
+              ],
+              "explanation": "One way to say it: \"J'ai déjà mangé.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q18",
+              "type": "translate",
+              "prompt": "Ask if there is a discount.",
+              "acceptableAnswers": [
+                "Y a-t-il une réduction ?",
+                "Est-ce qu'il y a une remise ?",
+                "Faites-vous des réductions ?"
+              ],
+              "explanation": "One way to say it: \"Y a-t-il une réduction ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q19",
+              "type": "translate",
+              "prompt": "Say you will call back later.",
+              "acceptableAnswers": [
+                "Je rappellerai plus tard.",
+                "Je vous rappelle plus tard.",
+                "Je te rappelle tout à l'heure."
+              ],
+              "explanation": "One way to say it: \"Je rappellerai plus tard.\" Everyday situations, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "fra2p21l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "fra2p21q20",
+              "type": "translate",
+              "prompt": "Apologize for being late.",
+              "acceptableAnswers": [
+                "Désolé pour le retard.",
+                "Désolée pour le retard.",
+                "Je suis en retard, toutes mes excuses."
+              ],
+              "explanation": "One way to say it: \"Désolé pour le retard.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q21",
+              "type": "translate",
+              "prompt": "Say you have never been to Italy.",
+              "acceptableAnswers": [
+                "Je ne suis jamais allé en Italie.",
+                "Je ne suis jamais allée en Italie.",
+                "Je n'ai encore jamais visité l'Italie."
+              ],
+              "explanation": "One way to say it: \"Je ne suis jamais allé en Italie.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q22",
+              "type": "translate",
+              "prompt": "Ask if the wifi password is available.",
+              "acceptableAnswers": [
+                "Quel est le mot de passe wifi ?",
+                "Avez-vous le mot de passe du wifi ?",
+                "Le wifi, c'est quoi le mot de passe ?"
+              ],
+              "explanation": "One way to say it: \"Quel est le mot de passe wifi ?\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q23",
+              "type": "translate",
+              "prompt": "Say you plan to study tonight.",
+              "acceptableAnswers": [
+                "Je vais étudier ce soir.",
+                "Ce soir, je compte réviser.",
+                "J'ai l'intention d'étudier ce soir."
+              ],
+              "explanation": "One way to say it: \"Je vais étudier ce soir.\" Everyday situations, and more than one wording is right."
+            },
+            {
+              "id": "fra2p21q24",
+              "type": "translate",
+              "prompt": "Ask someone to slow down when speaking.",
+              "acceptableAnswers": [
+                "Pouvez-vous parler plus lentement ?",
+                "Parlez plus lentement, s'il vous plaît.",
+                "Pourriez-vous ralentir un peu quand vous parlez ?"
+              ],
+              "explanation": "One way to say it: \"Pouvez-vous parler plus lentement ?\" Everyday situations, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "frb1p1u1",
       "level": "B1",
       "eyebrow": "Unit 1",
@@ -22033,6 +22671,325 @@
               ],
               "answer": "prendre",
               "explanation": "\"prendre\" is correct here. Common structures for suggestions and advice."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb1p21u1",
+      "level": "B1",
+      "eyebrow": "Unit 21",
+      "title": "Say It Your Way",
+      "description": "Write the idea in French — Opinions and plans, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "frb1p21l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb1p21q0",
+              "type": "translate",
+              "prompt": "Say you think the meeting went well.",
+              "acceptableAnswers": [
+                "Je pense que la réunion s'est bien passée.",
+                "À mon avis, la réunion était réussie.",
+                "Je trouve que la réunion s'est bien déroulée."
+              ],
+              "explanation": "One way to say it: \"Je pense que la réunion s'est bien passée.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q1",
+              "type": "translate",
+              "prompt": "Disagree politely with an opinion.",
+              "acceptableAnswers": [
+                "Je ne suis pas tout à fait d'accord.",
+                "Je vois les choses différemment.",
+                "Permettez-moi de ne pas être d'accord."
+              ],
+              "explanation": "One way to say it: \"Je ne suis pas tout à fait d'accord.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q2",
+              "type": "translate",
+              "prompt": "Say you would like to change your reservation.",
+              "acceptableAnswers": [
+                "Je voudrais modifier ma réservation.",
+                "J'aimerais changer ma réservation.",
+                "Serait-il possible de modifier ma réservation ?"
+              ],
+              "explanation": "One way to say it: \"Je voudrais modifier ma réservation.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q3",
+              "type": "translate",
+              "prompt": "Explain why you are learning French.",
+              "acceptableAnswers": [
+                "J'apprends le français pour voyager.",
+                "J'apprends le français parce que je veux voyager.",
+                "C'est pour le travail que j'apprends le français."
+              ],
+              "explanation": "One way to say it: \"J'apprends le français pour voyager.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q4",
+              "type": "translate",
+              "prompt": "Say you would help if you had more time.",
+              "acceptableAnswers": [
+                "Je t'aiderais si j'avais plus de temps.",
+                "Si j'avais le temps, je t'aiderais volontiers.",
+                "J'aimerais aider, mais le temps me manque."
+              ],
+              "explanation": "One way to say it: \"Je t'aiderais si j'avais plus de temps.\" Opinions and plans, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb1p21l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb1p21q5",
+              "type": "translate",
+              "prompt": "Ask for someone's opinion on a decision.",
+              "acceptableAnswers": [
+                "Qu'en penses-tu ?",
+                "Quel est ton avis là-dessus ?",
+                "Qu'est-ce que tu en penses ?"
+              ],
+              "explanation": "One way to say it: \"Qu'en penses-tu ?\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q6",
+              "type": "translate",
+              "prompt": "Say you regret not calling earlier.",
+              "acceptableAnswers": [
+                "Je regrette de ne pas avoir appelé plus tôt.",
+                "J'aurais dû appeler plus tôt.",
+                "Je m'en veux de ne pas avoir téléphoné avant."
+              ],
+              "explanation": "One way to say it: \"Je regrette de ne pas avoir appelé plus tôt.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q7",
+              "type": "translate",
+              "prompt": "Propose a compromise.",
+              "acceptableAnswers": [
+                "Et si on trouvait un compromis ?",
+                "Je propose un compromis.",
+                "On pourrait peut-être trouver un terrain d'entente."
+              ],
+              "explanation": "One way to say it: \"Et si on trouvait un compromis ?\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q8",
+              "type": "translate",
+              "prompt": "Say you are worried about the exam.",
+              "acceptableAnswers": [
+                "Je suis inquiet pour l'examen.",
+                "Je suis inquiète pour l'examen.",
+                "L'examen m'inquiète beaucoup."
+              ],
+              "explanation": "One way to say it: \"Je suis inquiet pour l'examen.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q9",
+              "type": "translate",
+              "prompt": "Explain that you need more information before deciding.",
+              "acceptableAnswers": [
+                "J'ai besoin de plus d'informations avant de décider.",
+                "Il me faut plus de détails pour me décider.",
+                "Je ne peux pas décider sans plus d'informations."
+              ],
+              "explanation": "One way to say it: \"J'ai besoin de plus d'informations avant de décider.\" Opinions and plans, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb1p21l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb1p21q10",
+              "type": "translate",
+              "prompt": "Say you are proud of your progress.",
+              "acceptableAnswers": [
+                "Je suis fier de mes progrès.",
+                "Je suis fière de mes progrès.",
+                "Mes progrès me rendent vraiment content."
+              ],
+              "explanation": "One way to say it: \"Je suis fier de mes progrès.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q11",
+              "type": "translate",
+              "prompt": "Suggest postponing the meeting.",
+              "acceptableAnswers": [
+                "On pourrait reporter la réunion.",
+                "Et si on repoussait la réunion ?",
+                "Je propose de reporter la réunion."
+              ],
+              "explanation": "One way to say it: \"On pourrait reporter la réunion.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q12",
+              "type": "translate",
+              "prompt": "Say you would rather stay home tonight.",
+              "acceptableAnswers": [
+                "Je préférerais rester à la maison ce soir.",
+                "Ce soir, je préfère rester chez moi.",
+                "J'aimerais mieux rester à la maison."
+              ],
+              "explanation": "One way to say it: \"Je préférerais rester à la maison ce soir.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q13",
+              "type": "translate",
+              "prompt": "Express that a decision was difficult.",
+              "acceptableAnswers": [
+                "Cette décision a été difficile à prendre.",
+                "Ce n'était pas facile de décider.",
+                "J'ai eu du mal à me décider."
+              ],
+              "explanation": "One way to say it: \"Cette décision a été difficile à prendre.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q14",
+              "type": "translate",
+              "prompt": "Say you are considering a career change.",
+              "acceptableAnswers": [
+                "J'envisage de changer de carrière.",
+                "Je pense à changer de métier.",
+                "Un changement de carrière me tente."
+              ],
+              "explanation": "One way to say it: \"J'envisage de changer de carrière.\" Opinions and plans, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb1p21l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb1p21q15",
+              "type": "translate",
+              "prompt": "Ask someone for their honest opinion.",
+              "acceptableAnswers": [
+                "Dis-moi franchement ce que tu en penses.",
+                "J'aimerais ton avis sincère.",
+                "Sois honnête, qu'en penses-tu ?"
+              ],
+              "explanation": "One way to say it: \"Dis-moi franchement ce que tu en penses.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q16",
+              "type": "translate",
+              "prompt": "Say the situation has improved.",
+              "acceptableAnswers": [
+                "La situation s'est améliorée.",
+                "Les choses vont mieux maintenant.",
+                "Ça s'est nettement amélioré."
+              ],
+              "explanation": "One way to say it: \"La situation s'est améliorée.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q17",
+              "type": "translate",
+              "prompt": "Explain you missed the deadline because of an emergency.",
+              "acceptableAnswers": [
+                "J'ai raté la date limite à cause d'une urgence.",
+                "Une urgence m'a empêché de respecter le délai.",
+                "Je n'ai pas pu finir à temps à cause d'un imprévu."
+              ],
+              "explanation": "One way to say it: \"J'ai raté la date limite à cause d'une urgence.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q18",
+              "type": "translate",
+              "prompt": "Say you would travel more if you had the money.",
+              "acceptableAnswers": [
+                "Je voyagerais davantage si j'avais l'argent.",
+                "Si j'avais plus d'argent, je voyagerais plus souvent.",
+                "J'aimerais voyager plus, mais l'argent me manque."
+              ],
+              "explanation": "One way to say it: \"Je voyagerais davantage si j'avais l'argent.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q19",
+              "type": "translate",
+              "prompt": "Recommend that a friend see a specialist.",
+              "acceptableAnswers": [
+                "Tu devrais consulter un spécialiste.",
+                "Je te conseille de voir un spécialiste.",
+                "Il vaudrait mieux consulter un spécialiste."
+              ],
+              "explanation": "One way to say it: \"Tu devrais consulter un spécialiste.\" Opinions and plans, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb1p21l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb1p21q20",
+              "type": "translate",
+              "prompt": "Say you are grateful for the support.",
+              "acceptableAnswers": [
+                "Je suis reconnaissant pour ce soutien.",
+                "Je suis reconnaissante pour ce soutien.",
+                "Ce soutien compte énormément pour moi."
+              ],
+              "explanation": "One way to say it: \"Je suis reconnaissant pour ce soutien.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q21",
+              "type": "translate",
+              "prompt": "Express doubt about a plan.",
+              "acceptableAnswers": [
+                "Je doute que ce plan fonctionne.",
+                "Ce plan me semble risqué.",
+                "Je ne suis pas convaincu que ça marche."
+              ],
+              "explanation": "One way to say it: \"Je doute que ce plan fonctionne.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q22",
+              "type": "translate",
+              "prompt": "Say you will think it over.",
+              "acceptableAnswers": [
+                "Je vais y réfléchir.",
+                "Laisse-moi y réfléchir.",
+                "Je dois y penser encore un peu."
+              ],
+              "explanation": "One way to say it: \"Je vais y réfléchir.\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q23",
+              "type": "translate",
+              "prompt": "Ask someone to clarify their point.",
+              "acceptableAnswers": [
+                "Peux-tu préciser ce que tu veux dire ?",
+                "Peux-tu clarifier ton propos ?",
+                "Qu'entends-tu exactement par là ?"
+              ],
+              "explanation": "One way to say it: \"Peux-tu préciser ce que tu veux dire ?\" Opinions and plans, and more than one wording is right."
+            },
+            {
+              "id": "frb1p21q24",
+              "type": "translate",
+              "prompt": "Say you appreciate honest feedback.",
+              "acceptableAnswers": [
+                "J'apprécie les retours honnêtes.",
+                "Les critiques sincères, je les apprécie.",
+                "Un avis franc, ça me fait toujours plaisir."
+              ],
+              "explanation": "One way to say it: \"J'apprécie les retours honnêtes.\" Opinions and plans, and more than one wording is right."
             }
           ]
         }
@@ -29388,6 +30345,325 @@
               ],
               "answer": 2,
               "explanation": "signature → la signature. Set phrases for formal letters and emails."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb2p21u1",
+      "level": "B2",
+      "eyebrow": "Unit 21",
+      "title": "Say It Your Way",
+      "description": "Write the idea in French — Nuanced and hypothetical ideas, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "frb2p21l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb2p21q0",
+              "type": "translate",
+              "prompt": "Say the project would have succeeded with more funding.",
+              "acceptableAnswers": [
+                "Le projet aurait réussi avec plus de financement.",
+                "Avec davantage de fonds, le projet aurait abouti.",
+                "Le manque de financement a empêché la réussite du projet."
+              ],
+              "explanation": "One way to say it: \"Le projet aurait réussi avec plus de financement.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q1",
+              "type": "translate",
+              "prompt": "Express reluctant agreement.",
+              "acceptableAnswers": [
+                "Bon, d'accord, si tu insistes.",
+                "Je suppose que tu as raison.",
+                "Soit, allons-y, mais à contrecœur."
+              ],
+              "explanation": "One way to say it: \"Bon, d'accord, si tu insistes.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q2",
+              "type": "translate",
+              "prompt": "Say you wish you had studied harder.",
+              "acceptableAnswers": [
+                "J'aurais aimé étudier plus sérieusement.",
+                "Si seulement j'avais travaillé plus dur.",
+                "Je regrette de ne pas avoir davantage étudié."
+              ],
+              "explanation": "One way to say it: \"J'aurais aimé étudier plus sérieusement.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q3",
+              "type": "translate",
+              "prompt": "Argue that the policy is unfair.",
+              "acceptableAnswers": [
+                "Cette politique me semble injuste.",
+                "Je trouve cette mesure injuste.",
+                "Cette politique désavantage clairement certains groupes."
+              ],
+              "explanation": "One way to say it: \"Cette politique me semble injuste.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q4",
+              "type": "translate",
+              "prompt": "Say the outcome exceeded expectations.",
+              "acceptableAnswers": [
+                "Le résultat a dépassé nos attentes.",
+                "On ne s'attendait pas à un si bon résultat.",
+                "C'est mieux que ce qu'on espérait."
+              ],
+              "explanation": "One way to say it: \"Le résultat a dépassé nos attentes.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb2p21l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb2p21q5",
+              "type": "translate",
+              "prompt": "Concede a point while maintaining your position.",
+              "acceptableAnswers": [
+                "Certes, mais je maintiens mon point de vue.",
+                "C'est vrai, cependant je ne change pas d'avis.",
+                "J'admets ce fait, sans pour autant changer d'opinion."
+              ],
+              "explanation": "One way to say it: \"Certes, mais je maintiens mon point de vue.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q6",
+              "type": "translate",
+              "prompt": "Say you would reconsider under different circumstances.",
+              "acceptableAnswers": [
+                "Je reconsidérerais ma position dans d'autres circonstances.",
+                "Les choses seraient différentes si le contexte changeait.",
+                "Je pourrais changer d'avis si la situation évoluait."
+              ],
+              "explanation": "One way to say it: \"Je reconsidérerais ma position dans d'autres circonstances.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q7",
+              "type": "translate",
+              "prompt": "Express skepticism about a claim.",
+              "acceptableAnswers": [
+                "Je reste sceptique face à cette affirmation.",
+                "Ça me semble difficile à croire.",
+                "J'ai du mal à croire cette version des faits."
+              ],
+              "explanation": "One way to say it: \"Je reste sceptique face à cette affirmation.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q8",
+              "type": "translate",
+              "prompt": "Say the negotiation reached an impasse.",
+              "acceptableAnswers": [
+                "La négociation est dans une impasse.",
+                "Les discussions n'avancent plus.",
+                "On est bloqués, la négociation n'aboutit pas."
+              ],
+              "explanation": "One way to say it: \"La négociation est dans une impasse.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q9",
+              "type": "translate",
+              "prompt": "Say you would have acted differently.",
+              "acceptableAnswers": [
+                "J'aurais agi différemment.",
+                "À ta place, j'aurais fait autrement.",
+                "Je n'aurais pas procédé de cette façon."
+              ],
+              "explanation": "One way to say it: \"J'aurais agi différemment.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb2p21l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb2p21q10",
+              "type": "translate",
+              "prompt": "Point out an inconsistency in an argument.",
+              "acceptableAnswers": [
+                "Il y a une incohérence dans ton raisonnement.",
+                "Ton argument se contredit.",
+                "Je remarque une contradiction dans ce que tu dis."
+              ],
+              "explanation": "One way to say it: \"Il y a une incohérence dans ton raisonnement.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q11",
+              "type": "translate",
+              "prompt": "Say the company is undergoing restructuring.",
+              "acceptableAnswers": [
+                "L'entreprise traverse une restructuration.",
+                "La société est en pleine réorganisation.",
+                "L'entreprise revoit actuellement sa structure."
+              ],
+              "explanation": "One way to say it: \"L'entreprise traverse une restructuration.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q12",
+              "type": "translate",
+              "prompt": "Express cautious optimism.",
+              "acceptableAnswers": [
+                "Je suis prudemment optimiste.",
+                "J'ai bon espoir, sans trop m'avancer.",
+                "Je reste raisonnablement confiant."
+              ],
+              "explanation": "One way to say it: \"Je suis prudemment optimiste.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q13",
+              "type": "translate",
+              "prompt": "Say the evidence is inconclusive.",
+              "acceptableAnswers": [
+                "Les preuves ne sont pas concluantes.",
+                "Rien ne permet de conclure avec certitude.",
+                "Les éléments recueillis restent insuffisants."
+              ],
+              "explanation": "One way to say it: \"Les preuves ne sont pas concluantes.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q14",
+              "type": "translate",
+              "prompt": "Suggest a middle-ground solution.",
+              "acceptableAnswers": [
+                "Peut-être devrions-nous chercher un compromis.",
+                "Il existe sûrement une solution intermédiaire.",
+                "Trouvons un juste milieu entre les deux positions."
+              ],
+              "explanation": "One way to say it: \"Peut-être devrions-nous chercher un compromis.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb2p21l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb2p21q15",
+              "type": "translate",
+              "prompt": "Say the deadline is unrealistic.",
+              "acceptableAnswers": [
+                "Ce délai me semble irréaliste.",
+                "Ce délai n'est pas tenable.",
+                "Il sera difficile de respecter une échéance aussi serrée."
+              ],
+              "explanation": "One way to say it: \"Ce délai me semble irréaliste.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q16",
+              "type": "translate",
+              "prompt": "Express frustration diplomatically.",
+              "acceptableAnswers": [
+                "Je dois avouer une certaine frustration.",
+                "Cette situation commence à m'agacer, je l'admets.",
+                "Je ne vais pas cacher que c'est frustrant."
+              ],
+              "explanation": "One way to say it: \"Je dois avouer une certaine frustration.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q17",
+              "type": "translate",
+              "prompt": "Say the theory has since been disproven.",
+              "acceptableAnswers": [
+                "Cette théorie a depuis été réfutée.",
+                "On a depuis démontré que cette théorie était fausse.",
+                "Cette théorie ne tient plus depuis de nouvelles découvertes."
+              ],
+              "explanation": "One way to say it: \"Cette théorie a depuis été réfutée.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q18",
+              "type": "translate",
+              "prompt": "Acknowledge a mistake without over-apologizing.",
+              "acceptableAnswers": [
+                "C'était une erreur de ma part, je le reconnais.",
+                "J'admets m'être trompé.",
+                "J'admets m'être trompée."
+              ],
+              "explanation": "One way to say it: \"C'était une erreur de ma part, je le reconnais.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q19",
+              "type": "translate",
+              "prompt": "Say the market has become increasingly competitive.",
+              "acceptableAnswers": [
+                "Le marché est devenu de plus en plus concurrentiel.",
+                "La concurrence s'est nettement intensifiée.",
+                "Le secteur est aujourd'hui beaucoup plus compétitif."
+              ],
+              "explanation": "One way to say it: \"Le marché est devenu de plus en plus concurrentiel.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frb2p21l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frb2p21q20",
+              "type": "translate",
+              "prompt": "Express that you are torn between two options.",
+              "acceptableAnswers": [
+                "J'hésite entre les deux options.",
+                "Je suis partagé entre les deux choix.",
+                "Je suis partagée entre les deux choix."
+              ],
+              "explanation": "One way to say it: \"J'hésite entre les deux options.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q21",
+              "type": "translate",
+              "prompt": "Say the report raises more questions than it answers.",
+              "acceptableAnswers": [
+                "Ce rapport soulève plus de questions qu'il n'en résout.",
+                "Ce rapport laisse plus de questions en suspens que de réponses.",
+                "Ce rapport, finalement, répond à peu de questions."
+              ],
+              "explanation": "One way to say it: \"Ce rapport soulève plus de questions qu'il n'en résout.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q22",
+              "type": "translate",
+              "prompt": "Downplay the significance of an event.",
+              "acceptableAnswers": [
+                "Ce n'est pas si grave que ça.",
+                "Il ne faut pas exagérer l'importance de cet événement.",
+                "Ça n'a pas tant d'importance, en fin de compte."
+              ],
+              "explanation": "One way to say it: \"Ce n'est pas si grave que ça.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q23",
+              "type": "translate",
+              "prompt": "Say the initiative fell short of its goals.",
+              "acceptableAnswers": [
+                "L'initiative n'a pas atteint ses objectifs.",
+                "Les objectifs de cette initiative n'ont pas été atteints.",
+                "Cette initiative est restée en deçà de ses ambitions."
+              ],
+              "explanation": "One way to say it: \"L'initiative n'a pas atteint ses objectifs.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            },
+            {
+              "id": "frb2p21q24",
+              "type": "translate",
+              "prompt": "Express admiration for someone's resilience.",
+              "acceptableAnswers": [
+                "J'admire sa résilience.",
+                "Sa capacité à tenir bon force le respect.",
+                "C'est vraiment impressionnant, sa résilience."
+              ],
+              "explanation": "One way to say it: \"J'admire sa résilience.\" Nuanced and hypothetical ideas, and more than one wording is right."
             }
           ]
         }
@@ -36767,6 +38043,325 @@
               ],
               "answer": 2,
               "explanation": "\"viennent\" is correct here. Aspectual expressions for ongoing, just-finished, and about-to-happen actions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frc1p21u1",
+      "level": "C1",
+      "eyebrow": "Unit 21",
+      "title": "Say It Your Way",
+      "description": "Write the idea in French — Sophisticated and abstract ideas, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "frc1p21l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frc1p21q0",
+              "type": "translate",
+              "prompt": "Argue that the reform is long overdue.",
+              "acceptableAnswers": [
+                "Cette réforme est attendue depuis longtemps.",
+                "Il est grand temps que cette réforme voie le jour.",
+                "Cette réforme aurait dû être mise en œuvre depuis longtemps."
+              ],
+              "explanation": "One way to say it: \"Cette réforme est attendue depuis longtemps.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q1",
+              "type": "translate",
+              "prompt": "Express a nuanced position on a controversial topic.",
+              "acceptableAnswers": [
+                "Ma position sur ce sujet est nuancée.",
+                "Je ne partage ni l'un ni l'autre camp entièrement.",
+                "Ce sujet mérite une réflexion plus nuancée qu'un simple pour ou contre."
+              ],
+              "explanation": "One way to say it: \"Ma position sur ce sujet est nuancée.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q2",
+              "type": "translate",
+              "prompt": "Say the findings warrant further investigation.",
+              "acceptableAnswers": [
+                "Ces résultats méritent une enquête plus approfondie.",
+                "Il conviendrait d'approfondir ces recherches.",
+                "Ces conclusions appellent des investigations supplémentaires."
+              ],
+              "explanation": "One way to say it: \"Ces résultats méritent une enquête plus approfondie.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q3",
+              "type": "translate",
+              "prompt": "Concede that the critics have a valid point.",
+              "acceptableAnswers": [
+                "Il faut reconnaître que les critiques ne sont pas infondées.",
+                "Les détracteurs soulèvent un point valable, je l'admets.",
+                "On ne peut pas balayer cette critique d'un revers de main."
+              ],
+              "explanation": "One way to say it: \"Il faut reconnaître que les critiques ne sont pas infondées.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q4",
+              "type": "translate",
+              "prompt": "Say the argument, while persuasive, overlooks key evidence.",
+              "acceptableAnswers": [
+                "Cet argument, bien que convaincant, néglige des preuves essentielles.",
+                "Malgré sa force persuasive, cet argument omet des éléments cruciaux.",
+                "Convaincant en apparence, cet argument passe sous silence des faits déterminants."
+              ],
+              "explanation": "One way to say it: \"Cet argument, bien que convaincant, néglige des preuves essentielles.\" Sophisticated and abstract ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frc1p21l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frc1p21q5",
+              "type": "translate",
+              "prompt": "Express reservations about a proposal without rejecting it outright.",
+              "acceptableAnswers": [
+                "J'ai quelques réserves sur cette proposition.",
+                "Je ne rejette pas cette proposition, mais elle appelle des nuances.",
+                "Cette proposition mérite d'être examinée avec prudence."
+              ],
+              "explanation": "One way to say it: \"J'ai quelques réserves sur cette proposition.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q6",
+              "type": "translate",
+              "prompt": "Say the policy's long-term consequences remain uncertain.",
+              "acceptableAnswers": [
+                "Les conséquences à long terme de cette politique restent incertaines.",
+                "On ignore encore les effets durables de cette mesure.",
+                "L'impact à long terme de cette politique demeure difficile à évaluer."
+              ],
+              "explanation": "One way to say it: \"Les conséquences à long terme de cette politique restent incertaines.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q7",
+              "type": "translate",
+              "prompt": "Articulate why consensus has proven elusive.",
+              "acceptableAnswers": [
+                "Le consensus s'est révélé difficile à atteindre pour plusieurs raisons.",
+                "Divers facteurs expliquent l'absence de consensus.",
+                "Un accord général peine à se dégager, et ce, pour de bonnes raisons."
+              ],
+              "explanation": "One way to say it: \"Le consensus s'est révélé difficile à atteindre pour plusieurs raisons.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q8",
+              "type": "translate",
+              "prompt": "Say the precedent set by this case is troubling.",
+              "acceptableAnswers": [
+                "Le précédent créé par cette affaire est préoccupant.",
+                "Cette affaire établit un précédent inquiétant.",
+                "Le précédent qui en découle soulève de sérieuses inquiétudes."
+              ],
+              "explanation": "One way to say it: \"Le précédent créé par cette affaire est préoccupant.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q9",
+              "type": "translate",
+              "prompt": "Suggest the debate has become needlessly polarized.",
+              "acceptableAnswers": [
+                "Ce débat s'est polarisé de manière excessive.",
+                "La polarisation de ce débat me semble inutile.",
+                "Ce débat, à mon sens, s'est inutilement radicalisé."
+              ],
+              "explanation": "One way to say it: \"Ce débat s'est polarisé de manière excessive.\" Sophisticated and abstract ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frc1p21l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frc1p21q10",
+              "type": "translate",
+              "prompt": "Say the data, though limited, points to a clear trend.",
+              "acceptableAnswers": [
+                "Les données, bien que limitées, révèlent une tendance nette.",
+                "Malgré leur nombre restreint, les données indiquent une tendance claire.",
+                "Ces données, quoique partielles, dessinent une tendance évidente."
+              ],
+              "explanation": "One way to say it: \"Les données, bien que limitées, révèlent une tendance nette.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q11",
+              "type": "translate",
+              "prompt": "Express that a compromise would satisfy no one.",
+              "acceptableAnswers": [
+                "Un compromis ne satisferait personne dans ce cas.",
+                "Aucun compromis ne conviendrait vraiment ici.",
+                "Dans cette affaire, tout compromis laisserait les deux parties insatisfaites."
+              ],
+              "explanation": "One way to say it: \"Un compromis ne satisferait personne dans ce cas.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q12",
+              "type": "translate",
+              "prompt": "Say the institution has lost public trust.",
+              "acceptableAnswers": [
+                "L'institution a perdu la confiance du public.",
+                "Le public ne fait plus confiance à cette institution.",
+                "Cette institution a vu sa crédibilité s'effriter aux yeux du public."
+              ],
+              "explanation": "One way to say it: \"L'institution a perdu la confiance du public.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q13",
+              "type": "translate",
+              "prompt": "Argue for a more measured response.",
+              "acceptableAnswers": [
+                "Je plaide pour une réponse plus mesurée.",
+                "Une réaction plus modérée serait préférable.",
+                "Il conviendrait d'adopter une approche plus mesurée."
+              ],
+              "explanation": "One way to say it: \"Je plaide pour une réponse plus mesurée.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q14",
+              "type": "translate",
+              "prompt": "Say the proposal, however well-intentioned, is impractical.",
+              "acceptableAnswers": [
+                "Cette proposition, bien qu'animée de bonnes intentions, est irréalisable.",
+                "Malgré de bonnes intentions, cette proposition reste peu pratique.",
+                "Aussi bien intentionnée soit-elle, cette proposition n'est guère applicable."
+              ],
+              "explanation": "One way to say it: \"Cette proposition, bien qu'animée de bonnes intentions, est irréalisable.\" Sophisticated and abstract ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frc1p21l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frc1p21q15",
+              "type": "translate",
+              "prompt": "Express that the burden of proof lies elsewhere.",
+              "acceptableAnswers": [
+                "La charge de la preuve incombe à l'autre partie.",
+                "Ce n'est pas à nous de prouver cela.",
+                "C'est à l'autre camp qu'il revient d'apporter la preuve."
+              ],
+              "explanation": "One way to say it: \"La charge de la preuve incombe à l'autre partie.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q16",
+              "type": "translate",
+              "prompt": "Say the committee's recommendations were largely symbolic.",
+              "acceptableAnswers": [
+                "Les recommandations du comité étaient surtout symboliques.",
+                "Le comité a formulé des recommandations essentiellement symboliques.",
+                "Ces recommandations relèvent davantage du symbole que de l'action concrète."
+              ],
+              "explanation": "One way to say it: \"Les recommandations du comité étaient surtout symboliques.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q17",
+              "type": "translate",
+              "prompt": "Argue that correlation should not be mistaken for causation.",
+              "acceptableAnswers": [
+                "Il ne faut pas confondre corrélation et causalité.",
+                "Une corrélation n'implique pas nécessairement une causalité.",
+                "Ce lien statistique ne prouve en rien une relation de cause à effet."
+              ],
+              "explanation": "One way to say it: \"Il ne faut pas confondre corrélation et causalité.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q18",
+              "type": "translate",
+              "prompt": "Say the reform risks unintended consequences.",
+              "acceptableAnswers": [
+                "Cette réforme risque d'entraîner des conséquences imprévues.",
+                "Il faut craindre des effets secondaires imprévus.",
+                "Cette réforme pourrait bien produire des effets contraires à ceux escomptés."
+              ],
+              "explanation": "One way to say it: \"Cette réforme risque d'entraîner des conséquences imprévues.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q19",
+              "type": "translate",
+              "prompt": "Express that the evidence, on balance, supports the hypothesis.",
+              "acceptableAnswers": [
+                "Dans l'ensemble, les preuves confirment cette hypothèse.",
+                "Les éléments recueillis, pris dans leur ensemble, étayent cette hypothèse.",
+                "Globalement, les faits vont dans le sens de cette hypothèse."
+              ],
+              "explanation": "One way to say it: \"Dans l'ensemble, les preuves confirment cette hypothèse.\" Sophisticated and abstract ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "frc1p21l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in French",
+          "questions": [
+            {
+              "id": "frc1p21q20",
+              "type": "translate",
+              "prompt": "Say the debate ultimately hinges on differing values.",
+              "acceptableAnswers": [
+                "Ce débat repose en définitive sur des valeurs divergentes.",
+                "Au fond, ce désaccord relève de valeurs différentes.",
+                "Ce sont des valeurs opposées qui sous-tendent ce débat."
+              ],
+              "explanation": "One way to say it: \"Ce débat repose en définitive sur des valeurs divergentes.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q21",
+              "type": "translate",
+              "prompt": "Argue that transparency should take precedence over efficiency.",
+              "acceptableAnswers": [
+                "La transparence devrait primer sur l'efficacité.",
+                "Je considère que la transparence doit l'emporter sur l'efficacité.",
+                "Mieux vaut privilégier la transparence, quitte à perdre en efficacité."
+              ],
+              "explanation": "One way to say it: \"La transparence devrait primer sur l'efficacité.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q22",
+              "type": "translate",
+              "prompt": "Say the assumption underlying the model is flawed.",
+              "acceptableAnswers": [
+                "L'hypothèse sur laquelle repose ce modèle est erronée.",
+                "Ce modèle part d'un postulat discutable.",
+                "Le modèle repose sur une prémisse qui ne tient pas la route."
+              ],
+              "explanation": "One way to say it: \"L'hypothèse sur laquelle repose ce modèle est erronée.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q23",
+              "type": "translate",
+              "prompt": "Express cautious support for an untested idea.",
+              "acceptableAnswers": [
+                "Je soutiens cette idée, mais avec prudence.",
+                "Cette idée mérite d'être essayée, sous certaines réserves.",
+                "Je suis plutôt favorable, tout en restant prudent."
+              ],
+              "explanation": "One way to say it: \"Je soutiens cette idée, mais avec prudence.\" Sophisticated and abstract ideas, and more than one wording is right."
+            },
+            {
+              "id": "frc1p21q24",
+              "type": "translate",
+              "prompt": "Say history will be the ultimate judge.",
+              "acceptableAnswers": [
+                "L'histoire jugera en dernier ressort.",
+                "Seul l'avenir dira si nous avions raison.",
+                "C'est à l'histoire qu'il reviendra de trancher."
+              ],
+              "explanation": "One way to say it: \"L'histoire jugera en dernier ressort.\" Sophisticated and abstract ideas, and more than one wording is right."
             }
           ]
         }

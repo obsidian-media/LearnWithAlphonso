@@ -671,6 +671,45 @@ traffic light|le feu
 parking|le stationnement
 speed|la vitesse`,
   },
+  {
+    id: "fra1p21",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in French",
+    kind: "translate",
+    prompt: "Write this in French:",
+    note: "Everyday ideas, and more than one wording is right.",
+    // Left side describes the idea, never the sentence -- otherwise this is a
+    // copying exercise, not a producing one. Gendered adjectives (désolé(e),
+    // fier/fière) are listed as an explicit pair rather than a "(e)" suffix --
+    // matchesAcceptableAnswer normalises via normaliseSpoken, whose accent
+    // fold+ASCII strip collapses "désolé(e)" to a single ambiguous string
+    // that does not actually equal either real gendered form's normalisation.
+    data: `Greet someone in the morning.|Bonjour.;Salut, ça va ?;Bonjour à vous.
+Ask someone their name (informal).|Comment tu t'appelles ?;Tu t'appelles comment ?;C'est quoi ton prénom ?
+Say you do not understand.|Je ne comprends pas.;Pardon, je ne comprends pas.;Je n'y comprends rien.
+Ask where the train station is.|Où est la gare ?;Pourriez-vous me dire où est la gare ?;Comment aller à la gare ?
+Thank someone warmly.|Merci beaucoup.;Merci mille fois.;Je vous remercie vraiment.
+Ask someone to repeat something.|Pouvez-vous répéter ?;Vous pouvez répéter, s'il vous plaît ?;Pardon, vous disiez ?
+Say you come from Canada.|Je viens du Canada.;Je suis originaire du Canada.;J'arrive du Canada.
+Order a coffee politely.|Je voudrais un café, s'il vous plaît.;Un café, s'il vous plaît.;Puis-je avoir un café ?
+Ask how someone is doing.|Comment allez-vous ?;Comment ça va ?;Ça va bien ?
+Say you are fine, thanks.|Je vais bien, merci.;Ça va bien, merci.;Très bien, merci.
+Introduce yourself.|Je m'appelle Julie.;Moi, c'est Julie.;Mon nom est Julie.
+Ask for the bill at a restaurant.|L'addition, s'il vous plaît.;Pouvez-vous apporter l'addition ?;Je voudrais l'addition, s'il vous plaît.
+Say you would like some water.|Je voudrais de l'eau.;De l'eau, s'il vous plaît.;Puis-je avoir de l'eau ?
+Ask what time it is.|Quelle heure est-il ?;Vous avez l'heure ?;Il est quelle heure, s'il vous plaît ?
+Say goodbye to a friend.|Salut !;À bientôt !;Ciao !
+Say you are hungry.|J'ai faim.;Je meurs de faim.;J'ai vraiment faim.
+Ask someone where they live.|Où habitez-vous ?;Tu habites où ?;Où est-ce que vous habitez ?
+Say you live in Paris.|J'habite à Paris.;Je vis à Paris.;Mon domicile est à Paris.
+Ask for directions to the bathroom.|Où sont les toilettes ?;Pourriez-vous m'indiquer les toilettes ?;Les toilettes, s'il vous plaît ?
+Say you are sorry (apologize).|Je suis désolé.;Je suis désolée.;Toutes mes excuses.
+Wish someone a good day.|Bonne journée !;Passez une bonne journée !;Je vous souhaite une bonne journée.
+Ask how much something costs.|Combien ça coûte ?;C'est combien ?;Quel est le prix, s'il vous plaît ?
+Say you don't speak French well.|Je ne parle pas bien français.;Mon français n'est pas très bon.;Je parle un peu français.
+Invite someone for coffee.|Tu veux prendre un café ?;On va prendre un café ?;Voulez-vous prendre un café avec moi ?
+Wish someone good luck.|Bonne chance !;Je te souhaite bonne chance !;Bon courage !`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1320,6 +1359,39 @@ traffic jam|l'embouteillage
 pedestrian|le piéton
 crosswalk|le passage piéton
 one-way street|le sens unique`,
+  },
+  {
+    id: "fra2p21",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in French",
+    kind: "translate",
+    prompt: "Write this in French:",
+    note: "Everyday situations, and more than one wording is right.",
+    data: `Say what you did yesterday (go to the market).|Hier, je suis allé au marché.;Hier, je suis allée au marché.;Je suis allé au marché hier.
+Ask someone about their weekend.|Comment s'est passé ton week-end ?;Tu as passé un bon week-end ?;Qu'as-tu fait ce week-end ?
+Say you are going to travel next summer.|Je vais voyager l'été prochain.;L'été prochain, je pars en voyage.;Je compte voyager l'été prochain.
+Complain that something is broken.|C'est cassé.;Ça ne marche pas.;C'est en panne.
+Ask for a table for two.|Une table pour deux, s'il vous plaît.;Avez-vous une table pour deux ?;Je voudrais une table pour deux personnes.
+Say you forgot your keys.|J'ai oublié mes clés.;J'ai oublié mes clés à la maison.;Mes clés, je les ai oubliées.
+Ask if the seat is taken.|Cette place est-elle libre ?;Est-ce que cette place est prise ?;La place est libre ?
+Say you used to live in Lyon.|J'habitais à Lyon avant.;Avant, j'habitais à Lyon.;J'ai habité à Lyon pendant longtemps.
+Recommend a restaurant to a friend.|Je te recommande ce restaurant.;Ce restaurant est vraiment bon, essaie-le.;Tu devrais essayer ce restaurant.
+Ask someone what they think of a movie.|Qu'est-ce que tu penses du film ?;Tu as aimé le film ?;Comment as-tu trouvé le film ?
+Say you need to see a doctor.|Je dois voir un médecin.;J'ai besoin de consulter un médecin.;Il faut que je voie un médecin.
+Explain that you missed the bus.|J'ai raté le bus.;Le bus est parti sans moi.;J'ai manqué le bus.
+Ask how to get to the museum.|Comment va-t-on au musée ?;Pour aller au musée, s'il vous plaît ?;Quel chemin faut-il prendre pour le musée ?
+Say you are looking for a job.|Je cherche un emploi.;Je suis à la recherche d'un travail.;Je cherche du travail.
+Ask a colleague for help with a task.|Peux-tu m'aider avec ça ?;Pourriez-vous m'aider avec cette tâche ?;J'aurais besoin d'un coup de main.
+Say the weather was terrible yesterday.|Il a fait un temps horrible hier.;Hier, le temps était affreux.;Le temps était vraiment mauvais hier.
+Suggest going to the beach.|Et si on allait à la plage ?;On pourrait aller à la plage.;Allons à la plage !
+Say you already ate.|J'ai déjà mangé.;J'ai déjà pris mon repas.;J'ai mangé, merci.
+Ask if there is a discount.|Y a-t-il une réduction ?;Est-ce qu'il y a une remise ?;Faites-vous des réductions ?
+Say you will call back later.|Je rappellerai plus tard.;Je vous rappelle plus tard.;Je te rappelle tout à l'heure.
+Apologize for being late.|Désolé pour le retard.;Désolée pour le retard.;Je suis en retard, toutes mes excuses.
+Say you have never been to Italy.|Je ne suis jamais allé en Italie.;Je ne suis jamais allée en Italie.;Je n'ai encore jamais visité l'Italie.
+Ask if the wifi password is available.|Quel est le mot de passe wifi ?;Avez-vous le mot de passe du wifi ?;Le wifi, c'est quoi le mot de passe ?
+Say you plan to study tonight.|Je vais étudier ce soir.;Ce soir, je compte réviser.;J'ai l'intention d'étudier ce soir.
+Ask someone to slow down when speaking.|Pouvez-vous parler plus lentement ?;Parlez plus lentement, s'il vous plaît.;Pourriez-vous ralentir un peu quand vous parlez ?`,
   },
 ];
 
@@ -1971,6 +2043,39 @@ Si j'étais à ta place, je ___ (accepter) cette offre.|accepterais
 Il vaut mieux ___ (to prevent) que guérir.|prévenir
 Je te conseille vivement de ___ (to take) ce cours.|suivre
 Tu devrais peut-être ___ (to take) un peu de repos.|prendre`,
+  },
+  {
+    id: "frb1p21",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in French",
+    kind: "translate",
+    prompt: "Write this in French:",
+    note: "Opinions and plans, and more than one wording is right.",
+    data: `Say you think the meeting went well.|Je pense que la réunion s'est bien passée.;À mon avis, la réunion était réussie.;Je trouve que la réunion s'est bien déroulée.
+Disagree politely with an opinion.|Je ne suis pas tout à fait d'accord.;Je vois les choses différemment.;Permettez-moi de ne pas être d'accord.
+Say you would like to change your reservation.|Je voudrais modifier ma réservation.;J'aimerais changer ma réservation.;Serait-il possible de modifier ma réservation ?
+Explain why you are learning French.|J'apprends le français pour voyager.;J'apprends le français parce que je veux voyager.;C'est pour le travail que j'apprends le français.
+Say you would help if you had more time.|Je t'aiderais si j'avais plus de temps.;Si j'avais le temps, je t'aiderais volontiers.;J'aimerais aider, mais le temps me manque.
+Ask for someone's opinion on a decision.|Qu'en penses-tu ?;Quel est ton avis là-dessus ?;Qu'est-ce que tu en penses ?
+Say you regret not calling earlier.|Je regrette de ne pas avoir appelé plus tôt.;J'aurais dû appeler plus tôt.;Je m'en veux de ne pas avoir téléphoné avant.
+Propose a compromise.|Et si on trouvait un compromis ?;Je propose un compromis.;On pourrait peut-être trouver un terrain d'entente.
+Say you are worried about the exam.|Je suis inquiet pour l'examen.;Je suis inquiète pour l'examen.;L'examen m'inquiète beaucoup.
+Explain that you need more information before deciding.|J'ai besoin de plus d'informations avant de décider.;Il me faut plus de détails pour me décider.;Je ne peux pas décider sans plus d'informations.
+Say you are proud of your progress.|Je suis fier de mes progrès.;Je suis fière de mes progrès.;Mes progrès me rendent vraiment content.
+Suggest postponing the meeting.|On pourrait reporter la réunion.;Et si on repoussait la réunion ?;Je propose de reporter la réunion.
+Say you would rather stay home tonight.|Je préférerais rester à la maison ce soir.;Ce soir, je préfère rester chez moi.;J'aimerais mieux rester à la maison.
+Express that a decision was difficult.|Cette décision a été difficile à prendre.;Ce n'était pas facile de décider.;J'ai eu du mal à me décider.
+Say you are considering a career change.|J'envisage de changer de carrière.;Je pense à changer de métier.;Un changement de carrière me tente.
+Ask someone for their honest opinion.|Dis-moi franchement ce que tu en penses.;J'aimerais ton avis sincère.;Sois honnête, qu'en penses-tu ?
+Say the situation has improved.|La situation s'est améliorée.;Les choses vont mieux maintenant.;Ça s'est nettement amélioré.
+Explain you missed the deadline because of an emergency.|J'ai raté la date limite à cause d'une urgence.;Une urgence m'a empêché de respecter le délai.;Je n'ai pas pu finir à temps à cause d'un imprévu.
+Say you would travel more if you had the money.|Je voyagerais davantage si j'avais l'argent.;Si j'avais plus d'argent, je voyagerais plus souvent.;J'aimerais voyager plus, mais l'argent me manque.
+Recommend that a friend see a specialist.|Tu devrais consulter un spécialiste.;Je te conseille de voir un spécialiste.;Il vaudrait mieux consulter un spécialiste.
+Say you are grateful for the support.|Je suis reconnaissant pour ce soutien.;Je suis reconnaissante pour ce soutien.;Ce soutien compte énormément pour moi.
+Express doubt about a plan.|Je doute que ce plan fonctionne.;Ce plan me semble risqué.;Je ne suis pas convaincu que ça marche.
+Say you will think it over.|Je vais y réfléchir.;Laisse-moi y réfléchir.;Je dois y penser encore un peu.
+Ask someone to clarify their point.|Peux-tu préciser ce que tu veux dire ?;Peux-tu clarifier ton propos ?;Qu'entends-tu exactement par là ?
+Say you appreciate honest feedback.|J'apprécie les retours honnêtes.;Les critiques sincères, je les apprécie.;Un avis franc, ça me fait toujours plaisir.`,
   },
 ];
 
@@ -2624,6 +2729,39 @@ recipient|le destinataire
 sender|l'expéditeur
 attachment|la pièce jointe
 signature|la signature`,
+  },
+  {
+    id: "frb2p21",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in French",
+    kind: "translate",
+    prompt: "Write this in French:",
+    note: "Nuanced and hypothetical ideas, and more than one wording is right.",
+    data: `Say the project would have succeeded with more funding.|Le projet aurait réussi avec plus de financement.;Avec davantage de fonds, le projet aurait abouti.;Le manque de financement a empêché la réussite du projet.
+Express reluctant agreement.|Bon, d'accord, si tu insistes.;Je suppose que tu as raison.;Soit, allons-y, mais à contrecœur.
+Say you wish you had studied harder.|J'aurais aimé étudier plus sérieusement.;Si seulement j'avais travaillé plus dur.;Je regrette de ne pas avoir davantage étudié.
+Argue that the policy is unfair.|Cette politique me semble injuste.;Je trouve cette mesure injuste.;Cette politique désavantage clairement certains groupes.
+Say the outcome exceeded expectations.|Le résultat a dépassé nos attentes.;On ne s'attendait pas à un si bon résultat.;C'est mieux que ce qu'on espérait.
+Concede a point while maintaining your position.|Certes, mais je maintiens mon point de vue.;C'est vrai, cependant je ne change pas d'avis.;J'admets ce fait, sans pour autant changer d'opinion.
+Say you would reconsider under different circumstances.|Je reconsidérerais ma position dans d'autres circonstances.;Les choses seraient différentes si le contexte changeait.;Je pourrais changer d'avis si la situation évoluait.
+Express skepticism about a claim.|Je reste sceptique face à cette affirmation.;Ça me semble difficile à croire.;J'ai du mal à croire cette version des faits.
+Say the negotiation reached an impasse.|La négociation est dans une impasse.;Les discussions n'avancent plus.;On est bloqués, la négociation n'aboutit pas.
+Say you would have acted differently.|J'aurais agi différemment.;À ta place, j'aurais fait autrement.;Je n'aurais pas procédé de cette façon.
+Point out an inconsistency in an argument.|Il y a une incohérence dans ton raisonnement.;Ton argument se contredit.;Je remarque une contradiction dans ce que tu dis.
+Say the company is undergoing restructuring.|L'entreprise traverse une restructuration.;La société est en pleine réorganisation.;L'entreprise revoit actuellement sa structure.
+Express cautious optimism.|Je suis prudemment optimiste.;J'ai bon espoir, sans trop m'avancer.;Je reste raisonnablement confiant.
+Say the evidence is inconclusive.|Les preuves ne sont pas concluantes.;Rien ne permet de conclure avec certitude.;Les éléments recueillis restent insuffisants.
+Suggest a middle-ground solution.|Peut-être devrions-nous chercher un compromis.;Il existe sûrement une solution intermédiaire.;Trouvons un juste milieu entre les deux positions.
+Say the deadline is unrealistic.|Ce délai me semble irréaliste.;Ce délai n'est pas tenable.;Il sera difficile de respecter une échéance aussi serrée.
+Express frustration diplomatically.|Je dois avouer une certaine frustration.;Cette situation commence à m'agacer, je l'admets.;Je ne vais pas cacher que c'est frustrant.
+Say the theory has since been disproven.|Cette théorie a depuis été réfutée.;On a depuis démontré que cette théorie était fausse.;Cette théorie ne tient plus depuis de nouvelles découvertes.
+Acknowledge a mistake without over-apologizing.|C'était une erreur de ma part, je le reconnais.;J'admets m'être trompé.;J'admets m'être trompée.
+Say the market has become increasingly competitive.|Le marché est devenu de plus en plus concurrentiel.;La concurrence s'est nettement intensifiée.;Le secteur est aujourd'hui beaucoup plus compétitif.
+Express that you are torn between two options.|J'hésite entre les deux options.;Je suis partagé entre les deux choix.;Je suis partagée entre les deux choix.
+Say the report raises more questions than it answers.|Ce rapport soulève plus de questions qu'il n'en résout.;Ce rapport laisse plus de questions en suspens que de réponses.;Ce rapport, finalement, répond à peu de questions.
+Downplay the significance of an event.|Ce n'est pas si grave que ça.;Il ne faut pas exagérer l'importance de cet événement.;Ça n'a pas tant d'importance, en fin de compte.
+Say the initiative fell short of its goals.|L'initiative n'a pas atteint ses objectifs.;Les objectifs de cette initiative n'ont pas été atteints.;Cette initiative est restée en deçà de ses ambitions.
+Express admiration for someone's resilience.|J'admire sa résilience.;Sa capacité à tenir bon force le respect.;C'est vraiment impressionnant, sa résilience.`,
   },
 ];
 
@@ -3280,6 +3418,39 @@ Elle ___ (venir) de recevoir un appel.|vient
 Il ___ (être) en train de travailler dur.|est
 Tu ___ (être) sur le point de réussir.|es
 Ils ___ (venir) de gagner le match.|viennent`,
+  },
+  {
+    id: "frc1p21",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in French",
+    kind: "translate",
+    prompt: "Write this in French:",
+    note: "Sophisticated and abstract ideas, and more than one wording is right.",
+    data: `Argue that the reform is long overdue.|Cette réforme est attendue depuis longtemps.;Il est grand temps que cette réforme voie le jour.;Cette réforme aurait dû être mise en œuvre depuis longtemps.
+Express a nuanced position on a controversial topic.|Ma position sur ce sujet est nuancée.;Je ne partage ni l'un ni l'autre camp entièrement.;Ce sujet mérite une réflexion plus nuancée qu'un simple pour ou contre.
+Say the findings warrant further investigation.|Ces résultats méritent une enquête plus approfondie.;Il conviendrait d'approfondir ces recherches.;Ces conclusions appellent des investigations supplémentaires.
+Concede that the critics have a valid point.|Il faut reconnaître que les critiques ne sont pas infondées.;Les détracteurs soulèvent un point valable, je l'admets.;On ne peut pas balayer cette critique d'un revers de main.
+Say the argument, while persuasive, overlooks key evidence.|Cet argument, bien que convaincant, néglige des preuves essentielles.;Malgré sa force persuasive, cet argument omet des éléments cruciaux.;Convaincant en apparence, cet argument passe sous silence des faits déterminants.
+Express reservations about a proposal without rejecting it outright.|J'ai quelques réserves sur cette proposition.;Je ne rejette pas cette proposition, mais elle appelle des nuances.;Cette proposition mérite d'être examinée avec prudence.
+Say the policy's long-term consequences remain uncertain.|Les conséquences à long terme de cette politique restent incertaines.;On ignore encore les effets durables de cette mesure.;L'impact à long terme de cette politique demeure difficile à évaluer.
+Articulate why consensus has proven elusive.|Le consensus s'est révélé difficile à atteindre pour plusieurs raisons.;Divers facteurs expliquent l'absence de consensus.;Un accord général peine à se dégager, et ce, pour de bonnes raisons.
+Say the precedent set by this case is troubling.|Le précédent créé par cette affaire est préoccupant.;Cette affaire établit un précédent inquiétant.;Le précédent qui en découle soulève de sérieuses inquiétudes.
+Suggest the debate has become needlessly polarized.|Ce débat s'est polarisé de manière excessive.;La polarisation de ce débat me semble inutile.;Ce débat, à mon sens, s'est inutilement radicalisé.
+Say the data, though limited, points to a clear trend.|Les données, bien que limitées, révèlent une tendance nette.;Malgré leur nombre restreint, les données indiquent une tendance claire.;Ces données, quoique partielles, dessinent une tendance évidente.
+Express that a compromise would satisfy no one.|Un compromis ne satisferait personne dans ce cas.;Aucun compromis ne conviendrait vraiment ici.;Dans cette affaire, tout compromis laisserait les deux parties insatisfaites.
+Say the institution has lost public trust.|L'institution a perdu la confiance du public.;Le public ne fait plus confiance à cette institution.;Cette institution a vu sa crédibilité s'effriter aux yeux du public.
+Argue for a more measured response.|Je plaide pour une réponse plus mesurée.;Une réaction plus modérée serait préférable.;Il conviendrait d'adopter une approche plus mesurée.
+Say the proposal, however well-intentioned, is impractical.|Cette proposition, bien qu'animée de bonnes intentions, est irréalisable.;Malgré de bonnes intentions, cette proposition reste peu pratique.;Aussi bien intentionnée soit-elle, cette proposition n'est guère applicable.
+Express that the burden of proof lies elsewhere.|La charge de la preuve incombe à l'autre partie.;Ce n'est pas à nous de prouver cela.;C'est à l'autre camp qu'il revient d'apporter la preuve.
+Say the committee's recommendations were largely symbolic.|Les recommandations du comité étaient surtout symboliques.;Le comité a formulé des recommandations essentiellement symboliques.;Ces recommandations relèvent davantage du symbole que de l'action concrète.
+Argue that correlation should not be mistaken for causation.|Il ne faut pas confondre corrélation et causalité.;Une corrélation n'implique pas nécessairement une causalité.;Ce lien statistique ne prouve en rien une relation de cause à effet.
+Say the reform risks unintended consequences.|Cette réforme risque d'entraîner des conséquences imprévues.;Il faut craindre des effets secondaires imprévus.;Cette réforme pourrait bien produire des effets contraires à ceux escomptés.
+Express that the evidence, on balance, supports the hypothesis.|Dans l'ensemble, les preuves confirment cette hypothèse.;Les éléments recueillis, pris dans leur ensemble, étayent cette hypothèse.;Globalement, les faits vont dans le sens de cette hypothèse.
+Say the debate ultimately hinges on differing values.|Ce débat repose en définitive sur des valeurs divergentes.;Au fond, ce désaccord relève de valeurs différentes.;Ce sont des valeurs opposées qui sous-tendent ce débat.
+Argue that transparency should take precedence over efficiency.|La transparence devrait primer sur l'efficacité.;Je considère que la transparence doit l'emporter sur l'efficacité.;Mieux vaut privilégier la transparence, quitte à perdre en efficacité.
+Say the assumption underlying the model is flawed.|L'hypothèse sur laquelle repose ce modèle est erronée.;Ce modèle part d'un postulat discutable.;Le modèle repose sur une prémisse qui ne tient pas la route.
+Express cautious support for an untested idea.|Je soutiens cette idée, mais avec prudence.;Cette idée mérite d'être essayée, sous certaines réserves.;Je suis plutôt favorable, tout en restant prudent.
+Say history will be the ultimate judge.|L'histoire jugera en dernier ressort.;Seul l'avenir dira si nous avions raison.;C'est à l'histoire qu'il reviendra de trancher.`,
   },
 ];
 
