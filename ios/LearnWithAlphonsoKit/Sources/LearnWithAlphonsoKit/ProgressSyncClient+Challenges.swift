@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// V4 candidate #7 (deeper gamification) -- weekly solo challenges and
 /// open ("anyone") duel matchmaking. In its own extension file, not
