@@ -402,7 +402,7 @@ function ConverseChatPage() {
             disabled={sending || transcribing}
             className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
               recording
-                ? "bg-ember text-surface scale-110 hard-shadow-ember"
+                ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
                 : "bg-moss text-surface hard-shadow"
             } disabled:opacity-50`}
           >

@@ -330,7 +330,7 @@ function ReviewPage() {
           ) : (
             <button
               onClick={next}
-              className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+              className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
             >
               {idx < cards.length - 1 ? "Continue" : "Finish"}
             </button>

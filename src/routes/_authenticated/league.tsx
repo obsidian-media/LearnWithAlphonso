@@ -162,7 +162,7 @@ function LeaguePage() {
                   <p className="truncate text-sm font-medium text-ink">
                     {row.display_name}
                     {row.isYou && (
-                      <span className="ml-1.5 rounded-full bg-ember px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-surface">
+                      <span className="ml-1.5 rounded-full bg-ember px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-on-ember">
                         You
                       </span>
                     )}

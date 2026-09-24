@@ -65,7 +65,7 @@ function LessonNode({
     state === "done"
       ? "bg-moss text-surface hard-shadow"
       : state === "active"
-        ? "bg-ember text-surface hard-shadow-ember"
+        ? "bg-ember text-ink-on-ember hard-shadow-ember"
         : "bg-parchment text-ink-soft/40 ring-1 ring-hairline";
   const button = (
     <motion.div
@@ -298,7 +298,7 @@ function LearnPage() {
               </span>
               {dueCount > 0 && (
                 <span
-                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-surface"
+                  className="tnum grid min-w-5 place-items-center rounded-full bg-ember px-1.5 py-0.5 text-[11px] font-semibold text-ink-on-ember"
                   aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
                 >
                   {dueCount}

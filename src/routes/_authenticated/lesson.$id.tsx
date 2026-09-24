@@ -456,7 +456,7 @@ function LessonPage() {
             ) : (
               <button
                 onClick={next}
-                className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+                className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
               >
                 {isReinforcing || pendingReinforcement || idx < total - 1 ? "Continue" : "Finish"}
               </button>
@@ -756,7 +756,7 @@ function FinishScreen({
                       : "flex items-center gap-3 rounded-2xl border border-hairline bg-parchment px-3 py-2 text-left"
                   }
                 >
-                  <span className="grid size-8 place-items-center rounded-full bg-ember text-surface text-xs">
+                  <span className="grid size-8 place-items-center rounded-full bg-ember text-ink-on-ember text-xs">
                     ★
                   </span>
                   <div>
