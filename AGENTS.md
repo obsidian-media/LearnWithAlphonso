@@ -190,7 +190,7 @@ pattern". It is at **91.17%**, as are its siblings (`chat.ts` 96.29%,
 describes the codebase — don't cite it to justify skipping tests on a
 new server route.
 
-### Two traps that have each cost a session real time
+### Three traps that have each cost a session real time
 
 **`user.type` on a controlled input can leave only the last character in
 state.** The symptom is not "the typing failed" — it is that whatever consumes
@@ -201,6 +201,15 @@ to print the real payload rather than be reasoned about. Use
 textareas; reserve `user.type` for cases where the per-keystroke path is itself
 what you are testing. And when a test disagrees with your model of the code,
 print the actual value early rather than guessing at the model a third time.
+
+**A passing mutation test can still be proving the wrong thing.** The check is
+not "I broke something and the test went red" — it is "I broke *the property
+the test claims to guard* and the test went red". A placement assertion
+comparing two derivations of the same array was verified by deleting an item
+from the dump, which went red because the deletion perturbed the mapping, not
+because the assertion pinned any content. The assertion still could not catch
+the thing its own comment claimed. When a mutation passes, check which axis it
+actually attacked.
 
 **Nothing else may touch the tree while a verification command runs.** A second
 `vitest` racing a backgrounded first silently drops test files — 126 files
