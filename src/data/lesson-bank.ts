@@ -2465,14 +2465,14 @@ The novel was later ___ into a successful film.|adapted
 The orchestra gave a ___ performance last night.|stunning
 The museum's new wing displays ___ artefacts.|ancient
 The play explores themes of loss and ___.|identity
-Tickets for the concert sold out within ___.|minutes
+The concert was performed to a sold-out ___.|audience
 The director is known for his unique visual ___.|style
 The choreography was both bold and ___.|graceful
 The exhibition features works by local ___.|artists
 The band's latest album was a huge commercial ___.|success
 Critics praised the film's stunning ___.|cinematography
 The theatre company is famous for its innovative ___.|productions
-The painting sold at auction for a record ___.|price
+The painting is the centrepiece of the gallery's new ___.|collection
 The festival celebrates classical and contemporary ___.|music
 The actor gave a deeply moving ___.|performance
 The sculpture was carved from a single block of ___.|marble
@@ -2482,7 +2482,7 @@ The documentary sheds light on an overlooked ___ movement.|artistic
 The opera house is renowned for its stunning ___.|acoustics
 The mural depicts the city's rich cultural ___.|heritage
 The critics called the performance a true work of ___.|art
-The exhibition runs until the end of the ___.|month
+The exhibition received widespread critical ___.|acclaim
 The novel won several literary ___ this year.|awards`,
   },
   {
