@@ -677,12 +677,52 @@ note in README.md's Documentation section for why.)
   `vocab-images.ts`, and there's no test that fails loudly if it's
   forgotten (only a symptom: iOS shows stale/missing content the web app
   already has).
-- `USER_ID_TABLES` in `account.functions.ts` (GDPR export/delete) previously
-  had three real bugs — wrong table name, wrong filter column for
-  `profiles`, and two missing tables — all silent because neither
-  handler checked query errors. Fixed, but it's evidence this list needs
-  to be updated by hand whenever a new user-scoped table is added; nothing
-  enforces it stays in sync.
+- **`eslint .` used to lint every other branch's code** (fixed 2026-09-23).
+  `.claude/worktrees/` holds full checkouts of other branches physically
+  nested inside this repo, and the root ESLint config never ignored them,
+  so `bun run lint` walked into all 15 of them: 3,632 reported problems,
+  of which 3,630 came from other branches and 2 were real. Fixed by adding
+  `.claude/worktrees/**` to the `ignores` list in `eslint.config.js`
+  rather than by deleting worktrees, so a future one can't reintroduce it.
+  The two genuine findings in the live tree are a `prettier/prettier`
+  break in `scripts/upload-review-screenshot.ts` and a long-standing
+  harmless `react-refresh/only-export-components` warning in
+  `CookieConsent.tsx`; both deliberately left alone.
+- **`src/integrations/supabase/types.ts` is stale** — found 2026-09-23.
+  Seven tables added by the gamification/push batches
+  (`challenge_completions`, `device_tokens`, `duel_queue`,
+  `season_cohort_members`, `season_placements`, `team_members`, `teams`)
+  were never regenerated into it, so `supabase.from()`'s literal-union
+  parameter rejects real, existing table names and any typed query
+  against them fails to compile. Worked around locally in
+  `account.functions.ts` with a widened `from` helper; the real fix is
+  regenerating the file against the live project, which needs the
+  Supabase CLI and credentials this sandbox doesn't have. Until then,
+  assume the generated types under-describe the schema rather than
+  trusting them as complete.
+- `account.functions.ts`'s GDPR table lists drifted a **fourth** time and
+  are now enforced by a test (2026-09-23). The earlier three bugs (wrong
+  table name, wrong filter column for `profiles`, two missing tables) were
+  each silent because neither handler checks query errors; the fourth was
+  the whole gamification + push batch — 9 user-scoped tables added by PRs
+  #59/#64–67 that `exportMyData` never exported, so every "download my
+  data" file had been incomplete since those landed. Account *deletion*
+  was unaffected: all 9 are `ON DELETE CASCADE` from `auth.users`, so
+  `deleteUser()` always cleaned them up.
+  The list is now split in two, because the two handlers genuinely need
+  different sets: `USER_ID_EXPORT_TABLES` (every table with a `user_id`
+  column) plus `OTHER_OWNED_EXPORT_TABLES` (`nudges`/`duels`, user-owned
+  but keyed by `sender_id`/`challenger_id`/etc., so a `user_id` scan can
+  never reach them) for export, and `USER_DELETE_TABLES` for deletion —
+  deliberately only the tables `authenticated` actually holds a DELETE
+  grant on, since the gamification tables revoked direct writes
+  (`20260920050000_revoke_direct_gamification_writes.sql`) and widening it
+  would only add silently-failing requests. `account.functions.test.ts`
+  now parses `supabase/migrations/` and fails the build when a new
+  user-scoped table isn't covered, so this can't silently rot a fifth
+  time. Its scan assumes no migration adds `user_id` via `ALTER TABLE`
+  and none drops a table — both true when written, re-check if it ever
+  starts under-reporting.
 - App Store upload validation (error 90474) rejects an archive whose
   `UISupportedInterfaceOrientations` declares fewer than all four
   orientations, even for an iPhone-only (`TARGETED_DEVICE_FAMILY=1`)

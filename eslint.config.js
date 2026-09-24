@@ -11,7 +11,20 @@ export default tseslint.config(
   // no Node/browser globals) -- not part of this project's Node/Vite
   // TypeScript setup, so tsconfig.json excludes it too. `deno lint`/`deno
   // check` are the right tools for it, not this eslint config.
-  { ignores: ["dist", ".output", ".vinxi", "coverage", "supabase/functions/**"] },
+  // `.claude/worktrees/**` holds full checkouts of other branches, physically
+  // nested inside this repo. Without this ignore, `eslint .` from the root
+  // walks into every one of them and lints other branches' code -- 3,630 of
+  // 3,632 reported problems came from there, drowning the 2 real ones.
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      "coverage",
+      "supabase/functions/**",
+      ".claude/worktrees/**",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
