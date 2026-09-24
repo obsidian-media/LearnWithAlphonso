@@ -195,6 +195,76 @@ describe("Lesson page", () => {
     expect(loseHeartRemote).toHaveBeenCalled();
   });
 
+  it("keeps a translation question answerable and gradeable with no network", async () => {
+    // deriveLessonCompletion throws when the submitted total does not equal the
+    // lesson's question count, so a question that cannot be answered offline is
+    // a lesson that can never be completed: no XP, no streak, no unlock, and
+    // nothing on screen saying why. The curated phrasings are bundled content,
+    // so they still grade offline -- just without the AI second opinion.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline");
+      }),
+    );
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Your answer"), "good morning");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("upgrades a wrong local verdict when the grader accepts the wording", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ correct: true, reason: "Same meaning.", source: "ai" }),
+      })),
+    );
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Your answer"), "morning to you all");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("shows one accepted phrasing after a wrong translation", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ correct: false, reason: "That is a farewell.", source: "ai" }),
+      })),
+    );
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Your answer"), "goodbye");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(screen.getByText("Good morning.")).toBeInTheDocument();
+    expect(screen.getByText("That is a farewell.")).toBeInTheDocument();
+  });
+
+  it("does not enable Check for a whitespace-only translation", async () => {
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Your answer"), "   ");
+    expect(screen.getByRole("button", { name: "Check" })).toBeDisabled();
+  });
+
   it("walks overview -> vocab -> quiz for a lesson with derived vocabulary", async () => {
     const user = userEvent.setup();
     renderPage();

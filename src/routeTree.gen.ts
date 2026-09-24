@@ -28,6 +28,7 @@ import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
+import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
@@ -131,6 +132,11 @@ const ApiGeneratePracticeRoute = ApiGeneratePracticeRouteImport.update({
   path: '/api/generate-practice',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGradeTranslationRoute = ApiGradeTranslationRouteImport.update({
+  id: '/api/grade-translation',
+  path: '/api/grade-translation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
+  '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
+  '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
+  '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
+    | '/api/grade-translation'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
+    | '/api/grade-translation'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
+    | '/api/grade-translation'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/campaign_/$campaignId'
@@ -362,6 +374,7 @@ export interface RootRouteChildren {
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
+  ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
@@ -501,6 +514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGeneratePracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/grade-translation': {
+      id: '/api/grade-translation'
+      path: '/api/grade-translation'
+      fullPath: '/api/grade-translation'
+      preLoaderRoute: typeof ApiGradeTranslationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stt': {
       id: '/api/stt'
       path: '/api/stt'
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
+  ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }

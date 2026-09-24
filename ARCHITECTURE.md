@@ -133,17 +133,19 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
 counts, verified 2026-09-24 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 584 lessons / 2,971 questions, French 500 lessons
+kept in sync): English 609 lessons / 3,096 questions, French 500 lessons
 / 2,500 questions, Spanish 508 lessons / 2,540 questions. English is now
-ahead of structural parity (it gained the listening and speaking types,
-with 125 questions each); French/Spanish still need a native-speaker review
+ahead of structural parity (it gained the listening, speaking and
+translation types, with 125 questions each); French/Spanish still need a native-speaker review
 pass for grammar/naturalness (`docs/BACKLOG.md`, gitignored).
 
-**There are five question types**, not three: `mc`, `fill`, `reorder`,
-`listening`, and `speak`. `listening` (added 2026-09-24) plays `audioText`
-via TTS and asks the learner to choose what they heard; `speak` (added
-2026-09-24) shows a phrase, records the learner saying it, and grades the
-speech-to-text transcript. Three things about them are load bearing:
+**There are six question types**, not three: `mc`, `fill`, `reorder`,
+`listening`, `speak`, and `translate`. `listening` (added 2026-09-24) plays
+`audioText` via TTS and asks the learner to choose what they heard; `speak`
+(added 2026-09-24) shows a phrase, records the learner saying it, and grades
+the speech-to-text transcript; `translate` (added 2026-09-24) describes an
+idea and has the learner write it, accepting any of a curated list of
+wordings. Four things about them are load bearing:
 
 - Every type except `mc` carries its answer as **text**, not as an index
   (`listening` stores the correct choice's text; `speak` stores the phrase and
@@ -168,6 +170,25 @@ speech-to-text transcript. Three things about them are load bearing:
   TypeScript, the `grade-review` Deno mirror, and `SpokenAnswer.swift` — with
   the same test vectors in all three suites, which is the only thing keeping
   them honest.
+
+- **`translate` is graded in three places, and they must agree.** Its rule
+  is hybrid: the curated `acceptableAnswers` decide it locally and for free,
+  and only what they reject is put to an AI grader
+  (`src/lib/translation-grader.server.ts`, mirrored for Deno). That AI half
+  runs **server-side in all three paths that grade** —
+  `/api/grade-translation` for the lesson player, `gradeReview` in
+  `review.functions.ts` for web review, and the `grade-review` Edge Function
+  for iOS review. Putting it in only one would recreate the lapse-behind-your-
+  back bug: a wording accepted on screen and re-derived by string comparison
+  in the scheduler. The review players therefore **display the verdict from
+  the same call that scheduled the item** rather than grading it a second
+  time — `gradeReview` returns `correct` on web, and `grade-review` does the
+  same for iOS, which grades on Check rather than on Next so there is one call
+  and one verdict. A first attempt had iOS *displaying* a verdict from
+  `/api/grade-translation` while `grade-review` independently decided the
+  schedule: two AI calls, two answers, no guarantee they matched. A `null` from the grader (vendor
+  down, no key, quota spent, unparseable reply) always means "no opinion" and
+  leaves the local verdict standing — it never means "wrong".
 
 `Question` decoding on iOS **fails loudly** on an unrecognised `type`. A
 lenient version (decoding to a filtered `.unsupported` case) was tried and

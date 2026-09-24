@@ -44,6 +44,9 @@ private func answerOf(_ question: Question) -> String {
         // Likewise: the answer IS the whole phrase to say, and the web mirror
         // skips it the same way, so a speaking lesson has no vocabulary step.
         return ""
+    case .translate:
+        // And likewise again: a whole produced sentence, not a term.
+        return ""
     }
 }
 
@@ -68,8 +71,8 @@ private func exampleOf(_ question: Question) -> String {
         return filled == q.prompt ? "\(q.prompt) \(answer)" : filled
     case .multipleChoice(let q):
         return "\(stripTrailingColon(q.prompt)) \u{2192} \(answer)"
-    case .reorder, .listening, .speak:
-        // Unreachable in practice -- deriveVocab skips all four via
+    case .reorder, .listening, .speak, .translate:
+        // Unreachable in practice -- deriveVocab skips all five via
         // answerOf's empty term.
         return ""
     }
@@ -96,6 +99,7 @@ public func deriveVocab(lesson: Lesson, images: [String: VocabImageRef]) -> [Voc
         case .reorder(let q): explanation = q.explanation
         case .listening(let q): explanation = q.explanation
         case .speak(let q): explanation = q.explanation
+        case .translate(let q): explanation = q.explanation
         }
         items.append(VocabItem(term: term, meaning: explanation, example: exampleOf(question), image: images[key]))
     }

@@ -59,11 +59,13 @@ export function buildCourseDump(course: Course = "en"): CourseDump {
           }
         : q.type === "speak"
           ? { ...base, answer: q.answer }
-          : q.type === "listening"
-            ? { ...base, choices: q.choices, answer: q.answer, audioText: q.audioText }
-            : q.type === "fill"
-              ? { ...base, bank: q.bank, answer: q.answer }
-              : { ...base, tokens: q.tokens, answer: q.answer };
+          : q.type === "translate"
+            ? { ...base, bank: q.acceptableAnswers, answer: q.acceptableAnswers[0] ?? "" }
+            : q.type === "listening"
+              ? { ...base, choices: q.choices, answer: q.answer, audioText: q.audioText }
+              : q.type === "fill"
+                ? { ...base, bank: q.bank, answer: q.answer }
+                : { ...base, tokens: q.tokens, answer: q.answer };
     byLevel[ref.level].push(dumped);
     curriculumCount++;
   }

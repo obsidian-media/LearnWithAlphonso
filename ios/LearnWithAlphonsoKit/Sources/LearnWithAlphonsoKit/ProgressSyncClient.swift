@@ -100,6 +100,18 @@ public struct DueReviews: Sendable, Equatable {
 public struct ReviewGradeOutcome: Sendable, Equatable {
     public let retired: Bool
     public let dueOn: String
+    /// The verdict the server actually scheduled on. Displayed rather than
+    /// re-derived on device: for a "translate" item the server may have asked
+    /// an AI grader about a wording the curated list did not anticipate, and a
+    /// second derivation here would show the learner one answer while the
+    /// scheduler recorded the other. Nil from a server predating this field.
+    public let correct: Bool?
+
+    public init(retired: Bool, dueOn: String, correct: Bool? = nil) {
+        self.retired = retired
+        self.dueOn = dueOn
+        self.correct = correct
+    }
 }
 
 public struct ReviewClearBonus: Sendable, Equatable {
@@ -461,7 +473,11 @@ public final class ProgressSyncClient: Sendable {
               let dueOn = object["dueOn"] as? String else {
             throw ProgressSyncError.invalidPayload
         }
-        return ReviewGradeOutcome(retired: retired, dueOn: dueOn)
+        // `correct` is optional for compatibility with a deployed function that
+        // predates it -- an older server simply yields nil, and the caller
+        // falls back to grading locally exactly as it did before.
+        return ReviewGradeOutcome(
+            retired: retired, dueOn: dueOn, correct: object["correct"] as? Bool)
     }
 
     /// Calls the `claim_review_clear_bonus` SECURITY DEFINER RPC directly

@@ -490,9 +490,15 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
               ? `${q.prompt} (heard: "${q.audioText}")`
               : q.type === "speak"
                 ? `${q.prompt} (said aloud: "${q.answer}")`
-                : q.prompt
+                : q.type === "translate"
+                  ? `${q.prompt} (wrote it themselves)`
+                  : q.prompt
           } — I answered incorrectly. The correct answer was: ${
-            q.type === "mc" ? q.choices[q.answer] : q.answer
+            q.type === "mc"
+              ? q.choices[q.answer]
+              : q.type === "translate"
+                ? q.acceptableAnswers[0]
+                : q.answer
           }.`,
         }));
         if (transcriptMessages.length > 0) {

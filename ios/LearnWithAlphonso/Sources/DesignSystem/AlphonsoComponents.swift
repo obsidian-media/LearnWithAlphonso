@@ -535,9 +535,15 @@ struct ExplanationView: View {
     let question: Question
     let picked: String?
     let explanation: String
+    /// Overrides the derived verdict where the caller knows better than
+    /// `isAnswerCorrect` can. That is exactly one case today: a translation,
+    /// whose curated phrasings are only a floor and whose real verdict may have
+    /// come from the server's AI grader. Without this the card would show the
+    /// "not quite" styling over an answer the learner was just told was right.
+    var correctOverride: Bool? = nil
 
     var body: some View {
-        if isAnswerCorrect(question, picked: picked) {
+        if correctOverride ?? isAnswerCorrect(question, picked: picked) {
             Text(explanation)
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)

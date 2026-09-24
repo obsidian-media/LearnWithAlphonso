@@ -11,6 +11,7 @@ public enum Question: Decodable, Sendable {
     case reorder(Reorder)
     case listening(Listening)
     case speak(Speak)
+    case translate(Translate)
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -75,6 +76,29 @@ public enum Question: Decodable, Sendable {
         }
     }
 
+    /// Mirrors curriculum.ts's "translate" variant: the learner writes the
+    /// phrase themselves and it is matched against `acceptableAnswers`, any of
+    /// which counts. `[0]` is canonical and is what the player shows after a
+    /// miss.
+    ///
+    /// The field is `acceptableAnswers` here because the bundled JSON is a
+    /// pass-through of the TypeScript `Question` objects (see
+    /// ios-content-export.ts) -- it is only the DATABASE seed that stores the
+    /// same list in the `bank` column, and the two are not the same shape.
+    public struct Translate: Decodable, Sendable {
+        public let id: String
+        public let prompt: String
+        public let acceptableAnswers: [String]
+        public let explanation: String
+
+        public init(id: String, prompt: String, acceptableAnswers: [String], explanation: String) {
+            self.id = id
+            self.prompt = prompt
+            self.acceptableAnswers = acceptableAnswers
+            self.explanation = explanation
+        }
+    }
+
     public struct FillInBlank: Decodable, Sendable {
         public let id: String
         public let prompt: String
@@ -113,6 +137,8 @@ public enum Question: Decodable, Sendable {
             self = .listening(try Listening(from: decoder))
         case "speak":
             self = .speak(try Speak(from: decoder))
+        case "translate":
+            self = .translate(try Translate(from: decoder))
         default:
             // Deliberately fails loudly. A lenient version of this was tried
             // and reverted: content ships inside the same binary (CI fails the

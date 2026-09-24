@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 
-export type QuotaKind = "chat" | "stt" | "tts";
+export type QuotaKind = "chat" | "stt" | "tts" | "translate";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -13,6 +13,11 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   chat: 60,
   stt: 60,
   tts: 80,
+  // Its own budget rather than a share of `chat`'s: translation grading is
+  // only reached by submissions the curated answer list already rejected, so
+  // a learner writing unusual-but-valid English should not quietly eat the
+  // conversation practice they also paid for.
+  translate: 60,
 };
 
 export type QuotaResult =

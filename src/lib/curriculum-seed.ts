@@ -40,7 +40,7 @@ export type LessonRow = {
 export type QuestionRow = {
   lesson_id: string;
   id: string;
-  type: "mc" | "fill" | "reorder" | "listening" | "speak";
+  type: "mc" | "fill" | "reorder" | "listening" | "speak" | "translate";
   prompt: string;
   choices: string[] | null;
   bank: string[] | null;
@@ -161,6 +161,21 @@ function questionRow(lessonId: string, q: Question, sortOrder: number): Question
       bank: null,
       answer_index: null,
       answer_text: q.answer,
+    };
+  }
+  if (q.type === "translate") {
+    // A fifth row shape, and deliberately built from columns that already
+    // exist: the curated phrasings ride in `bank` (already a jsonb string[]
+    // for fill/reorder) and the canonical one in `answer_text`. That means
+    // grade-review's generic non-mc path still has something sane to compare
+    // against even before its translate branch lands.
+    return {
+      ...base,
+      type: "translate",
+      choices: null,
+      bank: q.acceptableAnswers,
+      answer_index: null,
+      answer_text: q.acceptableAnswers[0] ?? "",
     };
   }
   return {

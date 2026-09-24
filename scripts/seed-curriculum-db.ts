@@ -11,7 +11,7 @@
  * or a real project if you've deliberately set that up. This script does
  * NOT default to or assume a production target.
  *
- * Usage: node_modules/.bin/tsx scripts/seed-curriculum-db.ts
+ * Usage: bun scripts/seed-curriculum-db.ts
  */
 import { createClient } from "@supabase/supabase-js";
 import { buildFullSeed } from "../src/lib/curriculum-seed";
