@@ -21,10 +21,12 @@
 > 3. **Re-running `scripts/init-audit-log.ts` destroyed the phase 1 audit log**
 >    — all 112 verdicts, recovered from git. That script scaffolds, it does not
 >    maintain; it now refuses to overwrite a filled log.
-> 4. **Two hardcoded lesson counts needed updating** beyond the content itself:
->    `curriculum-seed.test.ts` and `ios-content-export.test.ts` both assert
->    English's lesson count (534 → 559). Adding a pack is never only a content
->    change.
+> 4. **Three hardcoded lesson counts needed updating** beyond the content
+>    itself: `curriculum-seed.test.ts`, `ios-content-export.test.ts`, and
+>    `ContentStoreTests.swift` all assert English's lesson count (534 → 559).
+>    The Swift one was found only by CI, two pushes later, because it reads the
+>    exported bundle rather than the source. Adding a pack is never only a
+>    content change — grep for the current count before assuming otherwise.
 >
 > What the plan got right and is worth repeating: probing the type change with
 > `tsc` before committing to a shape (which is how the text-vs-index decision

@@ -4,7 +4,11 @@ import XCTest
 final class ContentStoreTests: XCTestCase {
     func testLoadsEnglishAndFrenchBundles() throws {
         let store = try ContentStore()
-        XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 534)
+        // 559 = 534 + the 25 listening lessons added 2026-09-24 (V5 phase 2A).
+        // This is the third place an English lesson count is hardcoded, after
+        // curriculum-seed.test.ts and ios-content-export.test.ts -- adding a
+        // pack is never only a content change.
+        XCTAssertEqual(store.english.units.reduce(0) { $0 + $1.lessons.count }, 559)
         XCTAssertEqual(store.french.units.reduce(0) { $0 + $1.lessons.count }, 500) // V3 pkg 4a: closed the 125 -> ~500 French content gap
     }
 
