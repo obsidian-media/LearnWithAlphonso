@@ -57,4 +57,6 @@ explicit applied/declined decision before phase 1 exits._
 const out = path.resolve(import.meta.dirname, "../docs/superpowers/english-content-audit-log.md");
 fs.writeFileSync(out, body);
 console.log(`Wrote ${out}`);
-console.log(`Rows: ${packRows.length} packs, ${handWritten.length} hand-written units, 1 placement`);
+console.log(
+  `Rows: ${packRows.length} packs, ${handWritten.length} hand-written units, 1 placement`,
+);

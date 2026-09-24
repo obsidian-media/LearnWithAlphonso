@@ -43,7 +43,10 @@ describe("packLineStats", () => {
 
 describe("id parity against committed baseline", () => {
   it("has not added or removed any question id", () => {
-    const baselinePath = path.resolve(import.meta.dirname, "../../.audit-baseline/english-ids.json");
+    const baselinePath = path.resolve(
+      import.meta.dirname,
+      "../../.audit-baseline/english-ids.json",
+    );
     const baseline = JSON.parse(fs.readFileSync(baselinePath, "utf8")) as string[];
     const { added, removed } = diffIds(baseline, collectEnglishIds());
     expect({ added, removed }).toEqual({ added: [], removed: [] });

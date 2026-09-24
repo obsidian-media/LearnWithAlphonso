@@ -44,7 +44,11 @@ describe("orderDistractorCandidates", () => {
     // Grammar packs legitimately reuse function words as distractors: a mixed
     // conditional drilling "If he HAD taken the job, he ___ be living abroad"
     // wants "had" among the choices. Deprioritising must not become dropping.
-    const ordered = orderDistractorCandidates("would", ["had"], "If he had taken the job, he ___ be living abroad now.");
+    const ordered = orderDistractorCandidates(
+      "would",
+      ["had"],
+      "If he had taken the job, he ___ be living abroad now.",
+    );
     expect(ordered).toEqual(["had"]);
   });
 

@@ -66,6 +66,15 @@ function tagInContext(sentence: string, answer: string): string | null {
   return null;
 }
 
+/**
+ * Emits a bare key where JS allows one, quoting only what needs it. Prettier's
+ * `quoteProps: "as-needed"` would otherwise rewrite every quoted key and fail
+ * lint on a freshly generated file.
+ */
+function objectKey(word: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(word) ? word : JSON.stringify(word);
+}
+
 const observed = new Map<string, Set<string>>();
 let clozeLines = 0;
 let pairOnly = 0;
@@ -107,7 +116,7 @@ const body = `// GENERATED FILE -- do not edit by hand.
 // word": distractor ranking degrades gracefully to pool order.
 
 export const ANSWER_POS: Record<string, string> = {
-${stable.map(([a, p]) => `  ${JSON.stringify(a)}: ${JSON.stringify(p)},`).join("\n")}
+${stable.map(([a, p]) => `  ${objectKey(a)}: ${JSON.stringify(p)},`).join("\n")}
 };
 `;
 
