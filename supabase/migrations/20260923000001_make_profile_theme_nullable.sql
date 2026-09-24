@@ -1,0 +1,28 @@
+-- Fixes a real bug found in code review of the Canopy theme rollout:
+-- profiles.theme was `not null default 'meadow'`, so every row --
+-- including a brand-new signup, since handle_new_user() never sets
+-- theme -- already holds the literal string 'meadow'. There was no way
+-- to represent "user has no explicit theme preference yet."
+--
+-- iOS's own fetchProfileTheme() doc comment already anticipated a
+-- nullable column ("nil covers both 'no row yet' and 'theme column is
+-- null' -- both mean use the local default", see
+-- ProgressSyncClient+Profile.swift), and web's __root.tsx already reads
+-- `profile?.theme ?? null` defensively -- but the column itself never
+-- actually allowed null, so that defensive code could never actually
+-- see one.
+--
+-- Consequence: on every signed-in launch, RootView's server-value
+-- hydration read the default-driven 'meadow', applied it via
+-- AlphonsoThemeManager.setTheme, and PERSISTED it to UserDefaults as if
+-- the user had explicitly picked it -- permanently overriding the new
+-- Canopy default the very first time any user signed in.
+--
+-- Dropping the NOT NULL default restores "no row-level value yet" as a
+-- real, representable state. Existing rows keep their literal 'meadow'
+-- (can't be retroactively disambiguated from an explicit pick -- a
+-- known, accepted limit for this early-stage app's small existing user
+-- set), but every new signup going forward gets a real null, which
+-- iOS/web both already treat correctly as "no preference."
+alter table profiles alter column theme drop not null;
+alter table profiles alter column theme drop default;
