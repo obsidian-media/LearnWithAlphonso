@@ -104,7 +104,13 @@ export function SpeakAnswer({
             </div>
           )}
           {error && (
-            <p role="alert" className="text-center text-xs text-ember">
+            // Same rose pill the conversation route uses for a capture error.
+            // Ember is the accent colour here (the lesson eyebrow, the Continue
+            // button), so an error drawn in it reads as decoration.
+            <p
+              role="alert"
+              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            >
               {error}
             </p>
           )}
