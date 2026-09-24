@@ -30,6 +30,17 @@ nothing.
 Offline download and search (Phase 3), transcripts, comprehension
 questions, XP and SRS (Phase 2), and CarPlay.
 
+### Where verification stands, up front
+
+The logic — client, tree, clamping, URLs — lives in the Kit and gets real
+tests. **The audio layer does not, and cannot here:** session category,
+interruptions, route changes, Now Playing and background playback have no
+unit tests in this repo, no local build (no macOS or Xcode in the
+development environment), and a simulator would not prove the interesting
+cases anyway. So the riskiest code in this phase is the least verified,
+and the device pass is its only real check. That is stated here rather
+than at the bottom because it should shape how the work is reviewed.
+
 ## The first server-fetched content in the iOS app
 
 `ContentStore` is explicitly "No network calls, no async" — curriculum
@@ -64,6 +75,27 @@ PostgREST has no equivalent of the server function's join. RLS already
 filters episodes to `published = true` and playback rows to the caller,
 so neither is re-checked here.
 
+### Two failure modes the client has to own
+
+**A token that expires mid-session.** `PodcastClient` is handed an
+`accessToken` at init and cannot refresh it, exactly like
+`ProgressSyncClient`. A long listening session can outlive it, and a
+position save is a best-effort call whose errors are swallowed — so
+resume would quietly stop working with nothing surfaced. The client
+therefore maps **401 to a distinct `.unauthorized` error**, and the
+player stops issuing saves for the rest of the session rather than firing
+calls that cannot succeed. The next launch builds a client from a fresh
+token, as `RootView.triggerSync` already does.
+
+**Cross-device resume must not move backwards.** Both clients upsert, so
+last-writer-wins lets a stale phone sitting at 5:00 drag a laptop's 0:30
+position backwards when it syncs later. `updated_at` exists and nothing
+reads it. `savePlaybackPosition` therefore guards on the stored value
+rather than overwriting blindly (implementation choice recorded in the
+plan). Without that guard the "resumes across devices" criterion above is
+not actually delivered, and asserting it while not designing it would be
+worse than dropping it.
+
 ## What moves into the Kit (so it is tested)
 
 The app target has no unit tests anywhere in this repo. Anything with a
@@ -81,9 +113,13 @@ decision in it therefore belongs in `LearnWithAlphonsoKit`:
 
 Ported deliberately rather than shared: there is no mechanism in this
 repo for sharing logic between TypeScript and Swift, and the existing
-SRS/hearts/progress-math ports set the precedent. Each port's tests are
-written from the same cases as the TypeScript ones so the two cannot
-drift silently.
+SRS/hearts/progress-math ports set the precedent.
+
+Nothing enforces that a port and its original stay in step — the existing
+ports carry the same exposure. Each ported function therefore carries a
+comment naming **both** the TypeScript file and that file's test, so a
+change on one side has a visible counterpart to check in review. That is
+a weaker guarantee than shared code, and it is the one available.
 
 ## Audio
 
@@ -94,10 +130,17 @@ playback survives view changes for free — iOS does not have the web's
 Critical finding possible.
 
 - `AVAudioSession` category `.playback`, activated when playback starts,
-  so audio continues when the screen locks. Five existing screens already
-  configure the session (`ConversationView`, `HectorView`,
-  `CampaignView`, `SpeakQuestionCard`, `LessonPlayerView`) — this must
-  cooperate with them rather than fight over the category.
+  so audio continues when the screen locks.
+
+  **Category policy with the mic screens.** `SpeakQuestionCard`,
+  `ConversationView`, `HectorView` and `CampaignView` take the session
+  for recording (`.playAndRecord`). When one of them does, this player
+  **pauses and does not auto-resume**; the learner restarts it
+  deliberately. Auto-resuming would talk over someone doing a speaking
+  exercise, and sharing one session between podcast playback and
+  recording is not attempted. This is the most likely thing in the phase
+  to be wrong on a real device with real headphones, and it has no
+  automated coverage.
 - `MPNowPlayingInfoCenter` for title and elapsed time;
   `MPRemoteCommandCenter` for play, pause and skip.
 - **`UIBackgroundModes` = `audio`** added to `ios/LearnWithAlphonso/Info.plist`
@@ -118,9 +161,17 @@ Critical finding possible.
   folder. Every child view it pushes is a plain view that does **not**
   own its own `NavigationStack` — Phase 0 showed what nesting costs, and
   this time the children are new code, so the constraint is free.
-- **A mini-player bar in `RootView`**, above the `TabView`, so it stays
-  visible across tabs while something is playing. The audio itself does
-  not depend on this; the bar is only the control surface.
+- **A mini-player bar** attached with `.safeAreaInset(edge: .bottom)` on
+  the `TabView`, so it sits above the tab bar without overlapping content
+  or being overlapped. It stays visible across tab switches; the audio
+  does not depend on it, since the player object lives above the view
+  tree — the bar is only a control surface.
+
+  It will **not** follow screens presented over the tabs (the lesson
+  player, review queue, and the four Profile sheets). That is intended —
+  a control bar floating over a lesson would be worse — but it is a
+  decision, and it is on the device checklist rather than left to be
+  discovered.
 - Empty states are honest: an empty folder says so, and being offline
   says *that* rather than blaming the episode.
 
