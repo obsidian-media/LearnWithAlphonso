@@ -644,10 +644,14 @@ private struct FinishView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AlphonsoSpacing.md) {
+                Text("Lesson complete")
+                    .font(AlphonsoFont.display(21, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+
                 // The exact "no imagery, just text/icon" pattern the
                 // spec's Background section calls out on PaywallView
                 // shows up here too -- same fix.
-                AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work — lesson complete!")
+                AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work!")
                 Text("+\(result.xpGain) XP")
                     .font(AlphonsoFont.display(32, weight: .bold))
                     .foregroundStyle(AlphonsoColor.moss)

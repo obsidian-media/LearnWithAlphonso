@@ -11,6 +11,10 @@ struct PaywallView: View {
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.lg) {
+            Text("Alphonso Pro")
+                .font(AlphonsoFont.display(28, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+
             // This is the exact screen the account owner pointed at
             // during brainstorming as "everything wrong with how it
             // looks" -- an SF Symbol and plain text, despite Hector's
