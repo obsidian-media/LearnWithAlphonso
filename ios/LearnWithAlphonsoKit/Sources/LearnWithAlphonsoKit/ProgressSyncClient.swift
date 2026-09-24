@@ -825,6 +825,87 @@ public final class ProgressSyncClient: Sendable {
     /// to the learner's real level. Returns nil if the row doesn't exist
     /// yet (e.g. this course was never opened) rather than throwing --
     /// callers should treat that the same as "no adaptation available."
+    /// Reads the signed-in user's *current* progress straight from the
+    /// database, without needing a lesson completion to happen first.
+    ///
+    /// Why this exists: until 2026-09-24 the app had **no read path for
+    /// the user's own progress at all**. `LessonCompletionProgress` only
+    /// ever arrived as the *response to* `completeLesson`, so
+    /// `SyncEngine.sync` could only report it as a side effect of pushing
+    /// a queued completion. With nothing queued -- the normal state for a
+    /// user who has already synced and then updates or reinstalls the app
+    /// -- `SyncQueueStore.cachedProgress` stayed nil, and
+    /// `StatusHeaderView` renders nothing at all when it is nil. Net
+    /// effect: a fresh install showed **no streak, hearts, XP or league**
+    /// until the user happened to finish a lesson. Reported by a real
+    /// tester as "the user can't find or figure out his progress".
+    ///
+    /// Composed from the same two tables `complete-lesson` itself writes,
+    /// so the two can't disagree:
+    /// - `language_progress` (per course) -> `xp`, `league_tier`. **Not**
+    ///   `user_progress.xp`: that column has been frozen since the
+    ///   2026-09-08 multi-course migration and is no longer written by
+    ///   anything -- reading it would show a months-stale number.
+    /// - `user_progress` (per user) -> streak, hearts and friends.
+    ///
+    /// Takes **no course argument on purpose.** `xp` and `league_tier` are
+    /// per-course, but the header this feeds shows a single figure, and
+    /// the cached value it replaces was always "whatever course the user
+    /// last completed a lesson in" -- `complete-lesson` returns that
+    /// course's row. Ordering by `updated_at desc` and taking the first
+    /// row reproduces exactly that meaning without the caller having to
+    /// know which course is on screen. Hardcoding a course here would
+    /// silently show a French-only learner their (empty) English numbers.
+    ///
+    /// Returns nil when the user has no `language_progress` row at all
+    /// (i.e. genuinely no progress yet), which the caller should treat as
+    /// "nothing to show", not as an error.
+    public func fetchProgress() async throws -> LessonCompletionProgress? {
+        var languageRequest = restRequest(path: "language_progress", query: [
+            URLQueryItem(name: "select", value: "xp,league_tier"),
+            URLQueryItem(name: "order", value: "updated_at.desc"),
+            URLQueryItem(name: "limit", value: "1"),
+        ])
+        languageRequest.httpMethod = "GET"
+        let (languageData, languageResponse) = try await requester(languageRequest)
+        try Self.requireSuccess(data: languageData, response: languageResponse)
+        guard
+            let languageRows = try? JSONSerialization.jsonObject(with: languageData) as? [[String: Any]],
+            let languageRow = languageRows.first
+        else {
+            return nil
+        }
+
+        var userRequest = restRequest(path: "user_progress", query: [
+            URLQueryItem(
+                name: "select",
+                value: "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes"
+            ),
+        ])
+        userRequest.httpMethod = "GET"
+        let (userData, userResponse) = try await requester(userRequest)
+        try Self.requireSuccess(data: userData, response: userResponse)
+        let userRow = (try? JSONSerialization.jsonObject(with: userData) as? [[String: Any]])?.first ?? [:]
+
+        let refillAt = (userRow["hearts_refill_at"] as? String)
+            .flatMap(Self.parsePostgresTimestamp)
+            .map { $0.timeIntervalSince1970 * 1000 }
+
+        return LessonCompletionProgress(
+            xp: languageRow["xp"] as? Int ?? 0,
+            streak: userRow["streak"] as? Int ?? 0,
+            longestStreak: userRow["longest_streak"] as? Int ?? 0,
+            lastActiveDate: userRow["last_active_date"] as? String ?? "",
+            // `hearts` defaults to 5 in the schema, so a missing row means
+            // a full set rather than zero -- showing 0 hearts to someone
+            // who has all of them would read as a bug.
+            hearts: userRow["hearts"] as? Int ?? 5,
+            heartsRefillAt: refillAt,
+            streakFreezes: userRow["streak_freezes"] as? Int ?? 0,
+            leagueTier: languageRow["league_tier"] as? String ?? "bronze"
+        )
+    }
+
     public func fetchCefrLevel(course: String) async throws -> String? {
         var request = restRequest(path: "language_progress", query: [
             URLQueryItem(name: "select", value: "cefr_level"),

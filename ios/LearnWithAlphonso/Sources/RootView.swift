@@ -92,6 +92,21 @@ struct RootView: View {
         syncQueueStore.removeSyncedReviewGrades(result.syncedReviewGrades)
         if let lastKnownProgress = result.lastKnownProgress {
             syncQueueStore.updateLastKnownProgress(lastKnownProgress)
+        } else if let fetched = try? await client.fetchProgress() {
+            // SyncEngine.sync only learns progress as a side effect of
+            // *pushing* a queued lesson completion, so with an empty queue
+            // -- the normal state after a user has synced and then updated
+            // or reinstalled -- it returns nil and the cache stays empty.
+            // StatusHeaderView renders nothing when the cache is nil, which
+            // is why a real tester reported their streak/hearts/XP/league
+            // had disappeared entirely after updating. Read it directly in
+            // that case so the header reflects the server, not just
+            // whatever this device happens to have written locally.
+            //
+            // Best-effort by design (`try?`), same posture as
+            // hydrateThemeFromServer below: a failed fetch leaves the
+            // previous cached value alone rather than blanking the header.
+            syncQueueStore.updateLastKnownProgress(fetched)
         } else {
             syncQueueStore.markSyncedNow()
         }
