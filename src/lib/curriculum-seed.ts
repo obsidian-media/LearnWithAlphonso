@@ -220,7 +220,7 @@ export function buildPlacementQuestionRows(course: Course): PlacementQuestionRow
     // Mirrors the questions table's shapes: mc keeps choices + an index,
     // listening keeps choices but answers with text, translate carries its
     // wordings in `bank` with the canonical one in answer_text. See migration
-    // 20260927010000, which widens the columns to allow it.
+    // 20260927215427_placement_question_types.sql, which widens the columns.
     if (p.type === "mc") {
       return {
         ...base,

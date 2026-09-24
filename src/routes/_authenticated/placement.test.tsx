@@ -43,7 +43,11 @@ vi.mock("framer-motion", () => ({
 }));
 
 const canSpeak = vi.fn(() => true);
-vi.mock("../../lib/speech", () => ({ speak: vi.fn(), canSpeak: () => canSpeak() }));
+const speak = vi.fn();
+vi.mock("../../lib/speech", () => ({
+  speak: (t: string, l: string) => speak(t, l),
+  canSpeak: () => canSpeak(),
+}));
 
 const savePlacementResult = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ savePlacementResult }));
@@ -69,6 +73,36 @@ const FIXED_QUESTIONS: PlacementQuestion[] = [
     answer: 3,
   },
 ];
+const LISTENING_BAND: PlacementQuestion[] = [
+  {
+    id: "p50",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+  {
+    id: "p50b",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+  {
+    id: "p50c",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+];
+
 const LISTENING_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p50",
@@ -189,7 +223,13 @@ const MULTI_BAND_QUESTIONS: PlacementQuestion[] = [
 // Typed as the union rather than inferred from the first fixture, so a
 // listening or translate set can be injected too.
 const pickPlacement = vi.fn((): PlacementQuestion[] => FIXED_QUESTIONS);
-vi.mock("../../data/courses", () => ({ getCourse: () => ({ pickPlacement }) }));
+vi.mock("../../data/courses", () => ({
+  getCourse: () => ({ pickPlacement }),
+  // Omitting this made the Play-audio handler unclickable in tests: vitest
+  // throws on an export a mock factory does not define, so the button could
+  // not be exercised at all.
+  localeForCourse: () => "en-US",
+}));
 
 /** Answers the current question and advances, regardless of which label ("Continue" / "See my level") the submit button currently shows. */
 async function answer(user: ReturnType<typeof userEvent.setup>, choice: "right" | "wrong") {
@@ -207,6 +247,8 @@ function renderPage() {
 
 beforeEach(() => {
   canSpeak.mockReturnValue(true);
+  speak.mockReset();
+  vi.unstubAllGlobals();
   navigate.mockClear();
   savePlacementResult.mockReset();
   savePlacementResult.mockResolvedValue({});
@@ -342,27 +384,48 @@ describe("Adaptive band sequencing", () => {
     expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
   });
 
-  it("plays a listening placement question and grades the choice by its text", async () => {
-    pickPlacement.mockReturnValue([...LISTENING_QUESTIONS]);
+  it("plays the sentence in the course locale and grades the choice by its text", async () => {
+    // A full band, so the 2-of-3 rule can actually distinguish right from
+    // wrong. With a single question the result is A1 whatever is clicked, and
+    // the old version of this test passed with listening grading broken.
+    pickPlacement.mockReturnValue([...LISTENING_BAND]);
     const user = userEvent.setup();
     renderPage();
 
-    expect(await screen.findByRole("button", { name: /play audio/i })).toBeEnabled();
-    await user.click(screen.getByRole("button", { name: "She's a doctor." }));
-    expect(screen.getByRole("button", { name: /Continue|See my level/ })).toBeEnabled();
+    await user.click(await screen.findByRole("button", { name: /play audio/i }));
+    expect(speak).toHaveBeenCalledWith("She's a doctor.", "en-US");
+
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: "She's a doctor." }));
+      await user.click(screen.getByRole("button", { name: /Continue|See my level/ }));
+    }
+    // Three correct answers pass the A1 band, which places them one above it.
+    expect(await screen.findByText("A2")).toBeInTheDocument();
   });
 
-  it("shows the sentence when the browser cannot speak", async () => {
-    // A placement question nobody can answer mis-places the learner DOWNWARD,
-    // and unlike a lesson question that sets their whole course. `speak` fails
-    // silently where speechSynthesis is missing, so the button alone is not
-    // enough.
-    canSpeak.mockReturnValue(false);
-    pickPlacement.mockReturnValue([...LISTENING_QUESTIONS]);
+  it("marks a wrong listening choice wrong", async () => {
+    // The other half of the same claim: without this, a grader that returned
+    // true unconditionally would still pass the test above.
+    pickPlacement.mockReturnValue([...LISTENING_BAND]);
+    const user = userEvent.setup();
     renderPage();
 
-    expect(await screen.findByText(/audio is unavailable/i)).toBeInTheDocument();
-    expect(screen.getByText("She's a doctor.", { selector: "p" })).toBeInTheDocument();
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: "She's a teacher." }));
+      await user.click(screen.getByRole("button", { name: /Continue|See my level/ }));
+    }
+    expect(await screen.findByText("A1")).toBeInTheDocument();
+  });
+
+  it("drops listening questions where the browser cannot speak", async () => {
+    // The sentence IS the answer, so printing it as a fallback would hand the
+    // learner the mark. The question leaves the exam instead.
+    canSpeak.mockReturnValue(false);
+    pickPlacement.mockReturnValue([...LISTENING_BAND]);
+    renderPage();
+
+    expect(await screen.findByText(/No placement questions are available/i)).toBeInTheDocument();
+    expect(screen.queryByText("She's a doctor.")).toBeNull();
   });
 
   it("accepts a curated wording for a translation without asking the server", async () => {

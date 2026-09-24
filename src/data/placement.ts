@@ -425,15 +425,23 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     answer: 1,
   },
   // --- Listening (added with phase 5) ---------------------------------
-  // Two per band. Spoken via TTS, with the sentence shown instead where
-  // the browser cannot speak, so the question always has an answer.
+  // Two per band, four options each. Every distractor is one word or one
+  // inflection from the answer, so the question cannot be passed by
+  // spotting a topic word -- in an exam a word-spottable question inflates
+  // the band and starts the learner on content they cannot do.
+  //
+  // These are NOT shown when the browser has no speech synthesis: the
+  // session filters them out (see startSession). The sentence IS the
+  // answer, so printing it as a fallback -- which is what the lesson
+  // player does, where the cost is one heart -- would hand the learner
+  // every listening question for free and inflate their placement.
   {
     id: "p50",
     level: "A1",
     type: "listening",
     prompt: "What did you hear?",
     audioText: "She's a doctor.",
-    choices: ["She's a doctor.", "She's a teacher."],
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
     answer: "She's a doctor.",
   },
   {
@@ -442,7 +450,12 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     type: "listening",
     prompt: "What did you hear?",
     audioText: "I can't find my keys.",
-    choices: ["I can't find my keys.", "I can't find my phone."],
+    choices: [
+      "I can't find my keys.",
+      "I can't find my phone.",
+      "I can find my keys.",
+      "I couldn't find my keys.",
+    ],
     answer: "I can't find my keys.",
   },
   {
@@ -451,7 +464,12 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     type: "listening",
     prompt: "What did you hear?",
     audioText: "We went to the coast last weekend.",
-    choices: ["We went to the coast last weekend.", "We went to the coast last summer."],
+    choices: [
+      "We went to the coast last weekend.",
+      "We went to the coast last summer.",
+      "We went to the coast this weekend.",
+      "We drove to the coast last weekend.",
+    ],
     answer: "We went to the coast last weekend.",
   },
   {
@@ -460,7 +478,12 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     type: "listening",
     prompt: "What did you hear?",
     audioText: "She hasn't finished her report.",
-    choices: ["She hasn't finished her report.", "She's already finished her report."],
+    choices: [
+      "She hasn't finished her report.",
+      "She's already finished her report.",
+      "She hasn't started her report.",
+      "He hasn't finished his report.",
+    ],
     answer: "She hasn't finished her report.",
   },
   {
@@ -472,6 +495,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "The course was harder than I'd expected.",
       "The course was easier than I'd expected.",
+      "The course was harder than I'd remembered.",
+      "The course was harder than we'd expected.",
     ],
     answer: "The course was harder than I'd expected.",
   },
@@ -484,6 +509,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "They're considering a move to Edinburgh.",
       "They're considering a move to Manchester.",
+      "They've considered a move to Edinburgh.",
+      "They're considering a move from Edinburgh.",
     ],
     answer: "They're considering a move to Edinburgh.",
   },
@@ -496,6 +523,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "The findings appear to contradict earlier research.",
       "The findings appear to confirm earlier research.",
+      "The findings appear to contradict earlier reporting.",
+      "The finding appears to contradict earlier research.",
     ],
     answer: "The findings appear to contradict earlier research.",
   },
@@ -508,6 +537,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "He claimed the delay was beyond his control.",
       "He claimed the delay was within his control.",
+      "He claimed the delay was beyond her control.",
+      "He claims the delay was beyond his control.",
     ],
     answer: "He claimed the delay was beyond his control.",
   },
@@ -520,6 +551,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "The evidence is suggestive rather than conclusive.",
       "The evidence is conclusive rather than suggestive.",
+      "The evidence is suggestive rather than exhaustive.",
+      "The evidence was suggestive rather than conclusive.",
     ],
     answer: "The evidence is suggestive rather than conclusive.",
   },
@@ -532,6 +565,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     choices: [
       "Their reasoning rests on an untested assumption.",
       "Their reasoning rests on a well-tested assumption.",
+      "Their reasoning rests on an untested assertion.",
+      "Their reasoning rested on an untested assumption.",
     ],
     answer: "Their reasoning rests on an untested assumption.",
   },
@@ -544,7 +579,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     id: "p60",
     level: "A1",
     type: "translate",
-    prompt: "Greet someone in the morning.",
+    prompt: "Say hello to someone at the start of the day.",
     acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
   },
   {
@@ -562,7 +597,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     id: "p62",
     level: "B1",
     type: "translate",
-    prompt: "Say the answer depends on the time available.",
+    prompt: "Explain that you cannot commit until you know your schedule.",
     acceptableAnswers: [
       "It depends how much time we have.",
       "It depends on the time available.",
@@ -573,7 +608,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     id: "p63",
     level: "B2",
     type: "translate",
-    prompt: "Say nobody is obliged to accept the offer.",
+    prompt: "Make clear the team is free to turn the offer down.",
     acceptableAnswers: [
       "We are under no obligation to accept it.",
       "We do not have to accept it.",
@@ -608,7 +643,16 @@ export function pickPlacementSet(
   const picked: PlacementQuestion[] = [];
   for (const lvl of PLACEMENT_ORDER) {
     const candidates = pool.filter((q) => q.level === lvl);
-    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    // Fisher-Yates, not `sort(() => Math.random() - 0.5)`. That comparator is
+    // not a shuffle: V8 uses insertion sort below 23 elements, so items stay
+    // near where they started -- measured at ~13.8% draw rate for the
+    // listening entries against a fair 16.7%, purely because they are appended
+    // at the end of the pool. The bias ran against exactly the new content.
+    const shuffled = [...candidates];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    }
     picked.push(...shuffled.slice(0, 3));
   }
   return picked;
