@@ -120,7 +120,7 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest (105 test files / 842 tests, full-suite run
+bun run test         # Vitest (108 test files / 870 tests, full-suite run
                       # verified 2026-09-24 — the suite ran clean repeatedly
                       # that day on this Windows sandbox, so the earlier
                       # "full suite is unreliable here" caveat is retired;
@@ -131,8 +131,8 @@ swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/Learn
 ```
 
 **Coverage as of 2026-09-24** (`bun run test:coverage`, re-run rather
-than assuming it holds after further changes): 91.52% statements /
-79.33% branches / 87.64% functions / 92.78% lines overall.
+than assuming it holds after further changes): 92.60% statements /
+80.83% branches / 89.55% functions / 93.85% lines overall.
 
 Both long-standing thin spots were closed the same day and are no longer
 thin: `src/routes/__root.tsx` went 18.36% -> **97.95%** statements (100%
@@ -141,6 +141,11 @@ lines, 100% functions). What had been untested in each was real logic
 rather than boilerplate — `AuthSync`'s session/auth-event handling and
 the first-paint theme script in one, the focus trap and the
 refill-due transition in the other.
+
+`challenges`/`season`/`teams.functions.ts` also got their first tests
+the same day. They had been the **only** `*.functions.ts` modules
+without a test file — all three arrived in the gamification batch
+(PRs #65–67) without the tests every sibling has.
 
 **Corrected 2026-09-24**: `src/routes/api/analyze-weaknesses.ts` was
 listed here for a long time as "~8%, because server routes adjacent to

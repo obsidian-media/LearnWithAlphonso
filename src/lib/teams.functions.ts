@@ -16,11 +16,17 @@ export type MyTeam = {
 function toJoinResult(
   row: { ok: boolean; reason: string | null; team_id: string | null } | undefined,
 ): TeamJoinResult {
-  return {
-    ok: row?.ok ?? false,
-    reason: row?.reason ?? "unknown-error",
-    teamId: row?.team_id ?? null,
-  };
+  // "unknown-error" is the fallback for a MISSING row (the RPC returned
+  // nothing, so we have no idea why) -- not a default for a null `reason`.
+  // Applying `row?.reason ?? "unknown-error"` unconditionally meant a
+  // *successful* join came back reporting reason: "unknown-error", since
+  // the RPC correctly returns reason: null on success. Nothing surfaced it
+  // (both web `teams.tsx` and iOS `TeamsView` read `reason` only when
+  // `ok` is false), so this was latent rather than user-visible -- but it
+  // also made this port disagree with the Swift one, which does a plain
+  // `row["reason"] as? String` and returns nil on success.
+  if (!row) return { ok: false, reason: "unknown-error", teamId: null };
+  return { ok: row.ok, reason: row.reason, teamId: row.team_id };
 }
 
 export const joinTeamByCode = createServerFn({ method: "POST" })
