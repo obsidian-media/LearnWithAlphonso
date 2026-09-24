@@ -11198,6 +11198,325 @@
       ]
     },
     {
+      "id": "a1p25u1",
+      "level": "A1",
+      "eyebrow": "Unit 28",
+      "title": "Say It Your Way",
+      "description": "Write the idea in English — Everyday ideas, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "a1p25l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q0",
+              "type": "translate",
+              "prompt": "Greet someone in the morning.",
+              "acceptableAnswers": [
+                "Good morning.",
+                "Morning.",
+                "Good morning to you."
+              ],
+              "explanation": "One way to say it: \"Good morning.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q1",
+              "type": "translate",
+              "prompt": "Ask someone their name.",
+              "acceptableAnswers": [
+                "What is your name?",
+                "May I ask your name?",
+                "Could you tell me your name?"
+              ],
+              "explanation": "One way to say it: \"What is your name?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q2",
+              "type": "translate",
+              "prompt": "Say you do not understand.",
+              "acceptableAnswers": [
+                "I do not understand.",
+                "Sorry, I don't understand.",
+                "I am afraid I do not follow."
+              ],
+              "explanation": "One way to say it: \"I do not understand.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q3",
+              "type": "translate",
+              "prompt": "Ask where the station is.",
+              "acceptableAnswers": [
+                "Where is the station?",
+                "Could you tell me where the station is?",
+                "How do I get to the station?"
+              ],
+              "explanation": "One way to say it: \"Where is the station?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q4",
+              "type": "translate",
+              "prompt": "Thank someone warmly.",
+              "acceptableAnswers": [
+                "Thank you very much.",
+                "Thanks a lot.",
+                "Thank you so much."
+              ],
+              "explanation": "One way to say it: \"Thank you very much.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q5",
+              "type": "translate",
+              "prompt": "Ask someone to repeat something.",
+              "acceptableAnswers": [
+                "Could you repeat that?",
+                "Can you say that again?",
+                "Please say that again."
+              ],
+              "explanation": "One way to say it: \"Could you repeat that?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q6",
+              "type": "translate",
+              "prompt": "Say you come from Spain.",
+              "acceptableAnswers": [
+                "I am from Spain.",
+                "I come from Spain.",
+                "My home country is Spain."
+              ],
+              "explanation": "One way to say it: \"I am from Spain.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q7",
+              "type": "translate",
+              "prompt": "Order a coffee politely.",
+              "acceptableAnswers": [
+                "I would like a coffee, please.",
+                "Can I have a coffee, please?",
+                "A coffee, please."
+              ],
+              "explanation": "One way to say it: \"I would like a coffee, please.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q8",
+              "type": "translate",
+              "prompt": "Ask how someone is.",
+              "acceptableAnswers": [
+                "How are you?",
+                "How are you today?",
+                "How are you doing?"
+              ],
+              "explanation": "One way to say it: \"How are you?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q9",
+              "type": "translate",
+              "prompt": "Say goodbye until tomorrow.",
+              "acceptableAnswers": [
+                "See you tomorrow.",
+                "Goodbye, see you tomorrow.",
+                "Until tomorrow."
+              ],
+              "explanation": "One way to say it: \"See you tomorrow.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q10",
+              "type": "translate",
+              "prompt": "Ask what the time is.",
+              "acceptableAnswers": [
+                "What time is it?",
+                "Do you have the time?",
+                "Could you tell me the time?"
+              ],
+              "explanation": "One way to say it: \"What time is it?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q11",
+              "type": "translate",
+              "prompt": "Say you are hungry.",
+              "acceptableAnswers": [
+                "I am hungry.",
+                "I am very hungry.",
+                "I could eat something."
+              ],
+              "explanation": "One way to say it: \"I am hungry.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q12",
+              "type": "translate",
+              "prompt": "Ask someone for help.",
+              "acceptableAnswers": [
+                "Can you help me?",
+                "Could you help me?",
+                "I need some help, please."
+              ],
+              "explanation": "One way to say it: \"Can you help me?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q13",
+              "type": "translate",
+              "prompt": "Say you live in London.",
+              "acceptableAnswers": [
+                "I live in London.",
+                "I'm living in London.",
+                "My home is in London."
+              ],
+              "explanation": "One way to say it: \"I live in London.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q14",
+              "type": "translate",
+              "prompt": "Ask the price of something.",
+              "acceptableAnswers": [
+                "How much is it?",
+                "How much does it cost?",
+                "What does it cost?"
+              ],
+              "explanation": "One way to say it: \"How much is it?\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q15",
+              "type": "translate",
+              "prompt": "Say you are learning English.",
+              "acceptableAnswers": [
+                "I am learning English.",
+                "I study English.",
+                "I am taking English lessons."
+              ],
+              "explanation": "One way to say it: \"I am learning English.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q16",
+              "type": "translate",
+              "prompt": "Apologise for arriving late.",
+              "acceptableAnswers": [
+                "I am sorry I am late.",
+                "Sorry for being late.",
+                "My apologies for the delay."
+              ],
+              "explanation": "One way to say it: \"I am sorry I am late.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q17",
+              "type": "translate",
+              "prompt": "Ask where the toilet is.",
+              "acceptableAnswers": [
+                "Where is the toilet?",
+                "Could you tell me where the toilet is?",
+                "Is there a toilet nearby?"
+              ],
+              "explanation": "One way to say it: \"Where is the toilet?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q18",
+              "type": "translate",
+              "prompt": "Say you do not eat meat.",
+              "acceptableAnswers": [
+                "I do not eat meat.",
+                "I never eat meat.",
+                "I am vegetarian."
+              ],
+              "explanation": "One way to say it: \"I do not eat meat.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q19",
+              "type": "translate",
+              "prompt": "Introduce your sister to someone.",
+              "acceptableAnswers": [
+                "This is my sister.",
+                "She is my sister.",
+                "Let me introduce my sister."
+              ],
+              "explanation": "One way to say it: \"This is my sister.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q20",
+              "type": "translate",
+              "prompt": "Say the weather is pleasant.",
+              "acceptableAnswers": [
+                "The weather is nice.",
+                "It is nice weather.",
+                "It's lovely weather."
+              ],
+              "explanation": "One way to say it: \"The weather is nice.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q21",
+              "type": "translate",
+              "prompt": "Ask someone to speak more slowly.",
+              "acceptableAnswers": [
+                "Could you speak slowly?",
+                "Please speak more slowly.",
+                "Can you speak slower?"
+              ],
+              "explanation": "One way to say it: \"Could you speak slowly?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q22",
+              "type": "translate",
+              "prompt": "Say you work in a bank.",
+              "acceptableAnswers": [
+                "I work in a bank.",
+                "I work at a bank.",
+                "My job is in a bank."
+              ],
+              "explanation": "One way to say it: \"I work in a bank.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q23",
+              "type": "translate",
+              "prompt": "Wish someone a good evening.",
+              "acceptableAnswers": [
+                "Have a good evening.",
+                "Good evening.",
+                "Have a nice evening."
+              ],
+              "explanation": "One way to say it: \"Have a good evening.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q24",
+              "type": "translate",
+              "prompt": "Say you are tired.",
+              "acceptableAnswers": [
+                "I am tired.",
+                "I feel tired.",
+                "I am exhausted."
+              ],
+              "explanation": "One way to say it: \"I am tired.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "a2p1u1",
       "level": "A2",
       "eyebrow": "Unit 3",
@@ -19173,6 +19492,325 @@
       ]
     },
     {
+      "id": "a2p23u1",
+      "level": "A2",
+      "eyebrow": "Unit 25",
+      "title": "Say It Your Way: Getting Things Done",
+      "description": "Write the idea in English — Everyday errands and arrangements, more than one wording.",
+      "lessons": [
+        {
+          "id": "a2p23l1",
+          "title": "Say It Your Way: Getting Things Done 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a2p23q0",
+              "type": "translate",
+              "prompt": "Ask what time a shop opens.",
+              "acceptableAnswers": [
+                "What time does the shop open?",
+                "When does the shop open?",
+                "Could you tell me what time the shop opens?"
+              ],
+              "explanation": "One way to say it: \"What time does the shop open?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q1",
+              "type": "translate",
+              "prompt": "Say you went to the market yesterday.",
+              "acceptableAnswers": [
+                "I went to the market yesterday.",
+                "Yesterday I went to the market.",
+                "I was at the market yesterday."
+              ],
+              "explanation": "One way to say it: \"I went to the market yesterday.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q2",
+              "type": "translate",
+              "prompt": "Ask someone to speak more slowly.",
+              "acceptableAnswers": [
+                "Could you speak more slowly?",
+                "Can you speak slower, please?",
+                "Please speak a little slower."
+              ],
+              "explanation": "One way to say it: \"Could you speak more slowly?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q3",
+              "type": "translate",
+              "prompt": "Say you have never been to Italy.",
+              "acceptableAnswers": [
+                "I have never been to Italy.",
+                "I have not been to Italy before.",
+                "Italy is somewhere I have yet to visit."
+              ],
+              "explanation": "One way to say it: \"I have never been to Italy.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q4",
+              "type": "translate",
+              "prompt": "Ask whether you can pay by card.",
+              "acceptableAnswers": [
+                "Can I pay by card?",
+                "Do you take cards?",
+                "Is it possible to pay by card?"
+              ],
+              "explanation": "One way to say it: \"Can I pay by card?\" Everyday errands and arrangements, more than one wording."
+            }
+          ]
+        },
+        {
+          "id": "a2p23l2",
+          "title": "Say It Your Way: Getting Things Done 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a2p23q5",
+              "type": "translate",
+              "prompt": "Say your train was delayed.",
+              "acceptableAnswers": [
+                "My train was delayed.",
+                "The train was late.",
+                "My train ran late."
+              ],
+              "explanation": "One way to say it: \"My train was delayed.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q6",
+              "type": "translate",
+              "prompt": "Offer to help someone with their bags.",
+              "acceptableAnswers": [
+                "Can I help you with your bags?",
+                "Would you like some help with your bags?",
+                "Let me help you with those bags."
+              ],
+              "explanation": "One way to say it: \"Can I help you with your bags?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q7",
+              "type": "translate",
+              "prompt": "Say you would rather stay at home tonight.",
+              "acceptableAnswers": [
+                "I would rather stay at home tonight.",
+                "I'd rather stay in tonight.",
+                "I would prefer to stay home tonight."
+              ],
+              "explanation": "One way to say it: \"I would rather stay at home tonight.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q8",
+              "type": "translate",
+              "prompt": "Ask where you can find a pharmacy.",
+              "acceptableAnswers": [
+                "Where can I find a pharmacy?",
+                "Is there a pharmacy near here?",
+                "Could you tell me where the pharmacy is?"
+              ],
+              "explanation": "One way to say it: \"Where can I find a pharmacy?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q9",
+              "type": "translate",
+              "prompt": "Say you forgot your umbrella.",
+              "acceptableAnswers": [
+                "I forgot my umbrella.",
+                "I left my umbrella behind.",
+                "I have forgotten my umbrella."
+              ],
+              "explanation": "One way to say it: \"I forgot my umbrella.\" Everyday errands and arrangements, more than one wording."
+            }
+          ]
+        },
+        {
+          "id": "a2p23l3",
+          "title": "Say It Your Way: Getting Things Done 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a2p23q10",
+              "type": "translate",
+              "prompt": "Ask someone to call you later.",
+              "acceptableAnswers": [
+                "Could you call me later?",
+                "Can you ring me later?",
+                "Please call me later."
+              ],
+              "explanation": "One way to say it: \"Could you call me later?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q11",
+              "type": "translate",
+              "prompt": "Say the film was better than you expected.",
+              "acceptableAnswers": [
+                "The film was better than I expected.",
+                "The film was better than I thought.",
+                "I enjoyed the film more than I expected."
+              ],
+              "explanation": "One way to say it: \"The film was better than I expected.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q12",
+              "type": "translate",
+              "prompt": "Say you are looking for the post office.",
+              "acceptableAnswers": [
+                "I am looking for the post office.",
+                "I am trying to find the post office.",
+                "Could you point me to the post office?"
+              ],
+              "explanation": "One way to say it: \"I am looking for the post office.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q13",
+              "type": "translate",
+              "prompt": "Ask how long the journey takes.",
+              "acceptableAnswers": [
+                "How long does the journey take?",
+                "How long is the journey?",
+                "How much time does the trip take?"
+              ],
+              "explanation": "One way to say it: \"How long does the journey take?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q14",
+              "type": "translate",
+              "prompt": "Say you booked a room for one night.",
+              "acceptableAnswers": [
+                "I booked a room for one night.",
+                "I have booked a room for one night.",
+                "I reserved a room for one night."
+              ],
+              "explanation": "One way to say it: \"I booked a room for one night.\" Everyday errands and arrangements, more than one wording."
+            }
+          ]
+        },
+        {
+          "id": "a2p23l4",
+          "title": "Say It Your Way: Getting Things Done 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a2p23q15",
+              "type": "translate",
+              "prompt": "Apologise for arriving late.",
+              "acceptableAnswers": [
+                "I am sorry I am late.",
+                "Sorry for being late.",
+                "I apologise for arriving late."
+              ],
+              "explanation": "One way to say it: \"I am sorry I am late.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q16",
+              "type": "translate",
+              "prompt": "Ask whether the seat is free.",
+              "acceptableAnswers": [
+                "Is this seat free?",
+                "Is anyone sitting here?",
+                "May I sit here?"
+              ],
+              "explanation": "One way to say it: \"Is this seat free?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q17",
+              "type": "translate",
+              "prompt": "Say you are trying to eat less sugar.",
+              "acceptableAnswers": [
+                "I am trying to eat less sugar.",
+                "I'm trying to cut down on sugar.",
+                "I am eating less sugar these days."
+              ],
+              "explanation": "One way to say it: \"I am trying to eat less sugar.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q18",
+              "type": "translate",
+              "prompt": "Ask someone what they did at the weekend.",
+              "acceptableAnswers": [
+                "What did you do at the weekend?",
+                "How was your weekend?",
+                "What did you get up to at the weekend?"
+              ],
+              "explanation": "One way to say it: \"What did you do at the weekend?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q19",
+              "type": "translate",
+              "prompt": "Say the jacket is a little too small.",
+              "acceptableAnswers": [
+                "This jacket is a little too small.",
+                "The jacket is slightly too small.",
+                "This jacket is a bit small for me."
+              ],
+              "explanation": "One way to say it: \"This jacket is a little too small.\" Everyday errands and arrangements, more than one wording."
+            }
+          ]
+        },
+        {
+          "id": "a2p23l5",
+          "title": "Say It Your Way: Getting Things Done 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a2p23q20",
+              "type": "translate",
+              "prompt": "Say you will call when you arrive.",
+              "acceptableAnswers": [
+                "I will call you when I arrive.",
+                "I'll call when I get there.",
+                "I am going to call you when I arrive."
+              ],
+              "explanation": "One way to say it: \"I will call you when I arrive.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q21",
+              "type": "translate",
+              "prompt": "Ask whether breakfast is included.",
+              "acceptableAnswers": [
+                "Is breakfast included?",
+                "Does the price include breakfast?",
+                "Is breakfast part of the price?"
+              ],
+              "explanation": "One way to say it: \"Is breakfast included?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q22",
+              "type": "translate",
+              "prompt": "Say the whole journey to the river was on foot.",
+              "acceptableAnswers": [
+                "We walked all the way to the river.",
+                "I walked as far as the river.",
+                "We went on foot to the river."
+              ],
+              "explanation": "One way to say it: \"We walked all the way to the river.\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q23",
+              "type": "translate",
+              "prompt": "Ask someone to repeat the address.",
+              "acceptableAnswers": [
+                "Could you repeat the address?",
+                "Can you say the address again?",
+                "Please repeat the address."
+              ],
+              "explanation": "One way to say it: \"Could you repeat the address?\" Everyday errands and arrangements, more than one wording."
+            },
+            {
+              "id": "a2p23q24",
+              "type": "translate",
+              "prompt": "Say you are studying to be a nurse.",
+              "acceptableAnswers": [
+                "I am studying to be a nurse.",
+                "I'm training to be a nurse.",
+                "I am studying nursing."
+              ],
+              "explanation": "One way to say it: \"I am studying to be a nurse.\" Everyday errands and arrangements, more than one wording."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "b1p1u1",
       "level": "B1",
       "eyebrow": "Unit 3",
@@ -27110,6 +27748,325 @@
               "prompt": "Say this aloud:",
               "answer": "It is worth trying at least once.",
               "explanation": "Target phrase: \"It is worth trying at least once.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b1p23u1",
+      "level": "B1",
+      "eyebrow": "Unit 25",
+      "title": "Say It Your Way: Opinions",
+      "description": "Write the idea in English — Opinions, reasons and comparisons, written in your own words.",
+      "lessons": [
+        {
+          "id": "b1p23l1",
+          "title": "Say It Your Way: Opinions 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b1p23q0",
+              "type": "translate",
+              "prompt": "Name cost as the biggest obstacle.",
+              "acceptableAnswers": [
+                "The main problem is the cost.",
+                "The biggest problem is the cost.",
+                "Cost is the main issue."
+              ],
+              "explanation": "One way to say it: \"The main problem is the cost.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q1",
+              "type": "translate",
+              "prompt": "Say the answer depends on the time available.",
+              "acceptableAnswers": [
+                "It depends how much time we have.",
+                "It depends on the time available.",
+                "That depends how much time there is."
+              ],
+              "explanation": "One way to say it: \"It depends how much time we have.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q2",
+              "type": "translate",
+              "prompt": "Disagree politely with an argument.",
+              "acceptableAnswers": [
+                "I am afraid I do not agree.",
+                "I'm not sure I agree with that.",
+                "I see it differently."
+              ],
+              "explanation": "One way to say it: \"I am afraid I do not agree.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q3",
+              "type": "translate",
+              "prompt": "Say you would handle it differently.",
+              "acceptableAnswers": [
+                "I would handle it differently.",
+                "Personally, I'd do it another way.",
+                "I would approach it differently."
+              ],
+              "explanation": "One way to say it: \"I would handle it differently.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q4",
+              "type": "translate",
+              "prompt": "Say results exceeded what you hoped for.",
+              "acceptableAnswers": [
+                "The results were better than we hoped.",
+                "The results beat our expectations.",
+                "The results were better than expected."
+              ],
+              "explanation": "One way to say it: \"The results were better than we hoped.\" Opinions, reasons and comparisons, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b1p23l2",
+          "title": "Say It Your Way: Opinions 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b1p23q5",
+              "type": "translate",
+              "prompt": "Say there is no easy answer.",
+              "acceptableAnswers": [
+                "There is no easy answer to that.",
+                "There's no simple answer.",
+                "That question has no easy answer."
+              ],
+              "explanation": "One way to say it: \"There is no easy answer to that.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q6",
+              "type": "translate",
+              "prompt": "Suggest trying a different approach.",
+              "acceptableAnswers": [
+                "We could try a different approach.",
+                "Perhaps we should try another way.",
+                "Let us try a different approach."
+              ],
+              "explanation": "One way to say it: \"We could try a different approach.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q7",
+              "type": "translate",
+              "prompt": "Say you have been thinking about it all week.",
+              "acceptableAnswers": [
+                "I have been thinking about it all week.",
+                "I've been thinking about this all week.",
+                "It has been on my mind all week."
+              ],
+              "explanation": "One way to say it: \"I have been thinking about it all week.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q8",
+              "type": "translate",
+              "prompt": "Say it would make sense to wait.",
+              "acceptableAnswers": [
+                "It would make sense to wait.",
+                "I think we should wait.",
+                "Waiting would make more sense."
+              ],
+              "explanation": "One way to say it: \"It would make sense to wait.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q9",
+              "type": "translate",
+              "prompt": "Say you used to feel the same way.",
+              "acceptableAnswers": [
+                "I used to feel the same way.",
+                "I felt the same way once.",
+                "I used to think that too."
+              ],
+              "explanation": "One way to say it: \"I used to feel the same way.\" Opinions, reasons and comparisons, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b1p23l3",
+          "title": "Say It Your Way: Opinions 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b1p23q10",
+              "type": "translate",
+              "prompt": "Ask someone to explain what they mean.",
+              "acceptableAnswers": [
+                "Could you explain what you mean?",
+                "What do you mean by that?",
+                "Can you say more about that?"
+              ],
+              "explanation": "One way to say it: \"Could you explain what you mean?\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q11",
+              "type": "translate",
+              "prompt": "Play down how large a gap appears.",
+              "acceptableAnswers": [
+                "The difference is smaller than it looks.",
+                "The gap is smaller than it seems.",
+                "It is a smaller difference than it appears."
+              ],
+              "explanation": "One way to say it: \"The difference is smaller than it looks.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q12",
+              "type": "translate",
+              "prompt": "Urge realism about a plan.",
+              "acceptableAnswers": [
+                "We need to be realistic about this.",
+                "Let us be realistic here.",
+                "We should be realistic about it."
+              ],
+              "explanation": "One way to say it: \"We need to be realistic about this.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q13",
+              "type": "translate",
+              "prompt": "Say you can see why someone thinks that.",
+              "acceptableAnswers": [
+                "I can see why you think that.",
+                "I understand why you would say that.",
+                "I can see where you are coming from."
+              ],
+              "explanation": "One way to say it: \"I can see why you think that.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q14",
+              "type": "translate",
+              "prompt": "Say that in your experience it rarely works.",
+              "acceptableAnswers": [
+                "In my experience, that rarely works.",
+                "From what I have seen, it seldom works.",
+                "That has rarely worked in my experience."
+              ],
+              "explanation": "One way to say it: \"In my experience, that rarely works.\" Opinions, reasons and comparisons, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b1p23l4",
+          "title": "Say It Your Way: Opinions 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b1p23q15",
+              "type": "translate",
+              "prompt": "Suggest giving something a single try.",
+              "acceptableAnswers": [
+                "It is worth trying at least once.",
+                "It's worth a try.",
+                "I think it deserves one try."
+              ],
+              "explanation": "One way to say it: \"It is worth trying at least once.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q16",
+              "type": "translate",
+              "prompt": "Say the sooner you decide the better.",
+              "acceptableAnswers": [
+                "The sooner we decide, the better.",
+                "It is better to decide soon.",
+                "The sooner a decision is made, the better."
+              ],
+              "explanation": "One way to say it: \"The sooner we decide, the better.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q17",
+              "type": "translate",
+              "prompt": "Say you would like to hear their opinion.",
+              "acceptableAnswers": [
+                "I would like to hear your opinion.",
+                "I'd like to know what you think.",
+                "What is your view on it?"
+              ],
+              "explanation": "One way to say it: \"I would like to hear your opinion.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q18",
+              "type": "translate",
+              "prompt": "Say that would take far too long.",
+              "acceptableAnswers": [
+                "That would take far too long.",
+                "That would take too much time.",
+                "It would take far too long."
+              ],
+              "explanation": "One way to say it: \"That would take far too long.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q19",
+              "type": "translate",
+              "prompt": "Say you are fairly sure it can be managed.",
+              "acceptableAnswers": [
+                "I am fairly sure we can manage it.",
+                "I'm reasonably confident we can do it.",
+                "I think we can manage it."
+              ],
+              "explanation": "One way to say it: \"I am fairly sure we can manage it.\" Opinions, reasons and comparisons, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b1p23l5",
+          "title": "Say It Your Way: Opinions 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b1p23q20",
+              "type": "translate",
+              "prompt": "Say on the whole the changes have helped.",
+              "acceptableAnswers": [
+                "On the whole, the changes have helped.",
+                "Overall, the changes helped.",
+                "By and large the changes have helped."
+              ],
+              "explanation": "One way to say it: \"On the whole, the changes have helped.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q21",
+              "type": "translate",
+              "prompt": "Say you would rather discuss it in person.",
+              "acceptableAnswers": [
+                "I would rather discuss this in person.",
+                "I'd prefer to talk about it face to face.",
+                "Let us discuss it in person."
+              ],
+              "explanation": "One way to say it: \"I would rather discuss this in person.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q22",
+              "type": "translate",
+              "prompt": "Concede a point while still disagreeing.",
+              "acceptableAnswers": [
+                "That is a fair point, but I still disagree.",
+                "You have a point, though I do not agree.",
+                "I take your point, but I disagree."
+              ],
+              "explanation": "One way to say it: \"That is a fair point, but I still disagree.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q23",
+              "type": "translate",
+              "prompt": "Choose between two options, preferring the second.",
+              "acceptableAnswers": [
+                "The second option makes more sense.",
+                "I think the second one is better.",
+                "The other option makes more sense."
+              ],
+              "explanation": "One way to say it: \"The second option makes more sense.\" Opinions, reasons and comparisons, written in your own words."
+            },
+            {
+              "id": "b1p23q24",
+              "type": "translate",
+              "prompt": "Say you are not entirely convinced.",
+              "acceptableAnswers": [
+                "I am not entirely convinced.",
+                "I'm not completely convinced.",
+                "I have my doubts about that."
+              ],
+              "explanation": "One way to say it: \"I am not entirely convinced.\" Opinions, reasons and comparisons, written in your own words."
             }
           ]
         }
@@ -35109,6 +36066,325 @@
       ]
     },
     {
+      "id": "b2p23u1",
+      "level": "B2",
+      "eyebrow": "Unit 24",
+      "title": "Say It Your Way: Longer Turns",
+      "description": "Write the idea in English — Multi-clause ideas, written in your own words.",
+      "lessons": [
+        {
+          "id": "b2p23l1",
+          "title": "Say It Your Way: Longer Turns 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b2p23q0",
+              "type": "translate",
+              "prompt": "Say that if you had known, you would have said something.",
+              "acceptableAnswers": [
+                "If I had known, I would have said something.",
+                "Had I known, I would have spoken up.",
+                "I would have said something if I had known."
+              ],
+              "explanation": "One way to say it: \"If I had known, I would have said something.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q1",
+              "type": "translate",
+              "prompt": "Say what surprised you most was the reaction.",
+              "acceptableAnswers": [
+                "What surprised me most was the reaction.",
+                "The reaction was what surprised me most.",
+                "It was the reaction that surprised me most."
+              ],
+              "explanation": "One way to say it: \"What surprised me most was the reaction.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q2",
+              "type": "translate",
+              "prompt": "Say the report suggests demand is falling.",
+              "acceptableAnswers": [
+                "The report suggests that demand is falling.",
+                "According to the report, demand is falling.",
+                "The report indicates falling demand."
+              ],
+              "explanation": "One way to say it: \"The report suggests that demand is falling.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q3",
+              "type": "translate",
+              "prompt": "Say it is not the price so much as the timing.",
+              "acceptableAnswers": [
+                "It is not so much the price as the timing.",
+                "The issue is the timing rather than the price.",
+                "It's less about price than timing."
+              ],
+              "explanation": "One way to say it: \"It is not so much the price as the timing.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q4",
+              "type": "translate",
+              "prompt": "Say nobody is obliged to accept the offer.",
+              "acceptableAnswers": [
+                "We are under no obligation to accept it.",
+                "We do not have to accept it.",
+                "There is no obligation to accept."
+              ],
+              "explanation": "One way to say it: \"We are under no obligation to accept it.\" Multi-clause ideas, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b2p23l2",
+          "title": "Say It Your Way: Longer Turns 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b2p23q5",
+              "type": "translate",
+              "prompt": "Say the sooner it is resolved the less it costs.",
+              "acceptableAnswers": [
+                "The sooner this is resolved, the less it will cost.",
+                "Resolving it sooner will cost less.",
+                "The longer it takes, the more it costs."
+              ],
+              "explanation": "One way to say it: \"The sooner this is resolved, the less it will cost.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q6",
+              "type": "translate",
+              "prompt": "Ask someone politely to confirm.",
+              "acceptableAnswers": [
+                "I would appreciate it if you could confirm.",
+                "Could you please confirm?",
+                "Please confirm when you can."
+              ],
+              "explanation": "One way to say it: \"I would appreciate it if you could confirm.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q7",
+              "type": "translate",
+              "prompt": "Say there is a strong case for waiting.",
+              "acceptableAnswers": [
+                "There is a strong case for waiting.",
+                "A good argument can be made for waiting.",
+                "There are strong reasons to wait."
+              ],
+              "explanation": "One way to say it: \"There is a strong case for waiting.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q8",
+              "type": "translate",
+              "prompt": "Say you are inclined to think it was a mistake.",
+              "acceptableAnswers": [
+                "I am inclined to think it was a mistake.",
+                "I tend to think it was a mistake.",
+                "My feeling is that it was a mistake."
+              ],
+              "explanation": "One way to say it: \"I am inclined to think it was a mistake.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q9",
+              "type": "translate",
+              "prompt": "Say that by the time you arrived everyone had left.",
+              "acceptableAnswers": [
+                "By the time we arrived, everyone had left.",
+                "Everyone had gone by the time we got there.",
+                "When we arrived, everyone had already left."
+              ],
+              "explanation": "One way to say it: \"By the time we arrived, everyone had left.\" Multi-clause ideas, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b2p23l3",
+          "title": "Say It Your Way: Longer Turns 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b2p23q10",
+              "type": "translate",
+              "prompt": "Complain that a decision skipped your team.",
+              "acceptableAnswers": [
+                "The decision was made without consulting us.",
+                "Nobody consulted us about the decision.",
+                "They decided without asking us."
+              ],
+              "explanation": "One way to say it: \"The decision was made without consulting us.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q11",
+              "type": "translate",
+              "prompt": "Concede a point while keeping your doubts.",
+              "acceptableAnswers": [
+                "I take your point, although I still have doubts.",
+                "I accept that, but I remain unconvinced.",
+                "Fair enough, though I still have reservations."
+              ],
+              "explanation": "One way to say it: \"I take your point, although I still have doubts.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q12",
+              "type": "translate",
+              "prompt": "Reject a claim as badly under-evidenced.",
+              "acceptableAnswers": [
+                "We will need far more evidence than that.",
+                "That is nowhere near enough evidence.",
+                "Much more evidence is needed."
+              ],
+              "explanation": "One way to say it: \"We will need far more evidence than that.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q13",
+              "type": "translate",
+              "prompt": "Say it turned out simpler than expected.",
+              "acceptableAnswers": [
+                "It turned out to be much simpler than expected.",
+                "It was far simpler than we thought.",
+                "In the end it was simpler than expected."
+              ],
+              "explanation": "One way to say it: \"It turned out to be much simpler than expected.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q14",
+              "type": "translate",
+              "prompt": "Say the process took longer than planned.",
+              "acceptableAnswers": [
+                "The whole process took longer than planned.",
+                "It took longer than we had planned.",
+                "The process ran over schedule."
+              ],
+              "explanation": "One way to say it: \"The whole process took longer than planned.\" Multi-clause ideas, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b2p23l4",
+          "title": "Say It Your Way: Longer Turns 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b2p23q15",
+              "type": "translate",
+              "prompt": "Say you are not sure that follows.",
+              "acceptableAnswers": [
+                "I am not sure that follows.",
+                "I don't think that follows.",
+                "That does not necessarily follow."
+              ],
+              "explanation": "One way to say it: \"I am not sure that follows.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q16",
+              "type": "translate",
+              "prompt": "Say the risks should be weighed before committing.",
+              "acceptableAnswers": [
+                "We should weigh the risks before committing.",
+                "Let us consider the risks first.",
+                "The risks need weighing before we commit."
+              ],
+              "explanation": "One way to say it: \"We should weigh the risks before committing.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q17",
+              "type": "translate",
+              "prompt": "Say that given the circumstances it seems reasonable.",
+              "acceptableAnswers": [
+                "Given the circumstances, that seems reasonable.",
+                "In the circumstances, it seems fair enough.",
+                "That seems reasonable given the situation."
+              ],
+              "explanation": "One way to say it: \"Given the circumstances, that seems reasonable.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q18",
+              "type": "translate",
+              "prompt": "Say it would be unwise to rush.",
+              "acceptableAnswers": [
+                "It would be unwise to rush the decision.",
+                "Rushing this would be a mistake.",
+                "We should not rush the decision."
+              ],
+              "explanation": "One way to say it: \"It would be unwise to rush the decision.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q19",
+              "type": "translate",
+              "prompt": "Note how often a proposal has changed.",
+              "acceptableAnswers": [
+                "The proposal has been revised several times.",
+                "There have been several revisions to the proposal.",
+                "The proposal went through several revisions."
+              ],
+              "explanation": "One way to say it: \"The proposal has been revised several times.\" Multi-clause ideas, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "b2p23l5",
+          "title": "Say It Your Way: Longer Turns 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "b2p23q20",
+              "type": "translate",
+              "prompt": "Say what matters most is that it works.",
+              "acceptableAnswers": [
+                "What matters most is that it actually works.",
+                "The important thing is that it works.",
+                "Above all, it has to work."
+              ],
+              "explanation": "One way to say it: \"What matters most is that it actually works.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q21",
+              "type": "translate",
+              "prompt": "Say you would be reluctant to change it now.",
+              "acceptableAnswers": [
+                "I would be reluctant to change it now.",
+                "I'd rather not change it at this stage.",
+                "I am hesitant to change it now."
+              ],
+              "explanation": "One way to say it: \"I would be reluctant to change it now.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q22",
+              "type": "translate",
+              "prompt": "Say that acting sooner would have avoided it.",
+              "acceptableAnswers": [
+                "Had we acted sooner, this could have been avoided.",
+                "If we had acted earlier, this would not have happened.",
+                "Acting sooner would have prevented this."
+              ],
+              "explanation": "One way to say it: \"Had we acted sooner, this could have been avoided.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q23",
+              "type": "translate",
+              "prompt": "Say having read it all you changed your mind.",
+              "acceptableAnswers": [
+                "Having read the whole thing, I changed my mind.",
+                "After reading all of it, I changed my mind.",
+                "Reading it in full changed my view."
+              ],
+              "explanation": "One way to say it: \"Having read the whole thing, I changed my mind.\" Multi-clause ideas, written in your own words."
+            },
+            {
+              "id": "b2p23q24",
+              "type": "translate",
+              "prompt": "Say that rather depends on what is agreed today.",
+              "acceptableAnswers": [
+                "That rather depends on what we agree today.",
+                "It depends what gets agreed today.",
+                "That hinges on today's decision."
+              ],
+              "explanation": "One way to say it: \"That rather depends on what we agree today.\" Multi-clause ideas, written in your own words."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "c1p1u1",
       "level": "C1",
       "eyebrow": "Unit 2",
@@ -43094,6 +44370,325 @@
               "prompt": "Say this aloud:",
               "answer": "It bears repeating that nothing was agreed.",
               "explanation": "Target phrase: \"It bears repeating that nothing was agreed.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c1p23u1",
+      "level": "C1",
+      "eyebrow": "Unit 24",
+      "title": "Say It Your Way: Register and Nuance",
+      "description": "Write the idea in English — Idiomatic and formal phrasing, written in your own words.",
+      "lessons": [
+        {
+          "id": "c1p23l1",
+          "title": "Say It Your Way: Register and Nuance 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "c1p23q0",
+              "type": "translate",
+              "prompt": "Say politely that an argument misses the point.",
+              "acceptableAnswers": [
+                "I am afraid that rather misses the point.",
+                "With respect, that misses the point.",
+                "That rather misses the point, I think."
+              ],
+              "explanation": "One way to say it: \"I am afraid that rather misses the point.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q1",
+              "type": "translate",
+              "prompt": "Offer to argue the opposing side for a moment.",
+              "acceptableAnswers": [
+                "Let me argue the other side for a moment.",
+                "Allow me to take the opposing view.",
+                "Let me put the opposite case."
+              ],
+              "explanation": "One way to say it: \"Let me argue the other side for a moment.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q2",
+              "type": "translate",
+              "prompt": "Dismiss a suggestion as impractical, idiomatically.",
+              "acceptableAnswers": [
+                "That is easier said than done.",
+                "Easier said than done.",
+                "Saying it is easier than doing it."
+              ],
+              "explanation": "One way to say it: \"That is easier said than done.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q3",
+              "type": "translate",
+              "prompt": "Say you are arguing over trivial wording.",
+              "acceptableAnswers": [
+                "We are splitting hairs over the wording.",
+                "This is a quibble about wording.",
+                "We are arguing over details of wording."
+              ],
+              "explanation": "One way to say it: \"We are splitting hairs over the wording.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q4",
+              "type": "translate",
+              "prompt": "Say an argument does not stand up.",
+              "acceptableAnswers": [
+                "The argument does not hold water.",
+                "That argument does not stand up.",
+                "The argument falls apart under scrutiny."
+              ],
+              "explanation": "One way to say it: \"The argument does not hold water.\" Idiomatic and formal phrasing, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "c1p23l2",
+          "title": "Say It Your Way: Register and Nuance 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "c1p23q5",
+              "type": "translate",
+              "prompt": "Say you would hesitate to draw that conclusion.",
+              "acceptableAnswers": [
+                "I would hesitate to draw that conclusion.",
+                "I'd be cautious about concluding that.",
+                "I am reluctant to conclude that."
+              ],
+              "explanation": "One way to say it: \"I would hesitate to draw that conclusion.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q6",
+              "type": "translate",
+              "prompt": "Say something has been postponed for months.",
+              "acceptableAnswers": [
+                "This has been on the back burner for months.",
+                "It has been postponed for months.",
+                "This has been set aside for months."
+              ],
+              "explanation": "One way to say it: \"This has been on the back burner for months.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q7",
+              "type": "translate",
+              "prompt": "Say that in hindsight the warnings were obvious.",
+              "acceptableAnswers": [
+                "In hindsight, the warning signs were obvious.",
+                "Looking back, the signs were clear.",
+                "With hindsight the warnings were plain."
+              ],
+              "explanation": "One way to say it: \"In hindsight, the warning signs were obvious.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q8",
+              "type": "translate",
+              "prompt": "Say two people are misunderstanding each other.",
+              "acceptableAnswers": [
+                "We are talking at cross purposes.",
+                "We are misunderstanding each other.",
+                "I think we are at cross purposes."
+              ],
+              "explanation": "One way to say it: \"We are talking at cross purposes.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q9",
+              "type": "translate",
+              "prompt": "Say something would set a bad precedent.",
+              "acceptableAnswers": [
+                "That would set an unfortunate precedent.",
+                "That would set a bad precedent.",
+                "It would establish an unwelcome precedent."
+              ],
+              "explanation": "One way to say it: \"That would set an unfortunate precedent.\" Idiomatic and formal phrasing, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "c1p23l3",
+          "title": "Say It Your Way: Register and Nuance 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "c1p23q10",
+              "type": "translate",
+              "prompt": "Extend someone good faith despite doubts.",
+              "acceptableAnswers": [
+                "I am inclined to give them the benefit of the doubt.",
+                "I'd give them the benefit of the doubt.",
+                "I am willing to assume good faith."
+              ],
+              "explanation": "One way to say it: \"I am inclined to give them the benefit of the doubt.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q11",
+              "type": "translate",
+              "prompt": "Say a proposal is ambitious, understating it.",
+              "acceptableAnswers": [
+                "The proposal is ambitious, to put it mildly.",
+                "To say the proposal is ambitious is an understatement.",
+                "The proposal is, to put it mildly, ambitious."
+              ],
+              "explanation": "One way to say it: \"The proposal is ambitious, to put it mildly.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q12",
+              "type": "translate",
+              "prompt": "Warn against discarding the good with the bad.",
+              "acceptableAnswers": [
+                "We should not throw the baby out with the bathwater.",
+                "Let us not discard what works along with what does not.",
+                "We should keep what is good here."
+              ],
+              "explanation": "One way to say it: \"We should not throw the baby out with the bathwater.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q13",
+              "type": "translate",
+              "prompt": "Say a distinction makes no real difference.",
+              "acceptableAnswers": [
+                "That is a distinction without a difference.",
+                "That distinction makes no real difference.",
+                "There is no practical difference there."
+              ],
+              "explanation": "One way to say it: \"That is a distinction without a difference.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q14",
+              "type": "translate",
+              "prompt": "Say you would go so far as to call it reckless.",
+              "acceptableAnswers": [
+                "I would go so far as to call it reckless.",
+                "I'd even call it reckless.",
+                "I would describe it as reckless."
+              ],
+              "explanation": "One way to say it: \"I would go so far as to call it reckless.\" Idiomatic and formal phrasing, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "c1p23l4",
+          "title": "Say It Your Way: Register and Nuance 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "c1p23q15",
+              "type": "translate",
+              "prompt": "Say findings are suggestive rather than conclusive.",
+              "acceptableAnswers": [
+                "The findings are suggestive rather than conclusive.",
+                "The evidence suggests but does not prove.",
+                "These findings point a way without settling it."
+              ],
+              "explanation": "One way to say it: \"The findings are suggestive rather than conclusive.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q16",
+              "type": "translate",
+              "prompt": "Say it is about priorities, not resources.",
+              "acceptableAnswers": [
+                "It is a question of priorities, not resources.",
+                "This is about priorities rather than resources.",
+                "The issue is priorities, not money."
+              ],
+              "explanation": "One way to say it: \"It is a question of priorities, not resources.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q17",
+              "type": "translate",
+              "prompt": "Say you have left yourselves no options.",
+              "acceptableAnswers": [
+                "We have painted ourselves into a corner.",
+                "We have left ourselves no room to move.",
+                "We are out of options now."
+              ],
+              "explanation": "One way to say it: \"We have painted ourselves into a corner.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q18",
+              "type": "translate",
+              "prompt": "Say an interpretation seems like a stretch.",
+              "acceptableAnswers": [
+                "That interpretation strikes me as a stretch.",
+                "That reading seems like a stretch.",
+                "I find that interpretation strained."
+              ],
+              "explanation": "One way to say it: \"That interpretation strikes me as a stretch.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q19",
+              "type": "translate",
+              "prompt": "Urge people not to lose sight of the original aim.",
+              "acceptableAnswers": [
+                "Let us not lose sight of the original aim.",
+                "We should keep the original aim in view.",
+                "Let's remember what we set out to do."
+              ],
+              "explanation": "One way to say it: \"Let us not lose sight of the original aim.\" Idiomatic and formal phrasing, written in your own words."
+            }
+          ]
+        },
+        {
+          "id": "c1p23l5",
+          "title": "Say It Your Way: Register and Nuance 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "c1p23q20",
+              "type": "translate",
+              "prompt": "Say the tone of a letter was unmistakable.",
+              "acceptableAnswers": [
+                "The tone of the letter was unmistakable.",
+                "There was no mistaking the tone of the letter.",
+                "The letter's tone was quite clear."
+              ],
+              "explanation": "One way to say it: \"The tone of the letter was unmistakable.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q21",
+              "type": "translate",
+              "prompt": "Say you would put something more carefully.",
+              "acceptableAnswers": [
+                "I would put it more carefully than that.",
+                "I'd phrase that more carefully.",
+                "I would be more careful in how I said that."
+              ],
+              "explanation": "One way to say it: \"I would put it more carefully than that.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q22",
+              "type": "translate",
+              "prompt": "Say this is where an argument starts to fall apart.",
+              "acceptableAnswers": [
+                "This is where the argument starts to unravel.",
+                "The argument begins to break down here.",
+                "Here is where it falls apart."
+              ],
+              "explanation": "One way to say it: \"This is where the argument starts to unravel.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q23",
+              "type": "translate",
+              "prompt": "Say you are effectively back where you started.",
+              "acceptableAnswers": [
+                "We are effectively back where we started.",
+                "We have come full circle.",
+                "We are essentially back at the beginning."
+              ],
+              "explanation": "One way to say it: \"We are effectively back where we started.\" Idiomatic and formal phrasing, written in your own words."
+            },
+            {
+              "id": "c1p23q24",
+              "type": "translate",
+              "prompt": "Say it bears repeating that nothing is agreed.",
+              "acceptableAnswers": [
+                "It bears repeating that nothing was agreed.",
+                "It is worth saying again that nothing was agreed.",
+                "Let me repeat that nothing was agreed."
+              ],
+              "explanation": "One way to say it: \"It bears repeating that nothing was agreed.\" Idiomatic and formal phrasing, written in your own words."
             }
           ]
         }

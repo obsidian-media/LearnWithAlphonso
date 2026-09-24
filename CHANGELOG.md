@@ -72,6 +72,66 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
+**Free-form translation question type (#TBD)** — a sixth question type,
+`translate`: the learner is shown an idea to express ("Ask someone their name")
+and writes it in English themselves. 125 questions across all five CEFR bands
+(one pack each), taking English to 609 lessons / 3,096 questions.
+
+Grading is hybrid and local-first. A curated list of acceptable wordings settles
+most answers for free and works offline; only what it rejects is put to an AI
+grader (NVIDIA NIM), which can upgrade a local miss but never the reverse. The
+web paths resolve the model through `resolveNvidiaChatModel`; the Edge Function
+cannot import from `src/`, so it mirrors that constant — and is now listed
+alongside the other hardcodes in `nvidia-chat-model.server.ts`'s doc comment,
+which exists because four of them broke at once when NVIDIA retired a model. The AI verdict is never written back
+into the content — what counts as correct stays a content decision rather than a
+side effect of someone's answer.
+
+The design decision that shaped everything else: **a translate answer is graded
+in three places**, and they have to agree. `/api/grade-translation` serves the
+lesson player, `gradeReview` serves web review, and the `grade-review` Edge
+Function serves iOS review. Putting the AI half in only one of them would
+recreate the bug the speaking type was already bitten by — a wording accepted on
+screen and re-derived by string comparison in the scheduler, so the learner
+reads "Still got it" on an item that was just lapsed. The review players now
+**display the verdict from the call that scheduled the item** instead of
+grading a second time, which is what makes that disagreement impossible rather
+than merely unlikely. An independent review caught the first attempt getting
+this exactly wrong on iOS — displaying `/api/grade-translation`'s answer while
+`grade-review` independently decided the schedule.
+
+Two rules the whole feature rests on:
+
+- **`null` is not `false`.** Vendor down, key missing, quota spent, model
+  replying in prose — all mean "no opinion", and the local verdict stands. A
+  learner is never marked wrong because a vendor was unavailable.
+- **Offline still grades.** The acceptable wordings are bundled content, so a
+  translation resolves with no network — stricter, but resolvable. The spec had
+  said to skip speaking and translation questions when offline; that would break
+  `deriveLessonCompletion`'s count check, which is how a learner finishes a
+  lesson and silently receives no XP, no streak and no unlock.
+
+Also in this phase: the deploy pipeline was repaired (see above), CI's
+never-executed curriculum-seed step was switched from `bunx tsx` to `bun` so its
+first real run is not also the first test of its command, and AGENTS.md stopped
+claiming three-course parity — English is now 609 lessons to French's 500 and
+Spanish's 508, with three English-only question types.
+
+**Deploy pipeline repair (2026-09-24)** — `supabase db push` started failing on
+every push to `main` (the `#93` and `#94` merges both show it), with "Remote
+migration versions not found in local migrations directory". Cause: the
+speaking migration was applied to the live project through the Supabase
+management API rather than by the CLI, which recorded it in
+`supabase_migrations.schema_migrations` under a generated version
+(`20260924081755`) that no local filename matched. The local file has been
+renamed to that version, which is what `supabase migration repair` would have
+achieved from the other direction.
+
+Worth knowing because of what else that job does: it is the step that deploys
+the Edge Functions. While it was red, **no function redeployed** — so a
+`grade-review` change merged during that window was live in the repo and not on
+the server.
+
 **Speaking practice question type (#TBD)** — a fifth question type, `speak`:
 the learner is shown a phrase, records themselves saying it, and the
 speech-to-text transcript is graded. 125 questions across all five CEFR bands
@@ -113,7 +173,7 @@ own:
 Also: the capture flow was extracted from the conversation route into
 `use-speech-capture.ts` rather than copied, both web players now grade through
 `deriveAnswerCorrectness` instead of their own inline copies of the rule, and
-`20260925010000_v5_speaking_question_type.sql` adds a **fourth** allowed row
+`20260924081755_v5_speaking_question_type.sql` adds a **fourth** allowed row
 shape to `question_shape_matches_type` (answer text, no choices, no bank, no
 answer index) — without it every speaking row would be rejected.
 

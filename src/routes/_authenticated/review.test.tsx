@@ -148,6 +148,42 @@ describe("Review page", () => {
     });
   });
 
+  it("renders a translation review item and shows the SERVER's verdict", async () => {
+    // The point of this test is the disagreement it forbids. Locally "morning
+    // to you all" does not match any curated phrasing, so a player computing
+    // its own verdict would say "Back in the queue" -- while the server, which
+    // asked the AI grader, has already scheduled it as correct. The learner
+    // would be told one thing and have the opposite recorded.
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "a1p25l1:a1p25q0" }], total: 1 });
+    gradeReview.mockResolvedValue({ retired: false, dueOn: "2026-09-25", correct: true });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("Greet someone in the morning.")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Your answer"), "morning to you all");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "a1p25l1:a1p25q0", answer: "morning to you all", course: "en" },
+    });
+  });
+
+  it("falls back to the local verdict when the server cannot be reached", async () => {
+    // Being offline is not evidence about the learner's English, but leaving
+    // them on a question that never resolves is worse than a strict verdict.
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "a1p25l1:a1p25q0" }], total: 1 });
+    gradeReview.mockRejectedValue(new Error("offline"));
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("Greet someone in the morning.")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Your answer"), "good morning");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+  });
+
   it("marks a wrong answer and shows the retired count when the item is retired", async () => {
     gradeReview.mockResolvedValue({ retired: true, dueOn: "2026-09-19" });
     fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });

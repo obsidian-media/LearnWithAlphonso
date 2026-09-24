@@ -7,7 +7,9 @@
  * runtime error log), it silently broke all three features at once,
  * surfacing to users as a generic "failed to fetch"-style error with no
  * indication the model itself was the problem. Centralizing here means
- * the next catalog shift is a one-line fix instead of a four-file hunt,
+ * the next catalog shift is a one-line fix instead of a four-file hunt
+ * (plus supabase/functions/grade-review/answer-correctness.ts, which cannot
+ * import from src/ and therefore mirrors this value by hand),
  * and NVIDIA_CHAT_MODEL still overrides this with no redeploy needed --
  * verify this default is still live at https://build.nvidia.com before
  * relying on it.

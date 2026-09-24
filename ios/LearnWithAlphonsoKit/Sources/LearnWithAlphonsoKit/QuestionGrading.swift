@@ -24,6 +24,12 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
         // fill-in-blank uses rather than an index lookup.
         return picked.trimmingCharacters(in: .whitespaces).lowercased()
             == q.answer.trimmingCharacters(in: .whitespaces).lowercased()
+    case .translate(let q):
+        // Local-only on device, and deliberately so. The AI half of translate
+        // grading runs server-side (/api/grade-translation, and grade-review
+        // for review items); this is the floor the player shows instantly and
+        // the whole verdict when there is no network.
+        return TranslationAnswer.matches(submission: picked, acceptable: q.acceptableAnswers)
     case .speak(let q):
         // `picked` is a speech-to-text transcript, whose spelling of the same
         // utterance varies run to run, so it needs the tolerant match rather

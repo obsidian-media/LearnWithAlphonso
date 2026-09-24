@@ -185,6 +185,12 @@ export function previewPack(pack: Pack): string {
     } else if (q.type === "listening") {
       out.push(`      audio: ${q.audioText}`);
       q.choices.forEach((c) => out.push(`      ${c === q.answer ? "*" : " "} ${c}`));
+    } else if (q.type === "translate") {
+      // Every accepted phrasing is printed, not just the canonical one --
+      // reviewing a translate pack IS reviewing that list.
+      q.acceptableAnswers.forEach((a, i) =>
+        out.push(`      ${i === 0 ? "canonical" : "also ok "}: ${a}`),
+      );
     } else {
       out.push(`      answer: ${q.answer}`);
     }
