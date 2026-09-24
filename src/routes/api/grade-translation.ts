@@ -58,6 +58,12 @@ export const Route = createFileRoute("/api/grade-translation")({
         // An empty submission is not an answer. Returning 400 rather than
         // "incorrect" keeps it out of the learner's score and spends nothing.
         if (!submission) return Response.json({ error: "Empty submission" }, { status: 400 });
+        // Quota counts calls, not tokens, so without a cap one call can carry
+        // an arbitrarily large body to the vendor. 500 is far beyond any real
+        // answer to a one-sentence prompt.
+        if (submission.length > 500) {
+          return Response.json({ error: "Submission too long" }, { status: 400 });
+        }
 
         const found = getCourse(course).findLesson(lessonId);
         const question = found?.lesson.questions.find((q) => q.id === questionId);

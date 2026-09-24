@@ -419,7 +419,19 @@ function ReviewPage() {
         <div className="mt-auto pt-6">
           {!checked ? (
             <button
-              disabled={q.type === "reorder" ? orderPicks.length !== q.tokens.length : !picked}
+              disabled={
+                // `checking` matters as much as the emptiness check: `checked`
+                // only flips in the .finally(), so without it the button stays
+                // live for the whole round trip and a second tap grades the
+                // item twice -- two vendor calls, double-counted stats, and a
+                // second call the server rejects as not-yet-due, whose failure
+                // path then overwrites the verdict with the local one.
+                checking ||
+                (q.type === "reorder"
+                  ? orderPicks.length !== q.tokens.length
+                  : // Whitespace is not an answer.
+                    !picked?.trim())
+              }
               onClick={check}
               className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
             >

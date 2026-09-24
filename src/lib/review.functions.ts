@@ -226,7 +226,7 @@ export const gradeReview = createServerFn({ method: "POST" })
       // The AI verdict can only ever upgrade a local miss. A null (vendor
       // down, no key, unparseable answer) leaves the local verdict standing:
       // being offline is not evidence about the learner's English.
-      if (!correct && ref.question.type === "translate") {
+      if (!correct && ref.question.type === "translate" && data.answer.trim()) {
         const apiKey = process.env.NVIDIA_API_KEY;
         if (apiKey) {
           const [{ gradeTranslationWithAi }, { resolveNvidiaChatModel }] = await Promise.all([

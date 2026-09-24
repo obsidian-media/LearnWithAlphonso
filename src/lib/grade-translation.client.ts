@@ -23,6 +23,10 @@ export async function requestTranslationVerdict(args: {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify(args),
+      // Check is disabled while this is in flight, so an unbounded wait is a
+      // frozen-looking button. A timeout returns null, which keeps the local
+      // verdict -- the same outcome as being offline.
+      signal: AbortSignal.timeout(15_000),
     });
     if (!resp.ok) return null;
     const data = (await resp.json()) as Partial<TranslationVerdict>;

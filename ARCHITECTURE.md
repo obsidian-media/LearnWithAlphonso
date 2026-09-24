@@ -180,9 +180,13 @@ wordings. Four things about them are load bearing:
   `review.functions.ts` for web review, and the `grade-review` Edge Function
   for iOS review. Putting it in only one would recreate the lapse-behind-your-
   back bug: a wording accepted on screen and re-derived by string comparison
-  in the scheduler. The review players therefore **display the server's
-  verdict** rather than computing their own, which makes disagreement
-  impossible rather than merely unlikely. A `null` from the grader (vendor
+  in the scheduler. The review players therefore **display the verdict from
+  the same call that scheduled the item** rather than grading it a second
+  time — `gradeReview` returns `correct` on web, and `grade-review` does the
+  same for iOS, which grades on Check rather than on Next so there is one call
+  and one verdict. A first attempt had iOS *displaying* a verdict from
+  `/api/grade-translation` while `grade-review` independently decided the
+  schedule: two AI calls, two answers, no guarantee they matched. A `null` from the grader (vendor
   down, no key, quota spent, unparseable reply) always means "no opinion" and
   leaves the local verdict standing — it never means "wrong".
 

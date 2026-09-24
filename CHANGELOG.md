@@ -79,8 +79,11 @@ and writes it in English themselves. 125 questions across all five CEFR bands
 
 Grading is hybrid and local-first. A curated list of acceptable wordings settles
 most answers for free and works offline; only what it rejects is put to an AI
-grader (NVIDIA NIM, via the existing `resolveNvidiaChatModel`), which can
-upgrade a local miss but never the reverse. The AI verdict is never written back
+grader (NVIDIA NIM), which can upgrade a local miss but never the reverse. The
+web paths resolve the model through `resolveNvidiaChatModel`; the Edge Function
+cannot import from `src/`, so it mirrors that constant — and is now listed
+alongside the other hardcodes in `nvidia-chat-model.server.ts`'s doc comment,
+which exists because four of them broke at once when NVIDIA retired a model. The AI verdict is never written back
 into the content — what counts as correct stays a content decision rather than a
 side effect of someone's answer.
 
@@ -91,8 +94,11 @@ Function serves iOS review. Putting the AI half in only one of them would
 recreate the bug the speaking type was already bitten by — a wording accepted on
 screen and re-derived by string comparison in the scheduler, so the learner
 reads "Still got it" on an item that was just lapsed. The review players now
-**display the server's verdict** instead of computing their own, which makes
-that disagreement impossible rather than merely unlikely.
+**display the verdict from the call that scheduled the item** instead of
+grading a second time, which is what makes that disagreement impossible rather
+than merely unlikely. An independent review caught the first attempt getting
+this exactly wrong on iOS — displaying `/api/grade-translation`'s answer while
+`grade-review` independently decided the schedule.
 
 Two rules the whole feature rests on:
 

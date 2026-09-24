@@ -168,7 +168,7 @@ export async function handleRequest(req: Request): Promise<Response> {
         .from("weakness_events")
         .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
     }
-    return jsonResponse({ retired: true, dueOn: outcome.dueOn }, 200);
+    return jsonResponse({ retired: true, dueOn: outcome.dueOn, correct }, 200);
   }
 
   await admin
@@ -185,7 +185,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     .eq("item_key", itemKey)
     .eq("language", course);
 
-  return jsonResponse({ retired: false, dueOn: outcome.dueOn }, 200);
+  return jsonResponse({ retired: false, dueOn: outcome.dueOn, correct }, 200);
 }
 
 Deno.serve(handleRequest);

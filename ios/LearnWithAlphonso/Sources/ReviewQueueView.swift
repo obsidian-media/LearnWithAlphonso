@@ -23,6 +23,11 @@ struct ReviewQueueView: View {
     // scored must be one value, not two derivations of it.
     @State private var translationVerdict: TranslationVerdict?
     @State private var isCheckingTranslation = false
+    /// Set when Check already submitted this item (translate only). The server
+    /// graded AND scheduled it in that call, so submitAndAdvance must not send
+    /// it again -- a second call would re-grade, spend a second vendor call,
+    /// and be rejected as not-yet-due by the freshly moved due date.
+    @State private var alreadySubmitted = false
     @State private var checked = false
     @State private var isLoading = true
     @State private var isSubmitting = false
@@ -116,13 +121,7 @@ struct ReviewQueueView: View {
                             if case .translate(let q) = question {
                                 isCheckingTranslation = true
                                 Task {
-                                    translationVerdict = await settledTranslationVerdict(
-                                        question: q,
-                                        lessonId: currentItem.lessonId,
-                                        course: course,
-                                        session: session,
-                                        isConnected: networkMonitor.isConnected,
-                                        submission: picked)
+                                    await gradeTranslationReviewItem(question: q)
                                     isCheckingTranslation = false
                                     checked = true
                                 }
@@ -188,11 +187,70 @@ struct ReviewQueueView: View {
         isLoading = false
     }
 
+    /// Grades a translate item through `grade-review` -- the one call that also
+    /// schedules it -- and shows the verdict that call returned.
+    ///
+    /// This is deliberately NOT /api/grade-translation, which is the lesson
+    /// player's route. Using it here meant the answer was graded twice by two
+    /// different paths: one result shown to the learner, the other recorded by
+    /// the scheduler, with no guarantee they agreed. Grading once and
+    /// displaying that result is what makes them the same value rather than two
+    /// derivations that usually match.
+    ///
+    /// Offline, or against a server too old to return a verdict, this falls
+    /// back to the local match -- which is also what the offline queue will
+    /// replay, so the two still agree.
+    private func gradeTranslationReviewItem(question q: Question.Translate) async {
+        let submission = (picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let localVerdict = TranslationVerdict(
+            correct: TranslationAnswer.matches(
+                submission: submission, acceptable: q.acceptableAnswers),
+            reason: nil)
+
+        guard networkMonitor.isConnected, let accessToken = session.accessToken else {
+            translationVerdict = localVerdict
+            return
+        }
+        let client = ProgressSyncClient(
+            supabaseURL: AppConfig.supabaseURL,
+            anonKey: AppConfig.supabasePublishableKey,
+            accessToken: accessToken)
+        do {
+            let outcome = try await client.gradeReview(
+                itemKey: currentItem.itemKey, answer: submission, course: course.code)
+            guard let correct = outcome.correct else {
+                // Server predates the field: nothing was displayed wrongly, it
+                // just graded without telling us, so show the local verdict and
+                // let Next submit again as it always did.
+                translationVerdict = localVerdict
+                return
+            }
+            translationVerdict = TranslationVerdict(correct: correct, reason: nil)
+            alreadySubmitted = true
+        } catch {
+            translationVerdict = localVerdict
+        }
+    }
+
     private func submitAndAdvance(question: Question) async {
         guard let picked else { return }
         isSubmitting = true
         defer { isSubmitting = false }
 
+        // Already graded and scheduled by the Check step (translate only).
+        if alreadySubmitted {
+            advance()
+            if idx >= queue.count, networkMonitor.isConnected,
+                let accessToken = session.accessToken
+            {
+                await claimBonusIfCleared(
+                    client: ProgressSyncClient(
+                        supabaseURL: AppConfig.supabaseURL,
+                        anonKey: AppConfig.supabasePublishableKey,
+                        accessToken: accessToken))
+            }
+            return
+        }
         if networkMonitor.isConnected, let accessToken = session.accessToken {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
@@ -252,6 +310,11 @@ struct ReviewQueueView: View {
         idx += 1
         picked = nil
         checked = false
+        // Cleared here for the same reason the lesson player clears it: a
+        // stale verdict would otherwise describe the previous item, and
+        // `alreadySubmitted` would make the next one skip its own grading.
+        translationVerdict = nil
+        alreadySubmitted = false
     }
 
     private func claimBonusIfCleared(client: ProgressSyncClient) async {

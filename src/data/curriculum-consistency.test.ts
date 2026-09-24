@@ -3,6 +3,7 @@ import { curriculum } from "./curriculum";
 import { curriculumFr } from "./curriculum-fr";
 import { curriculumEs } from "./curriculum-es";
 import { VOCAB_IMAGES } from "./vocab-images";
+import { normaliseWritten } from "../lib/translation-answer";
 import type { Lesson, Question, Unit } from "./curriculum";
 
 /**
@@ -66,7 +67,7 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     expect(empty, `lessons with zero questions in ${name}: ${empty.join(", ")}`).toEqual([]);
   });
 
-  it("translate questions: at least two non-empty acceptable phrasings, no duplicates", () => {
+  it("translate questions: at least three distinct non-empty acceptable phrasings", () => {
     // One phrasing makes the AI fallback carry the whole question, and an
     // empty list makes matchesAcceptableAnswer reject everything -- a question
     // nobody can answer, which is worse than a wrong one because it is silent.
@@ -75,7 +76,10 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
       if (question.type !== "translate") continue;
       const key = `${lesson.id}:${question.id}`;
       const answers = question.acceptableAnswers;
-      if (answers.length < 2) {
+      // Three, matching what the packs and the audit log claim. Two is the
+      // point at which the AI fallback starts carrying the question, and every
+      // wording the list misses is a vendor call.
+      if (answers.length < 3) {
         offenders.push(`${key}: only ${answers.length} acceptable phrasing(s)`);
         continue;
       }
@@ -83,9 +87,15 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
         offenders.push(`${key}: has a blank acceptable phrasing`);
         continue;
       }
-      const normalized = answers.map((a) => a.trim().toLowerCase());
+      // Deduped with the REAL matching rule, not a trim/lowercase. Matching
+      // runs through normaliseWritten, which expands contractions -- so
+      // "What's your name?" and "What is your name?" are one wording, not two,
+      // and a list of three that collapses to two is really a list of two. The
+      // cheaper check passed those happily, which is how a1p25 shipped nine
+      // such lines.
+      const normalized = answers.map((a) => normaliseWritten(a));
       if (new Set(normalized).size !== normalized.length) {
-        offenders.push(`${key}: duplicate acceptable phrasings`);
+        offenders.push(`${key}: acceptable phrasings that are identical once normalised`);
       }
     }
     expect(offenders, `translate problems in ${name}: ${offenders.join(" | ")}`).toEqual([]);

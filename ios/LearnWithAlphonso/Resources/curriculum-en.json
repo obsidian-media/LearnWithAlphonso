@@ -11226,8 +11226,8 @@
               "prompt": "Ask someone their name.",
               "acceptableAnswers": [
                 "What is your name?",
-                "What's your name?",
-                "May I ask your name?"
+                "May I ask your name?",
+                "Could you tell me your name?"
               ],
               "explanation": "One way to say it: \"What is your name?\" Everyday ideas, and more than one wording is right."
             },
@@ -11237,8 +11237,8 @@
               "prompt": "Say you do not understand.",
               "acceptableAnswers": [
                 "I do not understand.",
-                "I don't understand.",
-                "Sorry, I don't understand."
+                "Sorry, I don't understand.",
+                "I am afraid I do not follow."
               ],
               "explanation": "One way to say it: \"I do not understand.\" Everyday ideas, and more than one wording is right."
             },
@@ -11248,8 +11248,8 @@
               "prompt": "Ask where the station is.",
               "acceptableAnswers": [
                 "Where is the station?",
-                "Where's the station?",
-                "Could you tell me where the station is?"
+                "Could you tell me where the station is?",
+                "How do I get to the station?"
               ],
               "explanation": "One way to say it: \"Where is the station?\" Everyday ideas, and more than one wording is right."
             },
@@ -11288,8 +11288,8 @@
               "prompt": "Say you come from Spain.",
               "acceptableAnswers": [
                 "I am from Spain.",
-                "I'm from Spain.",
-                "I come from Spain."
+                "I come from Spain.",
+                "My home country is Spain."
               ],
               "explanation": "One way to say it: \"I am from Spain.\" Everyday ideas, and more than one wording is right."
             },
@@ -11350,8 +11350,8 @@
               "prompt": "Say you are hungry.",
               "acceptableAnswers": [
                 "I am hungry.",
-                "I'm hungry.",
-                "I am very hungry."
+                "I am very hungry.",
+                "I could eat something."
               ],
               "explanation": "One way to say it: \"I am hungry.\" Everyday ideas, and more than one wording is right."
             },
@@ -11401,8 +11401,8 @@
               "prompt": "Say you are learning English.",
               "acceptableAnswers": [
                 "I am learning English.",
-                "I'm learning English.",
-                "I study English."
+                "I study English.",
+                "I am taking English lessons."
               ],
               "explanation": "One way to say it: \"I am learning English.\" Everyday ideas, and more than one wording is right."
             },
@@ -11412,8 +11412,8 @@
               "prompt": "Apologise for arriving late.",
               "acceptableAnswers": [
                 "I am sorry I am late.",
-                "I'm sorry I'm late.",
-                "Sorry for being late."
+                "Sorry for being late.",
+                "My apologies for the delay."
               ],
               "explanation": "One way to say it: \"I am sorry I am late.\" Everyday ideas, and more than one wording is right."
             },
@@ -11423,8 +11423,8 @@
               "prompt": "Ask where the toilet is.",
               "acceptableAnswers": [
                 "Where is the toilet?",
-                "Where's the toilet?",
-                "Could you tell me where the toilet is?"
+                "Could you tell me where the toilet is?",
+                "Is there a toilet nearby?"
               ],
               "explanation": "One way to say it: \"Where is the toilet?\" Everyday ideas, and more than one wording is right."
             },
@@ -11434,8 +11434,8 @@
               "prompt": "Say you do not eat meat.",
               "acceptableAnswers": [
                 "I do not eat meat.",
-                "I don't eat meat.",
-                "I never eat meat."
+                "I never eat meat.",
+                "I am vegetarian."
               ],
               "explanation": "One way to say it: \"I do not eat meat.\" Everyday ideas, and more than one wording is right."
             },
@@ -11507,8 +11507,8 @@
               "prompt": "Say you are tired.",
               "acceptableAnswers": [
                 "I am tired.",
-                "I'm tired.",
-                "I feel tired."
+                "I feel tired.",
+                "I am exhausted."
               ],
               "explanation": "One way to say it: \"I am tired.\" Everyday ideas, and more than one wording is right."
             }
@@ -19542,8 +19542,8 @@
               "prompt": "Say you have never been to Italy.",
               "acceptableAnswers": [
                 "I have never been to Italy.",
-                "I've never been to Italy.",
-                "I have not been to Italy before."
+                "I have not been to Italy before.",
+                "Italy is somewhere I have yet to visit."
               ],
               "explanation": "One way to say it: \"I have never been to Italy.\" Everyday errands and arrangements, more than one wording."
             },
@@ -19655,8 +19655,8 @@
               "prompt": "Say you are looking for the post office.",
               "acceptableAnswers": [
                 "I am looking for the post office.",
-                "I'm looking for the post office.",
-                "I am trying to find the post office."
+                "I am trying to find the post office.",
+                "Could you point me to the post office?"
               ],
               "explanation": "One way to say it: \"I am looking for the post office.\" Everyday errands and arrangements, more than one wording."
             },
@@ -19776,7 +19776,7 @@
             {
               "id": "a2p23q22",
               "type": "translate",
-              "prompt": "Say you walked all the way to the river.",
+              "prompt": "Say the whole journey to the river was on foot.",
               "acceptableAnswers": [
                 "We walked all the way to the river.",
                 "I walked as far as the river.",
@@ -27768,7 +27768,7 @@
             {
               "id": "b1p23q0",
               "type": "translate",
-              "prompt": "Say the main problem is the cost.",
+              "prompt": "Name cost as the biggest obstacle.",
               "acceptableAnswers": [
                 "The main problem is the cost.",
                 "The biggest problem is the cost.",
@@ -27779,13 +27779,13 @@
             {
               "id": "b1p23q1",
               "type": "translate",
-              "prompt": "Say it depends how much time you have.",
+              "prompt": "Say the answer depends on the time available.",
               "acceptableAnswers": [
-                "It depends on how much time we have.",
-                "That depends on the time available.",
-                "It depends how much time there is."
+                "It depends how much time we have.",
+                "It depends on the time available.",
+                "That depends how much time there is."
               ],
-              "explanation": "One way to say it: \"It depends on how much time we have.\" Opinions, reasons and comparisons, written in your own words."
+              "explanation": "One way to say it: \"It depends how much time we have.\" Opinions, reasons and comparisons, written in your own words."
             },
             {
               "id": "b1p23q2",
@@ -27812,7 +27812,7 @@
             {
               "id": "b1p23q4",
               "type": "translate",
-              "prompt": "Say the results were better than hoped.",
+              "prompt": "Say results exceeded what you hoped for.",
               "acceptableAnswers": [
                 "The results were better than we hoped.",
                 "The results beat our expectations.",
@@ -27903,7 +27903,7 @@
             {
               "id": "b1p23q11",
               "type": "translate",
-              "prompt": "Say the difference is smaller than it looks.",
+              "prompt": "Play down how large a gap appears.",
               "acceptableAnswers": [
                 "The difference is smaller than it looks.",
                 "The gap is smaller than it seems.",
@@ -27914,7 +27914,7 @@
             {
               "id": "b1p23q12",
               "type": "translate",
-              "prompt": "Say you need to be realistic about this.",
+              "prompt": "Urge realism about a plan.",
               "acceptableAnswers": [
                 "We need to be realistic about this.",
                 "Let us be realistic here.",
@@ -27954,7 +27954,7 @@
             {
               "id": "b1p23q15",
               "type": "translate",
-              "prompt": "Say it is worth trying at least once.",
+              "prompt": "Suggest giving something a single try.",
               "acceptableAnswers": [
                 "It is worth trying at least once.",
                 "It's worth a try.",
@@ -28049,13 +28049,13 @@
             {
               "id": "b1p23q23",
               "type": "translate",
-              "prompt": "Say the second option makes more sense.",
+              "prompt": "Choose between two options, preferring the second.",
               "acceptableAnswers": [
-                "The other option makes more sense.",
-                "I think the alternative makes more sense.",
-                "The other choice seems more sensible."
+                "The second option makes more sense.",
+                "I think the second one is better.",
+                "The other option makes more sense."
               ],
-              "explanation": "One way to say it: \"The other option makes more sense.\" Opinions, reasons and comparisons, written in your own words."
+              "explanation": "One way to say it: \"The second option makes more sense.\" Opinions, reasons and comparisons, written in your own words."
             },
             {
               "id": "b1p23q24",
@@ -36124,7 +36124,7 @@
             {
               "id": "b2p23q4",
               "type": "translate",
-              "prompt": "Say you are under no obligation to accept.",
+              "prompt": "Say nobody is obliged to accept the offer.",
               "acceptableAnswers": [
                 "We are under no obligation to accept it.",
                 "We do not have to accept it.",
@@ -36204,7 +36204,7 @@
             {
               "id": "b2p23q10",
               "type": "translate",
-              "prompt": "Say the decision was made without consulting you.",
+              "prompt": "Complain that a decision skipped your team.",
               "acceptableAnswers": [
                 "The decision was made without consulting us.",
                 "Nobody consulted us about the decision.",
@@ -36226,7 +36226,7 @@
             {
               "id": "b2p23q12",
               "type": "translate",
-              "prompt": "Say far more evidence is needed.",
+              "prompt": "Reject a claim as badly under-evidenced.",
               "acceptableAnswers": [
                 "We will need far more evidence than that.",
                 "That is nowhere near enough evidence.",
@@ -36310,7 +36310,7 @@
             {
               "id": "b2p23q19",
               "type": "translate",
-              "prompt": "Say the proposal has been revised several times.",
+              "prompt": "Note how often a proposal has changed.",
               "acceptableAnswers": [
                 "The proposal has been revised several times.",
                 "There have been several revisions to the proposal.",
@@ -44412,7 +44412,7 @@
             {
               "id": "c1p23q2",
               "type": "translate",
-              "prompt": "Say something is easier said than done.",
+              "prompt": "Dismiss a suggestion as impractical, idiomatically.",
               "acceptableAnswers": [
                 "That is easier said than done.",
                 "Easier said than done.",
@@ -44514,7 +44514,7 @@
             {
               "id": "c1p23q10",
               "type": "translate",
-              "prompt": "Say you are inclined to give them the benefit of the doubt.",
+              "prompt": "Extend someone good faith despite doubts.",
               "acceptableAnswers": [
                 "I am inclined to give them the benefit of the doubt.",
                 "I'd give them the benefit of the doubt.",

@@ -10,6 +10,17 @@ import { matchesSpokenAnswer } from "./spoken-answer.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
 
+/**
+ * Hand-kept mirror of src/lib/nvidia-chat-model.server.ts's
+ * NVIDIA_CHAT_MODEL_DEFAULT. That constant exists BECAUSE four independent
+ * hardcodes of a model name broke at once when NVIDIA retired
+ * meta/llama-3.1-70b-instruct (410 Gone), and an edge function cannot import
+ * from src/ -- so this is the fifth place to update on the next catalog shift,
+ * and it is listed in that file's doc comment for exactly that reason.
+ * NVIDIA_CHAT_MODEL overrides it here with no redeploy, same as on the web.
+ */
+const NVIDIA_CHAT_MODEL_DEFAULT = "nvidia/nemotron-3.5-lightning-30b-a3b";
+
 export type QuestionRow = {
   type: "mc" | "fill" | "reorder" | "listening" | "speak" | "translate";
   prompt: string | null;
@@ -56,6 +67,9 @@ export async function deriveAnswerCorrectness(question: QuestionRow, answer: str
   if (question.type === "translate") {
     const acceptable = question.bank ?? [];
     if (matchesAcceptableAnswer(answer, acceptable)) return true;
+    // An empty or whitespace answer is not worth a vendor call: it cannot be
+    // right, and paying to be told so is pure waste.
+    if (!answer.trim()) return false;
     const apiKey = Deno.env.get("NVIDIA_API_KEY");
     if (!apiKey) return false;
     const verdict = await gradeTranslationWithAi({
@@ -63,7 +77,7 @@ export async function deriveAnswerCorrectness(question: QuestionRow, answer: str
       acceptableAnswers: acceptable,
       submission: answer,
       apiKey,
-      model: Deno.env.get("NVIDIA_CHAT_MODEL") ?? "meta/llama-3.1-8b-instruct",
+      model: Deno.env.get("NVIDIA_CHAT_MODEL") ?? NVIDIA_CHAT_MODEL_DEFAULT,
       });
     // `null` is "no usable AI opinion", not "wrong" -- keep the local verdict.
     return verdict?.correct ?? false;
