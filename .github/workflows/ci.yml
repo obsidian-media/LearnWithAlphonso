@@ -220,7 +220,14 @@ jobs:
             echo "::warning::SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set -- skipping curriculum data seed (see this job's header comment)."
             exit 0
           fi
-          bun run node_modules/.bin/tsx scripts/seed-curriculum-db.ts
+          # bunx (not node_modules/.bin/tsx): tsx is NOT a dependency of this
+          # project, so the local path does not exist and this command would
+          # fail the moment SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY are set.
+          # It has never run -- those secrets are unset, so the guard above
+          # exits first -- which is exactly why the break went unnoticed: it
+          # was primed to fire on the day someone finished the setup. Every
+          # other workflow here already uses `bunx tsx`, which fetches it.
+          bunx tsx scripts/seed-curriculum-db.ts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
