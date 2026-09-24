@@ -190,6 +190,29 @@ pattern". It is at **91.17%**, as are its siblings (`chat.ts` 96.29%,
 describes the codebase — don't cite it to justify skipping tests on a
 new server route.
 
+### Two traps that have each cost a session real time
+
+**`user.type` on a controlled input can leave only the last character in
+state.** The symptom is not "the typing failed" — it is that whatever consumes
+the value behaves as though the feature under test is broken. It cost three
+wrong hypotheses about placement's band-scoring rules before the test was made
+to print the real payload rather than be reasoned about. Use
+`fireEvent.change(el, { target: { value: "..." } })` for controlled inputs and
+textareas; reserve `user.type` for cases where the per-keystroke path is itself
+what you are testing. And when a test disagrees with your model of the code,
+print the actual value early rather than guessing at the model a third time.
+
+**Nothing else may touch the tree while a verification command runs.** A second
+`vitest` racing a backgrounded first silently drops test files — 126 files
+became 115, and earlier 117 became 113 and then 107 — with everything
+"passing", so the count just quietly shrinks. Two concurrent `bun run build`s
+report a spurious failure. It is not only same-tool collisions: a run started
+immediately after `lint --fix` dropped 11 files too, because the formatter was
+still writing while vitest was discovering. Run verification sequentially with
+nothing in the background, and treat any unexplained DROP in the file count as
+a racing process rather than a regression — re-run before investigating. If a
+command gets backgrounded mid-pass, wait for it rather than re-running.
+
 ## Assets
 
 See `LESSON_ASSETS.md` for the asset list (audio, images, icons,
