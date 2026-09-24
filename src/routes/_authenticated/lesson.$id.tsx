@@ -22,7 +22,7 @@ import {
 } from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
 import { deriveAnswerCorrectness } from "../../lib/srs";
-import { requestTranslationVerdict } from "../../lib/grade-translation.client";
+import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import type { TranslationVerdict } from "../api/grade-translation";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";

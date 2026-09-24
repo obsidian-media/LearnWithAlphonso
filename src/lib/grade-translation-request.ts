@@ -5,6 +5,12 @@ import type { TranslationVerdict } from "../routes/api/grade-translation";
  * Asks the server for a second opinion on a written translation the curated
  * phrasings rejected.
  *
+ * Deliberately NOT named `.client.ts`: TanStack Start treats that suffix as
+ * client-only and refuses to bundle it into a server environment, and the
+ * lesson player that calls this is server-rendered. Nothing in here is
+ * browser-only -- it is a fetch with an auth header, which is fine in either
+ * environment; it simply only ever runs from a click handler.
+ *
  * Returns `null` for every failure -- offline, 5xx, a malformed body, a thrown
  * fetch. `null` means "no second opinion", and the caller keeps the local
  * verdict it already had. This function never throws for the same reason the
