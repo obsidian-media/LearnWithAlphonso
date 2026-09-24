@@ -27,7 +27,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
     id: "p2",
     level: "A1",
     prompt: "Choose the polite greeting:",
-    choices: ["Oi you", "Good morning", "What", "Give"],
+    choices: ["Oi you", "Good morning", "Yo", "Alright mate"],
     answer: 1,
   },
   {
@@ -47,8 +47,8 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p2b",
     level: "A1",
-    prompt: "Choose the correct question word:",
-    choices: ["___ is your name?", "What", "Whose", "Which", "Who"],
+    prompt: "___ is your name?",
+    choices: ["What", "Whose", "Which", "Who"],
     answer: 0,
   },
   {

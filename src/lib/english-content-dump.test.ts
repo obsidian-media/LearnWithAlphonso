@@ -41,6 +41,19 @@ describe("buildEnglishDump", () => {
     }
   });
 
+  // A placement answer that still carries a blank marker means the sentence
+  // was pasted into the choices array instead of the prompt, so the "correct"
+  // answer is the question itself and every real option is marked wrong.
+  // Found live in the phase 1 audit (p2b, in the A1 band that decides a
+  // learner's starting level).
+  it("never offers a placement answer that is itself a blanked sentence", () => {
+    for (const p of PLACEMENT_QUESTIONS) {
+      for (const choice of p.choices) {
+        expect(choice, `${p.id} has a blanked sentence as a choice`).not.toContain("___");
+      }
+    }
+  });
+
   it("surfaces the fill bank so an auditor can see answer-in-bank violations", () => {
     const dump = buildEnglishDump();
     const fills = Object.values(dump.byLevel)
