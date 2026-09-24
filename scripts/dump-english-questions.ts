@@ -3,7 +3,7 @@
  * audit. The audit reviews generated output (real distractors), not raw
  * pack source, because pickDistractors is what produces the wrong answers.
  *
- * Usage: node_modules/.bin/tsx scripts/dump-english-questions.ts
+ * Usage: bun run scripts/dump-english-questions.ts
  */
 import fs from "node:fs";
 import path from "node:path";

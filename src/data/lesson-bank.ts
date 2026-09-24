@@ -3332,7 +3332,7 @@ In ___ words, the results were not as expected.|other`,
   },
 ];
 
-const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
+export const BANK: Record<Level, Pack[]> = { A1, A2, B1, B2, C1 };
 
 function hash(s: string) {
   let h = 2166136261;
