@@ -4,6 +4,7 @@
 
 import type { Question } from "../data/curriculum";
 import { matchesSpokenAnswer } from "./spoken-answer";
+import { matchesAcceptableAnswer } from "./translation-answer";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -25,6 +26,14 @@ export function deriveAnswerCorrectness(question: Question, answer: string): boo
   // learner would be shown "Still got it" and then have the item lapsed
   // behind their back.
   if (question.type === "speak") return matchesSpokenAnswer(answer, question.answer);
+  // The LOCAL half of translate grading, and only that. The AI half cannot
+  // live here -- this function is synchronous and is mirrored into a Deno edge
+  // function -- so the three server-side graders call it first and ask an AI
+  // grader only about what it rejects. What this accepts is never overturned;
+  // what it rejects is not yet a verdict.
+  if (question.type === "translate") {
+    return matchesAcceptableAnswer(answer, question.acceptableAnswers);
+  }
   return answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
 }
 

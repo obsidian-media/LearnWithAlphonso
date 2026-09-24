@@ -62,6 +62,20 @@ export type Question =
     }
   | {
       id: string;
+      type: "translate";
+      /** Describes the idea to express, rather than giving the sentence away
+       * — "Ask someone's name", not "What is your name?". */
+      prompt: string;
+      /** Curated valid phrasings, most canonical first. A learner's wording is
+       * matched against ALL of them, and `[0]` is what they are shown after a
+       * miss. Deliberately never auto-expanded from graded submissions (see
+       * the spec's non-goals): what counts as correct stays a content
+       * decision, not a side effect of someone's answer. */
+      acceptableAnswers: string[];
+      explanation: string;
+    }
+  | {
+      id: string;
       type: "fill";
       prompt: string; // uses ___ for blank
       bank: string[];

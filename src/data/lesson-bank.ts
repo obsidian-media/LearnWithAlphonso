@@ -21,8 +21,14 @@ type Pack = {
    * "speak" lines: "phrase|phrase" — the same text twice, because what is
    * shown is exactly what the learner must say. The pack's `prompt` is the
    * instruction ("Say this aloud:").
+   * "translate" lines: "idea|phrasing;phrasing;phrasing" — the left side
+   * describes what to express WITHOUT giving the sentence away, and the right
+   * side is the semicolon-separated list of wordings that count, most
+   * canonical first. Two is the enforced minimum (see
+   * curriculum-consistency.test.ts); three or more is the intent, because
+   * every wording the list misses costs an AI call to accept.
    */
-  kind: "pair" | "cloze" | "listening" | "speak";
+  kind: "pair" | "cloze" | "listening" | "speak" | "translate";
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -823,6 +829,46 @@ He plays the guitar.|He plays the guitar.
 Have a good evening.|Have a good evening.
 I am learning English.|I am learning English.
 See you next week.|See you next week.`,
+  },
+  {
+    id: "a1p25",
+    title: "Say It Your Way",
+    subtitle: "Write the idea in English",
+    kind: "translate",
+    prompt: "Write this in English:",
+    note: "Everyday ideas, and more than one wording is right.",
+    // The left side describes the idea rather than giving the sentence away --
+    // otherwise this is a copying exercise, not a producing one. Each line
+    // lists three wordings a learner plausibly reaches for; anything else
+    // valid is caught by the AI grader, which is the fallback, not the plan.
+    // Avoids the traps the speaking packs documented (compound numbers,
+    // ordinals, contracted "has", possessive 's, undisambiguated names),
+    // because the same normaliser runs underneath.
+    data: `Greet someone in the morning.|Good morning.;Morning.;Good morning to you.
+Ask someone their name.|What is your name?;What's your name?;May I ask your name?
+Say you do not understand.|I do not understand.;I don't understand.;Sorry, I don't understand.
+Ask where the station is.|Where is the station?;Where's the station?;Could you tell me where the station is?
+Thank someone warmly.|Thank you very much.;Thanks a lot.;Thank you so much.
+Ask someone to repeat something.|Could you repeat that?;Can you say that again?;Please say that again.
+Say you come from Spain.|I am from Spain.;I'm from Spain.;I come from Spain.
+Order a coffee politely.|I would like a coffee, please.;Can I have a coffee, please?;A coffee, please.
+Ask how someone is.|How are you?;How are you today?;How are you doing?
+Say goodbye until tomorrow.|See you tomorrow.;Goodbye, see you tomorrow.;Until tomorrow.
+Ask what the time is.|What time is it?;Do you have the time?;Could you tell me the time?
+Say you are hungry.|I am hungry.;I'm hungry.;I am very hungry.
+Ask someone for help.|Can you help me?;Could you help me?;I need some help, please.
+Say you live in London.|I live in London.;I'm living in London.;My home is in London.
+Ask the price of something.|How much is it?;How much does it cost?;What does it cost?
+Say you are learning English.|I am learning English.;I'm learning English.;I study English.
+Apologise for arriving late.|I am sorry I am late.;I'm sorry I'm late.;Sorry for being late.
+Ask where the toilet is.|Where is the toilet?;Where's the toilet?;Could you tell me where the toilet is?
+Say you do not eat meat.|I do not eat meat.;I don't eat meat.;I never eat meat.
+Introduce your sister to someone.|This is my sister.;She is my sister.;Let me introduce my sister.
+Say the weather is pleasant.|The weather is nice.;It is nice weather.;It's lovely weather.
+Ask someone to speak more slowly.|Could you speak slowly?;Please speak more slowly.;Can you speak slower?
+Say you work in a bank.|I work in a bank.;I work at a bank.;My job is in a bank.
+Wish someone a good evening.|Have a good evening.;Good evening.;Have a nice evening.
+Say you are tired.|I am tired.;I'm tired.;I feel tired.`,
   },
 ];
 
@@ -3810,6 +3856,21 @@ function packQuestions(pack: Pack): Question[] {
         prompt: pack.prompt ?? "Say this aloud:",
         answer: left!,
         explanation: `Target phrase: "${left}" ${pack.note}`,
+      };
+    }
+    // Same reasoning as speak: a translate question has no choices and no word
+    // bank, so the distractor work below is effort whose result is discarded.
+    if (pack.kind === "translate") {
+      const answers = right!
+        .split(";")
+        .map((a) => a.trim())
+        .filter(Boolean);
+      return {
+        id: `${pack.id}q${i}`,
+        type: "translate",
+        prompt: left!,
+        acceptableAnswers: answers,
+        explanation: `One way to say it: "${answers[0]}" ${pack.note}`,
       };
     }
     // Built before the distractors so they can be ranked against it -- a

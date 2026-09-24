@@ -751,7 +751,13 @@ export function FinishScreen({
               <p className="mt-1 text-xs text-ink-soft/80">
                 You said <span className="line-through">{yours}</span> ·{" "}
                 <span className="font-semibold text-moss">
-                  {q.type === "mc" ? q.choices[q.answer] : q.answer}
+                  {q.type === "mc"
+                    ? q.choices[q.answer]
+                    : q.type === "translate"
+                      ? // One of several accepted wordings, so it is shown as
+                        // an example rather than as "the" answer.
+                        q.acceptableAnswers[0]
+                      : q.answer}
                 </span>
               </p>
             </div>

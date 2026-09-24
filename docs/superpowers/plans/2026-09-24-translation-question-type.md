@@ -39,6 +39,22 @@ for whoever executes it.
    grading degrades to local-only rather than failing. Both facts are stated in
    Task 4 instead of being discovered in production.
 
+### Correction found during execution (Task 1)
+
+**The task boundaries were wrong.** Task 1 adds translate content to the
+bundled iOS JSON, and the Swift decoder fails loudly on an unknown type by
+design -- so shipping the content without the Kit's decode support turned all
+five `ContentStoreTests` red, and would have left the iOS package broken across
+five tasks. The Kit half of Task 7 (the `Translate` case, its struct, the
+decoder branch, `isAnswerCorrect`, and `deriveVocab`'s three switches) plus the
+Swift half of Task 2 therefore moved **into Task 1**. Task 7 keeps only the UI:
+the card and the two players.
+
+A second thing the move caught: the bundled JSON is a pass-through of the
+TypeScript objects, so its key is `acceptableAnswers`. Only the DATABASE seed
+puts that list in the `bank` column. A `CodingKeys` remap written from the
+migration rather than from the bundle decoded nothing.
+
 ## Global Constraints
 
 - **English only.** French and Spanish content is untouched (spec, "Scope"). `bank-engine.ts` must not gain new pack kinds in this plan.
@@ -110,6 +126,21 @@ Five failure modes the spec implies but does not test. Each has a test in the ta
 - [ ] **Step 1: Probe the blast radius before writing anything**
 
 Add the variant to the union in `src/data/curriculum.ts`, then run `bun run tsc --noEmit`. Record the error count and the file list. This is how listening (14 vs 8 errors) and speaking (4 errors) were sized; the list is the authoritative set of switches this plan must cover, and if it names a file this plan does not mention, add it.
+
+**Probe result (2026-09-24): 10 errors across 7 files.** Four were not named
+anywhere else in this plan and are now part of Task 1:
+
+- `src/lib/english-content-dump.ts:67` — the audit dump's per-type serialiser.
+- `src/lib/pack-authoring.ts:189` — the dev preview printer.
+- `src/lib/sync.functions.ts:495` — the weakness-classifier prompt. A translate
+  miss needs the phrasing appended for the same reason listening and speaking
+  do: the stem is a constant, so without it every miss reaches the classifier
+  looking identical.
+- `src/routes/_authenticated/lesson.$id.tsx:754` — the finish screen's "the
+  correct answer was" line, which must show `acceptableAnswers[0]`.
+
+The other six are `bank-engine.ts` (reshuffle, Step 6), `curriculum-seed.ts`
+(Step 8) and `srs.ts` (Task 5), all already planned.
 
 - [ ] **Step 2: Write the failing seed-row test**
 

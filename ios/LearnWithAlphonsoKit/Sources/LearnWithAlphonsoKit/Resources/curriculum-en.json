@@ -11198,6 +11198,325 @@
       ]
     },
     {
+      "id": "a1p25u1",
+      "level": "A1",
+      "eyebrow": "Unit 28",
+      "title": "Say It Your Way",
+      "description": "Write the idea in English — Everyday ideas, and more than one wording is right.",
+      "lessons": [
+        {
+          "id": "a1p25l1",
+          "title": "Say It Your Way 1",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q0",
+              "type": "translate",
+              "prompt": "Greet someone in the morning.",
+              "acceptableAnswers": [
+                "Good morning.",
+                "Morning.",
+                "Good morning to you."
+              ],
+              "explanation": "One way to say it: \"Good morning.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q1",
+              "type": "translate",
+              "prompt": "Ask someone their name.",
+              "acceptableAnswers": [
+                "What is your name?",
+                "What's your name?",
+                "May I ask your name?"
+              ],
+              "explanation": "One way to say it: \"What is your name?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q2",
+              "type": "translate",
+              "prompt": "Say you do not understand.",
+              "acceptableAnswers": [
+                "I do not understand.",
+                "I don't understand.",
+                "Sorry, I don't understand."
+              ],
+              "explanation": "One way to say it: \"I do not understand.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q3",
+              "type": "translate",
+              "prompt": "Ask where the station is.",
+              "acceptableAnswers": [
+                "Where is the station?",
+                "Where's the station?",
+                "Could you tell me where the station is?"
+              ],
+              "explanation": "One way to say it: \"Where is the station?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q4",
+              "type": "translate",
+              "prompt": "Thank someone warmly.",
+              "acceptableAnswers": [
+                "Thank you very much.",
+                "Thanks a lot.",
+                "Thank you so much."
+              ],
+              "explanation": "One way to say it: \"Thank you very much.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l2",
+          "title": "Say It Your Way 2",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q5",
+              "type": "translate",
+              "prompt": "Ask someone to repeat something.",
+              "acceptableAnswers": [
+                "Could you repeat that?",
+                "Can you say that again?",
+                "Please say that again."
+              ],
+              "explanation": "One way to say it: \"Could you repeat that?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q6",
+              "type": "translate",
+              "prompt": "Say you come from Spain.",
+              "acceptableAnswers": [
+                "I am from Spain.",
+                "I'm from Spain.",
+                "I come from Spain."
+              ],
+              "explanation": "One way to say it: \"I am from Spain.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q7",
+              "type": "translate",
+              "prompt": "Order a coffee politely.",
+              "acceptableAnswers": [
+                "I would like a coffee, please.",
+                "Can I have a coffee, please?",
+                "A coffee, please."
+              ],
+              "explanation": "One way to say it: \"I would like a coffee, please.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q8",
+              "type": "translate",
+              "prompt": "Ask how someone is.",
+              "acceptableAnswers": [
+                "How are you?",
+                "How are you today?",
+                "How are you doing?"
+              ],
+              "explanation": "One way to say it: \"How are you?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q9",
+              "type": "translate",
+              "prompt": "Say goodbye until tomorrow.",
+              "acceptableAnswers": [
+                "See you tomorrow.",
+                "Goodbye, see you tomorrow.",
+                "Until tomorrow."
+              ],
+              "explanation": "One way to say it: \"See you tomorrow.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l3",
+          "title": "Say It Your Way 3",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q10",
+              "type": "translate",
+              "prompt": "Ask what the time is.",
+              "acceptableAnswers": [
+                "What time is it?",
+                "Do you have the time?",
+                "Could you tell me the time?"
+              ],
+              "explanation": "One way to say it: \"What time is it?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q11",
+              "type": "translate",
+              "prompt": "Say you are hungry.",
+              "acceptableAnswers": [
+                "I am hungry.",
+                "I'm hungry.",
+                "I am very hungry."
+              ],
+              "explanation": "One way to say it: \"I am hungry.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q12",
+              "type": "translate",
+              "prompt": "Ask someone for help.",
+              "acceptableAnswers": [
+                "Can you help me?",
+                "Could you help me?",
+                "I need some help, please."
+              ],
+              "explanation": "One way to say it: \"Can you help me?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q13",
+              "type": "translate",
+              "prompt": "Say you live in London.",
+              "acceptableAnswers": [
+                "I live in London.",
+                "I'm living in London.",
+                "My home is in London."
+              ],
+              "explanation": "One way to say it: \"I live in London.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q14",
+              "type": "translate",
+              "prompt": "Ask the price of something.",
+              "acceptableAnswers": [
+                "How much is it?",
+                "How much does it cost?",
+                "What does it cost?"
+              ],
+              "explanation": "One way to say it: \"How much is it?\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l4",
+          "title": "Say It Your Way 4",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q15",
+              "type": "translate",
+              "prompt": "Say you are learning English.",
+              "acceptableAnswers": [
+                "I am learning English.",
+                "I'm learning English.",
+                "I study English."
+              ],
+              "explanation": "One way to say it: \"I am learning English.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q16",
+              "type": "translate",
+              "prompt": "Apologise for arriving late.",
+              "acceptableAnswers": [
+                "I am sorry I am late.",
+                "I'm sorry I'm late.",
+                "Sorry for being late."
+              ],
+              "explanation": "One way to say it: \"I am sorry I am late.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q17",
+              "type": "translate",
+              "prompt": "Ask where the toilet is.",
+              "acceptableAnswers": [
+                "Where is the toilet?",
+                "Where's the toilet?",
+                "Could you tell me where the toilet is?"
+              ],
+              "explanation": "One way to say it: \"Where is the toilet?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q18",
+              "type": "translate",
+              "prompt": "Say you do not eat meat.",
+              "acceptableAnswers": [
+                "I do not eat meat.",
+                "I don't eat meat.",
+                "I never eat meat."
+              ],
+              "explanation": "One way to say it: \"I do not eat meat.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q19",
+              "type": "translate",
+              "prompt": "Introduce your sister to someone.",
+              "acceptableAnswers": [
+                "This is my sister.",
+                "She is my sister.",
+                "Let me introduce my sister."
+              ],
+              "explanation": "One way to say it: \"This is my sister.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "a1p25l5",
+          "title": "Say It Your Way 5",
+          "subtitle": "Write the idea in English",
+          "questions": [
+            {
+              "id": "a1p25q20",
+              "type": "translate",
+              "prompt": "Say the weather is pleasant.",
+              "acceptableAnswers": [
+                "The weather is nice.",
+                "It is nice weather.",
+                "It's lovely weather."
+              ],
+              "explanation": "One way to say it: \"The weather is nice.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q21",
+              "type": "translate",
+              "prompt": "Ask someone to speak more slowly.",
+              "acceptableAnswers": [
+                "Could you speak slowly?",
+                "Please speak more slowly.",
+                "Can you speak slower?"
+              ],
+              "explanation": "One way to say it: \"Could you speak slowly?\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q22",
+              "type": "translate",
+              "prompt": "Say you work in a bank.",
+              "acceptableAnswers": [
+                "I work in a bank.",
+                "I work at a bank.",
+                "My job is in a bank."
+              ],
+              "explanation": "One way to say it: \"I work in a bank.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q23",
+              "type": "translate",
+              "prompt": "Wish someone a good evening.",
+              "acceptableAnswers": [
+                "Have a good evening.",
+                "Good evening.",
+                "Have a nice evening."
+              ],
+              "explanation": "One way to say it: \"Have a good evening.\" Everyday ideas, and more than one wording is right."
+            },
+            {
+              "id": "a1p25q24",
+              "type": "translate",
+              "prompt": "Say you are tired.",
+              "acceptableAnswers": [
+                "I am tired.",
+                "I'm tired.",
+                "I feel tired."
+              ],
+              "explanation": "One way to say it: \"I am tired.\" Everyday ideas, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "a2p1u1",
       "level": "A2",
       "eyebrow": "Unit 3",

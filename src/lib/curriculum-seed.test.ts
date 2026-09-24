@@ -34,10 +34,23 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
     }
   });
 
+  it("maps a translate question onto the bank + answer_text row shape", () => {
+    const row = buildQuestionRows("en").find((r) => r.type === "translate");
+    expect(row).toBeDefined();
+    // The curated phrasings ride in `bank` and the canonical one in
+    // answer_text, so no new column is needed and grade-review's generic
+    // non-mc path still has something sane to compare against.
+    expect(Array.isArray(row!.bank)).toBe(true);
+    expect((row!.bank as string[]).length).toBeGreaterThanOrEqual(2);
+    expect(row!.answer_text).toBe((row!.bank as string[])[0]);
+    expect(row!.choices).toBeNull();
+    expect(row!.answer_index).toBeNull();
+  });
+
   it("every lesson row's unit_id references a real English unit row", () => {
     const unitIds = new Set(buildUnitRows("en").map((u) => u.id));
     const lessons = buildLessonRows("en");
-    expect(lessons.length).toBe(584); // matches ios-content-export.test.ts's known English lesson count
+    expect(lessons.length).toBe(589); // matches ios-content-export.test.ts's known English lesson count
     for (const l of lessons) expect(unitIds.has(l.unit_id)).toBe(true);
   });
 
@@ -149,7 +162,7 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    expect(seed.lessons.length).toBe(584 + 500 + 508);
+    expect(seed.lessons.length).toBe(589 + 500 + 508);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +

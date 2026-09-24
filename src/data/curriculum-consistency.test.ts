@@ -66,6 +66,31 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     expect(empty, `lessons with zero questions in ${name}: ${empty.join(", ")}`).toEqual([]);
   });
 
+  it("translate questions: at least two non-empty acceptable phrasings, no duplicates", () => {
+    // One phrasing makes the AI fallback carry the whole question, and an
+    // empty list makes matchesAcceptableAnswer reject everything -- a question
+    // nobody can answer, which is worse than a wrong one because it is silent.
+    const offenders: string[] = [];
+    for (const { lesson, question } of allQuestions(units)) {
+      if (question.type !== "translate") continue;
+      const key = `${lesson.id}:${question.id}`;
+      const answers = question.acceptableAnswers;
+      if (answers.length < 2) {
+        offenders.push(`${key}: only ${answers.length} acceptable phrasing(s)`);
+        continue;
+      }
+      if (answers.some((a) => a.trim().length === 0)) {
+        offenders.push(`${key}: has a blank acceptable phrasing`);
+        continue;
+      }
+      const normalized = answers.map((a) => a.trim().toLowerCase());
+      if (new Set(normalized).size !== normalized.length) {
+        offenders.push(`${key}: duplicate acceptable phrasings`);
+      }
+    }
+    expect(offenders, `translate problems in ${name}: ${offenders.join(" | ")}`).toEqual([]);
+  });
+
   it("mc questions: answer index is within range of choices, and choices have no duplicates", () => {
     const offenders: string[] = [];
     for (const { lesson, question } of allQuestions(units)) {

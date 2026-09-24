@@ -116,6 +116,11 @@ export function reshuffleQuestion(q: Question, seed: string): Question {
   // A speaking question has no choices, bank or tokens -- there is nothing to
   // reshuffle, so it is returned untouched.
   if (q.type === "speak") return q;
+  // Nor does a translate question, and its acceptableAnswers are a grading
+  // list rather than a display order -- shuffling them would be pointless as
+  // well as wrong. This branch must stay ABOVE the `bank` fallthrough below,
+  // which would otherwise spread a property this variant does not have.
+  if (q.type === "translate") return q;
   if (q.type === "listening") {
     // Reshuffling the choices is safe here precisely because `answer` is the
     // choice text rather than an index -- there is nothing to keep in sync.
