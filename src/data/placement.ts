@@ -26,7 +26,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p2",
     level: "A1",
-    prompt: "Choose the polite greeting:",
+    prompt: "Choose the most formal greeting:",
     choices: ["Oi you", "Good morning", "Yo", "Alright mate"],
     answer: 1,
   },
