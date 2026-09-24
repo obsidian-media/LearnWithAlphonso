@@ -434,12 +434,12 @@ has stripes like a cat|tiger
 climbs trees and eats bananas|monkey
 is black and white and eats bamboo|panda
 hops on strong back legs|kangaroo
-is a very large grey animal with tusks|elephant seal
+is a large sea animal with tusks and whiskers|walrus
 lives in a hive and makes honey|bee
 spins a web|spider
 is a fast desert animal with a hump|camel
 swims and is the largest animal|whale
-has a shell and moves slowly|snail
+is a small garden creature that leaves a slimy trail|snail
 barks like a dog but is wild|fox
 flies at night and sleeps upside down|bat`,
   },
@@ -471,7 +471,7 @@ New Year's Eve is on the last day of the ___.|year
 There are sixty minutes in an ___.|hour
 There are sixty seconds in a ___.|minute
 The middle day of the week is ___.|Wednesday
-Valentine's Day is celebrated with cards and ___.|flowers
+Twelve o'clock in the middle of the day is called ___.|noon
 We often relax on the ___.|weekend
 The day after Thursday is ___.|Friday`,
   },
