@@ -133,7 +133,10 @@ describe("buildPlacementQuestionRows", () => {
     for (const r of rows) {
       expect(r.course).toBe("en");
       expect(levelIds.has(r.level_id)).toBe(true);
-      expect(r.choices.length).toBeGreaterThan(0);
+      // Only the option-based types carry choices now; a translate row's
+      // wordings live in `bank`.
+      if (r.type === "translate") expect(r.bank?.length ?? 0).toBeGreaterThan(0);
+      else expect(r.choices?.length ?? 0).toBeGreaterThan(0);
     }
   });
 

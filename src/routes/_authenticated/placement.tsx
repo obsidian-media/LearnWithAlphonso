@@ -12,6 +12,7 @@ import {
   type PlacementQuestion,
 } from "../../data/placement";
 import { getCourse } from "../../data/courses";
+import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
@@ -73,7 +74,10 @@ function PlacementPage() {
     startSession(getCourse(course).pickPlacement()),
   );
   const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<number | null>(null);
+  // The submitted TEXT, not an option index: a listening question answers with
+  // the choice's text and a translation with a whole sentence, and one grading
+  // helper serves all three only if they speak the same language.
+  const [picked, setPicked] = useState<string | null>(null);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
   const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
@@ -119,7 +123,7 @@ function PlacementPage() {
 
   function submit() {
     if (picked === null || !q) return;
-    const next = [...answers, picked === q.answer];
+    const next = [...answers, isPlacementAnswerCorrect(q, picked)];
     setPicked(null);
     setAnswers(next);
 
@@ -283,14 +287,14 @@ function PlacementPage() {
               {q.prompt}
             </h1>
             <div className={isStudioInk ? "mt-7" : "mt-7 flex flex-col gap-2.5"}>
-              {q.choices.map((c, i) =>
+              {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c) =>
                 isStudioInk ? (
                   <button
                     key={c}
                     type="button"
-                    onClick={() => setPicked(i)}
+                    onClick={() => setPicked(c)}
                     className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-[15px] font-medium text-ink transition ${
-                      picked === i ? "border-l-ink" : "border-l-transparent"
+                      picked === c ? "border-l-ink" : "border-l-transparent"
                     }`}
                   >
                     {c}
@@ -299,9 +303,9 @@ function PlacementPage() {
                   <button
                     key={c}
                     type="button"
-                    onClick={() => setPicked(i)}
+                    onClick={() => setPicked(c)}
                     className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
-                      picked === i
+                      picked === c
                         ? "border-ink bg-ink text-surface"
                         : "border-hairline bg-surface text-ink hover:bg-parchment"
                     }`}

@@ -1,12 +1,36 @@
 import type { Level } from "./levels";
 
-export type PlacementQuestion = {
-  id: string;
-  level: Level;
-  prompt: string;
-  choices: string[];
-  answer: number;
-};
+/**
+ * A placement question, in the three formats the exam can fairly assess.
+ *
+ * `speak` is deliberately absent. Asking for microphone permission during
+ * onboarding -- before the learner has any reason to grant it -- and then
+ * having a denial make the question unanswerable is the wrong trade for an
+ * exam that sets someone's whole course; the typing fallback that rescues a
+ * speaking question inside a lesson would here be assessing writing while
+ * claiming to assess speaking. That is a product decision, recorded in
+ * docs/superpowers/plans/2026-09-24-placement-question-types.md so it can be
+ * overturned knowingly.
+ *
+ * Unlike lesson content, these ids are NOT review-item keys (review keys are
+ * `lessonId:questionId`), and the id-parity baseline covers only `byLevel`,
+ * not the placement pool -- so entries here can be edited and reordered
+ * freely.
+ */
+export type PlacementQuestion = { id: string; level: Level } & (
+  | { type: "mc"; prompt: string; choices: string[]; answer: number }
+  | {
+      type: "listening";
+      prompt: string;
+      /** Spoken via TTS. Shown as text when the browser cannot speak -- an
+       *  unanswerable placement question mis-places the learner downward. */
+      audioText: string;
+      choices: string[];
+      /** The correct choice's TEXT, matching the lesson player's variant. */
+      answer: string;
+    }
+  | { type: "translate"; prompt: string; acceptableAnswers: string[] }
+);
 
 /**
  * Question pool per CEFR band — 9 candidates per band, 3 sampled at random
@@ -19,6 +43,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p1",
     level: "A1",
+    type: "mc",
     prompt: "She ___ a teacher.",
     choices: ["are", "is", "be", "am"],
     answer: 1,
@@ -26,6 +51,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p2",
     level: "A1",
+    type: "mc",
     prompt: "Choose the most formal greeting:",
     choices: ["Oi you", "Good morning", "Yo", "Alright mate"],
     answer: 1,
@@ -33,6 +59,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p3",
     level: "A1",
+    type: "mc",
     prompt: "I ___ coffee every morning.",
     choices: ["drinks", "drinking", "drink", "drank"],
     answer: 2,
@@ -40,6 +67,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p1b",
     level: "A1",
+    type: "mc",
     prompt: "They ___ from Canada.",
     choices: ["is", "am", "are", "be"],
     answer: 2,
@@ -47,6 +75,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p2b",
     level: "A1",
+    type: "mc",
     prompt: "___ is your name?",
     choices: ["What", "Whose", "Which", "Who"],
     answer: 0,
@@ -54,6 +83,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p3b",
     level: "A1",
+    type: "mc",
     prompt: "He ___ a big house.",
     choices: ["have", "has", "haves", "having"],
     answer: 1,
@@ -61,6 +91,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p1c",
     level: "A1",
+    type: "mc",
     prompt: "This is ___ book.",
     choices: ["I", "my", "me", "mine own"],
     answer: 1,
@@ -68,6 +99,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p2c",
     level: "A1",
+    type: "mc",
     prompt: "We ___ students.",
     choices: ["is", "am", "are", "be"],
     answer: 2,
@@ -75,6 +107,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p3c",
     level: "A1",
+    type: "mc",
     prompt: "Choose the correct farewell:",
     choices: ["Good night", "Good night to you go", "Nighting", "Good nightly"],
     answer: 0,
@@ -83,6 +116,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p4",
     level: "A2",
+    type: "mc",
     prompt: "We ___ to Rome last summer.",
     choices: ["go", "gone", "went", "going"],
     answer: 2,
@@ -90,6 +124,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p5",
     level: "A2",
+    type: "mc",
     prompt: "This bag is ___ than that one.",
     choices: ["cheap", "cheaper", "cheapest", "more cheap"],
     answer: 1,
@@ -97,6 +132,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p6",
     level: "A2",
+    type: "mc",
     prompt: "Can I pay ___ card?",
     choices: ["by", "on", "for", "of"],
     answer: 0,
@@ -104,6 +140,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p4b",
     level: "A2",
+    type: "mc",
     prompt: "She ___ her homework already.",
     choices: ["finish", "finished", "finishing", "finishes"],
     answer: 1,
@@ -111,6 +148,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p5b",
     level: "A2",
+    type: "mc",
     prompt: "There ___ many people at the party.",
     choices: ["was", "is", "were", "be"],
     answer: 2,
@@ -118,6 +156,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p6b",
     level: "A2",
+    type: "mc",
     prompt: "I'm going to ___ a new car next year.",
     choices: ["buy", "bought", "buying", "buys"],
     answer: 0,
@@ -125,6 +164,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p4c",
     level: "A2",
+    type: "mc",
     prompt: "He plays football ___ Sundays.",
     choices: ["in", "at", "on", "by"],
     answer: 2,
@@ -132,6 +172,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p5c",
     level: "A2",
+    type: "mc",
     prompt: "This is the ___ film I've ever seen.",
     choices: ["good", "better", "best", "goodest"],
     answer: 2,
@@ -139,6 +180,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p6c",
     level: "A2",
+    type: "mc",
     prompt: "___ you ever been to Spain?",
     choices: ["Do", "Did", "Have", "Are"],
     answer: 2,
@@ -147,6 +189,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p7",
     level: "B1",
+    type: "mc",
     prompt: "If it rains, we ___ inside.",
     choices: ["stayed", "will stay", "would stayed", "stay would"],
     answer: 1,
@@ -154,6 +197,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p8",
     level: "B1",
+    type: "mc",
     prompt: "I look forward to ___ from you.",
     choices: ["hear", "hearing", "heard", "be hearing"],
     answer: 1,
@@ -161,6 +205,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p9",
     level: "B1",
+    type: "mc",
     prompt: '"Unless" means:',
     choices: ["if", "if not", "because", "although"],
     answer: 1,
@@ -168,6 +213,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p7b",
     level: "B1",
+    type: "mc",
     prompt: "By the time we arrived, the film ___.",
     choices: ["already started", "had already started", "has already started", "already starts"],
     answer: 1,
@@ -175,6 +221,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p8b",
     level: "B1",
+    type: "mc",
     prompt: "She's the woman ___ car was stolen.",
     choices: ["who", "which", "whose", "that"],
     answer: 2,
@@ -182,6 +229,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p9b",
     level: "B1",
+    type: "mc",
     prompt: "You ___ smoke in here, it's not allowed.",
     choices: ["don't have to", "mustn't", "shouldn't", "don't must"],
     answer: 1,
@@ -189,6 +237,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p7c",
     level: "B1",
+    type: "mc",
     prompt: "I used to ___ swimming every weekend.",
     choices: ["go", "going", "went", "goes"],
     answer: 0,
@@ -196,6 +245,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p8c",
     level: "B1",
+    type: "mc",
     prompt: '"Although" introduces:',
     choices: ["a reason", "a contrast", "a condition", "a result"],
     answer: 1,
@@ -203,6 +253,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p9c",
     level: "B1",
+    type: "mc",
     prompt: "He asked me ___ I was ready.",
     choices: ["that", "if", "what", "so"],
     answer: 1,
@@ -211,6 +262,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p10",
     level: "B2",
+    type: "mc",
     prompt: "The bridge is ___ inspected annually.",
     choices: ["been", "be", "being", "was"],
     answer: 2,
@@ -218,6 +270,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p11",
     level: "B2",
+    type: "mc",
     prompt: "___ the cost, demand rose.",
     choices: ["Although", "Despite", "However", "Whereas"],
     answer: 1,
@@ -225,6 +278,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p12",
     level: "B2",
+    type: "mc",
     prompt: "Costs rose; ___, prices followed.",
     choices: ["accordingly", "whereas", "despite", "although"],
     answer: 0,
@@ -232,6 +286,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p10b",
     level: "B2",
+    type: "mc",
     prompt: "She said she ___ the report by Friday.",
     choices: ["will finish", "would finish", "finishes", "finish"],
     answer: 1,
@@ -239,6 +294,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p11b",
     level: "B2",
+    type: "mc",
     prompt: 'Most formal way to say "a lot of growth":',
     choices: ["tons of growth", "loads of growth", "substantial growth", "big growth"],
     answer: 2,
@@ -246,6 +302,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p12b",
     level: "B2",
+    type: "mc",
     prompt: '"Whereas" is used to:',
     choices: ["give a reason", "compare two contrasting facts", "add an example", "conclude"],
     answer: 1,
@@ -253,6 +310,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p10c",
     level: "B2",
+    type: "mc",
     prompt: "If I had known, I ___ differently.",
     choices: ["would act", "would have acted", "will act", "acted"],
     answer: 1,
@@ -260,6 +318,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p11c",
     level: "B2",
+    type: "mc",
     prompt: "The report is ___ to be published next week.",
     choices: ["expect", "expecting", "expected", "expects"],
     answer: 2,
@@ -267,6 +326,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p12c",
     level: "B2",
+    type: "mc",
     prompt: '"Nevertheless" signals:',
     choices: ["addition", "concession/contrast", "cause", "example"],
     answer: 1,
@@ -275,6 +335,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p13",
     level: "C1",
+    type: "mc",
     prompt: 'Most formal equivalent of "find out":',
     choices: ["dig up", "check out", "ascertain", "get"],
     answer: 2,
@@ -282,6 +343,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p14",
     level: "C1",
+    type: "mc",
     prompt: "That argument doesn't hold ___.",
     choices: ["air", "water", "ground", "weight"],
     answer: 1,
@@ -289,6 +351,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p15",
     level: "C1",
+    type: "mc",
     prompt: "Which avoids nominalisation overload?",
     choices: [
       "The implementation of the reduction of costs",
@@ -301,6 +364,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p13b",
     level: "C1",
+    type: "mc",
     prompt: '"To play devil\'s advocate" means to:',
     choices: [
       "cause trouble deliberately",
@@ -313,6 +377,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p14b",
     level: "C1",
+    type: "mc",
     prompt: 'Most precise register-appropriate word for "a lot of proof":',
     choices: ["loads of proof", "substantial evidence", "big proof", "much proof stuff"],
     answer: 1,
@@ -320,6 +385,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p15b",
     level: "C1",
+    type: "mc",
     prompt: "Which sentence best avoids a dangling modifier?",
     choices: [
       "Walking to the store, the rain started.",
@@ -332,6 +398,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p13c",
     level: "C1",
+    type: "mc",
     prompt: '"Notwithstanding" is closest in meaning to:',
     choices: ["because of", "despite", "in addition to", "as a result of"],
     answer: 1,
@@ -339,6 +406,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p14c",
     level: "C1",
+    type: "mc",
     prompt: 'Best formal alternative to "a big problem":',
     choices: ["a huge issue", "a significant challenge", "a massive headache", "a really big deal"],
     answer: 1,
@@ -346,6 +414,7 @@ export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
   {
     id: "p15c",
     level: "C1",
+    type: "mc",
     prompt: "Which uses hedging appropriately in academic writing?",
     choices: [
       "This proves the theory is correct.",

@@ -13,6 +13,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep1",
     level: "A1",
+    type: "mc",
     prompt: 'How do you say "thank you" in Spanish?',
     choices: ["Hola", "Gracias", "Adiós", "Perdón"],
     answer: 1,
@@ -20,6 +21,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep2",
     level: "A1",
+    type: "mc",
     prompt: "Yo ___ estudiante.",
     choices: ["es", "soy", "está", "son"],
     answer: 1,
@@ -27,6 +29,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep3",
     level: "A1",
+    type: "mc",
     prompt: 'Choose the correct number for "five":',
     choices: ["cuatro", "cinco", "seis", "nueve"],
     answer: 1,
@@ -34,6 +37,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep1b",
     level: "A1",
+    type: "mc",
     prompt: "Nosotros ___ estudiantes.",
     choices: ["es", "está", "somos", "son"],
     answer: 2,
@@ -41,6 +45,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep2b",
     level: "A1",
+    type: "mc",
     prompt: 'Elige el artículo correcto para "gato":',
     choices: ["la", "el", "los", "las"],
     answer: 1,
@@ -48,6 +53,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep3b",
     level: "A1",
+    type: "mc",
     prompt: "Yo ___ veinte años.",
     choices: ["soy", "tengo", "tiene", "tienes"],
     answer: 1,
@@ -55,6 +61,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep1c",
     level: "A1",
+    type: "mc",
     prompt: "Él ___ un libro.",
     choices: ["tengo", "tienes", "tiene", "tienen"],
     answer: 2,
@@ -62,6 +69,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep2c",
     level: "A1",
+    type: "mc",
     prompt: 'Cómo se dice "goodbye"?',
     choices: ["Hola", "Gracias", "Adiós", "Perdón"],
     answer: 2,
@@ -69,6 +77,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep3c",
     level: "A1",
+    type: "mc",
     prompt: "Ustedes ___ estudiantes.",
     choices: ["es", "está", "son", "somos"],
     answer: 2,
@@ -77,6 +86,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep4",
     level: "A2",
+    type: "mc",
     prompt: "Ayer yo ___ (ir) al mercado.",
     choices: ["voy", "fui", "iré", "iba"],
     answer: 1,
@@ -84,6 +94,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep5",
     level: "A2",
+    type: "mc",
     prompt: "Este vestido es más ___ que el otro.",
     choices: ["caro", "cara", "caros", "más caro"],
     answer: 1,
@@ -91,6 +102,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep6",
     level: "A2",
+    type: "mc",
     prompt: "Gira a la izquierda ___ el banco.",
     choices: ["después de", "antes de", "sobre", "en"],
     answer: 1,
@@ -98,6 +110,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep4b",
     level: "A2",
+    type: "mc",
     prompt: "Ella ___ (terminar) su tarea ya.",
     choices: ["termina", "terminó", "terminando", "terminará"],
     answer: 1,
@@ -105,6 +118,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep5b",
     level: "A2",
+    type: "mc",
     prompt: "Hay ___ manzanas en la cesta.",
     choices: ["mucho", "muchos", "mucha", "muchas"],
     answer: 3,
@@ -112,6 +126,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep6b",
     level: "A2",
+    type: "mc",
     prompt: "Voy a ___ un café.",
     choices: ["tomo", "tomar", "tomando", "tomado"],
     answer: 1,
@@ -119,6 +134,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep4c",
     level: "A2",
+    type: "mc",
     prompt: "Nosotros ___ (viajar) a España el próximo verano.",
     choices: ["viajamos", "viajaremos", "hemos viajado", "viajábamos"],
     answer: 1,
@@ -126,6 +142,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep5c",
     level: "A2",
+    type: "mc",
     prompt: "Esta es la ___ película que he visto.",
     choices: ["buena", "mejor", "bien", "mejora"],
     answer: 1,
@@ -133,6 +150,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep6c",
     level: "A2",
+    type: "mc",
     prompt: "___ has visitado Madrid?",
     choices: ["Has", "Eres", "Haces", "Vas"],
     answer: 0,
@@ -141,6 +159,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep7",
     level: "B1",
+    type: "mc",
     prompt: "Si llueve, nosotros ___ dentro.",
     choices: ["quedamos", "quedaremos", "quedáramos", "quedábamos"],
     answer: 1,
@@ -148,6 +167,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep8",
     level: "B1",
+    type: "mc",
     prompt: "Es necesario que tú ___ a tiempo.",
     choices: ["eres", "serás", "seas", "ser"],
     answer: 2,
@@ -155,6 +175,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep9",
     level: "B1",
+    type: "mc",
     prompt: '"Aunque" introduces…',
     choices: ["a cause", "a concession", "a purpose", "a condition"],
     answer: 1,
@@ -162,6 +183,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep7b",
     level: "B1",
+    type: "mc",
     prompt: "Cuando llegamos, la película ya ___ empezado.",
     choices: ["ha", "había", "habrá", "habiendo"],
     answer: 1,
@@ -169,6 +191,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep8b",
     level: "B1",
+    type: "mc",
     prompt: "Es la mujer ___ coche fue robado.",
     choices: ["que", "quien", "cuyo", "donde"],
     answer: 2,
@@ -176,6 +199,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep9b",
     level: "B1",
+    type: "mc",
     prompt: "No ___ fumar aquí.",
     choices: ["debes", "puedes", "has", "sabes"],
     answer: 0,
@@ -183,6 +207,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep7c",
     level: "B1",
+    type: "mc",
     prompt: "Antes, yo ___ (jugar) al fútbol cada semana.",
     choices: ["juego", "jugaba", "jugué", "jugaré"],
     answer: 1,
@@ -190,6 +215,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep8c",
     level: "B1",
+    type: "mc",
     prompt: "Me preguntó ___ estaba listo.",
     choices: ["que", "si", "qué", "entonces"],
     answer: 1,
@@ -197,6 +223,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep9c",
     level: "B1",
+    type: "mc",
     prompt: "___ llueve, saldremos.",
     choices: ["Aunque", "A pesar de", "Sin embargo", "Porque"],
     answer: 0,
@@ -205,6 +232,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep10",
     level: "B2",
+    type: "mc",
     prompt: "El informe ___ publicado la próxima semana.",
     choices: ["será", "es", "ha sido", "sería"],
     answer: 0,
@@ -212,6 +240,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep11",
     level: "B2",
+    type: "mc",
     prompt: "___ el costo, la demanda aumentó.",
     choices: ["Aunque", "A pesar de", "Sin embargo", "Ya que"],
     answer: 1,
@@ -219,6 +248,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep12",
     level: "B2",
+    type: "mc",
     prompt: "Los costos subieron; ___, los precios también.",
     choices: ["por lo tanto", "sin embargo", "a pesar de", "aunque"],
     answer: 0,
@@ -226,6 +256,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep10b",
     level: "B2",
+    type: "mc",
     prompt: "Ella dijo que ___ el informe antes del viernes.",
     choices: ["terminará", "terminaría", "termina", "terminó"],
     answer: 1,
@@ -233,6 +264,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep11b",
     level: "B2",
+    type: "mc",
     prompt: 'Manera más formal de decir "mucho crecimiento":',
     choices: [
       "un montón de crecimiento",
@@ -245,6 +277,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep12b",
     level: "B2",
+    type: "mc",
     prompt: '"Mientras que" se usa para:',
     choices: ["dar una razón", "comparar dos hechos contrastantes", "dar un ejemplo", "concluir"],
     answer: 1,
@@ -252,6 +285,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep10c",
     level: "B2",
+    type: "mc",
     prompt: "El informe debe ___ publicado la próxima semana.",
     choices: ["ser", "estar", "siendo", "sido"],
     answer: 0,
@@ -259,6 +293,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep11c",
     level: "B2",
+    type: "mc",
     prompt: '"Sin embargo" indica:',
     choices: ["una adición", "una concesión o contraste", "una causa", "un ejemplo"],
     answer: 1,
@@ -266,6 +301,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep12c",
     level: "B2",
+    type: "mc",
     prompt: "El puente está ___ inspeccionado anualmente.",
     choices: ["siendo", "sido", "ser", "es"],
     answer: 0,
@@ -274,6 +310,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep13",
     level: "C1",
+    type: "mc",
     prompt: 'The most formal equivalent of "descubrir":',
     choices: ["hallar", "constatar", "encontrar", "ver"],
     answer: 1,
@@ -281,6 +318,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep14",
     level: "C1",
+    type: "mc",
     prompt: "Si yo ___ (tener) más tiempo, viajaría más.",
     choices: ["tengo", "tendré", "tuviera", "tenía"],
     answer: 2,
@@ -288,6 +326,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep15",
     level: "C1",
+    type: "mc",
     prompt: '"No obstante" is closest in meaning to:',
     choices: ["por ejemplo", "sin embargo", "por lo tanto", "es decir"],
     answer: 1,
@@ -295,6 +334,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep13b",
     level: "C1",
+    type: "mc",
     prompt: '"Hacer de abogado del diablo" significa:',
     choices: [
       "causar problemas a propósito",
@@ -307,6 +347,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep14b",
     level: "C1",
+    type: "mc",
     prompt: 'Palabra más precisa para "mucha evidencia":',
     choices: [
       "un montón de pruebas",
@@ -319,6 +360,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep15b",
     level: "C1",
+    type: "mc",
     prompt: "¿Qué oración evita una construcción torpe?",
     choices: [
       "Caminando hacia la tienda, empezó a llover.",
@@ -331,6 +373,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep13c",
     level: "C1",
+    type: "mc",
     prompt: '"Con todo" es lo más cercano en significado a:',
     choices: ["a causa de", "sin embargo", "además de", "como resultado de"],
     answer: 1,
@@ -338,6 +381,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep14c",
     level: "C1",
+    type: "mc",
     prompt: 'Mejor alternativa formal a "un problema grande":',
     choices: [
       "un problema enorme",
@@ -350,6 +394,7 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
   {
     id: "ep15c",
     level: "C1",
+    type: "mc",
     prompt: "¿Qué oración usa un matiz apropiado en la escritura académica?",
     choices: [
       "Esto prueba que la teoría es correcta.",

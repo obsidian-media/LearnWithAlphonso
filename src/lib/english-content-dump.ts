@@ -74,18 +74,38 @@ export function buildCourseDump(course: Course = "en"): CourseDump {
     byLevel[level].sort((a, b) => a.key.localeCompare(b.key));
   }
 
-  const placement: DumpedQuestion[] = placementPool.map((p) => ({
-    key: `placement:${p.id}`,
-    level: p.level,
-    unitId: "placement",
-    lessonId: "placement",
-    questionId: p.id,
-    type: "mc",
-    prompt: p.prompt,
-    choices: p.choices,
-    answer: p.choices[p.answer] ?? "",
-    explanation: "",
-  }));
+  const placement: DumpedQuestion[] = placementPool.map((p) => {
+    const base = {
+      key: `placement:${p.id}`,
+      level: p.level,
+      unitId: "placement",
+      lessonId: "placement",
+      questionId: p.id,
+      prompt: p.prompt,
+      explanation: "",
+    };
+    // The placement pool is no longer mc-only: the exam assesses listening and
+    // translation too (speaking is deliberately excluded -- see
+    // PlacementQuestion's doc comment).
+    if (p.type === "mc") {
+      return { ...base, type: p.type, choices: p.choices, answer: p.choices[p.answer] ?? "" };
+    }
+    if (p.type === "listening") {
+      return {
+        ...base,
+        type: p.type,
+        choices: p.choices,
+        answer: p.answer,
+        audioText: p.audioText,
+      };
+    }
+    return {
+      ...base,
+      type: p.type,
+      bank: p.acceptableAnswers,
+      answer: p.acceptableAnswers[0] ?? "",
+    };
+  });
 
   return {
     byLevel,

@@ -48,10 +48,18 @@ vi.mock("../../lib/sync.functions", () => ({ savePlacementResult }));
 // 15-question pool, so the placement flow (score -> next-level placement)
 // is exercised without depending on which questions get sampled.
 const FIXED_QUESTIONS = [
-  { id: "p1", level: "A1", prompt: "Pick 2", choices: ["wrong", "right"], answer: 1 },
+  {
+    id: "p1",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "Pick 2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
   {
     id: "p2",
     level: "A1",
+    type: "mc" as const,
     prompt: "Pick 4",
     choices: ["wrong", "wrong2", "wrong3", "right"],
     answer: 3,
@@ -62,15 +70,78 @@ const FIXED_QUESTIONS = [
 // synthetically, and resumes on the one after) without needing the full
 // 15-question shape.
 const MULTI_BAND_QUESTIONS = [
-  { id: "m-a1-1", level: "A1", prompt: "A1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-a1-2", level: "A1", prompt: "A1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-a1-3", level: "A1", prompt: "A1 Q3", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-1", level: "B1", prompt: "B1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-2", level: "B1", prompt: "B1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-3", level: "B1", prompt: "B1 Q3", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-1", level: "C1", prompt: "C1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-2", level: "C1", prompt: "C1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-3", level: "C1", prompt: "C1 Q3", choices: ["wrong", "right"], answer: 1 },
+  {
+    id: "m-a1-1",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-a1-2",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-a1-3",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-1",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-2",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-3",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-1",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-2",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-3",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
 ];
 
 const pickPlacement = vi.fn(() => FIXED_QUESTIONS);

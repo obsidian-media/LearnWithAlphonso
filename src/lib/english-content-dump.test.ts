@@ -30,9 +30,26 @@ describe("buildCourseDump", () => {
   // would have no automated safety net at all.
   it("keeps placement questions structurally valid", () => {
     for (const p of PLACEMENT_QUESTIONS) {
-      expect(p.answer, `${p.id} answer index out of range`).toBeGreaterThanOrEqual(0);
-      expect(p.answer, `${p.id} answer index out of range`).toBeLessThan(p.choices.length);
       expect(p.prompt.trim(), `${p.id} has an empty prompt`).not.toBe("");
+
+      // The pool is no longer mc-only, so each shape is checked for the thing
+      // that would make IT unanswerable. An unanswerable placement question is
+      // worse than an unanswerable lesson one: it mis-places the learner
+      // downward and sets their whole course.
+      if (p.type === "translate") {
+        expect(p.acceptableAnswers.length, `${p.id} needs wordings`).toBeGreaterThanOrEqual(2);
+        for (const a of p.acceptableAnswers) {
+          expect(a.trim(), `${p.id} has an empty wording`).not.toBe("");
+        }
+        continue;
+      }
+      if (p.type === "listening") {
+        expect(p.audioText.trim(), `${p.id} has nothing to play`).not.toBe("");
+        expect(p.choices, `${p.id} answer is not among its choices`).toContain(p.answer);
+      } else {
+        expect(p.answer, `${p.id} answer index out of range`).toBeGreaterThanOrEqual(0);
+        expect(p.answer, `${p.id} answer index out of range`).toBeLessThan(p.choices.length);
+      }
       for (const c of p.choices) {
         expect(c.trim(), `${p.id} has an empty choice`).not.toBe("");
       }
@@ -48,7 +65,10 @@ describe("buildCourseDump", () => {
   // learner's starting level).
   it("never offers a placement answer that is itself a blanked sentence", () => {
     for (const p of PLACEMENT_QUESTIONS) {
-      for (const choice of p.choices) {
+      // A translate question has no choices to offer; its wordings are the
+      // answers, and the same rule applies to them.
+      const offered = p.type === "translate" ? p.acceptableAnswers : p.choices;
+      for (const choice of offered) {
         expect(choice, `${p.id} has a blanked sentence as a choice`).not.toContain("___");
       }
     }
