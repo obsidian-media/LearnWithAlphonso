@@ -227,6 +227,29 @@ describe("computeReviewOutcome", () => {
 });
 
 describe("deriveAnswerCorrectness", () => {
+  // The review server re-derives correctness through this same helper, so a
+  // spoken answer has to be tolerant HERE, not just in the player. Were it
+  // only in the UI, the learner would be shown "Still got it" and then have
+  // the item lapsed behind their back.
+  const speak: Question = {
+    id: "q9",
+    type: "speak",
+    prompt: "Say this aloud:",
+    answer: "She's a doctor.",
+    explanation: "",
+  };
+
+  it("accepts a spoken answer however the transcript spelled it", () => {
+    expect(deriveAnswerCorrectness(speak, "she is a doctor")).toBe(true);
+    expect(deriveAnswerCorrectness(speak, "Shes a doctor")).toBe(true);
+    expect(deriveAnswerCorrectness(speak, "um, she's a doctor")).toBe(true);
+  });
+
+  it("still rejects a different phrase, and an empty transcript", () => {
+    expect(deriveAnswerCorrectness(speak, "he is a driver")).toBe(false);
+    expect(deriveAnswerCorrectness(speak, "")).toBe(false);
+  });
+
   const mc: Question = {
     id: "q1",
     type: "mc",

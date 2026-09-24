@@ -5,7 +5,7 @@ describe("buildIOSContentBundle", () => {
   it("exports the full English curriculum with the expected lesson count", () => {
     const bundle = buildIOSContentBundle("en");
     const lessonCount = bundle.units.reduce((sum, u) => sum + u.lessons.length, 0);
-    expect(lessonCount).toBe(559);
+    expect(lessonCount).toBe(564);
     expect(bundle.units.length).toBeGreaterThan(0);
   });
 

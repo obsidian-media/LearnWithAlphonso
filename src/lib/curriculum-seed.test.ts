@@ -37,7 +37,7 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
   it("every lesson row's unit_id references a real English unit row", () => {
     const unitIds = new Set(buildUnitRows("en").map((u) => u.id));
     const lessons = buildLessonRows("en");
-    expect(lessons.length).toBe(559); // matches ios-content-export.test.ts's known English lesson count
+    expect(lessons.length).toBe(564); // matches ios-content-export.test.ts's known English lesson count
     for (const l of lessons) expect(unitIds.has(l.unit_id)).toBe(true);
   });
 
@@ -59,13 +59,14 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
 
   it("shapes every question row exactly like the DB's question_shape_matches_type CHECK constraint requires", () => {
     // The constraint (see supabase/migrations/, most recently
-    // 20260924010000_v5_listening_question_type.sql) permits exactly three
+    // 20260925010000_v5_speaking_question_type.sql) permits exactly four
     // shapes. A row matching none of them is rejected outright by Postgres, so
     // this test is the local stand-in for that constraint.
     const questions = [...buildQuestionRows("en"), ...buildQuestionRows("fr")];
     expect(questions.some((q) => q.type === "mc")).toBe(true);
     expect(questions.some((q) => q.type === "fill")).toBe(true);
     expect(questions.some((q) => q.type === "listening")).toBe(true);
+    expect(questions.some((q) => q.type === "speak")).toBe(true);
     for (const q of questions) {
       if (q.type === "mc") {
         expect(q.choices).not.toBeNull();
@@ -148,7 +149,7 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    expect(seed.lessons.length).toBe(559 + 500 + 508);
+    expect(seed.lessons.length).toBe(564 + 500 + 508);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +

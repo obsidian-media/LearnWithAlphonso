@@ -98,6 +98,9 @@ jobs:
       - name: Test grade-review's srs.ts port
         run: deno test supabase/functions/grade-review/srs.test.ts
 
+      - name: Test grade-review's spoken-answer.ts port
+        run: deno test supabase/functions/grade-review/spoken-answer.test.ts
+
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
 
