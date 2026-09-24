@@ -9,6 +9,12 @@ public enum Question: Decodable, Sendable {
     case multipleChoice(MultipleChoice)
     case fillInBlank(FillInBlank)
     case reorder(Reorder)
+    case listening(Listening)
+    /// A question type this build does not recognise. `Lesson` filters these
+    /// out at decode time, so it never reaches the UI -- it exists so that a
+    /// content bundle newer than the app degrades to "one fewer question"
+    /// rather than failing the whole decode. Switches still have to handle it.
+    case unsupported
 
     public struct MultipleChoice: Decodable, Sendable {
         public let id: String
@@ -38,6 +44,20 @@ public enum Question: Decodable, Sendable {
             self.imageKey = imageKey
             self.audioText = audioText
         }
+    }
+
+    /// Mirrors curriculum.ts's "listening" variant. `answer` is the correct
+    /// choice's TEXT rather than an index (deliberately unlike multipleChoice,
+    /// and matching fillInBlank/reorder), which is what lets `isAnswerCorrect`
+    /// grade it with the same comparison fill-in-blank uses.
+    public struct Listening: Decodable, Sendable {
+        public let id: String
+        public let prompt: String
+        /// Spoken via AVSpeechSynthesizer before the learner answers.
+        public let audioText: String
+        public let choices: [String]
+        public let answer: String
+        public let explanation: String
     }
 
     public struct FillInBlank: Decodable, Sendable {
@@ -74,12 +94,14 @@ public enum Question: Decodable, Sendable {
             self = .fillInBlank(try FillInBlank(from: decoder))
         case "reorder":
             self = .reorder(try Reorder(from: decoder))
+        case "listening":
+            self = .listening(try Listening(from: decoder))
         default:
-            throw DecodingError.dataCorruptedError(
-                forKey: .type,
-                in: container,
-                debugDescription: "Unknown question type: \(type)"
-            )
+            // Deliberately not a throw. Content is bundled inside the app, so
+            // an app older than its JSON would otherwise fail the whole
+            // ContentBundle decode and show the learner no content at all.
+            // `Lesson` drops these, so an unknown type costs one question.
+            self = .unsupported
         }
     }
 }
@@ -89,6 +111,34 @@ public struct Lesson: Decodable, Identifiable, Sendable {
     public let title: String
     public let subtitle: String
     public let questions: [Question]
+
+    public init(id: String, title: String, subtitle: String, questions: [Question]) {
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+        self.questions = questions
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, subtitle, questions
+    }
+
+    /// Decodes questions leniently: any whose `type` this build does not
+    /// recognise is dropped here rather than failing the lesson. Content is
+    /// bundled with the app, so a JSON bundle newer than the binary would
+    /// otherwise take down the entire ContentBundle decode and leave the
+    /// learner with no content at all.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        subtitle = try container.decode(String.self, forKey: .subtitle)
+        questions = try container.decode([Question].self, forKey: .questions)
+            .filter { question in
+                if case .unsupported = question { return false }
+                return true
+            }
+    }
 }
 
 public struct Unit: Decodable, Identifiable, Sendable {

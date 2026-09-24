@@ -252,6 +252,9 @@ private func questionID(_ question: Question) -> String {
     case .multipleChoice(let q): return q.id
     case .fillInBlank(let q): return q.id
     case .reorder(let q): return q.id
+    case .listening(let q): return q.id
+    // Filtered out when the lesson decodes, so unreachable here.
+    case .unsupported: return ""
     }
 }
 
@@ -381,6 +384,30 @@ private struct ReviewQuestionCard: View {
                     ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
                     : nil
             }
+        case .listening(let q):
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                Text("LISTENING")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Button {
+                    speak(q.audioText, languageCode: course.speechLanguageCode)
+                } label: {
+                    Label("Play audio", systemImage: "speaker.wave.2.fill")
+                }
+                .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                Text(q.prompt).font(AlphonsoFont.display(21, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
+                ForEach(q.choices, id: \.self) { choice in
+                    // `answer` is the choice text, not an index.
+                    choiceButton(choice, isCorrectChoice: q.answer == choice)
+                }
+                if checked {
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                }
+            }
+        case .unsupported:
+            // Filtered out when the lesson decodes, so this never renders.
+            EmptyView()
             }
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
