@@ -18,8 +18,11 @@ type Pack = {
    * "cloze" lines: the left side carries the "___" blank.
    * "listening" lines: "audioText|answer" — the left side is spoken aloud and
    * the pack's own `prompt` is the stem shown after playback.
+   * "speak" lines: "phrase|phrase" — the same text twice, because what is
+   * shown is exactly what the learner must say. The pack's `prompt` is the
+   * instruction ("Say this aloud:").
    */
-  kind: "pair" | "cloze" | "listening";
+  kind: "pair" | "cloze" | "listening" | "speak";
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -776,6 +779,42 @@ The shop opens on Monday.|The shop opens on Monday.
 The shop closes on Sunday.|The shop closes on Sunday.
 I can't find my keys.|I can't find my keys.
 I can't find my phone.|I can't find my phone.`,
+  },
+  {
+    id: "a1p24",
+    title: "Speaking: Everyday Phrases",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Short everyday phrases to practise saying.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // Kept to one breath and to words that transcribe unambiguously -- a
+    // homophone-heavy phrase would be marked wrong for a correct utterance.
+    data: `Good morning.|Good morning.
+Nice to meet you.|Nice to meet you.
+How are you today?|How are you today?
+My name is Sara.|My name is Sara.
+I would like a coffee.|I would like a coffee.
+Where is the station?|Where is the station?
+Thank you very much.|Thank you very much.
+Can you help me?|Can you help me?
+I am from Spain.|I am from Spain.
+See you tomorrow.|See you tomorrow.
+The weather is lovely.|The weather is lovely.
+I have two brothers.|I have two brothers.
+What time is it?|What time is it?
+Excuse me, please.|Excuse me, please.
+I work in a bank.|I work in a bank.
+She is my sister.|She is my sister.
+We live in London.|We live in London.
+I do not understand.|I do not understand.
+Could you repeat that?|Could you repeat that?
+The bus leaves at nine.|The bus leaves at nine.
+I am very hungry.|I am very hungry.
+He plays the guitar.|He plays the guitar.
+Have a good evening.|Have a good evening.
+I am learning English.|I am learning English.
+See you next week.|See you next week.`,
   },
 ];
 
@@ -3577,6 +3616,18 @@ function packQuestions(pack: Pack): Question[] {
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
+    // Returned before any distractor work: a speaking question has no choices
+    // and no word bank, so picking distractors would be effort whose result is
+    // discarded, and the mc/fill split below does not apply to it either.
+    if (pack.kind === "speak") {
+      return {
+        id: `${pack.id}q${i}`,
+        type: "speak",
+        prompt: pack.prompt ?? "Say this aloud:",
+        answer: left!,
+        explanation: `Target phrase: "${left}" ${pack.note}`,
+      };
+    }
     // Built before the distractors so they can be ranked against it -- a
     // candidate already present in the prompt makes a poor wrong answer.
     const prompt =
