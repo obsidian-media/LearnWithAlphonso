@@ -12,7 +12,10 @@ describe("buildIOSContentBundle", () => {
   it("exports the full French curriculum with the expected lesson count", () => {
     const bundle = buildIOSContentBundle("fr");
     const lessonCount = bundle.units.reduce((sum, u) => sum + u.lessons.length, 0);
-    expect(lessonCount).toBe(500); // V3 pkg 4a: closed the 125 -> ~500 French content gap
+    // 500 (V3 pkg 4a) + 25 (phase 2 PR 2: fra1p21/fra2p21/frb1p21/frb2p21/frc1p21,
+    // one 25-line translate pack per level, 5 lessons each -- see
+    // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md
+    expect(lessonCount).toBe(525);
   });
 
   it("preserves question shape exactly (mc and fill variants both present)", () => {
