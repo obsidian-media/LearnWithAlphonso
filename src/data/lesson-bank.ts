@@ -13,8 +13,13 @@ type Pack = {
   title: string;
   subtitle: string;
   note: string;
-  /** "pair" lines: "left|right" — prompt asks for the right side. */
-  kind: "pair" | "cloze";
+  /**
+   * "pair" lines: "left|right" — prompt asks for the right side.
+   * "cloze" lines: the left side carries the "___" blank.
+   * "listening" lines: "audioText|answer" — the left side is spoken aloud and
+   * the pack's own `prompt` is the stem shown after playback.
+   */
+  kind: "pair" | "cloze" | "listening";
   /** prompt template for pair packs, `%s` is the left side. */
   prompt?: string;
   data: string;
@@ -734,6 +739,43 @@ following|sports on TV
 volunteering|in the community
 learning|a new language
 meditating|for relaxation`,
+  },
+  {
+    id: "a1p23",
+    title: "Listening: Everyday Sentences",
+    subtitle: "Hear it, then choose",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Short statements at natural speed.",
+    // Every line is a short statement of similar length and register, so
+    // neither sentence length nor tone gives the answer away -- the learner
+    // has to actually listen. Distractors are the other sentences in this
+    // pack, which is what keeps them plausible.
+    data: `She is a doctor.|She is a doctor.
+He works at the airport.|He works at the airport.
+They live near the park.|They live near the park.
+I have two brothers.|I have two brothers.
+We eat dinner at seven.|We eat dinner at seven.
+The train leaves at nine.|The train leaves at nine.
+My sister plays the piano.|My sister plays the piano.
+This coffee is very hot.|This coffee is very hot.
+The shop opens on Monday.|The shop opens on Monday.
+Her birthday is in June.|Her birthday is in June.
+He walks to work every day.|He walks to work every day.
+We watch films on Sunday.|We watch films on Sunday.
+The cat sleeps on the chair.|The cat sleeps on the chair.
+I study English in the evening.|I study English in the evening.
+They travel by bus.|They travel by bus.
+My father cooks on Saturday.|My father cooks on Saturday.
+The children play outside.|The children play outside.
+She reads before bed.|She reads before bed.
+We live in a small flat.|We live in a small flat.
+He drinks tea with milk.|He drinks tea with milk.
+The library closes at six.|The library closes at six.
+I take the metro to school.|I take the metro to school.
+She writes letters to her aunt.|She writes letters to her aunt.
+They visit us in August.|They visit us in August.
+My brother works in a bank.|My brother works in a bank.`,
   },
 ];
 
@@ -3392,12 +3434,39 @@ function packQuestions(pack: Pack): Question[] {
     const seed = `${pack.id}-${i}`;
     // Built before the distractors so they can be ranked against it -- a
     // candidate already present in the prompt makes a poor wrong answer.
-    const prompt = pack.kind === "pair" ? (pack.prompt ?? "%s").replace("%s", left!) : left!;
-    const distractors = pickDistractors(answer, pool, seed, prompt);
+    const prompt =
+      pack.kind === "pair"
+        ? (pack.prompt ?? "%s").replace("%s", left!)
+        : pack.kind === "listening"
+          ? (pack.prompt ?? "What did you hear?")
+          : left!;
+    // For a listening question the learner hears `left` rather than reading
+    // it, so that -- not the on-screen stem -- is what a distractor must not
+    // echo.
+    const echoContext = pack.kind === "listening" ? left! : prompt;
+    const distractors = pickDistractors(answer, pool, seed, echoContext);
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`
-        : `"${answer}" is correct here. ${pack.note}`;
+        : pack.kind === "listening"
+          ? `The audio says "${left}". ${pack.note}`
+          : `"${answer}" is correct here. ${pack.note}`;
+    if (pack.kind === "listening") {
+      // Order is cosmetic here: `answer` is the choice text, so there is no
+      // index to keep in sync with the shuffle.
+      const choices = [answer, ...distractors].sort(
+        (a, b) => hash(a + seed) - hash(b + seed),
+      );
+      return {
+        id: `${pack.id}q${i}`,
+        type: "listening",
+        prompt,
+        audioText: left!,
+        choices,
+        answer,
+        explanation,
+      };
+    }
     const useMc = (hash(seed) & 1) === 0 || distractors.length < 3;
     if (useMc) {
       const choices = [answer, ...distractors];
