@@ -37,7 +37,7 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
   it("every lesson row's unit_id references a real English unit row", () => {
     const unitIds = new Set(buildUnitRows("en").map((u) => u.id));
     const lessons = buildLessonRows("en");
-    expect(lessons.length).toBe(564); // matches ios-content-export.test.ts's known English lesson count
+    expect(lessons.length).toBe(584); // matches ios-content-export.test.ts's known English lesson count
     for (const l of lessons) expect(unitIds.has(l.unit_id)).toBe(true);
   });
 
@@ -149,7 +149,7 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    expect(seed.lessons.length).toBe(564 + 500 + 508);
+    expect(seed.lessons.length).toBe(584 + 500 + 508);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +
