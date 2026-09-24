@@ -677,17 +677,24 @@ note in README.md's Documentation section for why.)
   `vocab-images.ts`, and there's no test that fails loudly if it's
   forgotten (only a symptom: iOS shows stale/missing content the web app
   already has).
-- **`eslint .` used to lint every other branch's code** (fixed 2026-09-23).
-  `.claude/worktrees/` holds full checkouts of other branches physically
-  nested inside this repo, and the root ESLint config never ignored them,
-  so `bun run lint` walked into all 15 of them: 3,632 reported problems,
-  of which 3,630 came from other branches and 2 were real. Fixed by adding
-  `.claude/worktrees/**` to the `ignores` list in `eslint.config.js`
-  rather than by deleting worktrees, so a future one can't reintroduce it.
-  The two genuine findings in the live tree are a `prettier/prettier`
-  break in `scripts/upload-review-screenshot.ts` and a long-standing
+- **`eslint .` used to lint every other branch's code** (fixed 2026-09-24,
+  PR #85). `.claude/worktrees/` holds full checkouts of other branches
+  physically nested inside this repo, and the root ESLint config never
+  ignored them, so `bun run lint` walked into all 15 of them: 3,632
+  reported problems, of which 3,630 came from other branches and 2 were
+  real. Fixed by adding `.claude/worktrees/**` to the `ignores` list in
+  `eslint.config.js` rather than by deleting worktrees, so a future one
+  can't reintroduce it.
+  **The more important half of this**: CI never saw that noise (it lints
+  a clean checkout), but it *was* failing on one of the two real
+  findings — a `prettier/prettier` break in
+  `scripts/upload-review-screenshot.ts`, introduced in `566b71c`. That
+  quietly red-X'd `lint-and-typecheck` on **every open PR** until PR #84
+  happened to carry the fix. Worth remembering as a diagnostic pattern:
+  when several unrelated PRs fail the same check, suspect `main` before
+  suspecting the PRs. The remaining live-tree finding is a long-standing
   harmless `react-refresh/only-export-components` warning in
-  `CookieConsent.tsx`; both deliberately left alone.
+  `CookieConsent.tsx`, deliberately left alone.
 - **`src/integrations/supabase/types.ts` is stale** — found 2026-09-23.
   Seven tables added by the gamification/push batches
   (`challenge_completions`, `device_tokens`, `duel_queue`,

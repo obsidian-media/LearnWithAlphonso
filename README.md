@@ -212,8 +212,12 @@ compile verification that exists):
 - Code signing via an App Store Connect API key (`.github/workflows/ios-release.yml`,
   manual trigger) — no interactive Apple ID login needed anywhere in the
   pipeline. App Store Connect app record exists ("Learn With Alphonso",
-  bundle `com.obsidianmedia.learnwithalphonso`), no TestFlight build has
-  shipped this V2 work yet
+  bundle `com.obsidianmedia.learnwithalphonso`). TestFlight builds ship
+  regularly now (build 17 as of 2026-09-23; the "no build has shipped
+  this V2 work yet" note that stood here until 2026-09-24 was long
+  stale). Build numbers are set by hand via `CURRENT_PROJECT_VERSION` in
+  `ios/LearnWithAlphonso/project.yml` and **must be bumped before each
+  upload** — App Store Connect rejects a duplicate.
 
 See `AGENTS.md`'s Key Files table for the full file-by-file breakdown,
 and `ARCHITECTURE.md`'s "Native iOS app" section for how it's wired to
