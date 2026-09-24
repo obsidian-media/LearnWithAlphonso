@@ -138,6 +138,22 @@ export function BottomTabs() {
             />
           </svg>
         </TabItem>
+        <TabItem to="/listen" label="Listen" active={pathname.startsWith("/listen")}>
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
+            <path
+              d="M4 14v-2a8 8 0 0 1 16 0v2"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+            <path
+              d="M4 14h3v5H5.5A1.5 1.5 0 0 1 4 17.5V14zM20 14h-3v5h1.5a1.5 1.5 0 0 0 1.5-1.5V14z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </TabItem>
         <TabItem to="/converse" label="Chat" active={pathname.startsWith("/converse")}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
