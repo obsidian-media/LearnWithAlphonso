@@ -1,0 +1,12 @@
+{
+  "name": "canopy",
+  "colors": {
+    "background": "#EFFAF4",
+    "foreground": "#05261A",
+    "primary": "#0C6944",
+    "muted": "#DCF3E8",
+    "border": "#05261A1a"
+  },
+  "fonts": { "display": "Baloo 2", "sans": "Geist" },
+  "radii": { "sm": 4, "md": 8, "lg": 12 }
+}
