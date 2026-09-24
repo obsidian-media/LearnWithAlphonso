@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { MascotBanner } from "../../components/MascotBanner";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
@@ -341,24 +342,31 @@ function ReviewPage() {
   );
 }
 
-function Empty({ title, body, bonus }: { title: string; body: string; bonus?: string }) {
+export function Empty({ title, body, bonus }: { title: string; body: string; bonus?: string }) {
+  const isComplete = title === "Review complete";
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-1 flex-col items-center justify-center px-8 text-center"
     >
-      <div className="mb-5 grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
-        <svg viewBox="0 0 24 24" className="size-8" fill="none" aria-hidden="true">
-          <path
-            d="m6 12 4 4 8-9"
-            stroke="white"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      {isComplete ? (
+        <div className="mb-5 w-full">
+          <MascotBanner mascot="alphonso" message="Review complete!" />
+        </div>
+      ) : (
+        <div className="mb-5 grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
+          <svg viewBox="0 0 24 24" className="size-8" fill="none" aria-hidden="true">
+            <path
+              d="m6 12 4 4 8-9"
+              stroke="white"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      )}
       <h1 className="font-display text-[22px] font-semibold text-ink">{title}</h1>
       <p className="mt-2 max-w-[280px] text-sm text-ink-soft/80">{body}</p>
       {bonus && (
