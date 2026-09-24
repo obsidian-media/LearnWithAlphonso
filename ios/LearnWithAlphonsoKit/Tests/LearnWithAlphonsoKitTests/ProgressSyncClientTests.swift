@@ -763,8 +763,11 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(progress.streakFreezes, 2)
         XCTAssertEqual(progress.lastActiveDate, "2026-09-24")
         // PostgREST returns fractional-second timestamps; heartsRefillAt is
-        // epoch milliseconds.
-        XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 1758677025678.901, accuracy: 1)
+        // epoch milliseconds. 2026-09-24T01:23:45.678901Z is 1790213025678.901
+        // ms; ISO8601DateFormatter truncates below the millisecond, so the
+        // parsed value lands on ...678.0 -- hence the 1ms accuracy rather
+        // than an exact match.
+        XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 1790213025678, accuracy: 1)
         XCTAssertEqual(paths.count, 2)
     }
 
