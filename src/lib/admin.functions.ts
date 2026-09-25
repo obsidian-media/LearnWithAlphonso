@@ -56,9 +56,52 @@ export function wouldCreateCycle(
   folderId: string,
   newParentId: string | null,
 ): boolean {
-  if (folderId === newParentId) return true;
+  return cycleFor(folders, folderId, newParentId) !== null;
+}
+
+/**
+ * The folder ids that would form the loop, or null if the move is legal.
+ *
+ * `findCycle` has always returned the path and the caller threw it away,
+ * so the refusal said only "that would put the folder inside itself" --
+ * leaving the admin to work out *which* nesting was the problem in a tree
+ * they cannot see all of at once.
+ *
+ * Self-parenting is reported as the single-element path rather than
+ * short-circuiting to a bare boolean, so the message has something to
+ * name in that case too.
+ */
+export function cycleFor(
+  folders: PodcastFolder[],
+  folderId: string,
+  newParentId: string | null,
+): string[] | null {
+  if (folderId === newParentId) return [folderId];
   const moved = folders.map((f) => (f.id === folderId ? { ...f, parentId: newParentId } : f));
-  return findCycle(moved) !== null;
+  return findCycle(moved);
+}
+
+/**
+ * Turns a PostgREST write that matched nothing into a refusal.
+ *
+ * `.update()/.delete().eq()` against an id that no longer exists
+ * succeeds: no error, zero rows touched. Every mutation here used to
+ * return `{ ok: true }` for that, so an admin deleting a folder someone
+ * had already removed, or renaming from a stale tab, was told it worked
+ * and the list simply re-rendered unchanged.
+ *
+ * A null count is treated as "nothing matched", not as success: PostgREST
+ * omits the count unless asked, so if a caller ever stops asking, this
+ * fails loudly instead of quietly returning to the old behaviour.
+ */
+export function affectedOrThrow(
+  result: { count: number | null; error: { message: string } | null },
+  missingMessage: string,
+): void {
+  // The database's own error wins. Reporting a constraint violation as
+  // "nothing matched" sends someone hunting for a missing row.
+  if (result.error) throw new Error(result.error.message);
+  if (!result.count) throw new Error(missingMessage);
 }
 
 /**
@@ -159,11 +202,11 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
     // Title and description only. The slug is part of every episode's
     // storage path underneath this folder, so changing it here would
     // orphan audio without moving a single object.
-    const { error } = await untyped(context.supabaseAdmin)
+    const result = await untyped(context.supabaseAdmin)
       .from("podcast_folders")
-      .update({ title: data.title, description: data.description })
+      .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    affectedOrThrow(result, "That folder no longer exists. Reload the list.");
     return { ok: true };
   });
 
@@ -189,14 +232,20 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
     // Checked here rather than by a trigger for the same reason the CLI
     // checks it: only trusted writers reach these tables, so the rule
     // lives in tested TypeScript where it can be read.
-    if (wouldCreateCycle(folders, data.id, data.parentId)) {
-      throw new Error("That move would put the folder inside itself.");
+    const cycle = cycleFor(folders, data.id, data.parentId);
+    if (cycle) {
+      // findCycle returns the path and the first version discarded it,
+      // leaving the admin to work out WHICH nesting was the problem in a
+      // tree they cannot see all of at once.
+      const byId = new Map(folders.map((f) => [f.id, f.title]));
+      const names = cycle.map((id) => byId.get(id) ?? id).join(" → ");
+      throw new Error(`That move would put the folder inside itself: ${names} → …`);
     }
-    const { error } = await client
+    const result = await client
       .from("podcast_folders")
-      .update({ parent_id: data.parentId })
+      .update({ parent_id: data.parentId }, { count: "exact" })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    affectedOrThrow(result, "That folder no longer exists. Reload the list.");
     return { ok: true };
   });
 
@@ -223,8 +272,11 @@ export const adminDeleteFolder = createServerFn({ method: "POST" })
     ]);
     if ((childCount ?? 0) > 0) throw new Error("Move or delete the subfolders first.");
     if ((episodeCount ?? 0) > 0) throw new Error("Delete this folder's episodes first.");
-    const { error } = await client.from("podcast_folders").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    const result = await client
+      .from("podcast_folders")
+      .delete({ count: "exact" })
+      .eq("id", data.id);
+    affectedOrThrow(result, "That folder was already deleted. Reload the list.");
     return { ok: true };
   });
 
@@ -279,11 +331,11 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
     // without moving the object orphans the audio -- and moving the
     // object is a different, riskier operation than editing a title.
     // Publish under a new slug instead.
-    const { error } = await untyped(context.supabaseAdmin)
+    const result = await untyped(context.supabaseAdmin)
       .from("podcast_episodes")
-      .update({ title: data.title, description: data.description })
+      .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    affectedOrThrow(result, "That episode no longer exists. Reload the list.");
     return { ok: true };
   });
 
@@ -297,11 +349,11 @@ export const adminSetPublished = createServerFn({ method: "POST" })
     // the podcast-audio bucket is public-read, so an unpublished
     // episode's audio stays fetchable by anyone holding the URL. Any UI
     // built on this must say "not listed", never "private".
-    const { error } = await untyped(context.supabaseAdmin)
+    const result = await untyped(context.supabaseAdmin)
       .from("podcast_episodes")
-      .update({ published: data.published })
+      .update({ published: data.published }, { count: "exact" })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    affectedOrThrow(result, "That episode no longer exists. Reload the list.");
     return { ok: true };
   });
 

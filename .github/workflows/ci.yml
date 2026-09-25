@@ -59,9 +59,14 @@ jobs:
 
       # The admin app is a second Vite/Nitro build from the same repo
       # (vite.admin.config.ts). Nothing else in CI compiles it, so without
-      # this job a broken admin route is invisible until deploy. It also
-      # catches a stale admin/routeTree.gen.ts, which is committed rather
-      # than ignored because the generator only runs under `vite dev`.
+      # this job a broken admin route is invisible until deploy.
+      #
+      # What this catches: a broken or missing admin route, and a MISSING
+      # admin/routeTree.gen.ts. What it does NOT catch: a STALE one --
+      # `vite build` regenerates the tree in place and nothing diffs the
+      # result, unlike the bundled-iOS-content step above, which does
+      # exactly that check. An earlier version of this comment claimed the
+      # stale case; it did not hold.
       - name: Build admin app
         run: bun run build:admin
 
@@ -301,6 +306,12 @@ jobs:
       # skipped in every job, silently, while its own comment claimed CI
       # ran it. ADMIN_RLS_TEST_REQUIRED=1 makes the test FAIL rather than
       # skip if the credentials are absent, so it can never go quiet again.
+      #
+      # SCOPE, so nobody inherits the belief that was just corrected: this
+      # job is `if: push && ref == main`, so this check runs POST-MERGE,
+      # not on the pull request. A PR that breaks the allowlist goes green
+      # and this fails afterwards, on main. It is a regression alarm, not
+      # a merge gate -- treat a red run here as a revert-now signal.
       - name: admin_users is unreadable by a client token
         run: bunx vitest run src/lib/admin-auth.test.ts
         env:
