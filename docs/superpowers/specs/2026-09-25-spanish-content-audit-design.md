@@ -212,12 +212,23 @@ the triage.)
 
 ### 3.2 The 57 split two ways, and the split is the whole job
 
-**40 are true repeats** — identical prompt, identical answer, two
-packs. `sol`/`sol`, `escuela`/`escuela`, `farmacia`/`farmacia`,
-`sea como sea`/`sea como sea`, and grammar drills like
-`yo ___ (ser) estudiante.` producing `soy`/`soy`. Delete one side,
-prefer keeping the occurrence at the lower CEFR level, and **replace it
-with a new line so the pack does not shrink** (§4).
+**40 are true repeats — fixed 2026-09-25 (step 3).** Identical prompt,
+identical answer, two packs. `sol`/`sol`, `escuela`/`escuela`,
+`farmacia`/`farmacia`, `sea como sea`/`sea como sea`, and grammar
+drills like `yo ___ (ser) estudiante.` producing `soy`/`soy`. Each was
+kept at the lower-CEFR-level occurrence (tie-broken by lower pack
+number) and the higher-level occurrence **replaced with a new,
+verified-non-colliding line, never deleted** (§4) — 1:1, so no id
+moved. Caught one self-inflicted collision during the fix: a first
+verification pass used `^word|` as a shell grep pattern, which only
+matches a pack's second-and-later lines (a pack's first data line is on
+the same physical line as `` data: ` ``, so `^` never anchors there) —
+silently missing collisions against any pack's first line. Re-verified
+every replacement against the real compiled question list afterward
+(not the flawed pattern) and found exactly one real miss (`valley`,
+collided with `esb1p23`'s first line), fixed. `CROSS_PACK_DUPLICATE_BASELINE.es`
+is now 17. No Spanish prompt qualified for `INSTRUCTIONAL_PROMPTS` —
+all 57 were genuine content, not instructions in disguise.
 
 **17 are contradictory** — same prompt, _different_ accepted answers.
 These are the ones that mark a correct learner wrong, and they are not
@@ -402,11 +413,13 @@ does not round-trip through `matchesSpokenAnswer` does not ship.
 
 Ship each as its own PR. Do not bundle.
 
-1. **`spanish-ids.json` baseline** (§4). Alone, no content changes.
-2. **Duplicate-check mechanism** (§3.1). Alone, and tell the English
-   session the moment it lands.
+1. **`spanish-ids.json` baseline** (§4). Alone, no content changes. Done
+   2026-09-25 (PR #122).
+2. **Duplicate-check mechanism** (§3.1). Done 2026-09-25 by the English
+   session (PR #121), shipped ahead of and instead of this session's own
+   version — see §3.1's status note.
 3. **The 40 true repeats** (§3.2), baseline `es` lowered in the same
-   commit.
+   commit. Done 2026-09-25 — `CROSS_PACK_DUPLICATE_BASELINE.es` is 17.
 4. **The 17 contradictory prompts** (§3.2). Separate from 3 because it
    is authoring judgement rather than deletion, and deserves its own
    review.

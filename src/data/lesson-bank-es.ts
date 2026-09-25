@@ -397,7 +397,7 @@ scientist|científico`,
     prompt: 'How do you say "%s" in Spanish?',
     note: "Common opposite adjectives.",
     data: `hot|caliente
-cold|frío
+rough|áspero
 sweet|dulce
 salty|salado
 hard|duro
@@ -425,7 +425,7 @@ quiet|silencioso`,
     prompt: 'How do you say "%s" in Spanish?',
     note: "Common emotion words.",
     data: `happy|contento
-sad|triste
+grateful|agradecido
 angry|enojado
 scared|asustado
 surprised|sorprendido
@@ -510,7 +510,7 @@ against|contra`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Basic nature vocabulary.",
-    data: `sun|sol
+    data: `coral reef|arrecife de coral
 moon|luna
 star|estrella
 sky|cielo
@@ -631,7 +631,7 @@ exactly|exactamente`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Common small-talk and reaction phrases.",
-    data: `Nice to meet you|Mucho gusto
+    data: `Make yourself at home|Siéntete como en casa
 How's it going?|¿Qué tal?
 Long time no see|Cuánto tiempo sin verte
 See you later|Hasta luego
@@ -797,7 +797,7 @@ Ayer yo ___ (comprar) un regalo.|compré`,
 city|ciudad
 bank|banco
 hospital|hospital
-school|escuela
+bridge|puente
 store|tienda
 market|mercado
 park|parque
@@ -921,7 +921,7 @@ Tú ___ (pedir) ayuda.|pides`,
 price|precio
 expensive|caro
 cheap|barato
-store|tienda
+cashier|cajero
 to buy|comprar
 to sell|vender
 cash|efectivo
@@ -1065,7 +1065,7 @@ Do you accept cards?|¿Aceptan tarjetas?`,
     prompt: 'How do you say "%s" in Spanish?',
     note: "More places found around a city.",
     data: `post office|oficina de correos
-pharmacy|farmacia
+clinic|clínica
 supermarket|supermercado
 library|biblioteca
 museum|museo
@@ -1545,8 +1545,8 @@ on the other hand|por otro lado
 in addition|además
 for example|por ejemplo
 in other words|es decir
-finally|finalmente
-meanwhile|mientras tanto
+otherwise|de lo contrario
+likewise|asimismo
 in fact|de hecho
 as soon as|tan pronto como
 unless|a menos que
@@ -1638,14 +1638,14 @@ El cielo ___ (estar) nublado.|está
 La fiesta ___ (ser) el sábado.|es
 Nosotros ___ (estar) listos.|estamos
 Ellos ___ (ser) argentinos.|son
-Yo ___ (ser) estudiante.|soy
+Yo ___ (ser) profesor.|soy
 Tú ___ (estar) preocupado.|estás
 El libro ___ (ser) interesante.|es
 La sopa ___ (estar) fría.|está
 Nosotras ___ (ser) hermanas.|somos
 Ellas ___ (estar) ocupadas.|están
 Yo ___ (estar) aburrido.|estoy
-Tú ___ (ser) muy amable.|eres
+Tú ___ (ser) muy simpático.|eres
 El examen ___ (ser) difícil.|es`,
   },
   {
@@ -1784,7 +1784,7 @@ boss|jefe
 colleague|colega
 salary|salario
 meeting|reunión
-schedule|horario
+overtime|horas extra
 resume|currículum
 interview|entrevista
 contract|contrato
@@ -1961,9 +1961,9 @@ What a surprise!|¡Qué sorpresa!`,
     data: `sofa|sofá
 cushion|cojín
 rug|alfombra
-curtain|cortina
-shelf|estante
-drawer|cajón
+doorbell|timbre
+windowsill|alféizar
+fireplace|chimenea
 wardrobe|armario
 nightstand|mesita de noche
 mattress|colchón
@@ -2249,7 +2249,7 @@ best regards|un cordial saludo`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Connectors typical of formal writing and argumentation.",
-    data: `nevertheless|no obstante
+    data: `furthermore|además
 in this regard|al respecto
 with regard to|con respecto a
 in conclusion|en conclusión
@@ -2339,7 +2339,7 @@ El amigo con ___ viajé vive en Lima.|quien`,
     data: `environment|medio ambiente
 nature|naturaleza
 forest|bosque
-mountain|montaña
+habitat|hábitat
 river|río
 ocean|océano
 climate|clima
@@ -2397,7 +2397,7 @@ Tú estás ___ (bailar) muy bien.|bailando`,
     note: "Subjunctive triggered by impersonal expressions of necessity/possibility.",
     data: `Es posible que ___ (llover) mañana.|llueva
 Es necesario que tú ___ (terminar) el informe.|termines
-Es importante que nosotros ___ (llegar) a tiempo.|lleguemos
+Es probable que nosotros ___ (ganar) el partido.|ganemos
 Es probable que ellos ___ (venir) tarde.|vengan
 Es raro que ella no ___ (contestar) el teléfono.|conteste
 Es mejor que ustedes ___ (descansar) hoy.|descansen
@@ -2529,7 +2529,7 @@ Si ellos ___ (ser) más pacientes, entenderían mejor.|fueran`,
     prompt: 'How do you say "%s" in Spanish?',
     note: "Business and economics vocabulary.",
     data: `economy|economía
-market|mercado
+bankruptcy|bancarrota
 investment|inversión
 profit|ganancia
 loss|pérdida
@@ -2542,7 +2542,7 @@ supply|oferta
 demand|demanda
 stock (shares)|acción
 debt|deuda
-loan|préstamo`,
+subsidy|subsidio`,
   },
   {
     id: "esb2p16",
@@ -2579,7 +2579,7 @@ journalist|periodista
 newspaper|periódico
 headline|titular
 article|artículo
-interview|entrevista
+correspondent|corresponsal
 broadcast|transmisión
 report|reportaje
 editor|editor
@@ -2600,9 +2600,9 @@ subscription|suscripción`,
     data: `painting|pintura
 sculpture|escultura
 exhibition|exposición
-museum|museo
+curator|curador
 gallery|galería
-artist|artista
+portrait|retrato
 masterpiece|obra maestra
 canvas|lienzo
 brush|pincel
@@ -2626,7 +2626,7 @@ surgery|cirugía
 vaccine|vacuna
 infection|infección
 chronic|crónico
-symptom|síntoma
+inflammation|inflamación
 recovery|recuperación
 specialist|especialista
 emergency room|sala de urgencias
@@ -2801,7 +2801,7 @@ mortgage|hipoteca
 lease|contrato de arrendamiento
 tenant|inquilino
 landlord|propietario
-deposit|depósito
+inspection|inspección
 real estate agent|agente inmobiliario
 property|propiedad
 neighborhood|vecindario
@@ -2833,17 +2833,17 @@ real estate market|mercado inmobiliario`,
 despite the fact that|a pesar de que
 whereas|mientras que
 on the contrary|por el contrario
-however|sin embargo
+as a result|como resultado
 nonetheless|no obstante
 regardless of|independientemente de
-in spite of|a pesar de
+for this reason|por esta razón
 granted that|si bien es cierto que
 on the other hand|por otro lado
-conversely|en cambio
+on top of that|además de eso
 all the same|de todas formas
 in contrast|en contraste
 notwithstanding|pese a
-be that as it may|sea como sea
+at the same time|al mismo tiempo
 yet still|aun así
 albeit|si bien
 in any case|en todo caso
@@ -2872,14 +2872,14 @@ Nos pidió que ___ (llegar) temprano.|llegáramos
 Dudaba que él ___ (decir) la verdad.|dijera
 Si nosotros ___ (poder), te ayudaríamos.|pudiéramos
 Ella esperaba que yo ___ (venir) a la fiesta.|viniera
-Si ellos ___ (saber) la verdad, actuarían diferente.|supieran
+Si ella ___ (saber) conducir, iría en coche.|supiera
 Me gustaría que tú ___ (ser) más paciente.|fueras
 Si él ___ (querer), podría cambiar de trabajo.|quisiera
 Actuaba como si nada ___ (importar).|importara
 Ojalá ___ (ganar) nosotros el premio.|ganáramos
 Si ustedes ___ (venir) antes, verían el atardecer.|vinieran
 Ella dudaba que nosotros ___ (terminar) a tiempo.|termináramos
-Si yo ___ (ser) rico, ayudaría a más gente.|fuera
+Si nosotros ___ (ser) más organizados, terminaríamos antes.|fuéramos
 Nos habría gustado que tú ___ (quedarte).|te quedaras
 Si ella ___ (hacer) más ejercicio, se sentiría mejor.|hiciera
 Esperábamos que ellos ___ (llegar) sin problemas.|llegaran
@@ -3040,16 +3040,16 @@ Antes de irme, ya ___ (apagar) las luces.|había apagado`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Legal and academic register vocabulary.",
-    data: `law|ley
-contract|contrato
-lawyer|abogado
+    data: `trial|juicio
+guilty|culpable
+innocent|inocente
 judge|juez
 court|tribunal
 evidence|prueba
 lawsuit|demanda
 regulation|reglamento
 clause|cláusula
-verdict|veredicto
+prosecutor|fiscal
 research|investigación
 thesis|tesis
 argument|argumento
@@ -3177,11 +3177,11 @@ deadline|plazo
 terms and conditions|términos y condiciones
 liability|responsabilidad
 shareholder|accionista
-compromise|compromiso
+arbitration|arbitraje
 negotiation|negociación
 partnership|sociedad
 revenue|ingresos
-clause|cláusula`,
+breach|incumplimiento`,
   },
   {
     id: "esc1p13",
@@ -3259,7 +3259,7 @@ morality|moralidad`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Advanced science and technology vocabulary.",
-    data: `hypothesis|hipótesis
+    data: `prototype|prototipo
 experiment|experimento
 data|datos
 algorithm|algoritmo
@@ -3317,7 +3317,7 @@ estar hecho polvo|to be exhausted
 dar gato por liebre|to deceive someone with a substitute
 no tener abuela|to be shamelessly self-praising
 ser el pan de cada día|to be a daily occurrence
-tirar la toalla|to give up
+hablar por los codos|to talk a mile a minute
 írsele la mano|to overdo it
 poner los puntos sobre las íes|to spell things out precisely`,
   },
@@ -3561,7 +3561,7 @@ in retrospect|en retrospectiva
 on second thought|pensándolo bien
 all told|en total
 by and large|en general
-for all intents and purposes|a todos los efectos
+when all is said and done|al fin y al cabo
 in the grand scheme of things|en el gran esquema de las cosas`,
   },
 ];

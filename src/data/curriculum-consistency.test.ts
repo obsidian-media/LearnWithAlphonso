@@ -91,13 +91,19 @@ const INSTRUCTIONAL_PROMPTS = new Set(["choose the correct question."]);
  *          hand-written units stopped collapsing into one pseudo-pack: 8 genuine
  *          duplicates plus one instructional-prompt false positive, now excluded
  *          by INSTRUCTIONAL_PROMPTS rather than by tolerating a non-zero count.
- *   es  57 not yet audited. Owned by the Spanish session; lower this as they fix
- *          them. Left gated rather than silent so the count cannot grow.
+ *   es  17 40 true repeats fixed 2026-09-25 (docs/superpowers/specs/
+ *          2026-09-25-spanish-content-audit-design.md §7 step 3) -- each
+ *          replaced in place with a new, non-colliding line, never deleted,
+ *          so no id moved. The remaining 17 are contradictory prompts (same
+ *          prompt, different accepted answers, e.g. "happy" -> feliz vs
+ *          contento) -- authoring judgement, not deletion, and deliberately
+ *          left for step 4 as its own review. No Spanish prompt qualified
+ *          for INSTRUCTIONAL_PROMPTS; all 57 were content, not instructions.
  */
 const CROSS_PACK_DUPLICATE_BASELINE: Record<string, number> = {
   en: 0,
   fr: 0,
-  es: 57,
+  es: 17,
 };
 
 describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
