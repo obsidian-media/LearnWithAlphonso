@@ -109,6 +109,27 @@ cannot reach Supabase, which is the right trade for an admin surface:
 a preview URL of a service-role-holding app is a liability, not a
 convenience.
 
+Sign-in offers **Google and email/password**, plus a reset link. Google
+matters because the owner's account carries both `email` and `google`
+identities, and an admin page that only accepted a password would look
+like it was rejecting someone who normally clicks "Sign in with Google"
+-- at exactly the moment they need to get in. Offering both costs nothing
+in authorization terms: `requireAdmin` decides what a caller may do, and
+the provider only decides how they proved who they are.
+
+The OAuth callback lands on **`/signin`, not `/`**. The client exchanges
+the PKCE `code` from the URL on load, and `/`'s loader calls
+`adminWhoAmI` immediately -- landing there races the exchange and bounces
+a valid admin straight back to the sign-in page. `/signin` has no loader
+guard, so it waits for the session and then navigates.
+
+**Prerequisite in the Supabase dashboard:** `https://admin.alphonsoecosystem.app/**`
+must be in Authentication → URL Configuration → Redirect URLs, or Google
+sign-in is refused before it starts. Password sign-in works without it,
+which is what makes this easy to miss. Password reset deliberately
+redirects to the LEARNER app's existing `/reset-password` route rather
+than a second copy built here.
+
 The allowlist is seeded by hand in the SQL editor, once:
 
 ```sql

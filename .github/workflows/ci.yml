@@ -313,11 +313,37 @@ jobs:
       # and this fails afterwards, on main. It is a regression alarm, not
       # a merge gate -- treat a red run here as a revert-now signal.
       - name: admin_users is unreadable by a client token
-        run: bunx vitest run src/lib/admin-auth.test.ts
+        # The publishable key is resolved from the Supabase Management API
+        # with the SUPABASE_ACCESS_TOKEN this job already holds, rather
+        # than from a repo secret. The first version read
+        # secrets.SUPABASE_PUBLISHABLE_KEY, which does not exist -- only
+        # SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN
+        # and SUPABASE_DB_PASSWORD do -- so the step failed on its first
+        # real run. It failed rather than skipping, which is the whole
+        # point of ADMIN_RLS_TEST_REQUIRED, but the check still was not
+        # running. Fetching the key needs no new secret and nothing to
+        # keep in sync.
+        #
+        # An empty key is a hard failure, never a skip: a silent skip here
+        # is precisely the defect this step exists to prevent.
+        run: |
+          set -euo pipefail
+          KEYS=$(supabase projects api-keys --project-ref qhcjpfbxfcltjbiuknyt --output json)
+          KEY=$(printf '%s' "$KEYS" | jq -r '
+            [.[] | select(.name == "publishable" or .name == "anon")][0]
+            | (.api_key // .apiKey // .key // empty)
+          ')
+          if [ -z "$KEY" ]; then
+            echo "::error::Could not resolve the publishable key from the Supabase API."
+            NAMES=$(printf '%s' "$KEYS" | jq -r '[.[].name] | join(", ")')
+            echo "key names returned: $NAMES"
+            exit 1
+          fi
+          SUPABASE_PUBLISHABLE_KEY="$KEY" bunx vitest run src/lib/admin-auth.test.ts
         env:
           ADMIN_RLS_TEST_REQUIRED: "1"
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
 
   ios-swift-tests:
     # macOS runners ship a working Swift/Xcode toolchain natively, so none
