@@ -109,6 +109,19 @@ cannot reach Supabase, which is the right trade for an admin surface:
 a preview URL of a service-role-holding app is a liability, not a
 convenience.
 
+**`admin/start.ts` is not optional.** `srcDirectory: "admin"` means
+TanStack Start loads `admin/start.ts` and never `src/start.ts`, so the
+admin app needs its own copy registering `attachSupabaseAuth` as a global
+`functionMiddleware`. Without it no middleware is registered at all, the
+browser attaches no bearer token to any serverFn RPC, and
+`requireSupabaseAuth` rejects every admin call -- which presents exactly
+as a rejected login: sign in, land on `/`, `adminWhoAmI` throws, bounce
+back to `/signin`. Nothing in the build, the types or the suite could see
+it, because the missing piece was a file nothing referenced by name.
+`admin-route-isolation.test.ts` now asserts the file exists, registers the
+attacher, and lists the *same* middleware as `src/start.ts` -- add one
+there and it must be added here.
+
 Sign-in offers **Google and email/password**, plus a reset link. Google
 matters because the owner's account carries both `email` and `google`
 identities, and an admin page that only accepted a password would look
