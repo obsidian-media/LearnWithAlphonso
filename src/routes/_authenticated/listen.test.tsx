@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ListenFolderView } from "./listen";
+import { ListenFolderView, PodcastSearchResults } from "./listen";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
@@ -53,5 +53,34 @@ describe("ListenFolderView", () => {
   it("lists the root folders at the top level", () => {
     render(<ListenFolderView folders={folders} episodes={[]} segments={[]} />);
     expect(screen.getByText("English")).toBeInTheDocument();
+  });
+});
+
+describe("PodcastSearchResults", () => {
+  const results = [episode];
+
+  it("lists matching episodes", () => {
+    render(<PodcastSearchResults query="coffee" results={results} isLoading={false} />);
+    expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
+  });
+
+  it("says nothing matched rather than showing an empty list", () => {
+    render(<PodcastSearchResults query="zzzz" results={[]} isLoading={false} />);
+    expect(screen.getByText(/no episodes match/i)).toBeInTheDocument();
+  });
+
+  // A one-character query matches nearly everything, so the query builder
+  // returns null and the handler returns []. Reporting "no episodes match"
+  // for that would be a lie: the search never ran.
+  it("asks for more characters instead of claiming nothing matched", () => {
+    render(<PodcastSearchResults query="c" results={[]} isLoading={false} />);
+    expect(screen.getByText(/keep typing/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no episodes match/i)).not.toBeInTheDocument();
+  });
+
+  it("shows a searching state rather than a premature empty state", () => {
+    render(<PodcastSearchResults query="coffee" results={[]} isLoading />);
+    expect(screen.getByText(/searching/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no episodes match/i)).not.toBeInTheDocument();
   });
 });
