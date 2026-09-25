@@ -115,6 +115,39 @@ describe("placement questions measure what they claim to", () => {
     }
   });
 
+  it("never asks the same thing twice in one pool", () => {
+    // The pool is sampled 3-per-band, so two questions carrying the same content
+    // in different bands can both be drawn in one sitting -- the learner answers
+    // it twice and it counts twice, in two different bands.
+    //
+    // Currently clean in all three courses; this exists so it stays that way.
+    // Nothing else covers it: placement-lesson-overlap.test.ts compares the pool
+    // against the lesson banks, and the checks above compare options within one
+    // question. Compared on audioText for listening and prompt otherwise, the
+    // same rule the other two use.
+    for (const [name, pool] of [
+      ["en", PLACEMENT_QUESTIONS],
+      ["fr", PLACEMENT_QUESTIONS_FR],
+      ["es", PLACEMENT_QUESTIONS_ES],
+    ] as const) {
+      const byContent = new Map<string, string[]>();
+      for (const q of pool) {
+        const key = (q.type === "listening" ? q.audioText : q.prompt)
+          .trim()
+          .replace(/\s*___\s*$/, "")
+          .toLowerCase();
+        if (!byContent.has(key)) byContent.set(key, []);
+        byContent.get(key)!.push(`${q.id}[${q.level}]`);
+      }
+      const repeats = [...byContent.entries()].filter(([, ids]) => ids.length > 1);
+      expect(
+        repeats.length,
+        `${name} asks the same thing more than once:\n` +
+          repeats.map(([text, ids]) => `  "${text}" -> ${ids.join(", ")}`).join("\n"),
+      ).toBe(0);
+    }
+  });
+
   it("has no duplicate ids in any pool", () => {
     for (const [name, pool] of [
       ["en", PLACEMENT_QUESTIONS],

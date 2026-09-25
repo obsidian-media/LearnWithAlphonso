@@ -1013,6 +1013,20 @@ note in README.md's Documentation section for why.)
   review-item ids are keyed against (`lessonId:questionId`), so it needs
   its own careful pass confirming lesson/unit id output is byte-for-byte
   identical before/after, not a rider on an unrelated bug fix.
+- **Three content-overlap checks, one per pair of sets, and none of them sees
+  what the others do.** `curriculum-consistency.test.ts` compares lesson questions
+  with each other (within a course); `placement-lesson-overlap.test.ts` compares
+  the placement pool against the lesson banks; `placement-validity.test.ts`
+  compares placement questions with each other. Before the middle one existed, 25
+  of English's 60 placement questions were also lesson questions -- including all
+  ten listening questions, whose sentences came straight out of the listening
+  packs -- with both other suites green. When adding a content check, work out
+  which pair of sets it covers, and whether a pair is left uncovered.
+- **Placement content is safe to rewrite; lesson content is not.** Placement ids
+  are not review-item keys (those are `lessonId:questionId`) and are not in the id
+  baseline, so a placement question can be re-authored freely. Editing a pack line
+  changes the content behind an id real users hold spaced-repetition state
+  against. Where an overlap has to be resolved, the placement side gives way.
 - **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
   abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
   candidate to the answer's own class, so it sorts as a perfect distractor. The
