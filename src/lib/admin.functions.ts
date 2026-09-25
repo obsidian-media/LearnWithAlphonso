@@ -22,6 +22,9 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminRenameFolder",
   "adminMoveFolder",
   "adminDeleteFolder",
+  "adminListEpisodes",
+  "adminUpdateEpisode",
+  "adminSetPublished",
 ] as const;
 
 const slugSchema = z.string().min(1).max(80).refine(isValidSlug, "use lowercase kebab-case");
@@ -207,6 +210,83 @@ export const adminDeleteFolder = createServerFn({ method: "POST" })
     if ((childCount ?? 0) > 0) throw new Error("Move or delete the subfolders first.");
     if ((episodeCount ?? 0) > 0) throw new Error("Delete this folder's episodes first.");
     const { error } = await client.from("podcast_folders").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export type AdminEpisode = {
+  id: string;
+  folderId: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  durationSeconds: number;
+  published: boolean;
+  audioPath: string;
+};
+
+/** Every episode in a folder, published or not. */
+export const adminListEpisodes = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ folderId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<AdminEpisode[]> => {
+    const { data: rows, error } = await untyped(context.supabaseAdmin)
+      .from("podcast_episodes")
+      .select("id,folder_id,slug,title,description,duration_seconds,published,audio_path")
+      .eq("folder_id", data.folderId)
+      .order("slug", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (rows ?? []).map((row) => ({
+      id: row.id as string,
+      folderId: row.folder_id as string,
+      slug: row.slug as string,
+      title: row.title as string,
+      description: (row.description as string | null) ?? null,
+      durationSeconds: row.duration_seconds as number,
+      published: row.published as boolean,
+      audioPath: row.audio_path as string,
+    }));
+  });
+
+export const adminUpdateEpisode = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        title: z.string().min(1).max(200),
+        description: z.string().max(4000).nullable().default(null),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    // Slug is deliberately not editable. It is baked into the storage
+    // path (see storagePathFor in podcast-authoring.ts), so renaming it
+    // without moving the object orphans the audio -- and moving the
+    // object is a different, riskier operation than editing a title.
+    // Publish under a new slug instead.
+    const { error } = await untyped(context.supabaseAdmin)
+      .from("podcast_episodes")
+      .update({ title: data.title, description: data.description })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminSetPublished = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    // Publishing hides or shows the ROW. It does not touch the object:
+    // the podcast-audio bucket is public-read, so an unpublished
+    // episode's audio stays fetchable by anyone holding the URL. Any UI
+    // built on this must say "not listed", never "private".
+    const { error } = await untyped(context.supabaseAdmin)
+      .from("podcast_episodes")
+      .update({ published: data.published })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

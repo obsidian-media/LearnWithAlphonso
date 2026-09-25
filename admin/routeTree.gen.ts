@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FoldersRouteImport } from './routes/folders'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as FolderIdRouteImport } from './routes/folder.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const SigninRoute = SigninRouteImport.update({
   path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FolderIdRoute = FolderIdRouteImport.update({
+  id: '/folder/$id',
+  path: '/folder/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
   '/signin': typeof SigninRoute
+  '/folder/$id': typeof FolderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
   '/signin': typeof SigninRoute
+  '/folder/$id': typeof FolderIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
   '/signin': typeof SigninRoute
+  '/folder/$id': typeof FolderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/folders' | '/signin'
+  fullPaths: '/' | '/folders' | '/signin' | '/folder/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/folders' | '/signin'
-  id: '__root__' | '/' | '/folders' | '/signin'
+  to: '/' | '/folders' | '/signin' | '/folder/$id'
+  id: '__root__' | '/' | '/folders' | '/signin' | '/folder/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FoldersRoute: typeof FoldersRoute
   SigninRoute: typeof SigninRoute
+  FolderIdRoute: typeof FolderIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/folder/$id': {
+      id: '/folder/$id'
+      path: '/folder/$id'
+      fullPath: '/folder/$id'
+      preLoaderRoute: typeof FolderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FoldersRoute: FoldersRoute,
   SigninRoute: SigninRoute,
+  FolderIdRoute: FolderIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

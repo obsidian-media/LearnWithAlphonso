@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { adminListFolders, adminCreateFolder, adminDeleteFolder } from "@/lib/admin.functions";
 import { buildFolderTree, type FolderNode, type PodcastFolder } from "@/lib/podcast-tree";
@@ -59,7 +59,10 @@ function FolderRow({
     <>
       <li className="flex items-center justify-between" style={{ paddingLeft: depth * 16 }}>
         <span>
-          {node.title} <code className="text-ink-soft">/{node.slug}</code>
+          <Link to="/folder/$id" params={{ id: node.id }} className="text-moss underline">
+            {node.title}
+          </Link>{" "}
+          <code className="text-ink-soft">/{node.slug}</code>
         </span>
         <button onClick={() => onDelete(node.id)} className="text-sm text-ember">
           Delete
