@@ -170,7 +170,11 @@ describe("buildFullSeed", () => {
     );
     // French: 500 + 25 from PR 2's translate packs + 25 from PR 3's listening
     // packs + 25 from PR 4's speak packs.
-    expect(seed.lessons.length).toBe(609 + 575 + 508);
+    // Spanish: 508 (phase 1) + 25 from this PR's (PR 4/4) speak packs. PR 2's
+    // translate packs and PR 3's listening packs are each on their own
+    // still-unmerged branch as of this PR -- once both land, this becomes
+    // 508 + 75.
+    expect(seed.lessons.length).toBe(609 + 575 + 533);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +

@@ -97,7 +97,7 @@ describe.each(COURSES)(
         for (const s of Object.values(stats)) {
           distribution[s.lines] = (distribution[s.lines] ?? 0) + 1;
         }
-        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 47 });
+        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 52 });
       });
     }
 

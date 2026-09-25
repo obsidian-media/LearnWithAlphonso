@@ -5,6 +5,7 @@
 import type { Question } from "../data/curriculum";
 import { matchesSpokenAnswer } from "./spoken-answer";
 import { matchesSpokenAnswerFr } from "./spoken-answer-fr";
+import { matchesSpokenAnswerEs } from "./spoken-answer-es";
 import { matchesAcceptableAnswer } from "./translation-answer";
 import type { Course } from "../data/courses";
 
@@ -48,9 +49,9 @@ export function deriveAnswerCorrectness(
   // architectural reasoning for why this is a course-selected sibling
   // rather than one function with a language flag.
   if (question.type === "speak") {
-    return course === "fr"
-      ? matchesSpokenAnswerFr(answer, question.answer)
-      : matchesSpokenAnswer(answer, question.answer);
+    if (course === "fr") return matchesSpokenAnswerFr(answer, question.answer);
+    if (course === "es") return matchesSpokenAnswerEs(answer, question.answer);
+    return matchesSpokenAnswer(answer, question.answer);
   }
   // The LOCAL half of translate grading, and only that. The AI half cannot
   // live here -- this function is synchronous and is mirrored into a Deno edge

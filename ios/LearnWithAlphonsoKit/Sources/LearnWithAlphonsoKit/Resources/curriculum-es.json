@@ -7303,6 +7303,225 @@
       ]
     },
     {
+      "id": "esa1p29u1",
+      "level": "A1",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Basic Everyday Phrases",
+      "description": "Say it out loud — Short everyday greetings and phrases to practise saying.",
+      "lessons": [
+        {
+          "id": "esa1p29l1",
+          "title": "Speaking: Basic Everyday Phrases 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa1p29q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Hola, ¿cómo estás?",
+              "explanation": "Target phrase: \"Hola, ¿cómo estás?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Buenos días.",
+              "explanation": "Target phrase: \"Buenos días.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Buenas noches.",
+              "explanation": "Target phrase: \"Buenas noches.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿Cómo te llamas?",
+              "explanation": "Target phrase: \"¿Cómo te llamas?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me llamo Ana.",
+              "explanation": "Target phrase: \"Me llamo Ana.\" Short everyday greetings and phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa1p29l2",
+          "title": "Speaking: Basic Everyday Phrases 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa1p29q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Mucho gusto.",
+              "explanation": "Target phrase: \"Mucho gusto.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿De dónde eres?",
+              "explanation": "Target phrase: \"¿De dónde eres?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Soy de España.",
+              "explanation": "Target phrase: \"Soy de España.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tengo hambre.",
+              "explanation": "Target phrase: \"Tengo hambre.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tengo sed.",
+              "explanation": "Target phrase: \"Tengo sed.\" Short everyday greetings and phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa1p29l3",
+          "title": "Speaking: Basic Everyday Phrases 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa1p29q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿Dónde está el baño?",
+              "explanation": "Target phrase: \"¿Dónde está el baño?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Muchas gracias.",
+              "explanation": "Target phrase: \"Muchas gracias.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "De nada.",
+              "explanation": "Target phrase: \"De nada.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Por favor.",
+              "explanation": "Target phrase: \"Por favor.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Lo siento.",
+              "explanation": "Target phrase: \"Lo siento.\" Short everyday greetings and phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa1p29l4",
+          "title": "Speaking: Basic Everyday Phrases 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa1p29q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿Qué hora es?",
+              "explanation": "Target phrase: \"¿Qué hora es?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Hasta luego.",
+              "explanation": "Target phrase: \"Hasta luego.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Hasta mañana.",
+              "explanation": "Target phrase: \"Hasta mañana.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿Habla usted inglés?",
+              "explanation": "Target phrase: \"¿Habla usted inglés?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "No entiendo.",
+              "explanation": "Target phrase: \"No entiendo.\" Short everyday greetings and phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa1p29l5",
+          "title": "Speaking: Basic Everyday Phrases 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa1p29q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "¿Puede repetir, por favor?",
+              "explanation": "Target phrase: \"¿Puede repetir, por favor?\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tengo dos hermanos.",
+              "explanation": "Target phrase: \"Tengo dos hermanos.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tengo tres hermanas.",
+              "explanation": "Target phrase: \"Tengo tres hermanas.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Son las cinco.",
+              "explanation": "Target phrase: \"Son las cinco.\" Short everyday greetings and phrases to practise saying."
+            },
+            {
+              "id": "esa1p29q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Vivo aquí.",
+              "explanation": "Target phrase: \"Vivo aquí.\" Short everyday greetings and phrases to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esa2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -14645,6 +14864,225 @@
               ],
               "answer": "freímos",
               "explanation": "\"freímos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p29u1",
+      "level": "A2",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Daily Routine & Plans",
+      "description": "Say it out loud — Everyday routine and near-future plans to practise saying.",
+      "lessons": [
+        {
+          "id": "esa2p29l1",
+          "title": "Speaking: Daily Routine & Plans 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa2p29q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me levanto a las siete.",
+              "explanation": "Target phrase: \"Me levanto a las siete.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Desayuno a las ocho.",
+              "explanation": "Target phrase: \"Desayuno a las ocho.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Voy al trabajo en autobús.",
+              "explanation": "Target phrase: \"Voy al trabajo en autobús.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Trabajo hasta las cinco.",
+              "explanation": "Target phrase: \"Trabajo hasta las cinco.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Vuelvo a casa cansado.",
+              "explanation": "Target phrase: \"Vuelvo a casa cansado.\" Everyday routine and near-future plans to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa2p29l2",
+          "title": "Speaking: Daily Routine & Plans 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa2p29q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ceno con mi familia.",
+              "explanation": "Target phrase: \"Ceno con mi familia.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Veo la televisión un rato.",
+              "explanation": "Target phrase: \"Veo la televisión un rato.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me acuesto a las diez.",
+              "explanation": "Target phrase: \"Me acuesto a las diez.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Los fines de semana descanso.",
+              "explanation": "Target phrase: \"Los fines de semana descanso.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "A veces voy al cine.",
+              "explanation": "Target phrase: \"A veces voy al cine.\" Everyday routine and near-future plans to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa2p29l3",
+          "title": "Speaking: Daily Routine & Plans 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa2p29q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me gusta cocinar los domingos.",
+              "explanation": "Target phrase: \"Me gusta cocinar los domingos.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Prefiero el té al café.",
+              "explanation": "Target phrase: \"Prefiero el té al café.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Necesito comprar leche.",
+              "explanation": "Target phrase: \"Necesito comprar leche.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Voy al mercado los sábados.",
+              "explanation": "Target phrase: \"Voy al mercado los sábados.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Hoy hace mucho calor.",
+              "explanation": "Target phrase: \"Hoy hace mucho calor.\" Everyday routine and near-future plans to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa2p29l4",
+          "title": "Speaking: Daily Routine & Plans 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa2p29q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Mañana va a llover.",
+              "explanation": "Target phrase: \"Mañana va a llover.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El invierno aquí es frío.",
+              "explanation": "Target phrase: \"El invierno aquí es frío.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me encanta la primavera.",
+              "explanation": "Target phrase: \"Me encanta la primavera.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tengo una reunión a las nueve.",
+              "explanation": "Target phrase: \"Tengo una reunión a las nueve.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Llego tarde a veces.",
+              "explanation": "Target phrase: \"Llego tarde a veces.\" Everyday routine and near-future plans to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esa2p29l5",
+          "title": "Speaking: Daily Routine & Plans 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esa2p29q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Estudio español todos los días.",
+              "explanation": "Target phrase: \"Estudio español todos los días.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Practico con mis amigos.",
+              "explanation": "Target phrase: \"Practico con mis amigos.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quiero viajar el próximo año.",
+              "explanation": "Target phrase: \"Quiero viajar el próximo año.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Voy a visitar a mis abuelos.",
+              "explanation": "Target phrase: \"Voy a visitar a mis abuelos.\" Everyday routine and near-future plans to practise saying."
+            },
+            {
+              "id": "esa2p29q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Espero verte pronto.",
+              "explanation": "Target phrase: \"Espero verte pronto.\" Everyday routine and near-future plans to practise saying."
             }
           ]
         }
@@ -22245,6 +22683,225 @@
       ]
     },
     {
+      "id": "esb1p29u1",
+      "level": "B1",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Opinions & Feelings",
+      "description": "Say it out loud — Opinions, feelings, and hypotheticals to practise saying.",
+      "lessons": [
+        {
+          "id": "esb1p29l1",
+          "title": "Speaking: Opinions & Feelings 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb1p29q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Creo que tienes razón.",
+              "explanation": "Target phrase: \"Creo que tienes razón.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En mi opinión, es una buena idea.",
+              "explanation": "Target phrase: \"En mi opinión, es una buena idea.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me parece interesante.",
+              "explanation": "Target phrase: \"Me parece interesante.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "No estoy de acuerdo contigo.",
+              "explanation": "Target phrase: \"No estoy de acuerdo contigo.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Depende de la situación.",
+              "explanation": "Target phrase: \"Depende de la situación.\" Opinions, feelings, and hypotheticals to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb1p29l2",
+          "title": "Speaking: Opinions & Feelings 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb1p29q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me siento un poco cansado hoy.",
+              "explanation": "Target phrase: \"Me siento un poco cansado hoy.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Estoy muy contento con los resultados.",
+              "explanation": "Target phrase: \"Estoy muy contento con los resultados.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me preocupa el examen de mañana.",
+              "explanation": "Target phrase: \"Me preocupa el examen de mañana.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Espero que todo salga bien.",
+              "explanation": "Target phrase: \"Espero que todo salga bien.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ojalá pudiera ayudarte.",
+              "explanation": "Target phrase: \"Ojalá pudiera ayudarte.\" Opinions, feelings, and hypotheticals to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb1p29l3",
+          "title": "Speaking: Opinions & Feelings 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb1p29q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Es posible que llueva esta tarde.",
+              "explanation": "Target phrase: \"Es posible que llueva esta tarde.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Dudo que llegue a tiempo.",
+              "explanation": "Target phrase: \"Dudo que llegue a tiempo.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Prefiero quedarme en casa.",
+              "explanation": "Target phrase: \"Prefiero quedarme en casa.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Me gustaría aprender a tocar la guitarra.",
+              "explanation": "Target phrase: \"Me gustaría aprender a tocar la guitarra.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Si tuviera tiempo, viajaría más.",
+              "explanation": "Target phrase: \"Si tuviera tiempo, viajaría más.\" Opinions, feelings, and hypotheticals to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb1p29l4",
+          "title": "Speaking: Opinions & Feelings 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb1p29q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cuando era niño, vivía en el campo.",
+              "explanation": "Target phrase: \"Cuando era niño, vivía en el campo.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Antes trabajaba en una oficina.",
+              "explanation": "Target phrase: \"Antes trabajaba en una oficina.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ahora trabajo desde casa.",
+              "explanation": "Target phrase: \"Ahora trabajo desde casa.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "He decidido cambiar de trabajo.",
+              "explanation": "Target phrase: \"He decidido cambiar de trabajo.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Todavía no he terminado el proyecto.",
+              "explanation": "Target phrase: \"Todavía no he terminado el proyecto.\" Opinions, feelings, and hypotheticals to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb1p29l5",
+          "title": "Speaking: Opinions & Feelings 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb1p29q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ya he leído ese libro.",
+              "explanation": "Target phrase: \"Ya he leído ese libro.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nunca he estado en Argentina.",
+              "explanation": "Target phrase: \"Nunca he estado en Argentina.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Siempre digo la verdad.",
+              "explanation": "Target phrase: \"Siempre digo la verdad.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "A veces me equivoco.",
+              "explanation": "Target phrase: \"A veces me equivoco.\" Opinions, feelings, and hypotheticals to practise saying."
+            },
+            {
+              "id": "esb1p29q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Al final, todo salió bien.",
+              "explanation": "Target phrase: \"Al final, todo salió bien.\" Opinions, feelings, and hypotheticals to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb2p1u1",
       "level": "B2",
       "eyebrow": "Unit 1",
@@ -29610,6 +30267,225 @@
       ]
     },
     {
+      "id": "esb2p29u1",
+      "level": "B2",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Professional & Abstract Topics",
+      "description": "Say it out loud — Professional and abstract topics to practise saying.",
+      "lessons": [
+        {
+          "id": "esb2p29l1",
+          "title": "Speaking: Professional & Abstract Topics 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb2p29q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El cambio climático afecta a todo el planeta.",
+              "explanation": "Target phrase: \"El cambio climático afecta a todo el planeta.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La economía global sigue siendo incierta.",
+              "explanation": "Target phrase: \"La economía global sigue siendo incierta.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Es fundamental proteger el medio ambiente.",
+              "explanation": "Target phrase: \"Es fundamental proteger el medio ambiente.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La tecnología avanza más rápido que nunca.",
+              "explanation": "Target phrase: \"La tecnología avanza más rápido que nunca.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Muchas empresas apuestan por el trabajo remoto.",
+              "explanation": "Target phrase: \"Muchas empresas apuestan por el trabajo remoto.\" Professional and abstract topics to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb2p29l2",
+          "title": "Speaking: Professional & Abstract Topics 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb2p29q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La educación es la base del desarrollo.",
+              "explanation": "Target phrase: \"La educación es la base del desarrollo.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El gobierno anunció nuevas medidas económicas.",
+              "explanation": "Target phrase: \"El gobierno anunció nuevas medidas económicas.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La inflación preocupa a los consumidores.",
+              "explanation": "Target phrase: \"La inflación preocupa a los consumidores.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Es importante fomentar la igualdad de oportunidades.",
+              "explanation": "Target phrase: \"Es importante fomentar la igualdad de oportunidades.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La innovación impulsa el crecimiento empresarial.",
+              "explanation": "Target phrase: \"La innovación impulsa el crecimiento empresarial.\" Professional and abstract topics to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb2p29l3",
+          "title": "Speaking: Professional & Abstract Topics 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb2p29q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Debemos reducir nuestra huella de carbono.",
+              "explanation": "Target phrase: \"Debemos reducir nuestra huella de carbono.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La inteligencia artificial cambiará muchos empleos.",
+              "explanation": "Target phrase: \"La inteligencia artificial cambiará muchos empleos.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Las energías renovables son el futuro.",
+              "explanation": "Target phrase: \"Las energías renovables son el futuro.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La comunicación efectiva es clave en el trabajo.",
+              "explanation": "Target phrase: \"La comunicación efectiva es clave en el trabajo.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El liderazgo requiere paciencia y empatía.",
+              "explanation": "Target phrase: \"El liderazgo requiere paciencia y empatía.\" Professional and abstract topics to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb2p29l4",
+          "title": "Speaking: Professional & Abstract Topics 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb2p29q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La globalización conecta mercados distintos.",
+              "explanation": "Target phrase: \"La globalización conecta mercados distintos.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Muchas startups buscan financiación externa.",
+              "explanation": "Target phrase: \"Muchas startups buscan financiación externa.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Las redes sociales influyen en la opinión pública.",
+              "explanation": "Target phrase: \"Las redes sociales influyen en la opinión pública.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La salud mental merece más atención.",
+              "explanation": "Target phrase: \"La salud mental merece más atención.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El teletrabajo cambió nuestra rutina diaria.",
+              "explanation": "Target phrase: \"El teletrabajo cambió nuestra rutina diaria.\" Professional and abstract topics to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "esb2p29l5",
+          "title": "Speaking: Professional & Abstract Topics 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esb2p29q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La productividad no depende solo de las horas trabajadas.",
+              "explanation": "Target phrase: \"La productividad no depende solo de las horas trabajadas.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Las negociaciones comerciales fueron complicadas.",
+              "explanation": "Target phrase: \"Las negociaciones comerciales fueron complicadas.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Se espera que la economía crezca este año.",
+              "explanation": "Target phrase: \"Se espera que la economía crezca este año.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "La sostenibilidad debe ser una prioridad.",
+              "explanation": "Target phrase: \"La sostenibilidad debe ser una prioridad.\" Professional and abstract topics to practise saying."
+            },
+            {
+              "id": "esb2p29q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "El acuerdo beneficiará a ambas partes.",
+              "explanation": "Target phrase: \"El acuerdo beneficiará a ambas partes.\" Professional and abstract topics to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esc1p1u1",
       "level": "C1",
       "eyebrow": "Unit 1",
@@ -36930,6 +37806,225 @@
               ],
               "answer": 0,
               "explanation": "in the grand scheme of things → en el gran esquema de las cosas. Further advanced discourse markers."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p29u1",
+      "level": "C1",
+      "eyebrow": "Unit 27",
+      "title": "Speaking: Idiomatic and Formal Phrasing",
+      "description": "Say it out loud — Idiomatic and formal phrasing said aloud.",
+      "lessons": [
+        {
+          "id": "esc1p29l1",
+          "title": "Speaking: Idiomatic and Formal Phrasing 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esc1p29q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Huelga decir que este proyecto es fundamental.",
+              "explanation": "Target phrase: \"Huelga decir que este proyecto es fundamental.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ni que decir tiene.",
+              "explanation": "Target phrase: \"Ni que decir tiene.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Le ruego que disculpe las molestias.",
+              "explanation": "Target phrase: \"Le ruego que disculpe las molestias.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tenemos el placer de informarle de nuestra decisión.",
+              "explanation": "Target phrase: \"Tenemos el placer de informarle de nuestra decisión.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Adjunto encontrará el documento solicitado.",
+              "explanation": "Target phrase: \"Adjunto encontrará el documento solicitado.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "esc1p29l2",
+          "title": "Speaking: Idiomatic and Formal Phrasing 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esc1p29q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En la medida de lo posible, haremos lo necesario.",
+              "explanation": "Target phrase: \"En la medida de lo posible, haremos lo necesario.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Sea como fuere, debemos avanzar.",
+              "explanation": "Target phrase: \"Sea como fuere, debemos avanzar.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "No cabe duda de ello.",
+              "explanation": "Target phrase: \"No cabe duda de ello.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "No obstante, el problema persiste.",
+              "explanation": "Target phrase: \"No obstante, el problema persiste.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "A decir verdad, no lo sé.",
+              "explanation": "Target phrase: \"A decir verdad, no lo sé.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "esc1p29l3",
+          "title": "Speaking: Idiomatic and Formal Phrasing 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esc1p29q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En definitiva, fue una buena decisión.",
+              "explanation": "Target phrase: \"En definitiva, fue una buena decisión.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Al fin y al cabo, eso no importa.",
+              "explanation": "Target phrase: \"Al fin y al cabo, eso no importa.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Huelga decirlo.",
+              "explanation": "Target phrase: \"Huelga decirlo.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Le agradezco de antemano su confianza.",
+              "explanation": "Target phrase: \"Le agradezco de antemano su confianza.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quedamos a su entera disposición.",
+              "explanation": "Target phrase: \"Quedamos a su entera disposición.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "esc1p29l4",
+          "title": "Speaking: Idiomatic and Formal Phrasing 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esc1p29q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Es cuestión de sentido común.",
+              "explanation": "Target phrase: \"Es cuestión de sentido común.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Dicho esto, hay que ser prudentes.",
+              "explanation": "Target phrase: \"Dicho esto, hay que ser prudentes.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Donde hay humo, hay fuego.",
+              "explanation": "Target phrase: \"Donde hay humo, hay fuego.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Más vale tarde que nunca.",
+              "explanation": "Target phrase: \"Más vale tarde que nunca.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cada cosa a su tiempo.",
+              "explanation": "Target phrase: \"Cada cosa a su tiempo.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "esc1p29l5",
+          "title": "Speaking: Idiomatic and Formal Phrasing 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "esc1p29q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Le agradecería que respondiera con prontitud.",
+              "explanation": "Target phrase: \"Le agradecería que respondiera con prontitud.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Le pedimos disculpas por las molestias ocasionadas.",
+              "explanation": "Target phrase: \"Le pedimos disculpas por las molestias ocasionadas.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Es el mundo al revés.",
+              "explanation": "Target phrase: \"Es el mundo al revés.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En una palabra, todo va bien.",
+              "explanation": "Target phrase: \"En una palabra, todo va bien.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "esc1p29q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Sin más preámbulos, comencemos.",
+              "explanation": "Target phrase: \"Sin más preámbulos, comencemos.\" Idiomatic and formal phrasing said aloud."
             }
           ]
         }

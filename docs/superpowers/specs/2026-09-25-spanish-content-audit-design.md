@@ -530,8 +530,29 @@ Ship each as its own PR. Do not bundle.
    decision, and is structural rather than a ranking port (see §5).
 7. **Phase 2**, in the order of §6: generator check, `translate`,
    `listening`, `speak`, each its own PR. Generator check done
-   2026-09-25 (§6's note) — no code change needed, verified rather
-   than assumed. `translate`/`listening`/`speak` not started.
+   2026-09-25 (§6's note, PR #134) — no code change needed, verified
+   rather than assumed. `translate` content (PR #137) and `listening`
+   content (PR #138) are each open, unmerged as of this entry —
+   opened in parallel against the same pre-phase-2 base, so they will
+   conflict with each other on `lesson-bank-es.ts`'s array-append
+   points and these same doc sections; whichever merges last should
+   combine both PRs' content and re-total rather than picking one
+   side. `speak` (this PR) is done 2026-09-25: `spoken-answer-es.ts`
+   landed across all three ports (TS/Deno/Swift, mirrored test
+   vectors, `ci.yml`'s Deno step in the same PR, all three mutation-
+   tested), then 5 packs / 125 questions, each round-tripped through
+   the real normaliser before authoring, per §6.1's requirement. Named
+   `SpokenAnswerEs.swift` (matching `SpokenAnswerFr.swift`'s existing
+   casing convention, not this doc's own `SpokenAnswerES.swift` — a
+   typo here, not a deliberate choice). Spanish needed a silent-h rule
+   (categorical: silent everywhere except inside "ch") rather than
+   French's elision rule — Spanish has no phonological equivalent to
+   elision. §6.1's other named hazards (seseo/ceceo, b/v, yeísmo) were
+   treated as content-authoring constraints, not normaliser rules —
+   see the module's own header comment for why no rule could fix a
+   genuine phonemic merger. Once all three content PRs merge, Spanish
+   reaches 583 lessons / 2,915 questions and full six-type parity with
+   English and French.
 
 Steps 1 and 2 are prerequisites for everything after them. Steps 3–6
 can be reordered if something argues for it; say so if you reorder.

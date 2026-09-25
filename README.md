@@ -84,7 +84,7 @@ session:
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
 | **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
-| **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
+| **Spanish** | 105 | 106 | 109 | 107 | 106 | **533**       | 2,665           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
 types — **listening comprehension**, **speaking practice** and **free-form
@@ -107,8 +107,17 @@ required its own French speech-normalisation module
 (TS/Deno/Swift) the same way English's `spoken-answer.ts` is, because
 French elision is a phonological rule with no relationship to English's
 auxiliary-verb-contraction rules — see that module's header comment.
-Spanish still has the original three types only; its content is a
-separate, later job now that the generator work is proven on French.
+**Spanish's own phase 2**
+(`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md` §6-7)
+follows the same one-PR-per-question-type shape. As of this PR, Spanish has
+**speak** content (125 new questions) plus its own speech-normalisation
+module (`spoken-answer-es.ts`, hand-kept in sync across TS/Deno/Swift the
+same way French's is) — Spanish's phonology needed different rules than
+either sibling (no elision like French, but a categorical silent-h rule
+neither English nor French needs). **translate** and **listening** content
+(125 questions each) are each on their own separate, still-unmerged PR as
+of this writing; once both land alongside this one, Spanish reaches full
+six-type parity with English and French at 583 lessons / 2,915 questions.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just
