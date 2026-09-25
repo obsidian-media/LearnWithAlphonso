@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
 import { findCycle, isValidSlug, type PodcastFolder } from "./podcast-tree";
 import { validateUpload, MAX_UPLOAD_BYTES } from "./admin-upload";
+import { normalizeTranscript } from "./podcast-transcript";
 
 /**
  * Every admin server function lives in this one file so
@@ -28,6 +29,8 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminSetPublished",
   "adminCreateAudioUploadUrl",
   "adminVerifyUploadedAudio",
+  "adminGetTranscript",
+  "adminSaveTranscript",
 ] as const;
 
 const BUCKET = "podcast-audio";
@@ -381,4 +384,57 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
       .eq("id", data.episodeId);
     if (error) throw new Error(error.message);
     return { ok: true, durationSeconds };
+  });
+
+export const adminGetTranscript = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ text: string | null }> => {
+    const { data: row, error } = await untyped(context.supabaseAdmin)
+      .from("podcast_transcripts")
+      .select("text")
+      .eq("episode_id", data.episodeId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { text: (row?.text as string | undefined) ?? null };
+  });
+
+export const adminSaveTranscript = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ episodeId: z.string().uuid(), text: z.string().max(200_000) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    // The SAME rule --transcript enforces, from the same module. A
+    // transcript is not the TTS script: episode 1's script carries
+    // ElevenLabs SSML, and rendering that to a screen reader is the
+    // precise failure this feature exists to prevent.
+    //
+    // normalizeTranscript THROWS on markup and on over-length, and
+    // returns null only for genuinely empty text. Those are three
+    // different outcomes and are kept distinct here: collapsing them
+    // would turn "you pasted the TTS script" into "saved nothing,
+    // succeeded".
+    let normalized: string | null;
+    try {
+      normalized = normalizeTranscript(data.text);
+    } catch (e) {
+      throw new Error(e instanceof Error ? e.message : "That transcript was rejected.");
+    }
+    if (normalized === null) {
+      // Empty is a deletion request, not an error: clearing the box is
+      // how an admin removes a transcript that should never have been
+      // published. Refusing would leave them no way to undo it.
+      const { error: deleteError } = await untyped(context.supabaseAdmin)
+        .from("podcast_transcripts")
+        .delete()
+        .eq("episode_id", data.episodeId);
+      if (deleteError) throw new Error(deleteError.message);
+      return { ok: true };
+    }
+    const { error } = await untyped(context.supabaseAdmin)
+      .from("podcast_transcripts")
+      .upsert({ episode_id: data.episodeId, text: normalized }, { onConflict: "episode_id" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

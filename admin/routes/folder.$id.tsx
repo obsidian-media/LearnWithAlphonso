@@ -6,6 +6,8 @@ import {
   adminSetPublished,
   adminCreateAudioUploadUrl,
   adminVerifyUploadedAudio,
+  adminGetTranscript,
+  adminSaveTranscript,
   type AdminEpisode,
 } from "@/lib/admin.functions";
 
@@ -93,6 +95,7 @@ function FolderEpisodes() {
               </span>
             </div>
             <ReplaceAudio episode={episode} onDone={() => router.invalidate()} />
+            <TranscriptEditor episodeId={episode.id} />
           </li>
         ))}
       </ul>
@@ -157,6 +160,76 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
           className="text-sm"
         />
       </label>
+      {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * Transcript editing.
+ *
+ * Loaded on demand rather than with the folder: a transcript is
+ * kilobytes nobody needs until they open one episode, which is the same
+ * reason it is a separate table rather than a column.
+ */
+function TranscriptEditor({ episodeId }: { episodeId: string }) {
+  const [text, setText] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  async function load() {
+    setStatus(null);
+    try {
+      const { text: existing } = await adminGetTranscript({ data: { episodeId } });
+      setText(existing ?? "");
+      setLoaded(true);
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : "Could not load the transcript.");
+    }
+  }
+
+  async function save() {
+    setStatus(null);
+    try {
+      await adminSaveTranscript({ data: { episodeId, text } });
+      setStatus(text.trim() === "" ? "Transcript removed." : "Saved.");
+    } catch (e) {
+      // The server's markup refusal is a paragraph written for a person
+      // -- it names the tag it found and says why it is rejected rather
+      // than stripped. Shown verbatim.
+      setStatus(e instanceof Error ? e.message : "Save failed.");
+    }
+  }
+
+  if (!loaded) {
+    return (
+      <div className="mt-2">
+        <button onClick={load} className="text-sm text-moss">
+          Edit transcript
+        </button>
+        {status ? <p className="mt-1 text-sm text-ember">{status}</p> : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={10}
+        className="w-full rounded border border-hairline px-3 py-2 font-mono text-sm"
+      />
+      {/* Said in the UI as well as enforced on the server, because the
+          server's refusal arrives after the paste and the warning should
+          arrive before it. */}
+      <p className="mt-1 text-xs text-ink-soft">
+        The spoken words only — not the TTS script. Markup is rejected, not stripped. Clearing this
+        box removes the transcript.
+      </p>
+      <button onClick={save} className="mt-2 rounded bg-moss px-3 py-2 text-sm text-surface">
+        Save transcript
+      </button>
       {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
     </div>
   );

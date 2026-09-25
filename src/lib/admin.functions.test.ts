@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { ADMIN_FUNCTION_NAMES, wouldCreateCycle } from "./admin.functions";
+import { normalizeTranscript } from "./podcast-transcript";
 
 // The failure mode of this entire design is ONE admin server function
 // added later without the gate. A reviewer will not notice a missing
@@ -87,5 +88,52 @@ describe("wouldCreateCycle", () => {
     const before = structuredClone(folders);
     wouldCreateCycle(folders, "a", "c");
     expect(folders).toEqual(before);
+  });
+});
+
+// Review Focus #5. In the CLI the TTS script and the transcript are two
+// separate files typed on two separate runs. In the admin UI both are
+// on one screen, so pasting the script into the transcript box is one
+// wrong click -- and SSML rendered as a transcript reaches exactly the
+// deaf and hard-of-hearing readers the feature exists for.
+//
+// This is a CHARACTERISATION test, not a red-green cycle: it asserts the
+// admin path uses the SAME rule as --transcript rather than a second,
+// looser one. Its job is to fail LATER, if anyone gives the admin path
+// its own transcript rule.
+describe("the admin transcript rule is the CLI's rule", () => {
+  it("rejects ElevenLabs SSML by throwing, not by returning null", () => {
+    // The plan wrote `toBeNull()` here. The real contract THROWS, and the
+    // difference matters: null means "empty" and is a normal outcome the
+    // caller stores nothing for, while a throw carries a message written
+    // to be read. A server function that treated markup as null would
+    // save an empty transcript and report success.
+    expect(() => normalizeTranscript('<speak>Hello <break time="1s"/> there</speak>')).toThrow(
+      /markup/i,
+    );
+  });
+
+  it("rejects a bare self-closing tag", () => {
+    expect(() => normalizeTranscript('Hello <break time="500ms"/> there')).toThrow(/markup/i);
+  });
+
+  it("accepts prose containing a less-than sign", () => {
+    // "5 < 10" and "I <3 coffee" are ordinary transcript content; a rule
+    // that rejects them rejects real episodes.
+    expect(normalizeTranscript("Five is less than ten: 5 < 10.")).not.toBeNull();
+    expect(normalizeTranscript("I <3 coffee.")).not.toBeNull();
+  });
+
+  it("rejects an empty transcript", () => {
+    expect(normalizeTranscript("   \n\n  ")).toBeNull();
+  });
+
+  it("is the same function admin.functions.ts imports", () => {
+    // The assertions above would all pass against a private copy of the
+    // rule living in this test file. This pins the import, which is the
+    // thing that actually stops the two paths drifting.
+    expect(readFileSync("src/lib/admin.functions.ts", "utf8")).toContain(
+      'from "./podcast-transcript"',
+    );
   });
 });
