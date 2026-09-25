@@ -74,7 +74,7 @@ session:
 | Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
-| **French**  | 100 | 100 | 100 | 100 | 100 | **500**       | 2,500           |
+| **French**  | 110 | 110 | 110 | 110 | 110 | **550**       | 2,750           |
 | **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
@@ -86,13 +86,23 @@ same utterance differently run to run, so "she's a doctor" and "she is a
 doctor" both count. Translation questions describe an idea ("Ask someone
 their name") and let the learner write it themselves, accepting any of a
 curated list of wordings — and, for a valid wording the list did not
-anticipate, asking an AI grader. French and Spanish have the other three
-types only.
+anticipate, asking an AI grader.
+
+**French phase 2** (in progress, `docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
+is closing that type gap, one PR per generator change / question type: the
+shared generator (`bank-engine.ts`) now knows all three new kinds, and
+French has **translate** and **listening** content (250 new questions,
+125 each). **Speak** is the remaining PR — it needs a new French
+speech-normalisation module across three code ports before any content can
+be authored against it. Spanish still has the original three types only;
+its content is a separate, later job once the generator work is proven on
+French.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just
-structurally complete (see `docs/BACKLOG.md`, gitignored/local, for the
-full open-items list).
+structurally complete, and phase 2's new content adds to that same
+unreviewed surface rather than reducing it (see `docs/BACKLOG.md`,
+gitignored/local, for the full open-items list).
 
 ## Spaced Repetition System
 

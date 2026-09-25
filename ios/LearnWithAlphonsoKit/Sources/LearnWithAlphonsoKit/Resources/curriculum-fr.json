@@ -7701,6 +7701,400 @@
       ]
     },
     {
+      "id": "fra1p22u1",
+      "level": "A1",
+      "eyebrow": "Unit 22",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds English speakers tend to merge.",
+      "lessons": [
+        {
+          "id": "fra1p22l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra1p22q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de la table est propre.",
+              "choices": [
+                "Le dessus de l'armoire est sale.",
+                "Le dessous de la table est propre.",
+                "Ce plat contient du poison.",
+                "Le dessus de la table est propre."
+              ],
+              "answer": "Le dessus de la table est propre.",
+              "explanation": "The audio says \"Le dessus de la table est propre.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de la table est propre.",
+              "choices": [
+                "Le dessous de l'armoire est sale.",
+                "Le dessous de la table est propre.",
+                "Il a acheté du pain.",
+                "Le dessus de la table est propre."
+              ],
+              "answer": "Le dessous de la table est propre.",
+              "explanation": "The audio says \"Le dessous de la table est propre.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de l'armoire est sale.",
+              "choices": [
+                "Le dessous de l'armoire est sale.",
+                "Le dessus de l'armoire est sale.",
+                "Cette boîte contient du poison.",
+                "Le dessus de la table est propre."
+              ],
+              "answer": "Le dessus de l'armoire est sale.",
+              "explanation": "The audio says \"Le dessus de l'armoire est sale.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de l'armoire est sale.",
+              "choices": [
+                "Le dessous de l'armoire est sale.",
+                "Le dessus de l'armoire est sale.",
+                "Le cou me fait mal.",
+                "Le dessous de la table est propre."
+              ],
+              "answer": "Le dessous de l'armoire est sale.",
+              "explanation": "The audio says \"Le dessous de l'armoire est sale.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat contient du poisson.",
+              "choices": [
+                "Cette boîte contient du poison.",
+                "Cette boîte contient du poisson.",
+                "Ce plat contient du poisson.",
+                "Ce plat contient du poison."
+              ],
+              "answer": "Ce plat contient du poisson.",
+              "explanation": "The audio says \"Ce plat contient du poisson.\" Sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra1p22l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra1p22q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat contient du poison.",
+              "choices": [
+                "Cette boîte contient du poison.",
+                "Cette boîte contient du poisson.",
+                "Ce plat contient du poisson.",
+                "Ce plat contient du poison."
+              ],
+              "answer": "Ce plat contient du poison.",
+              "explanation": "The audio says \"Ce plat contient du poison.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette boîte contient du poisson.",
+              "choices": [
+                "Cette boîte contient du poison.",
+                "Cette boîte contient du poisson.",
+                "Ce plat contient du poisson.",
+                "Ce plat contient du poison."
+              ],
+              "answer": "Cette boîte contient du poisson.",
+              "explanation": "The audio says \"Cette boîte contient du poisson.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette boîte contient du poison.",
+              "choices": [
+                "Cette boîte contient du poison.",
+                "Cette boîte contient du poisson.",
+                "Ce plat contient du poisson.",
+                "Ce plat contient du poison."
+              ],
+              "answer": "Cette boîte contient du poison.",
+              "explanation": "The audio says \"Cette boîte contient du poison.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces livres sont intéressants.",
+              "choices": [
+                "Le dessous de l'armoire est sale.",
+                "Ses livres sont intéressants.",
+                "Ces livres sont intéressants.",
+                "Le coup me fait mal."
+              ],
+              "answer": "Ces livres sont intéressants.",
+              "explanation": "The audio says \"Ces livres sont intéressants.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses livres sont intéressants.",
+              "choices": [
+                "Ces photos sont anciennes.",
+                "Ses livres sont intéressants.",
+                "Ces livres sont intéressants.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "Ses livres sont intéressants.",
+              "explanation": "The audio says \"Ses livres sont intéressants.\" Sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra1p22l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra1p22q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces photos sont anciennes.",
+              "choices": [
+                "Ces photos sont anciennes.",
+                "Ses photos sont anciennes.",
+                "Ce plat contient du poisson.",
+                "Ce mur est vert."
+              ],
+              "answer": "Ces photos sont anciennes.",
+              "explanation": "The audio says \"Ces photos sont anciennes.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses photos sont anciennes.",
+              "choices": [
+                "Ces photos sont anciennes.",
+                "Le dessus de la table est propre.",
+                "Ses photos sont anciennes.",
+                "Il a acheté du pain."
+              ],
+              "answer": "Ses photos sont anciennes.",
+              "explanation": "The audio says \"Ses photos sont anciennes.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons vu la mer hier.",
+              "choices": [
+                "Nous avons vu la mer hier.",
+                "Nous avons vu ta mère hier.",
+                "Ces documents sont importants.",
+                "J'aime beaucoup la mer."
+              ],
+              "answer": "Nous avons vu la mer hier.",
+              "explanation": "The audio says \"Nous avons vu la mer hier.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons vu ta mère hier.",
+              "choices": [
+                "J'aime beaucoup ma mère.",
+                "Le cou me fait mal.",
+                "Nous avons vu la mer hier.",
+                "Nous avons vu ta mère hier."
+              ],
+              "answer": "Nous avons vu ta mère hier.",
+              "explanation": "The audio says \"Nous avons vu ta mère hier.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "J'aime beaucoup la mer.",
+              "choices": [
+                "J'aime beaucoup le pain.",
+                "J'aime beaucoup ma mère.",
+                "J'aime beaucoup la mer.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "J'aime beaucoup la mer.",
+              "explanation": "The audio says \"J'aime beaucoup la mer.\" Sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra1p22l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra1p22q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "J'aime beaucoup ma mère.",
+              "choices": [
+                "J'aime beaucoup le pain.",
+                "J'aime beaucoup ma mère.",
+                "J'aime beaucoup la mer.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "J'aime beaucoup ma mère.",
+              "explanation": "The audio says \"J'aime beaucoup ma mère.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "J'aime beaucoup le pain.",
+              "choices": [
+                "J'aime beaucoup le pain.",
+                "J'aime beaucoup ma mère.",
+                "J'aime beaucoup la mer.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "J'aime beaucoup le pain.",
+              "explanation": "The audio says \"J'aime beaucoup le pain.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "J'aime beaucoup le pin.",
+              "choices": [
+                "J'aime beaucoup le pain.",
+                "J'aime beaucoup ma mère.",
+                "J'aime beaucoup la mer.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "J'aime beaucoup le pin.",
+              "explanation": "The audio says \"J'aime beaucoup le pin.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il a acheté du pain.",
+              "choices": [
+                "J'aime beaucoup le pain.",
+                "Il a acheté un pin.",
+                "Il a acheté du pain.",
+                "Nous avons vu ta mère hier."
+              ],
+              "answer": "Il a acheté du pain.",
+              "explanation": "The audio says \"Il a acheté du pain.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il a acheté un pin.",
+              "choices": [
+                "Il a acheté un pin.",
+                "Il a acheté du pain.",
+                "Le dessus de l'armoire est sale.",
+                "J'aime beaucoup le pin."
+              ],
+              "answer": "Il a acheté un pin.",
+              "explanation": "The audio says \"Il a acheté un pin.\" Sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra1p22l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra1p22q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le cou me fait mal.",
+              "choices": [
+                "J'aime beaucoup le pin.",
+                "Le coup me fait mal.",
+                "Le cou me fait mal.",
+                "Ces photos sont anciennes."
+              ],
+              "answer": "Le cou me fait mal.",
+              "explanation": "The audio says \"Le cou me fait mal.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le coup me fait mal.",
+              "choices": [
+                "Ces documents sont importants.",
+                "Cette boîte contient du poisson.",
+                "Le coup me fait mal.",
+                "Le cou me fait mal."
+              ],
+              "answer": "Le coup me fait mal.",
+              "explanation": "The audio says \"Le coup me fait mal.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce mur est vert.",
+              "choices": [
+                "Ce mur est vert.",
+                "Ce mur est en verre.",
+                "Ces livres sont intéressants.",
+                "J'aime beaucoup ma mère."
+              ],
+              "answer": "Ce mur est vert.",
+              "explanation": "The audio says \"Ce mur est vert.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce mur est en verre.",
+              "choices": [
+                "Ce mur est vert.",
+                "Ce mur est en verre.",
+                "Ce plat contient du poisson.",
+                "Le coup me fait mal."
+              ],
+              "answer": "Ce mur est en verre.",
+              "explanation": "The audio says \"Ce mur est en verre.\" Sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra1p22q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces documents sont importants.",
+              "choices": [
+                "Ces documents sont importants.",
+                "Ce plat contient du poisson.",
+                "Le coup me fait mal.",
+                "J'aime beaucoup la mer."
+              ],
+              "answer": "Ces documents sont importants.",
+              "explanation": "The audio says \"Ces documents sont importants.\" Sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "fra2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -15400,6 +15794,400 @@
       ]
     },
     {
+      "id": "fra2p22u1",
+      "level": "A2",
+      "eyebrow": "Unit 22",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Everyday situations built around sounds English speakers tend to merge.",
+      "lessons": [
+        {
+          "id": "fra2p22l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra2p22q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de l'armoire est couvert de poussière.",
+              "choices": [
+                "Le dessus du carton contient des vêtements d'hiver.",
+                "Le dessus de l'armoire est couvert de poussière.",
+                "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+                "Le dessous de l'armoire est couvert de poussière."
+              ],
+              "answer": "Le dessus de l'armoire est couvert de poussière.",
+              "explanation": "The audio says \"Le dessus de l'armoire est couvert de poussière.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de l'armoire est couvert de poussière.",
+              "choices": [
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Le dessus de l'armoire est couvert de poussière.",
+                "Le dessous de l'armoire est couvert de poussière.",
+                "Ces documents doivent être envoyés avant vendredi."
+              ],
+              "answer": "Le dessous de l'armoire est couvert de poussière.",
+              "explanation": "The audio says \"Le dessous de l'armoire est couvert de poussière.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus du carton contient des vêtements d'hiver.",
+              "choices": [
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Le dessus du carton contient des vêtements d'hiver.",
+                "Ces vêtements sont vraiment trop grands.",
+                "Ce plat contient sans doute du poisson."
+              ],
+              "answer": "Le dessus du carton contient des vêtements d'hiver.",
+              "explanation": "The audio says \"Le dessus du carton contient des vêtements d'hiver.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous du carton contient des vêtements d'hiver.",
+              "choices": [
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Le dessus du carton contient des vêtements d'hiver.",
+                "Ces vêtements sont vraiment trop grands.",
+                "Ce plat contient sans doute du poisson."
+              ],
+              "answer": "Le dessous du carton contient des vêtements d'hiver.",
+              "explanation": "The audio says \"Le dessous du carton contient des vêtements d'hiver.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat contient sans doute du poisson.",
+              "choices": [
+                "Le dessus du carton contient des vêtements d'hiver.",
+                "Ce plat contient sans doute du poison.",
+                "Ce plat contient sans doute du poisson.",
+                "Cette bouteille contenait apparemment du poisson."
+              ],
+              "answer": "Ce plat contient sans doute du poisson.",
+              "explanation": "The audio says \"Ce plat contient sans doute du poisson.\" Everyday situations built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra2p22l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra2p22q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat contient sans doute du poison.",
+              "choices": [
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Le dessus du carton contient des vêtements d'hiver.",
+                "Ce plat contient sans doute du poison.",
+                "Ce plat contient sans doute du poisson."
+              ],
+              "answer": "Ce plat contient sans doute du poison.",
+              "explanation": "The audio says \"Ce plat contient sans doute du poison.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette bouteille contenait apparemment du poisson.",
+              "choices": [
+                "Ce plat contient sans doute du poison.",
+                "Ce plat contient sans doute du poisson.",
+                "Cette bouteille contenait apparemment du poisson.",
+                "Cette bouteille contenait apparemment du poison."
+              ],
+              "answer": "Cette bouteille contenait apparemment du poisson.",
+              "explanation": "The audio says \"Cette bouteille contenait apparemment du poisson.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette bouteille contenait apparemment du poison.",
+              "choices": [
+                "Elle achète chaque semaine un jeune pin.",
+                "Ce plat contient sans doute du poison.",
+                "Cette bouteille contenait apparemment du poisson.",
+                "Cette bouteille contenait apparemment du poison."
+              ],
+              "answer": "Cette bouteille contenait apparemment du poison.",
+              "explanation": "The audio says \"Cette bouteille contenait apparemment du poison.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces documents doivent être envoyés avant vendredi.",
+              "choices": [
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Ses photos ont été prises pendant les vacances.",
+                "Ses documents doivent être envoyés avant vendredi.",
+                "Ces documents doivent être envoyés avant vendredi."
+              ],
+              "answer": "Ces documents doivent être envoyés avant vendredi.",
+              "explanation": "The audio says \"Ces documents doivent être envoyés avant vendredi.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses documents doivent être envoyés avant vendredi.",
+              "choices": [
+                "Ses documents doivent être envoyés avant vendredi.",
+                "Ces vêtements sont vraiment trop grands.",
+                "Ces documents doivent être envoyés avant vendredi.",
+                "La taille de ce pin a beaucoup augmenté cette année."
+              ],
+              "answer": "Ses documents doivent être envoyés avant vendredi.",
+              "explanation": "The audio says \"Ses documents doivent être envoyés avant vendredi.\" Everyday situations built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra2p22l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra2p22q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces photos ont été prises pendant les vacances.",
+              "choices": [
+                "Ses photos ont été prises pendant les vacances.",
+                "Ces photos ont été prises pendant les vacances.",
+                "La taille de ce pin a beaucoup augmenté cette année.",
+                "Ces vêtements sont vraiment trop grands."
+              ],
+              "answer": "Ces photos ont été prises pendant les vacances.",
+              "explanation": "The audio says \"Ces photos ont été prises pendant les vacances.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses photos ont été prises pendant les vacances.",
+              "choices": [
+                "Ses photos ont été prises pendant les vacances.",
+                "Ces photos ont été prises pendant les vacances.",
+                "Ce plat contient sans doute du poison.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
+              ],
+              "answer": "Ses photos ont été prises pendant les vacances.",
+              "explanation": "The audio says \"Ses photos ont été prises pendant les vacances.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+              "choices": [
+                "Elle pense souvent à la mer de son enfance.",
+                "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
+              ],
+              "answer": "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+              "explanation": "The audio says \"Nous avons vu la mer depuis la fenêtre de l'hôtel.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons vu sa mère depuis la fenêtre de l'hôtel.",
+              "choices": [
+                "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+                "Elle pense souvent à la mère de son mari.",
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
+              ],
+              "answer": "Nous avons vu sa mère depuis la fenêtre de l'hôtel.",
+              "explanation": "The audio says \"Nous avons vu sa mère depuis la fenêtre de l'hôtel.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle pense souvent à la mer de son enfance.",
+              "choices": [
+                "Le coup me fait vraiment mal depuis ce matin.",
+                "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+                "Elle pense souvent à la mer de son enfance.",
+                "Elle pense souvent à la mère de son mari."
+              ],
+              "answer": "Elle pense souvent à la mer de son enfance.",
+              "explanation": "The audio says \"Elle pense souvent à la mer de son enfance.\" Everyday situations built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra2p22l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra2p22q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle pense souvent à la mère de son mari.",
+              "choices": [
+                "Elle pense souvent à la mer de son enfance.",
+                "Elle pense souvent à la mère de son mari.",
+                "Ses documents doivent être envoyés avant vendredi.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
+              ],
+              "answer": "Elle pense souvent à la mère de son mari.",
+              "explanation": "The audio says \"Elle pense souvent à la mère de son mari.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le prix du pain a beaucoup augmenté cette année.",
+              "choices": [
+                "La taille de ce pin a beaucoup augmenté cette année.",
+                "Le mur de la cuisine est fait en verre.",
+                "Le prix du pain a beaucoup augmenté cette année.",
+                "Elle achète chaque semaine du pain complet."
+              ],
+              "answer": "Le prix du pain a beaucoup augmenté cette année.",
+              "explanation": "The audio says \"Le prix du pain a beaucoup augmenté cette année.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La taille de ce pin a beaucoup augmenté cette année.",
+              "choices": [
+                "Ses photos ont été prises pendant les vacances.",
+                "Elle achète chaque semaine un jeune pin.",
+                "La taille de ce pin a beaucoup augmenté cette année.",
+                "Le prix du pain a beaucoup augmenté cette année."
+              ],
+              "answer": "La taille de ce pin a beaucoup augmenté cette année.",
+              "explanation": "The audio says \"La taille de ce pin a beaucoup augmenté cette année.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle achète chaque semaine du pain complet.",
+              "choices": [
+                "Le dessus de l'armoire est couvert de poussière.",
+                "Elle achète chaque semaine un jeune pin.",
+                "Le prix du pain a beaucoup augmenté cette année.",
+                "Elle achète chaque semaine du pain complet."
+              ],
+              "answer": "Elle achète chaque semaine du pain complet.",
+              "explanation": "The audio says \"Elle achète chaque semaine du pain complet.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle achète chaque semaine un jeune pin.",
+              "choices": [
+                "Elle achète chaque semaine un jeune pin.",
+                "La taille de ce pin a beaucoup augmenté cette année.",
+                "Elle achète chaque semaine du pain complet.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel."
+              ],
+              "answer": "Elle achète chaque semaine un jeune pin.",
+              "explanation": "The audio says \"Elle achète chaque semaine un jeune pin.\" Everyday situations built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "fra2p22l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "fra2p22q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le cou me fait vraiment mal depuis ce matin.",
+              "choices": [
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Le mur de la cuisine est fait en verre.",
+                "Nous avons vu la mer depuis la fenêtre de l'hôtel.",
+                "Le coup me fait vraiment mal depuis ce matin."
+              ],
+              "answer": "Le cou me fait vraiment mal depuis ce matin.",
+              "explanation": "The audio says \"Le cou me fait vraiment mal depuis ce matin.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le coup me fait vraiment mal depuis ce matin.",
+              "choices": [
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Nous avons vu sa mère depuis la fenêtre de l'hôtel.",
+                "Ces vêtements sont vraiment trop grands.",
+                "Le coup me fait vraiment mal depuis ce matin."
+              ],
+              "answer": "Le coup me fait vraiment mal depuis ce matin.",
+              "explanation": "The audio says \"Le coup me fait vraiment mal depuis ce matin.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de la cuisine est peint en vert.",
+              "choices": [
+                "Ces documents doivent être envoyés avant vendredi.",
+                "Le mur de la cuisine est fait en verre.",
+                "Le dessous de l'armoire est couvert de poussière.",
+                "Le mur de la cuisine est peint en vert."
+              ],
+              "answer": "Le mur de la cuisine est peint en vert.",
+              "explanation": "The audio says \"Le mur de la cuisine est peint en vert.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de la cuisine est fait en verre.",
+              "choices": [
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Le mur de la cuisine est fait en verre.",
+                "Le mur de la cuisine est peint en vert.",
+                "Le coup me fait vraiment mal depuis ce matin."
+              ],
+              "answer": "Le mur de la cuisine est fait en verre.",
+              "explanation": "The audio says \"Le mur de la cuisine est fait en verre.\" Everyday situations built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "fra2p22q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces vêtements sont vraiment trop grands.",
+              "choices": [
+                "Le cou me fait vraiment mal depuis ce matin.",
+                "Ces vêtements sont vraiment trop grands.",
+                "Le dessous du carton contient des vêtements d'hiver.",
+                "Le coup me fait vraiment mal depuis ce matin."
+              ],
+              "answer": "Ces vêtements sont vraiment trop grands.",
+              "explanation": "The audio says \"Ces vêtements sont vraiment trop grands.\" Everyday situations built around sounds English speakers tend to merge."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "frb1p1u1",
       "level": "B1",
       "eyebrow": "Unit 1",
@@ -22990,6 +23778,400 @@
                 "Un avis franc, ça me fait toujours plaisir."
               ],
               "explanation": "One way to say it: \"J'apprécie les retours honnêtes.\" Opinions and plans, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb1p22u1",
+      "level": "B1",
+      "eyebrow": "Unit 22",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Everyday and opinion sentences built around sounds English speakers tend to merge.",
+      "lessons": [
+        {
+          "id": "frb1p22l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb1p22q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus du bureau était couvert de dossiers urgents.",
+              "choices": [
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Ces habitudes sont difficiles à changer.",
+                "Le dessous du bureau était couvert de dossiers urgents.",
+                "Le dessus du bureau était couvert de dossiers urgents."
+              ],
+              "answer": "Le dessus du bureau était couvert de dossiers urgents.",
+              "explanation": "The audio says \"Le dessus du bureau était couvert de dossiers urgents.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous du bureau était couvert de dossiers urgents.",
+              "choices": [
+                "Ses décisions ont surpris toute l'équipe hier.",
+                "Le dessous du bureau était couvert de dossiers urgents.",
+                "Le dessus du bureau était couvert de dossiers urgents.",
+                "Le dessous de l'étagère contenait des livres anciens."
+              ],
+              "answer": "Le dessous du bureau était couvert de dossiers urgents.",
+              "explanation": "The audio says \"Le dessous du bureau était couvert de dossiers urgents.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de l'étagère contenait des livres anciens.",
+              "choices": [
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Le mur du salon est peint en vert.",
+                "Le dessus du bureau était couvert de dossiers urgents.",
+                "Le dessous de l'étagère contenait des livres anciens."
+              ],
+              "answer": "Le dessus de l'étagère contenait des livres anciens.",
+              "explanation": "The audio says \"Le dessus de l'étagère contenait des livres anciens.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de l'étagère contenait des livres anciens.",
+              "choices": [
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Ses arguments ne m'ont pas du tout convaincu.",
+                "Le dessous du bureau était couvert de dossiers urgents.",
+                "Le dessous de l'étagère contenait des livres anciens."
+              ],
+              "answer": "Le dessous de l'étagère contenait des livres anciens.",
+              "explanation": "The audio says \"Le dessous de l'étagère contenait des livres anciens.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat traditionnel contient étonnamment du poisson.",
+              "choices": [
+                "Ce plat traditionnel contient étonnamment du poison.",
+                "Cette enquête a révélé la présence de poisson.",
+                "Ce plat traditionnel contient étonnamment du poisson.",
+                "Le dessous de l'étagère contenait des livres anciens."
+              ],
+              "answer": "Ce plat traditionnel contient étonnamment du poisson.",
+              "explanation": "The audio says \"Ce plat traditionnel contient étonnamment du poisson.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb1p22l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb1p22q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat traditionnel contient étonnamment du poison.",
+              "choices": [
+                "Ce plat traditionnel contient étonnamment du poison.",
+                "Cette enquête a révélé la présence de poison.",
+                "Ce plat traditionnel contient étonnamment du poisson.",
+                "Il pense souvent à la mère de son enfance avec nostalgie."
+              ],
+              "answer": "Ce plat traditionnel contient étonnamment du poison.",
+              "explanation": "The audio says \"Ce plat traditionnel contient étonnamment du poison.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette enquête a révélé la présence de poisson.",
+              "choices": [
+                "Cette enquête a révélé la présence de poison.",
+                "Cette enquête a révélé la présence de poisson.",
+                "Le dessous du bureau était couvert de dossiers urgents.",
+                "Ce plat traditionnel contient étonnamment du poisson."
+              ],
+              "answer": "Cette enquête a révélé la présence de poisson.",
+              "explanation": "The audio says \"Cette enquête a révélé la présence de poisson.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Cette enquête a révélé la présence de poison.",
+              "choices": [
+                "Ce plat traditionnel contient étonnamment du poison.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
+                "Cette enquête a révélé la présence de poison.",
+                "Cette enquête a révélé la présence de poisson."
+              ],
+              "answer": "Cette enquête a révélé la présence de poison.",
+              "explanation": "The audio says \"Cette enquête a révélé la présence de poison.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces arguments ne m'ont pas du tout convaincu.",
+              "choices": [
+                "Le mur du salon est fait en verre.",
+                "Ses arguments ne m'ont pas du tout convaincu.",
+                "Ces arguments ne m'ont pas du tout convaincu.",
+                "Le prix du pain a fortement augmenté cette saison."
+              ],
+              "answer": "Ces arguments ne m'ont pas du tout convaincu.",
+              "explanation": "The audio says \"Ces arguments ne m'ont pas du tout convaincu.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses arguments ne m'ont pas du tout convaincu.",
+              "choices": [
+                "Ces décisions ont surpris toute l'équipe hier.",
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Ses arguments ne m'ont pas du tout convaincu.",
+                "Ces arguments ne m'ont pas du tout convaincu."
+              ],
+              "answer": "Ses arguments ne m'ont pas du tout convaincu.",
+              "explanation": "The audio says \"Ses arguments ne m'ont pas du tout convaincu.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb1p22l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb1p22q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces décisions ont surpris toute l'équipe hier.",
+              "choices": [
+                "Cette enquête a révélé la présence de poisson.",
+                "Ses décisions ont surpris toute l'équipe hier.",
+                "Il pense souvent à la mer de son enfance avec nostalgie.",
+                "Ces décisions ont surpris toute l'équipe hier."
+              ],
+              "answer": "Ces décisions ont surpris toute l'équipe hier.",
+              "explanation": "The audio says \"Ces décisions ont surpris toute l'équipe hier.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses décisions ont surpris toute l'équipe hier.",
+              "choices": [
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Ses décisions ont surpris toute l'équipe hier.",
+                "Ces décisions ont surpris toute l'équipe hier."
+              ],
+              "answer": "Ses décisions ont surpris toute l'équipe hier.",
+              "explanation": "The audio says \"Ses décisions ont surpris toute l'équipe hier.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons observé la mer depuis la falaise pendant des heures.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Nous avons observé la mer depuis la falaise pendant des heures.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
+                "Il pense souvent à la mer de son enfance avec nostalgie."
+              ],
+              "answer": "Nous avons observé la mer depuis la falaise pendant des heures.",
+              "explanation": "The audio says \"Nous avons observé la mer depuis la falaise pendant des heures.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons observé sa mère depuis la falaise pendant des heures.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Nous avons observé la mer depuis la falaise pendant des heures.",
+                "Il pense souvent à la mère de son enfance avec nostalgie.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures."
+              ],
+              "answer": "Nous avons observé sa mère depuis la falaise pendant des heures.",
+              "explanation": "The audio says \"Nous avons observé sa mère depuis la falaise pendant des heures.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il pense souvent à la mer de son enfance avec nostalgie.",
+              "choices": [
+                "Le dessus de l'étagère contenait des livres anciens.",
+                "Nous avons observé la mer depuis la falaise pendant des heures.",
+                "Il pense souvent à la mère de son enfance avec nostalgie.",
+                "Il pense souvent à la mer de son enfance avec nostalgie."
+              ],
+              "answer": "Il pense souvent à la mer de son enfance avec nostalgie.",
+              "explanation": "The audio says \"Il pense souvent à la mer de son enfance avec nostalgie.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb1p22l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb1p22q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il pense souvent à la mère de son enfance avec nostalgie.",
+              "choices": [
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
+                "Il pense souvent à la mère de son enfance avec nostalgie.",
+                "Il pense souvent à la mer de son enfance avec nostalgie.",
+                "Le prix du pain a fortement augmenté cette saison."
+              ],
+              "answer": "Il pense souvent à la mère de son enfance avec nostalgie.",
+              "explanation": "The audio says \"Il pense souvent à la mère de son enfance avec nostalgie.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le prix du pain a fortement augmenté cette saison.",
+              "choices": [
+                "La hauteur de ce pin a fortement augmenté cette saison.",
+                "Elle achète régulièrement du pain complet.",
+                "Le dessus du bureau était couvert de dossiers urgents.",
+                "Le prix du pain a fortement augmenté cette saison."
+              ],
+              "answer": "Le prix du pain a fortement augmenté cette saison.",
+              "explanation": "The audio says \"Le prix du pain a fortement augmenté cette saison.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La hauteur de ce pin a fortement augmenté cette saison.",
+              "choices": [
+                "Elle achète régulièrement un jeune pin.",
+                "La hauteur de ce pin a fortement augmenté cette saison.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
+                "Le prix du pain a fortement augmenté cette saison."
+              ],
+              "answer": "La hauteur de ce pin a fortement augmenté cette saison.",
+              "explanation": "The audio says \"La hauteur de ce pin a fortement augmenté cette saison.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle achète régulièrement du pain complet.",
+              "choices": [
+                "Elle achète régulièrement un jeune pin.",
+                "Elle achète régulièrement du pain complet.",
+                "Le mur du salon est fait en verre.",
+                "Le prix du pain a fortement augmenté cette saison."
+              ],
+              "answer": "Elle achète régulièrement du pain complet.",
+              "explanation": "The audio says \"Elle achète régulièrement du pain complet.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle achète régulièrement un jeune pin.",
+              "choices": [
+                "Elle achète régulièrement un jeune pin.",
+                "La hauteur de ce pin a fortement augmenté cette saison.",
+                "Elle achète régulièrement du pain complet.",
+                "Ses décisions ont surpris toute l'équipe hier."
+              ],
+              "answer": "Elle achète régulièrement un jeune pin.",
+              "explanation": "The audio says \"Elle achète régulièrement un jeune pin.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb1p22l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb1p22q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le cou me fait terriblement mal depuis l'accident.",
+              "choices": [
+                "Le mur du salon est fait en verre.",
+                "Nous avons observé sa mère depuis la falaise pendant des heures.",
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Le coup me fait terriblement mal depuis l'accident."
+              ],
+              "answer": "Le cou me fait terriblement mal depuis l'accident.",
+              "explanation": "The audio says \"Le cou me fait terriblement mal depuis l'accident.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le coup me fait terriblement mal depuis l'accident.",
+              "choices": [
+                "Le mur du salon est fait en verre.",
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Nous avons observé la mer depuis la falaise pendant des heures.",
+                "Le coup me fait terriblement mal depuis l'accident."
+              ],
+              "answer": "Le coup me fait terriblement mal depuis l'accident.",
+              "explanation": "The audio says \"Le coup me fait terriblement mal depuis l'accident.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur du salon est peint en vert.",
+              "choices": [
+                "Le mur du salon est fait en verre.",
+                "Ce plat traditionnel contient étonnamment du poisson.",
+                "Le mur du salon est peint en vert.",
+                "Le coup me fait terriblement mal depuis l'accident."
+              ],
+              "answer": "Le mur du salon est peint en vert.",
+              "explanation": "The audio says \"Le mur du salon est peint en vert.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur du salon est fait en verre.",
+              "choices": [
+                "Le mur du salon est fait en verre.",
+                "Le cou me fait terriblement mal depuis l'accident.",
+                "Le mur du salon est peint en vert.",
+                "Le coup me fait terriblement mal depuis l'accident."
+              ],
+              "answer": "Le mur du salon est fait en verre.",
+              "explanation": "The audio says \"Le mur du salon est fait en verre.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb1p22q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces habitudes sont difficiles à changer.",
+              "choices": [
+                "Ces décisions ont surpris toute l'équipe hier.",
+                "Ces habitudes sont difficiles à changer.",
+                "La hauteur de ce pin a fortement augmenté cette saison.",
+                "Le dessous de l'étagère contenait des livres anciens."
+              ],
+              "answer": "Ces habitudes sont difficiles à changer.",
+              "explanation": "The audio says \"Ces habitudes sont difficiles à changer.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
             }
           ]
         }
@@ -30664,6 +31846,400 @@
                 "C'est vraiment impressionnant, sa résilience."
               ],
               "explanation": "One way to say it: \"J'admire sa résilience.\" Nuanced and hypothetical ideas, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb2p22u1",
+      "level": "B2",
+      "eyebrow": "Unit 22",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Nuanced and abstract sentences built around sounds English speakers tend to merge.",
+      "lessons": [
+        {
+          "id": "frb2p22l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb2p22q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus du dossier contenait un résumé synthétique.",
+              "choices": [
+                "Le dessous du dossier contenait un résumé synthétique.",
+                "Le dessus de la pile renfermait les pièces sensibles.",
+                "Le dessus du dossier contenait un résumé synthétique.",
+                "Ses décisions ont profondément divisé l'opinion publique."
+              ],
+              "answer": "Le dessus du dossier contenait un résumé synthétique.",
+              "explanation": "The audio says \"Le dessus du dossier contenait un résumé synthétique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous du dossier contenait un résumé synthétique.",
+              "choices": [
+                "Le dessous du dossier contenait un résumé synthétique.",
+                "Le dessus du dossier contenait un résumé synthétique.",
+                "Ces habitudes institutionnelles sont difficiles à réformer.",
+                "Le dessous de la pile renfermait les pièces sensibles."
+              ],
+              "answer": "Le dessous du dossier contenait un résumé synthétique.",
+              "explanation": "The audio says \"Le dessous du dossier contenait un résumé synthétique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de la pile renfermait les pièces sensibles.",
+              "choices": [
+                "Le dessus de la pile renfermait les pièces sensibles.",
+                "Ses conclusions restent sujettes à caution selon les experts.",
+                "Le dessus du dossier contenait un résumé synthétique.",
+                "Le dessous de la pile renfermait les pièces sensibles."
+              ],
+              "answer": "Le dessus de la pile renfermait les pièces sensibles.",
+              "explanation": "The audio says \"Le dessus de la pile renfermait les pièces sensibles.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de la pile renfermait les pièces sensibles.",
+              "choices": [
+                "Le dessus de la pile renfermait les pièces sensibles.",
+                "Le dessous du dossier contenait un résumé synthétique.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Le dessous de la pile renfermait les pièces sensibles."
+              ],
+              "answer": "Le dessous de la pile renfermait les pièces sensibles.",
+              "explanation": "The audio says \"Le dessous de la pile renfermait les pièces sensibles.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat gastronomique contient paraît-il du poisson.",
+              "choices": [
+                "Ce plat gastronomique contient paraît-il du poison.",
+                "Ce plat gastronomique contient paraît-il du poisson.",
+                "Il repense sans cesse à la mère qui borde son village natal.",
+                "L'analyse a détecté une trace infime de poisson."
+              ],
+              "answer": "Ce plat gastronomique contient paraît-il du poisson.",
+              "explanation": "The audio says \"Ce plat gastronomique contient paraît-il du poisson.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb2p22l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb2p22q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce plat gastronomique contient paraît-il du poison.",
+              "choices": [
+                "Ce plat gastronomique contient paraît-il du poison.",
+                "L'analyse a détecté une trace infime de poison.",
+                "Ce plat gastronomique contient paraît-il du poisson.",
+                "Le dessous de la pile renfermait les pièces sensibles."
+              ],
+              "answer": "Ce plat gastronomique contient paraît-il du poison.",
+              "explanation": "The audio says \"Ce plat gastronomique contient paraît-il du poison.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "L'analyse a détecté une trace infime de poisson.",
+              "choices": [
+                "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+                "L'analyse a détecté une trace infime de poison.",
+                "Ce plat gastronomique contient paraît-il du poisson.",
+                "L'analyse a détecté une trace infime de poisson."
+              ],
+              "answer": "L'analyse a détecté une trace infime de poisson.",
+              "explanation": "The audio says \"L'analyse a détecté une trace infime de poisson.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "L'analyse a détecté une trace infime de poison.",
+              "choices": [
+                "Le dessous du dossier contenait un résumé synthétique.",
+                "Ce plat gastronomique contient paraît-il du poison.",
+                "L'analyse a détecté une trace infime de poison.",
+                "L'analyse a détecté une trace infime de poisson."
+              ],
+              "answer": "L'analyse a détecté une trace infime de poison.",
+              "explanation": "The audio says \"L'analyse a détecté une trace infime de poison.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces conclusions restent sujettes à caution selon les experts.",
+              "choices": [
+                "Ses conclusions restent sujettes à caution selon les experts.",
+                "Le dessus de la pile renfermait les pièces sensibles.",
+                "Ces décisions ont profondément divisé l'opinion publique.",
+                "Ces conclusions restent sujettes à caution selon les experts."
+              ],
+              "answer": "Ces conclusions restent sujettes à caution selon les experts.",
+              "explanation": "The audio says \"Ces conclusions restent sujettes à caution selon les experts.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses conclusions restent sujettes à caution selon les experts.",
+              "choices": [
+                "Le mur de cette galerie est entièrement en verre profond.",
+                "Ses conclusions restent sujettes à caution selon les experts.",
+                "La pénurie de pain a ravivé les tensions dans la région.",
+                "Ces conclusions restent sujettes à caution selon les experts."
+              ],
+              "answer": "Ses conclusions restent sujettes à caution selon les experts.",
+              "explanation": "The audio says \"Ses conclusions restent sujettes à caution selon les experts.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb2p22l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb2p22q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces décisions ont profondément divisé l'opinion publique.",
+              "choices": [
+                "Ses décisions ont profondément divisé l'opinion publique.",
+                "Ces décisions ont profondément divisé l'opinion publique.",
+                "Le coup me fait terriblement mal depuis des semaines.",
+                "Il repense sans cesse à la mer qui borde son village natal."
+              ],
+              "answer": "Ces décisions ont profondément divisé l'opinion publique.",
+              "explanation": "The audio says \"Ces décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses décisions ont profondément divisé l'opinion publique.",
+              "choices": [
+                "Ses décisions ont profondément divisé l'opinion publique.",
+                "Ces décisions ont profondément divisé l'opinion publique.",
+                "Le dessus du dossier contenait un résumé synthétique.",
+                "L'analyse a détecté une trace infime de poison."
+              ],
+              "answer": "Ses décisions ont profondément divisé l'opinion publique.",
+              "explanation": "The audio says \"Ses décisions ont profondément divisé l'opinion publique.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons contemplé la mer depuis le sommet de la falaise.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Il repense sans cesse à la mer qui borde son village natal.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+                "Le cou me fait terriblement mal depuis des semaines."
+              ],
+              "answer": "Nous avons contemplé la mer depuis le sommet de la falaise.",
+              "explanation": "The audio says \"Nous avons contemplé la mer depuis le sommet de la falaise.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Le coup me fait terriblement mal depuis des semaines.",
+                "Il repense sans cesse à la mère qui borde son village natal.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise."
+              ],
+              "answer": "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+              "explanation": "The audio says \"Nous avons contemplé sa mère depuis le sommet de la falaise.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il repense sans cesse à la mer qui borde son village natal.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Il repense sans cesse à la mère qui borde son village natal.",
+                "Il repense sans cesse à la mer qui borde son village natal.",
+                "Elle se procure discrètement du pain rare."
+              ],
+              "answer": "Il repense sans cesse à la mer qui borde son village natal.",
+              "explanation": "The audio says \"Il repense sans cesse à la mer qui borde son village natal.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb2p22l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb2p22q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il repense sans cesse à la mère qui borde son village natal.",
+              "choices": [
+                "Il repense sans cesse à la mère qui borde son village natal.",
+                "Il repense sans cesse à la mer qui borde son village natal.",
+                "Ce plat gastronomique contient paraît-il du poisson.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise."
+              ],
+              "answer": "Il repense sans cesse à la mère qui borde son village natal.",
+              "explanation": "The audio says \"Il repense sans cesse à la mère qui borde son village natal.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La pénurie de pain a ravivé les tensions dans la région.",
+              "choices": [
+                "La pénurie de pin a ravivé les tensions dans la région.",
+                "La pénurie de pain a ravivé les tensions dans la région.",
+                "Elle se procure discrètement du pain rare.",
+                "Le cou me fait terriblement mal depuis des semaines."
+              ],
+              "answer": "La pénurie de pain a ravivé les tensions dans la région.",
+              "explanation": "The audio says \"La pénurie de pain a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La pénurie de pin a ravivé les tensions dans la région.",
+              "choices": [
+                "Elle se procure discrètement un jeune pin rare.",
+                "La pénurie de pin a ravivé les tensions dans la région.",
+                "La pénurie de pain a ravivé les tensions dans la région.",
+                "L'analyse a détecté une trace infime de poisson."
+              ],
+              "answer": "La pénurie de pin a ravivé les tensions dans la région.",
+              "explanation": "The audio says \"La pénurie de pin a ravivé les tensions dans la région.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle se procure discrètement du pain rare.",
+              "choices": [
+                "Elle se procure discrètement un jeune pin rare.",
+                "La pénurie de pain a ravivé les tensions dans la région.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Elle se procure discrètement du pain rare."
+              ],
+              "answer": "Elle se procure discrètement du pain rare.",
+              "explanation": "The audio says \"Elle se procure discrètement du pain rare.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle se procure discrètement un jeune pin rare.",
+              "choices": [
+                "Elle se procure discrètement un jeune pin rare.",
+                "La pénurie de pin a ravivé les tensions dans la région.",
+                "Elle se procure discrètement du pain rare.",
+                "Ces conclusions restent sujettes à caution selon les experts."
+              ],
+              "answer": "Elle se procure discrètement un jeune pin rare.",
+              "explanation": "The audio says \"Elle se procure discrètement un jeune pin rare.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frb2p22l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frb2p22q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le cou me fait terriblement mal depuis des semaines.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+                "Le coup me fait terriblement mal depuis des semaines.",
+                "Le cou me fait terriblement mal depuis des semaines."
+              ],
+              "answer": "Le cou me fait terriblement mal depuis des semaines.",
+              "explanation": "The audio says \"Le cou me fait terriblement mal depuis des semaines.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le coup me fait terriblement mal depuis des semaines.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Nous avons contemplé sa mère depuis le sommet de la falaise.",
+                "Le coup me fait terriblement mal depuis des semaines.",
+                "Le cou me fait terriblement mal depuis des semaines."
+              ],
+              "answer": "Le coup me fait terriblement mal depuis des semaines.",
+              "explanation": "The audio says \"Le coup me fait terriblement mal depuis des semaines.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de cette galerie est repeint en vert profond.",
+              "choices": [
+                "Nous avons contemplé la mer depuis le sommet de la falaise.",
+                "Le mur de cette galerie est entièrement en verre profond.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Ce plat gastronomique contient paraît-il du poison."
+              ],
+              "answer": "Le mur de cette galerie est repeint en vert profond.",
+              "explanation": "The audio says \"Le mur de cette galerie est repeint en vert profond.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de cette galerie est entièrement en verre profond.",
+              "choices": [
+                "La pénurie de pain a ravivé les tensions dans la région.",
+                "Le mur de cette galerie est entièrement en verre profond.",
+                "Le mur de cette galerie est repeint en vert profond.",
+                "Ses conclusions restent sujettes à caution selon les experts."
+              ],
+              "answer": "Le mur de cette galerie est entièrement en verre profond.",
+              "explanation": "The audio says \"Le mur de cette galerie est entièrement en verre profond.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frb2p22q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces habitudes institutionnelles sont difficiles à réformer.",
+              "choices": [
+                "Ces décisions ont profondément divisé l'opinion publique.",
+                "Ces habitudes institutionnelles sont difficiles à réformer.",
+                "Le cou me fait terriblement mal depuis des semaines.",
+                "Le dessous de la pile renfermait les pièces sensibles."
+              ],
+              "answer": "Ces habitudes institutionnelles sont difficiles à réformer.",
+              "explanation": "The audio says \"Ces habitudes institutionnelles sont difficiles à réformer.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
             }
           ]
         }
@@ -38362,6 +39938,400 @@
                 "C'est à l'histoire qu'il reviendra de trancher."
               ],
               "explanation": "One way to say it: \"L'histoire jugera en dernier ressort.\" Sophisticated and abstract ideas, and more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frc1p22u1",
+      "level": "C1",
+      "eyebrow": "Unit 22",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sophisticated and formal sentences built around sounds English speakers tend to merge.",
+      "lessons": [
+        {
+          "id": "frc1p22l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frc1p22q0",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus du dossier renfermait un résumé exécutif classifié.",
+              "choices": [
+                "L'expertise toxicologique n'a détecté aucune trace de poison.",
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "Le dessus du dossier renfermait un résumé exécutif classifié.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Le dessus du dossier renfermait un résumé exécutif classifié.",
+              "explanation": "The audio says \"Le dessus du dossier renfermait un résumé exécutif classifié.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q1",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous du dossier renfermait un résumé exécutif classifié.",
+              "choices": [
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le dessus du dossier renfermait un résumé exécutif classifié."
+              ],
+              "answer": "Le dessous du dossier renfermait un résumé exécutif classifié.",
+              "explanation": "The audio says \"Le dessous du dossier renfermait un résumé exécutif classifié.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q2",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.",
+              "choices": [
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le dessus du dossier renfermait un résumé exécutif classifié.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.",
+              "explanation": "The audio says \"Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q3",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+              "choices": [
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+              "explanation": "The audio says \"Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q4",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce mets raffiné comporte, semble-t-il, du poisson.",
+              "choices": [
+                "Ce mets raffiné comporte, semble-t-il, du poisson.",
+                "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+                "Ce mets raffiné comporte, semble-t-il, du poison.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Ce mets raffiné comporte, semble-t-il, du poisson.",
+              "explanation": "The audio says \"Ce mets raffiné comporte, semble-t-il, du poisson.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frc1p22l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frc1p22q5",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ce mets raffiné comporte, semble-t-il, du poison.",
+              "choices": [
+                "L'expertise toxicologique n'a détecté aucune trace de poison.",
+                "Ce mets raffiné comporte, semble-t-il, du poisson.",
+                "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+                "Ce mets raffiné comporte, semble-t-il, du poison."
+              ],
+              "answer": "Ce mets raffiné comporte, semble-t-il, du poison.",
+              "explanation": "The audio says \"Ce mets raffiné comporte, semble-t-il, du poison.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q6",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+              "choices": [
+                "L'expertise toxicologique n'a détecté aucune trace de poison.",
+                "Ce mets raffiné comporte, semble-t-il, du poisson.",
+                "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+                "Le dessus du dossier renfermait un résumé exécutif classifié."
+              ],
+              "answer": "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+              "explanation": "The audio says \"L'expertise toxicologique n'a détecté aucune trace de poisson.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q7",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "L'expertise toxicologique n'a détecté aucune trace de poison.",
+              "choices": [
+                "L'expertise toxicologique n'a détecté aucune trace de poison.",
+                "L'expertise toxicologique n'a détecté aucune trace de poisson.",
+                "Ce mets raffiné comporte, semble-t-il, du poison.",
+                "Il songe inlassablement à la mer qui borde son village natal."
+              ],
+              "answer": "L'expertise toxicologique n'a détecté aucune trace de poison.",
+              "explanation": "The audio says \"L'expertise toxicologique n'a détecté aucune trace de poison.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q8",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+              "choices": [
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+              "explanation": "The audio says \"Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q9",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+              "choices": [
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire."
+              ],
+              "answer": "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+              "explanation": "The audio says \"Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frc1p22l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frc1p22q10",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces décisions ont irrémédiablement divisé l'opinion publique.",
+              "choices": [
+                "Ses décisions ont irrémédiablement divisé l'opinion publique.",
+                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Ces décisions ont irrémédiablement divisé l'opinion publique."
+              ],
+              "answer": "Ces décisions ont irrémédiablement divisé l'opinion publique.",
+              "explanation": "The audio says \"Ces décisions ont irrémédiablement divisé l'opinion publique.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q11",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ses décisions ont irrémédiablement divisé l'opinion publique.",
+              "choices": [
+                "Ses décisions ont irrémédiablement divisé l'opinion publique.",
+                "Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Ces décisions ont irrémédiablement divisé l'opinion publique."
+              ],
+              "answer": "Ses décisions ont irrémédiablement divisé l'opinion publique.",
+              "explanation": "The audio says \"Ses décisions ont irrémédiablement divisé l'opinion publique.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q12",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
+                "Il songe inlassablement à la mer qui borde son village natal."
+              ],
+              "answer": "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
+              "explanation": "The audio says \"Nous avons contemplé la mer depuis les falaises escarpées de la côte.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q13",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte."
+              ],
+              "answer": "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
+              "explanation": "The audio says \"Nous avons contemplé sa mère depuis les falaises escarpées de la côte.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q14",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il songe inlassablement à la mer qui borde son village natal.",
+              "choices": [
+                "Il songe inlassablement à la mère qui borde son village natal.",
+                "Ce mets raffiné comporte, semble-t-il, du poison.",
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte.",
+                "Il songe inlassablement à la mer qui borde son village natal."
+              ],
+              "answer": "Il songe inlassablement à la mer qui borde son village natal.",
+              "explanation": "The audio says \"Il songe inlassablement à la mer qui borde son village natal.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frc1p22l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frc1p22q15",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Il songe inlassablement à la mère qui borde son village natal.",
+              "choices": [
+                "Il songe inlassablement à la mère qui borde son village natal.",
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Nous avons contemplé sa mère depuis les falaises escarpées de la côte.",
+                "Il songe inlassablement à la mer qui borde son village natal."
+              ],
+              "answer": "Il songe inlassablement à la mère qui borde son village natal.",
+              "explanation": "The audio says \"Il songe inlassablement à la mère qui borde son village natal.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q16",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+              "choices": [
+                "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+                "Elle se procure discrètement du pain particulièrement rare.",
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "L'expertise toxicologique n'a détecté aucune trace de poison."
+              ],
+              "answer": "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+              "explanation": "The audio says \"La flambée du prix du pain a ravivé les tensions sociales latentes.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q17",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+              "choices": [
+                "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+                "Le dessous du dossier renfermait un résumé exécutif classifié.",
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Elle se procure discrètement un spécimen de pin particulièrement rare."
+              ],
+              "answer": "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+              "explanation": "The audio says \"La flambée du prix du pin a ravivé les tensions commerciales latentes.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q18",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle se procure discrètement du pain particulièrement rare.",
+              "choices": [
+                "La flambée du prix du pain a ravivé les tensions sociales latentes.",
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Elle se procure discrètement un spécimen de pin particulièrement rare.",
+                "Elle se procure discrètement du pain particulièrement rare."
+              ],
+              "answer": "Elle se procure discrètement du pain particulièrement rare.",
+              "explanation": "The audio says \"Elle se procure discrètement du pain particulièrement rare.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q19",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Elle se procure discrètement un spécimen de pin particulièrement rare.",
+              "choices": [
+                "La flambée du prix du pin a ravivé les tensions commerciales latentes.",
+                "Elle se procure discrètement un spécimen de pin particulièrement rare.",
+                "Elle se procure discrètement du pain particulièrement rare.",
+                "Ce mets raffiné comporte, semble-t-il, du poisson."
+              ],
+              "answer": "Elle se procure discrètement un spécimen de pin particulièrement rare.",
+              "explanation": "The audio says \"Elle se procure discrètement un spécimen de pin particulièrement rare.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        },
+        {
+          "id": "frc1p22l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "frc1p22q20",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le mur de cette institution historique est entièrement fait en verre.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte."
+              ],
+              "answer": "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+              "explanation": "The audio says \"Le cou me fait terriblement mal depuis des mois, malgré les soins.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q21",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le mur de cette institution historique est entièrement fait en verre.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Nous avons contemplé la mer depuis les falaises escarpées de la côte."
+              ],
+              "answer": "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+              "explanation": "The audio says \"Le coup me fait terriblement mal depuis des mois, malgré les soins.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q22",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de cette institution historique est repeint en vert sombre.",
+              "choices": [
+                "Le mur de cette institution historique est entièrement fait en verre.",
+                "Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.",
+                "Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Le mur de cette institution historique est repeint en vert sombre."
+              ],
+              "answer": "Le mur de cette institution historique est repeint en vert sombre.",
+              "explanation": "The audio says \"Le mur de cette institution historique est repeint en vert sombre.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q23",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Le mur de cette institution historique est entièrement fait en verre.",
+              "choices": [
+                "Le cou me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le mur de cette institution historique est entièrement fait en verre.",
+                "Le coup me fait terriblement mal depuis des mois, malgré les soins.",
+                "Le mur de cette institution historique est repeint en vert sombre."
+              ],
+              "answer": "Le mur de cette institution historique est entièrement fait en verre.",
+              "explanation": "The audio says \"Le mur de cette institution historique est entièrement fait en verre.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            },
+            {
+              "id": "frc1p22q24",
+              "type": "listening",
+              "prompt": "What did you hear?",
+              "audioText": "Ces pratiques institutionnelles sont notoirement difficiles à réformer.",
+              "choices": [
+                "Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.",
+                "Ces pratiques institutionnelles sont notoirement difficiles à réformer.",
+                "Le mur de cette institution historique est repeint en vert sombre.",
+                "Il songe inlassablement à la mère qui borde son village natal."
+              ],
+              "answer": "Ces pratiques institutionnelles sont notoirement difficiles à réformer.",
+              "explanation": "The audio says \"Ces pratiques institutionnelles sont notoirement difficiles à réformer.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
             }
           ]
         }

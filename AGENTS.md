@@ -80,32 +80,44 @@ column, kept in sync):
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 137 | 119 | 119 | 117 | 117 | **609**       |
-| French  | 100 | 100 | 100 | 100 | 100 | **500**       |
+| French  | 110 | 110 | 110 | 110 | 110 | **550**       |
 | Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
 French and Spanish reached structural parity with English on 2026-09-21
 (both grew from a 25-pack/125-lesson starting point, reusing the same
-bank-engine pack pipeline). **English has since pulled ahead and they are
-no longer at parity**, in two ways that matter:
+bank-engine pack pipeline). English pulled ahead on 2026-09-24 by adding
+`listening`, `speak` and `translate`, and French is now closing that gap
+— **phase 2** (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`),
+in progress, four PRs, one per generator change / question type:
 
-- **Lesson count**: English 609, French 500, Spanish 508.
-- **Question types**: English has six (`mc`, `fill`, `reorder`,
-  `listening`, `speak`, `translate`); French and Spanish have the first
-  three. The listening, speaking and translation types (all 2026-09-24)
-  are English-only.
+- **PR 1** (merged): taught `bank-engine.ts` — the shared generator French
+  and Spanish use — the `listening`/`speak`/`translate` kinds. Spanish
+  inherits this for free; its own content is a separate, later job.
+  Deliberately did not port English's part-of-speech distractor ranking
+  (blocked on the morphology decision, phase 1.5) — only its
+  language-neutral confusability ordering for `listening`.
+- **PR 2** (merged): French `translate` content, 5 packs (one per CEFR
+  level), 125 questions.
+- **PR 3** (this work): French `listening` content, 5 packs, 125
+  questions — French minimal pairs (dessus/dessous, poisson/poison,
+  ces/ses, mer/mère, pain/pin, cou/coup, vert/verre), verified at 96%
+  confusability the same way the English audit measured its own listening
+  content (a distractor sharing ≥50% of the answer's content words).
+- **PR 4** (not started): French `speak`. Needs a new `spoken-answer-fr.ts`
+  module (elision, liaison, a French number map) landed across all three
+  ports (TS/Deno/Swift) with mirrored test vectors — the one part of this
+  phase that is genuinely new engineering, not content authoring.
 
-What a port would actually need, verified rather than assumed: the
-players, grading (`deriveAnswerCorrectness`) and the iOS decoder all
-switch on question _type_, not course, so they need no change. The
-**generator does**: French and Spanish are built by `bank-engine.ts`,
-whose `Pack.kind` is `"pair" | "cloze"` — listening and speaking
-generation lives in English's own `lesson-bank.ts` (see the duplicated
-distractor logic noted in `docs/BACKLOG.md`). So a port is a content job
-_and_ a generator-consolidation job, plus a native speaker to author the
-phrases. `localeForCourse` already supplies the right TTS/STT locale.
-Not scheduled. Content correctness (grammar, natural
-phrasing) for French and Spanish still needs native-speaker review —
-not done for either, just structurally complete.
+**Question types, current**: English has six (`mc`, `fill`, `reorder`,
+`listening`, `speak`, `translate`); French has five (all but `speak`,
+pending PR 4); Spanish still has the original three (`mc`, `fill`,
+`reorder`) — its content is a separate job once the generator work is
+proven on French.
+
+Content correctness (grammar, natural phrasing) for French and Spanish
+still needs native-speaker review — not done for either, just
+structurally complete, and phase 2's new content adds to that same
+unreviewed surface rather than reducing it.
 
 French's phase 1 structural audit
 (`docs/superpowers/french-content-audit-log.md`, 2026-09-24) covers only

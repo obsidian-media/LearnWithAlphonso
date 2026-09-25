@@ -710,6 +710,47 @@ Say you don't speak French well.|Je ne parle pas bien français.;Mon français n
 Invite someone for coffee.|Tu veux prendre un café ?;On va prendre un café ?;Voulez-vous prendre un café avec moi ?
 Wish someone good luck.|Bonne chance !;Je te souhaite bonne chance !;Bon courage !`,
   },
+  {
+    id: "fra1p22",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Sentences built around sounds English speakers tend to merge.",
+    // Every line is deliberately short and plain so that only the
+    // homophone/near-homophone difference distinguishes it from its pair --
+    // dessus/dessous, poisson/poison, ces/ses, mer/mère, cou/coup, pain/pin,
+    // sang/cent, vert/verre, où/ou, eau/haut, plus a -eau rhyme cluster.
+    // Distractors are drawn from this same pool (bank-engine.ts's
+    // pickDistractors with preferConfusable), so pairing sentences this
+    // closely is what makes the wrong choices genuinely confusable rather
+    // than a word-spotting exercise.
+    data: `Le dessus de la table est propre.|Le dessus de la table est propre.
+Le dessous de la table est propre.|Le dessous de la table est propre.
+Le dessus de l'armoire est sale.|Le dessus de l'armoire est sale.
+Le dessous de l'armoire est sale.|Le dessous de l'armoire est sale.
+Ce plat contient du poisson.|Ce plat contient du poisson.
+Ce plat contient du poison.|Ce plat contient du poison.
+Cette boîte contient du poisson.|Cette boîte contient du poisson.
+Cette boîte contient du poison.|Cette boîte contient du poison.
+Ces livres sont intéressants.|Ces livres sont intéressants.
+Ses livres sont intéressants.|Ses livres sont intéressants.
+Ces photos sont anciennes.|Ces photos sont anciennes.
+Ses photos sont anciennes.|Ses photos sont anciennes.
+Nous avons vu la mer hier.|Nous avons vu la mer hier.
+Nous avons vu ta mère hier.|Nous avons vu ta mère hier.
+J'aime beaucoup la mer.|J'aime beaucoup la mer.
+J'aime beaucoup ma mère.|J'aime beaucoup ma mère.
+J'aime beaucoup le pain.|J'aime beaucoup le pain.
+J'aime beaucoup le pin.|J'aime beaucoup le pin.
+Il a acheté du pain.|Il a acheté du pain.
+Il a acheté un pin.|Il a acheté un pin.
+Le cou me fait mal.|Le cou me fait mal.
+Le coup me fait mal.|Le coup me fait mal.
+Ce mur est vert.|Ce mur est vert.
+Ce mur est en verre.|Ce mur est en verre.
+Ces documents sont importants.|Ces documents sont importants.`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1392,6 +1433,39 @@ Say you have never been to Italy.|Je ne suis jamais allé en Italie.;Je ne suis 
 Ask if the wifi password is available.|Quel est le mot de passe wifi ?;Avez-vous le mot de passe du wifi ?;Le wifi, c'est quoi le mot de passe ?
 Say you plan to study tonight.|Je vais étudier ce soir.;Ce soir, je compte réviser.;J'ai l'intention d'étudier ce soir.
 Ask someone to slow down when speaking.|Pouvez-vous parler plus lentement ?;Parlez plus lentement, s'il vous plaît.;Pourriez-vous ralentir un peu quand vous parlez ?`,
+  },
+  {
+    id: "fra2p22",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Everyday situations built around sounds English speakers tend to merge.",
+    data: `Le dessus de l'armoire est couvert de poussière.|Le dessus de l'armoire est couvert de poussière.
+Le dessous de l'armoire est couvert de poussière.|Le dessous de l'armoire est couvert de poussière.
+Le dessus du carton contient des vêtements d'hiver.|Le dessus du carton contient des vêtements d'hiver.
+Le dessous du carton contient des vêtements d'hiver.|Le dessous du carton contient des vêtements d'hiver.
+Ce plat contient sans doute du poisson.|Ce plat contient sans doute du poisson.
+Ce plat contient sans doute du poison.|Ce plat contient sans doute du poison.
+Cette bouteille contenait apparemment du poisson.|Cette bouteille contenait apparemment du poisson.
+Cette bouteille contenait apparemment du poison.|Cette bouteille contenait apparemment du poison.
+Ces documents doivent être envoyés avant vendredi.|Ces documents doivent être envoyés avant vendredi.
+Ses documents doivent être envoyés avant vendredi.|Ses documents doivent être envoyés avant vendredi.
+Ces photos ont été prises pendant les vacances.|Ces photos ont été prises pendant les vacances.
+Ses photos ont été prises pendant les vacances.|Ses photos ont été prises pendant les vacances.
+Nous avons vu la mer depuis la fenêtre de l'hôtel.|Nous avons vu la mer depuis la fenêtre de l'hôtel.
+Nous avons vu sa mère depuis la fenêtre de l'hôtel.|Nous avons vu sa mère depuis la fenêtre de l'hôtel.
+Elle pense souvent à la mer de son enfance.|Elle pense souvent à la mer de son enfance.
+Elle pense souvent à la mère de son mari.|Elle pense souvent à la mère de son mari.
+Le prix du pain a beaucoup augmenté cette année.|Le prix du pain a beaucoup augmenté cette année.
+La taille de ce pin a beaucoup augmenté cette année.|La taille de ce pin a beaucoup augmenté cette année.
+Elle achète chaque semaine du pain complet.|Elle achète chaque semaine du pain complet.
+Elle achète chaque semaine un jeune pin.|Elle achète chaque semaine un jeune pin.
+Le cou me fait vraiment mal depuis ce matin.|Le cou me fait vraiment mal depuis ce matin.
+Le coup me fait vraiment mal depuis ce matin.|Le coup me fait vraiment mal depuis ce matin.
+Le mur de la cuisine est peint en vert.|Le mur de la cuisine est peint en vert.
+Le mur de la cuisine est fait en verre.|Le mur de la cuisine est fait en verre.
+Ces vêtements sont vraiment trop grands.|Ces vêtements sont vraiment trop grands.`,
   },
 ];
 
@@ -2076,6 +2150,39 @@ Express doubt about a plan.|Je doute que ce plan fonctionne.;Ce plan me semble r
 Say you will think it over.|Je vais y réfléchir.;Laisse-moi y réfléchir.;Je dois y penser encore un peu.
 Ask someone to clarify their point.|Peux-tu préciser ce que tu veux dire ?;Peux-tu clarifier ton propos ?;Qu'entends-tu exactement par là ?
 Say you appreciate honest feedback.|J'apprécie les retours honnêtes.;Les critiques sincères, je les apprécie.;Un avis franc, ça me fait toujours plaisir.`,
+  },
+  {
+    id: "frb1p22",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Everyday and opinion sentences built around sounds English speakers tend to merge.",
+    data: `Le dessus du bureau était couvert de dossiers urgents.|Le dessus du bureau était couvert de dossiers urgents.
+Le dessous du bureau était couvert de dossiers urgents.|Le dessous du bureau était couvert de dossiers urgents.
+Le dessus de l'étagère contenait des livres anciens.|Le dessus de l'étagère contenait des livres anciens.
+Le dessous de l'étagère contenait des livres anciens.|Le dessous de l'étagère contenait des livres anciens.
+Ce plat traditionnel contient étonnamment du poisson.|Ce plat traditionnel contient étonnamment du poisson.
+Ce plat traditionnel contient étonnamment du poison.|Ce plat traditionnel contient étonnamment du poison.
+Cette enquête a révélé la présence de poisson.|Cette enquête a révélé la présence de poisson.
+Cette enquête a révélé la présence de poison.|Cette enquête a révélé la présence de poison.
+Ces arguments ne m'ont pas du tout convaincu.|Ces arguments ne m'ont pas du tout convaincu.
+Ses arguments ne m'ont pas du tout convaincu.|Ses arguments ne m'ont pas du tout convaincu.
+Ces décisions ont surpris toute l'équipe hier.|Ces décisions ont surpris toute l'équipe hier.
+Ses décisions ont surpris toute l'équipe hier.|Ses décisions ont surpris toute l'équipe hier.
+Nous avons observé la mer depuis la falaise pendant des heures.|Nous avons observé la mer depuis la falaise pendant des heures.
+Nous avons observé sa mère depuis la falaise pendant des heures.|Nous avons observé sa mère depuis la falaise pendant des heures.
+Il pense souvent à la mer de son enfance avec nostalgie.|Il pense souvent à la mer de son enfance avec nostalgie.
+Il pense souvent à la mère de son enfance avec nostalgie.|Il pense souvent à la mère de son enfance avec nostalgie.
+Le prix du pain a fortement augmenté cette saison.|Le prix du pain a fortement augmenté cette saison.
+La hauteur de ce pin a fortement augmenté cette saison.|La hauteur de ce pin a fortement augmenté cette saison.
+Elle achète régulièrement du pain complet.|Elle achète régulièrement du pain complet.
+Elle achète régulièrement un jeune pin.|Elle achète régulièrement un jeune pin.
+Le cou me fait terriblement mal depuis l'accident.|Le cou me fait terriblement mal depuis l'accident.
+Le coup me fait terriblement mal depuis l'accident.|Le coup me fait terriblement mal depuis l'accident.
+Le mur du salon est peint en vert.|Le mur du salon est peint en vert.
+Le mur du salon est fait en verre.|Le mur du salon est fait en verre.
+Ces habitudes sont difficiles à changer.|Ces habitudes sont difficiles à changer.`,
   },
 ];
 
@@ -2762,6 +2869,39 @@ Say the report raises more questions than it answers.|Ce rapport soulève plus d
 Downplay the significance of an event.|Ce n'est pas si grave que ça.;Il ne faut pas exagérer l'importance de cet événement.;Ça n'a pas tant d'importance, en fin de compte.
 Say the initiative fell short of its goals.|L'initiative n'a pas atteint ses objectifs.;Les objectifs de cette initiative n'ont pas été atteints.;Cette initiative est restée en deçà de ses ambitions.
 Express admiration for someone's resilience.|J'admire sa résilience.;Sa capacité à tenir bon force le respect.;C'est vraiment impressionnant, sa résilience.`,
+  },
+  {
+    id: "frb2p22",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Nuanced and abstract sentences built around sounds English speakers tend to merge.",
+    data: `Le dessus du dossier contenait un résumé synthétique.|Le dessus du dossier contenait un résumé synthétique.
+Le dessous du dossier contenait un résumé synthétique.|Le dessous du dossier contenait un résumé synthétique.
+Le dessus de la pile renfermait les pièces sensibles.|Le dessus de la pile renfermait les pièces sensibles.
+Le dessous de la pile renfermait les pièces sensibles.|Le dessous de la pile renfermait les pièces sensibles.
+Ce plat gastronomique contient paraît-il du poisson.|Ce plat gastronomique contient paraît-il du poisson.
+Ce plat gastronomique contient paraît-il du poison.|Ce plat gastronomique contient paraît-il du poison.
+L'analyse a détecté une trace infime de poisson.|L'analyse a détecté une trace infime de poisson.
+L'analyse a détecté une trace infime de poison.|L'analyse a détecté une trace infime de poison.
+Ces conclusions restent sujettes à caution selon les experts.|Ces conclusions restent sujettes à caution selon les experts.
+Ses conclusions restent sujettes à caution selon les experts.|Ses conclusions restent sujettes à caution selon les experts.
+Ces décisions ont profondément divisé l'opinion publique.|Ces décisions ont profondément divisé l'opinion publique.
+Ses décisions ont profondément divisé l'opinion publique.|Ses décisions ont profondément divisé l'opinion publique.
+Nous avons contemplé la mer depuis le sommet de la falaise.|Nous avons contemplé la mer depuis le sommet de la falaise.
+Nous avons contemplé sa mère depuis le sommet de la falaise.|Nous avons contemplé sa mère depuis le sommet de la falaise.
+Il repense sans cesse à la mer qui borde son village natal.|Il repense sans cesse à la mer qui borde son village natal.
+Il repense sans cesse à la mère qui borde son village natal.|Il repense sans cesse à la mère qui borde son village natal.
+La pénurie de pain a ravivé les tensions dans la région.|La pénurie de pain a ravivé les tensions dans la région.
+La pénurie de pin a ravivé les tensions dans la région.|La pénurie de pin a ravivé les tensions dans la région.
+Elle se procure discrètement du pain rare.|Elle se procure discrètement du pain rare.
+Elle se procure discrètement un jeune pin rare.|Elle se procure discrètement un jeune pin rare.
+Le cou me fait terriblement mal depuis des semaines.|Le cou me fait terriblement mal depuis des semaines.
+Le coup me fait terriblement mal depuis des semaines.|Le coup me fait terriblement mal depuis des semaines.
+Le mur de cette galerie est repeint en vert profond.|Le mur de cette galerie est repeint en vert profond.
+Le mur de cette galerie est entièrement en verre profond.|Le mur de cette galerie est entièrement en verre profond.
+Ces habitudes institutionnelles sont difficiles à réformer.|Ces habitudes institutionnelles sont difficiles à réformer.`,
   },
 ];
 
@@ -3451,6 +3591,39 @@ Argue that transparency should take precedence over efficiency.|La transparence 
 Say the assumption underlying the model is flawed.|L'hypothèse sur laquelle repose ce modèle est erronée.;Ce modèle part d'un postulat discutable.;Le modèle repose sur une prémisse qui ne tient pas la route.
 Express cautious support for an untested idea.|Je soutiens cette idée, mais avec prudence.;Cette idée mérite d'être essayée, sous certaines réserves.;Je suis plutôt favorable, tout en restant prudent.
 Say history will be the ultimate judge.|L'histoire jugera en dernier ressort.;Seul l'avenir dira si nous avions raison.;C'est à l'histoire qu'il reviendra de trancher.`,
+  },
+  {
+    id: "frc1p22",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "What did you hear?",
+    note: "Sophisticated and formal sentences built around sounds English speakers tend to merge.",
+    data: `Le dessus du dossier renfermait un résumé exécutif classifié.|Le dessus du dossier renfermait un résumé exécutif classifié.
+Le dessous du dossier renfermait un résumé exécutif classifié.|Le dessous du dossier renfermait un résumé exécutif classifié.
+Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.|Le dessus de la pile contenait les pièces les plus sensibles de l'affaire.
+Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.|Le dessous de la pile contenait les pièces les plus sensibles de l'affaire.
+Ce mets raffiné comporte, semble-t-il, du poisson.|Ce mets raffiné comporte, semble-t-il, du poisson.
+Ce mets raffiné comporte, semble-t-il, du poison.|Ce mets raffiné comporte, semble-t-il, du poison.
+L'expertise toxicologique n'a détecté aucune trace de poisson.|L'expertise toxicologique n'a détecté aucune trace de poisson.
+L'expertise toxicologique n'a détecté aucune trace de poison.|L'expertise toxicologique n'a détecté aucune trace de poison.
+Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.|Ces prémisses méritent d'être réexaminées avec la plus grande rigueur.
+Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.|Ses prémisses méritent d'être réexaminées avec la plus grande rigueur.
+Ces décisions ont irrémédiablement divisé l'opinion publique.|Ces décisions ont irrémédiablement divisé l'opinion publique.
+Ses décisions ont irrémédiablement divisé l'opinion publique.|Ses décisions ont irrémédiablement divisé l'opinion publique.
+Nous avons contemplé la mer depuis les falaises escarpées de la côte.|Nous avons contemplé la mer depuis les falaises escarpées de la côte.
+Nous avons contemplé sa mère depuis les falaises escarpées de la côte.|Nous avons contemplé sa mère depuis les falaises escarpées de la côte.
+Il songe inlassablement à la mer qui borde son village natal.|Il songe inlassablement à la mer qui borde son village natal.
+Il songe inlassablement à la mère qui borde son village natal.|Il songe inlassablement à la mère qui borde son village natal.
+La flambée du prix du pain a ravivé les tensions sociales latentes.|La flambée du prix du pain a ravivé les tensions sociales latentes.
+La flambée du prix du pin a ravivé les tensions commerciales latentes.|La flambée du prix du pin a ravivé les tensions commerciales latentes.
+Elle se procure discrètement du pain particulièrement rare.|Elle se procure discrètement du pain particulièrement rare.
+Elle se procure discrètement un spécimen de pin particulièrement rare.|Elle se procure discrètement un spécimen de pin particulièrement rare.
+Le cou me fait terriblement mal depuis des mois, malgré les soins.|Le cou me fait terriblement mal depuis des mois, malgré les soins.
+Le coup me fait terriblement mal depuis des mois, malgré les soins.|Le coup me fait terriblement mal depuis des mois, malgré les soins.
+Le mur de cette institution historique est repeint en vert sombre.|Le mur de cette institution historique est repeint en vert sombre.
+Le mur de cette institution historique est entièrement fait en verre.|Le mur de cette institution historique est entièrement fait en verre.
+Ces pratiques institutionnelles sont notoirement difficiles à réformer.|Ces pratiques institutionnelles sont notoirement difficiles à réformer.`,
   },
 ];
 

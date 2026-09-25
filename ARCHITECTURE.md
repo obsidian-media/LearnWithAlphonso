@@ -152,11 +152,20 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
 counts, verified 2026-09-24 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 609 lessons / 3,096 questions, French 500 lessons
-/ 2,500 questions, Spanish 508 lessons / 2,540 questions. English is now
-ahead of structural parity (it gained the listening, speaking and
-translation types, with 125 questions each); French/Spanish still need a native-speaker review
-pass for grammar/naturalness (`docs/BACKLOG.md`, gitignored).
+kept in sync): English 609 lessons / 3,096 questions, French 550 lessons
+/ 2,750 questions, Spanish 508 lessons / 2,540 questions. French's phase 2
+(`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`,
+in progress) is closing the type gap English opened on 2026-09-24 by
+porting `listening`/`speak`/`translate` to the shared generator
+(`bank-engine.ts`, PR 1) and then authoring French content per type, one PR
+each: `translate` (PR 2, merged) and `listening` (PR 3) are done, adding
+125 questions each; `speak` (PR 4) is not started — it needs a new French
+speech-normalisation module (`spoken-answer-fr.ts`) across three ports
+before content can be authored against it. Spanish's content is
+unaffected and unchanged; it inherits the generator work but its own
+content port is a separate, later job. French/Spanish still need a
+native-speaker review pass for grammar/naturalness (`docs/BACKLOG.md`,
+gitignored), and each new pack adds to that same unreviewed surface.
 
 **There are six question types**, not three: `mc`, `fill`, `reorder`,
 `listening`, `speak`, and `translate`. `listening` (added 2026-09-24) plays
