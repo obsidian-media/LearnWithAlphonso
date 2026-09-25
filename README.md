@@ -84,7 +84,7 @@ session:
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
 | **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
-| **Spanish** | 105 | 106 | 109 | 107 | 106 | **533**       | 2,665           |
+| **Spanish** | 115 | 116 | 119 | 117 | 116 | **583**       | 2,915           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
 types — **listening comprehension**, **speaking practice** and **free-form
@@ -109,15 +109,21 @@ French elision is a phonological rule with no relationship to English's
 auxiliary-verb-contraction rules — see that module's header comment.
 **Spanish's own phase 2**
 (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md` §6-7)
-follows the same one-PR-per-question-type shape. As of this PR, Spanish has
-**speak** content (125 new questions) plus its own speech-normalisation
-module (`spoken-answer-es.ts`, hand-kept in sync across TS/Deno/Swift the
-same way French's is) — Spanish's phonology needed different rules than
-either sibling (no elision like French, but a categorical silent-h rule
-neither English nor French needs). **translate** and **listening** content
-(125 questions each) are each on their own separate, still-unmerged PR as
-of this writing; once both land alongside this one, Spanish reaches full
-six-type parity with English and French at 583 lessons / 2,915 questions.
+followed the same one-PR-per-question-type shape, all four PRs now
+merged: `bank-engine.ts` needed zero Spanish-specific changes (verified
+against real Spanish content, not inferred from French); **translate**
+content (125 questions) in Latin American Spanish (`tú`/`usted`/
+`ustedes`, no `vosotros`/`vos` — measured against the existing bank
+rather than chosen from preference); **listening** content (125
+questions) using Spanish minimal pairs across seseo, b/v and yeísmo
+mergers, measured (not assumed) at 96.0% confusability, matching
+French's own benchmark; and **speak** content (125 questions) plus its
+own speech-normalisation module (`spoken-answer-es.ts`, hand-kept in
+sync across TS/Deno/Swift the same way French's is) — Spanish's
+phonology needed different rules than either sibling (no elision like
+French, but a categorical silent-h rule neither English nor French
+needs). Spanish now has full six-type parity with English and French at
+583 lessons / 2,915 questions.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just
@@ -131,7 +137,7 @@ The app uses an SM-2-style algorithm (with two deliberate departures from
 vanilla SM-2, added 2026-09-20 — see `src/lib/srs.ts`'s doc comments) to
 schedule review of missed items:
 
-- **Wrong answer**: repetitions *halve* (not reset to zero), ease
+- **Wrong answer**: repetitions _halve_ (not reset to zero), ease
   decreases, a lapse is recorded — one slip no longer erases arbitrarily
   much earned progress, a well-known real weakness of vanilla SM-2
 - **Correct answer**: interval grows (1 day → 3 days → interval × ease ×

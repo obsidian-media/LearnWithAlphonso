@@ -84,7 +84,7 @@ column, kept in sync):
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 137 | 119 | 119 | 117 | 117 | **609**       |
 | French  | 115 | 115 | 115 | 115 | 115 | **575**       |
-| Spanish | 105 | 106 | 109 | 107 | 106 | **533**       |
+| Spanish | 115 | 116 | 119 | 117 | 116 | **583**       |
 
 French and Spanish reached structural parity with English on 2026-09-21
 (both grew from a 25-pack/125-lesson starting point, reusing the same
@@ -118,26 +118,29 @@ done, four PRs, one per generator change / question type:
   existed before this PR to build one from) — see `spoken-answer-fr.ts`'s
   header comment.
 
-**Spanish phase 2**
+**Spanish's own phase 2**
 (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md` §6-7),
-same one-PR-per-question-type shape:
+done, four PRs mirroring French's exactly:
 
 - **PR 1** (merged): confirmed `bank-engine.ts` needs no Spanish-specific
-  changes — it already inherited the shared `listening`/`speak`/`translate`
-  generator work from French's PR 1.
-- **PR 2** (translate content, open, unmerged as of this PR): 5 packs, 125
-  questions, Latin American Spanish (tú, not vosotros — measured against
-  the existing content's own tú/usted/ustedes/vosotros/vos distribution
-  before deciding, not assumed).
-- **PR 3** (listening content, open, unmerged as of this PR): 5 packs, 125
-  questions. First measurement came in at 76.8% confusability against the
-  same ≥50%-content-word-overlap bar French used, not the 96% target —
-  root cause was carrier sentences varied for naturalness, breaking the
-  ranking algorithm's "identical except the target word" assumption (see
-  the design doc's addendum). Rewritten to strict single-word-substitution
-  carriers; re-measured at 96.0%, matching French exactly.
-- **PR 4** (this work): Spanish `speak` — a new `spoken-answer-es.ts`
-  module landed across all three ports (TS/Deno/Swift) with mirrored test
+  changes — checked against real Spanish content (a `pesa`/`besa`
+  minimal-pair fixture testing Spanish's own accent range, `ñ`/`¿`/`¡`,
+  none of which appear in French), not inferred from French's passing
+  tests.
+- **PR 2** (merged): Spanish `translate` content, 5 packs (one per CEFR
+  level), 125 questions, Latin American variety (`tú`/`usted`/`ustedes`,
+  no `vosotros`/`vos` — measured against the existing bank, which already
+  used that variety exclusively).
+- **PR 3** (merged): Spanish `listening` content, 5 packs, 125 questions,
+  minimal pairs across seseo, b/v and yeísmo mergers. First measurement
+  came in at 76.8% confusability against the same ≥50%-content-word-
+  overlap bar French used, not the 96% target — root cause was carrier
+  sentences varied for naturalness, breaking the ranking algorithm's
+  "identical except the target word" assumption (see the design doc's
+  addendum). Rewritten to strict single-word-substitution carriers;
+  re-measured at 96.0%, matching French exactly.
+- **PR 4** (merged): Spanish `speak` — a new `spoken-answer-es.ts` module
+  landed across all three ports (TS/Deno/Swift) with mirrored test
   vectors, then 5 speak packs, 125 questions, each round-tripped through
   the real normaliser (`matchesSpokenAnswerEs`) before shipping. Unlike
   French, Spanish needed no elision rule (no phonological equivalent) but
@@ -146,18 +149,18 @@ same one-PR-per-question-type shape:
   Also UNVERIFIED AGAINST REAL PRODUCTION TRANSCRIPTS, same caveat as
   French's — see `spoken-answer-es.ts`'s header comment.
 
-PRs 2-4 were opened in parallel against the same pre-phase-2 base and will
-conflict on merge (`lesson-bank-es.ts`'s array-append points, and these
-same doc sections) — expected, not a mistake; whichever merges last should
-combine all landed PRs' content and re-total rather than picking one side.
-Once all three merge, Spanish reaches full six-type parity with English
-and French at 508 (phase 1) + 75 = 583 lessons.
+PRs 2-4 were opened in parallel against the same pre-phase-2 base and
+conflicted on merge (`lesson-bank-es.ts`'s array-append points, and these
+same doc sections) exactly as expected — resolved by combining all three
+PRs' content rather than picking one side, and re-verifying the real
+combined lesson/question counts (via `buildLessonRows`/`collectCourseIds`)
+rather than trusting arithmetic, since two of the doc/test edits happened
+to change the same number by the same amount independently and merged
+cleanly with no conflict despite being additive, not identical.
 
-**Question types, current**: English and French both have all six
-(`mc`, `fill`, `reorder`, `listening`, `speak`, `translate`) — full
-type parity; Spanish has `mc`, `fill`, `reorder`, and (as of this PR)
-`speak` — `translate` and `listening` are each pending in their own
-still-open PR (see above).
+**Question types, current**: English, French, and Spanish all have all
+six (`mc`, `fill`, `reorder`, `listening`, `speak`, `translate`) — full
+type parity across all three courses.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs native-speaker review — not done for either, just

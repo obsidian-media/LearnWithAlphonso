@@ -529,15 +529,14 @@ Ship each as its own PR. Do not bundle.
    Measured, not fixed; the fix is still gated on the open morphology
    decision, and is structural rather than a ranking port (see §5).
 7. **Phase 2**, in the order of §6: generator check, `translate`,
-   `listening`, `speak`, each its own PR. Generator check done
-   2026-09-25 (§6's note, PR #134) — no code change needed, verified
-   rather than assumed. `translate` content (PR #137) and `listening`
-   content (PR #138) are each open, unmerged as of this entry —
-   opened in parallel against the same pre-phase-2 base, so they will
-   conflict with each other on `lesson-bank-es.ts`'s array-append
-   points and these same doc sections; whichever merges last should
-   combine both PRs' content and re-total rather than picking one
-   side. `speak` (this PR) is done 2026-09-25: `spoken-answer-es.ts`
+   `listening`, `speak`, each its own PR. All four done, 2026-09-25:
+   generator check (§6's note, PR #134) — no code change needed,
+   verified rather than assumed. `translate` (PR #137) — 5 packs, 125
+   questions, Latin American variety, id baseline diffed to
+   insertions-only. `listening` (PR #138) — 5 packs, 125 questions,
+   measured at 96.0% confusability (matching French's own benchmark)
+   after a first measurement of 76.8% found and fixed real
+   carrier-looseness defects. `speak` (PR #139): `spoken-answer-es.ts`
    landed across all three ports (TS/Deno/Swift, mirrored test
    vectors, `ci.yml`'s Deno step in the same PR, all three mutation-
    tested), then 5 packs / 125 questions, each round-tripped through
@@ -550,9 +549,27 @@ Ship each as its own PR. Do not bundle.
    elision. §6.1's other named hazards (seseo/ceceo, b/v, yeísmo) were
    treated as content-authoring constraints, not normaliser rules —
    see the module's own header comment for why no rule could fix a
-   genuine phonemic merger. Once all three content PRs merge, Spanish
-   reaches 583 lessons / 2,915 questions and full six-type parity with
-   English and French.
+   genuine phonemic merger.
+
+   PRs #137/#138/#139 were opened in parallel against the same
+   pre-phase-2 base and conflicted with each other on merge, exactly
+   as expected — `lesson-bank-es.ts`'s five array-append points, plus
+   every doc/test location that tracks Spanish's lesson/question
+   counts. Two of those locations (`id-parity.test.ts`'s pack-length
+   distribution and this file's own step-7 note in an earlier
+   revision) independently changed the SAME number by the SAME delta
+   from the SAME pre-merge base, so git's line-based merge saw
+   "identical edit on both sides" and silently kept only one +5
+   instead of summing both — a clean auto-merge with no conflict
+   marker that was nonetheless substantively wrong. Caught by
+   recomputing every count from the actually-merged content
+   (`buildLessonRows`, `collectCourseIds`, `BANK_ES`'s own runtime
+   pack count) rather than trusting either side's arithmetic or a
+   clean merge as proof of correctness. Spanish now reaches 583
+   lessons / 2,915 questions and full six-type parity with English and
+   French — 145 packs total, 5 each of the three new kinds, id
+   baseline diffed at exactly +125 / −0 against the pre-phase-2
+   baseline.
 
 Steps 1 and 2 are prerequisites for everything after them. Steps 3–6
 can be reordered if something argues for it; say so if you reorder.

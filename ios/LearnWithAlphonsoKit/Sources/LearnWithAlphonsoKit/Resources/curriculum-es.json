@@ -7522,6 +7522,719 @@
       ]
     },
     {
+      "id": "esa1p27u1",
+      "level": "A1",
+      "eyebrow": "Unit 28",
+      "title": "Write It Yourself: Everyday Needs",
+      "description": "Say it your own way — Greetings, needs and everyday small talk -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esa1p27l1",
+          "title": "Write It Yourself: Everyday Needs 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q0",
+              "type": "translate",
+              "prompt": "Ask someone their name.",
+              "acceptableAnswers": [
+                "¿Cómo te llamas?",
+                "¿Cuál es tu nombre?",
+                "¿Cómo se llama usted?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo te llamas?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q1",
+              "type": "translate",
+              "prompt": "Say your name is Ana.",
+              "acceptableAnswers": [
+                "Me llamo Ana.",
+                "Mi nombre es Ana.",
+                "Soy Ana."
+              ],
+              "explanation": "One way to say it: \"Me llamo Ana.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q2",
+              "type": "translate",
+              "prompt": "Ask how someone is doing.",
+              "acceptableAnswers": [
+                "¿Cómo estás?",
+                "¿Qué tal?",
+                "¿Cómo te va?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo estás?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q3",
+              "type": "translate",
+              "prompt": "Say you are fine, thanks.",
+              "acceptableAnswers": [
+                "Estoy bien, gracias.",
+                "Bien, gracias.",
+                "Muy bien, gracias."
+              ],
+              "explanation": "One way to say it: \"Estoy bien, gracias.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q4",
+              "type": "translate",
+              "prompt": "Say good morning.",
+              "acceptableAnswers": [
+                "Buenos días.",
+                "Buen día.",
+                "Muy buenos días."
+              ],
+              "explanation": "One way to say it: \"Buenos días.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l2",
+          "title": "Write It Yourself: Everyday Needs 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q5",
+              "type": "translate",
+              "prompt": "Ask where the bathroom is.",
+              "acceptableAnswers": [
+                "¿Dónde está el baño?",
+                "¿Dónde queda el baño?",
+                "¿Dónde puedo encontrar el baño?"
+              ],
+              "explanation": "One way to say it: \"¿Dónde está el baño?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q6",
+              "type": "translate",
+              "prompt": "Say you don't understand.",
+              "acceptableAnswers": [
+                "No entiendo.",
+                "No comprendo.",
+                "No te entiendo."
+              ],
+              "explanation": "One way to say it: \"No entiendo.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q7",
+              "type": "translate",
+              "prompt": "Ask someone to repeat that.",
+              "acceptableAnswers": [
+                "¿Puedes repetir eso?",
+                "¿Podrías repetirlo?",
+                "¿Me lo repites, por favor?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes repetir eso?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q8",
+              "type": "translate",
+              "prompt": "Say you are hungry.",
+              "acceptableAnswers": [
+                "Tengo hambre.",
+                "Estoy hambriento.",
+                "Me muero de hambre."
+              ],
+              "explanation": "One way to say it: \"Tengo hambre.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q9",
+              "type": "translate",
+              "prompt": "Say you are thirsty.",
+              "acceptableAnswers": [
+                "Tengo sed.",
+                "Estoy sediento.",
+                "Me muero de sed."
+              ],
+              "explanation": "One way to say it: \"Tengo sed.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l3",
+          "title": "Write It Yourself: Everyday Needs 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q10",
+              "type": "translate",
+              "prompt": "Ask for a coffee.",
+              "acceptableAnswers": [
+                "Quiero un café, por favor.",
+                "Me gustaría un café.",
+                "¿Me da un café, por favor?"
+              ],
+              "explanation": "One way to say it: \"Quiero un café, por favor.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q11",
+              "type": "translate",
+              "prompt": "Say thank you very much.",
+              "acceptableAnswers": [
+                "Muchas gracias.",
+                "Muchísimas gracias.",
+                "Te lo agradezco mucho."
+              ],
+              "explanation": "One way to say it: \"Muchas gracias.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q12",
+              "type": "translate",
+              "prompt": "Say you're welcome.",
+              "acceptableAnswers": [
+                "De nada.",
+                "No hay de qué.",
+                "Con gusto."
+              ],
+              "explanation": "One way to say it: \"De nada.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q13",
+              "type": "translate",
+              "prompt": "Ask what time it is.",
+              "acceptableAnswers": [
+                "¿Qué hora es?",
+                "¿Tienes la hora?",
+                "¿Me dices qué hora es?"
+              ],
+              "explanation": "One way to say it: \"¿Qué hora es?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q14",
+              "type": "translate",
+              "prompt": "Say it's five o'clock.",
+              "acceptableAnswers": [
+                "Son las cinco.",
+                "Son las cinco en punto.",
+                "Ya son las cinco."
+              ],
+              "explanation": "One way to say it: \"Son las cinco.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l4",
+          "title": "Write It Yourself: Everyday Needs 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q15",
+              "type": "translate",
+              "prompt": "Ask where someone lives.",
+              "acceptableAnswers": [
+                "¿Dónde vives?",
+                "¿Dónde vive usted?",
+                "¿En dónde vives?"
+              ],
+              "explanation": "One way to say it: \"¿Dónde vives?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q16",
+              "type": "translate",
+              "prompt": "Say you live in Mexico.",
+              "acceptableAnswers": [
+                "Vivo en México.",
+                "Yo vivo en México.",
+                "Resido en México."
+              ],
+              "explanation": "One way to say it: \"Vivo en México.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q17",
+              "type": "translate",
+              "prompt": "Ask someone's age.",
+              "acceptableAnswers": [
+                "¿Cuántos años tienes?",
+                "¿Qué edad tienes?",
+                "¿Cuántos años tiene usted?"
+              ],
+              "explanation": "One way to say it: \"¿Cuántos años tienes?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q18",
+              "type": "translate",
+              "prompt": "Say you are twenty years old.",
+              "acceptableAnswers": [
+                "Tengo veinte años.",
+                "Tengo veinte.",
+                "Ya tengo veinte años."
+              ],
+              "explanation": "One way to say it: \"Tengo veinte años.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q19",
+              "type": "translate",
+              "prompt": "Say goodbye to a friend.",
+              "acceptableAnswers": [
+                "Adiós.",
+                "Nos vemos.",
+                "Chao."
+              ],
+              "explanation": "One way to say it: \"Adiós.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l5",
+          "title": "Write It Yourself: Everyday Needs 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q20",
+              "type": "translate",
+              "prompt": "Say see you tomorrow.",
+              "acceptableAnswers": [
+                "Hasta mañana.",
+                "Nos vemos mañana.",
+                "Te veo mañana."
+              ],
+              "explanation": "One way to say it: \"Hasta mañana.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q21",
+              "type": "translate",
+              "prompt": "Ask for the check at a restaurant.",
+              "acceptableAnswers": [
+                "La cuenta, por favor.",
+                "¿Me trae la cuenta?",
+                "¿Nos puede traer la cuenta, por favor?"
+              ],
+              "explanation": "One way to say it: \"La cuenta, por favor.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q22",
+              "type": "translate",
+              "prompt": "Say you like the food.",
+              "acceptableAnswers": [
+                "Me gusta la comida.",
+                "La comida me gusta.",
+                "Me encanta la comida."
+              ],
+              "explanation": "One way to say it: \"Me gusta la comida.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q23",
+              "type": "translate",
+              "prompt": "Ask how much something costs.",
+              "acceptableAnswers": [
+                "¿Cuánto cuesta?",
+                "¿Cuánto es?",
+                "¿Qué precio tiene?"
+              ],
+              "explanation": "One way to say it: \"¿Cuánto cuesta?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q24",
+              "type": "translate",
+              "prompt": "Say good night.",
+              "acceptableAnswers": [
+                "Buenas noches.",
+                "Que descanses.",
+                "Que duermas bien."
+              ],
+              "explanation": "One way to say it: \"Buenas noches.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa1p28u1",
+      "level": "A1",
+      "eyebrow": "Unit 29",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda).",
+      "lessons": [
+        {
+          "id": "esa1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Hablamos de la casa toda la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde.",
+                "Nunca había visto una casa tan grande.",
+                "Hablamos de la casa toda la tarde."
+              ],
+              "answer": "Hablamos de la casa toda la tarde.",
+              "explanation": "The audio says \"Hablamos de la casa toda la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Hablamos de la caza toda la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde.",
+                "Hablamos de la casa toda la tarde."
+              ],
+              "answer": "Hablamos de la caza toda la tarde.",
+              "explanation": "The audio says \"Hablamos de la caza toda la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca había visto una casa tan grande.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nunca había visto una casa tan grande.",
+              "explanation": "The audio says \"Nunca había visto una casa tan grande.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca había visto una caza tan grande.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nunca había visto una caza tan grande.",
+              "explanation": "The audio says \"Nunca había visto una caza tan grande.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos la onda desde la playa.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Se podía ver el cerro desde la ventana."
+              ],
+              "answer": "Vimos la onda desde la playa.",
+              "explanation": "The audio says \"Vimos la onda desde la playa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos la honda desde la playa.",
+              "choices": [
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio."
+              ],
+              "answer": "Vimos la honda desde la playa.",
+              "explanation": "The audio says \"Vimos la honda desde la playa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba una onda tan fuerte.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nadie esperaba una onda tan fuerte.",
+              "explanation": "The audio says \"Nadie esperaba una onda tan fuerte.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba una honda tan fuerte.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nadie esperaba una honda tan fuerte.",
+              "explanation": "The audio says \"Nadie esperaba una honda tan fuerte.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos el pollo en el patio.",
+              "choices": [
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Vimos el pollo en el patio.",
+              "explanation": "The audio says \"Vimos el pollo en el patio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos el poyo en el patio.",
+              "choices": [
+                "Mi abuela puso el poyo cerca de la puerta.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Vimos el poyo en el patio.",
+              "explanation": "The audio says \"Vimos el poyo en el patio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi abuela puso el pollo cerca de la puerta.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "Mi abuela puso el pollo cerca de la puerta.",
+                "Mi abuela puso el poyo cerca de la puerta.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Mi abuela puso el pollo cerca de la puerta.",
+              "explanation": "The audio says \"Mi abuela puso el pollo cerca de la puerta.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi abuela puso el poyo cerca de la puerta.",
+              "choices": [
+                "Mi abuela puso el pollo cerca de la puerta.",
+                "Hablamos de la casa toda la tarde.",
+                "Vimos el poyo en el patio.",
+                "Mi abuela puso el poyo cerca de la puerta."
+              ],
+              "answer": "Mi abuela puso el poyo cerca de la puerta.",
+              "explanation": "The audio says \"Mi abuela puso el poyo cerca de la puerta.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El paisaje era completamente vasto.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "El paisaje era completamente vasto.",
+              "explanation": "The audio says \"El paisaje era completamente vasto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El paisaje era completamente basto.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "El paisaje era completamente basto.",
+              "explanation": "The audio says \"El paisaje era completamente basto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos dijeron que el terreno era muy vasto.",
+              "choices": [
+                "Todos miraban el cerro con atención.",
+                "El paisaje era completamente vasto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "Todos dijeron que el terreno era muy vasto.",
+              "explanation": "The audio says \"Todos dijeron que el terreno era muy vasto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos dijeron que el terreno era muy basto.",
+              "choices": [
+                "Todos miraban el cerro con atención.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "Todos dijeron que el terreno era muy basto.",
+              "explanation": "The audio says \"Todos dijeron que el terreno era muy basto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos miraban el cerro con atención.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Todos miraban el cerro con atención.",
+                "Todos miraban el cero con atención.",
+                "Subimos el cerro despacio."
+              ],
+              "answer": "Todos miraban el cerro con atención.",
+              "explanation": "The audio says \"Todos miraban el cerro con atención.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos miraban el cero con atención.",
+              "choices": [
+                "Se podía ver el cero desde la ventana.",
+                "Todos miraban el cerro con atención.",
+                "Todos miraban el cero con atención.",
+                "Todos dijeron que el terreno era muy basto."
+              ],
+              "answer": "Todos miraban el cero con atención.",
+              "explanation": "The audio says \"Todos miraban el cero con atención.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se podía ver el cerro desde la ventana.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la onda desde la playa.",
+                "Vimos la honda desde la playa."
+              ],
+              "answer": "Se podía ver el cerro desde la ventana.",
+              "explanation": "The audio says \"Se podía ver el cerro desde la ventana.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se podía ver el cero desde la ventana.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la onda desde la playa.",
+                "Todos miraban el cero con atención."
+              ],
+              "answer": "Se podía ver el cero desde la ventana.",
+              "explanation": "The audio says \"Se podía ver el cero desde la ventana.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vamos a votar mañana temprano.",
+              "choices": [
+                "Vamos a votar mañana temprano.",
+                "Vamos a botar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Todos miraban el cerro con atención."
+              ],
+              "answer": "Vamos a votar mañana temprano.",
+              "explanation": "The audio says \"Vamos a votar mañana temprano.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vamos a botar mañana temprano.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a votar mañana temprano.",
+                "Vamos a botar mañana temprano.",
+                "Vimos la honda desde la playa."
+              ],
+              "answer": "Vamos a botar mañana temprano.",
+              "explanation": "The audio says \"Vamos a botar mañana temprano.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron votar ayer por la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a votar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde."
+              ],
+              "answer": "Decidieron votar ayer por la tarde.",
+              "explanation": "The audio says \"Decidieron votar ayer por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron botar ayer por la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a botar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde."
+              ],
+              "answer": "Decidieron botar ayer por la tarde.",
+              "explanation": "The audio says \"Decidieron botar ayer por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Subimos el cerro despacio.",
+              "choices": [
+                "Subimos el cerro despacio.",
+                "Vamos a votar mañana temprano.",
+                "Todos miraban el cerro con atención.",
+                "Se podía ver el cerro desde la ventana."
+              ],
+              "answer": "Subimos el cerro despacio.",
+              "explanation": "The audio says \"Subimos el cerro despacio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esa2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -15083,6 +15796,719 @@
               "prompt": "Say this aloud:",
               "answer": "Espero verte pronto.",
               "explanation": "Target phrase: \"Espero verte pronto.\" Everyday routine and near-future plans to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p27u1",
+      "level": "A2",
+      "eyebrow": "Unit 28",
+      "title": "Write It Yourself: Asking and Arranging",
+      "description": "Say it your own way — Asking, arranging and explaining -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esa2p27l1",
+          "title": "Write It Yourself: Asking and Arranging 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q0",
+              "type": "translate",
+              "prompt": "Ask someone if they are free tonight.",
+              "acceptableAnswers": [
+                "¿Estás libre esta noche?",
+                "¿Tienes tiempo esta noche?",
+                "¿Puedes esta noche?"
+              ],
+              "explanation": "One way to say it: \"¿Estás libre esta noche?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q1",
+              "type": "translate",
+              "prompt": "Suggest meeting tomorrow.",
+              "acceptableAnswers": [
+                "¿Nos vemos mañana?",
+                "¿Quedamos mañana?",
+                "Podríamos vernos mañana."
+              ],
+              "explanation": "One way to say it: \"¿Nos vemos mañana?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q2",
+              "type": "translate",
+              "prompt": "Say you have to leave now.",
+              "acceptableAnswers": [
+                "Tengo que irme ahora.",
+                "Debo irme ya.",
+                "Ya me tengo que ir."
+              ],
+              "explanation": "One way to say it: \"Tengo que irme ahora.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q3",
+              "type": "translate",
+              "prompt": "Ask for directions to the station.",
+              "acceptableAnswers": [
+                "¿Cómo llego a la estación?",
+                "¿Dónde queda la estación?",
+                "¿Por dónde se va a la estación?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo llego a la estación?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q4",
+              "type": "translate",
+              "prompt": "Say turn left at the corner.",
+              "acceptableAnswers": [
+                "Gira a la izquierda en la esquina.",
+                "Dobla a la izquierda en la esquina.",
+                "En la esquina, gira a la izquierda."
+              ],
+              "explanation": "One way to say it: \"Gira a la izquierda en la esquina.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l2",
+          "title": "Write It Yourself: Asking and Arranging 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q5",
+              "type": "translate",
+              "prompt": "Ask if the store is open.",
+              "acceptableAnswers": [
+                "¿Está abierta la tienda?",
+                "¿La tienda está abierta?",
+                "¿Abrió ya la tienda?"
+              ],
+              "explanation": "One way to say it: \"¿Está abierta la tienda?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q6",
+              "type": "translate",
+              "prompt": "Say you would like to reserve a table.",
+              "acceptableAnswers": [
+                "Quisiera reservar una mesa.",
+                "Me gustaría reservar una mesa.",
+                "Quiero hacer una reservación."
+              ],
+              "explanation": "One way to say it: \"Quisiera reservar una mesa.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q7",
+              "type": "translate",
+              "prompt": "Ask if there is a room available.",
+              "acceptableAnswers": [
+                "¿Hay una habitación disponible?",
+                "¿Tienen alguna habitación libre?",
+                "¿Queda alguna habitación?"
+              ],
+              "explanation": "One way to say it: \"¿Hay una habitación disponible?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q8",
+              "type": "translate",
+              "prompt": "Ask what time the train leaves.",
+              "acceptableAnswers": [
+                "¿A qué hora sale el tren?",
+                "¿Cuándo sale el tren?",
+                "¿A qué hora parte el tren?"
+              ],
+              "explanation": "One way to say it: \"¿A qué hora sale el tren?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q9",
+              "type": "translate",
+              "prompt": "Say you need to see a doctor.",
+              "acceptableAnswers": [
+                "Necesito ver a un médico.",
+                "Necesito un doctor.",
+                "Tengo que consultar a un médico."
+              ],
+              "explanation": "One way to say it: \"Necesito ver a un médico.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l3",
+          "title": "Write It Yourself: Asking and Arranging 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q10",
+              "type": "translate",
+              "prompt": "Say you don't feel well.",
+              "acceptableAnswers": [
+                "No me siento bien.",
+                "Me siento mal.",
+                "No me encuentro bien."
+              ],
+              "explanation": "One way to say it: \"No me siento bien.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q11",
+              "type": "translate",
+              "prompt": "Ask what someone is doing this weekend.",
+              "acceptableAnswers": [
+                "¿Qué vas a hacer este fin de semana?",
+                "¿Qué haces este fin de semana?",
+                "¿Tienes planes para el fin de semana?"
+              ],
+              "explanation": "One way to say it: \"¿Qué vas a hacer este fin de semana?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q12",
+              "type": "translate",
+              "prompt": "Say you work in an office.",
+              "acceptableAnswers": [
+                "Trabajo en una oficina.",
+                "Yo trabajo en una oficina.",
+                "Mi trabajo es en una oficina."
+              ],
+              "explanation": "One way to say it: \"Trabajo en una oficina.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q13",
+              "type": "translate",
+              "prompt": "Say you have been studying Spanish for two years.",
+              "acceptableAnswers": [
+                "Llevo dos años estudiando español.",
+                "Estudio español desde hace dos años.",
+                "Hace dos años que estudio español."
+              ],
+              "explanation": "One way to say it: \"Llevo dos años estudiando español.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q14",
+              "type": "translate",
+              "prompt": "Say you have lived here for a long time.",
+              "acceptableAnswers": [
+                "Vivo aquí desde hace mucho tiempo.",
+                "Llevo mucho tiempo viviendo aquí.",
+                "Hace mucho tiempo que vivo aquí."
+              ],
+              "explanation": "One way to say it: \"Vivo aquí desde hace mucho tiempo.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l4",
+          "title": "Write It Yourself: Asking and Arranging 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q15",
+              "type": "translate",
+              "prompt": "Say she arrives in ten minutes.",
+              "acceptableAnswers": [
+                "Ella llega en diez minutos.",
+                "Llega en diez minutos.",
+                "En diez minutos, ella llega."
+              ],
+              "explanation": "One way to say it: \"Ella llega en diez minutos.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q16",
+              "type": "translate",
+              "prompt": "Say he left last night.",
+              "acceptableAnswers": [
+                "Él se fue anoche.",
+                "Se fue anoche.",
+                "Anoche, él se fue."
+              ],
+              "explanation": "One way to say it: \"Él se fue anoche.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q17",
+              "type": "translate",
+              "prompt": "Ask if someone can come with us.",
+              "acceptableAnswers": [
+                "¿Puedes venir con nosotros?",
+                "¿Quieres venir con nosotros?",
+                "¿Te gustaría acompañarnos?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes venir con nosotros?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q18",
+              "type": "translate",
+              "prompt": "Say that's a good idea.",
+              "acceptableAnswers": [
+                "Es una buena idea.",
+                "Buena idea.",
+                "Me parece una buena idea."
+              ],
+              "explanation": "One way to say it: \"Es una buena idea.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q19",
+              "type": "translate",
+              "prompt": "Say you agree with someone.",
+              "acceptableAnswers": [
+                "Estoy de acuerdo contigo.",
+                "Estoy de acuerdo.",
+                "Concuerdo contigo."
+              ],
+              "explanation": "One way to say it: \"Estoy de acuerdo contigo.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l5",
+          "title": "Write It Yourself: Asking and Arranging 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q20",
+              "type": "translate",
+              "prompt": "Say you don't agree.",
+              "acceptableAnswers": [
+                "No estoy de acuerdo.",
+                "No estoy de acuerdo contigo.",
+                "Yo no pienso lo mismo."
+              ],
+              "explanation": "One way to say it: \"No estoy de acuerdo.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q21",
+              "type": "translate",
+              "prompt": "Suggest meeting in front of the station.",
+              "acceptableAnswers": [
+                "Nos vemos frente a la estación.",
+                "Quedamos delante de la estación.",
+                "Encontrémonos frente a la estación."
+              ],
+              "explanation": "One way to say it: \"Nos vemos frente a la estación.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q22",
+              "type": "translate",
+              "prompt": "Ask someone to call you back.",
+              "acceptableAnswers": [
+                "Llámame, por favor.",
+                "¿Me puedes llamar luego?",
+                "Devuélveme la llamada, por favor."
+              ],
+              "explanation": "One way to say it: \"Llámame, por favor.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q23",
+              "type": "translate",
+              "prompt": "Say you'll be there in five minutes.",
+              "acceptableAnswers": [
+                "Llego en cinco minutos.",
+                "Estaré ahí en cinco minutos.",
+                "En cinco minutos estoy ahí."
+              ],
+              "explanation": "One way to say it: \"Llego en cinco minutos.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q24",
+              "type": "translate",
+              "prompt": "Ask someone to speak more slowly.",
+              "acceptableAnswers": [
+                "¿Puedes hablar más despacio?",
+                "Habla más despacio, por favor.",
+                "¿Podrías hablar más lento?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes hablar más despacio?\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p28u1",
+      "level": "A2",
+      "eyebrow": "Unit 29",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar).",
+      "lessons": [
+        {
+          "id": "esa2p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi madre me enseñó a cocer bien.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a cocer rápido.",
+                "Mi madre me enseñó a cocer bien.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Mi madre me enseñó a cocer bien.",
+              "explanation": "The audio says \"Mi madre me enseñó a cocer bien.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi madre me enseñó a coser bien.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a coser rápido.",
+                "Mi madre me enseñó a cocer bien.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Mi madre me enseñó a coser bien.",
+              "explanation": "The audio says \"Mi madre me enseñó a coser bien.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca aprendí a cocer rápido.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Nunca aprendí a coser rápido.",
+                "Nunca aprendí a cocer rápido.",
+                "Mi madre me enseñó a cocer bien."
+              ],
+              "answer": "Nunca aprendí a cocer rápido.",
+              "explanation": "The audio says \"Nunca aprendí a cocer rápido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca aprendí a coser rápido.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a coser rápido.",
+                "Nunca aprendí a cocer rápido.",
+                "Decidió revelarse ante todos."
+              ],
+              "answer": "Nunca aprendí a coser rápido.",
+              "explanation": "The audio says \"Nunca aprendí a coser rápido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidió rebelarse ante todos.",
+              "choices": [
+                "Nadie esperaba que fuera a rebelarse.",
+                "Decidió revelarse ante todos.",
+                "Todos notaron la pulla en su comentario.",
+                "Decidió rebelarse ante todos."
+              ],
+              "answer": "Decidió rebelarse ante todos.",
+              "explanation": "The audio says \"Decidió rebelarse ante todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidió revelarse ante todos.",
+              "choices": [
+                "Decidió revelarse ante todos.",
+                "Todos notaron la pulla en su comentario.",
+                "Decidió rebelarse ante todos.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Decidió revelarse ante todos.",
+              "explanation": "The audio says \"Decidió revelarse ante todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que fuera a rebelarse.",
+              "choices": [
+                "Prefería hojear la revista antes de comprarla.",
+                "Nadie esperaba que fuera a rebelarse.",
+                "Nadie esperaba que fuera a revelarse.",
+                "Decidió rebelarse ante todos."
+              ],
+              "answer": "Nadie esperaba que fuera a rebelarse.",
+              "explanation": "The audio says \"Nadie esperaba que fuera a rebelarse.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que fuera a revelarse.",
+              "choices": [
+                "Nadie esperaba que fuera a rebelarse.",
+                "Mi madre me enseñó a cocer bien.",
+                "Decidió revelarse ante todos.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Nadie esperaba que fuera a revelarse.",
+              "explanation": "The audio says \"Nadie esperaba que fuera a revelarse.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le lanzó una pulla sin piedad.",
+              "choices": [
+                "Le lanzó una pulla sin piedad.",
+                "Le lanzó una puya sin piedad.",
+                "Nunca aprendí a coser rápido.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Le lanzó una pulla sin piedad.",
+              "explanation": "The audio says \"Le lanzó una pulla sin piedad.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le lanzó una puya sin piedad.",
+              "choices": [
+                "Le lanzó una puya sin piedad.",
+                "Le lanzó una pulla sin piedad.",
+                "Todos notaron la puya en su comentario.",
+                "Prefería ojear la revista antes de comprarla."
+              ],
+              "answer": "Le lanzó una puya sin piedad.",
+              "explanation": "The audio says \"Le lanzó una puya sin piedad.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos notaron la pulla en su comentario.",
+              "choices": [
+                "Decidió rebelarse ante todos.",
+                "Todos notaron la puya en su comentario.",
+                "Le lanzó una pulla sin piedad.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Todos notaron la pulla en su comentario.",
+              "explanation": "The audio says \"Todos notaron la pulla en su comentario.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos notaron la puya en su comentario.",
+              "choices": [
+                "Decidió revelarse ante todos.",
+                "Le lanzó una puya sin piedad.",
+                "Todos notaron la puya en su comentario.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Todos notaron la puya en su comentario.",
+              "explanation": "The audio says \"Todos notaron la puya en su comentario.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se puso a hojear el periódico.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Se puso a ojear el periódico.",
+                "El niño no debía rallar eso.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Se puso a hojear el periódico.",
+              "explanation": "The audio says \"Se puso a hojear el periódico.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se puso a ojear el periódico.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Se puso a ojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Nunca aprendí a coser rápido."
+              ],
+              "answer": "Se puso a ojear el periódico.",
+              "explanation": "The audio says \"Se puso a ojear el periódico.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prefería hojear la revista antes de comprarla.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Todos notaron la pulla en su comentario.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Prefería hojear la revista antes de comprarla.",
+              "explanation": "The audio says \"Prefería hojear la revista antes de comprarla.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prefería ojear la revista antes de comprarla.",
+              "choices": [
+                "Se puso a ojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Alguien había dejado la taza en la cocina.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Prefería ojear la revista antes de comprarla.",
+              "explanation": "The audio says \"Prefería ojear la revista antes de comprarla.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El niño no debía rayar eso.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "No encontraba la taza en la mesa.",
+                "El niño no debía rayar eso.",
+                "El niño no debía rallar eso."
+              ],
+              "answer": "El niño no debía rayar eso.",
+              "explanation": "The audio says \"El niño no debía rayar eso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El niño no debía rallar eso.",
+              "choices": [
+                "El niño no debía rayar eso.",
+                "El niño no debía rallar eso.",
+                "Nadie esperaba que fuera a rebelarse.",
+                "Guardé la taza favorita en el estante."
+              ],
+              "answer": "El niño no debía rallar eso.",
+              "explanation": "The audio says \"El niño no debía rallar eso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le pedí que no rayara la mesa.",
+              "choices": [
+                "Le pedí que no rallara la mesa.",
+                "No encontraba la taza en la mesa.",
+                "Le pedí que no rayara la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "Le pedí que no rayara la mesa.",
+              "explanation": "The audio says \"Le pedí que no rayara la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le pedí que no rallara la mesa.",
+              "choices": [
+                "Le pedí que no rallara la mesa.",
+                "No encontraba la taza en la mesa.",
+                "Le pedí que no rayara la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "Le pedí que no rallara la mesa.",
+              "explanation": "The audio says \"Le pedí que no rallara la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No encontraba la taza en la mesa.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Alguien había dejado la taza en la cocina.",
+                "No encontraba la taza en la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "No encontraba la taza en la mesa.",
+              "explanation": "The audio says \"No encontraba la taza en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No encontraba la tasa en la mesa.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "No encontraba la tasa en la mesa.",
+              "explanation": "The audio says \"No encontraba la tasa en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Alguien había dejado la taza en la cocina.",
+              "choices": [
+                "Guardé la taza favorita en el estante.",
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Alguien había dejado la taza en la cocina.",
+              "explanation": "The audio says \"Alguien había dejado la taza en la cocina.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Alguien había dejado la tasa en la cocina.",
+              "choices": [
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la tasa en la mesa.",
+                "Se puso a hojear el periódico."
+              ],
+              "answer": "Alguien había dejado la tasa en la cocina.",
+              "explanation": "The audio says \"Alguien había dejado la tasa en la cocina.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Guardé la taza favorita en el estante.",
+              "choices": [
+                "Guardé la taza favorita en el estante.",
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Guardé la taza favorita en el estante.",
+              "explanation": "The audio says \"Guardé la taza favorita en el estante.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
             }
           ]
         }
@@ -22902,6 +24328,719 @@
       ]
     },
     {
+      "id": "esb1p27u1",
+      "level": "B1",
+      "eyebrow": "Unit 28",
+      "title": "Write It Yourself: Opinions and Reasons",
+      "description": "Say it your own way — Opinions, reasons and comparisons -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esb1p27l1",
+          "title": "Write It Yourself: Opinions and Reasons 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q0",
+              "type": "translate",
+              "prompt": "Say you think it's a good idea.",
+              "acceptableAnswers": [
+                "Creo que es una buena idea.",
+                "Pienso que es una buena idea.",
+                "Me parece una buena idea."
+              ],
+              "explanation": "One way to say it: \"Creo que es una buena idea.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q1",
+              "type": "translate",
+              "prompt": "Say in your opinion, he is right.",
+              "acceptableAnswers": [
+                "En mi opinión, él tiene razón.",
+                "A mi parecer, él tiene razón.",
+                "Yo creo que él tiene razón."
+              ],
+              "explanation": "One way to say it: \"En mi opinión, él tiene razón.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q2",
+              "type": "translate",
+              "prompt": "Say you are not convinced by that argument.",
+              "acceptableAnswers": [
+                "No estoy convencido por ese argumento.",
+                "Ese argumento no me convence.",
+                "No me convence ese argumento."
+              ],
+              "explanation": "One way to say it: \"No estoy convencido por ese argumento.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q3",
+              "type": "translate",
+              "prompt": "Say this movie is more interesting than the other one.",
+              "acceptableAnswers": [
+                "Esta película es más interesante que la otra.",
+                "Esta película es más interesante que la otra película.",
+                "La otra película es menos interesante que esta."
+              ],
+              "explanation": "One way to say it: \"Esta película es más interesante que la otra.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q4",
+              "type": "translate",
+              "prompt": "Say you prefer coffee to tea.",
+              "acceptableAnswers": [
+                "Prefiero el café al té.",
+                "Prefiero el café en vez del té.",
+                "Me gusta más el café que el té."
+              ],
+              "explanation": "One way to say it: \"Prefiero el café al té.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l2",
+          "title": "Write It Yourself: Opinions and Reasons 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q5",
+              "type": "translate",
+              "prompt": "Say it's better to leave early.",
+              "acceptableAnswers": [
+                "Es mejor salir temprano.",
+                "Más vale salir temprano.",
+                "Conviene salir temprano."
+              ],
+              "explanation": "One way to say it: \"Es mejor salir temprano.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q6",
+              "type": "translate",
+              "prompt": "Say that in your opinion, it's too expensive.",
+              "acceptableAnswers": [
+                "Según yo, es demasiado caro.",
+                "A mi juicio, es demasiado caro.",
+                "Me parece demasiado caro."
+              ],
+              "explanation": "One way to say it: \"Según yo, es demasiado caro.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q7",
+              "type": "translate",
+              "prompt": "Say you find this book boring.",
+              "acceptableAnswers": [
+                "Me parece aburrido este libro.",
+                "Encuentro este libro aburrido.",
+                "Este libro me aburre."
+              ],
+              "explanation": "One way to say it: \"Me parece aburrido este libro.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q8",
+              "type": "translate",
+              "prompt": "Say she is probably right.",
+              "acceptableAnswers": [
+                "Ella probablemente tiene razón.",
+                "Es probable que ella tenga razón.",
+                "Seguramente ella tiene razón."
+              ],
+              "explanation": "One way to say it: \"Ella probablemente tiene razón.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q9",
+              "type": "translate",
+              "prompt": "Say it's important to eat well.",
+              "acceptableAnswers": [
+                "Es importante comer bien.",
+                "Importa comer bien.",
+                "Es necesario comer bien."
+              ],
+              "explanation": "One way to say it: \"Es importante comer bien.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l3",
+          "title": "Write It Yourself: Opinions and Reasons 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q10",
+              "type": "translate",
+              "prompt": "Say it's necessary to book in advance.",
+              "acceptableAnswers": [
+                "Es necesario reservar con anticipación.",
+                "Hay que reservar con anticipación.",
+                "Hace falta reservar con anticipación."
+              ],
+              "explanation": "One way to say it: \"Es necesario reservar con anticipación.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q11",
+              "type": "translate",
+              "prompt": "Say you are happy with your results.",
+              "acceptableAnswers": [
+                "Estoy contento con mis resultados.",
+                "Estoy satisfecho con mis resultados.",
+                "Me siento contento con mis resultados."
+              ],
+              "explanation": "One way to say it: \"Estoy contento con mis resultados.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q12",
+              "type": "translate",
+              "prompt": "Say we are proud of our work.",
+              "acceptableAnswers": [
+                "Estamos orgullosos de nuestro trabajo.",
+                "Nos sentimos orgullosos de nuestro trabajo.",
+                "Es un orgullo nuestro trabajo."
+              ],
+              "explanation": "One way to say it: \"Estamos orgullosos de nuestro trabajo.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q13",
+              "type": "translate",
+              "prompt": "Say it's difficult to explain.",
+              "acceptableAnswers": [
+                "Es difícil de explicar.",
+                "Es complicado explicarlo.",
+                "Cuesta explicarlo."
+              ],
+              "explanation": "One way to say it: \"Es difícil de explicar.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q14",
+              "type": "translate",
+              "prompt": "Say it's not that simple.",
+              "acceptableAnswers": [
+                "No es tan simple.",
+                "No es tan sencillo.",
+                "No es así de simple."
+              ],
+              "explanation": "One way to say it: \"No es tan simple.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l4",
+          "title": "Write It Yourself: Opinions and Reasons 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q15",
+              "type": "translate",
+              "prompt": "Say you would like to change your mind.",
+              "acceptableAnswers": [
+                "Me gustaría cambiar de opinión.",
+                "Quisiera cambiar de opinión.",
+                "Quiero cambiar de parecer."
+              ],
+              "explanation": "One way to say it: \"Me gustaría cambiar de opinión.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q16",
+              "type": "translate",
+              "prompt": "Say everything depends on the situation.",
+              "acceptableAnswers": [
+                "Todo depende de la situación.",
+                "Todo depende de las circunstancias.",
+                "Depende de la situación."
+              ],
+              "explanation": "One way to say it: \"Todo depende de la situación.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q17",
+              "type": "translate",
+              "prompt": "Say that seems reasonable to you.",
+              "acceptableAnswers": [
+                "Eso me parece razonable.",
+                "Me parece razonable.",
+                "Eso suena razonable."
+              ],
+              "explanation": "One way to say it: \"Eso me parece razonable.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q18",
+              "type": "translate",
+              "prompt": "Say you doubt that's true.",
+              "acceptableAnswers": [
+                "Dudo que eso sea verdad.",
+                "No creo que eso sea verdad.",
+                "Dudo que eso sea cierto."
+              ],
+              "explanation": "One way to say it: \"Dudo que eso sea verdad.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q19",
+              "type": "translate",
+              "prompt": "Say one must be patient.",
+              "acceptableAnswers": [
+                "Hay que ser paciente.",
+                "Uno debe ser paciente.",
+                "Es necesario tener paciencia."
+              ],
+              "explanation": "One way to say it: \"Hay que ser paciente.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l5",
+          "title": "Write It Yourself: Opinions and Reasons 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q20",
+              "type": "translate",
+              "prompt": "Say we must make a decision.",
+              "acceptableAnswers": [
+                "Debemos tomar una decisión.",
+                "Tenemos que tomar una decisión.",
+                "Hace falta tomar una decisión."
+              ],
+              "explanation": "One way to say it: \"Debemos tomar una decisión.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q21",
+              "type": "translate",
+              "prompt": "Say this is the best possible solution.",
+              "acceptableAnswers": [
+                "Esta es la mejor solución posible.",
+                "Es la mejor solución que hay.",
+                "No hay mejor solución que esta."
+              ],
+              "explanation": "One way to say it: \"Esta es la mejor solución posible.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q22",
+              "type": "translate",
+              "prompt": "Say you understand someone's point of view.",
+              "acceptableAnswers": [
+                "Entiendo tu punto de vista.",
+                "Comprendo tu punto de vista.",
+                "Entiendo cómo ves las cosas."
+              ],
+              "explanation": "One way to say it: \"Entiendo tu punto de vista.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q23",
+              "type": "translate",
+              "prompt": "Say you finally agree.",
+              "acceptableAnswers": [
+                "Finalmente estoy de acuerdo.",
+                "Al final estoy de acuerdo.",
+                "Por fin estoy de acuerdo."
+              ],
+              "explanation": "One way to say it: \"Finalmente estoy de acuerdo.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q24",
+              "type": "translate",
+              "prompt": "Say the meeting was very productive.",
+              "acceptableAnswers": [
+                "La reunión fue muy productiva.",
+                "La reunión resultó muy productiva.",
+                "Fue una reunión muy productiva."
+              ],
+              "explanation": "One way to say it: \"La reunión fue muy productiva.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb1p28u1",
+      "level": "B1",
+      "eyebrow": "Unit 29",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar).",
+      "lessons": [
+        {
+          "id": "esb1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No sabía qué hacer con el cazo.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "No sabía qué hacer con el caso.",
+                "El cazo llevaba años guardado en la alacena.",
+                "No sabía qué hacer con el cazo."
+              ],
+              "answer": "No sabía qué hacer con el cazo.",
+              "explanation": "The audio says \"No sabía qué hacer con el cazo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No sabía qué hacer con el caso.",
+              "choices": [
+                "No sabía qué hacer con el caso.",
+                "Nadie sabía que había un pozo ahí.",
+                "No sabía qué hacer con el cazo.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "No sabía qué hacer con el caso.",
+              "explanation": "The audio says \"No sabía qué hacer con el caso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le devolvieron el cazo al día siguiente.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "El cazo llevaba años guardado en la alacena.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Le devolvieron el cazo al día siguiente.",
+              "explanation": "The audio says \"Le devolvieron el cazo al día siguiente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le devolvieron el caso al día siguiente.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Le devolvieron el caso al día siguiente.",
+              "explanation": "The audio says \"Le devolvieron el caso al día siguiente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Encontraron un pozo al fondo del jardín.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Nadie sabía que había un pozo ahí.",
+                "Le devolvieron el cazo al día siguiente."
+              ],
+              "answer": "Encontraron un pozo al fondo del jardín.",
+              "explanation": "The audio says \"Encontraron un pozo al fondo del jardín.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Encontraron un poso al fondo del jardín.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Encontraron un poso al fondo del jardín.",
+              "explanation": "The audio says \"Encontraron un poso al fondo del jardín.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que había un pozo ahí.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Nadie sabía que había un poso ahí.",
+                "Nadie sabía que había un pozo ahí.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "Nadie sabía que había un pozo ahí.",
+              "explanation": "The audio says \"Nadie sabía que había un pozo ahí.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que había un poso ahí.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "No sabía qué hacer con el caso.",
+                "Cerca de la granja había un poso.",
+                "Nadie sabía que había un pozo ahí."
+              ],
+              "answer": "Nadie sabía que había un poso ahí.",
+              "explanation": "The audio says \"Nadie sabía que había un poso ahí.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Cerca de la granja había un pozo.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Nadie sabía que había un poso ahí.",
+                "Cerca de la granja había un poso.",
+                "Nadie sabía que había un pozo ahí."
+              ],
+              "answer": "Cerca de la granja había un pozo.",
+              "explanation": "The audio says \"Cerca de la granja había un pozo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Cerca de la granja había un poso.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "El agua brotaba del poso constantemente.",
+                "Nadie sabía que había un poso ahí.",
+                "Cerca de la granja había un poso."
+              ],
+              "answer": "Cerca de la granja había un poso.",
+              "explanation": "The audio says \"Cerca de la granja había un poso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El material estaba bien cocido.",
+              "choices": [
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "El material estaba bien cocido.",
+              "explanation": "The audio says \"El material estaba bien cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El material estaba bien cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "El material estaba bien cosido.",
+              "explanation": "The audio says \"El material estaba bien cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Dijeron que todo estaba perfectamente cocido.",
+              "choices": [
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "Dijeron que todo estaba perfectamente cocido.",
+              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Dijeron que todo estaba perfectamente cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "El material estaba bien cosido."
+              ],
+              "answer": "Dijeron que todo estaba perfectamente cosido.",
+              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Revisaron si estaba bien cocido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "Revisaron si estaba bien cocido.",
+              "explanation": "The audio says \"Revisaron si estaba bien cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Revisaron si estaba bien cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido."
+              ],
+              "answer": "Revisaron si estaba bien cosido.",
+              "explanation": "The audio says \"Revisaron si estaba bien cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron grabar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "Decidieron grabar el evento completo.",
+              "explanation": "The audio says \"Decidieron grabar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron gravar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "Decidieron gravar el evento completo.",
+              "explanation": "The audio says \"Decidieron gravar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El equipo tuvo que grabar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "El equipo tuvo que grabar el evento completo.",
+              "explanation": "The audio says \"El equipo tuvo que grabar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El equipo tuvo que gravar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "El equipo tuvo que gravar el evento completo.",
+              "explanation": "The audio says \"El equipo tuvo que gravar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prometieron grabar toda la ceremonia.",
+              "choices": [
+                "Decidieron grabar el evento completo.",
+                "Prometieron gravar toda la ceremonia.",
+                "El equipo tuvo que grabar el evento completo.",
+                "Prometieron grabar toda la ceremonia."
+              ],
+              "answer": "Prometieron grabar toda la ceremonia.",
+              "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prometieron gravar toda la ceremonia.",
+              "choices": [
+                "El equipo tuvo que gravar el evento completo.",
+                "Prometieron gravar toda la ceremonia.",
+                "Decidieron gravar el evento completo.",
+                "Prometieron grabar toda la ceremonia."
+              ],
+              "answer": "Prometieron gravar toda la ceremonia.",
+              "explanation": "The audio says \"Prometieron gravar toda la ceremonia.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El agua brotaba del pozo constantemente.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Encontraron un pozo al fondo del jardín.",
+                "El agua brotaba del poso constantemente.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "El agua brotaba del pozo constantemente.",
+              "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El agua brotaba del poso constantemente.",
+              "choices": [
+                "Encontraron un poso al fondo del jardín.",
+                "Nadie sabía que había un poso ahí.",
+                "El agua brotaba del poso constantemente.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "El agua brotaba del poso constantemente.",
+              "explanation": "The audio says \"El agua brotaba del poso constantemente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazo llevaba años guardado en la alacena.",
+              "choices": [
+                "El cazo llevaba años guardado en la alacena.",
+                "No sabía qué hacer con el cazo.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "El cazo llevaba años guardado en la alacena.",
+              "explanation": "The audio says \"El cazo llevaba años guardado en la alacena.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb2p1u1",
       "level": "B2",
       "eyebrow": "Unit 1",
@@ -30486,6 +32625,719 @@
       ]
     },
     {
+      "id": "esb2p27u1",
+      "level": "B2",
+      "eyebrow": "Unit 28",
+      "title": "Write It Yourself: Multi-Clause Sentences",
+      "description": "Say it your own way — Multi-clause sentences -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esb2p27l1",
+          "title": "Write It Yourself: Multi-Clause Sentences 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q0",
+              "type": "translate",
+              "prompt": "Say that when you finish work, you'll go for a walk.",
+              "acceptableAnswers": [
+                "Cuando termine el trabajo, iré a caminar.",
+                "Cuando acabe el trabajo, saldré a caminar.",
+                "Iré a caminar cuando termine el trabajo."
+              ],
+              "explanation": "One way to say it: \"Cuando termine el trabajo, iré a caminar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q1",
+              "type": "translate",
+              "prompt": "Say that if you have time, you could have lunch together.",
+              "acceptableAnswers": [
+                "Si tienes tiempo, podríamos almorzar juntos.",
+                "Si tienes tiempo, podríamos comer juntos.",
+                "Podríamos almorzar juntos si tienes tiempo."
+              ],
+              "explanation": "One way to say it: \"Si tienes tiempo, podríamos almorzar juntos.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q2",
+              "type": "translate",
+              "prompt": "Say that although it's difficult, you're going to try.",
+              "acceptableAnswers": [
+                "Aunque es difícil, voy a intentarlo.",
+                "Aunque sea difícil, lo voy a intentar.",
+                "Voy a intentarlo aunque sea difícil."
+              ],
+              "explanation": "One way to say it: \"Aunque es difícil, voy a intentarlo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q3",
+              "type": "translate",
+              "prompt": "Say that since it's raining, you'll stay home.",
+              "acceptableAnswers": [
+                "Como está lloviendo, nos quedaremos en casa.",
+                "Ya que está lloviendo, nos quedamos en casa.",
+                "Nos quedaremos en casa porque está lloviendo."
+              ],
+              "explanation": "One way to say it: \"Como está lloviendo, nos quedaremos en casa.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q4",
+              "type": "translate",
+              "prompt": "Say that when you arrive, you'll call.",
+              "acceptableAnswers": [
+                "Cuando llegue, te llamaré.",
+                "Cuando llegue, llamo.",
+                "Te llamaré en cuanto llegue."
+              ],
+              "explanation": "One way to say it: \"Cuando llegue, te llamaré.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l2",
+          "title": "Write It Yourself: Multi-Clause Sentences 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q5",
+              "type": "translate",
+              "prompt": "Say that if we leave now, you think we'll arrive on time.",
+              "acceptableAnswers": [
+                "Creo que si salimos ahora, llegaremos a tiempo.",
+                "Pienso que si nos vamos ahora, llegaremos a tiempo.",
+                "Si salimos ahora, creo que llegaremos a tiempo."
+              ],
+              "explanation": "One way to say it: \"Creo que si salimos ahora, llegaremos a tiempo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q6",
+              "type": "translate",
+              "prompt": "Say she said she would come, but she didn't come.",
+              "acceptableAnswers": [
+                "Ella dijo que vendría, pero no vino.",
+                "Dijo que iba a venir, pero no llegó.",
+                "Ella dijo que vendría y no vino."
+              ],
+              "explanation": "One way to say it: \"Ella dijo que vendría, pero no vino.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q7",
+              "type": "translate",
+              "prompt": "Say that even if it's expensive, you're going to buy it.",
+              "acceptableAnswers": [
+                "Aunque sea caro, lo voy a comprar.",
+                "Incluso si es caro, lo compraré.",
+                "Lo voy a comprar aunque sea caro."
+              ],
+              "explanation": "One way to say it: \"Aunque sea caro, lo voy a comprar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q8",
+              "type": "translate",
+              "prompt": "Say that as soon as you have news, you'll let me know.",
+              "acceptableAnswers": [
+                "En cuanto tenga noticias, te aviso.",
+                "Tan pronto tenga noticias, te avisaré.",
+                "Te aviso apenas tenga noticias."
+              ],
+              "explanation": "One way to say it: \"En cuanto tenga noticias, te aviso.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q9",
+              "type": "translate",
+              "prompt": "Say it's necessary that you finish before tonight.",
+              "acceptableAnswers": [
+                "Es necesario que termines antes de esta noche.",
+                "Hace falta que termines antes de esta noche.",
+                "Tienes que terminar antes de esta noche."
+              ],
+              "explanation": "One way to say it: \"Es necesario que termines antes de esta noche.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l3",
+          "title": "Write It Yourself: Multi-Clause Sentences 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q10",
+              "type": "translate",
+              "prompt": "Say you would like him to help you with this project.",
+              "acceptableAnswers": [
+                "Quisiera que me ayudara con este proyecto.",
+                "Me gustaría que me ayudara con este proyecto.",
+                "Quiero que me ayude con este proyecto."
+              ],
+              "explanation": "One way to say it: \"Quisiera que me ayudara con este proyecto.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q11",
+              "type": "translate",
+              "prompt": "Say you hope everything goes well.",
+              "acceptableAnswers": [
+                "Espero que todo salga bien.",
+                "Ojalá que todo salga bien.",
+                "Espero que todo vaya bien."
+              ],
+              "explanation": "One way to say it: \"Espero que todo salga bien.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q12",
+              "type": "translate",
+              "prompt": "Say that since it was cold, you came home early.",
+              "acceptableAnswers": [
+                "Como hacía frío, volvimos temprano a casa.",
+                "Como hacía frío, regresamos temprano.",
+                "Volvimos temprano porque hacía frío."
+              ],
+              "explanation": "One way to say it: \"Como hacía frío, volvimos temprano a casa.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q13",
+              "type": "translate",
+              "prompt": "Say that as long as you agree, we can continue.",
+              "acceptableAnswers": [
+                "Mientras estés de acuerdo, podemos continuar.",
+                "Siempre que estés de acuerdo, seguimos.",
+                "Podemos seguir mientras estés de acuerdo."
+              ],
+              "explanation": "One way to say it: \"Mientras estés de acuerdo, podemos continuar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q14",
+              "type": "translate",
+              "prompt": "Say before leaving, check that everything is closed.",
+              "acceptableAnswers": [
+                "Antes de salir, verifica que todo esté cerrado.",
+                "Antes de irte, revisa que todo esté cerrado.",
+                "Antes de salir, asegúrate de que todo esté cerrado."
+              ],
+              "explanation": "One way to say it: \"Antes de salir, verifica que todo esté cerrado.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l4",
+          "title": "Write It Yourself: Multi-Clause Sentences 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q15",
+              "type": "translate",
+              "prompt": "Say that after eating, you went for a walk.",
+              "acceptableAnswers": [
+                "Después de comer, salimos a caminar.",
+                "Después de comer, fuimos a caminar.",
+                "Salimos a caminar después de comer."
+              ],
+              "explanation": "One way to say it: \"Después de comer, salimos a caminar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q16",
+              "type": "translate",
+              "prompt": "Say that although he is tired, he keeps working.",
+              "acceptableAnswers": [
+                "Aunque está cansado, sigue trabajando.",
+                "A pesar de estar cansado, sigue trabajando.",
+                "Sigue trabajando aunque esté cansado."
+              ],
+              "explanation": "One way to say it: \"Aunque está cansado, sigue trabajando.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q17",
+              "type": "translate",
+              "prompt": "Say since you insist, you accept.",
+              "acceptableAnswers": [
+                "Ya que insistes, acepto.",
+                "Puesto que insistes, acepto.",
+                "Como insistes, acepto."
+              ],
+              "explanation": "One way to say it: \"Ya que insistes, acepto.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q18",
+              "type": "translate",
+              "prompt": "Say whatever happens, you'll be there for them.",
+              "acceptableAnswers": [
+                "Pase lo que pase, estaré ahí para ellos.",
+                "Ocurra lo que ocurra, estaré con ellos.",
+                "Pase lo que pase, los voy a apoyar."
+              ],
+              "explanation": "One way to say it: \"Pase lo que pase, estaré ahí para ellos.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q19",
+              "type": "translate",
+              "prompt": "Say if you had known, you wouldn't have come.",
+              "acceptableAnswers": [
+                "Si lo hubiera sabido, no habría venido.",
+                "Si lo hubiese sabido, no hubiera venido.",
+                "De haberlo sabido, no habría venido."
+              ],
+              "explanation": "One way to say it: \"Si lo hubiera sabido, no habría venido.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l5",
+          "title": "Write It Yourself: Multi-Clause Sentences 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q20",
+              "type": "translate",
+              "prompt": "Say every time you see him, he talks about work.",
+              "acceptableAnswers": [
+                "Cada vez que lo veo, habla del trabajo.",
+                "Cada vez que lo veo, me habla de su trabajo.",
+                "Siempre que lo veo, habla de trabajo."
+              ],
+              "explanation": "One way to say it: \"Cada vez que lo veo, habla del trabajo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q21",
+              "type": "translate",
+              "prompt": "Say the more you think about it, the more convinced you are.",
+              "acceptableAnswers": [
+                "Cuanto más lo pienso, más convencido estoy.",
+                "Mientras más lo pienso, más me convenzo.",
+                "Entre más lo pienso, más seguro estoy."
+              ],
+              "explanation": "One way to say it: \"Cuanto más lo pienso, más convencido estoy.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q22",
+              "type": "translate",
+              "prompt": "Say whether you like it or not, it has to be done.",
+              "acceptableAnswers": [
+                "Te guste o no, hay que hacerlo.",
+                "Quieras o no, se tiene que hacer.",
+                "Aunque no te guste, hay que hacerlo."
+              ],
+              "explanation": "One way to say it: \"Te guste o no, hay que hacerlo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q23",
+              "type": "translate",
+              "prompt": "Say although you're busy, you're going to help.",
+              "acceptableAnswers": [
+                "Aunque estoy ocupado, voy a ayudar.",
+                "Aunque esté ocupado, ayudaré.",
+                "Voy a ayudar aunque esté ocupado."
+              ],
+              "explanation": "One way to say it: \"Aunque estoy ocupado, voy a ayudar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q24",
+              "type": "translate",
+              "prompt": "Say once this is finished, we can leave.",
+              "acceptableAnswers": [
+                "Una vez que esto termine, podemos irnos.",
+                "En cuanto esto termine, nos podemos ir.",
+                "Cuando esto termine, podremos irnos."
+              ],
+              "explanation": "One way to say it: \"Una vez que esto termine, podemos irnos.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esb2p28u1",
+      "level": "B2",
+      "eyebrow": "Unit 29",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar).",
+      "lessons": [
+        {
+          "id": "esb2p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Llegaron hasta la cima de la montaña.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la cima.",
+                "Llegaron hasta la cima de la montaña.",
+                "Desde arriba se veía toda la cima.",
+                "Llegaron hasta la sima de la montaña."
+              ],
+              "answer": "Llegaron hasta la cima de la montaña.",
+              "explanation": "The audio says \"Llegaron hasta la cima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Llegaron hasta la sima de la montaña.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Llegaron hasta la cima de la montaña.",
+                "Llegaron hasta la sima de la montaña."
+              ],
+              "answer": "Llegaron hasta la sima de la montaña.",
+              "explanation": "The audio says \"Llegaron hasta la sima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie se atrevía a acercarse a la cima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la cima.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie se atrevía a acercarse a la cima.",
+              "explanation": "The audio says \"Nadie se atrevía a acercarse a la cima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie se atrevía a acercarse a la sima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Nadie se atrevía a acercarse a la sima.",
+              "explanation": "The audio says \"Nadie se atrevía a acercarse a la sima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Desde arriba se veía toda la cima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "El concejo escolar se reunió por la tarde.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Desde arriba se veía toda la cima.",
+              "explanation": "The audio says \"Desde arriba se veía toda la cima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Desde arriba se veía toda la sima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Desde arriba se veía toda la sima.",
+              "explanation": "The audio says \"Desde arriba se veía toda la sima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El alcalde presentó el concejo a todos.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "El alcalde presentó el concejo a todos.",
+              "explanation": "The audio says \"El alcalde presentó el concejo a todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El alcalde presentó el consejo a todos.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "El alcalde presentó el consejo a todos.",
+              "explanation": "The audio says \"El alcalde presentó el consejo a todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos hablaban sobre el concejo del pueblo.",
+              "choices": [
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Todos hablaban sobre el concejo del pueblo.",
+              "explanation": "The audio says \"Todos hablaban sobre el concejo del pueblo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos hablaban sobre el consejo del pueblo.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "Todos hablaban sobre el consejo del pueblo.",
+              "explanation": "The audio says \"Todos hablaban sobre el consejo del pueblo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que el concejo cambiara de opinión.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie sabía que alguien los estaba acechando.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie esperaba que el concejo cambiara de opinión.",
+              "explanation": "The audio says \"Nadie esperaba que el concejo cambiara de opinión.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que el consejo cambiara de opinión.",
+              "choices": [
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie esperaba que el consejo cambiara de opinión.",
+              "explanation": "The audio says \"Nadie esperaba que el consejo cambiara de opinión.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El calor parecía abrasar todo a su paso.",
+              "choices": [
+                "El animal empezó a acechar a su presa.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrazar todo a su paso.",
+                "El calor parecía abrasar todo a su paso."
+              ],
+              "answer": "El calor parecía abrasar todo a su paso.",
+              "explanation": "The audio says \"El calor parecía abrasar todo a su paso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El calor parecía abrazar todo a su paso.",
+              "choices": [
+                "El calor parecía abrazar todo a su paso.",
+                "El calor parecía abrasar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "El calor parecía abrazar todo a su paso.",
+              "explanation": "The audio says \"El calor parecía abrazar todo a su paso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Sintió que el fuego lo iba a abrasar.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrasar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar."
+              ],
+              "answer": "Sintió que el fuego lo iba a abrasar.",
+              "explanation": "The audio says \"Sintió que el fuego lo iba a abrasar.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Sintió que su madre lo iba a abrazar.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrazar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar."
+              ],
+              "answer": "Sintió que su madre lo iba a abrazar.",
+              "explanation": "The audio says \"Sintió que su madre lo iba a abrazar.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El animal empezó a acechar a su presa.",
+              "choices": [
+                "El cazador decidió acechar en silencio.",
+                "El animal empezó a acechar a su presa.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "El animal empezó a asechar a su presa."
+              ],
+              "answer": "El animal empezó a acechar a su presa.",
+              "explanation": "The audio says \"El animal empezó a acechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El animal empezó a asechar a su presa.",
+              "choices": [
+                "El animal empezó a acechar a su presa.",
+                "El cazador decidió asechar en silencio.",
+                "Todos hablaban sobre el concejo del pueblo.",
+                "El animal empezó a asechar a su presa."
+              ],
+              "answer": "El animal empezó a asechar a su presa.",
+              "explanation": "The audio says \"El animal empezó a asechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que alguien los estaba acechando.",
+              "choices": [
+                "Nadie sabía que alguien los estaba asechando.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie sabía que alguien los estaba acechando."
+              ],
+              "answer": "Nadie sabía que alguien los estaba acechando.",
+              "explanation": "The audio says \"Nadie sabía que alguien los estaba acechando.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que alguien los estaba asechando.",
+              "choices": [
+                "Nadie sabía que alguien los estaba asechando.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie sabía que alguien los estaba acechando."
+              ],
+              "answer": "Nadie sabía que alguien los estaba asechando.",
+              "explanation": "The audio says \"Nadie sabía que alguien los estaba asechando.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazador decidió acechar en silencio.",
+              "choices": [
+                "El cazador decidió acechar en silencio.",
+                "El cazador decidió asechar en silencio.",
+                "Nadie sabía que alguien los estaba acechando.",
+                "El animal empezó a acechar a su presa."
+              ],
+              "answer": "El cazador decidió acechar en silencio.",
+              "explanation": "The audio says \"El cazador decidió acechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazador decidió asechar en silencio.",
+              "choices": [
+                "El animal empezó a asechar a su presa.",
+                "El cazador decidió acechar en silencio.",
+                "El alcalde presentó el consejo a todos.",
+                "El cazador decidió asechar en silencio."
+              ],
+              "answer": "El cazador decidió asechar en silencio.",
+              "explanation": "The audio says \"El cazador decidió asechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El consejo escolar se reunió por la tarde.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El consejo escolar se reunió por la tarde.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "El concejo escolar se reunió por la tarde."
+              ],
+              "answer": "El consejo escolar se reunió por la tarde.",
+              "explanation": "The audio says \"El consejo escolar se reunió por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El concejo escolar se reunió por la tarde.",
+              "choices": [
+                "El consejo escolar se reunió por la tarde.",
+                "Desde arriba se veía toda la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "El concejo escolar se reunió por la tarde."
+              ],
+              "answer": "El concejo escolar se reunió por la tarde.",
+              "explanation": "The audio says \"El concejo escolar se reunió por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La sima resultó ser más profunda de lo esperado.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "Desde arriba se veía toda la sima.",
+                "Nadie se atrevía a acercarse a la sima."
+              ],
+              "answer": "La sima resultó ser más profunda de lo esperado.",
+              "explanation": "The audio says \"La sima resultó ser más profunda de lo esperado.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esc1p1u1",
       "level": "C1",
       "eyebrow": "Unit 1",
@@ -38025,6 +40877,719 @@
               "prompt": "Say this aloud:",
               "answer": "Sin más preámbulos, comencemos.",
               "explanation": "Target phrase: \"Sin más preámbulos, comencemos.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p27u1",
+      "level": "C1",
+      "eyebrow": "Unit 28",
+      "title": "Write It Yourself: Idiomatic and Formal Phrasing",
+      "description": "Say it your own way — Idiomatic and formal phrasing -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esc1p27l1",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q0",
+              "type": "translate",
+              "prompt": "Say it goes without saying that this project is important.",
+              "acceptableAnswers": [
+                "Ni que decir tiene que este proyecto es importante.",
+                "Huelga decir que este proyecto es importante.",
+                "Sobra decir que este proyecto es importante."
+              ],
+              "explanation": "One way to say it: \"Ni que decir tiene que este proyecto es importante.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q1",
+              "type": "translate",
+              "prompt": "Say that goes without saying.",
+              "acceptableAnswers": [
+                "Eso ni se pregunta.",
+                "Eso se sobreentiende.",
+                "Ni hace falta decirlo."
+              ],
+              "explanation": "One way to say it: \"Eso ni se pregunta.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q2",
+              "type": "translate",
+              "prompt": "Say please excuse this delay.",
+              "acceptableAnswers": [
+                "Le ruego que disculpe este retraso.",
+                "Le pido disculpas por este retraso.",
+                "Disculpe usted este retraso, por favor."
+              ],
+              "explanation": "One way to say it: \"Le ruego que disculpe este retraso.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q3",
+              "type": "translate",
+              "prompt": "Say we are pleased to inform you of our decision.",
+              "acceptableAnswers": [
+                "Nos complace informarle de nuestra decisión.",
+                "Tenemos el gusto de comunicarle nuestra decisión.",
+                "Nos es grato informarle nuestra decisión."
+              ],
+              "explanation": "One way to say it: \"Nos complace informarle de nuestra decisión.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q4",
+              "type": "translate",
+              "prompt": "Say please find attached the requested document.",
+              "acceptableAnswers": [
+                "Adjunto encontrará el documento solicitado.",
+                "Le envío adjunto el documento solicitado.",
+                "Encontrará adjunto el documento que pidió."
+              ],
+              "explanation": "One way to say it: \"Adjunto encontrará el documento solicitado.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l2",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q5",
+              "type": "translate",
+              "prompt": "Say we will do our best.",
+              "acceptableAnswers": [
+                "Haremos todo lo posible.",
+                "Haremos lo que esté a nuestro alcance.",
+                "Pondremos todo de nuestra parte."
+              ],
+              "explanation": "One way to say it: \"Haremos todo lo posible.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q6",
+              "type": "translate",
+              "prompt": "Say be that as it may, we must move forward.",
+              "acceptableAnswers": [
+                "Sea como sea, debemos avanzar.",
+                "Como quiera que sea, tenemos que seguir adelante.",
+                "De todos modos, hay que avanzar."
+              ],
+              "explanation": "One way to say it: \"Sea como sea, debemos avanzar.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q7",
+              "type": "translate",
+              "prompt": "Say there is no doubt about that.",
+              "acceptableAnswers": [
+                "No cabe duda de eso.",
+                "No hay ninguna duda al respecto.",
+                "Eso está fuera de toda duda."
+              ],
+              "explanation": "One way to say it: \"No cabe duda de eso.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q8",
+              "type": "translate",
+              "prompt": "Say the problem persists nonetheless.",
+              "acceptableAnswers": [
+                "El problema persiste sin embargo.",
+                "No obstante, el problema sigue ahí.",
+                "A pesar de todo, el problema continúa."
+              ],
+              "explanation": "One way to say it: \"El problema persiste sin embargo.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q9",
+              "type": "translate",
+              "prompt": "Say to tell the truth, you have no idea.",
+              "acceptableAnswers": [
+                "La verdad, no tengo ni idea.",
+                "A decir verdad, no tengo idea.",
+                "Para serte sincero, no sé nada."
+              ],
+              "explanation": "One way to say it: \"La verdad, no tengo ni idea.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l3",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q10",
+              "type": "translate",
+              "prompt": "Say all things considered, it was a good decision.",
+              "acceptableAnswers": [
+                "Considerando todo, fue una buena decisión.",
+                "Bien mirado, fue una buena decisión.",
+                "En resumidas cuentas, fue una buena decisión."
+              ],
+              "explanation": "One way to say it: \"Considerando todo, fue una buena decisión.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q11",
+              "type": "translate",
+              "prompt": "Say in the end, it doesn't matter.",
+              "acceptableAnswers": [
+                "Al final, no importa.",
+                "Al fin y al cabo, no importa.",
+                "A fin de cuentas, no importa."
+              ],
+              "explanation": "One way to say it: \"Al final, no importa.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q12",
+              "type": "translate",
+              "prompt": "Say you would like to thank someone for their trust.",
+              "acceptableAnswers": [
+                "Quisiera agradecerle su confianza.",
+                "Le agradezco mucho su confianza.",
+                "Deseo expresarle mi agradecimiento por su confianza."
+              ],
+              "explanation": "One way to say it: \"Quisiera agradecerle su confianza.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q13",
+              "type": "translate",
+              "prompt": "Say we remain at your entire disposal.",
+              "acceptableAnswers": [
+                "Quedamos a su entera disposición.",
+                "Estamos a su disposición para lo que necesite.",
+                "Seguimos a su disposición."
+              ],
+              "explanation": "One way to say it: \"Quedamos a su entera disposición.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q14",
+              "type": "translate",
+              "prompt": "Say that's a matter of common sense.",
+              "acceptableAnswers": [
+                "Eso es cuestión de sentido común.",
+                "Eso es de sentido común.",
+                "Es una cuestión de lógica."
+              ],
+              "explanation": "One way to say it: \"Eso es cuestión de sentido común.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l4",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q15",
+              "type": "translate",
+              "prompt": "Say that said, you should remain cautious.",
+              "acceptableAnswers": [
+                "Dicho esto, debemos ser cautelosos.",
+                "Aun así, conviene ser prudentes.",
+                "Dicho lo cual, hay que tener cuidado."
+              ],
+              "explanation": "One way to say it: \"Dicho esto, debemos ser cautelosos.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q16",
+              "type": "translate",
+              "prompt": "Say there's no smoke without fire.",
+              "acceptableAnswers": [
+                "No hay humo sin fuego.",
+                "Cuando el río suena, agua lleva.",
+                "Algo de cierto habrá cuando tanto se dice."
+              ],
+              "explanation": "One way to say it: \"No hay humo sin fuego.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q17",
+              "type": "translate",
+              "prompt": "Say better late than never.",
+              "acceptableAnswers": [
+                "Más vale tarde que nunca.",
+                "Mejor tarde que nunca.",
+                "Vale más tarde que nunca."
+              ],
+              "explanation": "One way to say it: \"Más vale tarde que nunca.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q18",
+              "type": "translate",
+              "prompt": "Say each thing in its own time.",
+              "acceptableAnswers": [
+                "Cada cosa a su tiempo.",
+                "Todo a su debido tiempo.",
+                "Cada cosa en su momento."
+              ],
+              "explanation": "One way to say it: \"Cada cosa a su tiempo.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q19",
+              "type": "translate",
+              "prompt": "Say things are getting worse.",
+              "acceptableAnswers": [
+                "Las cosas van de mal en peor.",
+                "Todo va cada vez peor.",
+                "La situación empeora cada vez más."
+              ],
+              "explanation": "One way to say it: \"Las cosas van de mal en peor.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l5",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q20",
+              "type": "translate",
+              "prompt": "Say you would be grateful if someone could reply quickly.",
+              "acceptableAnswers": [
+                "Le agradecería que respondiera pronto.",
+                "Le quedaría muy agradecido si contesta pronto.",
+                "Agradecería una respuesta rápida."
+              ],
+              "explanation": "One way to say it: \"Le agradecería que respondiera pronto.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q21",
+              "type": "translate",
+              "prompt": "Say we apologize for the inconvenience caused.",
+              "acceptableAnswers": [
+                "Le pedimos disculpas por las molestias ocasionadas.",
+                "Lamentamos las molestias que esto haya causado.",
+                "Rogamos disculpe las molestias causadas."
+              ],
+              "explanation": "One way to say it: \"Le pedimos disculpas por las molestias ocasionadas.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q22",
+              "type": "translate",
+              "prompt": "Say this is the world turned upside down.",
+              "acceptableAnswers": [
+                "Esto es el mundo al revés.",
+                "Este es un mundo al revés.",
+                "Aquí todo está al revés."
+              ],
+              "explanation": "One way to say it: \"Esto es el mundo al revés.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q23",
+              "type": "translate",
+              "prompt": "Say in a word, everything is fine.",
+              "acceptableAnswers": [
+                "En una palabra, todo está bien.",
+                "En resumen, todo va bien.",
+                "En pocas palabras, todo marcha bien."
+              ],
+              "explanation": "One way to say it: \"En una palabra, todo está bien.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q24",
+              "type": "translate",
+              "prompt": "Say we look forward to hearing from you.",
+              "acceptableAnswers": [
+                "Quedamos a la espera de su respuesta.",
+                "Esperamos su pronta respuesta.",
+                "Aguardamos noticias suyas."
+              ],
+              "explanation": "One way to say it: \"Quedamos a la espera de su respuesta.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p28u1",
+      "level": "C1",
+      "eyebrow": "Unit 29",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón).",
+      "lessons": [
+        {
+          "id": "esc1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El juez decidió encausar al acusado de inmediato.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El juez decidió encausar al acusado de inmediato.",
+              "explanation": "The audio says \"El juez decidió encausar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El juez decidió encauzar al acusado de inmediato.",
+              "choices": [
+                "El juez decidió encausar al acusado de inmediato.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El juez decidió encauzar al acusado de inmediato.",
+              "explanation": "The audio says \"El juez decidió encauzar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité decidió encausar el problema de raíz.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato."
+              ],
+              "answer": "El comité decidió encausar el problema de raíz.",
+              "explanation": "The audio says \"El comité decidió encausar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité decidió encauzar el problema de raíz.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El comité decidió encauzar el problema de raíz.",
+              "explanation": "The audio says \"El comité decidió encauzar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Intentaron encauzar la situación desde el principio.",
+              "choices": [
+                "Intentaron encausar la situación desde el principio.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "Intentaron encauzar la situación desde el principio."
+              ],
+              "answer": "Intentaron encauzar la situación desde el principio.",
+              "explanation": "The audio says \"Intentaron encauzar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Intentaron encausar la situación desde el principio.",
+              "choices": [
+                "Intentaron encausar la situación desde el principio.",
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "Intentaron encauzar la situación desde el principio."
+              ],
+              "answer": "Intentaron encausar la situación desde el principio.",
+              "explanation": "The audio says \"Intentaron encausar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "En el documento decía que era un varón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "El título nobiliario pertenecía a un varón.",
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "En el documento decía que era un varón.",
+              "explanation": "The audio says \"En el documento decía que era un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "En el documento decía que era un barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "Nadie sabía que el bebé era barón.",
+                "En el documento decía que era un varón.",
+                "El título nobiliario pertenecía a un barón."
+              ],
+              "answer": "En el documento decía que era un barón.",
+              "explanation": "The audio says \"En el documento decía que era un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que el bebé era varón.",
+              "choices": [
+                "Nadie sabía que el bebé era barón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "Nadie sabía que el bebé era varón.",
+              "explanation": "The audio says \"Nadie sabía que el bebé era varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que el bebé era barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "Nadie sabía que el bebé era barón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "Nadie sabía que el bebé era barón.",
+              "explanation": "The audio says \"Nadie sabía que el bebé era barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El título nobiliario pertenecía a un barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "El título nobiliario pertenecía a un varón.",
+                "El título nobiliario pertenecía a un barón.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "El título nobiliario pertenecía a un barón.",
+              "explanation": "The audio says \"El título nobiliario pertenecía a un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El título nobiliario pertenecía a un varón.",
+              "choices": [
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón.",
+                "El título nobiliario pertenecía a un barón.",
+                "El título nobiliario pertenecía a un varón."
+              ],
+              "answer": "El título nobiliario pertenecía a un varón.",
+              "explanation": "The audio says \"El título nobiliario pertenecía a un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+              "choices": [
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "El comité reconoció haber alcanzado la cima del proceso."
+              ],
+              "answer": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+              "explanation": "The audio says \"Los diplomáticos llegaron hasta la cima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones."
+              ],
+              "answer": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+              "explanation": "The audio says \"Los diplomáticos llegaron hasta la sima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité reconoció haber alcanzado la cima del proceso.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "El comité reconoció haber alcanzado la cima del proceso.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "El comité reconoció haber alcanzado la cima del proceso.",
+              "explanation": "The audio says \"El comité reconoció haber alcanzado la cima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité reconoció haber alcanzado la sima del proceso.",
+              "choices": [
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "El comité reconoció haber alcanzado la cima del proceso.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "El comité reconoció haber alcanzado la sima del proceso.",
+              "explanation": "The audio says \"El comité reconoció haber alcanzado la sima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La expedición alcanzó finalmente la cima más alta.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta.",
+                "El comité reconoció haber alcanzado la cima del proceso."
+              ],
+              "answer": "La expedición alcanzó finalmente la cima más alta.",
+              "explanation": "The audio says \"La expedición alcanzó finalmente la cima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La expedición alcanzó finalmente la sima más alta.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta."
+              ],
+              "answer": "La expedición alcanzó finalmente la sima más alta.",
+              "explanation": "The audio says \"La expedición alcanzó finalmente la sima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los inversionistas decidieron acechar el mercado en silencio.",
+              "choices": [
+                "El depredador aprendió a acechar pacientemente a su presa.",
+                "En el documento decía que era un barón.",
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "Los inversionistas decidieron asechar el mercado en silencio."
+              ],
+              "answer": "Los inversionistas decidieron acechar el mercado en silencio.",
+              "explanation": "The audio says \"Los inversionistas decidieron acechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los inversionistas decidieron asechar el mercado en silencio.",
+              "choices": [
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "Los inversionistas decidieron asechar el mercado en silencio.",
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "El juez decidió encauzar al acusado de inmediato."
+              ],
+              "answer": "Los inversionistas decidieron asechar el mercado en silencio.",
+              "explanation": "The audio says \"Los inversionistas decidieron asechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sospechaba que el escándalo los estuviera acechando.",
+              "choices": [
+                "Nadie sabía que el bebé era varón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sospechaba que el escándalo los estuviera asechando.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "Nadie sospechaba que el escándalo los estuviera acechando.",
+              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera acechando.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sospechaba que el escándalo los estuviera asechando.",
+              "choices": [
+                "Nadie sabía que el bebé era varón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sospechaba que el escándalo los estuviera asechando.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "Nadie sospechaba que el escándalo los estuviera asechando.",
+              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera asechando.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El depredador aprendió a acechar pacientemente a su presa.",
+              "choices": [
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "El depredador aprendió a acechar pacientemente a su presa."
+              ],
+              "answer": "El depredador aprendió a acechar pacientemente a su presa.",
+              "explanation": "The audio says \"El depredador aprendió a acechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El depredador aprendió a asechar pacientemente a su presa.",
+              "choices": [
+                "Los inversionistas decidieron asechar el mercado en silencio.",
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "Nadie sabía que el bebé era barón.",
+                "El depredador aprendió a acechar pacientemente a su presa."
+              ],
+              "answer": "El depredador aprendió a asechar pacientemente a su presa.",
+              "explanation": "The audio says \"El depredador aprendió a asechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La comisión decidió encauzar formalmente la investigación.",
+              "choices": [
+                "El juez decidió encauzar al acusado de inmediato.",
+                "El comité decidió encausar el problema de raíz.",
+                "La comisión decidió encauzar formalmente la investigación.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "La comisión decidió encauzar formalmente la investigación.",
+              "explanation": "The audio says \"La comisión decidió encauzar formalmente la investigación.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
             }
           ]
         }
