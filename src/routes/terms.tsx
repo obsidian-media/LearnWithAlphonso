@@ -19,7 +19,7 @@ export const Route = createFileRoute("/terms")({
   }),
 });
 
-const CONTACT = "support@lingua.app";
+const CONTACT = "support@alphonsoecosystem.app";
 
 function Terms() {
   return (

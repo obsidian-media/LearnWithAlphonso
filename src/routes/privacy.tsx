@@ -22,7 +22,7 @@ export const Route = createFileRoute("/privacy")({
   }),
 });
 
-const CONTACT = "privacy@lingua.app";
+const CONTACT = "privacy@alphonsoecosystem.app";
 
 function Privacy() {
   return (

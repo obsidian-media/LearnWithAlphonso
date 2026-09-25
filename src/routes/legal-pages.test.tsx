@@ -39,7 +39,7 @@ describe("Terms route", () => {
     const Terms = TermsRoute.options.component!;
     render(<Terms />);
     expect(screen.getByRole("heading", { name: "Terms of Service" })).toBeInTheDocument();
-    expect(screen.getByText(/support@lingua\.app/)).toBeInTheDocument();
+    expect(screen.getByText(/support@alphonsoecosystem\.app/)).toBeInTheDocument();
   });
 });
 
