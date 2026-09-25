@@ -352,7 +352,7 @@ pajamas|pijama`,
     note: "School and classroom objects.",
     data: `school|escuela
 classroom|salón de clase
-teacher|maestro
+teacher (primary school)|maestro
 student|estudiante
 desk|escritorio
 notebook|cuaderno
@@ -424,7 +424,7 @@ quiet|silencioso`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Common emotion words.",
-    data: `happy|contento
+    data: `happy (content)|contento
 grateful|agradecido
 angry|enojado
 scared|asustado
@@ -494,7 +494,7 @@ next to|al lado de
 between|entre
 in front of|delante de
 behind|detrás de
-near|cerca de
+near (to)|cerca de
 far from|lejos de
 inside|dentro de
 outside|fuera de
@@ -739,7 +739,7 @@ coffee|café
 milk|leche
 rice|arroz
 chicken|pollo
-fish|pescado
+fish (as food)|pescado
 vegetables|verduras
 fruit|fruta
 breakfast|desayuno
@@ -1025,13 +1025,13 @@ fever|fiebre
 headache|dolor de cabeza
 cough|tos
 medicine|medicina
-prescription|receta
+prescription (informal)|receta
 pharmacy|farmacia
 sick|enfermo
 healthy|sano
 injury|lesión
 allergy|alergia
-nurse|enfermera
+nurse (female)|enfermera
 patient|paciente`,
   },
   {
@@ -1550,7 +1550,7 @@ likewise|asimismo
 in fact|de hecho
 as soon as|tan pronto como
 unless|a menos que
-even though|aun cuando
+even though (formal)|aun cuando
 so that|para que
 as long as|siempre que
 consequently|en consecuencia
@@ -1595,7 +1595,7 @@ Tú ___ (terminar) el trabajo.|has terminado
 Ella ___ (llegar) tarde.|ha llegado
 Nosotros ___ (viajar) mucho.|hemos viajado
 Ellos ___ (ver) esa película.|han visto
-Yo ___ (hacer) mi tarea.|he hecho
+Yo ya ___ (hacer) mi tarea.|he hecho
 Tú ___ (escribir) la carta.|has escrito
 Él ___ (abrir) la puerta.|ha abierto
 Nosotras ___ (decir) la verdad.|hemos dicho
@@ -2255,7 +2255,7 @@ with regard to|con respecto a
 in conclusion|en conclusión
 in summary|en resumen
 on the one hand|por una parte
-on the other hand|por otra parte
+on the other hand (formal)|por otra parte
 given that|dado que
 provided that|siempre y cuando
 in view of|en vista de
@@ -2838,7 +2838,7 @@ nonetheless|no obstante
 regardless of|independientemente de
 for this reason|por esta razón
 granted that|si bien es cierto que
-on the other hand|por otro lado
+on the other hand (by contrast)|por otro lado
 on top of that|además de eso
 all the same|de todas formas
 in contrast|en contraste
@@ -2929,7 +2929,7 @@ opinion (basic: opinión)|criterio`,
 poner el dedo en la llaga|to hit a sore spot
 ser la gota que colma el vaso|to be the last straw
 llevar la voz cantante|to be the one in charge
-no tener pelos en la lengua|to not mince words
+irse de la lengua|to let something slip
 estar entre la espada y la pared|to be between a rock and a hard place
 dorar la píldora|to sugarcoat something
 irse por las nubes|for prices to skyrocket
@@ -2980,14 +2980,14 @@ Cabe ___ (concluir) que los objetivos se cumplieron.|concluir`,
     kind: "pair",
     prompt: 'How do you say "%s" in Spanish?',
     note: "Discourse markers for sophisticated argumentation and academic writing.",
-    data: `notwithstanding|no obstante lo anterior
+    data: `notwithstanding (formal)|no obstante lo anterior
 insofar as|en la medida en que
 to the extent that|en tanto que
 by the same token|de igual manera
 conversely|en cambio
 that being said|dicho esto
 in light of the above|a la luz de lo anterior
-all things considered|considerando todo lo anterior
+all things considered (formal)|considerando todo lo anterior
 be that as it may|sea como sea
 with that in mind|teniendo esto en cuenta
 in the final analysis|en última instancia
@@ -3173,7 +3173,7 @@ counteroffer|contraoferta
 stakeholder|parte interesada
 merger|fusión
 acquisition|adquisición
-deadline|plazo
+deadline (contractual)|plazo
 terms and conditions|términos y condiciones
 liability|responsabilidad
 shareholder|accionista
@@ -3271,7 +3271,7 @@ innovation|innovación
 sustainability|sostenibilidad
 quantum|cuántico
 neural network|red neuronal
-evidence|evidencia
+evidence (scientific)|evidencia
 breakthrough|avance
 simulation|simulación`,
   },
@@ -3352,7 +3352,7 @@ to leave (colloquial: pirarse)|marcharse`,
     prompt: 'How do you say "%s" in Spanish?',
     note: "Further advanced discourse markers for academic/formal Spanish.",
     data: `to that end|con ese fin
-in other words|dicho de otra manera
+in other words (formal)|dicho de otra manera
 more specifically|más concretamente
 broadly speaking|en términos generales
 as previously mentioned|como se mencionó anteriormente
@@ -3365,7 +3365,7 @@ as a case in point|como caso ilustrativo
 in due course|a su debido tiempo
 with this in mind|con esto en mente
 insofar as possible|en la medida de lo posible
-by the same token|de igual modo`,
+likewise (by the same token)|de igual modo`,
   },
   {
     id: "esc1p21",
@@ -3409,7 +3409,7 @@ Necesitamos una estrategia que ___ (resolver) esto.|resuelva
     data: `to cause (basic: causar)|ocasionar
 to reduce (basic: reducir)|disminuir
 to increase (basic: aumentar)|incrementar
-to show (basic: mostrar)|revelar
+to reveal (basic: mostrar)|revelar
 to demand (basic: exigir)|reclamar
 to avoid (basic: evitar)|eludir
 to gather (basic: reunir)|congregar

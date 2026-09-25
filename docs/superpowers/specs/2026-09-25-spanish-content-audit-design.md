@@ -184,7 +184,7 @@ intermediate correction recorded.** The full progression, kept because
 each step is a real, distinct bug: `packId` was derived as
 `question.id.replace(/q\d+$/, "")`, which yields `""` for a
 hand-written question whose id is bare (`q7`) — collapsing every such
-question into one pseudo-pack and hiding duplicates *between*
+question into one pseudo-pack and hiding duplicates _between_
 hand-written units. Falling back to the unit id took English from 7 to
 9 (171 English questions had an empty `packId`; zero French or Spanish
 questions did, so this bug never affected `es`'s count). #121 then
@@ -265,6 +265,30 @@ contradictory pair discards correct content and is the wrong move.
 They spread evenly across all five levels (A1 42, A2 40, B1 44, B2 50,
 C1 54 pack-references), so this is systemic, not one bad batch.
 
+**Fixed 2026-09-25 (step 4).** All 17 disambiguated by editing the
+English prompt text in place — no answer changed, no side dropped, no
+id moved. `CROSS_PACK_DUPLICATE_BASELINE.es` is now 0. Two entries
+needed judgement beyond the table above, worth recording:
+
+- `"on the other hand"` (the three-pack case) turned out to be a mixed
+  group: two of its three occurrences shared not just the prompt but
+  the _answer_ too (`por otro lado`, in `esb1p4` and `esb2p26`) — a
+  true repeat hiding inside what the overall group classified as
+  "contradictory" because the third occurrence (`esb2p4`, `por otra
+parte`) had a different answer. Fixed by disambiguating all three
+  distinctly rather than assuming the two-answer classification meant
+  only one edit was needed.
+- `no tener pelos en la lengua` was the one entry where "disambiguate
+  the prompt" didn't fit — both occurrences were the _same Spanish
+  idiom_ under two English glosses meaning the same thing, not two
+  valid interpretations. Tagging the prompt (`"(bluntly)"` on a fixed
+  idiom) would have been nonsensical. Treated as a step-3-shaped fix
+  instead: the C1 occurrence's idiom was replaced with a different one
+  (`irse de la lengua`, "to let something slip") rather than
+  disambiguated, since the B1 "everyday sayings" pack is the more
+  natural home for the original and duplicating one idiom under two
+  glosses isn't a nuance worth preserving twice.
+
 ---
 
 ## 4. The id-stability rule, which has no guard for Spanish
@@ -333,14 +357,14 @@ was actually about: for `cloze` lines whose parenthetical hint is a
 genuine verb infinitive (`"Yo ___ (hacer) mi tarea."`, matched by
 ending in `-ar`/`-er`/`-ir`, reflexive included — no external tool, the
 hint is already in the content), is a distractor drawn from a line
-testing the *same* verb or a *different* one?
+testing the _same_ verb or a _different_ one?
 
-| Metric               | Count | Share of resolvable |
-| --------------------- | ----- | -------------------- |
-| Verb-hinted mc/fill questions measured | 645   | —      |
-| Distractors from the same verb (`sameVerb`) | 84 | 5.0% |
-| Distractors from a different verb (`crossVerb`) | 1,611 | **95.0%** |
-| Unresolved (candidate's source line untraceable) | 103 | — |
+| Metric                                           | Count | Share of resolvable |
+| ------------------------------------------------ | ----- | ------------------- |
+| Verb-hinted mc/fill questions measured           | 645   | —                   |
+| Distractors from the same verb (`sameVerb`)      | 84    | 5.0%                |
+| Distractors from a different verb (`crossVerb`)  | 1,611 | **95.0%**           |
+| Unresolved (candidate's source line untraceable) | 103   | —                   |
 
 **95% of resolvable distractors in Spanish's verb-conjugation cloze
 questions come from a different verb than the one asked about.**
@@ -359,9 +383,9 @@ section, which remains open and is not this session's to make.
 
 **Correction to what "the fix" means — this is not a ranking problem,
 and porting `orderDistractorCandidates` would not fix it.** A Spanish
-conjugation pack holds one form each of several *different* verbs
+conjugation pack holds one form each of several _different_ verbs
 (`hablar` → `hablo`, `comer` → `como`, `tener` → `tengo`, ...), not
-several forms of the *same* verb. So a cross-verb distractor isn't the
+several forms of the _same_ verb. So a cross-verb distractor isn't the
 ranking misbehaving — the pool contains almost no same-verb
 alternatives to rank in the first place. This is unlike English's
 `a1p15` (#117), where both word classes were genuinely present in the
@@ -459,6 +483,7 @@ does not round-trip through `matchesSpokenAnswer` does not ship.
   products default to, but neither of those is why it was chosen — the
   bank's own existing content is. Gender agreement applies as it did for
   French (_cansado_ / _cansada_).
+
 - **`listening` second.** Minimal pairs are the good exercise here, and
   Spanish supplies excellent ones: `pero`/`perro` (tap vs. trill),
   `caro`/`carro`, `pesa`/`besa`, `cala`/`cara`. Better than
@@ -480,13 +505,14 @@ Ship each as its own PR. Do not bundle.
    commit. Done 2026-09-25 — `CROSS_PACK_DUPLICATE_BASELINE.es` is 17.
 4. **The 17 contradictory prompts** (§3.2). Separate from 3 because it
    is authoring judgement rather than deletion, and deserves its own
-   review.
+   review. Done 2026-09-25 — `CROSS_PACK_DUPLICATE_BASELINE.es` is 0.
 5. **Short-pack decision** (§2) — either the fill, or a documented
-   acceptance.
+   acceptance. Done 2026-09-25: accept and document (see §2's recorded
+   decision).
 6. **Distractor-quality measurement** (§5). Reported by assertion. Done
    2026-09-25 — 95.0% of resolvable cloze distractors are cross-verb.
    Measured, not fixed; the fix is still gated on the open morphology
-   decision.
+   decision, and is structural rather than a ranking port (see §5).
 7. **Phase 2**, in the order of §6: generator check, `translate`,
    `listening`, `speak`.
 
@@ -617,7 +643,7 @@ as part of whichever §7 step touches `curriculum-consistency.test.ts`
 
 §5 correctly says a Spanish morphology decision is not the agent's to
 make unilaterally and should only be measured, not fixed. Two points
-from the superseded draft's more detailed framing of *how* that decision
+from the superseded draft's more detailed framing of _how_ that decision
 should eventually be evaluated, once someone is authorized to make it —
 carried forward as context, not as new instruction:
 
@@ -635,5 +661,5 @@ carried forward as context, not as new instruction:
 - Watch for **caller-side agreement gotchas**, the class of bug French's
   `agreeNumber` gap was — a library can conjugate correctly and still
   produce a wrong answer if the integration doesn't pass every argument
-  it needs (gender *and* number, for instance). This is a test to write
+  it needs (gender _and_ number, for instance). This is a test to write
   once a library is chosen, not a property to assume.

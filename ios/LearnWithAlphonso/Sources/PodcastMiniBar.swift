@@ -1,9 +1,9 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The podcast control bar, attached to the TabView with
-/// `.safeAreaInset(edge: .bottom)` so it sits above the tab bar without
-/// overlapping content or being overlapped by it.
+/// The podcast control bar, docked above each tab's content by
+/// `View.podcastMiniBar` (below) -- not on the TabView, which is where it
+/// was and where the inset gets consumed by the tab bar itself.
 ///
 /// It is only a control surface: the audio lives in PodcastAudioPlayer,
 /// held above the view tree, so this bar coming and going never affects
@@ -171,5 +171,32 @@ private struct PodcastTranscriptSheet: View {
             }
         }
         .tint(AlphonsoColor.moss)
+    }
+}
+
+extension View {
+    /// Docks the podcast mini-bar above this view's own bottom edge.
+    ///
+    /// Applied to each tab's ROOT CONTENT, never to the TabView.
+    ///
+    /// It was on the TabView, under a comment asserting the bar would "sit
+    /// above the tab bar and push content up". Device check #12 found the
+    /// opposite: the inset is consumed inside the tab bar's own region and
+    /// the bar overlaps it. That comment was reasoning rather than
+    /// observation, and it told the next reader the broken arrangement was
+    /// correct -- which is worse than the overlap itself.
+    ///
+    /// Applied per tab, the inset belongs to that tab's content, so the bar
+    /// sits between the content and the tab bar.
+    ///
+    /// **Unverified on hardware at the time of writing.** swift.exe is
+    /// blocked by an Application Control policy on the development machine,
+    /// so this was not run locally, and no automated check can see layout.
+    /// Re-run device check #12 before trusting this comment any further
+    /// than the last one.
+    func podcastMiniBar(player: PodcastAudioPlayer, session: Session) -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            PodcastMiniBar(player: player, session: session)
+        }
     }
 }
