@@ -250,3 +250,29 @@ export const searchEpisodes = createServerFn({ method: "GET" })
       positionSeconds: 0,
     }));
   });
+
+/**
+ * One episode's transcript, or null when it has none yet.
+ *
+ * Fetched on demand rather than joined into `listEpisodes`: a transcript is
+ * kilobytes of text nobody needs until they open an episode, and the folder
+ * listing is read on every navigation.
+ *
+ * Null is an ordinary answer. Episodes published before Phase 2a have no
+ * transcript, and the caller shows that plainly rather than treating it as a
+ * failure -- though it IS an accessibility gap for that episode, which is
+ * why the UI says so rather than hiding the affordance.
+ */
+export const fetchTranscript = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<string | null> => {
+    const db = untyped(context.supabase);
+    const { data: row, error } = await db
+      .from("podcast_transcripts")
+      .select("text")
+      .eq("episode_id", data.episodeId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return (row as { text: string } | null)?.text ?? null;
+  });

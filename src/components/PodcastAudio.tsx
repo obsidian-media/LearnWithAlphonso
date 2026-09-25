@@ -152,14 +152,20 @@ export function PodcastAudio() {
     flushPlayEvent(episode.id);
   };
 
-  // The a11y rule below is right, and the gap it names is real: audio-only
-  // content is inaccessible to deaf and hard-of-hearing learners without a
-  // transcript or captions, and this is a language-learning app where that
-  // audience matters. Phase 2 of this feature adds per-episode transcripts
-  // (see the spec's open questions), which is the actual fix. A <track>
-  // element pointing at no caption file would satisfy the linter while
-  // claiming captions exist -- worse than an honest, tracked gap. So this
-  // is a recorded debt, not a silenced warning.
+  // The a11y rule below asks for a <track>, and this element still has none.
+  // What it is protecting against -- audio-only content being unavailable to
+  // deaf and hard-of-hearing learners -- is now addressed by a different
+  // means: Phase 2a added per-episode transcripts, reachable from the
+  // mini-player's "Text" button while an episode plays (PodcastTranscript.tsx,
+  // supabase/migrations/20260927230000_podcast_transcripts.sql).
+  //
+  // A real <track> needs timed cues, which need forced alignment between the
+  // text and the audio -- a separate problem with separate dependencies.
+  // Pointing <track> at a file that does not exist would satisfy the linter
+  // while claiming captions exist, which is worse than a stated gap.
+  //
+  // So what remains here is narrower than it was: no synchronised captions,
+  // rather than no text at all. Still worth doing; no longer an exclusion.
   return (
     // eslint-disable-next-line jsx-a11y/media-has-caption
     <audio

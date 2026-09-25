@@ -40,6 +40,7 @@ import {
   type EpisodeDraft,
 } from "../src/lib/podcast-authoring";
 import { findCycle, isValidSlug, resolveFolderPath } from "../src/lib/podcast-tree";
+import { normalizeTranscript } from "../src/lib/podcast-transcript";
 import { chunkScript } from "../src/lib/podcast-tts";
 import {
   CliArgError,
@@ -64,6 +65,7 @@ const DEFAULT_VOICE = "aura-2-thalia-en";
 const FLAG_SPEC = {
   booleans: ["confirm"],
   values: [
+    "transcript",
     "parent",
     "folder",
     "slug",
@@ -270,6 +272,17 @@ async function cmdAdd(flags: CliFlags) {
   if (!file && !script) fail("pass either --file <mp3> or --script <txt>.");
   if (file && script) fail("pass --file or --script, not both.");
 
+  // Read and validate the transcript up front, before credentials, the
+  // upload or any synthesis: a typo'd path or an empty file should cost
+  // nothing, not surface after a multi-megabyte upload has already landed.
+  let transcriptText: string | null = null;
+  const transcriptPath = flags.transcript as string | undefined;
+  if (transcriptPath) {
+    if (!existsSync(transcriptPath)) fail(`transcript file not found: ${transcriptPath}`);
+    transcriptText = normalizeTranscript(readFileSync(transcriptPath, "utf-8"));
+    if (transcriptText === null) fail(`${transcriptPath} has no text in it.`);
+  }
+
   const db = supabase();
   const folders = toFolders(await loadFolders(db));
   const folder = resolveFolderPath(folders, splitPath(folderPath));
@@ -353,6 +366,48 @@ async function cmdAdd(flags: CliFlags) {
   }
 
   console.log(`Added "${title}" (${duration}s) at ${objectPath}. It is NOT published yet.`);
+
+  // The transcript is attached after the episode row exists, because it is
+  // keyed by episode id. A failure here leaves a perfectly good episode with
+  // no transcript rather than rolling back the upload -- so it reports what
+  // to re-run instead of pretending the whole command failed.
+  const transcriptFile = flags.transcript as string | undefined;
+  if (transcriptFile) {
+    const { data: inserted, error: lookupError } = await db
+      .from("podcast_episodes")
+      .select("id")
+      .eq("folder_id", folder.id)
+      .eq("slug", slug)
+      .maybeSingle();
+    const episodeID = (inserted as { id: string } | null)?.id;
+    if (lookupError || !episodeID) {
+      console.error("Episode saved, but its id could not be read back to attach the transcript.");
+      console.error(
+        `Attach it with: transcript --folder ${folderPath} --slug ${slug} --transcript ${transcriptFile} --confirm`,
+      );
+    } else {
+      const { error: transcriptError } = await db
+        .from("podcast_transcripts")
+        .upsert(
+          { episode_id: episodeID, text: transcriptText, updated_at: new Date().toISOString() },
+          { onConflict: "episode_id" },
+        );
+      if (transcriptError) {
+        console.error(`Episode saved, but the transcript did not: ${transcriptError.message}`);
+        console.error(
+          `Attach it with: transcript --folder ${folderPath} --slug ${slug} --transcript ${transcriptFile} --confirm`,
+        );
+      } else {
+        console.log("  transcript attached.");
+      }
+    }
+  } else {
+    // Said plainly rather than left silent: an episode without a transcript
+    // is inaccessible to deaf and hard-of-hearing learners, which is a
+    // property of the content, not a preference.
+    console.log("  no transcript -- this episode is not accessible to deaf learners yet.");
+  }
+
   console.log(`Publish it with: publish --folder ${folderPath} --slug ${slug} --confirm`);
 }
 
@@ -454,11 +509,65 @@ async function cmdPublish(flags: CliFlags) {
   console.log(`Published ${folderPath}/${slug}.`);
 }
 
+/**
+ * Attaches or replaces an episode's transcript.
+ *
+ * A separate command as well as an `add --transcript` flag, because episodes
+ * published before Phase 2a already exist and need one -- including episode
+ * 1, whose transcript is word-perfect because the audio was generated from
+ * it.
+ *
+ * Deliberately independent of `source`. Episode 1 is source='upload' (the MP3
+ * came from ElevenLabs, outside this tool), so keying transcripts off source
+ * would have excluded the one episode that already had a perfect one.
+ */
+async function cmdTranscript(flags: CliFlags) {
+  const folderPath = requireStringFlag(flags, "folder", "e.g. --folder en/a1");
+  const slug = requireStringFlag(flags, "slug", "e.g. --slug ordering-coffee");
+  const file = requireStringFlag(flags, "transcript", "e.g. --transcript ./ep01.txt");
+
+  if (!existsSync(file)) fail(`transcript file not found: ${file}`);
+  const text = normalizeTranscript(readFileSync(file, "utf-8"));
+  if (text === null) fail(`${file} has no text in it.`);
+
+  const db = supabase();
+  const folders = toFolders(await loadFolders(db));
+  const folder = resolveFolderPath(folders, splitPath(folderPath));
+  if (!folder) fail(`folder path "${folderPath}" does not exist.`);
+
+  const { data: episode, error: episodeError } = await db
+    .from("podcast_episodes")
+    .select("id")
+    .eq("folder_id", folder.id)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (episodeError) fail(`could not read the episode: ${episodeError.message}`);
+  if (!episode) fail(`no episode "${slug}" in ${folderPath}.`);
+  const episodeID = (episode as { id: string }).id;
+
+  const words = text.split(/\s+/).length;
+  if (flags.confirm !== true) {
+    console.log(`Dry run. Would attach a ${words}-word transcript to ${folderPath}/${slug}.`);
+    console.log("Re-run with --confirm to write it.");
+    return;
+  }
+
+  const { error } = await db
+    .from("podcast_transcripts")
+    .upsert(
+      { episode_id: episodeID, text, updated_at: new Date().toISOString() },
+      { onConflict: "episode_id" },
+    );
+  if (error) fail(`could not save the transcript: ${error.message}`);
+  console.log(`Attached a ${words}-word transcript to ${folderPath}/${slug}.`);
+}
+
 const USAGE = `usage:
-  podcast-tool.ts folder   --parent <path|root> --slug <slug> --title <title> [--course en] [--level A1] [--confirm]
-  podcast-tool.ts add      --folder <path> --slug <slug> --title <title> (--file <mp3> | --script <txt>) [--voice <model>] [--confirm]
-  podcast-tool.ts validate --folder <path> --slug <slug>
-  podcast-tool.ts publish  --folder <path> --slug <slug> [--confirm]`;
+  podcast-tool.ts folder     --parent <path|root> --slug <slug> --title <title> [--course en] [--level A1] [--confirm]
+  podcast-tool.ts add        --folder <path> --slug <slug> --title <title> (--file <mp3> | --script <txt>) [--transcript <txt>] [--voice <model>] [--confirm]
+  podcast-tool.ts transcript --folder <path> --slug <slug> --transcript <txt> [--confirm]
+  podcast-tool.ts validate   --folder <path> --slug <slug>
+  podcast-tool.ts publish    --folder <path> --slug <slug> [--confirm]`;
 
 async function main() {
   const { command, flags } = parseCliArgs(process.argv.slice(2), FLAG_SPEC);
@@ -468,6 +577,9 @@ async function main() {
       break;
     case "add":
       await cmdAdd(flags);
+      break;
+    case "transcript":
+      await cmdTranscript(flags);
       break;
     case "validate":
       await cmdValidate(flags);
