@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PodcastFolder } from "./podcast-tree";
+import { buildIlikeOrFilter } from "./podcast-search";
 
 /**
  * Read/write server functions for the podcast library (Phase 1a, see
@@ -204,4 +205,48 @@ export const recordPlayEvent = createServerFn({ method: "POST" })
       _seconds_listened: Math.round(data.secondsListened),
     });
     if (error) throw new Error(error.message);
+  });
+
+/**
+ * Episodes whose title or description contains `query`, across every folder.
+ *
+ * Search is flat by design: the reason to search is not knowing where a thing
+ * lives. RLS keeps this to published episodes.
+ *
+ * The filter comes from `buildIlikeOrFilter`, which escapes LIKE wildcards
+ * and quotes the value -- PostgREST's `or=` treats commas and parentheses as
+ * syntax, and neither failure would look like a failure: both return
+ * plausible-looking results for the wrong query.
+ */
+export const searchEpisodes = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ query: z.string() }).parse(d))
+  .handler(async ({ data, context }): Promise<PodcastEpisode[]> => {
+    const filter = buildIlikeOrFilter(data.query, ["title", "description"]);
+    // Too short, or nothing but whitespace: an empty result. Not an error,
+    // and emphatically not every episode in the library.
+    if (filter === null) return [];
+
+    const db = untyped(context.supabase);
+    const { data: rows, error } = await db
+      .from("podcast_episodes")
+      .select("id, folder_id, slug, title, description, audio_path, duration_seconds")
+      .or(filter)
+      .order("title", { ascending: true })
+      .limit(50);
+    if (error) throw new Error(error.message);
+
+    return ((rows ?? []) as EpisodeRow[]).map((row) => ({
+      id: row.id,
+      folderId: row.folder_id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      audioUrl: db.storage.from(BUCKET).getPublicUrl(row.audio_path).data.publicUrl,
+      durationSeconds: row.duration_seconds,
+      // Resume position is deliberately not joined here: a search result is a
+      // way to find an episode, and the player reads the authoritative
+      // position when it opens one.
+      positionSeconds: 0,
+    }));
   });
