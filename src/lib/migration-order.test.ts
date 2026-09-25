@@ -70,6 +70,15 @@ const REFERENCES_TABLE = [
   /grant\s+[\s\S]{0,120}?\s+on\s+(?:table\s+)?((?:public\.)?[a-z_][a-z0-9_]*)/gi,
   /create\s+(?:unique\s+)?index\s+(?:concurrently\s+)?(?:if\s+not\s+exists\s+)?[a-z0-9_]+\s+on\s+((?:public\.)?[a-z_][a-z0-9_]*)/gi,
   /create\s+policy\s+[\s\S]{0,120}?\s+on\s+((?:public\.)?[a-z_][a-z0-9_]*)/gi,
+  // A foreign key inside CREATE TABLE. Added 2026-09-25 after this guard was
+  // mutation-tested against a new case and did not fire: a migration creating
+  // podcast_transcripts with `REFERENCES public.podcast_episodes(id)` was
+  // renamed to an earlier version than podcast_episodes' own migration, and
+  // every check above stayed green -- none of them matches a REFERENCES
+  // clause. On a fresh database that fails exactly like the original
+  // incident, so the gap was the same size as the hole this file was written
+  // to close.
+  /references\s+((?:public\.)?[a-z_][a-z0-9_]*)\s*\(/gi,
 ];
 
 describe("migration ordering", () => {
