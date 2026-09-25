@@ -1,3 +1,17 @@
+/**
+ * Question-id stability checks for ALL THREE courses.
+ *
+ * Renamed from `english-id-parity.ts` on 2026-09-25: it grew a per-course bank
+ * map and `collectCourseIds(course)` serves en/fr/es, so the prefix had become
+ * misleading. Documents written before that date cite the old path and were
+ * deliberately left alone -- a plan or audit report should keep saying what it
+ * said at the time. This note is here so a search from one of them lands.
+ *
+ * Its siblings `english-content-dump.ts` and `scripts/snapshot-english-ids.ts`
+ * are misnamed the same way and for the same reason (both take a `course`
+ * argument); not renamed here to keep one content PR from turning into a
+ * repo-wide path sweep.
+ */
 import { buildCourseDump } from "./english-content-dump";
 import { BANK } from "@/data/lesson-bank";
 import { BANK_FR } from "@/data/lesson-bank-fr";
