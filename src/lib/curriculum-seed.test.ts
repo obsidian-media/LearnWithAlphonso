@@ -58,8 +58,8 @@ describe("buildUnitRows / buildLessonRows / buildQuestionRows", () => {
     const unitIds = new Set(buildUnitRows("fr").map((u) => u.id));
     const lessons = buildLessonRows("fr");
     // matches ios-content-export.test.ts's known French lesson count (500 + 25
-    // from phase 2 PR 2's translate packs)
-    expect(lessons.length).toBe(525);
+    // from PR 2's translate packs + 25 from PR 3's listening packs)
+    expect(lessons.length).toBe(550);
     for (const l of lessons) expect(unitIds.has(l.unit_id)).toBe(true);
   });
 
@@ -164,8 +164,8 @@ describe("buildFullSeed", () => {
     expect(seed.units.length).toBe(
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
-    // French: 500 + 25 from phase 2 PR 2's translate packs.
-    expect(seed.lessons.length).toBe(609 + 525 + 508);
+    // French: 500 + 25 from PR 2's translate packs + 25 from PR 3's listening packs.
+    expect(seed.lessons.length).toBe(609 + 550 + 508);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +
