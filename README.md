@@ -40,8 +40,12 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   release. The schema and the `podcast-audio` bucket are live (migrations
   auto-apply on merge). Play events are written only through
   `record_podcast_play_event`, not by a direct insert — that table is the
-  evidence base Phase 2 will build on. Transcripts, comprehension questions,
-  XP and SRS wiring are Phase 2. See
+  evidence base Phase 2 will build on. Transcripts shipped in Phase 2a;
+  **comprehension questions, XP and SRS wiring are Phase 2b and are not
+  built**. On iOS, episodes can be **downloaded for offline listening**
+  (Phase 3): downloads are explicit, nothing is ever deleted without you
+  asking, and offline the downloaded set is listed flat rather than as the
+  folder tree. See
   `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle

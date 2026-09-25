@@ -89,6 +89,51 @@ because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
 
+**Offline download (Phase 3).** Downloaded episodes live in
+**Application Support**, not Caches: the system may purge Caches under
+memory pressure, and a file someone deliberately asked for should not
+evaporate. The directory is **excluded from iCloud backup** — it is
+re-downloadable content, which Apple has rejected apps for including.
+
+Every rule lives in `PodcastCache`/`PodcastCacheBudget` in the Kit and
+nothing decides anything in `PodcastDownloadManager`, because
+`ios-swift-tests` covers the Kit and **nothing in this repo covers the
+app target**. A rule decided in the app target is a rule no test can
+reach.
+
+The write order is staging name → verify byte count against
+`Content-Length` → atomic move → *then* insert the row, so a file at the
+final path always means a finished download and a row pointing at no
+file cannot exist. `reconcile()` runs at launch in both directions,
+because being killed mid-transfer is ordinary on iOS rather than
+exceptional. The budget is re-checked against the **real** size after
+the transfer, not only the pre-flight estimate.
+
+**Nothing is ever deleted automatically.** Exceeding the budget names
+what could be removed — never-played episodes first, least recently
+played after — and waits for the learner. The first draft evicted
+automatically while exempting explicit downloads, and since automatic
+downloading is out of scope, every download is explicit: the policy
+could never have run. The budget is a parameter at every level rather
+than a constant read internally, so a test can pass 2 MB and actually
+reach the refusal path; at the 500 MB default and a library this small
+that guard would never execute.
+
+Republish detection uses the Supabase `ETag`, which **is the MD5 of the
+object's content** (probed 2026-09-25 against the live object: the header
+matched the hash of the downloaded bytes and was stable through
+Cloudflare). Content-derived means it changes when the content changes,
+which is what makes this work with no server-side marker and therefore
+no migration. When nothing is known — offline — a cached copy is never
+discarded: a slightly old episode beats no episode.
+
+Offline browsing is a **flat, title-ordered list** of the downloaded
+set, not the folder tree. Folders are a browsing aid for a library you
+can see all of; offline you can only see what you downloaded. "Offline
+with nothing downloaded" is a distinct state from "no episodes", because
+telling someone who downloaded three episodes that there are none would
+be a lie about their own device.
+
 **Podcast audio storage.** Episodes live in a **public-read** Supabase
 Storage bucket, `podcast-audio`, with no client write policy — only
 `scripts/podcast-tool.ts` (service role) uploads. Consequence worth
