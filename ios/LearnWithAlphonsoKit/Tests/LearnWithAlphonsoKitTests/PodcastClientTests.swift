@@ -150,6 +150,49 @@ final class PodcastClientTests: XCTestCase {
     // permission denied inside a fire-and-forget call, so play recording
     // would silently never happen -- the exact trap the web client was
     // just moved off.
+    // MARK: - searchEpisodes
+
+    func testSearchEpisodesSendsTheEncodedFilter() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [self.episodeRow()])
+        }
+        _ = try await client.searchEpisodes(query: "coffee")
+        let query = await box.last!.url!.query ?? ""
+        XCTAssertTrue(query.contains("or="), query)
+        // Encoded, not raw: PodcastClient assigns percentEncodedQuery
+        // directly, so a raw quote or comma here would reshape the request.
+        XCTAssertFalse(query.contains("\""), query)
+        XCTAssertTrue(query.contains("%22"), query)
+    }
+
+    func testSearchEpisodesDoesNotCallTheServerForAQueryTooShortToRun() async throws {
+        // buildIlikeOrFilter declines below the minimum length. Sending the
+        // request anyway would return the whole library for one character.
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [])
+        }
+        let results = try await client.searchEpisodes(query: "c")
+        XCTAssertTrue(results.isEmpty)
+        let count = await box.requests.count
+        XCTAssertEqual(count, 0, "a one-character query must not reach the network")
+    }
+
+    func testSearchEpisodesReturnsEpisodesWithoutAResumePosition() async throws {
+        // A search result is a way to FIND an episode; the player reads the
+        // authoritative position when it opens one.
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [self.episodeRow()])
+        }
+        let results = try await client.searchEpisodes(query: "coffee")
+        XCTAssertEqual(results.count, 1)
+        XCTAssertEqual(results.first?.positionSeconds, 0)
+        XCTAssertNil(results.first?.playbackUpdatedAt)
+    }
+
     func testRecordPlayEventCallsTheRPCRatherThanInsertingDirectly() async throws {
         let box = RequestBox()
         let client = makeClient { request in
