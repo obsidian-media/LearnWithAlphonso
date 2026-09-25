@@ -262,7 +262,11 @@ final class PodcastAudioPlayer {
                 : Double(self.episode?.durationSeconds ?? 0)
             let target = PodcastPlayback.clampPosition(stored, durationSeconds: limit)
             guard target > 0 else { return }
-            player.seek(to: CMTime(seconds: target, preferredTimescale: 600))
+            // Completion-handler overload on purpose: inside an async
+            // context the bare `seek(to:)` resolves to the async variant and
+            // has to be awaited, which reads as if the seek needs to finish
+            // before anything else can happen. It does not.
+            player.seek(to: CMTime(seconds: target, preferredTimescale: 600)) { _ in }
             self.elapsedSeconds = target
         }
     }
