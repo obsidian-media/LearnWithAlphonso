@@ -422,6 +422,21 @@ Target, matching English and French exactly: **5 packs per type, 25
 lines each, 5 lessons per pack** — +15 packs, +75 lessons, +375
 questions.
 
+**Generator check (§7 step 7's PR 1) — done 2026-09-25, no code
+change.** The paragraph above's claim ("inherited free") was checked
+against real Spanish content rather than trusted: `LOCALES`/
+`localeForCourse` already map `es` → `es-ES`
+(`src/data/courses.ts:99`), `grade-translation.ts` already reads
+`course` generically, and `bank-engine.test.ts` — whose only
+language-sensitive logic is `listening`'s content-word-overlap
+ranking, since `translate`/`speak` do no per-language string
+processing at all — gained a Spanish minimal-pair fixture (`pesa`/
+`besa`, one of §6.2's own suggested pairs) to verify Spanish's own
+accent range (`ñ`, `¿`, `¡`, none of which appear in French) survives
+the same path French's fixtures already covered, rather than assuming
+French's passing tests say anything about Spanish's disjoint character
+set. It does. Zero `bank-engine.ts` changes were needed.
+
 ### 6.1 What Spanish needs that is genuinely new
 
 `spoken-answer-es.ts`, in **all three ports**, with mirrored vectors and
@@ -514,7 +529,9 @@ Ship each as its own PR. Do not bundle.
    Measured, not fixed; the fix is still gated on the open morphology
    decision, and is structural rather than a ranking port (see §5).
 7. **Phase 2**, in the order of §6: generator check, `translate`,
-   `listening`, `speak`.
+   `listening`, `speak`, each its own PR. Generator check done
+   2026-09-25 (§6's note) — no code change needed, verified rather
+   than assumed. `translate`/`listening`/`speak` not started.
 
 Steps 1 and 2 are prerequisites for everything after them. Steps 3–6
 can be reordered if something argues for it; say so if you reorder.

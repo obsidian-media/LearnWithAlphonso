@@ -70,6 +70,30 @@ Ces livres sont à moi.|Ces livres sont à moi.
 Ses livres sont à moi.|Ses livres sont à moi.`,
 };
 
+// Spanish-flavoured fixture: bank-engine.ts is shared by French AND Spanish
+// (unlike English's own lesson-bank.ts), but every existing fixture above is
+// French, so accented-character coverage only proves French's diacritic
+// range (à/â/ç/è/é/ê/ë/î/ô/ù/û/œ). Spanish's own range (á/é/í/ñ/ó/ú/ü/¿/¡)
+// is disjoint enough (ñ, ¿, ¡ have no French equivalent) that it is worth
+// its own pin -- docs/superpowers/specs/2026-09-25-spanish-content-audit-
+// design.md §7 step 7's "generator check": bank-engine.ts needs no Spanish-
+// specific code (it already declares all five kinds language-neutrally, and
+// STOP_WORDS already carries Spanish stopwords), but that claim is worth
+// verifying against real Spanish minimal pairs, not just inherited from
+// French's passing tests.
+const spanishListeningPack: Pack = {
+  id: "esp1",
+  title: "Minimal pairs",
+  subtitle: "Listen closely",
+  note: "Sounds that are easy to confuse.",
+  kind: "listening",
+  prompt: "¿Qué escuchaste?",
+  data: `El bebé pesa mucho.|El bebé pesa mucho.
+El bebé besa mucho.|El bebé besa mucho.
+El niño toca el piano.|El niño toca el piano.
+La niña come pan.|La niña come pan.`,
+};
+
 const speakPack: Pack = {
   id: "p4",
   title: "Say it aloud",
@@ -149,6 +173,24 @@ describe("packQuestions", () => {
     expect(dessus?.type).toBe("listening");
     if (dessus?.type === "listening") {
       expect(dessus.choices.some((c) => c.includes("dessous"))).toBe(true);
+    }
+  });
+
+  it("Spanish: 'listening' distractors prefer the minimal-pair sibling over an unrelated line (¿/¡ and ñ/á/é/í/ó/ú survive the same content-word overlap French's tests cover)", () => {
+    // pesa/besa (weighs/kisses) is one of the concrete minimal pairs
+    // docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md
+    // §6.2 names for Spanish listening content. Spanish's own accent range
+    // (ñ, ¿, ¡) has no French equivalent, so this is not redundant with the
+    // French dessus/dessous test above -- it is the actual claim ("bank-
+    // engine.ts needs no Spanish-specific code") checked against Spanish
+    // rather than inferred from French.
+    const qs = packQuestions(spanishListeningPack);
+    expect(qs.length).toBe(4);
+    const pesa = qs.find((q) => q.type === "listening" && q.audioText.includes("pesa"));
+    expect(pesa?.type).toBe("listening");
+    if (pesa?.type === "listening") {
+      expect(pesa.prompt).toBe("¿Qué escuchaste?");
+      expect(pesa.choices.some((c) => c.includes("besa"))).toBe(true);
     }
   });
 
