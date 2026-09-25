@@ -45,3 +45,33 @@ export function validateEpisodeDraft(draft: EpisodeDraft, existingSlugs: string[
 export function storagePathFor(draft: EpisodeDraft): string {
   return `${draft.folderSlugPath.join("/")}/${draft.slug}.mp3`;
 }
+
+/**
+ * Exit code for a command that collected `problems`.
+ *
+ * Exists because the alternative kept happening: a check finds a real defect,
+ * prints it, and exits 0 anyway. `podcast-tool validate` printed
+ * "[ERROR] folder tree contains a cycle" and then reported success, so any
+ * script, CI step or `&&` chain reading its exit code saw a clean run. The
+ * repo's curriculum-consistency.test.ts had the same shape from the other
+ * direction: it console.logged 57 Spanish and 7 English duplicate prompts
+ * into output vitest swallowed, and a reader reasonably took the silence for
+ * zero.
+ *
+ * A finding that does not reach the exit code is a finding thrown away.
+ */
+export function exitCodeForProblems(problems: readonly string[]): 0 | 1 {
+  return problems.length === 0 ? 0 : 1;
+}
+
+/**
+ * A one-line summary, or null when there is nothing to summarise.
+ *
+ * Carries the count because the individual lines may have scrolled away by
+ * the time anyone looks.
+ */
+export function formatProblemSummary(problems: readonly string[]): string | null {
+  if (problems.length === 0) return null;
+  const noun = problems.length === 1 ? "problem" : "problems";
+  return `Found ${problems.length} ${noun}.`;
+}
