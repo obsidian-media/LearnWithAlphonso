@@ -64,15 +64,34 @@ mechanism records the object's **`ETag` and `Content-Length`** as served,
 alongside the episode id; on a later online listing, a mismatch means the
 cached copy is stale and is re-downloaded rather than played.
 
-**This is unverified and the plan probes it first.** Nobody has checked
-that Supabase's storage CDN serves a stable `ETag`, or that it changes
-when an object is replaced. If it does not, the staleness check can never
-fire — a guard that cannot fail, which is the failure class this project
-has spent days on. In that case the honest fix is a server-side marker
-(a checksum or `audio_updated_at` the CLI writes on upload), which means
-a migration, which contradicts the "no migration" constraint below. That
-contradiction is real and is resolved by measuring, not by choosing in
-advance.
+**Probed and confirmed, 2026-09-25** (Task 0 of the plan) against the
+live episode 1 object:
+
+```
+ETag: "5c2b04a4232a942307ebd149b4236966"
+Content-Length: 1378473
+Accept-Ranges: bytes
+Last-Modified: Fri, 25 Sep 2026 03:08:08 GMT
+```
+
+- **The ETag is the MD5 of the content.** Downloading the object and
+  hashing it produces exactly `5c2b04a4232a942307ebd149b4236966`. That is
+  the finding that matters: a content-derived ETag necessarily changes
+  when the content changes, so republish detection works **without**
+  needing a re-upload to prove it, and without a server-side marker.
+- **Stable across requests**, including through Cloudflare
+  (`CF-Cache-Status: REVALIDATED` on repeats).
+- `Content-Length` is served and matches the object exactly.
+- `Accept-Ranges: bytes` is advertised, so resumable downloads would be
+  possible. Still out of scope — a restart costs ~1.3 MB, and resume
+  logic that is wrong produces the corrupt file this is trying to
+  prevent.
+
+So the "no migration" constraint holds, and now on evidence. It had been
+asserted before the evidence existed, which is a different mistake from
+the ones catalogued elsewhere in these docs: a constraint declared ahead
+of knowing whether the design needed it. `Last-Modified` is a usable
+secondary signal if an ETag is ever absent.
 
 Offline, a stale cache cannot be detected — and that is acceptable and
 must be stated: with no network there is nothing to compare against, and
@@ -90,10 +109,13 @@ A download that dies mid-flight must never be playable. Two rules:
   produced a well-formed MP3 would otherwise play as a shortened episode
   — the same "plausible but wrong" failure as a bad `duration_seconds`.
 
-  Also unverified: `URLSessionDownloadTask` delivers a complete file or
-  an error, so this check may be guarding something that cannot happen.
-  The plan measures rather than assuming. A check that cannot fail is
-  not free — it reads as rigour and invites trust it has not earned.
+  Kept, with its value stated honestly: `URLSessionDownloadTask` hands
+  back a file only on success, so this is not the last line of defence it
+  first sounded like. It costs one integer comparison against a
+  `Content-Length` the server already sends, and it covers the case the
+  download API does not — a file damaged after the task completed but
+  before the move. Belt-and-braces, labelled as such rather than as
+  rigour it has not earned.
 
 Resumable downloads (HTTP range requests) are **out of scope**: a
 restart is cheap at 3 MB, and resume logic that is wrong produces
@@ -110,7 +132,16 @@ is ever evictable, and the policy was dead code that looked like safety.
 
 So: **nothing is ever deleted automatically.**
 
-- A **cache budget** (default 500 MB) over downloaded audio.
+- A **cache budget**, injectable end to end, defaulting to 500 MB.
+
+  The default is unexercisable by design: the library has one 1.3 MB
+  episode and the free tier allows about two more, so at 500 MB the
+  refusal path can never run — the same "guard that cannot execute"
+  defect as the original eviction policy, one level up. The fix is the
+  seam, not a smaller guess: the budget is a parameter all the way from
+  the Kit function to the download manager, so a test can set it to 5 MB
+  and actually exercise refuse-and-offer. With the seam, the default
+  barely matters.
 - When a download would exceed it, the app **refuses and offers** the
   least-recently-played candidates to remove. The learner chooses.
 - Ranking is by least-recently-**played**, not downloaded: the episode
@@ -230,7 +261,12 @@ CI cannot see any of these.
 
 ## Open questions
 
-1. **Budget default.** 500 MB is a guess — roughly 170 episodes at 3 MB.
-   Worth revisiting once there is more than one episode.
-2. **Whether to auto-download the next episode in a folder.** Tempting
-   and out of scope; it spends someone's cellular data on a prediction.
+1. ~~Budget default.~~ **Resolved:** 500 MB, injectable, per above.
+2. ~~Whether to auto-download the next episode in a folder.~~
+   **Decided: no.** It spends someone's cellular data on a prediction,
+   and with three episodes there is nothing to predict.
+
+**Standing constraint (2026-09-25):** the account owner is staying on the
+ElevenLabs free tier, and the current episode format is not what they
+ultimately mean by "podcast" — it will be respecified. So design for a
+*small* library and build nothing that only pays off at scale.
