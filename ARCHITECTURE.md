@@ -175,10 +175,10 @@ placement pool) for `"en"`, `"fr"`, or `"es"`. Each course pairs
 hand-written units (`curriculum.ts` / `curriculum-fr.ts` / `curriculum-es.ts`)
 with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
-counts, verified 2026-09-24 (re-run the count rather than trusting this
+counts, verified 2026-09-25 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
 kept in sync): English 609 lessons / 3,096 questions, French 575 lessons
-/ 2,875 questions, Spanish 508 lessons / 2,540 questions. French's phase 2
+/ 2,875 questions, Spanish 533 lessons / 2,665 questions. French's phase 2
 (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
 closed the type gap English opened on 2026-09-24 by porting
 `listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
@@ -189,11 +189,20 @@ English. `speak` needed a new French speech-normalisation module
 (`spoken-answer-fr.ts`) across three ports (TS/Deno/Swift) before any
 content could be authored against it — see that module's header comment
 for why it's a sibling of `spoken-answer.ts` rather than an extension of
-it. Spanish's content is unaffected and unchanged; it inherits the
-generator work but its own content port is a separate, later job.
-French/Spanish still need a native-speaker review pass for
-grammar/naturalness (`docs/BACKLOG.md`, gitignored), and each new pack adds
-to that same unreviewed surface.
+it.
+
+**Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`
+§7 step 7) is following the same four-PR sequence: generator check (PR 1,
+done — `bank-engine.ts` needed zero Spanish-specific changes, verified
+against real Spanish content rather than inferred from French's passing
+tests) and `translate` content (PR 2, done — 125 questions, Latin
+American variety `tú`/`usted`/`ustedes`, no `vosotros`/`vos`, matching
+what the existing 2,665 questions already used exclusively).
+`listening`/`speak` (PRs 3-4) are not started; `speak` needs its own
+`spoken-answer-es.ts` across the same three ports before any speak
+content can be authored against it. French/Spanish still need a
+native-speaker review pass for grammar/naturalness (`docs/BACKLOG.md`,
+gitignored), and each new pack adds to that same unreviewed surface.
 
 **There are six question types**, not three: `mc`, `fill`, `reorder`,
 `listening`, `speak`, and `translate`. `listening` (added 2026-09-24) plays

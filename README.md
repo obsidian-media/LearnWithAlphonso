@@ -84,7 +84,7 @@ session:
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
 | **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
-| **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
+| **Spanish** | 105 | 106 | 109 | 107 | 106 | **533**       | 2,665           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
 types — **listening comprehension**, **speaking practice** and **free-form
@@ -107,8 +107,13 @@ required its own French speech-normalisation module
 (TS/Deno/Swift) the same way English's `spoken-answer.ts` is, because
 French elision is a phonological rule with no relationship to English's
 auxiliary-verb-contraction rules — see that module's header comment.
-Spanish still has the original three types only; its content is a
-separate, later job now that the generator work is proven on French.
+**Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`)
+is following the same path: `bank-engine.ts` needed zero Spanish-specific
+changes (verified against real Spanish content, not inferred from
+French), and Spanish now has **translate** content too (125 new
+questions) in Latin American Spanish (`tú`/`usted`/`ustedes`, no
+`vosotros`/`vos` — measured against the existing bank rather than chosen
+from preference). `listening` and `speak` are the remaining PRs.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just

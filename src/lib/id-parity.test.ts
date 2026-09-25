@@ -83,21 +83,24 @@ describe.each(COURSES)(
         }
       });
     } else {
-      it("packLineStats: pack-length distribution matches the documented 2026-09-25 baseline (83 short packs, accepted not fixed)", () => {
+      it("packLineStats: pack-length distribution matches the documented 2026-09-25 baseline (83 short original packs, accepted not fixed, plus new 25-line phase-2 packs)", () => {
         // Not a "must be 25" assertion -- see the recorded decision at COURSES'
         // definition above. This is a drift guard instead: it pins today's
         // exact distribution so a future edit that accidentally shortens a
         // pack further (e.g. while fixing a §3 duplicate by deleting rather
         // than replacing a line) is caught, the same way a baseline number
-        // catches drift elsewhere in this repo. Update this baseline only as
-        // a deliberate part of the §2 short-pack decision changing, never as
-        // a side effect of an unrelated fix.
+        // catches drift elsewhere in this repo. The 10/15/20 buckets are the
+        // §2 short-pack decision and change only if that decision changes;
+        // the 25 bucket also grows as phase-2 packs land (each one full-length
+        // by construction), most recently +5 for the translate packs (step 7
+        // PR 2, docs/superpowers/specs/2026-09-25-spanish-content-audit-
+        // design.md).
         const stats = packLineStats(course);
         const distribution: Record<number, number> = {};
         for (const s of Object.values(stats)) {
           distribution[s.lines] = (distribution[s.lines] ?? 0) + 1;
         }
-        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 47 });
+        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 52 });
       });
     }
 
