@@ -14,7 +14,7 @@ import type { PodcastFolder } from "./podcast-tree";
  * ADMIN_FUNCTION_NAMES. The test fails if the counts disagree, in both
  * directions.
  */
-export const ADMIN_FUNCTION_NAMES = ["adminListFolders"] as const;
+export const ADMIN_FUNCTION_NAMES = ["adminListFolders", "adminWhoAmI"] as const;
 
 /**
  * The generated Database type does not know the podcast tables (see
@@ -43,4 +43,17 @@ export const adminListFolders = createServerFn({ method: "GET" })
       description: (row.description as string | null) ?? null,
       sortOrder: row.sort_order as number,
     }));
+  });
+
+/**
+ * Confirms the caller is an admin, and returns only their own id.
+ *
+ * There is nothing else an admin session needs to know. Echoing any part
+ * of the allowlist back would undo the point of making the table
+ * unreadable in the first place.
+ */
+export const adminWhoAmI = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }): Promise<{ userId: string }> => {
+    return { userId: context.userId };
   });
