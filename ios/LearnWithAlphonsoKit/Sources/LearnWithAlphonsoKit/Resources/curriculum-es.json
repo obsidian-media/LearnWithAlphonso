@@ -3415,14 +3415,14 @@
             {
               "id": "esa1p13q2",
               "type": "mc",
-              "prompt": "How do you say \"teacher\" in Spanish?",
+              "prompt": "How do you say \"teacher (primary school)\" in Spanish?",
               "choices": [
                 "cuaderno",
                 "maestro",
                 "pegamento"
               ],
               "answer": 1,
-              "explanation": "teacher → maestro. School and classroom objects."
+              "explanation": "teacher (primary school) → maestro. School and classroom objects."
             },
             {
               "id": "esa1p13q3",
@@ -4108,14 +4108,14 @@
             {
               "id": "esa1p16q0",
               "type": "mc",
-              "prompt": "How do you say \"happy\" in Spanish?",
+              "prompt": "How do you say \"happy (content)\" in Spanish?",
               "choices": [
                 "preocupado",
                 "sorprendido",
                 "contento"
               ],
               "answer": 2,
-              "explanation": "happy → contento. Common emotion words."
+              "explanation": "happy (content) → contento. Common emotion words."
             },
             {
               "id": "esa1p16q1",
@@ -4774,14 +4774,14 @@
             {
               "id": "esa1p19q7",
               "type": "mc",
-              "prompt": "How do you say \"near\" in Spanish?",
+              "prompt": "How do you say \"near (to)\" in Spanish?",
               "choices": [
                 "en",
                 "lejos de",
                 "cerca de"
               ],
               "answer": 2,
-              "explanation": "near → cerca de. Common location prepositions."
+              "explanation": "near (to) → cerca de. Common location prepositions."
             },
             {
               "id": "esa1p19q8",
@@ -7402,7 +7402,7 @@
             {
               "id": "esa2p1q6",
               "type": "mc",
-              "prompt": "How do you say \"fish\" in Spanish?",
+              "prompt": "How do you say \"fish (as food)\" in Spanish?",
               "choices": [
                 "café",
                 "hambriento",
@@ -7410,7 +7410,7 @@
                 "almuerzo"
               ],
               "answer": 2,
-              "explanation": "fish → pescado. Everyday food and restaurant vocabulary."
+              "explanation": "fish (as food) → pescado. Everyday food and restaurant vocabulary."
             },
             {
               "id": "esa2p1q7",
@@ -10457,14 +10457,14 @@
             {
               "id": "esa2p11q7",
               "type": "mc",
-              "prompt": "How do you say \"prescription\" in Spanish?",
+              "prompt": "How do you say \"prescription (informal)\" in Spanish?",
               "choices": [
                 "farmacia",
                 "consultorio",
                 "receta"
               ],
               "answer": 2,
-              "explanation": "prescription → receta. Health and doctor's-visit vocabulary."
+              "explanation": "prescription (informal) → receta. Health and doctor's-visit vocabulary."
             },
             {
               "id": "esa2p11q8",
@@ -10536,14 +10536,14 @@
             {
               "id": "esa2p11q13",
               "type": "mc",
-              "prompt": "How do you say \"nurse\" in Spanish?",
+              "prompt": "How do you say \"nurse (female)\" in Spanish?",
               "choices": [
                 "fiebre",
                 "enfermera",
                 "sano"
               ],
               "answer": 1,
-              "explanation": "nurse → enfermera. Health and doctor's-visit vocabulary."
+              "explanation": "nurse (female) → enfermera. Health and doctor's-visit vocabulary."
             },
             {
               "id": "esa2p11q14",
@@ -15988,7 +15988,7 @@
             {
               "id": "esb1p4q15",
               "type": "fill",
-              "prompt": "How do you say \"even though\" in Spanish? ___",
+              "prompt": "How do you say \"even though (formal)\" in Spanish? ___",
               "bank": [
                 "por otro lado",
                 "tan pronto como",
@@ -15996,7 +15996,7 @@
                 "aunque"
               ],
               "answer": "aun cuando",
-              "explanation": "even though → aun cuando. Common linking words for more complex sentences."
+              "explanation": "even though (formal) → aun cuando. Common linking words for more complex sentences."
             },
             {
               "id": "esb1p4q16",
@@ -16438,7 +16438,7 @@
             {
               "id": "esb1p6q5",
               "type": "mc",
-              "prompt": "Yo ___ (hacer) mi tarea.",
+              "prompt": "Yo ya ___ (hacer) mi tarea.",
               "choices": [
                 "he hecho",
                 "han puesto",
@@ -23379,7 +23379,7 @@
             {
               "id": "esb2p4q6",
               "type": "mc",
-              "prompt": "How do you say \"on the other hand\" in Spanish?",
+              "prompt": "How do you say \"on the other hand (formal)\" in Spanish?",
               "choices": [
                 "tomando en cuenta",
                 "en relación con",
@@ -23387,7 +23387,7 @@
                 "por una parte"
               ],
               "answer": 2,
-              "explanation": "on the other hand → por otra parte. Connectors typical of formal writing and argumentation."
+              "explanation": "on the other hand (formal) → por otra parte. Connectors typical of formal writing and argumentation."
             },
             {
               "id": "esb2p4q7",
@@ -29379,7 +29379,7 @@
             {
               "id": "esb2p26q9",
               "type": "fill",
-              "prompt": "How do you say \"on the other hand\" in Spanish? ___",
+              "prompt": "How do you say \"on the other hand (by contrast)\" in Spanish? ___",
               "bank": [
                 "además de eso",
                 "mientras que",
@@ -29387,7 +29387,7 @@
                 "por otro lado"
               ],
               "answer": "por otro lado",
-              "explanation": "on the other hand → por otro lado. Advanced connectors expressing contrast or concession."
+              "explanation": "on the other hand (by contrast) → por otro lado. Advanced connectors expressing contrast or concession."
             }
           ]
         },
@@ -30333,7 +30333,7 @@
               "choices": [
                 "to be the one in charge",
                 "to be in control",
-                "to not mince words",
+                "to let something slip",
                 "to spare no expense"
               ],
               "answer": 0,
@@ -30342,15 +30342,15 @@
             {
               "id": "esc1p3q4",
               "type": "fill",
-              "prompt": "What does \"no tener pelos en la lengua\" mean? ___",
+              "prompt": "What does \"irse de la lengua\" mean? ___",
               "bank": [
                 "to get one's own way",
                 "to be the last straw",
-                "to not mince words",
-                "to be dumbfounded"
+                "to be dumbfounded",
+                "to let something slip"
               ],
-              "answer": "to not mince words",
-              "explanation": "no tener pelos en la lengua → to not mince words. More advanced idiomatic expressions used in fluent, natural Spanish."
+              "answer": "to let something slip",
+              "explanation": "irse de la lengua → to let something slip. More advanced idiomatic expressions used in fluent, natural Spanish."
             }
           ]
         },
@@ -30393,7 +30393,7 @@
                 "for prices to skyrocket",
                 "to get one's own way",
                 "to take its toll",
-                "to not mince words"
+                "to let something slip"
               ],
               "answer": 0,
               "explanation": "irse por las nubes → for prices to skyrocket. More advanced idiomatic expressions used in fluent, natural Spanish."
@@ -30450,7 +30450,7 @@
               "prompt": "What does \"tirar la casa por la ventana\" mean? ___",
               "bank": [
                 "to spare no expense",
-                "to not mince words",
+                "to let something slip",
                 "to take its toll",
                 "to lay one's cards on the table"
               ],
@@ -30884,7 +30884,7 @@
             {
               "id": "esc1p5q0",
               "type": "fill",
-              "prompt": "How do you say \"notwithstanding\" in Spanish? ___",
+              "prompt": "How do you say \"notwithstanding (formal)\" in Spanish? ___",
               "bank": [
                 "no obstante lo anterior",
                 "en cambio",
@@ -30892,7 +30892,7 @@
                 "teniendo esto en cuenta"
               ],
               "answer": "no obstante lo anterior",
-              "explanation": "notwithstanding → no obstante lo anterior. Discourse markers for sophisticated argumentation and academic writing."
+              "explanation": "notwithstanding (formal) → no obstante lo anterior. Discourse markers for sophisticated argumentation and academic writing."
             },
             {
               "id": "esc1p5q1",
@@ -30982,7 +30982,7 @@
             {
               "id": "esc1p5q7",
               "type": "mc",
-              "prompt": "How do you say \"all things considered\" in Spanish?",
+              "prompt": "How do you say \"all things considered (formal)\" in Spanish?",
               "choices": [
                 "por extensión",
                 "sin perjuicio de lo anterior",
@@ -30990,7 +30990,7 @@
                 "dicho esto"
               ],
               "answer": 2,
-              "explanation": "all things considered → considerando todo lo anterior. Discourse markers for sophisticated argumentation and academic writing."
+              "explanation": "all things considered (formal) → considerando todo lo anterior. Discourse markers for sophisticated argumentation and academic writing."
             },
             {
               "id": "esc1p5q8",
@@ -32925,14 +32925,14 @@
             {
               "id": "esc1p12q6",
               "type": "mc",
-              "prompt": "How do you say \"deadline\" in Spanish?",
+              "prompt": "How do you say \"deadline (contractual)\" in Spanish?",
               "choices": [
                 "plazo",
                 "parte interesada",
                 "negociación"
               ],
               "answer": 0,
-              "explanation": "deadline → plazo. Business negotiation vocabulary."
+              "explanation": "deadline (contractual) → plazo. Business negotiation vocabulary."
             },
             {
               "id": "esc1p12q7",
@@ -33844,14 +33844,14 @@
             {
               "id": "esc1p16q12",
               "type": "mc",
-              "prompt": "How do you say \"evidence\" in Spanish?",
+              "prompt": "How do you say \"evidence (scientific)\" in Spanish?",
               "choices": [
                 "evidencia",
                 "inteligencia artificial",
                 "red neuronal"
               ],
               "answer": 0,
-              "explanation": "evidence → evidencia. Advanced science and technology vocabulary."
+              "explanation": "evidence (scientific) → evidencia. Advanced science and technology vocabulary."
             },
             {
               "id": "esc1p16q13",
@@ -34538,14 +34538,14 @@
             {
               "id": "esc1p20q1",
               "type": "mc",
-              "prompt": "How do you say \"in other words\" in Spanish?",
+              "prompt": "How do you say \"in other words (formal)\" in Spanish?",
               "choices": [
                 "como se mencionó anteriormente",
                 "dicho de otra manera",
                 "a su debido tiempo"
               ],
               "answer": 1,
-              "explanation": "in other words → dicho de otra manera. Further advanced discourse markers for academic/formal Spanish."
+              "explanation": "in other words (formal) → dicho de otra manera. Further advanced discourse markers for academic/formal Spanish."
             },
             {
               "id": "esc1p20q2",
@@ -34708,14 +34708,14 @@
             {
               "id": "esc1p20q14",
               "type": "mc",
-              "prompt": "How do you say \"by the same token\" in Spanish?",
+              "prompt": "How do you say \"likewise (by the same token)\" in Spanish?",
               "choices": [
                 "con ese fin",
                 "tras un análisis más detallado",
                 "de igual modo"
               ],
               "answer": 2,
-              "explanation": "by the same token → de igual modo. Further advanced discourse markers for academic/formal Spanish."
+              "explanation": "likewise (by the same token) → de igual modo. Further advanced discourse markers for academic/formal Spanish."
             }
           ]
         }
@@ -35144,7 +35144,7 @@
             {
               "id": "esc1p22q3",
               "type": "fill",
-              "prompt": "What is a more precise/formal way to say \"to show (basic: mostrar)\"? ___",
+              "prompt": "What is a more precise/formal way to say \"to reveal (basic: mostrar)\"? ___",
               "bank": [
                 "afrontar",
                 "posponer",
@@ -35152,7 +35152,7 @@
                 "revelar"
               ],
               "answer": "revelar",
-              "explanation": "to show (basic: mostrar) → revelar. Further advanced vocabulary offering more precise alternatives."
+              "explanation": "to reveal (basic: mostrar) → revelar. Further advanced vocabulary offering more precise alternatives."
             },
             {
               "id": "esc1p22q4",

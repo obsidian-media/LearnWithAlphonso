@@ -265,6 +265,30 @@ contradictory pair discards correct content and is the wrong move.
 They spread evenly across all five levels (A1 42, A2 40, B1 44, B2 50,
 C1 54 pack-references), so this is systemic, not one bad batch.
 
+**Fixed 2026-09-25 (step 4).** All 17 disambiguated by editing the
+English prompt text in place — no answer changed, no side dropped, no
+id moved. `CROSS_PACK_DUPLICATE_BASELINE.es` is now 0. Two entries
+needed judgement beyond the table above, worth recording:
+
+- `"on the other hand"` (the three-pack case) turned out to be a mixed
+  group: two of its three occurrences shared not just the prompt but
+  the *answer* too (`por otro lado`, in `esb1p4` and `esb2p26`) — a
+  true repeat hiding inside what the overall group classified as
+  "contradictory" because the third occurrence (`esb2p4`, `por otra
+  parte`) had a different answer. Fixed by disambiguating all three
+  distinctly rather than assuming the two-answer classification meant
+  only one edit was needed.
+- `no tener pelos en la lengua` was the one entry where "disambiguate
+  the prompt" didn't fit — both occurrences were the *same Spanish
+  idiom* under two English glosses meaning the same thing, not two
+  valid interpretations. Tagging the prompt (`"(bluntly)"` on a fixed
+  idiom) would have been nonsensical. Treated as a step-3-shaped fix
+  instead: the C1 occurrence's idiom was replaced with a different one
+  (`irse de la lengua`, "to let something slip") rather than
+  disambiguated, since the B1 "everyday sayings" pack is the more
+  natural home for the original and duplicating one idiom under two
+  glosses isn't a nuance worth preserving twice.
+
 ---
 
 ## 4. The id-stability rule, which has no guard for Spanish
@@ -422,9 +446,10 @@ Ship each as its own PR. Do not bundle.
    commit. Done 2026-09-25 — `CROSS_PACK_DUPLICATE_BASELINE.es` is 17.
 4. **The 17 contradictory prompts** (§3.2). Separate from 3 because it
    is authoring judgement rather than deletion, and deserves its own
-   review.
+   review. Done 2026-09-25 — `CROSS_PACK_DUPLICATE_BASELINE.es` is 0.
 5. **Short-pack decision** (§2) — either the fill, or a documented
-   acceptance.
+   acceptance. Done 2026-09-25: accept and document (see §2's recorded
+   decision).
 6. **Distractor-quality measurement** (§5). Reported by assertion.
 7. **Phase 2**, in the order of §6: generator check, `translate`,
    `listening`, `speak`.
