@@ -269,6 +269,11 @@ final class SpeakTurnRecorder {
     private var fileURL: URL?
 
     func start() throws {
+        // Set before touching the session, so the flag is already true
+        // when iOS delivers interruption-began to the podcast player --
+        // that is how it tells an in-app mic takeover from a phone call.
+        // See RecordingState.
+        RecordingState.shared.began()
         let audioSession = AVAudioSession.sharedInstance()
         // .defaultToSpeaker matters here in a way it does not on the
         // conversation screen: AVAudioSession is process-wide, and plain
@@ -296,6 +301,7 @@ final class SpeakTurnRecorder {
     }
 
     func stop() -> Data? {
+        RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
         // Hand the session back rather than leaving the app in a recording

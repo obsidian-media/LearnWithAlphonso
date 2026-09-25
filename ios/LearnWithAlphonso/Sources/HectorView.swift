@@ -337,6 +337,11 @@ private final class HectorTurnRecorder {
     private var fileURL: URL?
 
     func start() throws {
+        // Set before touching the session, so the flag is already true
+        // when iOS delivers interruption-began to the podcast player --
+        // that is how it tells an in-app mic takeover from a phone call.
+        // See RecordingState.
+        RecordingState.shared.began()
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.playAndRecord, mode: .default)
         try audioSession.setActive(true)
@@ -355,6 +360,7 @@ private final class HectorTurnRecorder {
     }
 
     func stop() -> Data? {
+        RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
         defer { fileURL = nil }

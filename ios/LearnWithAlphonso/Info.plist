@@ -32,6 +32,18 @@
 	     needs re-evaluating -- don't copy this value forward blindly. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Background audio for the podcast library (Phase 1b, see
+	     docs/superpowers/specs/2026-09-24-podcast-phase1b-ios-design.md).
+	     Without this, playback stops the moment the screen locks, which is
+	     most of what people want a listening tab for. This capability is
+	     visible in App Store review: a reviewer may check that background
+	     audio is genuinely used, which it is. PodcastAudioPlayer sets the
+	     .playback category and keeps an AVPlayer running. Do not add other
+	     modes here speculatively; each one invites its own question. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<!-- RevenueCat's public SDK key, moved here from a per-config
 	     INFOPLIST_KEY_RCApiKey build setting in project.yml on 2026-09-23
 	     after proving that setting never actually reaches the built app:

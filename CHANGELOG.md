@@ -10,6 +10,35 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Podcast library Phase 1b — the iOS Listen client** — browse the folder tree, play an
+episode, keep playing with the screen locked, and resume across devices. **This lifts the
+Phase 0/1b release constraint**: Listen is no longer a placeholder.
+
+`PodcastClient` is the first time the iOS app fetches *content* from the server rather than
+its bundle — `ContentStore` is explicitly "No network calls, no async" because curriculum
+ships in the binary, which podcast content cannot do if the library is to grow without an
+App Store release. Models, folder-tree logic, resume clamping and URL building are ported
+into `LearnWithAlphonsoKit`, where they are actually tested; each port names its TypeScript
+original and that file's tests so drift is visible in review.
+
+Three decisions worth knowing:
+
+- **Play events go through `record_podcast_play_event`**, never a direct insert. iOS was
+  new code walking toward a hole just closed on web, and it would have failed silently
+  inside a fire-and-forget call. Mutation-tested.
+- **Resume uses optimistic concurrency on `updated_at`.** Guarding on position magnitude
+  would reject a deliberate rewind; guarding on `now()` would accept the stale write it is
+  meant to reject, since `now()` is evaluated when the write lands. Only observation
+  recency separates them.
+- **Interruptions are handled by type.** `.shouldResume` is honoured for a call, an alarm
+  or Siri — never resuming would make a podcast silently die after a phone call — and
+  suppressed only when one of the app's own mic screens took the session. The four
+  recorders now mark `RecordingState`, read at interruption-*began* because a recorder's
+  `stop()` is itself what makes iOS send `.shouldResume`.
+
+`UIBackgroundModes=audio` is new and App Store review-visible. The audio layer has no
+automated coverage and cannot have any here, so it is device-verified or not at all.
+
 **Podcast play events are written through a validating function** — `podcast_play_events`
 shipped with a direct INSERT grant to `authenticated`, so any signed-in client could write
 arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including
@@ -38,7 +67,7 @@ review row (visible even at zero, so the queue is never unreachable) and a tab b
 hides at zero. The badge rule lives in `LearnWithAlphonsoKit` so it is unit-tested; the
 app target has no test coverage anywhere in this repo, only `xcodebuild` in CI.
 
-**Listen is a placeholder until Phase 1b. No App Store release may ship between them.**
+**Listen shipped as a placeholder here and was filled by Phase 1b above, so the release constraint this entry originally carried is lifted.**
 
 **Podcast/audio library, Phase 1a (web)** — a Listen tab: a folder tree of
 short audio episodes, browsable at any depth through one splat route, with a
@@ -59,9 +88,9 @@ the drift that test was added for), and mounting a component in `AppShell` that
 statically imports server functions pulls the Supabase auth middleware into
 every page's import graph — now imported lazily.
 
-**Not live yet**: the migration has not been applied to the live project and the
-bucket has not been created, so the tab renders with no data. iOS is Phase 1b;
-transcripts, questions, XP and SRS are Phase 2. Spec:
+Live since the migration applied on merge (`deploy-supabase` ran green); the bucket
+and its read-only policy are created by that same migration. iOS landed in Phase 1b
+above; transcripts, questions, XP and SRS are Phase 2. Spec:
 `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
 
 
