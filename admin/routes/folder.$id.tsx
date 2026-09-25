@@ -4,6 +4,8 @@ import {
   adminListEpisodes,
   adminUpdateEpisode,
   adminSetPublished,
+  adminCreateAudioUploadUrl,
+  adminVerifyUploadedAudio,
   type AdminEpisode,
 } from "@/lib/admin.functions";
 
@@ -90,9 +92,72 @@ function FolderEpisodes() {
                 {episode.published ? "Listed" : "Not listed — audio still public by URL"}
               </span>
             </div>
+            <ReplaceAudio episode={episode} onDone={() => router.invalidate()} />
           </li>
         ))}
       </ul>
     </main>
+  );
+}
+
+/**
+ * Replaces an episode's audio.
+ *
+ * The bytes go straight to Supabase Storage through a signed URL, never
+ * through a server function: a serverless body is capped near 4.5 MB and
+ * base64 would inflate an ordinary 3 MB episode past it. The server then
+ * reads the object back and proves it is audio, deleting it if not.
+ */
+function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () => void }) {
+  const [status, setStatus] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    setStatus("Uploading…");
+    try {
+      const { signedUrl } = await adminCreateAudioUploadUrl({
+        data: { episodeId: episode.id, audioPath: episode.audioPath, declaredBytes: file.size },
+      });
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "content-type": "audio/mpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("The upload did not complete.");
+      setStatus("Checking…");
+      const { durationSeconds } = await adminVerifyUploadedAudio({
+        data: { episodeId: episode.id, audioPath: episode.audioPath },
+      });
+      setStatus(`Replaced — ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")}`);
+      onDone();
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-2">
+      <label className="text-sm text-ink-soft">
+        Replace audio:{" "}
+        <input
+          type="file"
+          accept="audio/mpeg,audio/mp4"
+          disabled={busy}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            // The input is reset so choosing the same file twice after a
+            // failure still fires onChange -- otherwise a retry of the
+            // identical file silently does nothing.
+            event.target.value = "";
+            if (file) void upload(file);
+          }}
+          className="text-sm"
+        />
+      </label>
+      {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
+    </div>
   );
 }

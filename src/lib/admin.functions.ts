@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
 import { findCycle, isValidSlug, type PodcastFolder } from "./podcast-tree";
+import { validateUpload, MAX_UPLOAD_BYTES } from "./admin-upload";
 
 /**
  * Every admin server function lives in this one file so
@@ -25,7 +26,11 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminListEpisodes",
   "adminUpdateEpisode",
   "adminSetPublished",
+  "adminCreateAudioUploadUrl",
+  "adminVerifyUploadedAudio",
 ] as const;
+
+const BUCKET = "podcast-audio";
 
 const slugSchema = z.string().min(1).max(80).refine(isValidSlug, "use lowercase kebab-case");
 
@@ -289,4 +294,91 @@ export const adminSetPublished = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/**
+ * A short-lived signed URL the browser uploads the audio to directly.
+ *
+ * Direct-to-storage, not a POST of the bytes through here: a serverless
+ * function body is capped near 4.5 MB on Vercel and base64 inflates by a
+ * third, so an ordinary 3 MB episode routed through a server function
+ * would fail at the platform rather than in any code we could fix.
+ */
+export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        episodeId: z.string().uuid(),
+        audioPath: z.string().min(1).max(400),
+        declaredBytes: z.number().int().positive(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ signedUrl: string; token: string }> => {
+    // The declared size is the caller's claim and buys only a cheap early
+    // refusal. The number that counts is measured from the stored object
+    // in adminVerifyUploadedAudio.
+    if (data.declaredBytes > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        `That file is too large (${Math.round(data.declaredBytes / 1024 / 1024)} MB). The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`,
+      );
+    }
+    const { data: signed, error } = await untyped(context.supabaseAdmin)
+      .storage.from(BUCKET)
+      .createSignedUploadUrl(data.audioPath, { upsert: true });
+    if (error || !signed) throw new Error(error?.message ?? "Could not start the upload.");
+    return { signedUrl: signed.signedUrl, token: signed.token };
+  });
+
+/**
+ * Reads the stored object back, proves it is audio, and only then writes
+ * the duration onto the row.
+ *
+ * Deletes the object when it is not audio. Verification necessarily
+ * happens after the write, so a bad object genuinely exists for a
+ * moment; leaving it there would mean a public URL under our own domain
+ * serving whatever was uploaded. Reporting without deleting is not
+ * enough.
+ */
+export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z.object({ episodeId: z.string().uuid(), audioPath: z.string().min(1).max(400) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
+    const client = untyped(context.supabaseAdmin);
+    const { data: blob, error: downloadError } = await client.storage
+      .from(BUCKET)
+      .download(data.audioPath);
+    if (downloadError || !blob) throw new Error("The upload did not arrive. Try again.");
+
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const problem = validateUpload(new Uint8Array(buffer.subarray(0, 16)), buffer.byteLength);
+    if (problem) {
+      await client.storage.from(BUCKET).remove([data.audioPath]);
+      throw new Error(problem);
+    }
+
+    // music-metadata is imported lazily, matching podcast-tool.ts: a
+    // top-level import made commands that never read audio die at import
+    // time, and the same would apply to every admin request here.
+    const { parseBuffer } = await import("music-metadata");
+    const metadata = await parseBuffer(buffer, { mimeType: "audio/mpeg" });
+    const durationSeconds = Math.round(metadata.format.duration ?? 0);
+    if (durationSeconds <= 0) {
+      await client.storage.from(BUCKET).remove([data.audioPath]);
+      throw new Error("Could not read a duration from that file. It may be truncated.");
+    }
+
+    // Written only after the object is proven good. A row claiming a
+    // duration the file does not have is exactly what the iOS cache's
+    // durationDisagrees check reads as a truncated download -- it would
+    // re-download the episode on every launch.
+    const { error } = await client
+      .from("podcast_episodes")
+      .update({ duration_seconds: durationSeconds })
+      .eq("id", data.episodeId);
+    if (error) throw new Error(error.message);
+    return { ok: true, durationSeconds };
   });
