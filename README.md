@@ -37,10 +37,11 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   where you left off, across devices. Episodes are published by the account
   owner with `scripts/podcast-tool.ts` — either an MP3 you recorded or a script
   spoken by Deepgram — so the library grows without a deploy or an App Store
-  release. **Not live yet**: the migration still has to be applied and the
-  `podcast-audio` bucket created (see the spec's "Implementation status").
-  Transcripts, comprehension questions, XP and SRS wiring are Phase 2; the iOS
-  client is Phase 1b. See
+  release. The schema and the `podcast-audio` bucket are live (migrations
+  auto-apply on merge). Play events are written only through
+  `record_podcast_play_event`, not by a direct insert — that table is the
+  evidence base Phase 2 will build on. Transcripts, comprehension questions,
+  XP and SRS wiring are Phase 2. See
   `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
@@ -56,9 +57,13 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   into the system "More" list, so Achievements was already buried. League, Friends and
   Achievements now live behind **Profile**; the **review queue** is a row at the top of
   Learn with a due-count badge on the tab (Settings also keeps its gear on Learn).
-  **Listen is a placeholder until Phase 1b** — no App Store release should ship between
-  the two, or users get a tab that does nothing. See
-  `docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md`.
+  **Listen is real as of Phase 1b** (2026-09-24), so the Phase 0/1b release constraint is
+  lifted: browse the folder tree, play an episode, keep playing with the screen locked
+  (lock-screen and Control Center controls included), and resume where you left off —
+  including across to the web app on the same account. Listening is online-only until
+  Phase 3 adds download. See
+  `docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md` and
+  `docs/superpowers/specs/2026-09-24-podcast-phase1b-ios-design.md`.
 - **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 4 themes: the three web themes ported over (Meadow/Studio Ink/Manuscript — fonts, oklch-accurate palette, the hard-shadow pressed-button effect) plus a fourth, iOS-only "Canopy" theme (2026-09-23) not mirrored on web, applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
 
 ## Content

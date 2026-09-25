@@ -64,6 +64,30 @@ over "what the answer currently is," since the latter goes stale fast.
 
 | `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. |
 
+**Podcast on iOS (Phase 1b).** `PodcastClient` in `LearnWithAlphonsoKit` is the
+first time the iOS app fetches *content* from the server rather than its
+bundle — `ContentStore` is deliberately "No network calls, no async" because
+curriculum ships in the binary, which podcast content cannot do if the library
+is to grow without an App Store release. Models, folder-tree logic, resume
+clamping and audio-URL building are ported into the Kit so they are actually
+tested; the app target has no unit tests anywhere in this repo.
+
+Resume position uses **optimistic concurrency on `podcast_playback.updated_at`**:
+the client sends the value it last read and the write is rejected if the stored
+one moved on. Guarding on position magnitude would reject a deliberate rewind,
+and guarding on `now()` would accept the stale write it is meant to reject,
+since `now()` is evaluated when the write lands. Only observation recency
+separates a stale device's flush from a rewind.
+
+Audio is one `AVPlayer` owned by `RootView` above the view tree, with
+`UIBackgroundModes=audio` (App Store review-visible) and the `.playback`
+category. Interruptions are handled **by type**: `.shouldResume` is honoured for
+a call, alarm or Siri, and suppressed only when one of the app's own mic screens
+took the session, tracked by `RecordingState` and read at interruption-*began*
+because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
+Reading the session category instead would be wrong — a lingering
+`.playAndRecord` is a known problem in this app.
+
 **Podcast audio storage.** Episodes live in a **public-read** Supabase
 Storage bucket, `podcast-audio`, with no client write policy — only
 `scripts/podcast-tool.ts` (service role) uploads. Consequence worth

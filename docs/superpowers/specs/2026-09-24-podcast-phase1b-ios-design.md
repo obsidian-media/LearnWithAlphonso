@@ -1,7 +1,7 @@
 # Podcast library Phase 1b — the iOS Listen client
 
 **Date:** 2026-09-24
-**Status:** design proposed, not yet approved
+**Status:** implemented; CI green (ios-app-build passes, 272 Kit tests). **Device verification outstanding** — see below.
 **Branch:** `worktree-podcast-phase1b-ios` (from `1b3163f`)
 **Follows:** Phase 1a (`2026-09-24-podcast-library-phase1-design.md`), Phase 0 (`2026-09-24-podcast-phase0-ios-tabs-design.md`)
 
@@ -11,9 +11,8 @@ Replace the `ListenView` placeholder with the real client: browse the
 folder tree, play an episode, resume where you left off — on the same
 account, across devices.
 
-This closes the release constraint Phase 0 opened. **No App Store release
-may ship until this lands**, because Listen is currently a tab that does
-nothing.
+This closes the release constraint Phase 0 opened: until this landed, no App
+Store release could ship, because Listen was a tab that did nothing.
 
 ### Success criteria
 
@@ -59,7 +58,7 @@ network, which is how all 241 Kit tests already run.
 | --- | --- |
 | `fetchFolders()` | `GET rest/v1/podcast_folders` |
 | `fetchEpisodes(folderID:)` | `GET rest/v1/podcast_episodes` + this user's `podcast_playback` rows |
-| `savePlaybackPosition(episodeID:positionSeconds:completed:)` | `POST rest/v1/podcast_playback` (upsert) |
+| `savePlaybackPosition(episodeID:positionSeconds:completed:lastSeenUpdatedAt:)` | `PATCH rest/v1/podcast_playback` filtered on `updated_at`, or `POST` when no row exists |
 | `recordPlayEvent(episodeID:secondsListened:)` | `POST rest/v1/rpc/record_podcast_play_event` |
 
 **`recordPlayEvent` must go through the RPC.** `authenticated` no longer
@@ -247,3 +246,25 @@ Device checks, on top of Phase 0's six:
 4. A phone call pauses it; unplugging headphones pauses it.
 5. Airplane mode gives an honest offline message, not a stuck spinner.
 6. The mini-player bar behaves across tab switches.
+
+## Implementation status (2026-09-25)
+
+Implemented on `worktree-podcast-phase1b-ios`. `ios-app-build` passes, so the
+app target compiles; `LearnWithAlphonsoKit` is at 272 tests, 0 failures.
+
+**Not verified, and not verifiable from here:** everything in the audio layer.
+No unit tests exist for it, there is no macOS in the development environment,
+and a simulator would not exercise a real call, real headphones or the lock
+screen. CI proves compilation only.
+
+**Blocked on content.** No episode has been published yet, so nothing can be
+device-verified against. Order matters: run the chunk-join probe, then publish,
+then verify. The Phase 1a clamp makes the player behave correctly against a
+wrong `duration_seconds`, so verifying against a bad episode would pass while
+the stored value stays wrong — and `clampPosition` measures resume against that
+stored value on read.
+
+Two compile errors were caught by CI rather than by me, both of the kind no
+local check here could find: a missing `import LearnWithAlphonsoKit` in
+`PodcastMiniBar`, and `AVPlayer.seek(to:)` resolving to its async overload
+inside an async context.
