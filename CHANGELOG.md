@@ -10,6 +10,29 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**English content quality — a1p15's distractors stop crossing word classes**
+(#TBD) — closes the content audit's one deferred defect. Multiple-choice
+distractors are drawn from a pack's own answers and ranked by part of speech, but
+tags are read from each answer's own cloze sentence and a "pair" pack line has
+none. So a1p15 "Shapes & Sizes", which mixes shape nouns with size adjectives,
+had no tags and no ranking: **23 of its 25 questions** offered a distractor from
+the other class, and "is a perfect cube shape" offered [cube, huge, narrow,
+average] — three of four size adjectives, answerable with no geometry. Now **0 of
+25**, via 25 hand labels held in a per-pack override map. No pack data changed, so
+no question id moved, and a1p15's 25 questions are the only ones in the course
+whose choices changed.
+
+The interesting part is what was tried first and withdrawn, because both looked
+like the careful option. Reading each pair pack's prompt template as a
+declaration of its answers' class ("Which verb goes with …?" cannot be answered
+by a noun) is true but **inert** — ranking is relative within a pool, so a class
+shared by every candidate expresses no preference — while its side effects were
+real: 43 questions degraded across 11 packs, 0 improved. And that damage came
+from assuming a dropped tag is a neutral abstention. It is not: `rank()` resolves
+an untagged candidate to the answer's own class, so **dropping a tag promotes the
+word**. Both were caught by whole-branch review, and the audit log records the
+measurements.
+
 **Podcast library Phase 1b — the iOS Listen client** — browse the folder tree, play an
 episode, keep playing with the screen locked, and resume across devices. **This lifts the
 Phase 0/1b release constraint**: Listen is no longer a placeholder.

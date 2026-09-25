@@ -212,7 +212,7 @@ pattern". It is at **91.17%**, as are its siblings (`chat.ts` 96.29%,
 describes the codebase — don't cite it to justify skipping tests on a
 new server route.
 
-### Three traps that have each cost a session real time
+### Traps that have each cost a session real time
 
 **`user.type` on a controlled input can leave only the last character in
 state.** The symptom is not "the typing failed" — it is that whatever consumes
@@ -233,6 +233,31 @@ because the assertion pinned any content. The assertion still could not catch
 the thing its own comment claimed. When a mutation passes, check which axis it
 actually attacked.
 
+**Check which direction a missing value pushes you before calling it safe.**
+"Leave it out rather than guess" is usually the cautious choice, and in distractor
+ranking it is the opposite. `rank()` resolves an untagged candidate to the
+ANSWER's word class, so a candidate with no tag sorts as a perfect distractor:
+removing a tag PROMOTES that word. A change that dropped 12 tags degraded 43
+questions across 11 packs while its own bank-wide metric improved — because that
+metric skipped untagged candidates, so the same deletion removed the mismatch
+from the numerator and promoted the word in the product. Three files of this
+branch's prose asserted "no tag merely declines to express a preference" without
+anyone reading the six-line function that decides it. When a design rests on what
+a default does, open the default.
+
+**A measurement can be a fact about your instrument rather than your data.**
+Pair-pack answers had no part-of-speech tag, and the obvious fix was to drop the
+answer into a synthetic sentence so the tagger has context -- the same move that
+made cloze tagging work. Measured against a hand-labelled sample, `It is X.`
+scores 93% and `They X.` scores 64%, and the reason is not that one frame is
+better: `It is X.` puts the word in a nominal slot so every verb comes back a
+noun, and `They X.` puts it in a verbal slot so sixteen nouns come back verbs. A
+frame does not read a word's class, it imposes one, and its accuracy is a fact
+about the frame's syntax and the sample's composition. The same shape shows up
+whenever a metric shares a mechanism with the thing it measures -- the existing
+part-of-speech *ratio* check has the identical flaw and says so. Before trusting
+a number, ask what it would say if the data were wrong.
+
 **Nothing else may touch the tree while a verification command runs.** A second
 `vitest` racing a backgrounded first silently drops test files — 126 files
 became 115, and earlier 117 became 113 and then 107 — with everything
@@ -252,6 +277,29 @@ still writing while vitest was discovering. Run verification sequentially with
 nothing in the background, and treat any unexplained DROP in the file count as
 a racing process rather than a regression — re-run before investigating. If a
 command gets backgrounded mid-pass, wait for it rather than re-running.
+
+**And "nothing in the background" means nothing on the MACHINE, not nothing in
+your session.** Parallel worktrees are parallel Claude sessions sharing one
+worker budget. Seen 2026-09-24: 128 files became 114 with 17 errors, then 105
+with 26, and every one was `[vitest-pool]: Failed to start forks worker ...
+Timeout waiting for worker to respond` rather than a single test failure — which
+reads exactly like a regression in whatever you just changed. The cause was
+another session running `vitest run --maxWorkers=4` in a sibling worktree, and
+re-running made it worse because both sessions were then competing. The same
+run came back 131 files / 1096 tests / 0 errors once that finished.
+
+A worker-spawn timeout is not a test failure. Diagnose it before believing a
+suite result, and check by worktree so you do not kill another session's run:
+
+```powershell
+Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
+  Where-Object { $_.CommandLine -like '*vitest*' } |
+  Select-Object ProcessId, CreationDate,
+    @{n='wt';e={ if($_.CommandLine -match 'worktrees.([^\\]+)'){$Matches[1]}else{'main'} }}
+```
+
+Wait for the other run, then re-verify. Never kill a process belonging to
+another worktree.
 
 ## Assets
 

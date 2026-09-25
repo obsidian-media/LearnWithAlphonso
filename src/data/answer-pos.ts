@@ -1108,3 +1108,44 @@ export const ANSWER_POS: Record<string, string> = {
   years: "Noun",
   yet: "Conjunction",
 };
+
+// Hand-labelled word classes for packs whose answer pool genuinely mixes
+// classes, scoped to the pack and consulted BEFORE the map above.
+//
+// Scoped, because a pack's distractors only ever come from its own pool, so that
+// is the only scope in which tags are compared. Not merged into ANSWER_POS,
+// because a hand label is ground truth and the merge rule there drops any word
+// two sources disagree about -- which would discard the label, and discarding is
+// not neutral: an untagged candidate is treated by rank() as the answer's own
+// class, i.e. as a perfect distractor. `light` is a noun in a1p18 ("bright
+// light") and an adjective in a1p15 ("is not heavy"); both are right, and
+// scoping is what lets both be true at once.
+export const PACK_ANSWER_POS: Record<string, Record<string, string>> = {
+  a1p15: {
+    average: "Adjective",
+    broad: "Adjective",
+    circle: "Noun",
+    cone: "Noun",
+    cube: "Noun",
+    cylinder: "Noun",
+    heavy: "Adjective",
+    hexagon: "Noun",
+    huge: "Adjective",
+    light: "Adjective",
+    long: "Adjective",
+    narrow: "Adjective",
+    octagon: "Noun",
+    oval: "Noun",
+    oversized: "Adjective",
+    pentagon: "Noun",
+    rectangle: "Noun",
+    short: "Adjective",
+    sphere: "Noun",
+    square: "Noun",
+    thick: "Adjective",
+    thin: "Adjective",
+    tiny: "Adjective",
+    towering: "Adjective",
+    triangle: "Noun",
+  },
+};

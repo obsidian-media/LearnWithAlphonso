@@ -1,4 +1,13 @@
-import { ANSWER_POS } from "@/data/answer-pos";
+import { ANSWER_POS, PACK_ANSWER_POS } from "@/data/answer-pos";
+
+/**
+ * Hand-labelled classes for one pack, or an empty object for a pack that needs
+ * none -- which is most of them, because a pool whose answers are all one class
+ * cannot produce a cross-class distractor.
+ */
+export function packAnswerPos(packId: string): Record<string, string> {
+  return PACK_ANSWER_POS[packId] ?? {};
+}
 
 /**
  * Orders distractor candidates so the most useful wrong answers come first.
@@ -28,23 +37,38 @@ import { ANSWER_POS } from "@/data/answer-pos";
  * distractors.
  *
  * Part-of-speech tags come from a precomputed map (see
- * scripts/gen-answer-pos.ts), so an unknown word simply expresses no
- * preference rather than a guessed one, and no tagging library reaches the
- * client bundle or app startup path.
+ * scripts/gen-answer-pos.ts), so no tagging library reaches the client bundle or
+ * the app startup path. A word the generator could not read consistently is left
+ * untagged rather than guessed at.
+ *
+ * `overrides` carries hand labels for a pack whose pool mixes word classes, and
+ * is consulted first. It exists because the corpus-wide map cannot hold two true
+ * readings of one word -- `light` is a noun in a1p18 and an adjective in a1p15 --
+ * and dropping the word is not a neutral abstention. See `rank`.
  */
 export function orderDistractorCandidates(
   answer: string,
   candidates: string[],
   prompt?: string,
+  /** Hand labels for the pack these candidates came from -- see packAnswerPos. */
+  overrides: Record<string, string> = {},
 ): string[] {
-  const answerPos = ANSWER_POS[answer];
+  const posOf = (word: string): string | undefined => overrides[word] ?? ANSWER_POS[word];
+  const answerPos = posOf(answer);
   const promptWords = prompt ? wordsIn(prompt) : null;
   if (!answerPos && !promptWords) return candidates;
 
   // Lower rank sorts earlier. Rank 0 is the ideal distractor: right word class,
   // not already sitting in the sentence.
   const rank = (candidate: string): number => {
-    const wrongClass = answerPos ? (ANSWER_POS[candidate] ?? answerPos) !== answerPos : false;
+    // An untagged candidate resolves to the ANSWER's class, i.e. ranks as a
+    // perfect match. That default is deliberate -- demoting unknowns was measured
+    // and rejected, because 150 of the bank's 2,675 questions have fewer than
+    // three known same-class candidates and would draw the same handful every
+    // time -- but it means a MISSING tag is a promotion, not an abstention. Any
+    // change that removes tags therefore makes questions worse while looking
+    // conservative; one did, degrading 43 questions across 11 packs.
+    const wrongClass = answerPos ? (posOf(candidate) ?? answerPos) !== answerPos : false;
     const inPrompt = promptWords ? promptWords.has(candidate.trim().toLowerCase()) : false;
     return (wrongClass ? 2 : 0) + (inPrompt ? 1 : 0);
   };

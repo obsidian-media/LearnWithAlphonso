@@ -29,7 +29,7 @@
 | `a1p12` | pack | Jobs & Occupations | 25 | ☑ | No issues found. |
 | `a1p13` | pack | Animals | 25 | ☑ | FIXED x2: "very large grey animal with tusks"->"elephant seal" re-clued to walrus (the clue described an elephant, already in the pool); turtle/snail clues were near-identical, snail re-clued. |
 | `a1p14` | pack | Days, Months & Time | 25 | ☑ | FIXED: answer "flowers" (a Valentine's line) polluted a time-word pool; replaced with a "noon" line. Was producing [January, flowers, time, year]. |
-| `a1p15` | pack | Shapes & Sizes | 25 | ☑ | DEFERRED STRUCTURAL: pack deliberately mixes shape nouns with size adjectives, so shape questions can draw adjective distractors. Not fixable in place; needs a pack split. |
+| `a1p15` | pack | Shapes & Sizes | 25 | ☑ | **FIXED 2026-09-24, no split needed.** The diagnosis in the deferred-changes section was right and its remedy was wrong: the pack does mix shape nouns with size adjectives, but the reason distractors crossed classes is that pair-pack answers carried no part-of-speech tag at all, so the ranking layer expressed no preference. Its 25 answers are now hand-labelled in `src/data/pair-answer-class.ts`, which moves no line and shifts no id. Cross-class distractors: **23 of 25 questions -> 0 of 25**, with no other pack in the course affected. |
 | `a1p16` | pack | Daily Routine | 25 | ☑ | No issues found. |
 | `a1p17` | pack | In the Classroom | 25 | ☑ | No issues found. |
 | `a1p18` | pack | Describing Things | 25 | ☑ | No issues found. |
@@ -202,6 +202,22 @@ prompt overlap before they are taken (`src/lib/distractor-affinity.ts`).
 Measured across all 1,387 English multiple-choice questions: distractors echoing a
 prompt word fell from 12 to **5** (1 multiple-choice, 4 fill banks).
 
+**Update 2026-09-24: hand labels for mixed pools.** The paragraphs here describe
+the cloze-only map, and it is **unchanged** -- byte-identical. What was added is a
+separate per-pack override map holding 25 hand labels for a1p15, the one pack
+whose pool genuinely mixes word classes. See the a1p15 entry above for the two
+approaches that were tried and withdrawn first.
+
+A third automated route was measured and rejected along the way: dropping the
+answer into a synthetic sentence frame so the tagger has context. `It is X.`
+scores 93% on a 45-word hand-labelled sample and `They X.` scores 64% -- and the
+gap is not quality. `It is X.` puts the word in a nominal slot so every verb
+comes back a noun; `They X.` puts it in a verbal slot so 16 of this corpus's
+nouns come back verbs. A frame does not read a word's class, it imposes one, and
+its accuracy is a fact about the frame's syntax. That is the bare-word trap
+wearing a different hat, and it is the thing to remember before reaching for a
+frame.
+
 A part-of-speech ratio is also tracked, but it is a smoke test, not evidence of
 quality: the ranking layer sorts by the same map the ratio is measured with, so
 it can only detect the layer being removed, never a wrong tag. Independent
@@ -242,7 +258,8 @@ review items.
 
 ## Deferred structural changes
 
-- **a1p15 "Shapes & Sizes" pack split** -- DECLINED for phase 1. The pack mixes
+- **a1p15 "Shapes & Sizes" pack split** -- DECLINED for phase 1, and **no longer
+  needed**; see the resolution note after this entry. The pack mixes
   shape nouns (triangle, hexagon) with size adjectives (huge, tiny), so a shape
   question can draw an adjective distractor. Splitting it adds or removes lines,
   which shifts every later question id in the pack and repoints real users'
@@ -253,5 +270,63 @@ review items.
   heavy]. The defect is real and remains open; it is deferred because splitting
   the pack shifts ids, not because it is harmless. Revisit as a deliberate,
   migrated content change.
+
+  **Resolved 2026-09-24 without a split.** The sentence above beginning "Note the
+  ranking layer does NOT mitigate this pack" is the real diagnosis and it is
+  correct; it was the remedy that was wrong, and it made this look like an
+  id-migration problem when it was a tag-coverage problem.
+  `scripts/gen-answer-pos.ts` read tags from cloze sentences only, so all 850
+  pair lines went untagged and the ranking layer had nothing to rank by. It now
+  also takes each pair pack's prompt template as a declaration of the answer's
+  class, and a1p15's genuinely two-class pool is hand-labelled per word. No
+  pack's `data` changed, so no id moved -- `english-id-parity.test.ts` passes
+  with no re-baselining.
+
+  Measured: cross-class distractors in a1p15 fell from **23 of 25** questions to
+  **0 of 25**. "is a perfect cube shape" offered [cube, huge, narrow, average] --
+  three of four from the wrong class, so no geometry was needed. The 25 questions
+  of a1p15 are the **only** questions in the course whose choices changed; the
+  corpus-wide tag map is byte-identical to before.
+
+  **Two wrong turns on the way, both caught by review, both worth recording
+  because each looked like the careful option.**
+
+  *Reading the prompt template as a declaration of the answer's class.* "Which
+  verb goes with ...?" cannot be answered by a noun, so 22 of the 34 pair packs
+  can be tagged with no tagger involved. It is true, and it is **inert**: a
+  declaration gives every answer in a pool the same class, and ranking is relative
+  WITHIN the pool, so a uniformly-tagged pool ranks exactly as an untagged one
+  does. The packs where a class could discriminate are precisely the mixed ones no
+  template can describe. Meanwhile the declarations collided with sentence
+  evidence and the agree-or-drop rule discarded 12 words -- measured net effect
+  **43 questions degraded across 11 packs, 0 improved**, to fix 16 in one. It is
+  withdrawn.
+
+  *Assuming a dropped tag is a neutral abstention.* It is not, and this is the
+  load-bearing fact in this whole area: `orderDistractorCandidates`'s `rank()`
+  resolves an untagged candidate to the ANSWER's class, so a word with no tag is
+  offered as a perfect distractor. **Dropping a tag promotes the word.** The 12
+  discarded words were promoted into pools where they are ungrammatical -- "The
+  trend shows a gradual ___ in average income" was offered "remained", and `light`
+  was offered as a preposition in 8 of c1p20's questions. The generator printed
+  those 12 losses and an earlier version of this entry described them as "the
+  conservative rule working".
+
+  What shipped instead: hand labels for mixed pools only, emitted as a **per-pack
+  override map** that the corpus-wide map never sees. `light` stays a noun
+  corpus-wide (from "Turn off the ___ before you sleep.") and is an adjective
+  inside a1p15 ("is not heavy"), both true at once, and no other pack can lose
+  anything.
+
+  Two further alternatives were measured and declined. **Demoting untagged
+  candidates** below known-same-class ones: 150 of the bank's 2,675 questions have
+  fewer than 3 known same-class candidates, so they would draw the same handful of
+  distractors on every question -- repetitive choices across 5.6% of the course.
+  **Scoping the whole map per pack**, not just the labels: it removes the
+  corpus-wide agreement check, which turns out to be doing a second job as an
+  accuracy filter -- a word this tagger reads inconsistently is a word it is
+  probably reading wrongly somewhere. Tried, and it tagged `coins` a Verb from
+  a1p11's "Can I pay in ___ instead of cash?", promoting it into that pack's verb
+  slot and breaking two of this audit's own hand-labelled guards.
 
 No pack re-levelling was proposed: no pack was found materially mis-levelled.

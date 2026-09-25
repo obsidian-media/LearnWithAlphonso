@@ -7649,10 +7649,10 @@
               "type": "mc",
               "prompt": "Something that \"has three sides\" is…",
               "choices": [
-                "towering",
+                "cone",
                 "octagon",
                 "triangle",
-                "cone"
+                "pentagon"
               ],
               "answer": 2,
               "explanation": "has three sides → triangle. Basic shapes and size adjectives."
@@ -7662,10 +7662,10 @@
               "type": "fill",
               "prompt": "Something that \"has four equal sides\" is… ___",
               "bank": [
+                "cylinder",
                 "triangle",
                 "square",
-                "huge",
-                "heavy"
+                "hexagon"
               ],
               "answer": "square",
               "explanation": "has four equal sides → square. Basic shapes and size adjectives."
@@ -7676,9 +7676,9 @@
               "prompt": "Something that \"is perfectly round\" is…",
               "choices": [
                 "circle",
-                "tiny",
-                "broad",
-                "average"
+                "oval",
+                "sphere",
+                "rectangle"
               ],
               "answer": 0,
               "explanation": "is perfectly round → circle. Basic shapes and size adjectives."
@@ -7690,8 +7690,8 @@
               "bank": [
                 "rectangle",
                 "circle",
-                "thin",
-                "sphere"
+                "sphere",
+                "octagon"
               ],
               "answer": "rectangle",
               "explanation": "has four sides, two longer than the others → rectangle. Basic shapes and size adjectives."
@@ -7701,10 +7701,10 @@
               "type": "mc",
               "prompt": "Something that \"has five sides\" is…",
               "choices": [
-                "thin",
+                "octagon",
                 "circle",
                 "pentagon",
-                "light"
+                "cone"
               ],
               "answer": 2,
               "explanation": "has five sides → pentagon. Basic shapes and size adjectives."
@@ -7722,9 +7722,9 @@
               "prompt": "Something that \"has six sides\" is… ___",
               "bank": [
                 "rectangle",
+                "triangle",
                 "cone",
-                "hexagon",
-                "towering"
+                "hexagon"
               ],
               "answer": "hexagon",
               "explanation": "has six sides → hexagon. Basic shapes and size adjectives."
@@ -7736,8 +7736,8 @@
               "choices": [
                 "oval",
                 "pentagon",
-                "long",
-                "cube"
+                "cube",
+                "square"
               ],
               "answer": 0,
               "explanation": "is shaped like an egg → oval. Basic shapes and size adjectives."
@@ -7747,8 +7747,8 @@
               "type": "fill",
               "prompt": "Something that \"has eight sides\" is… ___",
               "bank": [
-                "average",
-                "broad",
+                "circle",
+                "sphere",
                 "hexagon",
                 "octagon"
               ],
@@ -7760,10 +7760,10 @@
               "type": "mc",
               "prompt": "Something that \"is very big\" is…",
               "choices": [
-                "hexagon",
+                "short",
                 "average",
                 "huge",
-                "short"
+                "thin"
               ],
               "answer": 2,
               "explanation": "is very big → huge. Basic shapes and size adjectives."
@@ -7794,9 +7794,9 @@
               "prompt": "Something that \"is not thick\" is… ___",
               "bank": [
                 "tiny",
-                "sphere",
+                "oversized",
                 "thin",
-                "circle"
+                "light"
               ],
               "answer": "thin",
               "explanation": "is not thick → thin. Basic shapes and size adjectives."
@@ -7819,10 +7819,10 @@
               "type": "fill",
               "prompt": "Something that \"is longer than usual\" is… ___",
               "bank": [
-                "triangle",
-                "octagon",
+                "thick",
                 "narrow",
-                "long"
+                "long",
+                "heavy"
               ],
               "answer": "long",
               "explanation": "is longer than usual → long. Basic shapes and size adjectives."
@@ -7832,10 +7832,10 @@
               "type": "mc",
               "prompt": "Something that \"is not long\" is…",
               "choices": [
+                "thin",
                 "towering",
-                "oval",
                 "short",
-                "cone"
+                "heavy"
               ],
               "answer": 2,
               "explanation": "is not long → short. Basic shapes and size adjectives."
@@ -7846,7 +7846,7 @@
               "prompt": "Something that \"is very tall\" is… ___",
               "bank": [
                 "average",
-                "hexagon",
+                "long",
                 "towering",
                 "broad"
               ],
@@ -7866,9 +7866,9 @@
               "prompt": "Something that \"is not wide\" is…",
               "choices": [
                 "narrow",
-                "pentagon",
                 "thick",
-                "cube"
+                "huge",
+                "broad"
               ],
               "answer": 0,
               "explanation": "is not wide → narrow. Basic shapes and size adjectives."
@@ -7878,9 +7878,9 @@
               "type": "fill",
               "prompt": "Something that \"is very wide\" is… ___",
               "bank": [
-                "cone",
-                "rectangle",
+                "thin",
                 "short",
+                "heavy",
                 "broad"
               ],
               "answer": "broad",
@@ -7891,10 +7891,10 @@
               "type": "mc",
               "prompt": "Something that \"is not heavy\" is…",
               "choices": [
+                "broad",
                 "tiny",
-                "circle",
                 "light",
-                "broad"
+                "oversized"
               ],
               "answer": 2,
               "explanation": "is not heavy → light. Basic shapes and size adjectives."
@@ -7904,9 +7904,9 @@
               "type": "fill",
               "prompt": "Something that \"is very heavy\" is… ___",
               "bank": [
-                "pentagon",
-                "cylinder",
                 "thick",
+                "huge",
+                "narrow",
                 "heavy"
               ],
               "answer": "heavy",
@@ -7918,9 +7918,9 @@
               "prompt": "Something that \"is a perfect cube shape\" is…",
               "choices": [
                 "cube",
-                "huge",
-                "narrow",
-                "average"
+                "hexagon",
+                "sphere",
+                "circle"
               ],
               "answer": 0,
               "explanation": "is a perfect cube shape → cube. Basic shapes and size adjectives."
@@ -7938,9 +7938,9 @@
               "prompt": "Something that \"is round like a ball\" is…",
               "choices": [
                 "sphere",
-                "broad",
-                "oversized",
-                "oval"
+                "oval",
+                "cone",
+                "rectangle"
               ],
               "answer": 0,
               "explanation": "is round like a ball → sphere. Basic shapes and size adjectives."
@@ -7950,9 +7950,9 @@
               "type": "fill",
               "prompt": "Something that \"has a pointed top\" is… ___",
               "bank": [
-                "light",
                 "rectangle",
-                "thin",
+                "octagon",
+                "triangle",
                 "cone"
               ],
               "answer": "cone",
@@ -7963,10 +7963,10 @@
               "type": "mc",
               "prompt": "Something that \"is shaped like a tube\" is…",
               "choices": [
+                "pentagon",
                 "cone",
-                "towering",
                 "cylinder",
-                "pentagon"
+                "square"
               ],
               "answer": 2,
               "explanation": "is shaped like a tube → cylinder. Basic shapes and size adjectives."
@@ -7976,7 +7976,7 @@
               "type": "fill",
               "prompt": "Something that \"is medium, not big or small\" is… ___",
               "bank": [
-                "square",
+                "long",
                 "huge",
                 "narrow",
                 "average"
@@ -7991,8 +7991,8 @@
               "choices": [
                 "oversized",
                 "long",
-                "cube",
-                "circle"
+                "tiny",
+                "broad"
               ],
               "answer": 0,
               "explanation": "is bigger than expected → oversized. Basic shapes and size adjectives."
