@@ -63,7 +63,7 @@ function Cookies() {
       <Section heading="More information">
         <p>
           How we handle the data behind these cookies is described in our Privacy Policy. Questions?
-          Write to privacy@lingua.app.
+          Write to privacy@alphonsoecosystem.app.
         </p>
       </Section>
     </LegalPage>
