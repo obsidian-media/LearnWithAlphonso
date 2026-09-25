@@ -36,7 +36,34 @@ const MAX_TRANSCRIPT_CHARS = 60_000;
  * a partial transcript is worse than refusing one: a learner relying on it
  * has no way to know the text stops early.
  */
+/**
+ * A tag-like sequence: `<name ...>` or `</name>`.
+ *
+ * Requires a letter or slash immediately after the `<`, so ordinary prose
+ * survives: "5 < 10" and "I <3 coffee" are not tags, and a transcript is
+ * prose.
+ */
+const MARKUP = /<\/?([a-zA-Z][a-zA-Z0-9-]*)(?:\s[^>]*)?\/?>/;
+
 export function normalizeTranscript(raw: string): string | null {
+  const markup = MARKUP.exec(raw);
+  if (markup) {
+    // Rejected, never stripped. This exists because a TTS script reads like
+    // the obvious transcript -- the audio was generated from it -- but
+    // carries SSML, and `<break time="1.0s" />` rendered on screen would
+    // land on exactly the learners a transcript is for.
+    //
+    // Stripping would be worse than refusing: it would quietly accept the
+    // wrong file, and silently rewriting someone's hand-written text is
+    // surprising in its own right. The fix is a clean prose sibling of the
+    // script, not a cleverer parser.
+    throw new Error(
+      `Transcript contains markup (found "${markup[0]}"). This looks like a TTS script ` +
+        "rather than a transcript. Pass a plain-prose version instead -- markup is rejected, " +
+        "not stripped, because stripping would quietly accept the wrong file.",
+    );
+  }
+
   if (raw.length > MAX_TRANSCRIPT_CHARS) {
     throw new Error(
       `Transcript is too long (${raw.length} characters, limit ${MAX_TRANSCRIPT_CHARS}). ` +

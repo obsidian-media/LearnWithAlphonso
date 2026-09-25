@@ -234,6 +234,27 @@ public final class PodcastClient: Sendable {
         }
     }
 
+    /// One episode's transcript, or nil when it has none yet.
+    ///
+    /// Fetched on demand rather than with the episode list: a transcript is
+    /// kilobytes of text nobody needs until they open an episode, and the
+    /// folder listing is read on every navigation.
+    ///
+    /// Nil is an ordinary answer -- episodes published before Phase 2a have
+    /// no transcript. The caller says so plainly rather than rendering
+    /// blank, because an episode without one is inaccessible to deaf and
+    /// hard-of-hearing learners and that is worth stating, not hiding.
+    public func fetchTranscript(episodeID: String) async throws -> String? {
+        let request = request(
+            path: "rest/v1/podcast_transcripts",
+            query: "select=text&episode_id=eq.\(episodeID)&limit=1",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+        return try Self.rows(from: data).first?["text"] as? String
+    }
+
     // MARK: - Writes
 
     /// Saves a resume position using optimistic concurrency on
