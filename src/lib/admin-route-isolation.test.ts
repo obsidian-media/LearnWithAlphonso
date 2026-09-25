@@ -27,6 +27,38 @@ describe("admin routes are isolated from the learner bundle", () => {
     expect(config).toMatch(/srcDirectory:\s*"admin"/);
   });
 
+  it("the admin app registers the auth attacher in its own start.ts", () => {
+    // Its absence was a total, silent authentication failure. srcDirectory
+    // is "admin", so TanStack Start loads admin/start.ts and never
+    // src/start.ts; with no file there, NO global function middleware was
+    // registered, attachSupabaseAuth never ran, and the browser attached
+    // no bearer token to any serverFn RPC. requireSupabaseAuth then
+    // rejected every admin call.
+    //
+    // The symptom was indistinguishable from a rejected login -- sign in,
+    // land on /, adminWhoAmI throws, bounce back to /signin -- and nothing
+    // in the build, the types or the suite could see it, because the
+    // missing piece was a file nothing referenced by name.
+    expect(existsSync("admin/start.ts")).toBe(true);
+    const start = readFileSync("admin/start.ts", "utf8");
+    expect(start).toContain("attachSupabaseAuth");
+    expect(start).toMatch(/functionMiddleware:\s*\[[^\]]*attachSupabaseAuth/);
+  });
+
+  it("registers every global function middleware src/start.ts does", () => {
+    // Drift guard. A middleware added to the learner app's start.ts does
+    // not apply to the admin app, and that failure would again be silent.
+    const names = (source: string) =>
+      (source.match(/functionMiddleware:\s*\[([^\]]*)\]/)?.[1] ?? "")
+        .split(",")
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .sort();
+    const learner = names(readFileSync("src/start.ts", "utf8"));
+    expect(learner.length).toBeGreaterThan(0);
+    expect(names(readFileSync("admin/start.ts", "utf8"))).toEqual(learner);
+  });
+
   it("the admin app has its own generated route tree, committed", () => {
     // Committed, not ignored: src/routeTree.gen.ts is committed too, and
     // the generator only runs under `vite dev`. An ignored tree makes
