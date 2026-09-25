@@ -43,10 +43,14 @@ final class PodcastAudioPlayer {
     /// so reading the flag at -ended would race with it.
     private var pausedByRecording = false
 
-    private let makeClient: @MainActor () -> PodcastClient?
+    /// Builds a client on demand. Set by RootView once a session exists.
+    ///
+    /// Rebuilt per call rather than held, because `PodcastClient` keeps the
+    /// access token it was given and cannot refresh one -- a player that
+    /// cached a client would keep using a token long after it expired.
+    var makeClient: (@MainActor () -> PodcastClient?)?
 
-    init(makeClient: @MainActor @escaping () -> PodcastClient?) {
-        self.makeClient = makeClient
+    init() {
         observeSessionNotifications()
         configureRemoteCommands()
     }
@@ -309,7 +313,7 @@ final class PodcastAudioPlayer {
     }
 
     private func save(position: Double, completed: Bool) {
-        guard !savesDisabled, position.isFinite, let episode, let client = makeClient() else { return }
+        guard !savesDisabled, position.isFinite, let episode, let client = makeClient?() else { return }
         let seen = lastSeenUpdatedAt
         Task { @MainActor in
             do {
@@ -340,7 +344,7 @@ final class PodcastAudioPlayer {
     private func flushPlayEvent() {
         let listened = Int(listenedSeconds.rounded())
         listenedSeconds = 0
-        guard listened > 0, let episode, let client = makeClient() else { return }
+        guard listened > 0, let episode, let client = makeClient?() else { return }
         Task {
             // Through the RPC inside PodcastClient -- the table grants no
             // direct INSERT to authenticated.

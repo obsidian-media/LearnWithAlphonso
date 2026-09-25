@@ -12,6 +12,12 @@ struct RootView: View {
 
     @Environment(\.scenePhase) private var scenePhase
 
+    /// The one podcast player, owned here rather than in any view that can
+    /// come and go. Being a reference type above the view tree is what
+    /// makes playback survive navigation for free on iOS -- the web app had
+    /// to be restructured to get the same property.
+    @State private var podcastPlayer = PodcastAudioPlayer()
+
     var body: some View {
         // Group wraps both branches so .preferredColorScheme below covers
         // AuthView too, not just the signed-in TabView -- forces every
@@ -42,7 +48,7 @@ struct RootView: View {
                     LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
                         .tabItem { Label("Learn", systemImage: "book.fill") }
                         .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
-                    ListenView()
+                    ListenView(session: session, networkMonitor: networkMonitor, player: podcastPlayer)
                         .tabItem { Label("Listen", systemImage: "headphones") }
                     ConversationView(contentStore: contentStore, session: session)
                         .tabItem { Label("Practice", systemImage: "mic.fill") }
@@ -57,7 +63,17 @@ struct RootView: View {
                 .tint(AlphonsoColor.moss)
                 .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                 .toolbarBackground(.visible, for: .tabBar)
+                // safeAreaInset rather than an overlay: the bar then sits
+                // above the tab bar and pushes content up, instead of
+                // covering the last row of whatever list is showing.
+                .safeAreaInset(edge: .bottom) {
+                    PodcastMiniBar(player: podcastPlayer)
+                }
                 .task {
+                    // The player builds a client per call rather than
+                    // holding one, because PodcastClient cannot refresh the
+                    // token it was given.
+                    podcastPlayer.makeClient = { makePodcastClient(session: session) }
                     await triggerSync()
                     await hydrateThemeFromServer()
                     notificationScheduler.scheduleWeeklyRecap()
@@ -71,6 +87,11 @@ struct RootView: View {
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .active {
                         Task { await triggerSync() }
+                    } else if newPhase == .background {
+                        // Flush the listening position before the system can
+                        // suspend or kill the process. Audio itself keeps
+                        // going -- that is what UIBackgroundModes=audio buys.
+                        podcastPlayer.applicationDidBackground()
                     }
                 }
                 .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
