@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { adminWhoAmI } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/")({
@@ -22,14 +22,12 @@ function Home() {
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="font-display text-2xl font-semibold">Alphonso Admin</h1>
       <nav className="mt-6 flex flex-col gap-2">
-        {/* A plain anchor rather than <Link>: /folders arrives in Task 4,
-            and Link is typed against the generated route tree, so linking
-            to a route that does not exist yet would not compile. Converted
-            to <Link> once the route exists -- never by disabling route
-            typing, which is what catches a link to a renamed route. */}
-        <a href="/folders" className="text-moss underline">
+        {/* Typed against the generated route tree, so a rename of
+            /folders breaks the build here instead of shipping a dead
+            link. */}
+        <Link to="/folders" className="text-moss underline">
           Folders
-        </a>
+        </Link>
       </nav>
     </main>
   );
