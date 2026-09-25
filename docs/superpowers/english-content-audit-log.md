@@ -256,6 +256,61 @@ inside one moves every id after it and silently repoints real learners' saved
 review items.
 
 
+## Cross-pack duplicate prompts (2026-09-25)
+
+The audit's coverage table is per-pack, so a sentence appearing in two packs was
+never in scope for it. `curriculum-consistency.test.ts` did check for that, and
+the check was report-only for English and printed through `console.log`, which
+vitest intercepts -- so it held 7 findings while every run showed 46/46 and said
+nothing.
+
+**Nine groups, not seven, and eight were real.** The reported count was itself
+understated by a second bug: a hand-written question's id is `q7`, so the check's
+`id.replace(/q\d+$/, "")` produced `""` and every hand-written question in the
+course collapsed into a single pseudo-pack. Duplicates *between* hand-written
+units were structurally invisible. Fixing it surfaced two more, one of them the
+worst of the set.
+
+A third bug made three of the findings unreadable: the reported answer was
+`Array.isArray(choices) ? choices[answer] : String(answer)`, which is wrong for
+`listening` (whose `answer` is choice text, not an index) and `translate` (no
+`choices` at all). Both printed `(undefined)`, so real duplicates looked like
+artifacts of the report.
+
+The eight, and which side gave way:
+
+| duplicate | between | fixed by |
+|---|---|---|
+| "The meeting is ___ Monday." | u1l3:q7 (hand-written) / a1p4 | a1p4 -> "The exam is ___ 15 March.", which teaches the "on + date" half of its own note that no other line covered |
+| "He ___ his teeth twice a day." | u2l1:q4 / a1p16 | a1p16 -> "She ___ her hair before she goes out." |
+| "If I ___ rich, I'd travel." | u6l2:q2 / b1p2 | b1p2 -> "If we ___ closer, I'd visit more often." |
+| "He complained ___ the noise." | b2p4q17 / b2p7q14 | b2p7 -> "She complained ___ the delay." |
+| "The bus leaves at nine." | a1p23 (listening) / a1p24 (speak) | a1p24 -> "Please open the window." a1p23's line is the third member of a deliberate minimal-pair cluster (train/bus, nine/five), so the speaking pack gave way |
+| "Apologise for arriving late." | a1p25 (A1 translate) / a2p23 (A2) | a2p23 -> "Apologise for missing the meeting." Its old third wording, "I apologise for arriving late.", was the prompt with "I" prefixed -- a copying exercise |
+| "Ask someone to speak more slowly." | a1p25 / a2p23 | a2p23 -> "Ask a neighbour to water your plants while you are away." |
+| "Can I pay ___ card?" | u3l2:q6 / u5l1:q4, both hand-written, same answer | u5l1 -> "I paid ___ cash." Its own explanation already named the complementary rule |
+
+The two A2-vs-A1 translate repeats were the most damaging: identical prompts in
+the A1 and A2 packs mean an A2 learner is set an A1 task, and neither the level
+labels nor the per-pack audit could see it.
+
+Every fix replaces one line in place, so no line count or order changed and no
+question id moved (`english-id-parity.test.ts` passes with no re-baselining).
+
+**The mechanism is now a ratchet, not a report.** Each course asserts against a
+recorded count -- `{ en: 0, fr: 0, es: 57 }` -- so the number is visible in the
+file, has to be lowered deliberately, and a new duplicate fails the run with
+every finding in the assertion message. Spanish is held at 57 rather than
+silenced; that session owns lowering it.
+
+One finding left open, because it belongs to a different check: **"Can I pay ___
+card?" also exists a third time in `placement.ts`**, so a learner can meet it in
+the placement exam and in a lesson. Neither the curriculum check (which does not
+read the placement pool) nor `placement-validity.test.ts` (which compares within
+the pool) can see an overlap between them. Worth a guard; not added here because
+reusing a lesson question in the exam that decides where a learner starts is a
+product question, not a mechanical one.
+
 ## Deferred structural changes
 
 - **a1p15 "Shapes & Sizes" pack split** -- DECLINED for phase 1, and **no longer

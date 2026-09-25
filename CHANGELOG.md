@@ -10,6 +10,25 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**English content quality — 8 repeated questions removed, and the check that
+found them stops whispering** (#TBD) — `curriculum-consistency.test.ts` looks for
+the same sentence appearing in two packs, which a learner experiences as a
+repeat. For English and Spanish it was report-only and printed via `console.log`,
+which vitest intercepts: every run showed 46/46 passed and printed nothing while
+holding 7 English and 57 Spanish findings. Two sessions independently recorded
+that check as "already clean" on the strength of a quiet run.
+
+The reported 7 was itself understated. A hand-written question's id is `q7`, so
+the check's pack-id derivation produced `""` and collapsed every hand-written
+question into one pseudo-pack, making duplicates *between* hand-written units
+invisible — that hid two more, including an identical question with an identical
+answer in two units. A third bug rendered `listening` and `translate` answers as
+`(undefined)`, so three real findings looked like reporting artifacts. All three
+are fixed, and the check now asserts against a recorded per-course count
+(`{ en: 0, fr: 0, es: 57 }`) so a new duplicate fails the run with the findings in
+the message. English content: 8 duplicates fixed in place, no question id moved.
+The two worst put an identical A1 task in the A2 translation pack.
+
 **English content quality — a1p15's distractors stop crossing word classes**
 (#TBD) — closes the content audit's one deferred defect. Multiple-choice
 distractors are drawn from a pack's own answers and ranked by part of speech, but
