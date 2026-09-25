@@ -108,10 +108,15 @@ final class PodcastCacheTests: XCTestCase {
     func testSuggestsOnlyAsManyAsAreNeeded() {
         // A prompt offering to delete everything when one file would do
         // reads as the app losing its temper.
+        //
+        // The arithmetic matters and I got it wrong first time: with a 150
+        // budget, removing one 100-byte entry leaves 100 used, and
+        // 100 + 60 = 160 still exceeds 150 -- so two really were needed and
+        // CI was right to reject the expectation. At 200 one suffices.
         let candidates = PodcastCacheBudget.deletionCandidates(
             in: [entry(id: "a", bytes: 100), entry(id: "b", bytes: 100)],
             needing: 60,
-            budget: 150
+            budget: 200
         )
         XCTAssertEqual(candidates.count, 1)
     }
