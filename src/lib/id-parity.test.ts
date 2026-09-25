@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { collectCourseIds, diffIds, packLineStats } from "./english-id-parity";
+import { collectCourseIds, diffIds, packLineStats } from "./id-parity";
 import type { Course } from "@/data/courses";
 
 describe("diffIds", () => {

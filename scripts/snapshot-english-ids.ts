@@ -12,7 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { collectCourseIds } from "../src/lib/english-id-parity";
+import { collectCourseIds } from "../src/lib/id-parity";
 import type { Course } from "../src/data/courses";
 
 const BASELINE_FILENAMES: Record<Course, string> = {

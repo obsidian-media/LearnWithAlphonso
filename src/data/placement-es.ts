@@ -14,9 +14,9 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     id: "ep1",
     level: "A1",
     type: "mc",
-    prompt: 'How do you say "thank you" in Spanish?',
-    choices: ["Hola", "Gracias", "Adiós", "Perdón"],
-    answer: 1,
+    prompt: "Nosotros ___ en Madrid.",
+    choices: ["vivo", "vives", "vive", "vivimos"],
+    answer: 3,
   },
   {
     id: "ep2",
@@ -319,8 +319,8 @@ export const PLACEMENT_QUESTIONS_ES: PlacementQuestion[] = [
     id: "ep14",
     level: "C1",
     type: "mc",
-    prompt: "Si yo ___ (tener) más tiempo, viajaría más.",
-    choices: ["tengo", "tendré", "tuviera", "tenía"],
+    prompt: "Si ella ___ (saber) la respuesta, la diría.",
+    choices: ["sabe", "sabrá", "supiera", "sabía"],
     answer: 2,
   },
   {

@@ -303,13 +303,58 @@ file, has to be lowered deliberately, and a new duplicate fails the run with
 every finding in the assertion message. Spanish is held at 57 rather than
 silenced; that session owns lowering it.
 
-One finding left open, because it belongs to a different check: **"Can I pay ___
-card?" also exists a third time in `placement.ts`**, so a learner can meet it in
-the placement exam and in a lesson. Neither the curriculum check (which does not
-read the placement pool) nor `placement-validity.test.ts` (which compares within
-the pool) can see an overlap between them. Worth a guard; not added here because
-reusing a lesson question in the exam that decides where a learner starts is a
-product question, not a mechanical one.
+That last finding -- "Can I pay ___ card?" also existing in `placement.ts` -- was
+the thread that led to the section below.
+
+## Placement questions the course also teaches (2026-09-25)
+
+The product decision was made explicitly: **the placement exam must not reuse
+lesson questions.** An exam that draws from the pool it places you into measures
+recall of that item rather than level, and the error runs one way only -- upward,
+because recognising an item can raise a score and never lowers it. A learner
+placed a band too high starts on content they cannot do.
+
+Measured across all three courses, comparing placement content against lesson
+content (listening on `audioText`, speak on `answer`, everything else on `prompt`,
+the same rule `curriculum-consistency.test.ts` uses):
+
+| course | overlapping placement questions |
+|---|---|
+| en | **25 of 60** |
+| fr | 0 of 45 |
+| es | 2 of 45 |
+
+**Ten of English's 25 were self-inflicted and recent.** When the exam learned the
+`listening` type (phase 5), all ten of its sentences were taken straight out of the
+course's own listening packs -- a1p23, a2p21, b1p21, b2p21, c1p21. Every listening
+question in the exam was scoring recall of one specific lesson item. The other 15
+are older: 13 multiple-choice questions matching hand-written units, and 2
+translate prompts matching a2p23 and c1p23 verbatim.
+
+Neither existing check could see any of it, and that is structural rather than
+bad luck: `curriculum-consistency.test.ts` compares lesson questions with each
+other and never reads the placement pool, while `placement-validity.test.ts`
+compares placement questions with each other and never reads the banks. A question
+could sit in both sets forever with both suites green.
+
+**All 27 fixes are on the placement side**, because placement ids are not
+review-item keys (those are `lessonId:questionId`): rewriting a placement question
+changes nothing a learner has scheduled, whereas editing a pack line changes the
+content behind an id real users hold review state against. Each replacement keeps
+its band and the construct under test, so the exam still measures what it claims.
+
+Worth recording about the Spanish pair: `ep1` was `How do you say "thank you" in
+Spanish?`, which is pack `esa1p1`'s own prompt TEMPLATE filled with one of its own
+lines. Choosing a different word would collide again the moment that pack covered
+it, and two packs share that template, so the question changed form instead. A
+placement question built on a pack template is structurally at risk rather than
+unluckily colliding.
+
+Two new guards, both gated at zero for all three courses:
+`placement-lesson-overlap.test.ts` (placement against the banks) and a
+repeats-within-one-pool check added to `placement-validity.test.ts` -- the pool is
+sampled three per band, so the same content in two bands can be drawn twice in one
+sitting and counted twice. That third pairing had no owner either.
 
 ## Deferred structural changes
 

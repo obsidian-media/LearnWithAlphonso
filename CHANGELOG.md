@@ -10,6 +10,23 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Placement exam stops reusing lesson questions** (#TBD) — the exam decides which
+band a learner starts in, and **25 of English's 60 placement questions were also
+lesson questions**, so anyone who had met one was scored on recall of that item
+rather than on level. The error only ran upward, and a learner placed a band too
+high starts on content they cannot do. All ten listening questions were the worst
+of it: their sentences were lifted verbatim from the course's own listening packs
+when the exam learned that question type. French was clean; Spanish had 2.
+
+No existing check could see this, structurally: one suite compares lesson
+questions with each other and never reads the placement pool, the other compares
+placement questions with each other and never reads the banks.
+`placement-lesson-overlap.test.ts` now covers that pair, gated at zero for all
+three courses, plus a repeats-within-one-pool check (the pool is sampled three per
+band, so the same content in two bands can be drawn twice in one sitting). All 27
+questions were re-authored on the placement side, keeping band and construct —
+placement ids are not review keys, so no learner's saved review state was touched.
+
 **English content quality — 8 repeated questions removed, and the check that
 found them stops whispering** (#TBD) — `curriculum-consistency.test.ts` looks for
 the same sentence appearing in two packs, which a learner experiences as a
