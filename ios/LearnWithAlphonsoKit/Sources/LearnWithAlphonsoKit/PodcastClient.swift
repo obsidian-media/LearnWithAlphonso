@@ -179,6 +179,61 @@ public final class PodcastClient: Sendable {
         }
     }
 
+    /// Episodes whose title or description contains `query`, across every
+    /// folder. Mirrors the web app's `searchEpisodes` server function.
+    ///
+    /// Flat by design: the reason to search is not knowing where a thing
+    /// lives. RLS keeps this to published episodes.
+    ///
+    /// Returns an empty array **without a request** when the query is too
+    /// short to run -- `PodcastSearch` declines below the minimum length, and
+    /// sending it anyway would hand back the whole library for one character.
+    ///
+    /// Results carry no resume position: a search result is a way to find an
+    /// episode, and the player reads the authoritative position when it opens
+    /// one.
+    public func searchEpisodes(query: String) async throws -> [PodcastEpisode] {
+        guard let filter = PodcastSearch.ilikeOrFilter(
+            query: query,
+            columns: ["title", "description"]
+        ) else { return [] }
+
+        // Encoded here because `request(path:query:)` assigns
+        // percentEncodedQuery directly -- handing it the raw filter would undo
+        // the quoting that keeps commas and parens out of the grammar.
+        let encoded = PodcastSearch.percentEncodedFilter(filter)
+        let request = request(
+            path: "rest/v1/podcast_episodes",
+            query: "select=id,folder_id,slug,title,description,audio_path,duration_seconds"
+                + "&or=(\(encoded))&order=title.asc&limit=50",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+
+        return try Self.rows(from: data).compactMap { row in
+            guard let id = row["id"] as? String,
+                  let folderID = row["folder_id"] as? String,
+                  let slug = row["slug"] as? String,
+                  let title = row["title"] as? String,
+                  let audioPath = row["audio_path"] as? String,
+                  let duration = row["duration_seconds"] as? Int,
+                  let audioURL = PodcastPlayback.audioURL(supabaseURL: supabaseURL, audioPath: audioPath)
+            else { return nil }
+            return PodcastEpisode(
+                id: id,
+                folderID: folderID,
+                slug: slug,
+                title: title,
+                description: row["description"] as? String,
+                audioURL: audioURL,
+                durationSeconds: duration,
+                positionSeconds: 0,
+                playbackUpdatedAt: nil
+            )
+        }
+    }
+
     // MARK: - Writes
 
     /// Saves a resume position using optimistic concurrency on

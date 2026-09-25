@@ -23,14 +23,50 @@ struct ListenView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
 
+    @State private var searchQuery = ""
+    @State private var searchResults: [PodcastEpisode] = []
+    @State private var isSearching = false
+
     var body: some View {
         NavigationStack {
-            content
-                .background(AlphonsoColor.surface)
-                .navigationTitle("Listen")
+            Group {
+                if searchQuery.isEmpty {
+                    content
+                } else {
+                    PodcastSearchResultsView(
+                        query: searchQuery,
+                        results: searchResults,
+                        isSearching: isSearching,
+                        player: player
+                    )
+                }
+            }
+            .background(AlphonsoColor.surface)
+            .navigationTitle("Listen")
+            .searchable(text: $searchQuery, prompt: "Search episodes")
         }
         .tint(AlphonsoColor.moss)
         .task { await load() }
+        // Keyed on the NORMALIZED query, so "coffee" and "  coffee  " do not
+        // fetch twice and each keystroke cancels the previous request rather
+        // than racing it.
+        .task(id: PodcastSearch.normalizeQuery(searchQuery)) { await runSearch() }
+    }
+
+    private func runSearch() async {
+        // Below the minimum length PodcastSearch declines to build a filter
+        // and the client never calls the network, so there is nothing to show
+        // and nothing to report as "no results".
+        guard PodcastSearch.normalizeQuery(searchQuery) != nil,
+              let client = makePodcastClient(session: session)
+        else {
+            searchResults = []
+            isSearching = false
+            return
+        }
+        isSearching = true
+        searchResults = (try? await client.searchEpisodes(query: searchQuery)) ?? []
+        isSearching = false
     }
 
     @ViewBuilder
@@ -194,4 +230,63 @@ func makePodcastClient(session: Session) -> PodcastClient? {
         anonKey: AppConfig.supabasePublishableKey,
         accessToken: accessToken
     )
+}
+
+/// Search results, flat across every folder. Mirrors the web app's
+/// `PodcastSearchResults`.
+///
+/// Owns no `NavigationStack` -- ListenView owns it, and nesting is what
+/// forced Phase 0's Profile hub to present rather than push.
+///
+/// The three empty-ish states are deliberately distinct. Below the minimum
+/// length `PodcastSearch` declines to build a filter and the client never
+/// calls the network, so "no episodes match" would be a lie about a search
+/// that never ran -- and a learner told that stops typing.
+private struct PodcastSearchResultsView: View {
+    let query: String
+    let results: [PodcastEpisode]
+    let isSearching: Bool
+    let player: PodcastAudioPlayer
+
+    var body: some View {
+        if PodcastSearch.normalizeQuery(query) == nil {
+            message("Keep typing to search episodes.")
+        } else if isSearching {
+            message("Searching…")
+        } else if results.isEmpty {
+            message("No episodes match “\(query)”.")
+        } else {
+            List {
+                ForEach(results) { episode in
+                    Button {
+                        player.play(episode)
+                    } label: {
+                        AlphonsoRowCard(
+                            title: episode.title,
+                            subtitle: durationLabel(for: episode),
+                            leadingEmoji: "🎧"
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listRowBackground(Color.clear)
+            }
+            .scrollContentBackground(.hidden)
+            .background(AlphonsoColor.surface)
+        }
+    }
+
+    private func message(_ text: String) -> some View {
+        Text(text)
+            .font(AlphonsoFont.sans(14))
+            .foregroundStyle(AlphonsoColor.inkSoft)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AlphonsoColor.surface)
+    }
+
+    private func durationLabel(for episode: PodcastEpisode) -> String {
+        let minutes = episode.durationSeconds / 60
+        let seconds = episode.durationSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
 }
