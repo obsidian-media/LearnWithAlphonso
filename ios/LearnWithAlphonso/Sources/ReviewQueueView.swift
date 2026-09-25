@@ -276,7 +276,7 @@ struct ReviewQueueView: View {
     /// inline note.
     private func queueGradeOffline(item: ReviewItem, question: Question, answer: String) {
         let today = todayDateString()
-        let correct = isAnswerCorrect(question, picked: answer)
+        let correct = isAnswerCorrect(question, picked: answer, course: course)
         // ReviewItem never carries `lapses` (fetchDueReviews doesn't select
         // it), but none of computeReviewOutcome's ease/intervalDays/
         // repetitions/dueOn outputs actually depend on the *input* lapses
@@ -444,7 +444,7 @@ private struct ReviewQuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
         case .fillInBlank(let q):
@@ -467,7 +467,7 @@ private struct ReviewQuestionCard: View {
                     }
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
         case .reorder(let q):
@@ -476,7 +476,7 @@ private struct ReviewQuestionCard: View {
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
             .onChange(of: orderPicks) {
@@ -502,7 +502,7 @@ private struct ReviewQuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.answer == choice)
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
             case .translate(let q):

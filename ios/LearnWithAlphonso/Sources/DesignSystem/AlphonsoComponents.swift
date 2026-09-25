@@ -535,6 +535,14 @@ struct ExplanationView: View {
     let question: Question
     let picked: String?
     let explanation: String
+    /// Defaults to `.english` so every pre-existing call site keeps its
+    /// exact prior styling without changes -- only affects a "speak"
+    /// question's tolerant transcript match. Without this a French speak
+    /// answer that isAnswerCorrect(course: .french) graded correct at the
+    /// authoritative call site (LessonPlayerView/ReviewQueueView) could
+    /// still show "not quite" styling here, independently re-derived with
+    /// the wrong (English) normaliser.
+    var course: Course = .english
     /// Overrides the derived verdict where the caller knows better than
     /// `isAnswerCorrect` can. That is exactly one case today: a translation,
     /// whose curated phrasings are only a floor and whose real verdict may have
@@ -543,7 +551,7 @@ struct ExplanationView: View {
     var correctOverride: Bool? = nil
 
     var body: some View {
-        if correctOverride ?? isAnswerCorrect(question, picked: picked) {
+        if correctOverride ?? isAnswerCorrect(question, picked: picked, course: course) {
             Text(explanation)
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)

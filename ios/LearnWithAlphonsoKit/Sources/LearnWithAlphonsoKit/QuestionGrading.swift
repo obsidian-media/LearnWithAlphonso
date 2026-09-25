@@ -8,7 +8,10 @@ import Foundation
 /// immediate visual feedback and offline-optimistic grading; the server
 /// (complete-lesson, grade-review) always re-derives correctness
 /// independently and is the source of truth.
-public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
+///
+/// `course` defaults to `.english` so every pre-existing call site keeps its
+/// exact prior behaviour without changes -- only `.speak` branches on it.
+public func isAnswerCorrect(_ question: Question, picked: String?, course: Course = .english) -> Bool {
     guard let picked else { return false }
     switch question {
     case .multipleChoice(let q):
@@ -36,7 +39,14 @@ public func isAnswerCorrect(_ question: Question, picked: String?) -> Bool {
         // than the comparison above -- and it needs the SAME tolerant match the
         // server uses, or the learner is told "Nice" and then has the item
         // lapsed. See SpokenAnswer.swift's note on the three copies.
-        return SpokenAnswer.matches(transcript: picked, expected: q.answer)
+        //
+        // English's rules are actively wrong for French ('s -> "is" is an
+        // auxiliary-verb contraction; French elision is a different,
+        // phonological rule) -- see SpokenAnswerFr.swift's header for why
+        // this is a course-selected sibling, not a language flag.
+        return course == .french
+            ? SpokenAnswerFr.matches(transcript: picked, expected: q.answer)
+            : SpokenAnswer.matches(transcript: picked, expected: q.answer)
     }
 }
 

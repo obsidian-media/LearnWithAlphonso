@@ -66,7 +66,8 @@ struct SpeakQuestionCard: View {
 
             if checked {
                 ExplanationView(
-                    question: .speak(question), picked: picked, explanation: question.explanation)
+                    question: .speak(question), picked: picked, explanation: question.explanation,
+                    course: course)
             }
         }
     }

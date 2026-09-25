@@ -83,7 +83,7 @@ session:
 | Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
-| **French**  | 110 | 110 | 110 | 110 | 110 | **550**       | 2,750           |
+| **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
 | **Spanish** | 100 | 101 | 104 | 102 | 101 | **508**       | 2,540           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
@@ -97,15 +97,18 @@ their name") and let the learner write it themselves, accepting any of a
 curated list of wordings — and, for a valid wording the list did not
 anticipate, asking an AI grader.
 
-**French phase 2** (in progress, `docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
-is closing that type gap, one PR per generator change / question type: the
+**French phase 2** (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
+closed that type gap, one PR per generator change / question type: the
 shared generator (`bank-engine.ts`) now knows all three new kinds, and
-French has **translate** and **listening** content (250 new questions,
-125 each). **Speak** is the remaining PR — it needs a new French
-speech-normalisation module across three code ports before any content can
-be authored against it. Spanish still has the original three types only;
-its content is a separate, later job once the generator work is proven on
-French.
+French has **translate**, **listening**, and **speak** content (375 new
+questions, 125 each) — full question-type parity with English. Speak
+required its own French speech-normalisation module
+(`spoken-answer-fr.ts`), hand-kept in sync across all three code ports
+(TS/Deno/Swift) the same way English's `spoken-answer.ts` is, because
+French elision is a phonological rule with no relationship to English's
+auxiliary-verb-contraction rules — see that module's header comment.
+Spanish still has the original three types only; its content is a
+separate, later job now that the generator work is proven on French.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just

@@ -74,6 +74,7 @@ struct TranslateQuestionCard: View {
                     question: .translate(question),
                     picked: picked,
                     explanation: question.explanation,
+                    course: course,
                     // The settled verdict, not a re-derivation of it.
                     correctOverride: verdict?.correct)
             }

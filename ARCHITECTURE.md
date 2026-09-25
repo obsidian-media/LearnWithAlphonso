@@ -176,20 +176,23 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
 counts, verified 2026-09-24 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 609 lessons / 3,096 questions, French 550 lessons
-/ 2,750 questions, Spanish 508 lessons / 2,540 questions. French's phase 2
-(`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`,
-in progress) is closing the type gap English opened on 2026-09-24 by
-porting `listening`/`speak`/`translate` to the shared generator
-(`bank-engine.ts`, PR 1) and then authoring French content per type, one PR
-each: `translate` (PR 2, merged) and `listening` (PR 3) are done, adding
-125 questions each; `speak` (PR 4) is not started — it needs a new French
-speech-normalisation module (`spoken-answer-fr.ts`) across three ports
-before content can be authored against it. Spanish's content is
-unaffected and unchanged; it inherits the generator work but its own
-content port is a separate, later job. French/Spanish still need a
-native-speaker review pass for grammar/naturalness (`docs/BACKLOG.md`,
-gitignored), and each new pack adds to that same unreviewed surface.
+kept in sync): English 609 lessons / 3,096 questions, French 575 lessons
+/ 2,875 questions, Spanish 508 lessons / 2,540 questions. French's phase 2
+(`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
+closed the type gap English opened on 2026-09-24 by porting
+`listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
+PR 1) and then authoring French content per type, one PR each: `translate`
+(PR 2), `listening` (PR 3), and `speak` (PR 4) are all done, adding 125
+questions each (375 total) — French now has full question-type parity with
+English. `speak` needed a new French speech-normalisation module
+(`spoken-answer-fr.ts`) across three ports (TS/Deno/Swift) before any
+content could be authored against it — see that module's header comment
+for why it's a sibling of `spoken-answer.ts` rather than an extension of
+it. Spanish's content is unaffected and unchanged; it inherits the
+generator work but its own content port is a separate, later job.
+French/Spanish still need a native-speaker review pass for
+grammar/naturalness (`docs/BACKLOG.md`, gitignored), and each new pack adds
+to that same unreviewed surface.
 
 **There are six question types**, not three: `mc`, `fill`, `reorder`,
 `listening`, `speak`, and `translate`. `listening` (added 2026-09-24) plays
@@ -1022,3 +1025,18 @@ note in README.md's Documentation section for why.)
   don't assume a real regression: scope to the changed files first, and
   treat a genuinely-needed full-suite confirmation as something to run
   in a fresh session/shell rather than deep into a long one.
+- **Campaign/converse (Hector) speech is still transcribed as English,
+  even after French `speak` content ships (French Phase 2, PR 4).**
+  PR #111 threaded `course` from `SpeakAnswer` through `/api/stt` to
+  Deepgram's `language` param, fixing every lesson/review `speak`
+  question — but conversation scenarios (`src/routes/.../campaign*`,
+  iOS's `AIConversationClient`) carry no `course` field at all, so
+  their STT calls still omit `language` and default to `en`. This was
+  latent and harmless when PR #111 landed (no French `speak` content
+  existed yet to expose it); it is now a live, known boundary rather
+  than a latent one, since French `speak` content exists starting with
+  PR 4. Not fixed here — deliberately out of PR 4's scope, and a
+  product question (should Hector converse in French at all yet, and
+  in which course) rather than a code one. If a future session wires
+  `course` into conversation scenarios, `/api/stt` and Deepgram already
+  support it; only the caller side needs the field threaded through.

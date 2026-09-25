@@ -216,7 +216,7 @@ export const gradeReview = createServerFn({ method: "POST" })
     } else {
       const ref = getCourse(course).questionIndex[data.itemKey];
       if (!ref) throw new Error("Unknown review item");
-      correct = deriveAnswerCorrectness(ref.question, data.answer);
+      correct = deriveAnswerCorrectness(ref.question, data.answer, course);
       // A written translation gets the same second opinion the lesson player
       // asks for. This is the web review path -- the grade-review Edge
       // Function is iOS's -- and without it a phrasing the player accepted

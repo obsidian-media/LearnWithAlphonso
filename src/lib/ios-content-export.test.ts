@@ -14,9 +14,10 @@ describe("buildIOSContentBundle", () => {
     const lessonCount = bundle.units.reduce((sum, u) => sum + u.lessons.length, 0);
     // 500 (V3 pkg 4a) + 25 (phase 2 PR 2: fra1p21/fra2p21/frb1p21/frb2p21/frc1p21,
     // translate) + 25 (phase 2 PR 3: fra1p22/fra2p22/frb1p22/frb2p22/frc1p22,
-    // listening) -- one 25-line pack per level per type, 5 lessons each. See
+    // listening) + 25 (phase 2 PR 4: fra1p23/fra2p23/frb1p23/frb2p23/frc1p23,
+    // speak) -- one 25-line pack per level per type, 5 lessons each. See
     // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md
-    expect(lessonCount).toBe(550);
+    expect(lessonCount).toBe(575);
   });
 
   it("preserves question shape exactly (mc and fill variants both present)", () => {

@@ -751,6 +751,54 @@ Ce mur est vert.|Ce mur est vert.
 Ce mur est en verre.|Ce mur est en verre.
 Ces documents sont importants.|Ces documents sont importants.`,
   },
+  {
+    id: "fra1p23",
+    title: "Speaking: Everyday Phrases",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Short everyday phrases to practise saying.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // UNVERIFIED AGAINST REAL PRODUCTION TRANSCRIPTS -- see
+    // spoken-answer-fr.ts's header for the full reasoning. Authored against
+    // the real normaliser (every line self-round-trips through
+    // matchesSpokenAnswerFr, and elided lines were checked against their
+    // space-separated STT rendering too), not against intuition, per design
+    // spec section 5.3. Three things are avoided on purpose, the French
+    // analogues of English's own speak-pack traps:
+    //   - dix-sept/dix-huit/dix-neuf and soixante-dix/quatre-vingts/
+    //     quatre-vingt-dix (compound numbers that will not survive
+    //     smart_format, same reasoning as English's compound-number avoidance)
+    //   - un/une used as a spoken NUMBER (kept only as the article, which the
+    //     normaliser never maps -- see spoken-answer-fr.ts's NUMBER_WORDS
+    //     comment on this exact bare-word hazard)
+    //   - ordinals, for the same smart_format reason English avoids them
+    data: `Bonjour, comment allez-vous ?|Bonjour, comment allez-vous ?
+Bonjour, comment vas-tu ?|Bonjour, comment vas-tu ?
+Enchanté de vous rencontrer.|Enchanté de vous rencontrer.
+Comment tu t'appelles ?|Comment tu t'appelles ?
+Je m'appelle Marie.|Je m'appelle Marie.
+J'ai faim.|J'ai faim.
+J'ai soif.|J'ai soif.
+Je voudrais un café, s'il vous plaît.|Je voudrais un café, s'il vous plaît.
+Où sont les toilettes ?|Où sont les toilettes ?
+Merci beaucoup.|Merci beaucoup.
+De rien.|De rien.
+Excusez-moi.|Excusez-moi.
+Je suis désolé.|Je suis désolé.
+À bientôt !|À bientôt !
+Bonne journée !|Bonne journée !
+Quelle heure est-il ?|Quelle heure est-il ?
+Il est cinq heures.|Il est cinq heures.
+J'habite à Paris.|J'habite à Paris.
+Je ne comprends pas.|Je ne comprends pas.
+Pouvez-vous répéter, s'il vous plaît ?|Pouvez-vous répéter, s'il vous plaît ?
+Je suis fatigué.|Je suis fatigué.
+Il fait très beau ce matin.|Il fait très beau ce matin.
+J'ai deux frères.|J'ai deux frères.
+Je parle un peu français.|Je parle un peu français.
+Bonne chance !|Bonne chance !`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1466,6 +1514,41 @@ Le coup me fait vraiment mal depuis ce matin.|Le coup me fait vraiment mal depui
 Le mur de la cuisine est peint en vert.|Le mur de la cuisine est peint en vert.
 Le mur de la cuisine est fait en verre.|Le mur de la cuisine est fait en verre.
 Ces vêtements sont vraiment trop grands.|Ces vêtements sont vraiment trop grands.`,
+  },
+  {
+    id: "fra2p23",
+    title: "Speaking: Asking and Arranging",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Everyday phrases for asking, arranging and explaining.",
+    // See fra1p23's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same three traps avoided).
+    data: `Est-ce que tu es libre ce soir ?|Est-ce que tu es libre ce soir ?
+On peut se voir demain ?|On peut se voir demain ?
+Je dois partir maintenant.|Je dois partir maintenant.
+Pouvez-vous m'aider, s'il vous plaît ?|Pouvez-vous m'aider, s'il vous plaît ?
+Je cherche la gare.|Je cherche la gare.
+C'est à quelle distance ?|C'est à quelle distance ?
+Combien ça coûte ?|Combien ça coûte ?
+Je voudrais réserver une table.|Je voudrais réserver une table.
+Avez-vous une chambre libre ?|Avez-vous une chambre libre ?
+Le train part à quelle heure ?|Le train part à quelle heure ?
+J'ai besoin d'un médecin.|J'ai besoin d'un médecin.
+Je ne me sens pas bien.|Je ne me sens pas bien.
+Qu'est-ce que tu fais ce week-end ?|Qu'est-ce que tu fais ce week-end ?
+Je travaille dans un bureau.|Je travaille dans un bureau.
+J'étudie le français depuis deux ans.|J'étudie le français depuis deux ans.
+Nous habitons ici depuis longtemps.|Nous habitons ici depuis longtemps.
+Elle arrive dans dix minutes.|Elle arrive dans dix minutes.
+Il est parti hier soir.|Il est parti hier soir.
+Je vais chez le médecin demain.|Je vais chez le médecin demain.
+Tu peux venir avec nous ?|Tu peux venir avec nous ?
+C'est une bonne idée.|C'est une bonne idée.
+Je suis d'accord avec toi.|Je suis d'accord avec toi.
+Je ne suis pas d'accord.|Je ne suis pas d'accord.
+On se retrouve devant la gare.|On se retrouve devant la gare.
+À demain !|À demain !`,
   },
 ];
 
@@ -2183,6 +2266,41 @@ Le coup me fait terriblement mal depuis l'accident.|Le coup me fait terriblement
 Le mur du salon est peint en vert.|Le mur du salon est peint en vert.
 Le mur du salon est fait en verre.|Le mur du salon est fait en verre.
 Ces habitudes sont difficiles à changer.|Ces habitudes sont difficiles à changer.`,
+  },
+  {
+    id: "frb1p23",
+    title: "Speaking: Opinions and Reasons",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Opinions, reasons and comparisons said out loud.",
+    // See fra1p23's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same three traps avoided).
+    data: `Je pense que c'est une bonne idée.|Je pense que c'est une bonne idée.
+À mon avis, il a raison.|À mon avis, il a raison.
+Je ne suis pas convaincu par cet argument.|Je ne suis pas convaincu par cet argument.
+Ce film est plus intéressant que l'autre.|Ce film est plus intéressant que l'autre.
+Cette solution est meilleure que la précédente.|Cette solution est meilleure que la précédente.
+Je préfère le café au thé.|Je préfère le café au thé.
+Il vaut mieux partir tôt.|Il vaut mieux partir tôt.
+Selon moi, c'est trop cher.|Selon moi, c'est trop cher.
+Je trouve que ce livre est ennuyeux.|Je trouve que ce livre est ennuyeux.
+Elle a probablement raison.|Elle a probablement raison.
+C'est important de bien manger.|C'est important de bien manger.
+Il est nécessaire de réserver à l'avance.|Il est nécessaire de réserver à l'avance.
+Je suis content de mes résultats.|Je suis content de mes résultats.
+Nous sommes fiers de notre travail.|Nous sommes fiers de notre travail.
+C'est difficile à expliquer.|C'est difficile à expliquer.
+Ce n'est pas si simple.|Ce n'est pas si simple.
+J'aimerais changer d'avis.|J'aimerais changer d'avis.
+Tout dépend de la situation.|Tout dépend de la situation.
+Cela me semble raisonnable.|Cela me semble raisonnable.
+Je doute que ce soit vrai.|Je doute que ce soit vrai.
+Il faut être patient.|Il faut être patient.
+Nous devons prendre une décision.|Nous devons prendre une décision.
+C'est la meilleure solution possible.|C'est la meilleure solution possible.
+Je comprends ton point de vue.|Je comprends ton point de vue.
+Finalement, je suis d'accord.|Finalement, je suis d'accord.`,
   },
 ];
 
@@ -2902,6 +3020,42 @@ Le coup me fait terriblement mal depuis des semaines.|Le coup me fait terribleme
 Le mur de cette galerie est repeint en vert profond.|Le mur de cette galerie est repeint en vert profond.
 Le mur de cette galerie est entièrement en verre profond.|Le mur de cette galerie est entièrement en verre profond.
 Ces habitudes institutionnelles sont difficiles à réformer.|Ces habitudes institutionnelles sont difficiles à réformer.`,
+  },
+  {
+    id: "frb2p23",
+    title: "Speaking: Multi-Clause Sentences",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Multi-clause sentences to say in one breath.",
+    // See fra1p23's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same three traps avoided). No numbers at
+    // all here, so the number-word traps don't apply to this pack.
+    data: `Quand j'aurai fini mon travail, j'irai me promener.|Quand j'aurai fini mon travail, j'irai me promener.
+Si tu as le temps, on pourrait déjeuner ensemble.|Si tu as le temps, on pourrait déjeuner ensemble.
+Bien que ce soit difficile, je vais essayer.|Bien que ce soit difficile, je vais essayer.
+Puisqu'il pleut, nous resterons à la maison.|Puisqu'il pleut, nous resterons à la maison.
+Lorsque je serai arrivé, je t'appellerai.|Lorsque je serai arrivé, je t'appellerai.
+Je pense que si nous partons maintenant, nous arriverons à temps.|Je pense que si nous partons maintenant, nous arriverons à temps.
+Elle a dit qu'elle viendrait, mais elle n'est pas venue.|Elle a dit qu'elle viendrait, mais elle n'est pas venue.
+Même si c'est cher, je vais l'acheter.|Même si c'est cher, je vais l'acheter.
+Dès que j'aurai des nouvelles, je te préviendrai.|Dès que j'aurai des nouvelles, je te préviendrai.
+Il faut que tu finisses avant ce soir.|Il faut que tu finisses avant ce soir.
+Je voudrais que tu m'aides avec ce projet.|Je voudrais que tu m'aides avec ce projet.
+Nous espérons que tout se passera bien.|Nous espérons que tout se passera bien.
+Comme il faisait froid, nous sommes rentrés tôt.|Comme il faisait froid, nous sommes rentrés tôt.
+Tant que tu es d'accord, on peut continuer.|Tant que tu es d'accord, on peut continuer.
+Avant de partir, vérifie que tout est fermé.|Avant de partir, vérifie que tout est fermé.
+Après avoir mangé, nous sommes sortis nous promener.|Après avoir mangé, nous sommes sortis nous promener.
+Bien qu'il soit fatigué, il continue de travailler.|Bien qu'il soit fatigué, il continue de travailler.
+Puisque tu insistes, j'accepte.|Puisque tu insistes, j'accepte.
+Quoi qu'il arrive, je serai là pour toi.|Quoi qu'il arrive, je serai là pour toi.
+Si j'avais su, je ne serais pas venu.|Si j'avais su, je ne serais pas venu.
+Chaque fois que je le vois, il me parle de son travail.|Chaque fois que je le vois, il me parle de son travail.
+Plus j'y pense, plus je suis convaincu.|Plus j'y pense, plus je suis convaincu.
+Que tu le veuilles ou non, il faut le faire.|Que tu le veuilles ou non, il faut le faire.
+Bien que je sois occupé, je vais t'aider.|Bien que je sois occupé, je vais t'aider.
+Une fois que ce sera fini, nous pourrons partir.|Une fois que ce sera fini, nous pourrons partir.`,
   },
 ];
 
@@ -3624,6 +3778,42 @@ Le coup me fait terriblement mal depuis des mois, malgré les soins.|Le coup me 
 Le mur de cette institution historique est repeint en vert sombre.|Le mur de cette institution historique est repeint en vert sombre.
 Le mur de cette institution historique est entièrement fait en verre.|Le mur de cette institution historique est entièrement fait en verre.
 Ces pratiques institutionnelles sont notoirement difficiles à réformer.|Ces pratiques institutionnelles sont notoirement difficiles à réformer.`,
+  },
+  {
+    id: "frc1p23",
+    title: "Speaking: Idiomatic and Formal Phrasing",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Idiomatic and formal phrasing said aloud.",
+    // See fra1p23's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same three traps avoided). No numbers at
+    // all here, so the number-word traps don't apply to this pack.
+    data: `Il va sans dire que ce projet est important.|Il va sans dire que ce projet est important.
+Cela va de soi.|Cela va de soi.
+Je vous prie de bien vouloir excuser ce contretemps.|Je vous prie de bien vouloir excuser ce contretemps.
+Nous avons le plaisir de vous informer de notre décision.|Nous avons le plaisir de vous informer de notre décision.
+Veuillez trouver ci-joint le document demandé.|Veuillez trouver ci-joint le document demandé.
+Dans la mesure du possible, nous ferons de notre mieux.|Dans la mesure du possible, nous ferons de notre mieux.
+Quoi qu'il en soit, nous devons avancer.|Quoi qu'il en soit, nous devons avancer.
+Cela ne fait aucun doute.|Cela ne fait aucun doute.
+Il n'en demeure pas moins que le problème persiste.|Il n'en demeure pas moins que le problème persiste.
+À vrai dire, je n'en sais rien.|À vrai dire, je n'en sais rien.
+Tout compte fait, c'était une bonne décision.|Tout compte fait, c'était une bonne décision.
+En fin de compte, cela n'a pas d'importance.|En fin de compte, cela n'a pas d'importance.
+Cela va sans dire.|Cela va sans dire.
+Je tiens à vous remercier de votre confiance.|Je tiens à vous remercier de votre confiance.
+Nous restons à votre entière disposition.|Nous restons à votre entière disposition.
+C'est une question de bon sens.|C'est une question de bon sens.
+Cela dit, il faut rester prudent.|Cela dit, il faut rester prudent.
+Il n'y a pas de fumée sans feu.|Il n'y a pas de fumée sans feu.
+Mieux vaut tard que jamais.|Mieux vaut tard que jamais.
+Chaque chose en son temps.|Chaque chose en son temps.
+Cela va de mal en pis.|Cela va de mal en pis.
+Je vous saurais gré de bien vouloir répondre rapidement.|Je vous saurais gré de bien vouloir répondre rapidement.
+Nous vous prions de nous excuser pour la gêne occasionnée.|Nous vous prions de nous excuser pour la gêne occasionnée.
+C'est le monde à l'envers.|C'est le monde à l'envers.
+En un mot, tout va bien.|En un mot, tout va bien.`,
   },
 ];
 

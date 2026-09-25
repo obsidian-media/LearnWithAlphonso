@@ -8095,6 +8095,225 @@
       ]
     },
     {
+      "id": "fra1p23u1",
+      "level": "A1",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Everyday Phrases",
+      "description": "Say it out loud — Short everyday phrases to practise saying.",
+      "lessons": [
+        {
+          "id": "fra1p23l1",
+          "title": "Speaking: Everyday Phrases 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra1p23q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bonjour, comment allez-vous ?",
+              "explanation": "Target phrase: \"Bonjour, comment allez-vous ?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bonjour, comment vas-tu ?",
+              "explanation": "Target phrase: \"Bonjour, comment vas-tu ?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Enchanté de vous rencontrer.",
+              "explanation": "Target phrase: \"Enchanté de vous rencontrer.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Comment tu t'appelles ?",
+              "explanation": "Target phrase: \"Comment tu t'appelles ?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je m'appelle Marie.",
+              "explanation": "Target phrase: \"Je m'appelle Marie.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "fra1p23l2",
+          "title": "Speaking: Everyday Phrases 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra1p23q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'ai faim.",
+              "explanation": "Target phrase: \"J'ai faim.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'ai soif.",
+              "explanation": "Target phrase: \"J'ai soif.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je voudrais un café, s'il vous plaît.",
+              "explanation": "Target phrase: \"Je voudrais un café, s'il vous plaît.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Où sont les toilettes ?",
+              "explanation": "Target phrase: \"Où sont les toilettes ?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Merci beaucoup.",
+              "explanation": "Target phrase: \"Merci beaucoup.\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "fra1p23l3",
+          "title": "Speaking: Everyday Phrases 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra1p23q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "De rien.",
+              "explanation": "Target phrase: \"De rien.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Excusez-moi.",
+              "explanation": "Target phrase: \"Excusez-moi.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je suis désolé.",
+              "explanation": "Target phrase: \"Je suis désolé.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "À bientôt !",
+              "explanation": "Target phrase: \"À bientôt !\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bonne journée !",
+              "explanation": "Target phrase: \"Bonne journée !\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "fra1p23l4",
+          "title": "Speaking: Everyday Phrases 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra1p23q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quelle heure est-il ?",
+              "explanation": "Target phrase: \"Quelle heure est-il ?\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il est cinq heures.",
+              "explanation": "Target phrase: \"Il est cinq heures.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'habite à Paris.",
+              "explanation": "Target phrase: \"J'habite à Paris.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je ne comprends pas.",
+              "explanation": "Target phrase: \"Je ne comprends pas.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Pouvez-vous répéter, s'il vous plaît ?",
+              "explanation": "Target phrase: \"Pouvez-vous répéter, s'il vous plaît ?\" Short everyday phrases to practise saying."
+            }
+          ]
+        },
+        {
+          "id": "fra1p23l5",
+          "title": "Speaking: Everyday Phrases 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra1p23q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je suis fatigué.",
+              "explanation": "Target phrase: \"Je suis fatigué.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il fait très beau ce matin.",
+              "explanation": "Target phrase: \"Il fait très beau ce matin.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'ai deux frères.",
+              "explanation": "Target phrase: \"J'ai deux frères.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je parle un peu français.",
+              "explanation": "Target phrase: \"Je parle un peu français.\" Short everyday phrases to practise saying."
+            },
+            {
+              "id": "fra1p23q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bonne chance !",
+              "explanation": "Target phrase: \"Bonne chance !\" Short everyday phrases to practise saying."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "fra2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -16188,6 +16407,225 @@
       ]
     },
     {
+      "id": "fra2p23u1",
+      "level": "A2",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Asking and Arranging",
+      "description": "Say it out loud — Everyday phrases for asking, arranging and explaining.",
+      "lessons": [
+        {
+          "id": "fra2p23l1",
+          "title": "Speaking: Asking and Arranging 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra2p23q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Est-ce que tu es libre ce soir ?",
+              "explanation": "Target phrase: \"Est-ce que tu es libre ce soir ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "On peut se voir demain ?",
+              "explanation": "Target phrase: \"On peut se voir demain ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je dois partir maintenant.",
+              "explanation": "Target phrase: \"Je dois partir maintenant.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Pouvez-vous m'aider, s'il vous plaît ?",
+              "explanation": "Target phrase: \"Pouvez-vous m'aider, s'il vous plaît ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je cherche la gare.",
+              "explanation": "Target phrase: \"Je cherche la gare.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "fra2p23l2",
+          "title": "Speaking: Asking and Arranging 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra2p23q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est à quelle distance ?",
+              "explanation": "Target phrase: \"C'est à quelle distance ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Combien ça coûte ?",
+              "explanation": "Target phrase: \"Combien ça coûte ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je voudrais réserver une table.",
+              "explanation": "Target phrase: \"Je voudrais réserver une table.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Avez-vous une chambre libre ?",
+              "explanation": "Target phrase: \"Avez-vous une chambre libre ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Le train part à quelle heure ?",
+              "explanation": "Target phrase: \"Le train part à quelle heure ?\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "fra2p23l3",
+          "title": "Speaking: Asking and Arranging 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra2p23q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'ai besoin d'un médecin.",
+              "explanation": "Target phrase: \"J'ai besoin d'un médecin.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je ne me sens pas bien.",
+              "explanation": "Target phrase: \"Je ne me sens pas bien.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Qu'est-ce que tu fais ce week-end ?",
+              "explanation": "Target phrase: \"Qu'est-ce que tu fais ce week-end ?\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je travaille dans un bureau.",
+              "explanation": "Target phrase: \"Je travaille dans un bureau.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'étudie le français depuis deux ans.",
+              "explanation": "Target phrase: \"J'étudie le français depuis deux ans.\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "fra2p23l4",
+          "title": "Speaking: Asking and Arranging 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra2p23q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous habitons ici depuis longtemps.",
+              "explanation": "Target phrase: \"Nous habitons ici depuis longtemps.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Elle arrive dans dix minutes.",
+              "explanation": "Target phrase: \"Elle arrive dans dix minutes.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il est parti hier soir.",
+              "explanation": "Target phrase: \"Il est parti hier soir.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je vais chez le médecin demain.",
+              "explanation": "Target phrase: \"Je vais chez le médecin demain.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tu peux venir avec nous ?",
+              "explanation": "Target phrase: \"Tu peux venir avec nous ?\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        },
+        {
+          "id": "fra2p23l5",
+          "title": "Speaking: Asking and Arranging 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "fra2p23q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est une bonne idée.",
+              "explanation": "Target phrase: \"C'est une bonne idée.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je suis d'accord avec toi.",
+              "explanation": "Target phrase: \"Je suis d'accord avec toi.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je ne suis pas d'accord.",
+              "explanation": "Target phrase: \"Je ne suis pas d'accord.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "On se retrouve devant la gare.",
+              "explanation": "Target phrase: \"On se retrouve devant la gare.\" Everyday phrases for asking, arranging and explaining."
+            },
+            {
+              "id": "fra2p23q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "À demain !",
+              "explanation": "Target phrase: \"À demain !\" Everyday phrases for asking, arranging and explaining."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "frb1p1u1",
       "level": "B1",
       "eyebrow": "Unit 1",
@@ -24172,6 +24610,225 @@
               ],
               "answer": "Ces habitudes sont difficiles à changer.",
               "explanation": "The audio says \"Ces habitudes sont difficiles à changer.\" Everyday and opinion sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb1p23u1",
+      "level": "B1",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Opinions and Reasons",
+      "description": "Say it out loud — Opinions, reasons and comparisons said out loud.",
+      "lessons": [
+        {
+          "id": "frb1p23l1",
+          "title": "Speaking: Opinions and Reasons 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb1p23q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je pense que c'est une bonne idée.",
+              "explanation": "Target phrase: \"Je pense que c'est une bonne idée.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "À mon avis, il a raison.",
+              "explanation": "Target phrase: \"À mon avis, il a raison.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je ne suis pas convaincu par cet argument.",
+              "explanation": "Target phrase: \"Je ne suis pas convaincu par cet argument.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ce film est plus intéressant que l'autre.",
+              "explanation": "Target phrase: \"Ce film est plus intéressant que l'autre.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cette solution est meilleure que la précédente.",
+              "explanation": "Target phrase: \"Cette solution est meilleure que la précédente.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "frb1p23l2",
+          "title": "Speaking: Opinions and Reasons 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb1p23q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je préfère le café au thé.",
+              "explanation": "Target phrase: \"Je préfère le café au thé.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il vaut mieux partir tôt.",
+              "explanation": "Target phrase: \"Il vaut mieux partir tôt.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Selon moi, c'est trop cher.",
+              "explanation": "Target phrase: \"Selon moi, c'est trop cher.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je trouve que ce livre est ennuyeux.",
+              "explanation": "Target phrase: \"Je trouve que ce livre est ennuyeux.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Elle a probablement raison.",
+              "explanation": "Target phrase: \"Elle a probablement raison.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "frb1p23l3",
+          "title": "Speaking: Opinions and Reasons 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb1p23q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est important de bien manger.",
+              "explanation": "Target phrase: \"C'est important de bien manger.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il est nécessaire de réserver à l'avance.",
+              "explanation": "Target phrase: \"Il est nécessaire de réserver à l'avance.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je suis content de mes résultats.",
+              "explanation": "Target phrase: \"Je suis content de mes résultats.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous sommes fiers de notre travail.",
+              "explanation": "Target phrase: \"Nous sommes fiers de notre travail.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est difficile à expliquer.",
+              "explanation": "Target phrase: \"C'est difficile à expliquer.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "frb1p23l4",
+          "title": "Speaking: Opinions and Reasons 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb1p23q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Ce n'est pas si simple.",
+              "explanation": "Target phrase: \"Ce n'est pas si simple.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "J'aimerais changer d'avis.",
+              "explanation": "Target phrase: \"J'aimerais changer d'avis.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tout dépend de la situation.",
+              "explanation": "Target phrase: \"Tout dépend de la situation.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela me semble raisonnable.",
+              "explanation": "Target phrase: \"Cela me semble raisonnable.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je doute que ce soit vrai.",
+              "explanation": "Target phrase: \"Je doute que ce soit vrai.\" Opinions, reasons and comparisons said out loud."
+            }
+          ]
+        },
+        {
+          "id": "frb1p23l5",
+          "title": "Speaking: Opinions and Reasons 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb1p23q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il faut être patient.",
+              "explanation": "Target phrase: \"Il faut être patient.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous devons prendre une décision.",
+              "explanation": "Target phrase: \"Nous devons prendre une décision.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est la meilleure solution possible.",
+              "explanation": "Target phrase: \"C'est la meilleure solution possible.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je comprends ton point de vue.",
+              "explanation": "Target phrase: \"Je comprends ton point de vue.\" Opinions, reasons and comparisons said out loud."
+            },
+            {
+              "id": "frb1p23q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Finalement, je suis d'accord.",
+              "explanation": "Target phrase: \"Finalement, je suis d'accord.\" Opinions, reasons and comparisons said out loud."
             }
           ]
         }
@@ -32240,6 +32897,225 @@
               ],
               "answer": "Ces habitudes institutionnelles sont difficiles à réformer.",
               "explanation": "The audio says \"Ces habitudes institutionnelles sont difficiles à réformer.\" Nuanced and abstract sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frb2p23u1",
+      "level": "B2",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Multi-Clause Sentences",
+      "description": "Say it out loud — Multi-clause sentences to say in one breath.",
+      "lessons": [
+        {
+          "id": "frb2p23l1",
+          "title": "Speaking: Multi-Clause Sentences 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb2p23q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quand j'aurai fini mon travail, j'irai me promener.",
+              "explanation": "Target phrase: \"Quand j'aurai fini mon travail, j'irai me promener.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Si tu as le temps, on pourrait déjeuner ensemble.",
+              "explanation": "Target phrase: \"Si tu as le temps, on pourrait déjeuner ensemble.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bien que ce soit difficile, je vais essayer.",
+              "explanation": "Target phrase: \"Bien que ce soit difficile, je vais essayer.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Puisqu'il pleut, nous resterons à la maison.",
+              "explanation": "Target phrase: \"Puisqu'il pleut, nous resterons à la maison.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Lorsque je serai arrivé, je t'appellerai.",
+              "explanation": "Target phrase: \"Lorsque je serai arrivé, je t'appellerai.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "frb2p23l2",
+          "title": "Speaking: Multi-Clause Sentences 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb2p23q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je pense que si nous partons maintenant, nous arriverons à temps.",
+              "explanation": "Target phrase: \"Je pense que si nous partons maintenant, nous arriverons à temps.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Elle a dit qu'elle viendrait, mais elle n'est pas venue.",
+              "explanation": "Target phrase: \"Elle a dit qu'elle viendrait, mais elle n'est pas venue.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Même si c'est cher, je vais l'acheter.",
+              "explanation": "Target phrase: \"Même si c'est cher, je vais l'acheter.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Dès que j'aurai des nouvelles, je te préviendrai.",
+              "explanation": "Target phrase: \"Dès que j'aurai des nouvelles, je te préviendrai.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il faut que tu finisses avant ce soir.",
+              "explanation": "Target phrase: \"Il faut que tu finisses avant ce soir.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "frb2p23l3",
+          "title": "Speaking: Multi-Clause Sentences 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb2p23q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je voudrais que tu m'aides avec ce projet.",
+              "explanation": "Target phrase: \"Je voudrais que tu m'aides avec ce projet.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous espérons que tout se passera bien.",
+              "explanation": "Target phrase: \"Nous espérons que tout se passera bien.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Comme il faisait froid, nous sommes rentrés tôt.",
+              "explanation": "Target phrase: \"Comme il faisait froid, nous sommes rentrés tôt.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tant que tu es d'accord, on peut continuer.",
+              "explanation": "Target phrase: \"Tant que tu es d'accord, on peut continuer.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Avant de partir, vérifie que tout est fermé.",
+              "explanation": "Target phrase: \"Avant de partir, vérifie que tout est fermé.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "frb2p23l4",
+          "title": "Speaking: Multi-Clause Sentences 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb2p23q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Après avoir mangé, nous sommes sortis nous promener.",
+              "explanation": "Target phrase: \"Après avoir mangé, nous sommes sortis nous promener.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bien qu'il soit fatigué, il continue de travailler.",
+              "explanation": "Target phrase: \"Bien qu'il soit fatigué, il continue de travailler.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Puisque tu insistes, j'accepte.",
+              "explanation": "Target phrase: \"Puisque tu insistes, j'accepte.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quoi qu'il arrive, je serai là pour toi.",
+              "explanation": "Target phrase: \"Quoi qu'il arrive, je serai là pour toi.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Si j'avais su, je ne serais pas venu.",
+              "explanation": "Target phrase: \"Si j'avais su, je ne serais pas venu.\" Multi-clause sentences to say in one breath."
+            }
+          ]
+        },
+        {
+          "id": "frb2p23l5",
+          "title": "Speaking: Multi-Clause Sentences 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frb2p23q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Chaque fois que je le vois, il me parle de son travail.",
+              "explanation": "Target phrase: \"Chaque fois que je le vois, il me parle de son travail.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Plus j'y pense, plus je suis convaincu.",
+              "explanation": "Target phrase: \"Plus j'y pense, plus je suis convaincu.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Que tu le veuilles ou non, il faut le faire.",
+              "explanation": "Target phrase: \"Que tu le veuilles ou non, il faut le faire.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Bien que je sois occupé, je vais t'aider.",
+              "explanation": "Target phrase: \"Bien que je sois occupé, je vais t'aider.\" Multi-clause sentences to say in one breath."
+            },
+            {
+              "id": "frb2p23q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Une fois que ce sera fini, nous pourrons partir.",
+              "explanation": "Target phrase: \"Une fois que ce sera fini, nous pourrons partir.\" Multi-clause sentences to say in one breath."
             }
           ]
         }
@@ -40332,6 +41208,225 @@
               ],
               "answer": "Ces pratiques institutionnelles sont notoirement difficiles à réformer.",
               "explanation": "The audio says \"Ces pratiques institutionnelles sont notoirement difficiles à réformer.\" Sophisticated and formal sentences built around sounds English speakers tend to merge."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frc1p23u1",
+      "level": "C1",
+      "eyebrow": "Unit 23",
+      "title": "Speaking: Idiomatic and Formal Phrasing",
+      "description": "Say it out loud — Idiomatic and formal phrasing said aloud.",
+      "lessons": [
+        {
+          "id": "frc1p23l1",
+          "title": "Speaking: Idiomatic and Formal Phrasing 1",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frc1p23q0",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il va sans dire que ce projet est important.",
+              "explanation": "Target phrase: \"Il va sans dire que ce projet est important.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q1",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela va de soi.",
+              "explanation": "Target phrase: \"Cela va de soi.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q2",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je vous prie de bien vouloir excuser ce contretemps.",
+              "explanation": "Target phrase: \"Je vous prie de bien vouloir excuser ce contretemps.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q3",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous avons le plaisir de vous informer de notre décision.",
+              "explanation": "Target phrase: \"Nous avons le plaisir de vous informer de notre décision.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q4",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Veuillez trouver ci-joint le document demandé.",
+              "explanation": "Target phrase: \"Veuillez trouver ci-joint le document demandé.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "frc1p23l2",
+          "title": "Speaking: Idiomatic and Formal Phrasing 2",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frc1p23q5",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Dans la mesure du possible, nous ferons de notre mieux.",
+              "explanation": "Target phrase: \"Dans la mesure du possible, nous ferons de notre mieux.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q6",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Quoi qu'il en soit, nous devons avancer.",
+              "explanation": "Target phrase: \"Quoi qu'il en soit, nous devons avancer.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q7",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela ne fait aucun doute.",
+              "explanation": "Target phrase: \"Cela ne fait aucun doute.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q8",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il n'en demeure pas moins que le problème persiste.",
+              "explanation": "Target phrase: \"Il n'en demeure pas moins que le problème persiste.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q9",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "À vrai dire, je n'en sais rien.",
+              "explanation": "Target phrase: \"À vrai dire, je n'en sais rien.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "frc1p23l3",
+          "title": "Speaking: Idiomatic and Formal Phrasing 3",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frc1p23q10",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Tout compte fait, c'était une bonne décision.",
+              "explanation": "Target phrase: \"Tout compte fait, c'était une bonne décision.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q11",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En fin de compte, cela n'a pas d'importance.",
+              "explanation": "Target phrase: \"En fin de compte, cela n'a pas d'importance.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q12",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela va sans dire.",
+              "explanation": "Target phrase: \"Cela va sans dire.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q13",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je tiens à vous remercier de votre confiance.",
+              "explanation": "Target phrase: \"Je tiens à vous remercier de votre confiance.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q14",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous restons à votre entière disposition.",
+              "explanation": "Target phrase: \"Nous restons à votre entière disposition.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "frc1p23l4",
+          "title": "Speaking: Idiomatic and Formal Phrasing 4",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frc1p23q15",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est une question de bon sens.",
+              "explanation": "Target phrase: \"C'est une question de bon sens.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q16",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela dit, il faut rester prudent.",
+              "explanation": "Target phrase: \"Cela dit, il faut rester prudent.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q17",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Il n'y a pas de fumée sans feu.",
+              "explanation": "Target phrase: \"Il n'y a pas de fumée sans feu.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q18",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Mieux vaut tard que jamais.",
+              "explanation": "Target phrase: \"Mieux vaut tard que jamais.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q19",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Chaque chose en son temps.",
+              "explanation": "Target phrase: \"Chaque chose en son temps.\" Idiomatic and formal phrasing said aloud."
+            }
+          ]
+        },
+        {
+          "id": "frc1p23l5",
+          "title": "Speaking: Idiomatic and Formal Phrasing 5",
+          "subtitle": "Say it out loud",
+          "questions": [
+            {
+              "id": "frc1p23q20",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Cela va de mal en pis.",
+              "explanation": "Target phrase: \"Cela va de mal en pis.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q21",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Je vous saurais gré de bien vouloir répondre rapidement.",
+              "explanation": "Target phrase: \"Je vous saurais gré de bien vouloir répondre rapidement.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q22",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "Nous vous prions de nous excuser pour la gêne occasionnée.",
+              "explanation": "Target phrase: \"Nous vous prions de nous excuser pour la gêne occasionnée.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q23",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "C'est le monde à l'envers.",
+              "explanation": "Target phrase: \"C'est le monde à l'envers.\" Idiomatic and formal phrasing said aloud."
+            },
+            {
+              "id": "frc1p23q24",
+              "type": "speak",
+              "prompt": "Say this aloud:",
+              "answer": "En un mot, tout va bien.",
+              "explanation": "Target phrase: \"En un mot, tout va bien.\" Idiomatic and formal phrasing said aloud."
             }
           ]
         }

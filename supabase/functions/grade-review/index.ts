@@ -134,7 +134,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!question) {
       return jsonResponse({ error: "Unknown review item" }, 400);
     }
-    correct = await deriveAnswerCorrectness(question as QuestionRow, answer);
+    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course);
   }
 
   // Same overdue-growth-bonus reasoning as review.functions.ts's gradeReview.
