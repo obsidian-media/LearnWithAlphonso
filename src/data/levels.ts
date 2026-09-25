@@ -174,10 +174,12 @@ export const advancedUnits: Unit[] = [
           {
             id: "q4",
             type: "fill",
-            prompt: "Can I pay ___ card?",
-            bank: ["by", "with the", "on", "for"],
-            answer: "by",
-            explanation: '"Pay by card / in cash".',
+            prompt: "I paid ___ cash.",
+            bank: ["in", "by", "on", "with"],
+            answer: "in",
+            // Was "Can I pay ___ card?", identical to u3l2:q6 including the
+            // answer. This teaches the other half of the same rule instead.
+            explanation: '"Pay in cash" -- but "pay by card".',
           },
           {
             id: "q5",

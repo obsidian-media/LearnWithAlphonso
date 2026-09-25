@@ -37,6 +37,69 @@ function allQuestions(units: Unit[]): { unit: Unit; lesson: Lesson; question: Qu
   );
 }
 
+/**
+ * The correct answer as a learner would read it, for any question type.
+ *
+ * The previous version did `Array.isArray(choices) ? choices[answer] : String(answer)`,
+ * which is wrong for two of the six types and made a real defect look like a
+ * reporting bug. A `listening` question's `answer` is the choice TEXT, not an
+ * index, so `choices["The bus leaves at nine."]` was undefined. A `translate`
+ * question has no `choices` at all, so `String(undefined)` came out as the string
+ * "undefined". Three of English's seven reported duplicates rendered as
+ * `(undefined)` and read as an artifact of the report; they were real content
+ * duplicates the report was simply unable to describe.
+ */
+function answerTextOf(question: Question): string {
+  switch (question.type) {
+    case "mc":
+      return question.choices[question.answer] ?? "(no such choice)";
+    case "fill":
+    case "listening":
+    case "speak":
+    case "reorder":
+      // reorder stores the correct sentence as text, tokens joined by spaces.
+      return question.answer;
+    case "translate":
+      return question.acceptableAnswers[0] ?? "(no accepted answer)";
+  }
+}
+
+/**
+ * Prompts that are instructions rather than content.
+ *
+ * For these the prompt is identical by design and the material is in the
+ * choices, exactly as for `listening` ("What did you hear?") and `speak` ("Say
+ * this aloud:"), which this check already special-cases. Two hand-written
+ * questions both headed "Choose the correct question." teach to-be inversion and
+ * do/does respectively -- different questions, one instruction.
+ *
+ * Kept as an explicit list rather than a heuristic, because the cost of guessing
+ * wrong is silence about a genuine repeat. A prompt only belongs here when the
+ * questions sharing it are demonstrably different questions.
+ */
+const INSTRUCTIONAL_PROMPTS = new Set(["choose the correct question."]);
+
+/**
+ * Cross-pack duplicate prompt groups per course, as measured on 2026-09-25.
+ *
+ * Not a target -- a ratchet. The number is here so it is visible in review,
+ * cannot drift silently, and has to be edited down deliberately when content is
+ * fixed. A new duplicate fails the run with every finding in the message.
+ *
+ *   fr  0  audited and fixed (french-content-audit-log.md); hold at zero.
+ *   en  0  audited and fixed 2026-09-25. Was 7 as reported, and actually 9 once
+ *          hand-written units stopped collapsing into one pseudo-pack: 8 genuine
+ *          duplicates plus one instructional-prompt false positive, now excluded
+ *          by INSTRUCTIONAL_PROMPTS rather than by tolerating a non-zero count.
+ *   es  57 not yet audited. Owned by the Spanish session; lower this as they fix
+ *          them. Left gated rather than silent so the count cannot grow.
+ */
+const CROSS_PACK_DUPLICATE_BASELINE: Record<string, number> = {
+  en: 0,
+  fr: 0,
+  es: 57,
+};
+
 describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
   it("has no duplicate unit ids", () => {
     const ids = units.map((u) => u.id);
@@ -243,33 +306,52 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     // suffix) in one context and a fill question (" ___" appended by
     // bank-engine.ts) in another, and those must still be recognized as the
     // same underlying prompt.
+    //
+    // This check was report-only for en/es until 2026-09-25, and vitest
+    // intercepts console output, so a normal run printed 46/46 passed and said
+    // nothing while holding 7 English and 57 Spanish findings. It found the
+    // defect and threw it away. Each course now asserts against a recorded
+    // count (CROSS_PACK_DUPLICATE_BASELINE) so the number lives in the file,
+    // has to be edited down as content is fixed, and fails loudly on a new one.
     const byPrompt = new Map<string, { key: string; packId: string; answer: string }[]>();
     for (const { lesson, question } of allQuestions(units)) {
-      const packId = question.id.replace(/q\d+$/, "");
+      // A pack question's id is `${packId}q${i}`. A hand-written unit question's
+      // id is just `q7`, so this replace yielded "" for all of them and every
+      // hand-written question across every unit collapsed into one pseudo-pack
+      // -- which made duplicates BETWEEN hand-written units invisible. It hid
+      // two real ones in English ("Can I pay ___ card?" in u3l2 and u5l1, same
+      // answer, and a false positive worth keeping visible). Hand-written
+      // content falls back to its unit, taken from the lesson id (`u3l2` -> `u3`).
+      const packId = question.id.replace(/q\d+$/, "") || lesson.id.replace(/l\d+.*$/, "");
       // "listening" and "speak" questions each share one fixed instructional
       // prompt ("What did you hear?" / "Say this aloud:") across every
       // question of that type in the course by design -- the content being
       // compared is audioText/answer, not prompt. Using prompt here would
       // flag every listening (or speak) question as a duplicate of every
       // other one of its type.
+      //
+      // Hand-written multiple choice has the same shape: "Choose the correct
+      // question." is an instruction, and the content is in the choices. Two
+      // such questions teaching different grammar (to-be inversion vs do/does)
+      // are not duplicates. Compare their correct answer instead.
       const dedupText =
         question.type === "listening"
           ? question.audioText
           : question.type === "speak"
             ? question.answer
-            : question.prompt;
+            : INSTRUCTIONAL_PROMPTS.has(question.prompt.trim().toLowerCase())
+              ? `${question.prompt} :: ${answerTextOf(question)}`
+              : question.prompt;
       const norm = dedupText
         .trim()
         .replace(/\s*___\s*$/, "")
         .toLowerCase();
       if (!byPrompt.has(norm)) byPrompt.set(norm, []);
-      const anyQ = question as unknown as { choices?: string[]; answer: unknown };
-      const answer = Array.isArray(anyQ.choices)
-        ? anyQ.choices[anyQ.answer as number]
-        : String(anyQ.answer);
-      byPrompt
-        .get(norm)!
-        .push({ key: `${lesson.id}:${question.id}`, packId, answer: String(answer) });
+      byPrompt.get(norm)!.push({
+        key: `${lesson.id}:${question.id}`,
+        packId,
+        answer: answerTextOf(question),
+      });
     }
     const crossPackDupes: string[] = [];
     for (const [prompt, group] of byPrompt) {
@@ -280,21 +362,54 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
         );
       }
     }
-    if (name === "fr") {
-      // French was fully audited and fixed (french-content-audit-log.md) --
-      // hold it at zero so a future content addition can't silently
-      // reintroduce a duplicate.
-      expect(crossPackDupes, crossPackDupes.join("\n")).toEqual([]);
-    } else {
-      // English/Spanish were not audited this session (spec section 11) --
-      // report-only so this test doesn't start gating content nobody has
-      // reviewed for false positives.
-      if (crossPackDupes.length > 0) {
-        console.log(
-          `${name}: ${crossPackDupes.length} cross-pack duplicate prompt groups (not gated):`,
-        );
-        console.log(crossPackDupes.join("\n"));
-      }
+    // The message carries every finding, because that is the only channel a
+    // vitest run reliably shows. Nothing here relies on console output.
+    expect(
+      crossPackDupes.length,
+      `${name}: expected ${CROSS_PACK_DUPLICATE_BASELINE[name]} cross-pack duplicate ` +
+        `prompt groups, found ${crossPackDupes.length}. If you fixed one, lower the ` +
+        `baseline in this file; if this rose, you added a repeat:\n${crossPackDupes.join("\n")}`,
+    ).toBe(CROSS_PACK_DUPLICATE_BASELINE[name]);
+  });
+
+  it("only exempts a shared prompt when the questions behind it really differ", () => {
+    // Guards INSTRUCTIONAL_PROMPTS, which is a genuine need -- "Choose the
+    // correct question." is an instruction and the material is in the choices --
+    // and also, on the face of it, a way to make a real duplicate disappear
+    // without fixing it.
+    //
+    // It turns out to be largely self-limiting, and the mutation that proved it
+    // is worth recording, because the first version of this comment claimed more
+    // than was true. Exempting a prompt swaps its dedup key from the prompt to
+    // `prompt :: answer`, so two questions that share a prompt AND an answer keep
+    // an IDENTICAL key and are still counted as duplicates. Reintroducing a real
+    // repeat and then exempting its prompt still fails the count above.
+    //
+    // What this test adds is therefore narrow but real. First, a precise message:
+    // the count says "you added a repeat", this says the exemption itself is
+    // illegitimate. Second, and the reason it stays: the count is only decisive
+    // for a course held at ZERO. Spanish sits at 57 while its audit is pending, so
+    // there one more same-answer duplicate hides inside the allowance -- this
+    // check names it whatever the baseline is.
+    //
+    // The discriminator is the answer. Two questions sharing a prompt and an
+    // answer are the same question however the prompt is worded; two sharing only
+    // an instruction are different questions wearing one label.
+    for (const prompt of INSTRUCTIONAL_PROMPTS) {
+      const answers = allQuestions(units)
+        .filter(({ question }) => question.prompt.trim().toLowerCase() === prompt)
+        .map(({ lesson, question }) => ({
+          key: `${lesson.id}:${question.id}`,
+          answer: answerTextOf(question),
+        }));
+      if (answers.length < 2) continue; // not shared in this course; nothing to exempt
+      const distinct = new Set(answers.map((a) => a.answer.trim().toLowerCase()));
+      expect(
+        distinct.size,
+        `"${prompt}" is exempted as instructional, but these questions share an ` +
+          `answer, which makes them the same question rather than a shared ` +
+          `instruction: ${answers.map((a) => `${a.key}(${a.answer})`).join(", ")}`,
+      ).toBe(answers.length);
     }
   });
 

@@ -143,7 +143,7 @@ first|last`,
     subtitle: "Basic prepositions",
     kind: "cloze",
     note: "Use in for months/years, on for days/dates, at for clock times.",
-    data: `The meeting is ___ Monday.|on
+    data: `The exam is ___ 15 March.|on
 I was born ___ 1998.|in
 We eat ___ seven o'clock.|at
 The cat is ___ the table.|under
@@ -534,7 +534,7 @@ is bigger than expected|oversized`,
     note: "Simple present tense sentences describing a typical day.",
     data: `I ___ up at seven o'clock every morning.|wake
 She ___ a shower before breakfast.|takes
-He ___ his teeth twice a day.|brushes
+She ___ her hair before she goes out.|brushes
 We ___ breakfast together as a family.|eat
 I ___ dressed before I leave the house.|get
 She ___ to work by bus.|travels
@@ -827,7 +827,7 @@ She is my sister.|She is my sister.
 We live in London.|We live in London.
 I do not understand.|I do not understand.
 Could you repeat that?|Could you repeat that?
-The bus leaves at nine.|The bus leaves at nine.
+Please open the window.|Please open the window.
 I am very hungry.|I am very hungry.
 He plays the guitar.|He plays the guitar.
 Have a good evening.|Have a good evening.
@@ -1615,7 +1615,7 @@ I will call you when I arrive.|I will call you when I arrive.`,
     // normaliser runs underneath.
     data: `Ask what time a shop opens.|What time does the shop open?;When does the shop open?;Could you tell me what time the shop opens?
 Say you went to the market yesterday.|I went to the market yesterday.;Yesterday I went to the market.;I was at the market yesterday.
-Ask someone to speak more slowly.|Could you speak more slowly?;Can you speak slower, please?;Please speak a little slower.
+Ask a neighbour to water your plants while you are away.|Could you water my plants while I am away?;Would you mind watering my plants while I'm away?;Can you look after my plants while I am away?
 Say you have never been to Italy.|I have never been to Italy.;I have not been to Italy before.;Italy is somewhere I have yet to visit.
 Ask whether you can pay by card.|Can I pay by card?;Do you take cards?;Is it possible to pay by card?
 Say your train was delayed.|My train was delayed.;The train was late.;My train ran late.
@@ -1628,7 +1628,7 @@ Say the film was better than you expected.|The film was better than I expected.;
 Say you are looking for the post office.|I am looking for the post office.;I am trying to find the post office.;Could you point me to the post office?
 Ask how long the journey takes.|How long does the journey take?;How long is the journey?;How much time does the trip take?
 Say you booked a room for one night.|I booked a room for one night.;I have booked a room for one night.;I reserved a room for one night.
-Apologise for arriving late.|I am sorry I am late.;Sorry for being late.;I apologise for arriving late.
+Apologise for missing the meeting.|I am sorry I missed the meeting.;Sorry for missing the meeting.;My apologies for not making the meeting.
 Ask whether the seat is free.|Is this seat free?;Is anyone sitting here?;May I sit here?
 Say you are trying to eat less sugar.|I am trying to eat less sugar.;I'm trying to cut down on sugar.;I am eating less sugar these days.
 Ask someone what they did at the weekend.|What did you do at the weekend?;How was your weekend?;What did you get up to at the weekend?
@@ -1682,7 +1682,7 @@ look forward to|anticipate happily`,
     kind: "cloze",
     note: "First conditional: if + present, will. Second: if + past, would.",
     data: `If it rains, we ___ stay home.|will
-If I ___ rich, I'd travel.|were
+If we ___ closer, I'd visit more often.|were
 She'd help if she ___ time.|had
 If you heat ice, it ___ .|melts
 I'll call you if I ___ late.|am
@@ -2621,7 +2621,7 @@ She claimed ___ have seen him.|to
 He refused ___ comment.|to
 They announced that the deal ___ off.|was
 She explained ___ the system worked.|how
-He complained ___ the noise.|about
+She complained ___ the delay.|about
 She reminded me ___ lock the door.|to
 He accused her ___ lying.|of
 They agreed ___ meet on Friday.|to

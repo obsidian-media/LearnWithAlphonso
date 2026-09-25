@@ -1634,15 +1634,15 @@
             {
               "id": "q4",
               "type": "fill",
-              "prompt": "Can I pay ___ card?",
+              "prompt": "I paid ___ cash.",
               "bank": [
+                "in",
                 "by",
-                "with the",
                 "on",
-                "for"
+                "with"
               ],
-              "answer": "by",
-              "explanation": "\"Pay by card / in cash\"."
+              "answer": "in",
+              "explanation": "\"Pay in cash\" -- but \"pay by card\"."
             },
             {
               "id": "q5",
@@ -3597,7 +3597,7 @@
             {
               "id": "a1p4q0",
               "type": "mc",
-              "prompt": "The meeting is ___ Monday.",
+              "prompt": "The exam is ___ 15 March.",
               "choices": [
                 "at",
                 "by",
@@ -8042,7 +8042,7 @@
             {
               "id": "a1p16q2",
               "type": "fill",
-              "prompt": "He ___ his teeth twice a day.",
+              "prompt": "She ___ her hair before she goes out.",
               "bank": [
                 "brushes",
                 "wake",
@@ -11148,8 +11148,8 @@
               "id": "a1p24q19",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "The bus leaves at nine.",
-              "explanation": "Target phrase: \"The bus leaves at nine.\" Short everyday phrases to practise saying."
+              "answer": "Please open the window.",
+              "explanation": "Target phrase: \"Please open the window.\" Short everyday phrases to practise saying."
             }
           ]
         },
@@ -19528,13 +19528,13 @@
             {
               "id": "a2p23q2",
               "type": "translate",
-              "prompt": "Ask someone to speak more slowly.",
+              "prompt": "Ask a neighbour to water your plants while you are away.",
               "acceptableAnswers": [
-                "Could you speak more slowly?",
-                "Can you speak slower, please?",
-                "Please speak a little slower."
+                "Could you water my plants while I am away?",
+                "Would you mind watering my plants while I'm away?",
+                "Can you look after my plants while I am away?"
               ],
-              "explanation": "One way to say it: \"Could you speak more slowly?\" Everyday errands and arrangements, more than one wording."
+              "explanation": "One way to say it: \"Could you water my plants while I am away?\" Everyday errands and arrangements, more than one wording."
             },
             {
               "id": "a2p23q3",
@@ -19692,13 +19692,13 @@
             {
               "id": "a2p23q15",
               "type": "translate",
-              "prompt": "Apologise for arriving late.",
+              "prompt": "Apologise for missing the meeting.",
               "acceptableAnswers": [
-                "I am sorry I am late.",
-                "Sorry for being late.",
-                "I apologise for arriving late."
+                "I am sorry I missed the meeting.",
+                "Sorry for missing the meeting.",
+                "My apologies for not making the meeting."
               ],
-              "explanation": "One way to say it: \"I am sorry I am late.\" Everyday errands and arrangements, more than one wording."
+              "explanation": "One way to say it: \"I am sorry I missed the meeting.\" Everyday errands and arrangements, more than one wording."
             },
             {
               "id": "a2p23q16",
@@ -20207,7 +20207,7 @@
             {
               "id": "b1p2q1",
               "type": "mc",
-              "prompt": "If I ___ rich, I'd travel.",
+              "prompt": "If we ___ closer, I'd visit more often.",
               "choices": [
                 "were",
                 "would",
@@ -30497,7 +30497,7 @@
             {
               "id": "b2p7q14",
               "type": "mc",
-              "prompt": "He complained ___ the noise.",
+              "prompt": "She complained ___ the delay.",
               "choices": [
                 "not",
                 "to",

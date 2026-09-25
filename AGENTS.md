@@ -233,6 +233,23 @@ because the assertion pinned any content. The assertion still could not catch
 the thing its own comment claimed. When a mutation passes, check which axis it
 actually attacked.
 
+**A check that finds a defect and does not surface it is worse than no check,
+because the silence gets read as zero.** `curriculum-consistency.test.ts`'s
+cross-pack duplicate check was report-only for English and Spanish and printed
+its findings with `console.log` -- which vitest intercepts. A normal run showed
+46/46 passed and said nothing while holding 7 English and 57 Spanish findings;
+they were only visible with `--disableConsoleIntercept`. Two independent
+sessions then recorded "already clean" for that check on the strength of a quiet
+run. A sibling case landed the same week: `podcast-tool validate` printed
+`[ERROR] folder tree contains a cycle` and exited 0, so every `&&` chain and CI
+step read success.
+
+The rule: a finding must travel on a channel that fails the build -- an assertion
+message, a non-zero exit -- never on stdout alone. If a check is not ready to
+gate, gate it at its current count (a ratchet) rather than printing. And when a
+check IS report-only, treat its silence as unknown, not as zero: run it the way
+that shows output before believing it.
+
 **Check which direction a missing value pushes you before calling it safe.**
 "Leave it out rather than guess" is usually the cautious choice, and in distractor
 ranking it is the opposite. `rank()` resolves an untagged candidate to the
@@ -297,6 +314,8 @@ Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
   Select-Object ProcessId, CreationDate,
     @{n='wt';e={ if($_.CommandLine -match 'worktrees.([^\\]+)'){$Matches[1]}else{'main'} }}
 ```
+
+**Update:** `vitest.config.ts` now pins `maxWorkers: 4` (#116, f570221, "cap vitest workers so a starved run cannot look green"), so the cap is automatic and you no longer pass the flag by hand. The diagnosis above still applies -- a cap bounds one run's appetite, it does not stop two sessions competing.
 
 Wait for the other run, then re-verify. Never kill a process belonging to
 another worktree.
