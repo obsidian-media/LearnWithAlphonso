@@ -94,6 +94,38 @@ per question reuses nearly the whole pool every time.
 Do not leave it undecided. A reader of the code today cannot tell
 whether 15 was a choice or an omission.
 
+**Decision (2026-09-25): accept, document, do not fill.** Reasoning:
+
+1. **§10's own priority ordering argues against filling now.** Filling
+   83 packs to 25 means authoring ~710 new Spanish lines — content on
+   the scale of much of Phase 2 — with no native-speaker review
+   commissioned. §10 is explicit that if only part of this work ships,
+   it should be the audit, not the expansion; blanket-filling is
+   expansion wearing a structural-fix costume. Rushing that much new
+   content risks introducing the exact defect classes (§3's 57
+   duplicates, the 91 answer-leak/self-ref flags in the appendix) this
+   document exists to reduce, compounding rather than fixing the
+   problem.
+2. **It is reversible later; shipping it now is not, in spirit.**
+   Nothing forecloses filling packs once a content-expansion pass is
+   actually commissioned with review capacity. Filling now under audit
+   cover forecloses nothing but adds unreviewed surface immediately.
+3. **The severity is concentrated, not spread evenly.** Of the 83 short
+   packs, 53 are 15 lines (60% of a full pool — thin, not acute) and 27
+   are 20 lines (80% of a full pool — barely thin at all). Only the
+   **3 ten-line packs** (`esa1p17`, `esa2p15`, `esa2p18`) are the acute
+   case §2 describes, where 3
+   distractors drawn from a 9-word pool (10 lines minus the correct
+   answer) reuse nearly everything. A blanket fill solves a problem that
+   is mostly not there to the same degree everywhere it would apply.
+
+**What this decision does NOT defer**: the 3 ten-line packs are flagged
+here as the highest-priority candidate for a future, deliberately-scoped
+content-expansion pass — not fixed in this document's Phase 1, since
+that is still authoring new content under the same review-capacity
+constraint as point 1, but worth a session's attention before the other
+80 short packs are ever revisited.
+
 ---
 
 ## 3. Finding 2 — 57 cross-pack duplicate prompts, and why nobody saw them
@@ -130,9 +162,26 @@ Replace the report-only branch with an assertion against a recorded
 baseline:
 
 ```ts
-const BASELINE: Record<string, number> = { en: 7, fr: 0, es: 57 };
+const BASELINE: Record<string, number> = { en: 9, fr: 0, es: 57 };
 expect(crossPackDupes.length, crossPackDupes.join("\n")).toBe(BASELINE[name]);
 ```
+
+**`en` is 9, not the 7 the raw scan prints, and the difference is a
+second bug to fix in the same commit.** `packId` is derived as
+`question.id.replace(/q\d+$/, "")`, which yields `""` for a
+hand-written question whose id is bare (`q7`). That collapses every
+such question into one pseudo-pack, and duplicates inside it stop
+looking cross-pack. Measured: **171 English questions have an empty
+packId**; falling back to the unit id raises English from 7 to 9.
+
+**Spanish is unaffected — zero Spanish questions have an empty packId,
+and `es` is 57 both before and after.** French is 0 either way. So fix
+the derivation because it is wrong, not because it moves your number;
+it moves only English's, which is their baseline to carry.
+
+(The `(undefined)` answers in the printed output are a reporting
+artifact of how the message extracts an answer per question type, not a
+data defect. Worth fixing so real findings stop looking like noise.)
 
 The number then lives in the file, falls as duplicates are fixed, and
 **fails loudly when anyone adds a new one.** Lower `es` in the same
