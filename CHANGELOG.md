@@ -10,6 +10,41 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Podcast admin subsystem, and offline download** (#140, which carried
+#136). A second TanStack Start build from the same repo —
+`vite.admin.config.ts` sets `srcDirectory: "admin"` — so no admin route
+can reach the learner bundle, checked in both directions by a test,
+because losing that override silently turns the admin app into a copy of
+the learner app and is invisible in review. **Code-complete and
+deliberately undeployed**: it needs a second Vercel project and a
+hand-inserted first admin row, and episode uploads continue through
+`scripts/podcast-tool.ts` until then.
+
+Authorization is `admin_users` — **RLS enabled with zero policies** plus
+`REVOKE ALL FROM anon, authenticated`, so only `service_role` can read
+it. The first row is inserted by hand because every self-bootstrapping
+admin mechanism is an authentication bypass waiting for a
+misconfiguration. `requireAdmin` throws a message **identical** to an
+ordinary auth failure; the achievable property is "a non-admin cannot be
+distinguished from a bad token", not "reveals nothing", since endpoint
+existence still leaks through HTTP status.
+
+Review caught a Critical before it shipped. **"Replace audio" signed an
+upload URL at the live object** with upsert, so the browser overwrote
+published audio _before_ the server sniffed it — and on a sniff failure
+the server then deleted it. One mislabelled file would have 404'd every
+learner on a published episode, with no bucket versioning and no backup,
+leaving the row `published=true` pointing at nothing. Fixed with a
+staging key promoted only on success, holding the same invariant the iOS
+cache already does: **a file at the final path always means a finished,
+verified object.**
+
+It also corrected a claim rather than defending it: the `admin_users`
+RLS test was documented as running in CI and **ran nowhere**, because
+`bun run test` executes in a job that sets no Supabase env. It now runs
+in `deploy-supabase` with `ADMIN_RLS_TEST_REQUIRED=1` so it fails rather
+than skips — post-merge on main, not on the PR.
+
 **Spanish reaches question-type parity** (#134, #137, #138, #139),
 closing the audit's step 7 and making it the first time all three
 courses have carried the same set. Spanish gains `translate`,
@@ -119,7 +154,7 @@ on trains and planes, which is where the Listen tab previously stopped
 working. Downloaded episodes live in **Application Support** rather than
 Caches (the system purges Caches; a deliberate download should not
 evaporate) and are excluded from iCloud backup. Staging name → byte-count
-verification → atomic move → *then* the database row, so a file at the
+verification → atomic move → _then_ the database row, so a file at the
 final path always means a finished download; launch reconciles both
 directions, since being killed mid-transfer is ordinary on iOS.
 
