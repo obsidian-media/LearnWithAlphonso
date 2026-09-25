@@ -10,6 +10,22 @@ works now*.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**English content quality — pair-pack distractors stop crossing word classes**
+(#TBD) — closes the content audit's one deferred defect. Multiple-choice
+distractors are drawn from a pack's own answers and ranked by part of speech, but
+`ANSWER_POS` only covered cloze packs, because a tag was read from the answer's
+own sentence and a pair line has none. All 850 pair lines were untagged, so the
+ranking layer had nothing to rank by: a1p15 "Shapes & Sizes" offered size
+adjectives as the wrong answers to shape questions in **23 of its 25** questions
+— "is a perfect cube shape" offered [cube, huge, narrow, average], so the answer
+needed no geometry. Pair packs are now tagged from what their prompt template
+*declares* ("Which verb goes with …?" cannot be answered by a noun), with
+per-word hand labels for the one pack whose pool is honestly two classes. No
+pack data changed, so no question id moved. Cross-class distractors in a1p15:
+23/25 → **7/25**, the residual fully attributable to two words that two packs
+class differently. The audit log records the measured before/after, the rejected
+alternatives and the follow-up that takes it to zero.
+
 **Podcast library Phase 1b — the iOS Listen client** — browse the folder tree, play an
 episode, keep playing with the screen locked, and resume across devices. **This lifts the
 Phase 0/1b release constraint**: Listen is no longer a placeholder.

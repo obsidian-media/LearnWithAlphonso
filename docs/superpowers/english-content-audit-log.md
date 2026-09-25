@@ -29,7 +29,7 @@
 | `a1p12` | pack | Jobs & Occupations | 25 | ☑ | No issues found. |
 | `a1p13` | pack | Animals | 25 | ☑ | FIXED x2: "very large grey animal with tusks"->"elephant seal" re-clued to walrus (the clue described an elephant, already in the pool); turtle/snail clues were near-identical, snail re-clued. |
 | `a1p14` | pack | Days, Months & Time | 25 | ☑ | FIXED: answer "flowers" (a Valentine's line) polluted a time-word pool; replaced with a "noon" line. Was producing [January, flowers, time, year]. |
-| `a1p15` | pack | Shapes & Sizes | 25 | ☑ | DEFERRED STRUCTURAL: pack deliberately mixes shape nouns with size adjectives, so shape questions can draw adjective distractors. Not fixable in place; needs a pack split. |
+| `a1p15` | pack | Shapes & Sizes | 25 | ☑ | **FIXED 2026-09-24, no split needed.** The diagnosis in the deferred-changes section was right and its remedy was wrong: the pack does mix shape nouns with size adjectives, but the reason distractors crossed classes is that pair-pack answers carried no part-of-speech tag at all, so the ranking layer expressed no preference. Its 25 answers are now hand-labelled in `src/data/pair-answer-class.ts`, which moves no line and shifts no id. Cross-class distractors: **23 of 25 questions -> 7 of 25**. |
 | `a1p16` | pack | Daily Routine | 25 | ☑ | No issues found. |
 | `a1p17` | pack | In the Classroom | 25 | ☑ | No issues found. |
 | `a1p18` | pack | Describing Things | 25 | ☑ | No issues found. |
@@ -202,6 +202,17 @@ prompt overlap before they are taken (`src/lib/distractor-affinity.ts`).
 Measured across all 1,387 English multiple-choice questions: distractors echoing a
 prompt word fell from 12 to **5** (1 multiple-choice, 4 fill banks).
 
+**Update 2026-09-24: coverage extended to pair packs.** The paragraphs here
+describe the cloze-only map. Pair-pack answers are now tagged too, from what
+their prompt template declares rather than from any tagger -- 530 lines, map
+1,098 -> 1,507 entries, **0 existing tags changed**, 12 dropped as cross-pack
+homographs. A second automated route was measured and rejected: dropping the
+answer into a synthetic sentence frame does not read its class, it imposes one
+(`It is X.` scores 93% on a hand-labelled sample and is wrong on every verb it
+sees; `They X.` scores 64% and turns 16 of this corpus's nouns into verbs). That
+is the bare-word trap wearing a different hat, and it is the thing to remember
+before reaching for a frame.
+
 A part-of-speech ratio is also tracked, but it is a smoke test, not evidence of
 quality: the ranking layer sorts by the same map the ratio is measured with, so
 it can only detect the layer being removed, never a wrong tag. Independent
@@ -242,7 +253,8 @@ review items.
 
 ## Deferred structural changes
 
-- **a1p15 "Shapes & Sizes" pack split** -- DECLINED for phase 1. The pack mixes
+- **a1p15 "Shapes & Sizes" pack split** -- DECLINED for phase 1, and **no longer
+  needed**; see the resolution note after this entry. The pack mixes
   shape nouns (triangle, hexagon) with size adjectives (huge, tiny), so a shape
   question can draw an adjective distractor. Splitting it adds or removes lines,
   which shifts every later question id in the pack and repoints real users'
@@ -253,5 +265,33 @@ review items.
   heavy]. The defect is real and remains open; it is deferred because splitting
   the pack shifts ids, not because it is harmless. Revisit as a deliberate,
   migrated content change.
+
+  **Resolved 2026-09-24 without a split.** The sentence above beginning "Note the
+  ranking layer does NOT mitigate this pack" is the real diagnosis and it is
+  correct; it was the remedy that was wrong, and it made this look like an
+  id-migration problem when it was a tag-coverage problem.
+  `scripts/gen-answer-pos.ts` read tags from cloze sentences only, so all 850
+  pair lines went untagged and the ranking layer had nothing to rank by. It now
+  also takes each pair pack's prompt template as a declaration of the answer's
+  class, and a1p15's genuinely two-class pool is hand-labelled per word. No
+  pack's `data` changed, so no id moved -- `english-id-parity.test.ts` passes
+  with no re-baselining.
+
+  Measured: cross-class distractors in a1p15 fell from **23 of 25** questions to
+  **7 of 25**, and the shape of the failure changed with it. "is a perfect cube
+  shape" offered [cube, huge, narrow, average] -- three of four from the wrong
+  class, so no geometry was needed -- and now offers [cube, hexagon, long,
+  sphere]. The residual 7 is fully explained: every one involves `light` or
+  `long`, which two packs class differently (`light` is a noun in a1p18), so the
+  generator's agree-or-drop rule discards them rather than letting one pack win.
+  The map is keyed by word course-wide while distractors are always drawn within
+  one pack, so **pack-scoping the map would take this to zero**. Recorded as the
+  follow-up.
+
+  One alternative was measured and declined: demoting *untagged* candidates below
+  known-same-class ones would fix 5 of the 7, but 150 of the bank's 2,675
+  questions have fewer than 3 known same-class candidates, so those would draw
+  the same handful of distractors on every question. Repetitive choices across
+  5.6% of the course is a worse trade than 7 odd choices in one pack.
 
 No pack re-levelling was proposed: no pack was found materially mis-levelled.

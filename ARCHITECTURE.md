@@ -1013,6 +1013,21 @@ note in README.md's Documentation section for why.)
   review-item ids are keyed against (`lessonId:questionId`), so it needs
   its own careful pass confirming lesson/unit id output is byte-for-byte
   identical before/after, not a rider on an unrelated bug fix.
+- **Distractor part-of-speech ranking has two evidence sources, and neither is
+  a tagger run on a bare word.** `src/lib/distractor-affinity.ts` ranks
+  candidates by `ANSWER_POS`, which `scripts/gen-answer-pos.ts` builds from (a)
+  the answer read inside its own cloze sentence and (b) for pair packs, what the
+  prompt template *declares* -- "Which verb goes with ...?" cannot be answered by
+  a noun (`src/data/pair-answer-class.ts`). Pair packs carried no tags at all
+  until 2026-09-24, which is why a1p15 "Shapes & Sizes" offered size adjectives
+  as distractors for shape questions in 23 of its 25 questions. Two automated
+  alternatives are recorded as rejected, both measured: tagging the bare word
+  calls `square`, `circle` and `cube` verbs (this failure shipped once, tagging
+  44.8% of the bank Verb), and dropping the answer into a synthetic sentence
+  frame imposes a class rather than reading one. A word two packs class
+  differently is dropped, never arbitrated. The map is keyed by word course-wide
+  while distractors are drawn per pack, so pack-scoping it is a known
+  improvement, not yet done.
 - **`bun run vitest run` (the full ~90-file suite, one isolated worker
   per file) can hang indefinitely with zero output in this project's
   Windows development sandbox, after a long agent session has
