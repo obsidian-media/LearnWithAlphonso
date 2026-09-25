@@ -1,9 +1,9 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The podcast control bar, attached to the TabView with
-/// `.safeAreaInset(edge: .bottom)` so it sits above the tab bar without
-/// overlapping content or being overlapped by it.
+/// The podcast control bar, docked above each tab's content by
+/// `View.podcastMiniBar` (below) -- not on the TabView, which is where it
+/// was and where the inset gets consumed by the tab bar itself.
 ///
 /// It is only a control surface: the audio lives in PodcastAudioPlayer,
 /// held above the view tree, so this bar coming and going never affects
