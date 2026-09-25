@@ -156,40 +156,59 @@ This is the nastiest member of the family `docs/BACKLOG.md` tracks: not
 a test that cannot fail, but one that **finds the defect and throws it
 away**. It does not merely withhold confidence; it manufactures it.
 
-### 3.1 Fix the mechanism first
+### 3.1 The mechanism is fixed — shipped in #121, not by this session
 
-Replace the report-only branch with an assertion against a recorded
-baseline:
+**Status update, 2026-09-25: done, superseding everything below this
+line in this subsection.** This subsection originally assigned the
+mechanism fix to the Spanish session, on the assumption stated at the
+time ("You own this change... the English session has been told to
+rebase onto your fix"). In practice the English session shipped it
+first, in the same PR that also fixed all 8 of its own genuine
+duplicates (#121, merged `d660a53`) — coordinated directly with this
+session rather than duplicated, confirmed by diff review before
+deferring to it. Recorded here so a future reader doesn't go looking
+for a Spanish-owned version of this mechanism that was never built.
+
+What actually shipped, in `curriculum-consistency.test.ts`:
 
 ```ts
-const BASELINE: Record<string, number> = { en: 9, fr: 0, es: 57 };
-expect(crossPackDupes.length, crossPackDupes.join("\n")).toBe(BASELINE[name]);
+const CROSS_PACK_DUPLICATE_BASELINE: Record<string, number> = {
+  en: 0,
+  fr: 0,
+  es: 57,
+};
 ```
 
-**`en` is 9, not the 7 the raw scan prints, and the difference is a
-second bug to fix in the same commit.** `packId` is derived as
+**`en` is 0, not the 7 the raw scan first printed or the 9 an
+intermediate correction recorded.** The full progression, kept because
+each step is a real, distinct bug: `packId` was derived as
 `question.id.replace(/q\d+$/, "")`, which yields `""` for a
-hand-written question whose id is bare (`q7`). That collapses every
-such question into one pseudo-pack, and duplicates inside it stop
-looking cross-pack. Measured: **171 English questions have an empty
-packId**; falling back to the unit id raises English from 7 to 9.
+hand-written question whose id is bare (`q7`) — collapsing every such
+question into one pseudo-pack and hiding duplicates *between*
+hand-written units. Falling back to the unit id took English from 7 to
+9 (171 English questions had an empty `packId`; zero French or Spanish
+questions did, so this bug never affected `es`'s count). #121 then
+fixed all 9 English groups in the same PR — 8 genuine duplicates
+(content fixed, one line each, no id moved) and 1 instructional-prompt
+false positive ("Choose the correct question.", material in the
+choices, same shape as `listening`/`speak`'s existing special case,
+now excluded via an explicit `INSTRUCTIONAL_PROMPTS` set rather than by
+tolerating a non-zero count) — landing `en` at 0.
 
-**Spanish is unaffected — zero Spanish questions have an empty packId,
-and `es` is 57 both before and after.** French is 0 either way. So fix
-the derivation because it is wrong, not because it moves your number;
-it moves only English's, which is their baseline to carry.
+**`es` is unmoved at 57 throughout this entire progression** — the
+`packId` bug never touched it, and no Spanish content has been fixed
+yet. It is this session's baseline to lower, per §3.2/§7 step 3–4, the
+same way English's just went from 57-shaped to 0.
 
-(The `(undefined)` answers in the printed output are a reporting
-artifact of how the message extracts an answer per question type, not a
-data defect. Worth fixing so real findings stop looking like noise.)
-
-The number then lives in the file, falls as duplicates are fixed, and
-**fails loudly when anyone adds a new one.** Lower `es` in the same
-commit that fixes the duplicates, never separately.
-
-**You own this change.** The English session has the same problem for
-their 7 and has been told to rebase onto your fix rather than edit the
-same block. Land it early and tell them.
+(The `INSTRUCTIONAL_PROMPTS` exemption has a real sharp edge, worth
+carrying forward into Spanish's triage: it only works because it swaps
+the dedup key to `prompt :: answer`, so a prompt-and-answer match still
+groups and still counts. A same-prompt-different-answer pair like
+`"happy"` → feliz/contento does **not** qualify for the exemption even
+though it superficially resembles one — that is content, and the fix is
+content, not an allowlist entry. §3.2's own table already gets this
+right; the distinction is worth stating explicitly for whoever executes
+the triage.)
 
 ### 3.2 The 57 split two ways, and the split is the whole job
 
