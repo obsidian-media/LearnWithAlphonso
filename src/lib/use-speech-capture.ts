@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { authHeaders } from "./auth-headers";
 import { readApiError } from "./read-api-error";
 import { normaliseSpoken } from "./spoken-answer";
+import type { Course } from "@/data/courses";
 
 export type SpeechCaptureState = "idle" | "recording" | "transcribing";
 
@@ -22,8 +23,14 @@ export type SpeechCaptureState = "idle" | "recording" | "transcribing";
  */
 export function useSpeechCapture({
   onTranscript,
+  course,
 }: {
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
+  /** Forwarded to /api/stt so Deepgram transcribes in the right language
+   * instead of defaulting to English. Optional and defaults server-side to
+   * "en" -- the conversation route (converse_.$scenarioId.tsx) has no course
+   * on its scenarios yet and is unaffected by omitting this. */
+  course?: Course;
 }) {
   const [state, setState] = useState<SpeechCaptureState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +52,8 @@ export function useSpeechCapture({
   const stopRequestedRef = useRef(false);
   const onTranscriptRef = useRef(onTranscript);
   onTranscriptRef.current = onTranscript;
+  const courseRef = useRef(course);
+  courseRef.current = course;
 
   const canRecord =
     typeof navigator !== "undefined" &&
@@ -87,6 +96,7 @@ export function useSpeechCapture({
         try {
           const fd = new FormData();
           fd.append("file", blob, `recording.${ext}`);
+          if (courseRef.current) fd.append("course", courseRef.current);
           const resp = await fetch("/api/stt", {
             method: "POST",
             headers: await authHeaders(),

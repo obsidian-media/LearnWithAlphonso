@@ -369,6 +369,7 @@ function ReviewPage() {
               key={q.id}
               target={q.answer}
               locale={localeForCourse(course)}
+              course={course}
               value={picked}
               onChange={setPicked}
               checked={checked}
