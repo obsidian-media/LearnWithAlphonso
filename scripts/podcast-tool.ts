@@ -32,7 +32,6 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
-import { parseBuffer } from "music-metadata";
 import {
   storagePathFor,
   validateEpisodeDraft,
@@ -177,6 +176,23 @@ async function synthesise(script: string, voice: string): Promise<Uint8Array> {
 }
 
 async function durationSecondsOf(audio: Uint8Array): Promise<number> {
+  // Imported here rather than at module scope on purpose. A top-level import
+  // makes EVERY command die with "Cannot find package 'music-metadata'" when
+  // node_modules is stale -- including folder, validate and publish, none of
+  // which read audio. That happened during the first real publish, and it
+  // misdirects badly: the failure names an audio library while you are
+  // creating a folder. It fails at import so there is no partial state, but
+  // the message sends you the wrong way.
+  let parseBuffer: typeof import("music-metadata").parseBuffer;
+  try {
+    ({ parseBuffer } = await import("music-metadata"));
+  } catch {
+    fail(
+      "music-metadata is required to read an episode's duration. Run `bun install` and " +
+        "try again -- only `add` needs it.",
+    );
+  }
+
   const metadata = await parseBuffer(audio, { mimeType: "audio/mpeg" });
   const duration = metadata.format.duration;
   // duration_seconds drives the player's scrubber, so a missing or zero
