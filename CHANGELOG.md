@@ -127,7 +127,7 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
-**Placement covers the new question types (#TBD)** — the exam now assesses
+**Placement covers the new question types (#107)** — the exam now assesses
 `listening` (10 questions, two per band) and `translate` (5, one per band)
 alongside multiple choice. Before this it tested only multiple choice, then
 placed learners into a course where roughly one question in eight is listening,
@@ -155,7 +155,7 @@ and cost three wrong hypotheses about the scoring rules), and running two
 vitest or two build processes at once produces failures that look exactly like
 real regressions.
 
-**Free-form translation question type (#TBD)** — a sixth question type,
+**Free-form translation question type (#107)** — a sixth question type,
 `translate`: the learner is shown an idea to express ("Ask someone their name")
 and writes it in English themselves. 125 questions across all five CEFR bands
 (one pack each), taking English to 609 lessons / 3,096 questions.
@@ -215,7 +215,7 @@ the Edge Functions. While it was red, **no function redeployed** — so a
 `grade-review` change merged during that window was live in the repo and not on
 the server.
 
-**Speaking practice question type (#TBD)** — a fifth question type, `speak`:
+**Speaking practice question type (#107)** — a fifth question type, `speak`:
 the learner is shown a phrase, records themselves saying it, and the
 speech-to-text transcript is graded. 125 questions across all five CEFR bands
 (one pack each), taking English to 584 lessons / 2,971 questions.

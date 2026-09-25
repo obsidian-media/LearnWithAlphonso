@@ -637,6 +637,35 @@ export const PLACEMENT_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1"];
  * time. scorePlacement() only needs correctByLevel, so it's agnostic to
  * which 3 questions per band were shown.
  */
+/**
+ * Drops listening questions when the device has no speech synthesis.
+ *
+ * It lives HERE, next to the sampler, rather than in the route, because the
+ * order matters and only this file can enforce it: filtering has to happen
+ * BEFORE the 3-per-band draw. Filter afterwards and a band whose draw happened
+ * to include both of its listening questions is left with one question -- and a
+ * band needs 2 correct out of 3, so that band cannot be passed at all, however
+ * well the learner does. It truncates their placement at the band below. The
+ * odds are not negligible: C(2,2)*C(10,1)/C(12,3) = 4.5% per band, so about one
+ * no-audio attempt in five loses a band this way.
+ *
+ * Why filter rather than fall back to printing the sentence, which is what the
+ * lesson player does: a placement listening question's sentence IS its correct
+ * answer, so printing it hands out a free mark on every listening question
+ * drawn, and two free marks take a whole band. An exam that measures nothing
+ * and then places someone in B1 is worse than one that measures less -- they
+ * start on content they cannot do. Removing the questions costs coverage
+ * instead, which is the cheaper loss: each band still holds nine
+ * multiple-choice and one translation candidate, so three are still drawn.
+ */
+export function playablePool(
+  pool: PlacementQuestion[],
+  canPlayAudio: boolean,
+): PlacementQuestion[] {
+  if (canPlayAudio) return pool;
+  return pool.filter((q) => q.type !== "listening");
+}
+
 export function pickPlacementSet(
   pool: PlacementQuestion[] = PLACEMENT_QUESTIONS,
 ): PlacementQuestion[] {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PLACEMENT_QUESTIONS } from "./placement";
+import { PLACEMENT_QUESTIONS, PLACEMENT_ORDER, playablePool, pickPlacementSet } from "./placement";
 import { PLACEMENT_QUESTIONS_FR } from "./placement-fr";
 import { PLACEMENT_QUESTIONS_ES } from "./placement-es";
 import { normaliseWritten } from "@/lib/translation-answer";
@@ -84,6 +84,33 @@ describe("placement questions measure what they claim to", () => {
         if (q.type === "translate") continue;
         const seen = q.choices.map((c) => c.trim().toLowerCase());
         expect(new Set(seen).size, `${name} ${q.id} repeats an option`).toBe(q.choices.length);
+      }
+    }
+  });
+
+  it("still draws three answerable questions per band with no audio, in every course", () => {
+    // The property the first version of this branch broke: it filtered the
+    // SAMPLED set instead of the pool, so a band that happened to draw both of
+    // its listening questions was left with one -- and scorePlacement needs 2
+    // of 3, so that band could not be passed however well the learner did,
+    // truncating their placement one band low. 4.5% per band, ~21% of no-audio
+    // attempts. Sampling is random, so this runs it repeatedly rather than
+    // trusting one draw.
+    for (const [name, pool] of [
+      ["en", PLACEMENT_QUESTIONS],
+      ["fr", PLACEMENT_QUESTIONS_FR],
+      ["es", PLACEMENT_QUESTIONS_ES],
+    ] as const) {
+      for (let attempt = 0; attempt < 200; attempt++) {
+        const set = pickPlacementSet(playablePool(pool, false));
+        expect(
+          set.some((q) => q.type === "listening"),
+          `${name} kept an unplayable question`,
+        ).toBe(false);
+        for (const band of PLACEMENT_ORDER) {
+          const inBand = set.filter((q) => q.level === band);
+          expect(inBand.length, `${name} ${band} drew ${inBand.length} questions`).toBe(3);
+        }
       }
     }
   });

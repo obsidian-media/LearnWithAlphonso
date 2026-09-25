@@ -15,6 +15,8 @@
 Placement is a **soft nudge shown to new signups**, not a gate, and it is at most 15 questions. Three of the six question types are candidates and they are not equal:
 
 - **`listening` — include.** It adds real assessment signal (comprehension is most of what a CEFR band means at A1–B1), costs nothing, needs no permission and no network, and reuses the exam's existing choose-an-option interaction. Where the browser cannot speak, the same readable fallback the lesson player uses keeps the question answerable — a placement question nobody can answer would mis-place the learner downward.
+
+  > **Superseded during execution.** The fallback is wrong here: a placement listening question's sentence *is* its correct answer, so printing it hands out a free mark and inflates the band — the opposite of the risk this plan was watching for. Shipped behaviour is to drop listening questions from the pool when the device cannot speak, *before* the three-per-band draw (`playablePool`). Filtering after the draw was the first attempt and is also wrong: it can leave a band holding one question, which no learner can pass.
 - **`translate` — include.** Production is the other half of a band, and placement already requires auth and a network round trip to record its result, so the hybrid grader adds no new class of dependency. Graded exactly as everywhere else: curated wordings first, AI second opinion only on a miss, `null` means "no opinion" and the local verdict stands.
 - **`speak` — EXCLUDE, deliberately.** It would gate onboarding on a microphone permission prompt before the learner has any reason to grant it, and a denial makes the question unanswerable. The typing fallback that rescues it inside a lesson would here be assessing writing while claiming to assess speaking, which is worse than not asking. **This is a product call, not a technical one** — it is written down here so the account owner can overturn it knowingly rather than discover it.
 
@@ -46,7 +48,7 @@ Checked against the code rather than against itself. Four corrections:
 
 ## Global Constraints
 
-- **English only.** `placement-fr.ts` and `placement-es.ts` are untouched; their pools stay mc-only and must keep type-checking against the widened union.
+- **English only.** No question content is added to `placement-fr.ts` or `placement-es.ts`; their pools stay mc-only. They do gain the `type: "mc"` tag every entry now needs (Task 1), and must keep type-checking against the widened union.
 - **Placement ids are not review-item keys** (review keys are `lessonId:questionId`), so editing the pool in place is safe — unlike lesson content. Do not add the append-only ceremony here; it does not apply.
 - **Migration filenames carry REAL seconds, never a rounded `HHmmss` of zeros.**
   `20260926010000` collided with the podcast session's independently-chosen
@@ -166,7 +168,7 @@ Expected: PASS, and French/Spanish pools still type-check.
 
 **Files:**
 - Modify: `src/data/placement.ts` (two listening questions per band, 10 total)
-- Modify: `src/routes/_authenticated/placement.tsx` (playback + readable fallback)
+- Modify: `src/routes/_authenticated/placement.tsx` (playback; the readable fallback was dropped — see the note above)
 - Test: `src/routes/_authenticated/placement.test.tsx`
 
 - [ ] **Step 1: Write the failing tests**
@@ -174,11 +176,12 @@ Expected: PASS, and French/Spanish pools still type-check.
 ```tsx
 it("offers playback for a listening placement question", async () => { /* ... */ });
 
-it("shows the sentence when the browser cannot speak", async () => {
-  // A placement question nobody can answer mis-places the learner DOWNWARD,
-  // which is worse than the lesson-player case: it sets their whole course.
+// Superseded, per the note above: the shipped test asserts that the route asks
+// for a pool the device can play, and a separate content test asserts that the
+// no-audio pool still yields three questions per band.
+it("asks for a pool the device can actually play", async () => {
   canSpeak.mockReturnValue(false);
-  /* ... expect the sentence to be readable ... */
+  /* ... expect pickPlacement to have been called with false ... */
 });
 ```
 
@@ -188,7 +191,7 @@ it("shows the sentence when the browser cannot speak", async () => {
 
 Two per band, each a minimal pair against its own distractors, following the a1p23-style discipline: the wrong options must be genuine mishearings, not different topics.
 
-- [ ] **Step 4: Render it** — the same "🔊 Play audio" button and no-TTS fallback the lesson player uses.
+- [ ] **Step 4: Render it** — the same "🔊 Play audio" button the lesson player uses. No no-TTS fallback: `canSpeak()` is a capability check, so a listening question can only reach the screen on a device that can play it.
 
 - [ ] **Step 5: Run the tests and the build**
 

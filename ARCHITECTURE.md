@@ -227,11 +227,15 @@ gap rather than an accidental one.
 
 Two properties hold the exam together and are easy to break:
 
-- **Every question must resolve to an answer.** There is no skip. A listening
-  question on a browser with no TTS shows its sentence; a translation with no
-  network keeps its local verdict. An unanswerable lesson question costs a
-  heart — an unanswerable placement question mis-places the learner, or leaves
-  the exam unable to finish and them with no level at all.
+- **Every question must resolve to an answer.** There is no skip. A translation
+  with no network keeps its local verdict; listening questions are removed from
+  the pool entirely on a browser with no TTS, *before* the three-per-band draw
+  (`playablePool`), rather than falling back to printing the sentence the way a
+  lesson does — here the sentence is the answer. Filtering after the draw is the
+  same bug in the other direction: it can leave a band holding one question,
+  and a band needs two correct. An unanswerable lesson question costs a heart —
+  an unanswerable placement question mis-places the learner, or leaves the exam
+  unable to finish and them with no level at all.
 - **Grading takes the submitted TEXT, for every type** (`isPlacementAnswerCorrect`
   in `src/data/placement-grading.ts`). The exam used to compare an option
   index, which only multiple choice can express.

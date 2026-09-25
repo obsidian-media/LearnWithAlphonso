@@ -56,27 +56,6 @@ type Session = {
  * content in every band), so a thin/misconfigured pool degrades to "test
  * whatever exists" instead of crashing on an undefined first question.
  */
-/**
- * Drops listening questions where the browser has no speech synthesis.
- *
- * The lesson player prints the sentence instead, which keeps the question
- * answerable at the cost of one heart. That trade does not survive here,
- * because a placement listening question's sentence IS its correct answer --
- * printing it above the choices hands the learner a free pass on every
- * listening question they draw, and two free passes take a whole band under
- * the 2-of-3 rule. An exam that measures nothing and then places someone in B1
- * is worse than one that measures less: they start on content they cannot do.
- *
- * Removing them costs coverage rather than correctness. Each band still has
- * nine multiple-choice and one translation candidate, so the three questions
- * per band are drawn as normal -- the exam simply stops claiming to assess
- * listening on a device that cannot play it.
- */
-function withoutUnplayableQuestions(pool: PlacementQuestion[]): PlacementQuestion[] {
-  if (canSpeak()) return pool;
-  return pool.filter((q) => q.type !== "listening");
-}
-
 function startSession(pool: PlacementQuestion[]): Session {
   const bandPool = groupByBand(pool);
   let idx = 0;
@@ -94,7 +73,7 @@ function PlacementPage() {
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
   const course = useProgress((s) => s.course);
   const [session, setSession] = useState<Session>(() =>
-    startSession(withoutUnplayableQuestions(getCourse(course).pickPlacement())),
+    startSession(getCourse(course).pickPlacement(canSpeak())),
   );
   const [step, setStep] = useState(0);
   // The submitted TEXT, not an option index: a listening question answers with
@@ -110,10 +89,21 @@ function PlacementPage() {
   // Imperative tally across band transitions, not itself rendered --
   // see submit()'s band-complete branch and nextAdaptiveBand in placement.ts.
   const correctByLevelRef = useRef<Record<Level, number>>({ ...EMPTY_CORRECT });
+  // Which attempt is live. submit() is the one place in this flow that awaits
+  // (a translation's second opinion, up to 15s), so it is the one place where
+  // work can outlive the attempt that started it: switch course mid-request and
+  // the old call resumes afterwards holding the old session, but writing
+  // through correctByLevelRef and savePlacement, which are NOT per-attempt. It
+  // could file an abandoned band's score against the new attempt, or finish it
+  // outright. Comparing generations after the await is cheaper than plumbing an
+  // AbortController through the grader for a request whose result we simply no
+  // longer want.
+  const attemptRef = useRef(0);
 
   function resetSession() {
+    attemptRef.current += 1;
     correctByLevelRef.current = { ...EMPTY_CORRECT };
-    setSession(startSession(withoutUnplayableQuestions(getCourse(course).pickPlacement())));
+    setSession(startSession(getCourse(course).pickPlacement(canSpeak())));
     setAnswers([]);
     setStep(0);
     setPicked(null);
@@ -149,6 +139,7 @@ function PlacementPage() {
 
   async function submit() {
     if (picked === null || !q) return;
+    const attempt = attemptRef.current;
     let correct = isPlacementAnswerCorrect(q, picked);
     // A translation gets the same second opinion it would get in a lesson: the
     // curated wordings are a floor, and marking a valid-but-unlisted answer
@@ -162,6 +153,9 @@ function PlacementPage() {
         submission: picked,
         course,
       });
+      // Nothing below this line may run for an attempt that is gone: the
+      // writes it makes are global, not scoped to this closure's session.
+      if (attemptRef.current !== attempt) return;
       setChecking(false);
       if (verdict?.correct) correct = true;
     }
@@ -330,30 +324,23 @@ function PlacementPage() {
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
                   Listening
                 </p>
-                {canSpeak() ? (
-                  <button
-                    type="button"
-                    onClick={() => speak(q.audioText, localeForCourse(course))}
-                    className="flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
-                  >
-                    🔊 Play audio
-                  </button>
-                ) : (
-                  // Reached only if speech synthesis disappears MID-exam --
-                  // questions are filtered out at the start otherwise. It
-                  // deliberately does NOT print the sentence: the sentence is
-                  // the answer, so showing it would turn this into a free mark
-                  // rather than a rescued question. Answering blind is a worse
-                  // deal for the learner than being asked one fewer question,
-                  // but it is the honest one, and it errs downward rather than
-                  // up. The copy does not promise the question will not count,
-                  // because it does count -- it is graded like any other.
-                  <div className="rounded-2xl border border-hairline bg-parchment px-4 py-3">
-                    <p className="text-xs text-ink-soft">
-                      Audio stopped working on this device — pick the answer you think is right.
-                    </p>
-                  </div>
-                )}
+                {/* No no-audio branch here on purpose. canSpeak() is a
+                    capability check -- `"speechSynthesis" in window` -- so it
+                    cannot flip between one question and the next; a browser
+                    does not lose the API mid-attempt. A listening question can
+                    therefore only reach this screen on a device that answered
+                    true when the session was built, and an unreachable fallback
+                    is worse than none: it would have to grade a blind guess,
+                    and nothing could ever exercise it. Devices that cannot
+                    speak never see these questions at all -- playablePool
+                    removes them before the draw. */}
+                <button
+                  type="button"
+                  onClick={() => speak(q.audioText, localeForCourse(course))}
+                  className="flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+                >
+                  🔊 Play audio
+                </button>
               </div>
             )}
             <h1 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">

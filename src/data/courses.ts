@@ -14,7 +14,7 @@ import {
   findLessonEs,
   allLessonIdsEs,
 } from "./curriculum-es";
-import { PLACEMENT_QUESTIONS, pickPlacementSet } from "./placement";
+import { PLACEMENT_QUESTIONS, pickPlacementSet, playablePool } from "./placement";
 import { PLACEMENT_QUESTIONS_FR } from "./placement-fr";
 import { PLACEMENT_QUESTIONS_ES } from "./placement-es";
 import type { PlacementQuestion } from "./placement";
@@ -45,8 +45,13 @@ type CourseBundle = {
   allLessonIds: string[];
   /** Full placement-question pool for this course (9 per CEFR band). */
   placementPool: PlacementQuestion[];
-  /** Randomly samples a fresh 15-question placement set (3 per band) from the pool. */
-  pickPlacement: () => PlacementQuestion[];
+  /**
+   * Randomly samples a fresh 15-question placement set (3 per band) from the
+   * pool. `canPlayAudio` is threaded in rather than read here so the filtering
+   * happens before the draw -- see playablePool for why the order is
+   * load-bearing -- and so this module stays free of browser globals.
+   */
+  pickPlacement: (canPlayAudio?: boolean) => PlacementQuestion[];
 };
 
 const bundles: Record<Course, CourseBundle> = {
@@ -57,7 +62,8 @@ const bundles: Record<Course, CourseBundle> = {
     findLesson,
     allLessonIds,
     placementPool: PLACEMENT_QUESTIONS,
-    pickPlacement: () => pickPlacementSet(PLACEMENT_QUESTIONS),
+    pickPlacement: (canPlayAudio = true) =>
+      pickPlacementSet(playablePool(PLACEMENT_QUESTIONS, canPlayAudio)),
   },
   fr: {
     curriculum: curriculumFr,
@@ -66,7 +72,8 @@ const bundles: Record<Course, CourseBundle> = {
     findLesson: findLessonFr,
     allLessonIds: allLessonIdsFr,
     placementPool: PLACEMENT_QUESTIONS_FR,
-    pickPlacement: () => pickPlacementSet(PLACEMENT_QUESTIONS_FR),
+    pickPlacement: (canPlayAudio = true) =>
+      pickPlacementSet(playablePool(PLACEMENT_QUESTIONS_FR, canPlayAudio)),
   },
   es: {
     curriculum: curriculumEs,
@@ -75,7 +82,8 @@ const bundles: Record<Course, CourseBundle> = {
     findLesson: findLessonEs,
     allLessonIds: allLessonIdsEs,
     placementPool: PLACEMENT_QUESTIONS_ES,
-    pickPlacement: () => pickPlacementSet(PLACEMENT_QUESTIONS_ES),
+    pickPlacement: (canPlayAudio = true) =>
+      pickPlacementSet(playablePool(PLACEMENT_QUESTIONS_ES, canPlayAudio)),
   },
 };
 

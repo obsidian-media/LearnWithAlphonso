@@ -221,8 +221,14 @@ const MULTI_BAND_QUESTIONS: PlacementQuestion[] = [
 ];
 
 // Typed as the union rather than inferred from the first fixture, so a
-// listening or translate set can be injected too.
-const pickPlacement = vi.fn((): PlacementQuestion[] => FIXED_QUESTIONS);
+// listening or translate set can be injected too. It takes the same
+// `canPlayAudio` argument the real bundle does, because the route's job is now
+// to pass the device's capability INTO sampling rather than filter the sampled
+// set afterwards -- filtering afterwards can leave a band with one question,
+// which no learner can pass. See playablePool in placement.ts.
+const pickPlacement = vi.fn((canPlayAudio = true): PlacementQuestion[] =>
+  canPlayAudio ? FIXED_QUESTIONS : FIXED_QUESTIONS.filter((q) => q.type !== "listening"),
+);
 vi.mock("../../data/courses", () => ({
   getCourse: () => ({ pickPlacement }),
   // Omitting this made the Play-audio handler unclickable in tests: vitest
@@ -254,6 +260,8 @@ beforeEach(() => {
   savePlacementResult.mockResolvedValue({});
   pickPlacement.mockClear();
   pickPlacement.mockReturnValue(FIXED_QUESTIONS);
+  // mockReturnValue above wins over the factory implementation, so tests that
+  // care about the argument re-establish it themselves.
   useProgress.getState().reset();
 });
 
@@ -417,15 +425,35 @@ describe("Adaptive band sequencing", () => {
     expect(await screen.findByText("A1")).toBeInTheDocument();
   });
 
-  it("drops listening questions where the browser cannot speak", async () => {
-    // The sentence IS the answer, so printing it as a fallback would hand the
-    // learner the mark. The question leaves the exam instead.
+  it("asks for a pool the device can actually play, rather than filtering afterwards", async () => {
+    // The route's whole responsibility here is the ARGUMENT: sampling has to
+    // see the capability, because a listening question removed after the
+    // 3-per-band draw can leave a band holding one question, and a band needs 2
+    // correct -- so it becomes unpassable and the learner is placed a band low.
+    // That is the exact defect this replaced. What the filter then does to real
+    // content is asserted in placement-validity.test.ts.
     canSpeak.mockReturnValue(false);
-    pickPlacement.mockReturnValue([...LISTENING_BAND]);
+    pickPlacement.mockImplementation((canPlayAudio = true) =>
+      canPlayAudio ? [...LISTENING_BAND] : [],
+    );
     renderPage();
 
+    expect(pickPlacement).toHaveBeenCalledWith(false);
     expect(await screen.findByText(/No placement questions are available/i)).toBeInTheDocument();
     expect(screen.queryByText("She's a doctor.")).toBeNull();
+  });
+
+  it("asks for the full pool when the device can speak", async () => {
+    // The other half: a true capability must not be reported as false, or every
+    // device silently loses the listening questions.
+    canSpeak.mockReturnValue(true);
+    pickPlacement.mockImplementation((canPlayAudio = true) =>
+      canPlayAudio ? [...LISTENING_BAND] : [],
+    );
+    renderPage();
+
+    expect(pickPlacement).toHaveBeenCalledWith(true);
+    expect(await screen.findByRole("button", { name: /play audio/i })).toBeInTheDocument();
   });
 
   it("accepts a curated wording for a translation without asking the server", async () => {
