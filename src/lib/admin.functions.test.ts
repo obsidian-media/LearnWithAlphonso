@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { ADMIN_FUNCTION_NAMES, wouldCreateCycle } from "./admin.functions";
+import {
+  ADMIN_FUNCTION_NAMES,
+  wouldCreateCycle,
+  affectedOrThrow,
+  cycleFor,
+} from "./admin.functions";
 import { normalizeTranscript } from "./podcast-transcript";
 
 // The failure mode of this entire design is ONE admin server function
@@ -81,6 +86,42 @@ describe("every admin server function is gated", () => {
   });
 });
 
+// A PostgREST `.update()/.delete().eq()` that matches no row succeeds
+// with no error and zero rows touched. Every admin mutation returned
+// `{ ok: true }` for that, so an admin who deleted a folder someone else
+// had already removed, or renamed an episode from a stale tab, was told
+// it worked. That is this repo's recurring defect in its plainest form:
+// a success reported by code that never checked whether anything
+// happened.
+describe("affectedOrThrow", () => {
+  it("passes through a result that touched a row", () => {
+    expect(() => affectedOrThrow({ count: 1, error: null }, "nope")).not.toThrow();
+  });
+
+  it("throws the caller's message when nothing matched", () => {
+    expect(() => affectedOrThrow({ count: 0, error: null }, "That folder is gone.")).toThrow(
+      "That folder is gone.",
+    );
+  });
+
+  it("prefers the database's own error when there is one", () => {
+    // A real failure must not be reported as "nothing matched" -- that
+    // would send someone hunting for a missing row when the actual
+    // problem was a constraint or a connection.
+    expect(() => affectedOrThrow({ count: null, error: { message: "boom" } }, "gone")).toThrow(
+      "boom",
+    );
+  });
+
+  it("treats a null count as nothing matched", () => {
+    // PostgREST omits the count unless it is asked for. Treating
+    // "unknown" as success is what produced the silent no-op; the
+    // callers all ask for it, and if one ever stops, this fails loudly
+    // rather than lying.
+    expect(() => affectedOrThrow({ count: null, error: null }, "gone")).toThrow("gone");
+  });
+});
+
 // Review Focus #4. In the CLI a cycle needed a typo; in a folder tree
 // with a parent picker it is two clicks. A cycle makes the branch
 // unreachable from the root and invisible in both apps, which reads to
@@ -120,6 +161,23 @@ describe("wouldCreateCycle", () => {
     const before = structuredClone(folders);
     wouldCreateCycle(folders, "a", "c");
     expect(folders).toEqual(before);
+  });
+
+  it("returns the offending path, so the refusal can name it", () => {
+    // findCycle has always returned this and the caller discarded it.
+    // "That would put the folder inside itself" leaves the admin to work
+    // out WHICH nesting in a tree they cannot see all of at once.
+    const cycle = cycleFor(folders, "a", "c");
+    expect(cycle).not.toBeNull();
+    expect(cycle).toEqual(expect.arrayContaining(["a", "b", "c"]));
+  });
+
+  it("names the folder itself when it is parented to itself", () => {
+    expect(cycleFor(folders, "b", "b")).toEqual(["b"]);
+  });
+
+  it("returns null for a legal move", () => {
+    expect(cycleFor(folders, "c", "a")).toBeNull();
   });
 });
 
