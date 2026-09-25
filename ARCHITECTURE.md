@@ -89,6 +89,66 @@ because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
 
+**Podcast admin (Phase 4).** A second TanStack Start build from the same
+repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
+the key that moves the app, and `router.routesDirectory` alone does
+nothing, because it resolves *relative to* `srcDirectory` (passing both
+creates an empty `admin/admin/routes/`, and passing only the latter kills
+the build inside the manifest plugin with `Cannot convert undefined or
+null to object`). No admin route can reach the learner bundle, and
+`src/lib/admin-route-isolation.test.ts` checks both directions: losing
+that override silently turns the admin app into a copy of the learner
+app, which is invisible in review.
+
+Two consequences worth knowing before touching it. `admin/routeTree.gen.ts`
+is **committed**, like `src/routeTree.gen.ts`, because the generator only
+runs under `vite dev` — ignoring it builds on the machine that made it
+and fails in CI. And `src/styles.css` carries **`@source "../admin"`**:
+it declares `source(none)`, so without that line Tailwind never scans the
+admin files and every utility they use is missing from the generated CSS,
+producing an unstyled app with no error anywhere. The admin shell sets
+`data-theme="canopy"` explicitly, since `:root` is Meadow.
+
+Authorization is `admin_users`: **RLS enabled with zero policies**, plus
+`REVOKE ALL FROM anon, authenticated`, so only `service_role` (which
+bypasses RLS) can read it. An allowlist the guarded application can read
+is one an attacker can enumerate, and one it can write is not an
+allowlist; the revoked grant means a future migration that adds a
+permissive policy for some other reason still does not open the table.
+The first row is inserted by hand in the SQL editor — there is
+deliberately no bootstrap endpoint, because every self-bootstrapping
+admin mechanism is an authentication bypass waiting for a
+misconfiguration. It is excluded from the GDPR export for documented
+reasons (see `account.functions.test.ts`'s `NOT_PERSONAL_DATA`); deletion
+rides on `ON DELETE CASCADE` from `auth.users`.
+
+`requireAdmin` chains `requireSupabaseAuth` and then checks the allowlist
+with the service-role client. It throws a message identical to an
+ordinary auth failure: a distinct "you are not an admin" tells an
+attacker that the endpoint exists and that their token was otherwise
+valid. Every admin server function lives in `src/lib/admin.functions.ts`
+so one test can enumerate them and fail if any lacks the middleware —
+that test reads the **source**, because TanStack does not expose the
+middleware chain at runtime.
+
+**There is no separate identity provider and cannot be one:** the admin
+writes to the same database the learner app reads. What is separate is
+the deployment, the origin — and therefore the browser storage holding
+the Supabase session, since this repo authenticates with a Bearer token
+rather than a cookie — and the authorization check.
+
+Audio upload goes **straight to Storage through a signed URL**, never
+through a server function: a serverless body is capped near 4.5 MB and
+base64 inflates by a third, so an ordinary 3 MB episode would fail at the
+platform. The server then reads the object back, proves it is audio from
+its **signature rather than its extension**, and **deletes it** when it
+is not — verification necessarily happens after the write, and the bucket
+is public-read and served from our own domain, so reporting without
+deleting is not enough. Transcripts go through the same
+`normalizeTranscript` the CLI uses, which *throws* on markup rather than
+returning null; null means empty, and a handler that conflated them would
+save an empty transcript and report success.
+
 **Offline download (Phase 3).** Downloaded episodes live in
 **Application Support**, not Caches: the system may purge Caches under
 memory pressure, and a file someone deliberately asked for should not

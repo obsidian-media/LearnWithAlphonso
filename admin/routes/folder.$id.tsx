@@ -66,8 +66,7 @@ function FolderEpisodes() {
       {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
       {episodes.length === 0 ? (
         <p className="mt-6 text-ink-soft">
-          No episodes in this folder yet. Publish one with{" "}
-          <code>scripts/podcast-tool.ts</code>.
+          No episodes in this folder yet. Publish one with <code>scripts/podcast-tool.ts</code>.
         </p>
       ) : null}
       <ul className="mt-6 space-y-4">
@@ -132,7 +131,9 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
       const { durationSeconds } = await adminVerifyUploadedAudio({
         data: { episodeId: episode.id, audioPath: episode.audioPath },
       });
-      setStatus(`Replaced — ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")}`);
+      setStatus(
+        `Replaced — ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")}`,
+      );
       onDone();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Upload failed.");
