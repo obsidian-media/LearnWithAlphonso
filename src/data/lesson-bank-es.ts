@@ -755,6 +755,39 @@ Say you like the food.|Me gusta la comida.;La comida me gusta.;Me encanta la com
 Ask how much something costs.|¿Cuánto cuesta?;¿Cuánto es?;¿Qué precio tiene?
 Say good night.|Buenas noches.;Que descanses.;Que duermas bien.`,
   },
+  {
+    id: "esa1p28",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "¿Qué escuchaste?",
+    note: "Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda).",
+    data: `Hablamos de la casa toda la tarde.|Hablamos de la casa toda la tarde.
+Hablamos de la caza toda la tarde.|Hablamos de la caza toda la tarde.
+Nunca había visto una casa tan grande.|Nunca había visto una casa tan grande.
+Nunca había visto una caza tan grande.|Nunca había visto una caza tan grande.
+Vimos la onda desde la playa.|Vimos la onda desde la playa.
+Vimos la honda desde la playa.|Vimos la honda desde la playa.
+Nadie esperaba una onda tan fuerte.|Nadie esperaba una onda tan fuerte.
+Nadie esperaba una honda tan fuerte.|Nadie esperaba una honda tan fuerte.
+Vimos el pollo en el patio.|Vimos el pollo en el patio.
+Vimos el poyo en el patio.|Vimos el poyo en el patio.
+Mi abuela puso el pollo cerca de la puerta.|Mi abuela puso el pollo cerca de la puerta.
+Mi abuela puso el poyo cerca de la puerta.|Mi abuela puso el poyo cerca de la puerta.
+El paisaje era completamente vasto.|El paisaje era completamente vasto.
+El paisaje era completamente basto.|El paisaje era completamente basto.
+Todos dijeron que el terreno era muy vasto.|Todos dijeron que el terreno era muy vasto.
+Todos dijeron que el terreno era muy basto.|Todos dijeron que el terreno era muy basto.
+Todos miraban el cerro con atención.|Todos miraban el cerro con atención.
+Todos miraban el cero con atención.|Todos miraban el cero con atención.
+Se podía ver el cerro desde la ventana.|Se podía ver el cerro desde la ventana.
+Se podía ver el cero desde la ventana.|Se podía ver el cero desde la ventana.
+Vamos a votar mañana temprano.|Vamos a votar mañana temprano.
+Vamos a botar mañana temprano.|Vamos a botar mañana temprano.
+Decidieron votar ayer por la tarde.|Decidieron votar ayer por la tarde.
+Decidieron botar ayer por la tarde.|Decidieron botar ayer por la tarde.
+Subimos el cerro despacio.|Subimos el cerro despacio.`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1492,6 +1525,39 @@ Suggest meeting in front of the station.|Nos vemos frente a la estación.;Quedam
 Ask someone to call you back.|Llámame, por favor.;¿Me puedes llamar luego?;Devuélveme la llamada, por favor.
 Say you'll be there in five minutes.|Llego en cinco minutos.;Estaré ahí en cinco minutos.;En cinco minutos estoy ahí.
 Ask someone to speak more slowly.|¿Puedes hablar más despacio?;Habla más despacio, por favor.;¿Podrías hablar más lento?`,
+  },
+  {
+    id: "esa2p28",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "¿Qué escuchaste?",
+    note: "Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar).",
+    data: `Mi madre me enseñó a cocer bien.|Mi madre me enseñó a cocer bien.
+Mi madre me enseñó a coser bien.|Mi madre me enseñó a coser bien.
+Nunca aprendí a cocer rápido.|Nunca aprendí a cocer rápido.
+Nunca aprendí a coser rápido.|Nunca aprendí a coser rápido.
+Decidió rebelarse ante todos.|Decidió rebelarse ante todos.
+Decidió revelarse ante todos.|Decidió revelarse ante todos.
+Nadie esperaba que fuera a rebelarse.|Nadie esperaba que fuera a rebelarse.
+Nadie esperaba que fuera a revelarse.|Nadie esperaba que fuera a revelarse.
+Le lanzó una pulla sin piedad.|Le lanzó una pulla sin piedad.
+Le lanzó una puya sin piedad.|Le lanzó una puya sin piedad.
+Todos notaron la pulla en su comentario.|Todos notaron la pulla en su comentario.
+Todos notaron la puya en su comentario.|Todos notaron la puya en su comentario.
+Se puso a hojear el periódico.|Se puso a hojear el periódico.
+Se puso a ojear el periódico.|Se puso a ojear el periódico.
+Prefería hojear la revista antes de comprarla.|Prefería hojear la revista antes de comprarla.
+Prefería ojear la revista antes de comprarla.|Prefería ojear la revista antes de comprarla.
+El niño no debía rayar eso.|El niño no debía rayar eso.
+El niño no debía rallar eso.|El niño no debía rallar eso.
+Le pedí que no rayara la mesa.|Le pedí que no rayara la mesa.
+Le pedí que no rallara la mesa.|Le pedí que no rallara la mesa.
+No encontraba la taza en la mesa.|No encontraba la taza en la mesa.
+No encontraba la tasa en la mesa.|No encontraba la tasa en la mesa.
+Alguien había dejado la taza en la cocina.|Alguien había dejado la taza en la cocina.
+Alguien había dejado la tasa en la cocina.|Alguien había dejado la tasa en la cocina.
+Guardé la taza favorita en el estante.|Guardé la taza favorita en el estante.`,
   },
 ];
 
@@ -2243,6 +2309,39 @@ Say you understand someone's point of view.|Entiendo tu punto de vista.;Comprend
 Say you finally agree.|Finalmente estoy de acuerdo.;Al final estoy de acuerdo.;Por fin estoy de acuerdo.
 Say the meeting was very productive.|La reunión fue muy productiva.;La reunión resultó muy productiva.;Fue una reunión muy productiva.`,
   },
+  {
+    id: "esb1p28",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "¿Qué escuchaste?",
+    note: "Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar).",
+    data: `No sabía qué hacer con el cazo.|No sabía qué hacer con el cazo.
+No sabía qué hacer con el caso.|No sabía qué hacer con el caso.
+Le devolvieron el cazo al día siguiente.|Le devolvieron el cazo al día siguiente.
+Le devolvieron el caso al día siguiente.|Le devolvieron el caso al día siguiente.
+Encontraron un pozo al fondo del jardín.|Encontraron un pozo al fondo del jardín.
+Encontraron un poso al fondo del jardín.|Encontraron un poso al fondo del jardín.
+Nadie sabía que había un pozo ahí.|Nadie sabía que había un pozo ahí.
+Nadie sabía que había un poso ahí.|Nadie sabía que había un poso ahí.
+Cerca de la granja había un pozo.|Cerca de la granja había un pozo.
+Cerca de la granja había un poso.|Cerca de la granja había un poso.
+El material estaba bien cocido.|El material estaba bien cocido.
+El material estaba bien cosido.|El material estaba bien cosido.
+Dijeron que todo estaba perfectamente cocido.|Dijeron que todo estaba perfectamente cocido.
+Dijeron que todo estaba perfectamente cosido.|Dijeron que todo estaba perfectamente cosido.
+Revisaron si estaba bien cocido.|Revisaron si estaba bien cocido.
+Revisaron si estaba bien cosido.|Revisaron si estaba bien cosido.
+Decidieron grabar el evento completo.|Decidieron grabar el evento completo.
+Decidieron gravar el evento completo.|Decidieron gravar el evento completo.
+El equipo tuvo que grabar el evento completo.|El equipo tuvo que grabar el evento completo.
+El equipo tuvo que gravar el evento completo.|El equipo tuvo que gravar el evento completo.
+Prometieron grabar toda la ceremonia.|Prometieron grabar toda la ceremonia.
+Prometieron gravar toda la ceremonia.|Prometieron gravar toda la ceremonia.
+El agua brotaba del pozo constantemente.|El agua brotaba del pozo constantemente.
+El agua brotaba del poso constantemente.|El agua brotaba del poso constantemente.
+El cazo llevaba años guardado en la alacena.|El cazo llevaba años guardado en la alacena.`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -2982,6 +3081,39 @@ Say the more you think about it, the more convinced you are.|Cuanto más lo pien
 Say whether you like it or not, it has to be done.|Te guste o no, hay que hacerlo.;Quieras o no, se tiene que hacer.;Aunque no te guste, hay que hacerlo.
 Say although you're busy, you're going to help.|Aunque estoy ocupado, voy a ayudar.;Aunque esté ocupado, ayudaré.;Voy a ayudar aunque esté ocupado.
 Say once this is finished, we can leave.|Una vez que esto termine, podemos irnos.;En cuanto esto termine, nos podemos ir.;Cuando esto termine, podremos irnos.`,
+  },
+  {
+    id: "esb2p28",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "¿Qué escuchaste?",
+    note: "Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar).",
+    data: `Llegaron hasta la cima de la montaña.|Llegaron hasta la cima de la montaña.
+Llegaron hasta la sima de la montaña.|Llegaron hasta la sima de la montaña.
+Nadie se atrevía a acercarse a la cima.|Nadie se atrevía a acercarse a la cima.
+Nadie se atrevía a acercarse a la sima.|Nadie se atrevía a acercarse a la sima.
+Desde arriba se veía toda la cima.|Desde arriba se veía toda la cima.
+Desde arriba se veía toda la sima.|Desde arriba se veía toda la sima.
+El alcalde presentó el concejo a todos.|El alcalde presentó el concejo a todos.
+El alcalde presentó el consejo a todos.|El alcalde presentó el consejo a todos.
+Todos hablaban sobre el concejo del pueblo.|Todos hablaban sobre el concejo del pueblo.
+Todos hablaban sobre el consejo del pueblo.|Todos hablaban sobre el consejo del pueblo.
+Nadie esperaba que el concejo cambiara de opinión.|Nadie esperaba que el concejo cambiara de opinión.
+Nadie esperaba que el consejo cambiara de opinión.|Nadie esperaba que el consejo cambiara de opinión.
+El calor parecía abrasar todo a su paso.|El calor parecía abrasar todo a su paso.
+El calor parecía abrazar todo a su paso.|El calor parecía abrazar todo a su paso.
+Sintió que el fuego lo iba a abrasar.|Sintió que el fuego lo iba a abrasar.
+Sintió que su madre lo iba a abrazar.|Sintió que su madre lo iba a abrazar.
+El animal empezó a acechar a su presa.|El animal empezó a acechar a su presa.
+El animal empezó a asechar a su presa.|El animal empezó a asechar a su presa.
+Nadie sabía que alguien los estaba acechando.|Nadie sabía que alguien los estaba acechando.
+Nadie sabía que alguien los estaba asechando.|Nadie sabía que alguien los estaba asechando.
+El cazador decidió acechar en silencio.|El cazador decidió acechar en silencio.
+El cazador decidió asechar en silencio.|El cazador decidió asechar en silencio.
+El consejo escolar se reunió por la tarde.|El consejo escolar se reunió por la tarde.
+El concejo escolar se reunió por la tarde.|El concejo escolar se reunió por la tarde.
+La sima resultó ser más profunda de lo esperado.|La sima resultó ser más profunda de lo esperado.`,
   },
 ];
 
@@ -3723,6 +3855,39 @@ Say we apologize for the inconvenience caused.|Le pedimos disculpas por las mole
 Say this is the world turned upside down.|Esto es el mundo al revés.;Este es un mundo al revés.;Aquí todo está al revés.
 Say in a word, everything is fine.|En una palabra, todo está bien.;En resumen, todo va bien.;En pocas palabras, todo marcha bien.
 Say we look forward to hearing from you.|Quedamos a la espera de su respuesta.;Esperamos su pronta respuesta.;Aguardamos noticias suyas.`,
+  },
+  {
+    id: "esc1p28",
+    title: "Minimal Pairs",
+    subtitle: "Listen closely",
+    kind: "listening",
+    prompt: "¿Qué escuchaste?",
+    note: "Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón).",
+    data: `El juez decidió encausar al acusado de inmediato.|El juez decidió encausar al acusado de inmediato.
+El juez decidió encauzar al acusado de inmediato.|El juez decidió encauzar al acusado de inmediato.
+El comité decidió encausar el problema de raíz.|El comité decidió encausar el problema de raíz.
+El comité decidió encauzar el problema de raíz.|El comité decidió encauzar el problema de raíz.
+Intentaron encauzar la situación desde el principio.|Intentaron encauzar la situación desde el principio.
+Intentaron encausar la situación desde el principio.|Intentaron encausar la situación desde el principio.
+En el documento decía que era un varón.|En el documento decía que era un varón.
+En el documento decía que era un barón.|En el documento decía que era un barón.
+Nadie sabía que el bebé era varón.|Nadie sabía que el bebé era varón.
+Nadie sabía que el bebé era barón.|Nadie sabía que el bebé era barón.
+El título nobiliario pertenecía a un barón.|El título nobiliario pertenecía a un barón.
+El título nobiliario pertenecía a un varón.|El título nobiliario pertenecía a un varón.
+Los diplomáticos llegaron hasta la cima de las negociaciones.|Los diplomáticos llegaron hasta la cima de las negociaciones.
+Los diplomáticos llegaron hasta la sima de las negociaciones.|Los diplomáticos llegaron hasta la sima de las negociaciones.
+El comité reconoció haber alcanzado la cima del proceso.|El comité reconoció haber alcanzado la cima del proceso.
+El comité reconoció haber alcanzado la sima del proceso.|El comité reconoció haber alcanzado la sima del proceso.
+La expedición alcanzó finalmente la cima más alta.|La expedición alcanzó finalmente la cima más alta.
+La expedición alcanzó finalmente la sima más alta.|La expedición alcanzó finalmente la sima más alta.
+Los inversionistas decidieron acechar el mercado en silencio.|Los inversionistas decidieron acechar el mercado en silencio.
+Los inversionistas decidieron asechar el mercado en silencio.|Los inversionistas decidieron asechar el mercado en silencio.
+Nadie sospechaba que el escándalo los estuviera acechando.|Nadie sospechaba que el escándalo los estuviera acechando.
+Nadie sospechaba que el escándalo los estuviera asechando.|Nadie sospechaba que el escándalo los estuviera asechando.
+El depredador aprendió a acechar pacientemente a su presa.|El depredador aprendió a acechar pacientemente a su presa.
+El depredador aprendió a asechar pacientemente a su presa.|El depredador aprendió a asechar pacientemente a su presa.
+La comisión decidió encauzar formalmente la investigación.|La comisión decidió encauzar formalmente la investigación.`,
   },
 ];
 

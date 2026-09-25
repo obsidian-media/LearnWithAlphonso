@@ -84,7 +84,7 @@ column, kept in sync):
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 137 | 119 | 119 | 117 | 117 | **609**       |
 | French  | 115 | 115 | 115 | 115 | 115 | **575**       |
-| Spanish | 105 | 106 | 109 | 107 | 106 | **533**       |
+| Spanish | 110 | 111 | 114 | 112 | 111 | **558**       |
 
 French and Spanish reached structural parity with English on 2026-09-21
 (both grew from a 25-pack/125-lesson starting point, reusing the same
@@ -130,13 +130,16 @@ done, four PRs, one per generator change / question type:
   CEFR level), 125 questions, Latin American variety (`tú`/`usted`/
   `ustedes`, no `vosotros`/`vos` — measured against the existing bank,
   which already used that variety exclusively).
-- **PR 3, PR 4**: not started (`listening`, then `speak` +
-  `spoken-answer-es.ts` across three ports).
+- **PR 3** (done): Spanish `listening` content, 5 packs, 125 questions,
+  minimal pairs across seseo, b/v and yeísmo mergers, measured at 96.0%
+  confusability.
+- **PR 4**: not started (`speak` + `spoken-answer-es.ts` across three
+  ports).
 
 **Question types, current**: English and French both have all six
 (`mc`, `fill`, `reorder`, `listening`, `speak`, `translate`) — full
-type parity; Spanish now has four (`mc`, `fill`, `reorder`,
-`translate`) — `listening`/`speak` are its own phase 2's remaining PRs.
+type parity; Spanish now has five (`mc`, `fill`, `reorder`,
+`translate`, `listening`) — `speak` is its phase 2's remaining PR.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs native-speaker review — not done for either, just

@@ -169,10 +169,11 @@ describe("buildFullSeed", () => {
       buildUnitRows("en").length + buildUnitRows("fr").length + buildUnitRows("es").length,
     );
     // French: 500 + 25 from PR 2's translate packs + 25 from PR 3's listening
-    // packs + 25 from PR 4's speak packs. Spanish: 508 + 25 from Phase 2
-    // PR 2's translate packs (docs/superpowers/specs/2026-09-25-spanish-
-    // content-audit-design.md §7 step 7).
-    expect(seed.lessons.length).toBe(609 + 575 + 533);
+    // packs + 25 from PR 4's speak packs. Spanish: 508 + 25 from PR 2's
+    // translate packs + 25 from PR 3's listening packs
+    // (docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md
+    // §7 step 7). PR 4's speak packs add another 25 -- re-total then.
+    expect(seed.lessons.length).toBe(609 + 575 + 558);
     expect(seed.questions.length).toBe(
       buildQuestionRows("en").length +
         buildQuestionRows("fr").length +

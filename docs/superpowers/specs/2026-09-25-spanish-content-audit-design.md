@@ -531,9 +531,12 @@ Ship each as its own PR. Do not bundle.
 7. **Phase 2**, in the order of §6: generator check, `translate`,
    `listening`, `speak`, each its own PR. Generator check done
    2026-09-25 (§6's note) — no code change needed, verified rather
-   than assumed. `translate` done 2026-09-25 — 5 packs, 125 questions,
-   Latin American variety, id baseline diffed to insertions-only.
-   `listening`/`speak` not started.
+   than assumed. `translate` done 2026-09-25 (PR 2) — 5 packs, 125
+   questions, Latin American variety, id baseline diffed to
+   insertions-only. `listening` done (PR 3) — 5 packs, 125 questions,
+   measured at 96.0% confusability (matching French's own benchmark)
+   after a first measurement of 76.8% found and fixed real
+   carrier-looseness defects. `speak` (PR 4) not started.
 
 Steps 1 and 2 are prerequisites for everything after them. Steps 3–6
 can be reordered if something argues for it; say so if you reorder.

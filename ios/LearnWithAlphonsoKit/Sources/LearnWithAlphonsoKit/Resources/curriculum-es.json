@@ -7622,6 +7622,400 @@
       ]
     },
     {
+      "id": "esa1p28u1",
+      "level": "A1",
+      "eyebrow": "Unit 28",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda).",
+      "lessons": [
+        {
+          "id": "esa1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Hablamos de la casa toda la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde.",
+                "Nunca había visto una casa tan grande.",
+                "Hablamos de la casa toda la tarde."
+              ],
+              "answer": "Hablamos de la casa toda la tarde.",
+              "explanation": "The audio says \"Hablamos de la casa toda la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Hablamos de la caza toda la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde.",
+                "Hablamos de la casa toda la tarde."
+              ],
+              "answer": "Hablamos de la caza toda la tarde.",
+              "explanation": "The audio says \"Hablamos de la caza toda la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca había visto una casa tan grande.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nunca había visto una casa tan grande.",
+              "explanation": "The audio says \"Nunca había visto una casa tan grande.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca había visto una caza tan grande.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nunca había visto una caza tan grande.",
+              "explanation": "The audio says \"Nunca había visto una caza tan grande.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos la onda desde la playa.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Se podía ver el cerro desde la ventana."
+              ],
+              "answer": "Vimos la onda desde la playa.",
+              "explanation": "The audio says \"Vimos la onda desde la playa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos la honda desde la playa.",
+              "choices": [
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio."
+              ],
+              "answer": "Vimos la honda desde la playa.",
+              "explanation": "The audio says \"Vimos la honda desde la playa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba una onda tan fuerte.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nadie esperaba una onda tan fuerte.",
+              "explanation": "The audio says \"Nadie esperaba una onda tan fuerte.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba una honda tan fuerte.",
+              "choices": [
+                "Nadie esperaba una onda tan fuerte.",
+                "Nunca había visto una caza tan grande.",
+                "Nadie esperaba una honda tan fuerte.",
+                "Nunca había visto una casa tan grande."
+              ],
+              "answer": "Nadie esperaba una honda tan fuerte.",
+              "explanation": "The audio says \"Nadie esperaba una honda tan fuerte.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos el pollo en el patio.",
+              "choices": [
+                "Vimos la honda desde la playa.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Vimos el pollo en el patio.",
+              "explanation": "The audio says \"Vimos el pollo en el patio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vimos el poyo en el patio.",
+              "choices": [
+                "Mi abuela puso el poyo cerca de la puerta.",
+                "Vimos la onda desde la playa.",
+                "Vimos el poyo en el patio.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Vimos el poyo en el patio.",
+              "explanation": "The audio says \"Vimos el poyo en el patio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi abuela puso el pollo cerca de la puerta.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "Mi abuela puso el pollo cerca de la puerta.",
+                "Mi abuela puso el poyo cerca de la puerta.",
+                "Vimos el pollo en el patio."
+              ],
+              "answer": "Mi abuela puso el pollo cerca de la puerta.",
+              "explanation": "The audio says \"Mi abuela puso el pollo cerca de la puerta.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi abuela puso el poyo cerca de la puerta.",
+              "choices": [
+                "Mi abuela puso el pollo cerca de la puerta.",
+                "Hablamos de la casa toda la tarde.",
+                "Vimos el poyo en el patio.",
+                "Mi abuela puso el poyo cerca de la puerta."
+              ],
+              "answer": "Mi abuela puso el poyo cerca de la puerta.",
+              "explanation": "The audio says \"Mi abuela puso el poyo cerca de la puerta.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El paisaje era completamente vasto.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "El paisaje era completamente vasto.",
+              "explanation": "The audio says \"El paisaje era completamente vasto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El paisaje era completamente basto.",
+              "choices": [
+                "El paisaje era completamente vasto.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "El paisaje era completamente basto.",
+              "explanation": "The audio says \"El paisaje era completamente basto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos dijeron que el terreno era muy vasto.",
+              "choices": [
+                "Todos miraban el cerro con atención.",
+                "El paisaje era completamente vasto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "Todos dijeron que el terreno era muy vasto.",
+              "explanation": "The audio says \"Todos dijeron que el terreno era muy vasto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos dijeron que el terreno era muy basto.",
+              "choices": [
+                "Todos miraban el cerro con atención.",
+                "El paisaje era completamente basto.",
+                "Todos dijeron que el terreno era muy basto.",
+                "Todos dijeron que el terreno era muy vasto."
+              ],
+              "answer": "Todos dijeron que el terreno era muy basto.",
+              "explanation": "The audio says \"Todos dijeron que el terreno era muy basto.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos miraban el cerro con atención.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Todos miraban el cerro con atención.",
+                "Todos miraban el cero con atención.",
+                "Subimos el cerro despacio."
+              ],
+              "answer": "Todos miraban el cerro con atención.",
+              "explanation": "The audio says \"Todos miraban el cerro con atención.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos miraban el cero con atención.",
+              "choices": [
+                "Se podía ver el cero desde la ventana.",
+                "Todos miraban el cerro con atención.",
+                "Todos miraban el cero con atención.",
+                "Todos dijeron que el terreno era muy basto."
+              ],
+              "answer": "Todos miraban el cero con atención.",
+              "explanation": "The audio says \"Todos miraban el cero con atención.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se podía ver el cerro desde la ventana.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la onda desde la playa.",
+                "Vimos la honda desde la playa."
+              ],
+              "answer": "Se podía ver el cerro desde la ventana.",
+              "explanation": "The audio says \"Se podía ver el cerro desde la ventana.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se podía ver el cero desde la ventana.",
+              "choices": [
+                "Se podía ver el cerro desde la ventana.",
+                "Se podía ver el cero desde la ventana.",
+                "Vimos la onda desde la playa.",
+                "Todos miraban el cero con atención."
+              ],
+              "answer": "Se podía ver el cero desde la ventana.",
+              "explanation": "The audio says \"Se podía ver el cero desde la ventana.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        },
+        {
+          "id": "esa1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vamos a votar mañana temprano.",
+              "choices": [
+                "Vamos a votar mañana temprano.",
+                "Vamos a botar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Todos miraban el cerro con atención."
+              ],
+              "answer": "Vamos a votar mañana temprano.",
+              "explanation": "The audio says \"Vamos a votar mañana temprano.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Vamos a botar mañana temprano.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a votar mañana temprano.",
+                "Vamos a botar mañana temprano.",
+                "Vimos la honda desde la playa."
+              ],
+              "answer": "Vamos a botar mañana temprano.",
+              "explanation": "The audio says \"Vamos a botar mañana temprano.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron votar ayer por la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a votar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde."
+              ],
+              "answer": "Decidieron votar ayer por la tarde.",
+              "explanation": "The audio says \"Decidieron votar ayer por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron botar ayer por la tarde.",
+              "choices": [
+                "Decidieron botar ayer por la tarde.",
+                "Vamos a botar mañana temprano.",
+                "Decidieron votar ayer por la tarde.",
+                "Hablamos de la caza toda la tarde."
+              ],
+              "answer": "Decidieron botar ayer por la tarde.",
+              "explanation": "The audio says \"Decidieron botar ayer por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            },
+            {
+              "id": "esa1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Subimos el cerro despacio.",
+              "choices": [
+                "Subimos el cerro despacio.",
+                "Vamos a votar mañana temprano.",
+                "Todos miraban el cerro con atención.",
+                "Se podía ver el cerro desde la ventana."
+              ],
+              "answer": "Subimos el cerro despacio.",
+              "explanation": "The audio says \"Subimos el cerro despacio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esa2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -15283,6 +15677,400 @@
                 "¿Podrías hablar más lento?"
               ],
               "explanation": "One way to say it: \"¿Puedes hablar más despacio?\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p28u1",
+      "level": "A2",
+      "eyebrow": "Unit 28",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar).",
+      "lessons": [
+        {
+          "id": "esa2p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi madre me enseñó a cocer bien.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a cocer rápido.",
+                "Mi madre me enseñó a cocer bien.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Mi madre me enseñó a cocer bien.",
+              "explanation": "The audio says \"Mi madre me enseñó a cocer bien.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Mi madre me enseñó a coser bien.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a coser rápido.",
+                "Mi madre me enseñó a cocer bien.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Mi madre me enseñó a coser bien.",
+              "explanation": "The audio says \"Mi madre me enseñó a coser bien.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca aprendí a cocer rápido.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Nunca aprendí a coser rápido.",
+                "Nunca aprendí a cocer rápido.",
+                "Mi madre me enseñó a cocer bien."
+              ],
+              "answer": "Nunca aprendí a cocer rápido.",
+              "explanation": "The audio says \"Nunca aprendí a cocer rápido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nunca aprendí a coser rápido.",
+              "choices": [
+                "Mi madre me enseñó a coser bien.",
+                "Nunca aprendí a coser rápido.",
+                "Nunca aprendí a cocer rápido.",
+                "Decidió revelarse ante todos."
+              ],
+              "answer": "Nunca aprendí a coser rápido.",
+              "explanation": "The audio says \"Nunca aprendí a coser rápido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidió rebelarse ante todos.",
+              "choices": [
+                "Nadie esperaba que fuera a rebelarse.",
+                "Decidió revelarse ante todos.",
+                "Todos notaron la pulla en su comentario.",
+                "Decidió rebelarse ante todos."
+              ],
+              "answer": "Decidió rebelarse ante todos.",
+              "explanation": "The audio says \"Decidió rebelarse ante todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidió revelarse ante todos.",
+              "choices": [
+                "Decidió revelarse ante todos.",
+                "Todos notaron la pulla en su comentario.",
+                "Decidió rebelarse ante todos.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Decidió revelarse ante todos.",
+              "explanation": "The audio says \"Decidió revelarse ante todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que fuera a rebelarse.",
+              "choices": [
+                "Prefería hojear la revista antes de comprarla.",
+                "Nadie esperaba que fuera a rebelarse.",
+                "Nadie esperaba que fuera a revelarse.",
+                "Decidió rebelarse ante todos."
+              ],
+              "answer": "Nadie esperaba que fuera a rebelarse.",
+              "explanation": "The audio says \"Nadie esperaba que fuera a rebelarse.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que fuera a revelarse.",
+              "choices": [
+                "Nadie esperaba que fuera a rebelarse.",
+                "Mi madre me enseñó a cocer bien.",
+                "Decidió revelarse ante todos.",
+                "Nadie esperaba que fuera a revelarse."
+              ],
+              "answer": "Nadie esperaba que fuera a revelarse.",
+              "explanation": "The audio says \"Nadie esperaba que fuera a revelarse.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le lanzó una pulla sin piedad.",
+              "choices": [
+                "Le lanzó una pulla sin piedad.",
+                "Le lanzó una puya sin piedad.",
+                "Nunca aprendí a coser rápido.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Le lanzó una pulla sin piedad.",
+              "explanation": "The audio says \"Le lanzó una pulla sin piedad.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le lanzó una puya sin piedad.",
+              "choices": [
+                "Le lanzó una puya sin piedad.",
+                "Le lanzó una pulla sin piedad.",
+                "Todos notaron la puya en su comentario.",
+                "Prefería ojear la revista antes de comprarla."
+              ],
+              "answer": "Le lanzó una puya sin piedad.",
+              "explanation": "The audio says \"Le lanzó una puya sin piedad.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos notaron la pulla en su comentario.",
+              "choices": [
+                "Decidió rebelarse ante todos.",
+                "Todos notaron la puya en su comentario.",
+                "Le lanzó una pulla sin piedad.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Todos notaron la pulla en su comentario.",
+              "explanation": "The audio says \"Todos notaron la pulla en su comentario.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos notaron la puya en su comentario.",
+              "choices": [
+                "Decidió revelarse ante todos.",
+                "Le lanzó una puya sin piedad.",
+                "Todos notaron la puya en su comentario.",
+                "Todos notaron la pulla en su comentario."
+              ],
+              "answer": "Todos notaron la puya en su comentario.",
+              "explanation": "The audio says \"Todos notaron la puya en su comentario.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se puso a hojear el periódico.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Se puso a ojear el periódico.",
+                "El niño no debía rallar eso.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Se puso a hojear el periódico.",
+              "explanation": "The audio says \"Se puso a hojear el periódico.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Se puso a ojear el periódico.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Se puso a ojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Nunca aprendí a coser rápido."
+              ],
+              "answer": "Se puso a ojear el periódico.",
+              "explanation": "The audio says \"Se puso a ojear el periódico.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prefería hojear la revista antes de comprarla.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Todos notaron la pulla en su comentario.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Prefería hojear la revista antes de comprarla.",
+              "explanation": "The audio says \"Prefería hojear la revista antes de comprarla.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prefería ojear la revista antes de comprarla.",
+              "choices": [
+                "Se puso a ojear el periódico.",
+                "Prefería ojear la revista antes de comprarla.",
+                "Alguien había dejado la taza en la cocina.",
+                "Prefería hojear la revista antes de comprarla."
+              ],
+              "answer": "Prefería ojear la revista antes de comprarla.",
+              "explanation": "The audio says \"Prefería ojear la revista antes de comprarla.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El niño no debía rayar eso.",
+              "choices": [
+                "Se puso a hojear el periódico.",
+                "No encontraba la taza en la mesa.",
+                "El niño no debía rayar eso.",
+                "El niño no debía rallar eso."
+              ],
+              "answer": "El niño no debía rayar eso.",
+              "explanation": "The audio says \"El niño no debía rayar eso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El niño no debía rallar eso.",
+              "choices": [
+                "El niño no debía rayar eso.",
+                "El niño no debía rallar eso.",
+                "Nadie esperaba que fuera a rebelarse.",
+                "Guardé la taza favorita en el estante."
+              ],
+              "answer": "El niño no debía rallar eso.",
+              "explanation": "The audio says \"El niño no debía rallar eso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le pedí que no rayara la mesa.",
+              "choices": [
+                "Le pedí que no rallara la mesa.",
+                "No encontraba la taza en la mesa.",
+                "Le pedí que no rayara la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "Le pedí que no rayara la mesa.",
+              "explanation": "The audio says \"Le pedí que no rayara la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le pedí que no rallara la mesa.",
+              "choices": [
+                "Le pedí que no rallara la mesa.",
+                "No encontraba la taza en la mesa.",
+                "Le pedí que no rayara la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "Le pedí que no rallara la mesa.",
+              "explanation": "The audio says \"Le pedí que no rallara la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            }
+          ]
+        },
+        {
+          "id": "esa2p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esa2p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No encontraba la taza en la mesa.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Alguien había dejado la taza en la cocina.",
+                "No encontraba la taza en la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "No encontraba la taza en la mesa.",
+              "explanation": "The audio says \"No encontraba la taza en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No encontraba la tasa en la mesa.",
+              "choices": [
+                "Le pedí que no rayara la mesa.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa.",
+                "No encontraba la tasa en la mesa."
+              ],
+              "answer": "No encontraba la tasa en la mesa.",
+              "explanation": "The audio says \"No encontraba la tasa en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Alguien había dejado la taza en la cocina.",
+              "choices": [
+                "Guardé la taza favorita en el estante.",
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Alguien había dejado la taza en la cocina.",
+              "explanation": "The audio says \"Alguien había dejado la taza en la cocina.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Alguien había dejado la tasa en la cocina.",
+              "choices": [
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la tasa en la mesa.",
+                "Se puso a hojear el periódico."
+              ],
+              "answer": "Alguien había dejado la tasa en la cocina.",
+              "explanation": "The audio says \"Alguien había dejado la tasa en la cocina.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+            },
+            {
+              "id": "esa2p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Guardé la taza favorita en el estante.",
+              "choices": [
+                "Guardé la taza favorita en el estante.",
+                "Alguien había dejado la taza en la cocina.",
+                "Alguien había dejado la tasa en la cocina.",
+                "No encontraba la taza en la mesa."
+              ],
+              "answer": "Guardé la taza favorita en el estante.",
+              "explanation": "The audio says \"Guardé la taza favorita en el estante.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
             }
           ]
         }
@@ -23202,6 +23990,400 @@
       ]
     },
     {
+      "id": "esb1p28u1",
+      "level": "B1",
+      "eyebrow": "Unit 28",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar).",
+      "lessons": [
+        {
+          "id": "esb1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No sabía qué hacer con el cazo.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "No sabía qué hacer con el caso.",
+                "El cazo llevaba años guardado en la alacena.",
+                "No sabía qué hacer con el cazo."
+              ],
+              "answer": "No sabía qué hacer con el cazo.",
+              "explanation": "The audio says \"No sabía qué hacer con el cazo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "No sabía qué hacer con el caso.",
+              "choices": [
+                "No sabía qué hacer con el caso.",
+                "Nadie sabía que había un pozo ahí.",
+                "No sabía qué hacer con el cazo.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "No sabía qué hacer con el caso.",
+              "explanation": "The audio says \"No sabía qué hacer con el caso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le devolvieron el cazo al día siguiente.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "El cazo llevaba años guardado en la alacena.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Le devolvieron el cazo al día siguiente.",
+              "explanation": "The audio says \"Le devolvieron el cazo al día siguiente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Le devolvieron el caso al día siguiente.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Le devolvieron el caso al día siguiente.",
+              "explanation": "The audio says \"Le devolvieron el caso al día siguiente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Encontraron un pozo al fondo del jardín.",
+              "choices": [
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Nadie sabía que había un pozo ahí.",
+                "Le devolvieron el cazo al día siguiente."
+              ],
+              "answer": "Encontraron un pozo al fondo del jardín.",
+              "explanation": "The audio says \"Encontraron un pozo al fondo del jardín.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Encontraron un poso al fondo del jardín.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "Encontraron un pozo al fondo del jardín.",
+                "Encontraron un poso al fondo del jardín.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "Encontraron un poso al fondo del jardín.",
+              "explanation": "The audio says \"Encontraron un poso al fondo del jardín.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que había un pozo ahí.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Nadie sabía que había un poso ahí.",
+                "Nadie sabía que había un pozo ahí.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "Nadie sabía que había un pozo ahí.",
+              "explanation": "The audio says \"Nadie sabía que había un pozo ahí.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que había un poso ahí.",
+              "choices": [
+                "Nadie sabía que había un poso ahí.",
+                "No sabía qué hacer con el caso.",
+                "Cerca de la granja había un poso.",
+                "Nadie sabía que había un pozo ahí."
+              ],
+              "answer": "Nadie sabía que había un poso ahí.",
+              "explanation": "The audio says \"Nadie sabía que había un poso ahí.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Cerca de la granja había un pozo.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Nadie sabía que había un poso ahí.",
+                "Cerca de la granja había un poso.",
+                "Nadie sabía que había un pozo ahí."
+              ],
+              "answer": "Cerca de la granja había un pozo.",
+              "explanation": "The audio says \"Cerca de la granja había un pozo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Cerca de la granja había un poso.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "El agua brotaba del poso constantemente.",
+                "Nadie sabía que había un poso ahí.",
+                "Cerca de la granja había un poso."
+              ],
+              "answer": "Cerca de la granja había un poso.",
+              "explanation": "The audio says \"Cerca de la granja había un poso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El material estaba bien cocido.",
+              "choices": [
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "El material estaba bien cocido.",
+              "explanation": "The audio says \"El material estaba bien cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El material estaba bien cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "El material estaba bien cosido.",
+              "explanation": "The audio says \"El material estaba bien cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Dijeron que todo estaba perfectamente cocido.",
+              "choices": [
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "Dijeron que todo estaba perfectamente cocido.",
+              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Dijeron que todo estaba perfectamente cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cocido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "El material estaba bien cosido."
+              ],
+              "answer": "Dijeron que todo estaba perfectamente cosido.",
+              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Revisaron si estaba bien cocido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido.",
+                "El material estaba bien cocido."
+              ],
+              "answer": "Revisaron si estaba bien cocido.",
+              "explanation": "The audio says \"Revisaron si estaba bien cocido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Revisaron si estaba bien cosido.",
+              "choices": [
+                "Revisaron si estaba bien cosido.",
+                "Dijeron que todo estaba perfectamente cosido.",
+                "Revisaron si estaba bien cocido.",
+                "El material estaba bien cosido."
+              ],
+              "answer": "Revisaron si estaba bien cosido.",
+              "explanation": "The audio says \"Revisaron si estaba bien cosido.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron grabar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "Decidieron grabar el evento completo.",
+              "explanation": "The audio says \"Decidieron grabar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Decidieron gravar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "Decidieron gravar el evento completo.",
+              "explanation": "The audio says \"Decidieron gravar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El equipo tuvo que grabar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "El equipo tuvo que grabar el evento completo.",
+              "explanation": "The audio says \"El equipo tuvo que grabar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El equipo tuvo que gravar el evento completo.",
+              "choices": [
+                "El equipo tuvo que grabar el evento completo.",
+                "Decidieron gravar el evento completo.",
+                "Decidieron grabar el evento completo.",
+                "El equipo tuvo que gravar el evento completo."
+              ],
+              "answer": "El equipo tuvo que gravar el evento completo.",
+              "explanation": "The audio says \"El equipo tuvo que gravar el evento completo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        },
+        {
+          "id": "esb1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prometieron grabar toda la ceremonia.",
+              "choices": [
+                "Decidieron grabar el evento completo.",
+                "Prometieron gravar toda la ceremonia.",
+                "El equipo tuvo que grabar el evento completo.",
+                "Prometieron grabar toda la ceremonia."
+              ],
+              "answer": "Prometieron grabar toda la ceremonia.",
+              "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Prometieron gravar toda la ceremonia.",
+              "choices": [
+                "El equipo tuvo que gravar el evento completo.",
+                "Prometieron gravar toda la ceremonia.",
+                "Decidieron gravar el evento completo.",
+                "Prometieron grabar toda la ceremonia."
+              ],
+              "answer": "Prometieron gravar toda la ceremonia.",
+              "explanation": "The audio says \"Prometieron gravar toda la ceremonia.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El agua brotaba del pozo constantemente.",
+              "choices": [
+                "Cerca de la granja había un pozo.",
+                "Encontraron un pozo al fondo del jardín.",
+                "El agua brotaba del poso constantemente.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "El agua brotaba del pozo constantemente.",
+              "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El agua brotaba del poso constantemente.",
+              "choices": [
+                "Encontraron un poso al fondo del jardín.",
+                "Nadie sabía que había un poso ahí.",
+                "El agua brotaba del poso constantemente.",
+                "El agua brotaba del pozo constantemente."
+              ],
+              "answer": "El agua brotaba del poso constantemente.",
+              "explanation": "The audio says \"El agua brotaba del poso constantemente.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            },
+            {
+              "id": "esb1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazo llevaba años guardado en la alacena.",
+              "choices": [
+                "El cazo llevaba años guardado en la alacena.",
+                "No sabía qué hacer con el cazo.",
+                "Le devolvieron el cazo al día siguiente.",
+                "Le devolvieron el caso al día siguiente."
+              ],
+              "answer": "El cazo llevaba años guardado en la alacena.",
+              "explanation": "The audio says \"El cazo llevaba años guardado en la alacena.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb2p1u1",
       "level": "B2",
       "eyebrow": "Unit 1",
@@ -30886,6 +32068,400 @@
       ]
     },
     {
+      "id": "esb2p28u1",
+      "level": "B2",
+      "eyebrow": "Unit 28",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar).",
+      "lessons": [
+        {
+          "id": "esb2p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Llegaron hasta la cima de la montaña.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la cima.",
+                "Llegaron hasta la cima de la montaña.",
+                "Desde arriba se veía toda la cima.",
+                "Llegaron hasta la sima de la montaña."
+              ],
+              "answer": "Llegaron hasta la cima de la montaña.",
+              "explanation": "The audio says \"Llegaron hasta la cima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Llegaron hasta la sima de la montaña.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Llegaron hasta la cima de la montaña.",
+                "Llegaron hasta la sima de la montaña."
+              ],
+              "answer": "Llegaron hasta la sima de la montaña.",
+              "explanation": "The audio says \"Llegaron hasta la sima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie se atrevía a acercarse a la cima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la cima.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie se atrevía a acercarse a la cima.",
+              "explanation": "The audio says \"Nadie se atrevía a acercarse a la cima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie se atrevía a acercarse a la sima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Nadie se atrevía a acercarse a la sima.",
+              "explanation": "The audio says \"Nadie se atrevía a acercarse a la sima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Desde arriba se veía toda la cima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "El concejo escolar se reunió por la tarde.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Desde arriba se veía toda la cima.",
+              "explanation": "The audio says \"Desde arriba se veía toda la cima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Desde arriba se veía toda la sima.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Desde arriba se veía toda la sima.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "Desde arriba se veía toda la sima.",
+              "explanation": "The audio says \"Desde arriba se veía toda la sima.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El alcalde presentó el concejo a todos.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "El alcalde presentó el concejo a todos.",
+              "explanation": "The audio says \"El alcalde presentó el concejo a todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El alcalde presentó el consejo a todos.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "El alcalde presentó el consejo a todos.",
+              "explanation": "The audio says \"El alcalde presentó el consejo a todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos hablaban sobre el concejo del pueblo.",
+              "choices": [
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Todos hablaban sobre el concejo del pueblo.",
+              "explanation": "The audio says \"Todos hablaban sobre el concejo del pueblo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Todos hablaban sobre el consejo del pueblo.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El alcalde presentó el concejo a todos.",
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Todos hablaban sobre el concejo del pueblo."
+              ],
+              "answer": "Todos hablaban sobre el consejo del pueblo.",
+              "explanation": "The audio says \"Todos hablaban sobre el consejo del pueblo.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que el concejo cambiara de opinión.",
+              "choices": [
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie sabía que alguien los estaba acechando.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie esperaba que el concejo cambiara de opinión.",
+              "explanation": "The audio says \"Nadie esperaba que el concejo cambiara de opinión.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie esperaba que el consejo cambiara de opinión.",
+              "choices": [
+                "Todos hablaban sobre el consejo del pueblo.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie esperaba que el consejo cambiara de opinión.",
+                "Nadie esperaba que el concejo cambiara de opinión."
+              ],
+              "answer": "Nadie esperaba que el consejo cambiara de opinión.",
+              "explanation": "The audio says \"Nadie esperaba que el consejo cambiara de opinión.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El calor parecía abrasar todo a su paso.",
+              "choices": [
+                "El animal empezó a acechar a su presa.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrazar todo a su paso.",
+                "El calor parecía abrasar todo a su paso."
+              ],
+              "answer": "El calor parecía abrasar todo a su paso.",
+              "explanation": "The audio says \"El calor parecía abrasar todo a su paso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El calor parecía abrazar todo a su paso.",
+              "choices": [
+                "El calor parecía abrazar todo a su paso.",
+                "El calor parecía abrasar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar.",
+                "Desde arriba se veía toda la cima."
+              ],
+              "answer": "El calor parecía abrazar todo a su paso.",
+              "explanation": "The audio says \"El calor parecía abrazar todo a su paso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Sintió que el fuego lo iba a abrasar.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrasar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar."
+              ],
+              "answer": "Sintió que el fuego lo iba a abrasar.",
+              "explanation": "The audio says \"Sintió que el fuego lo iba a abrasar.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Sintió que su madre lo iba a abrazar.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "El calor parecía abrazar todo a su paso.",
+                "Sintió que su madre lo iba a abrazar."
+              ],
+              "answer": "Sintió que su madre lo iba a abrazar.",
+              "explanation": "The audio says \"Sintió que su madre lo iba a abrazar.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El animal empezó a acechar a su presa.",
+              "choices": [
+                "El cazador decidió acechar en silencio.",
+                "El animal empezó a acechar a su presa.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "El animal empezó a asechar a su presa."
+              ],
+              "answer": "El animal empezó a acechar a su presa.",
+              "explanation": "The audio says \"El animal empezó a acechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El animal empezó a asechar a su presa.",
+              "choices": [
+                "El animal empezó a acechar a su presa.",
+                "El cazador decidió asechar en silencio.",
+                "Todos hablaban sobre el concejo del pueblo.",
+                "El animal empezó a asechar a su presa."
+              ],
+              "answer": "El animal empezó a asechar a su presa.",
+              "explanation": "The audio says \"El animal empezó a asechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que alguien los estaba acechando.",
+              "choices": [
+                "Nadie sabía que alguien los estaba asechando.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie sabía que alguien los estaba acechando."
+              ],
+              "answer": "Nadie sabía que alguien los estaba acechando.",
+              "explanation": "The audio says \"Nadie sabía que alguien los estaba acechando.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que alguien los estaba asechando.",
+              "choices": [
+                "Nadie sabía que alguien los estaba asechando.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "Nadie sabía que alguien los estaba acechando."
+              ],
+              "answer": "Nadie sabía que alguien los estaba asechando.",
+              "explanation": "The audio says \"Nadie sabía que alguien los estaba asechando.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        },
+        {
+          "id": "esb2p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esb2p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazador decidió acechar en silencio.",
+              "choices": [
+                "El cazador decidió acechar en silencio.",
+                "El cazador decidió asechar en silencio.",
+                "Nadie sabía que alguien los estaba acechando.",
+                "El animal empezó a acechar a su presa."
+              ],
+              "answer": "El cazador decidió acechar en silencio.",
+              "explanation": "The audio says \"El cazador decidió acechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El cazador decidió asechar en silencio.",
+              "choices": [
+                "El animal empezó a asechar a su presa.",
+                "El cazador decidió acechar en silencio.",
+                "El alcalde presentó el consejo a todos.",
+                "El cazador decidió asechar en silencio."
+              ],
+              "answer": "El cazador decidió asechar en silencio.",
+              "explanation": "The audio says \"El cazador decidió asechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El consejo escolar se reunió por la tarde.",
+              "choices": [
+                "El alcalde presentó el consejo a todos.",
+                "El consejo escolar se reunió por la tarde.",
+                "Nadie se atrevía a acercarse a la sima.",
+                "El concejo escolar se reunió por la tarde."
+              ],
+              "answer": "El consejo escolar se reunió por la tarde.",
+              "explanation": "The audio says \"El consejo escolar se reunió por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El concejo escolar se reunió por la tarde.",
+              "choices": [
+                "El consejo escolar se reunió por la tarde.",
+                "Desde arriba se veía toda la sima.",
+                "Nadie se atrevía a acercarse a la cima.",
+                "El concejo escolar se reunió por la tarde."
+              ],
+              "answer": "El concejo escolar se reunió por la tarde.",
+              "explanation": "The audio says \"El concejo escolar se reunió por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            },
+            {
+              "id": "esb2p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La sima resultó ser más profunda de lo esperado.",
+              "choices": [
+                "La sima resultó ser más profunda de lo esperado.",
+                "Sintió que el fuego lo iba a abrasar.",
+                "Desde arriba se veía toda la sima.",
+                "Nadie se atrevía a acercarse a la sima."
+              ],
+              "answer": "La sima resultó ser más profunda de lo esperado.",
+              "explanation": "The audio says \"La sima resultó ser más profunda de lo esperado.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esc1p1u1",
       "level": "C1",
       "eyebrow": "Unit 1",
@@ -38525,6 +40101,400 @@
                 "Aguardamos noticias suyas."
               ],
               "explanation": "One way to say it: \"Quedamos a la espera de su respuesta.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p28u1",
+      "level": "C1",
+      "eyebrow": "Unit 28",
+      "title": "Minimal Pairs",
+      "description": "Listen closely — Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón).",
+      "lessons": [
+        {
+          "id": "esc1p28l1",
+          "title": "Minimal Pairs 1",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q0",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El juez decidió encausar al acusado de inmediato.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El juez decidió encausar al acusado de inmediato.",
+              "explanation": "The audio says \"El juez decidió encausar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q1",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El juez decidió encauzar al acusado de inmediato.",
+              "choices": [
+                "El juez decidió encausar al acusado de inmediato.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El juez decidió encauzar al acusado de inmediato.",
+              "explanation": "The audio says \"El juez decidió encauzar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q2",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité decidió encausar el problema de raíz.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato."
+              ],
+              "answer": "El comité decidió encausar el problema de raíz.",
+              "explanation": "The audio says \"El comité decidió encausar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q3",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité decidió encauzar el problema de raíz.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "La comisión decidió encauzar formalmente la investigación."
+              ],
+              "answer": "El comité decidió encauzar el problema de raíz.",
+              "explanation": "The audio says \"El comité decidió encauzar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q4",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Intentaron encauzar la situación desde el principio.",
+              "choices": [
+                "Intentaron encausar la situación desde el principio.",
+                "El comité decidió encauzar el problema de raíz.",
+                "El juez decidió encauzar al acusado de inmediato.",
+                "Intentaron encauzar la situación desde el principio."
+              ],
+              "answer": "Intentaron encauzar la situación desde el principio.",
+              "explanation": "The audio says \"Intentaron encauzar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l2",
+          "title": "Minimal Pairs 2",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q5",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Intentaron encausar la situación desde el principio.",
+              "choices": [
+                "Intentaron encausar la situación desde el principio.",
+                "El comité decidió encausar el problema de raíz.",
+                "El juez decidió encausar al acusado de inmediato.",
+                "Intentaron encauzar la situación desde el principio."
+              ],
+              "answer": "Intentaron encausar la situación desde el principio.",
+              "explanation": "The audio says \"Intentaron encausar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q6",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "En el documento decía que era un varón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "El título nobiliario pertenecía a un varón.",
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "En el documento decía que era un varón.",
+              "explanation": "The audio says \"En el documento decía que era un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q7",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "En el documento decía que era un barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "Nadie sabía que el bebé era barón.",
+                "En el documento decía que era un varón.",
+                "El título nobiliario pertenecía a un barón."
+              ],
+              "answer": "En el documento decía que era un barón.",
+              "explanation": "The audio says \"En el documento decía que era un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q8",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que el bebé era varón.",
+              "choices": [
+                "Nadie sabía que el bebé era barón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "Nadie sabía que el bebé era varón.",
+              "explanation": "The audio says \"Nadie sabía que el bebé era varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q9",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sabía que el bebé era barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "Nadie sabía que el bebé era barón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sabía que el bebé era varón."
+              ],
+              "answer": "Nadie sabía que el bebé era barón.",
+              "explanation": "The audio says \"Nadie sabía que el bebé era barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l3",
+          "title": "Minimal Pairs 3",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q10",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El título nobiliario pertenecía a un barón.",
+              "choices": [
+                "En el documento decía que era un barón.",
+                "El título nobiliario pertenecía a un varón.",
+                "El título nobiliario pertenecía a un barón.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "El título nobiliario pertenecía a un barón.",
+              "explanation": "The audio says \"El título nobiliario pertenecía a un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q11",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El título nobiliario pertenecía a un varón.",
+              "choices": [
+                "En el documento decía que era un varón.",
+                "Nadie sabía que el bebé era varón.",
+                "El título nobiliario pertenecía a un barón.",
+                "El título nobiliario pertenecía a un varón."
+              ],
+              "answer": "El título nobiliario pertenecía a un varón.",
+              "explanation": "The audio says \"El título nobiliario pertenecía a un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q12",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+              "choices": [
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "El comité reconoció haber alcanzado la cima del proceso."
+              ],
+              "answer": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+              "explanation": "The audio says \"Los diplomáticos llegaron hasta la cima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q13",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones."
+              ],
+              "answer": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+              "explanation": "The audio says \"Los diplomáticos llegaron hasta la sima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q14",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité reconoció haber alcanzado la cima del proceso.",
+              "choices": [
+                "El comité decidió encausar el problema de raíz.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "El comité reconoció haber alcanzado la cima del proceso.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "El comité reconoció haber alcanzado la cima del proceso.",
+              "explanation": "The audio says \"El comité reconoció haber alcanzado la cima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l4",
+          "title": "Minimal Pairs 4",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q15",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El comité reconoció haber alcanzado la sima del proceso.",
+              "choices": [
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "El comité reconoció haber alcanzado la cima del proceso.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "El comité reconoció haber alcanzado la sima del proceso.",
+              "explanation": "The audio says \"El comité reconoció haber alcanzado la sima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q16",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La expedición alcanzó finalmente la cima más alta.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta.",
+                "El comité reconoció haber alcanzado la cima del proceso."
+              ],
+              "answer": "La expedición alcanzó finalmente la cima más alta.",
+              "explanation": "The audio says \"La expedición alcanzó finalmente la cima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q17",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La expedición alcanzó finalmente la sima más alta.",
+              "choices": [
+                "La expedición alcanzó finalmente la sima más alta.",
+                "El comité reconoció haber alcanzado la sima del proceso.",
+                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+                "La expedición alcanzó finalmente la cima más alta."
+              ],
+              "answer": "La expedición alcanzó finalmente la sima más alta.",
+              "explanation": "The audio says \"La expedición alcanzó finalmente la sima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q18",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los inversionistas decidieron acechar el mercado en silencio.",
+              "choices": [
+                "El depredador aprendió a acechar pacientemente a su presa.",
+                "En el documento decía que era un barón.",
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "Los inversionistas decidieron asechar el mercado en silencio."
+              ],
+              "answer": "Los inversionistas decidieron acechar el mercado en silencio.",
+              "explanation": "The audio says \"Los inversionistas decidieron acechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q19",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Los inversionistas decidieron asechar el mercado en silencio.",
+              "choices": [
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "Los inversionistas decidieron asechar el mercado en silencio.",
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "El juez decidió encauzar al acusado de inmediato."
+              ],
+              "answer": "Los inversionistas decidieron asechar el mercado en silencio.",
+              "explanation": "The audio says \"Los inversionistas decidieron asechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            }
+          ]
+        },
+        {
+          "id": "esc1p28l5",
+          "title": "Minimal Pairs 5",
+          "subtitle": "Listen closely",
+          "questions": [
+            {
+              "id": "esc1p28q20",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sospechaba que el escándalo los estuviera acechando.",
+              "choices": [
+                "Nadie sabía que el bebé era varón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sospechaba que el escándalo los estuviera asechando.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "Nadie sospechaba que el escándalo los estuviera acechando.",
+              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera acechando.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q21",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "Nadie sospechaba que el escándalo los estuviera asechando.",
+              "choices": [
+                "Nadie sabía que el bebé era varón.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Nadie sospechaba que el escándalo los estuviera asechando.",
+                "Nadie sabía que el bebé era barón."
+              ],
+              "answer": "Nadie sospechaba que el escándalo los estuviera asechando.",
+              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera asechando.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q22",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El depredador aprendió a acechar pacientemente a su presa.",
+              "choices": [
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "Nadie sospechaba que el escándalo los estuviera acechando.",
+                "Los inversionistas decidieron acechar el mercado en silencio.",
+                "El depredador aprendió a acechar pacientemente a su presa."
+              ],
+              "answer": "El depredador aprendió a acechar pacientemente a su presa.",
+              "explanation": "The audio says \"El depredador aprendió a acechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q23",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "El depredador aprendió a asechar pacientemente a su presa.",
+              "choices": [
+                "Los inversionistas decidieron asechar el mercado en silencio.",
+                "El depredador aprendió a asechar pacientemente a su presa.",
+                "Nadie sabía que el bebé era barón.",
+                "El depredador aprendió a acechar pacientemente a su presa."
+              ],
+              "answer": "El depredador aprendió a asechar pacientemente a su presa.",
+              "explanation": "The audio says \"El depredador aprendió a asechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+            },
+            {
+              "id": "esc1p28q24",
+              "type": "listening",
+              "prompt": "¿Qué escuchaste?",
+              "audioText": "La comisión decidió encauzar formalmente la investigación.",
+              "choices": [
+                "El juez decidió encauzar al acusado de inmediato.",
+                "El comité decidió encausar el problema de raíz.",
+                "La comisión decidió encauzar formalmente la investigación.",
+                "El comité decidió encauzar el problema de raíz."
+              ],
+              "answer": "La comisión decidió encauzar formalmente la investigación.",
+              "explanation": "The audio says \"La comisión decidió encauzar formalmente la investigación.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
             }
           ]
         }
