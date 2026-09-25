@@ -67,7 +67,7 @@ struct RootView: View {
                 // above the tab bar and pushes content up, instead of
                 // covering the last row of whatever list is showing.
                 .safeAreaInset(edge: .bottom) {
-                    PodcastMiniBar(player: podcastPlayer)
+                    PodcastMiniBar(player: podcastPlayer, session: session)
                 }
                 .task {
                     // The player builds a client per call rather than

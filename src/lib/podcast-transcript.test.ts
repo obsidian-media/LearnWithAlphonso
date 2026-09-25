@@ -65,3 +65,36 @@ describe("transcriptParagraphs", () => {
     ]);
   });
 });
+
+describe("markup rejection", () => {
+  // The failure this exists for: episode 1's TTS script carries SSML, and
+  // the audio was generated from it, so it reads like the obvious
+  // transcript. Attached raw it would render `<break time="1.0s" />` on
+  // screen -- to exactly the learners a transcript exists for.
+  it("rejects SSML rather than rendering it to a reader", () => {
+    expect(() => normalizeTranscript('Hello. <break time="1.0s" /> How are you?')).toThrow(
+      /markup/i,
+    );
+  });
+
+  it("names the tag it found, so the fix is obvious", () => {
+    expect(() => normalizeTranscript("<speak>Hello.</speak>")).toThrow(/speak/);
+  });
+
+  it("rejects HTML too, not only SSML", () => {
+    expect(() => normalizeTranscript("<p>Hello.</p>")).toThrow(/markup/i);
+  });
+
+  // Rejecting rather than stripping: silently removing tags from a
+  // hand-written transcript would be surprising, and would hide the real
+  // mistake, which is that the wrong file was passed.
+  it("allows a less-than sign that is not a tag", () => {
+    expect(normalizeTranscript("Five is less than ten: 5 < 10.")).toBe(
+      "Five is less than ten: 5 < 10.",
+    );
+  });
+
+  it("allows an emoticon-like sequence", () => {
+    expect(normalizeTranscript("I <3 coffee.")).toBe("I <3 coffee.");
+  });
+});
