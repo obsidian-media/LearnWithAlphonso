@@ -33,6 +33,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import {
+  exitCodeForProblems,
+  formatProblemSummary,
   storagePathFor,
   validateEpisodeDraft,
   type EpisodeDraft,
@@ -361,8 +363,14 @@ async function cmdValidate(flags: CliFlags) {
   const db = supabase();
   const folders = toFolders(await loadFolders(db));
 
+  // Collected, not just printed. This command used to report every finding
+  // to stderr and then exit 0, so a script, a CI step or an `&&` chain read
+  // a clean run while the output said otherwise -- the same failure the
+  // repo's curriculum-consistency.test.ts had from the other direction.
+  const problems: string[] = [];
+
   const cycle = findCycle(folders);
-  if (cycle) console.error(`  [ERROR] folder tree contains a cycle: ${cycle.join(" -> ")}`);
+  if (cycle) problems.push(`folder tree contains a cycle: ${cycle.join(" -> ")}`);
 
   const folder = resolveFolderPath(folders, splitPath(folderPath));
   if (!folder) fail(`folder path "${folderPath}" does not exist.`);
@@ -398,10 +406,26 @@ async function cmdValidate(flags: CliFlags) {
   const { data: objects, error: listError } = await db.storage
     .from(BUCKET)
     .list(prefix, { search: name });
-  if (listError) console.error(`  [ERROR] could not check the audio object: ${listError.message}`);
-  else if (!objects?.some((object) => object.name === name)) {
-    console.error(`  [ERROR] audio object is missing: ${episode.audio_path}`);
-  } else console.log("  audio object exists.");
+  if (listError) {
+    problems.push(`could not check the audio object: ${listError.message}`);
+  } else if (!objects?.some((object) => object.name === name)) {
+    problems.push(`audio object is missing: ${episode.audio_path}`);
+  } else {
+    console.log("  audio object exists.");
+  }
+
+  // An unpublished episode is not a problem -- `published` is a staging flag
+  // -- but it IS the most common reason someone cannot see an episode they
+  // just added, so say it plainly rather than leaving it in the detail above.
+  if (!episode.published) {
+    console.log("  note: not published yet, so learners cannot see it.");
+  }
+
+  for (const problem of problems) console.error(`  [ERROR] ${problem}`);
+  const summary = formatProblemSummary(problems);
+  if (summary) console.error(summary);
+  // The point of the change: findings reach the exit code.
+  process.exit(exitCodeForProblems(problems));
 }
 
 async function cmdPublish(flags: CliFlags) {

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { storagePathFor, validateEpisodeDraft, type EpisodeDraft } from "./podcast-authoring";
+import {
+  exitCodeForProblems,
+  formatProblemSummary,
+  storagePathFor,
+  validateEpisodeDraft,
+  type EpisodeDraft,
+} from "./podcast-authoring";
 
 const draft = (over: Partial<EpisodeDraft> = {}): EpisodeDraft => ({
   folderSlugPath: ["en", "a1"],
@@ -57,5 +63,31 @@ describe("storagePathFor", () => {
     expect(storagePathFor(draft({ folderSlugPath: ["en", "a1", "cafe", "week-1"] }))).toBe(
       "en/a1/cafe/week-1/ordering-coffee.mp3",
     );
+  });
+});
+
+describe("problem reporting", () => {
+  it("reports success only when nothing was found", () => {
+    expect(exitCodeForProblems([])).toBe(0);
+  });
+
+  // The failure class this exists for: a check that finds a defect, prints
+  // it, and exits 0 anyway. curriculum-consistency.test.ts had the same
+  // shape -- it console.logged 57 Spanish and 7 English duplicate prompts
+  // into a log vitest swallowed, and a reader took the silence for zero.
+  // `podcast-tool validate` printed "[ERROR] folder tree contains a cycle"
+  // and exited 0, so anything scripting it read success.
+  it("reports failure when anything was found, however cosmetic it looks", () => {
+    expect(exitCodeForProblems(["audio object is missing"])).toBe(1);
+    expect(exitCodeForProblems(["a", "b"])).toBe(1);
+  });
+
+  it("summarises nothing when there is nothing to summarise", () => {
+    expect(formatProblemSummary([])).toBeNull();
+  });
+
+  it("counts the problems, so a scrolled-away log still shows the total", () => {
+    expect(formatProblemSummary(["one"])).toContain("1 problem");
+    expect(formatProblemSummary(["one", "two"])).toContain("2 problems");
   });
 });
