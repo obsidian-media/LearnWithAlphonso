@@ -133,7 +133,10 @@ describe("buildPlacementQuestionRows", () => {
     for (const r of rows) {
       expect(r.course).toBe("en");
       expect(levelIds.has(r.level_id)).toBe(true);
-      expect(r.choices.length).toBeGreaterThan(0);
+      // Only the option-based types carry choices now; a translate row's
+      // wordings live in `bank`.
+      if (r.type === "translate") expect(r.bank?.length ?? 0).toBeGreaterThan(0);
+      else expect(r.choices?.length ?? 0).toBeGreaterThan(0);
     }
   });
 
@@ -211,5 +214,51 @@ describe("buildFullSeed", () => {
       seed.questions.map((r) => `${r.lesson_id}:${r.id}`),
       "questions (lesson_id:id)",
     );
+  });
+});
+
+describe("placement rows satisfy the shape their table allows", () => {
+  // The migration's CHECK gives each type exactly the columns it can answer
+  // from. These assertions are that constraint, in TypeScript, so a bad row is
+  // caught here rather than by a failing seed in CI -- where the failure mode
+  // is the deploy job going red and the Edge Function deploy being skipped
+  // with it.
+  const rows = buildPlacementQuestionRows("en");
+
+  it("emits one row per placement question, keyed by id", () => {
+    expect(rows.map((r) => r.id).sort()).toEqual(PLACEMENT_QUESTIONS.map((p) => p.id).sort());
+  });
+
+  it("gives mc rows choices and an index, and nothing else", () => {
+    for (const r of rows.filter((r) => r.type === "mc")) {
+      expect(r.choices?.length ?? 0).toBeGreaterThan(0);
+      expect(typeof r.answer_index).toBe("number");
+      expect(r.answer_text).toBeNull();
+      expect(r.bank).toBeNull();
+      expect(r.audio_text).toBeNull();
+    }
+  });
+
+  it("gives listening rows something to play and a text answer", () => {
+    const listening = rows.filter((r) => r.type === "listening");
+    expect(listening.length).toBeGreaterThan(0);
+    for (const r of listening) {
+      expect(r.audio_text?.trim()).toBeTruthy();
+      expect(r.choices).toContain(r.answer_text);
+      expect(r.answer_index).toBeNull();
+      expect(r.bank).toBeNull();
+    }
+  });
+
+  it("gives translate rows their wordings, with the canonical one in answer_text", () => {
+    const translate = rows.filter((r) => r.type === "translate");
+    expect(translate.length).toBeGreaterThan(0);
+    for (const r of translate) {
+      expect(r.bank?.length ?? 0).toBeGreaterThanOrEqual(2);
+      expect(r.answer_text).toBe(r.bank?.[0]);
+      expect(r.choices).toBeNull();
+      expect(r.answer_index).toBeNull();
+      expect(r.audio_text).toBeNull();
+    }
   });
 });

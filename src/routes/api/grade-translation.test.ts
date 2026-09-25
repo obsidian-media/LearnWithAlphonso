@@ -130,3 +130,23 @@ describe("POST /api/grade-translation", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("POST /api/grade-translation, placement questions", () => {
+  it("grades a placement question, not just a lesson one", async () => {
+    // Placement ids are not lesson ids and the pool lives outside the
+    // curriculum's question index, so resolving only through findLesson meant
+    // every placement translation 400ed -- and the exam would have marked a
+    // valid wording wrong and placed the learner lower for it.
+    const res = await handler({
+      request: req({ placementId: "p60", submission: "good morning", course: "en" }),
+    });
+    expect(await res.json()).toMatchObject({ correct: true, source: "local" });
+  });
+
+  it("still refuses an unknown placement id", async () => {
+    const res = await handler({
+      request: req({ placementId: "nope", submission: "good morning", course: "en" }),
+    });
+    expect(res.status).toBe(400);
+  });
+});

@@ -16,10 +16,26 @@ describe("buildCourseDump", () => {
 
   it("includes placement questions, which are absent from questionIndex", () => {
     const dump = buildCourseDump("en");
-    expect(dump.placement.length).toBe(45);
-    expect(dump.totals.placement).toBe(45);
+    // Compared as ID SETS, not counts. `dump.placement` is
+    // `placementPool.map(...)` and `placementPool` IS PLACEMENT_QUESTIONS, so
+    // any length comparison between them is a tautology -- .map() preserves
+    // length, and the assertion tests Array.prototype.map rather than
+    // buildCourseDump. (A previous revision of this test did exactly that,
+    // having over-applied "do not pin a magic number": a filename is
+    // incidental to a test, but a content count is the thing under test.)
+    // Keys catch what counts cannot: a dropped, duplicated or mis-keyed
+    // question.
+    expect(dump.placement.map((q) => q.key).sort()).toEqual(
+      PLACEMENT_QUESTIONS.map((p) => `placement:${p.id}`).sort(),
+    );
+    expect(dump.totals.placement).toBe(dump.placement.length);
     // Review Focus #4: placement lives outside questionIndex entirely.
     for (const q of dump.placement) {
+      // A translate entry has no choices -- its wordings are the answers.
+      if (q.type === "translate") {
+        expect(q.bank?.length).toBeGreaterThan(0);
+        continue;
+      }
       expect(q.choices?.length).toBeGreaterThan(0);
       expect(q.answer.trim()).not.toBe("");
     }
@@ -30,9 +46,26 @@ describe("buildCourseDump", () => {
   // would have no automated safety net at all.
   it("keeps placement questions structurally valid", () => {
     for (const p of PLACEMENT_QUESTIONS) {
-      expect(p.answer, `${p.id} answer index out of range`).toBeGreaterThanOrEqual(0);
-      expect(p.answer, `${p.id} answer index out of range`).toBeLessThan(p.choices.length);
       expect(p.prompt.trim(), `${p.id} has an empty prompt`).not.toBe("");
+
+      // The pool is no longer mc-only, so each shape is checked for the thing
+      // that would make IT unanswerable. An unanswerable placement question is
+      // worse than an unanswerable lesson one: it mis-places the learner
+      // downward and sets their whole course.
+      if (p.type === "translate") {
+        expect(p.acceptableAnswers.length, `${p.id} needs wordings`).toBeGreaterThanOrEqual(2);
+        for (const a of p.acceptableAnswers) {
+          expect(a.trim(), `${p.id} has an empty wording`).not.toBe("");
+        }
+        continue;
+      }
+      if (p.type === "listening") {
+        expect(p.audioText.trim(), `${p.id} has nothing to play`).not.toBe("");
+        expect(p.choices, `${p.id} answer is not among its choices`).toContain(p.answer);
+      } else {
+        expect(p.answer, `${p.id} answer index out of range`).toBeGreaterThanOrEqual(0);
+        expect(p.answer, `${p.id} answer index out of range`).toBeLessThan(p.choices.length);
+      }
       for (const c of p.choices) {
         expect(c.trim(), `${p.id} has an empty choice`).not.toBe("");
       }
@@ -48,7 +81,10 @@ describe("buildCourseDump", () => {
   // learner's starting level).
   it("never offers a placement answer that is itself a blanked sentence", () => {
     for (const p of PLACEMENT_QUESTIONS) {
-      for (const choice of p.choices) {
+      // A translate question has no choices to offer; its wordings are the
+      // answers, and the same rule applies to them.
+      const offered = p.type === "translate" ? p.acceptableAnswers : p.choices;
+      for (const choice of offered) {
         expect(choice, `${p.id} has a blanked sentence as a choice`).not.toContain("___");
       }
     }

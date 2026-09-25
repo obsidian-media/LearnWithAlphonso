@@ -218,6 +218,41 @@ wordings. Four things about them are load bearing:
   down, no key, quota spent, unparseable reply) always means "no opinion" and
   leaves the local verdict standing — it never means "wrong".
 
+
+**The placement exam assesses three of the six types**, not one: `mc`,
+`listening` and `translate`. It used to be multiple-choice only, which meant a
+learner was placed by a text-only exam and then met a course that is roughly
+one-eighth listening, speaking and translation — assessed on nothing they would
+actually do.
+
+`speak` is excluded **deliberately**. Including it would gate onboarding on a
+microphone-permission prompt before the learner has any reason to grant one,
+and a denial makes the question unanswerable; the typing fallback that rescues
+a speaking question inside a lesson would here be assessing writing while
+claiming to assess speaking. That is a product decision, argued in
+`docs/superpowers/plans/2026-09-24-placement-question-types.md`, not a
+technical limitation — one type the exam still does not cover, but as a stated
+gap rather than an accidental one.
+
+Two properties hold the exam together and are easy to break:
+
+- **Every question must resolve to an answer.** There is no skip. A translation
+  with no network keeps its local verdict; listening questions are removed from
+  the pool entirely on a browser with no TTS, *before* the three-per-band draw
+  (`playablePool`), rather than falling back to printing the sentence the way a
+  lesson does — here the sentence is the answer. Filtering after the draw is the
+  same bug in the other direction: it can leave a band holding one question,
+  and a band needs two correct. An unanswerable lesson question costs a heart —
+  an unanswerable placement question mis-places the learner, or leaves the exam
+  unable to finish and them with no level at all.
+- **Grading takes the submitted TEXT, for every type** (`isPlacementAnswerCorrect`
+  in `src/data/placement-grading.ts`). The exam used to compare an option
+  index, which only multiple choice can express.
+
+`placement_questions` mirrors the pool into Postgres, but **nothing reads it at
+runtime** — the app uses bundled content and `scripts/seed-curriculum-db.ts` is
+its only writer.
+
 `Question` decoding on iOS **fails loudly** on an unrecognised `type`. A
 lenient version (decoding to a filtered `.unsupported` case) was tried and
 reverted: content ships inside the same binary and CI fails the build if the

@@ -67,8 +67,16 @@ export type PlacementQuestionRow = {
   course: Course;
   level_id: string;
   prompt: string;
-  choices: string[];
-  answer_index: number;
+  type: "mc" | "listening" | "translate";
+  choices: string[] | null;
+  answer_index: number | null;
+  answer_text: string | null;
+  /** Translate only: the curated wordings, same as questions.bank. */
+  bank: string[] | null;
+  /** Listening only: what is spoken. The questions table has no equivalent
+   *  column -- a known gap noted there -- but placement gets one, because a
+   *  listening row with no audio text is unanswerable from the database. */
+  audio_text: string | null;
 };
 
 export type ScenarioRow = {
@@ -207,14 +215,41 @@ export function buildVocabImageRows(): VocabImageRow[] {
 
 export function buildPlacementQuestionRows(course: Course): PlacementQuestionRow[] {
   const { placementPool } = getCourse(course);
-  return placementPool.map((p) => ({
-    id: p.id,
-    course,
-    level_id: p.level,
-    prompt: p.prompt,
-    choices: p.choices,
-    answer_index: p.answer,
-  }));
+  return placementPool.map((p) => {
+    const base = { id: p.id, course, level_id: p.level, prompt: p.prompt, type: p.type };
+    // Mirrors the questions table's shapes: mc keeps choices + an index,
+    // listening keeps choices but answers with text, translate carries its
+    // wordings in `bank` with the canonical one in answer_text. See migration
+    // 20260927215427_placement_question_types.sql, which widens the columns.
+    if (p.type === "mc") {
+      return {
+        ...base,
+        choices: p.choices,
+        answer_index: p.answer,
+        answer_text: null,
+        bank: null,
+        audio_text: null,
+      };
+    }
+    if (p.type === "listening") {
+      return {
+        ...base,
+        choices: p.choices,
+        answer_index: null,
+        answer_text: p.answer,
+        bank: null,
+        audio_text: p.audioText,
+      };
+    }
+    return {
+      ...base,
+      choices: null,
+      answer_index: null,
+      answer_text: p.acceptableAnswers[0] ?? "",
+      bank: p.acceptableAnswers,
+      audio_text: null,
+    };
+  });
 }
 
 /** SCENARIOS is course-agnostic (no French variant exists today). */

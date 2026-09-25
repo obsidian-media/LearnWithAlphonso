@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import type { PlacementQuestion } from "../../data/placement";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const navigate = vi.fn();
@@ -41,40 +42,200 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+const canSpeak = vi.fn(() => true);
+const speak = vi.fn();
+vi.mock("../../lib/speech", () => ({
+  speak: (t: string, l: string) => speak(t, l),
+  canSpeak: () => canSpeak(),
+}));
+
 const savePlacementResult = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ savePlacementResult }));
 
 // A fixed, deterministic 2-question A1 set instead of the real random
 // 15-question pool, so the placement flow (score -> next-level placement)
 // is exercised without depending on which questions get sampled.
-const FIXED_QUESTIONS = [
-  { id: "p1", level: "A1", prompt: "Pick 2", choices: ["wrong", "right"], answer: 1 },
+const FIXED_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "p1",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "Pick 2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
   {
     id: "p2",
     level: "A1",
+    type: "mc" as const,
     prompt: "Pick 4",
     choices: ["wrong", "wrong2", "wrong3", "right"],
     answer: 3,
   },
 ];
+const LISTENING_BAND: PlacementQuestion[] = [
+  {
+    id: "p50",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+  {
+    id: "p50b",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+  {
+    id: "p50c",
+    level: "A1",
+    type: "listening",
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher.", "He's a doctor.", "She's an actor."],
+    answer: "She's a doctor.",
+  },
+];
+
+const LISTENING_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "p50",
+    level: "A1",
+    type: "listening" as const,
+    prompt: "What did you hear?",
+    audioText: "She's a doctor.",
+    choices: ["She's a doctor.", "She's a teacher."],
+    answer: "She's a doctor.",
+  },
+];
+
+// A full A1 band: the exam passes a band on 2 of 3, so a one-question fixture
+// could never demonstrate acceptance -- it would score A1 whatever was typed.
+const TRANSLATE_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "p60",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+  {
+    id: "p60b",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning, again.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+  {
+    id: "p60c",
+    level: "A1",
+    type: "translate",
+    prompt: "Greet someone in the morning, once more.",
+    acceptableAnswers: ["Good morning.", "Morning.", "Good morning to you."],
+  },
+];
+
 // Three real bands (A1, B1, C1) with A2/B2 deliberately absent -- exercises
 // the adaptive skip-ahead path (acing a band skips the next one, credited
 // synthetically, and resumes on the one after) without needing the full
 // 15-question shape.
-const MULTI_BAND_QUESTIONS = [
-  { id: "m-a1-1", level: "A1", prompt: "A1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-a1-2", level: "A1", prompt: "A1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-a1-3", level: "A1", prompt: "A1 Q3", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-1", level: "B1", prompt: "B1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-2", level: "B1", prompt: "B1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-b1-3", level: "B1", prompt: "B1 Q3", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-1", level: "C1", prompt: "C1 Q1", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-2", level: "C1", prompt: "C1 Q2", choices: ["wrong", "right"], answer: 1 },
-  { id: "m-c1-3", level: "C1", prompt: "C1 Q3", choices: ["wrong", "right"], answer: 1 },
+const MULTI_BAND_QUESTIONS: PlacementQuestion[] = [
+  {
+    id: "m-a1-1",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-a1-2",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-a1-3",
+    level: "A1",
+    type: "mc" as const,
+    prompt: "A1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-1",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-2",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-b1-3",
+    level: "B1",
+    type: "mc" as const,
+    prompt: "B1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-1",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q1",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-2",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q2",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
+  {
+    id: "m-c1-3",
+    level: "C1",
+    type: "mc" as const,
+    prompt: "C1 Q3",
+    choices: ["wrong", "right"],
+    answer: 1,
+  },
 ];
 
-const pickPlacement = vi.fn(() => FIXED_QUESTIONS);
-vi.mock("../../data/courses", () => ({ getCourse: () => ({ pickPlacement }) }));
+// Typed as the union rather than inferred from the first fixture, so a
+// listening or translate set can be injected too. It takes the same
+// `canPlayAudio` argument the real bundle does, because the route's job is now
+// to pass the device's capability INTO sampling rather than filter the sampled
+// set afterwards -- filtering afterwards can leave a band with one question,
+// which no learner can pass. See playablePool in placement.ts.
+const pickPlacement = vi.fn((canPlayAudio = true): PlacementQuestion[] =>
+  canPlayAudio ? FIXED_QUESTIONS : FIXED_QUESTIONS.filter((q) => q.type !== "listening"),
+);
+vi.mock("../../data/courses", () => ({
+  getCourse: () => ({ pickPlacement }),
+  // Omitting this made the Play-audio handler unclickable in tests: vitest
+  // throws on an export a mock factory does not define, so the button could
+  // not be exercised at all.
+  localeForCourse: () => "en-US",
+}));
 
 /** Answers the current question and advances, regardless of which label ("Continue" / "See my level") the submit button currently shows. */
 async function answer(user: ReturnType<typeof userEvent.setup>, choice: "right" | "wrong") {
@@ -91,11 +252,16 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  canSpeak.mockReturnValue(true);
+  speak.mockReset();
+  vi.unstubAllGlobals();
   navigate.mockClear();
   savePlacementResult.mockReset();
   savePlacementResult.mockResolvedValue({});
   pickPlacement.mockClear();
   pickPlacement.mockReturnValue(FIXED_QUESTIONS);
+  // mockReturnValue above wins over the factory implementation, so tests that
+  // care about the argument re-establish it themselves.
   useProgress.getState().reset();
 });
 
@@ -224,5 +390,128 @@ describe("Adaptive band sequencing", () => {
     expect(await screen.findByText("A1")).toBeInTheDocument();
     expect(screen.getByText("0 of 3 correct")).toBeInTheDocument();
     expect(screen.queryByText(/Fast-tracked/)).not.toBeInTheDocument();
+  });
+
+  it("plays the sentence in the course locale and grades the choice by its text", async () => {
+    // A full band, so the 2-of-3 rule can actually distinguish right from
+    // wrong. With a single question the result is A1 whatever is clicked, and
+    // the old version of this test passed with listening grading broken.
+    pickPlacement.mockReturnValue([...LISTENING_BAND]);
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: /play audio/i }));
+    expect(speak).toHaveBeenCalledWith("She's a doctor.", "en-US");
+
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: "She's a doctor." }));
+      await user.click(screen.getByRole("button", { name: /Continue|See my level/ }));
+    }
+    // Three correct answers pass the A1 band, which places them one above it.
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+  });
+
+  it("marks a wrong listening choice wrong", async () => {
+    // The other half of the same claim: without this, a grader that returned
+    // true unconditionally would still pass the test above.
+    pickPlacement.mockReturnValue([...LISTENING_BAND]);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      await user.click(await screen.findByRole("button", { name: "She's a teacher." }));
+      await user.click(screen.getByRole("button", { name: /Continue|See my level/ }));
+    }
+    expect(await screen.findByText("A1")).toBeInTheDocument();
+  });
+
+  it("asks for a pool the device can actually play, rather than filtering afterwards", async () => {
+    // The route's whole responsibility here is the ARGUMENT: sampling has to
+    // see the capability, because a listening question removed after the
+    // 3-per-band draw can leave a band holding one question, and a band needs 2
+    // correct -- so it becomes unpassable and the learner is placed a band low.
+    // That is the exact defect this replaced. What the filter then does to real
+    // content is asserted in placement-validity.test.ts.
+    canSpeak.mockReturnValue(false);
+    pickPlacement.mockImplementation((canPlayAudio = true) =>
+      canPlayAudio ? [...LISTENING_BAND] : [],
+    );
+    renderPage();
+
+    expect(pickPlacement).toHaveBeenCalledWith(false);
+    expect(await screen.findByText(/No placement questions are available/i)).toBeInTheDocument();
+    expect(screen.queryByText("She's a doctor.")).toBeNull();
+  });
+
+  it("asks for the full pool when the device can speak", async () => {
+    // The other half: a true capability must not be reported as false, or every
+    // device silently loses the listening questions.
+    canSpeak.mockReturnValue(true);
+    pickPlacement.mockImplementation((canPlayAudio = true) =>
+      canPlayAudio ? [...LISTENING_BAND] : [],
+    );
+    renderPage();
+
+    expect(pickPlacement).toHaveBeenCalledWith(true);
+    expect(await screen.findByRole("button", { name: /play audio/i })).toBeInTheDocument();
+  });
+
+  it("accepts a curated wording for a translation without asking the server", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      // fireEvent.change, not user.type: the answer field is controlled, and a
+      // per-keystroke path left only the last character in state here.
+      fireEvent.change(await screen.findByLabelText("Your answer"), {
+        target: { value: "good morning" },
+      });
+      await user.click(screen.getByRole("button", { name: /See my level|Continue/ }));
+    }
+
+    // A curated wording is settled locally, so the exam never touches the
+    // network -- which is also what keeps it usable offline.
+    expect(fetchSpy).not.toHaveBeenCalled();
+    // Three locally-accepted translations pass the A1 band, which places the
+    // learner in the band above it.
+    expect(await screen.findByText("A2")).toBeInTheDocument();
+  });
+
+  it("keeps the exam moving when the grader cannot be reached", async () => {
+    // There is no skip in this exam. A translation that never resolves is an
+    // exam that cannot finish, which leaves the learner unplaced entirely --
+    // worse than being placed a band low.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline");
+      }),
+    );
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    for (let i = 0; i < 3; i++) {
+      fireEvent.change(await screen.findByLabelText("Your answer"), {
+        target: { value: "nowhere near it" },
+      });
+      await user.click(screen.getByRole("button", { name: /See my level|Continue/ }));
+    }
+
+    // The exam finished and placed them, which is the point: an unresolvable
+    // question would leave them with no level at all.
+    expect(await screen.findByText("A1")).toBeInTheDocument();
+  });
+
+  it("does not let whitespace advance the exam", async () => {
+    pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
+    const user = userEvent.setup();
+    renderPage();
+
+    fireEvent.change(await screen.findByLabelText("Your answer"), { target: { value: "   " } });
+    expect(screen.getByRole("button", { name: /See my level|Continue/ })).toBeDisabled();
   });
 });

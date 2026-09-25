@@ -18,12 +18,11 @@ import type { TranslationVerdict } from "../routes/api/grade-translation";
  * to the learner as a wrong answer, and being offline is not evidence about
  * their English.
  */
-export async function requestTranslationVerdict(args: {
-  lessonId: string;
-  questionId: string;
-  submission: string;
-  course: string;
-}): Promise<TranslationVerdict | null> {
+export async function requestTranslationVerdict(
+  args:
+    | { lessonId: string; questionId: string; submission: string; course: string }
+    | { placementId: string; submission: string; course: string },
+): Promise<TranslationVerdict | null> {
   try {
     const resp = await fetch("/api/grade-translation", {
       method: "POST",

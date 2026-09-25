@@ -45,7 +45,11 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page
-- **Placement test**: 15-question adaptive test to set starting level
+- **Placement test**: 15-question adaptive test to set starting level. In English it
+  assesses multiple choice, listening and written translation — the same formats
+  the course uses, so nobody is placed by an exam that tests something else.
+  Speaking is deliberately excluded: it would require microphone permission during
+  onboarding, and a denial would leave the question unanswerable
 - **AI conversation**: voice-enabled chat with 6 scenarios
 - **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)

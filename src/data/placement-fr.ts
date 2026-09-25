@@ -6,6 +6,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp1",
     level: "A1",
+    type: "mc",
     prompt: 'Comment dit-on "thank you" en français ?',
     choices: ["Bonjour", "Merci", "Pardon", "Salut"],
     answer: 1,
@@ -13,6 +14,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp2",
     level: "A1",
+    type: "mc",
     prompt: "Je ___ étudiant.",
     choices: ["es", "suis", "est", "sont"],
     answer: 1,
@@ -20,6 +22,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp3",
     level: "A1",
+    type: "mc",
     prompt: 'Choisissez le bon nombre pour "cinq":',
     choices: ["4", "5", "6", "9"],
     answer: 1,
@@ -28,6 +31,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp4",
     level: "A2",
+    type: "mc",
     prompt: "Hier, je ___ (to go) au marché.",
     choices: ["vais", "suis allé", "aller", "irai"],
     answer: 1,
@@ -35,6 +39,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp5",
     level: "A2",
+    type: "mc",
     prompt: "Cette robe est plus ___ que l'autre.",
     choices: ["cher", "chère", "chers", "chère que"],
     answer: 1,
@@ -42,6 +47,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp6",
     level: "A2",
+    type: "mc",
     prompt: "Tournez à gauche ___ la banque.",
     choices: ["après", "avant", "sur", "dans"],
     answer: 0,
@@ -50,6 +56,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp7",
     level: "B1",
+    type: "mc",
     prompt: "S'il pleut, nous ___ à l'intérieur.",
     choices: ["restons", "resterons", "resterions", "restâmes"],
     answer: 1,
@@ -57,6 +64,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp8",
     level: "B1",
+    type: "mc",
     prompt: "Il faut que tu ___ à l'heure.",
     choices: ["es", "seras", "sois", "être"],
     answer: 2,
@@ -64,6 +72,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp9",
     level: "B1",
+    type: "mc",
     prompt: '"Bien que" introduit…',
     choices: ["une cause", "une concession", "un but", "une condition"],
     answer: 1,
@@ -72,6 +81,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp10",
     level: "B2",
+    type: "mc",
     prompt: "Le rapport ___ publié la semaine prochaine.",
     choices: ["sera", "est", "a été", "serait"],
     answer: 0,
@@ -79,6 +89,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp11",
     level: "B2",
+    type: "mc",
     prompt: "___ le coût, la demande a augmenté.",
     choices: ["Bien que", "Malgré", "Cependant", "Puisque"],
     answer: 1,
@@ -86,6 +97,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp12",
     level: "B2",
+    type: "mc",
     prompt: "Les coûts ont augmenté ; ___, les prix ont suivi.",
     choices: ["par conséquent", "cependant", "malgré", "bien que"],
     answer: 0,
@@ -94,6 +106,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp13",
     level: "C1",
+    type: "mc",
     prompt: 'L\'équivalent le plus formel de "découvrir":',
     choices: ["dénicher", "constater", "trouver", "voir"],
     answer: 1,
@@ -101,6 +114,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp14",
     level: "C1",
+    type: "mc",
     prompt: '"Cela ne tient pas ___."',
     choices: ["l'air", "debout", "le sol", "le poids"],
     answer: 1,
@@ -108,6 +122,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp15",
     level: "C1",
+    type: "mc",
     prompt: "Quelle phrase évite la lourdeur nominale ?",
     choices: [
       "La mise en œuvre de la réduction des coûts",
@@ -121,6 +136,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp1b",
     level: "A1",
+    type: "mc",
     prompt: "Nous ___ françaises.",
     choices: ["est", "es", "sommes", "sont"],
     answer: 2,
@@ -128,6 +144,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp2b",
     level: "A1",
+    type: "mc",
     prompt: 'Choisissez l\'article correct pour "chat":',
     choices: ["la", "le", "les", "l'"],
     answer: 1,
@@ -135,6 +152,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp3b",
     level: "A1",
+    type: "mc",
     prompt: "J'___ vingt ans.",
     choices: ["suis", "ai", "a", "es"],
     answer: 1,
@@ -142,6 +160,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp1c",
     level: "A1",
+    type: "mc",
     prompt: "Il ___ un livre.",
     choices: ["a", "as", "ai", "ont"],
     answer: 0,
@@ -149,6 +168,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp2c",
     level: "A1",
+    type: "mc",
     prompt: 'Comment dit-on "goodbye" ?',
     choices: ["Bonjour", "Merci", "Au revoir", "Pardon"],
     answer: 2,
@@ -156,6 +176,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp3c",
     level: "A1",
+    type: "mc",
     prompt: "Vous ___ étudiants.",
     choices: ["êtes", "es", "sommes", "sont"],
     answer: 0,
@@ -164,6 +185,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp4b",
     level: "A2",
+    type: "mc",
     prompt: "Elle ___ (finir) ses devoirs hier.",
     choices: ["finit", "a fini", "finira", "finissait"],
     answer: 1,
@@ -171,6 +193,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp5b",
     level: "A2",
+    type: "mc",
     prompt: "Il y a ___ pommes dans le panier.",
     choices: ["beaucoup de", "beaucoup", "beaucoup des", "trop des"],
     answer: 0,
@@ -178,6 +201,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp6b",
     level: "A2",
+    type: "mc",
     prompt: "Je vais ___ un café.",
     choices: ["prend", "prendre", "prenant", "pris"],
     answer: 1,
@@ -185,6 +209,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp4c",
     level: "A2",
+    type: "mc",
     prompt: "Nous ___ (voyager) en France l'été prochain.",
     choices: ["voyageons", "voyagerons", "avons voyagé", "voyagions"],
     answer: 1,
@@ -192,6 +217,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp5c",
     level: "A2",
+    type: "mc",
     prompt: "C'est le ___ film que j'ai vu.",
     choices: ["bon", "meilleur", "bien", "mieux"],
     answer: 1,
@@ -199,6 +225,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp6c",
     level: "A2",
+    type: "mc",
     prompt: "___-vous déjà visité Paris ?",
     choices: ["Avez", "Êtes", "Faites", "Allez"],
     answer: 0,
@@ -207,6 +234,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp7b",
     level: "B1",
+    type: "mc",
     prompt: "Quand nous sommes arrivés, le film ___ déjà commencé.",
     choices: ["a", "avait", "aura", "ayant"],
     answer: 1,
@@ -214,6 +242,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp8b",
     level: "B1",
+    type: "mc",
     prompt: "C'est la femme ___ voiture a été volée.",
     choices: ["qui", "que", "dont", "où"],
     answer: 2,
@@ -221,6 +250,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp9b",
     level: "B1",
+    type: "mc",
     prompt: "Tu ne ___ pas fumer ici.",
     choices: ["dois", "peux", "as", "sais"],
     answer: 0,
@@ -228,6 +258,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp7c",
     level: "B1",
+    type: "mc",
     prompt: "Avant, je ___ (jouer) au foot chaque semaine.",
     choices: ["joue", "jouais", "ai joué", "jouerai"],
     answer: 1,
@@ -235,6 +266,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp8c",
     level: "B1",
+    type: "mc",
     prompt: '"Bien que" est suivi du:',
     choices: ["indicatif", "subjonctif", "conditionnel", "infinitif"],
     answer: 1,
@@ -242,6 +274,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp9c",
     level: "B1",
+    type: "mc",
     prompt: "Il m'a demandé ___ j'étais prêt.",
     choices: ["que", "si", "quoi", "donc"],
     answer: 1,
@@ -250,6 +283,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp10b",
     level: "B2",
+    type: "mc",
     prompt: "Elle a dit qu'elle ___ le rapport avant vendredi.",
     choices: ["finira", "finirait", "finit", "a fini"],
     answer: 1,
@@ -257,6 +291,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp11b",
     level: "B2",
+    type: "mc",
     prompt: 'Manière la plus formelle de dire "beaucoup de croissance":',
     choices: [
       "un tas de croissance",
@@ -269,6 +304,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp12b",
     level: "B2",
+    type: "mc",
     prompt: '"Alors que" sert à :',
     choices: [
       "donner une raison",
@@ -281,6 +317,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp10c",
     level: "B2",
+    type: "mc",
     prompt: "Si j'avais su, j'aurais agi ___.",
     choices: ["différent", "différemment", "différente", "différence"],
     answer: 1,
@@ -288,6 +325,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp11c",
     level: "B2",
+    type: "mc",
     prompt: "Le rapport doit ___ publié la semaine prochaine.",
     choices: ["être", "avoir", "êtes", "sera"],
     answer: 0,
@@ -295,6 +333,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp12c",
     level: "B2",
+    type: "mc",
     prompt: '"Néanmoins" indique :',
     choices: ["une addition", "une concession/un contraste", "une cause", "un exemple"],
     answer: 1,
@@ -303,6 +342,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp13b",
     level: "C1",
+    type: "mc",
     prompt: '"Jouer l\'avocat du diable" signifie :',
     choices: [
       "causer des problèmes exprès",
@@ -315,6 +355,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp14b",
     level: "C1",
+    type: "mc",
     prompt: 'Mot le plus précis pour "beaucoup de preuves":',
     choices: [
       "un tas de preuves",
@@ -327,6 +368,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp15b",
     level: "C1",
+    type: "mc",
     prompt: "Quelle phrase évite une construction maladroite ?",
     choices: [
       "En marchant vers le magasin, la pluie a commencé.",
@@ -339,6 +381,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp13c",
     level: "C1",
+    type: "mc",
     prompt: '"Nonobstant" est le plus proche de :',
     choices: ["à cause de", "malgré", "en plus de", "en conséquence de"],
     answer: 1,
@@ -346,6 +389,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp14c",
     level: "C1",
+    type: "mc",
     prompt: 'Meilleure alternative formelle à "un gros problème":',
     choices: ["un énorme souci", "un défi important", "une grosse galère", "un vrai gros truc"],
     answer: 1,
@@ -353,6 +397,7 @@ export const PLACEMENT_QUESTIONS_FR: PlacementQuestion[] = [
   {
     id: "fp15c",
     level: "C1",
+    type: "mc",
     prompt: "Quelle phrase utilise une nuance appropriée à l'écrit académique ?",
     choices: [
       "Ceci prouve que la théorie est correcte.",

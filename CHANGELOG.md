@@ -127,7 +127,35 @@ mid-merge). #83/#84's branches were updated via `gh pr update-branch`
 rather than a rebase force-push, since live sessions were still working
 in those worktrees.
 
-**Free-form translation question type (#TBD)** — a sixth question type,
+**Placement covers the new question types (#107)** — the exam now assesses
+`listening` (10 questions, two per band) and `translate` (5, one per band)
+alongside multiple choice. Before this it tested only multiple choice, then
+placed learners into a course where roughly one question in eight is listening,
+speaking or translation.
+
+`speak` is left out on purpose: asking for microphone permission during
+onboarding, where a denial makes the question unanswerable and the typing
+fallback would assess writing while claiming to assess speaking, is a worse
+trade than not asking. Argued in the plan so it can be overturned knowingly.
+
+The shape change underneath is that `PlacementQuestion` became a union and
+grading moved behind one helper that takes the submitted **text** — the exam
+previously compared an option index, which only multiple choice can express.
+`/api/grade-translation` also learned to resolve placement ids: that pool lives
+outside the curriculum's question index, so without it every placement
+translation would have 400ed, and since the client reads a 400 as "no verdict",
+it would have failed silently and mis-placed people rather than erroring. Same
+shape as the `consume_ai_quota` bug in phase 4 — a refusal read as an absent
+opinion.
+
+Two testing notes came out of it and are now in AGENTS.md, because two other
+sessions write React tests against controlled inputs: `user.type` can leave
+only the last character in a controlled field (it read as "grading is broken"
+and cost three wrong hypotheses about the scoring rules), and running two
+vitest or two build processes at once produces failures that look exactly like
+real regressions.
+
+**Free-form translation question type (#107)** — a sixth question type,
 `translate`: the learner is shown an idea to express ("Ask someone their name")
 and writes it in English themselves. 125 questions across all five CEFR bands
 (one pack each), taking English to 609 lessons / 3,096 questions.
@@ -187,7 +215,7 @@ the Edge Functions. While it was red, **no function redeployed** — so a
 `grade-review` change merged during that window was live in the repo and not on
 the server.
 
-**Speaking practice question type (#TBD)** — a fifth question type, `speak`:
+**Speaking practice question type (#107)** — a fifth question type, `speak`:
 the learner is shown a phrase, records themselves saying it, and the
 speech-to-text transcript is graded. 125 questions across all five CEFR bands
 (one pack each), taking English to 584 lessons / 2,971 questions.
