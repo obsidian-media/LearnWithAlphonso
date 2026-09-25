@@ -1,5 +1,6 @@
 import { canSpeak, speak } from "../lib/speech";
 import { useSpeechCapture } from "../lib/use-speech-capture";
+import type { Course } from "../data/courses";
 
 /**
  * The answer control for a "speak" question, shared by the lesson player and
@@ -26,18 +27,23 @@ import { useSpeechCapture } from "../lib/use-speech-capture";
 export function SpeakAnswer({
   target,
   locale,
+  course,
   value,
   onChange,
   checked,
 }: {
   target: string;
   locale: string;
+  /** Forwarded to /api/stt so Deepgram transcribes in this course's
+   * language instead of defaulting to English -- see use-speech-capture.ts. */
+  course: Course;
   value: string | null;
   onChange: (text: string) => void;
   checked: boolean;
 }) {
   const { state, error, failed, canRecord, start, stop } = useSpeechCapture({
     onTranscript: (text) => onChange(text),
+    course,
   });
   const recording = state === "recording";
   const transcribing = state === "transcribing";

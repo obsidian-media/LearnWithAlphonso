@@ -41,6 +41,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="She's a doctor."
         locale="en-US"
+        course="en"
         value={null}
         onChange={() => {}}
         checked={false}
@@ -59,6 +60,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={onChange}
         checked={false}
@@ -73,6 +75,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value="good mourning"
         onChange={() => {}}
         checked={false}
@@ -87,6 +90,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={() => {}}
         checked={false}
@@ -100,6 +104,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={() => {}}
         checked={false}
@@ -115,6 +120,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={() => {}}
         checked={false}
@@ -133,6 +139,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={onChange}
         checked={false}
@@ -148,6 +155,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value="good morning"
         onChange={() => {}}
         checked
@@ -171,6 +179,7 @@ describe("SpeakAnswer", () => {
       <SpeakAnswer
         target="Good morning."
         locale="en-US"
+        course="en"
         value={null}
         onChange={onChange}
         checked={false}

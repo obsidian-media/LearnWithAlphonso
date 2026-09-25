@@ -10,9 +10,10 @@ const handler = (
   }
 ).POST;
 
-function reqWithFile(file: Blob | null) {
+function reqWithFile(file: Blob | null, course?: string) {
   const form = new FormData();
   if (file) form.set("file", file, "audio.webm");
+  if (course !== undefined) form.set("course", course);
   return new Request("https://example.com/api/stt", { method: "POST", body: form });
 }
 
@@ -85,6 +86,52 @@ describe("POST /api/stt", () => {
     const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain("api.deepgram.com/v1/listen");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("audio/mp4");
+  });
+
+  // This bug lived in the request Deepgram never saw and nothing asserted on
+  // -- every course's audio was silently transcribed as English (Deepgram
+  // defaults every model to language=en when the parameter is omitted, and
+  // this endpoint never set it). Pinning the actual outbound URL, not just
+  // that a call was made, is what would have caught it originally.
+  describe("forwards the right Deepgram language for the requesting course", () => {
+    function okResponse() {
+      return new Response(
+        JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "x" }] }] } }),
+        { status: 200 },
+      );
+    }
+
+    it.each([
+      ["fr", "fr"],
+      ["es", "es"],
+      ["en", "en"],
+    ])("course=%s -> language=%s", async (course, expectedLanguage) => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(okResponse());
+      await handler({ request: reqWithFile(new Blob(["x".repeat(600)]), course) });
+      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(new URL(url as string).searchParams.get("language")).toBe(expectedLanguage);
+    });
+
+    it("defaults to language=en when the caller sends no course (the conversation route today)", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(okResponse());
+      await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(new URL(url as string).searchParams.get("language")).toBe("en");
+    });
+
+    it("defaults to language=en rather than forwarding an unrecognised course string", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(okResponse());
+      await handler({ request: reqWithFile(new Blob(["x".repeat(600)]), "klingon") });
+      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(new URL(url as string).searchParams.get("language")).toBe("en");
+    });
+
+    it("still requests model=nova-3, the model verified to support fr/es/en", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(okResponse());
+      await handler({ request: reqWithFile(new Blob(["x".repeat(600)]), "fr") });
+      const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(new URL(url as string).searchParams.get("model")).toBe("nova-3");
+    });
   });
 
   it("returns Deepgram's utterance-level confidence as a pronunciation-clarity heuristic", async () => {
