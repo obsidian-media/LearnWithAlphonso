@@ -25,6 +25,7 @@ struct TranslateQuestionCard: View {
     /// Set once the verdict settles, so the player can show the outcome and
     /// score it. Nil until then.
     @Binding var verdict: TranslationVerdict?
+    let course: Course
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {

@@ -508,7 +508,7 @@ private struct ReviewQuestionCard: View {
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict)
+                    verdict: $translationVerdict, course: course)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,
