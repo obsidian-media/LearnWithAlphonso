@@ -3824,15 +3824,15 @@
             {
               "id": "esa1p15q1",
               "type": "fill",
-              "prompt": "How do you say \"cold\" in Spanish? ___",
+              "prompt": "How do you say \"rough\" in Spanish? ___",
               "bank": [
-                "frío",
                 "fuerte",
                 "cerrado",
+                "áspero",
                 "duro"
               ],
-              "answer": "frío",
-              "explanation": "cold → frío. Common opposite adjectives."
+              "answer": "áspero",
+              "explanation": "rough → áspero. Common opposite adjectives."
             },
             {
               "id": "esa1p15q2",
@@ -3840,7 +3840,7 @@
               "prompt": "How do you say \"sweet\" in Spanish?",
               "choices": [
                 "dulce",
-                "frío",
+                "áspero",
                 "vacío",
                 "fuerte"
               ],
@@ -3911,9 +3911,9 @@
               "type": "fill",
               "prompt": "How do you say \"dirty\" in Spanish? ___",
               "bank": [
-                "frío",
                 "limpio",
                 "pesado",
+                "áspero",
                 "sucio"
               ],
               "answer": "sucio",
@@ -3972,7 +3972,7 @@
               "choices": [
                 "cerrado",
                 "pesado",
-                "frío",
+                "áspero",
                 "lleno"
               ],
               "answer": 0,
@@ -4082,7 +4082,7 @@
               "prompt": "How do you say \"quiet\" in Spanish?",
               "choices": [
                 "silencioso",
-                "frío",
+                "áspero",
                 "lleno",
                 "ligero"
               ],
@@ -4120,14 +4120,14 @@
             {
               "id": "esa1p16q1",
               "type": "mc",
-              "prompt": "How do you say \"sad\" in Spanish?",
+              "prompt": "How do you say \"grateful\" in Spanish?",
               "choices": [
                 "celoso",
-                "triste",
+                "agradecido",
                 "emocionado"
               ],
               "answer": 1,
-              "explanation": "sad → triste. Common emotion words."
+              "explanation": "grateful → agradecido. Common emotion words."
             },
             {
               "id": "esa1p16q2",
@@ -4148,7 +4148,7 @@
               "choices": [
                 "enamorado",
                 "asustado",
-                "triste"
+                "agradecido"
               ],
               "answer": 1,
               "explanation": "scared → asustado. Common emotion words."
@@ -4893,14 +4893,14 @@
             {
               "id": "esa1p20q0",
               "type": "mc",
-              "prompt": "How do you say \"sun\" in Spanish?",
+              "prompt": "How do you say \"coral reef\" in Spanish?",
               "choices": [
-                "sol",
+                "arrecife de coral",
                 "roca",
                 "estrella"
               ],
               "answer": 0,
-              "explanation": "sun → sol. Basic nature vocabulary."
+              "explanation": "coral reef → arrecife de coral. Basic nature vocabulary."
             },
             {
               "id": "esa1p20q1",
@@ -4986,7 +4986,7 @@
               "type": "mc",
               "prompt": "How do you say \"sea\" in Spanish?",
               "choices": [
-                "sol",
+                "arrecife de coral",
                 "arena",
                 "mar"
               ],
@@ -5041,7 +5041,7 @@
               "type": "mc",
               "prompt": "How do you say \"island\" in Spanish?",
               "choices": [
-                "sol",
+                "arrecife de coral",
                 "isla",
                 "mar"
               ],
@@ -6210,15 +6210,15 @@
             {
               "id": "esa1p24q0",
               "type": "mc",
-              "prompt": "How do you say \"Nice to meet you\" in Spanish?",
+              "prompt": "How do you say \"Make yourself at home\" in Spanish?",
               "choices": [
                 "Igualmente",
                 "Estoy de acuerdo",
-                "Mucho gusto",
+                "Siéntete como en casa",
                 "Que tengas un buen día"
               ],
               "answer": 2,
-              "explanation": "Nice to meet you → Mucho gusto. Common small-talk and reaction phrases."
+              "explanation": "Make yourself at home → Siéntete como en casa. Common small-talk and reaction phrases."
             },
             {
               "id": "esa1p24q1",
@@ -6267,7 +6267,7 @@
                 "Felicidades",
                 "No sé",
                 "Cuídate",
-                "Mucho gusto"
+                "Siéntete como en casa"
               ],
               "answer": 2,
               "explanation": "Take care → Cuídate. Common small-talk and reaction phrases."
@@ -6398,7 +6398,7 @@
                 "Felicidades",
                 "¿Qué significa eso?",
                 "No hay problema",
-                "Mucho gusto"
+                "Siéntete como en casa"
               ],
               "answer": 2,
               "explanation": "No problem → No hay problema. Common small-talk and reaction phrases."
@@ -8035,15 +8035,15 @@
             {
               "id": "esa2p3q4",
               "type": "mc",
-              "prompt": "How do you say \"school\" in Spanish?",
+              "prompt": "How do you say \"bridge\" in Spanish?",
               "choices": [
                 "iglesia",
                 "calle",
-                "escuela",
+                "puente",
                 "lejos"
               ],
               "answer": 2,
-              "explanation": "school → escuela. Places in town and basic direction words."
+              "explanation": "bridge → puente. Places in town and basic direction words."
             }
           ]
         },
@@ -8130,7 +8130,7 @@
               "prompt": "How do you say \"airport\" in Spanish? ___",
               "bank": [
                 "derecha",
-                "escuela",
+                "puente",
                 "aeropuerto",
                 "semáforo"
               ],
@@ -8204,7 +8204,7 @@
                 "lejos",
                 "estación",
                 "allí",
-                "escuela"
+                "puente"
               ],
               "answer": 0,
               "explanation": "far → lejos. Places in town and basic direction words."
@@ -8241,9 +8241,9 @@
               "prompt": "How do you say \"corner\" in Spanish? ___",
               "bank": [
                 "izquierda",
+                "puente",
                 "aquí",
-                "esquina",
-                "escuela"
+                "esquina"
               ],
               "answer": "esquina",
               "explanation": "corner → esquina. Places in town and basic direction words."
@@ -9411,15 +9411,15 @@
             {
               "id": "esa2p7q4",
               "type": "mc",
-              "prompt": "How do you say \"store\" in Spanish?",
+              "prompt": "How do you say \"cashier\" in Spanish?",
               "choices": [
                 "moneda",
                 "cambio",
-                "tienda",
+                "cajero",
                 "efectivo"
               ],
               "answer": 2,
-              "explanation": "store → tienda. Shopping and money vocabulary."
+              "explanation": "cashier → cajero. Shopping and money vocabulary."
             }
           ]
         },
@@ -9485,8 +9485,8 @@
               "type": "fill",
               "prompt": "How do you say \"receipt\" in Spanish? ___",
               "bank": [
+                "cajero",
                 "cliente",
-                "tienda",
                 "cambio",
                 "recibo"
               ],
@@ -9545,7 +9545,7 @@
               "prompt": "How do you say \"wallet\" in Spanish?",
               "choices": [
                 "talla",
-                "tienda",
+                "cajero",
                 "cartera",
                 "moneda"
               ],
@@ -10788,7 +10788,7 @@
               "type": "mc",
               "prompt": "How do you say \"post office\" in Spanish?",
               "choices": [
-                "farmacia",
+                "clínica",
                 "restaurante",
                 "oficina de correos"
               ],
@@ -10798,14 +10798,14 @@
             {
               "id": "esa2p13q1",
               "type": "mc",
-              "prompt": "How do you say \"pharmacy\" in Spanish?",
+              "prompt": "How do you say \"clinic\" in Spanish?",
               "choices": [
-                "farmacia",
+                "clínica",
                 "biblioteca",
                 "librería"
               ],
               "answer": 0,
-              "explanation": "pharmacy → farmacia. More places found around a city."
+              "explanation": "clinic → clínica. More places found around a city."
             },
             {
               "id": "esa2p13q2",
@@ -10857,7 +10857,7 @@
               "choices": [
                 "panadería",
                 "teatro",
-                "farmacia"
+                "clínica"
               ],
               "answer": 1,
               "explanation": "theater → teatro. More places found around a city."
@@ -10948,7 +10948,7 @@
               "choices": [
                 "comisaría",
                 "restaurante",
-                "farmacia"
+                "clínica"
               ],
               "answer": 0,
               "explanation": "police station → comisaría. More places found around a city."
@@ -15788,7 +15788,7 @@
               "prompt": "How do you say \"although\" in Spanish?",
               "choices": [
                 "siempre que",
-                "finalmente",
+                "de lo contrario",
                 "aunque",
                 "a pesar de"
               ],
@@ -15849,7 +15849,7 @@
                 "por lo tanto",
                 "para que",
                 "a pesar de",
-                "mientras tanto"
+                "asimismo"
               ],
               "answer": 2,
               "explanation": "in spite of → a pesar de. Common linking words for more complex sentences."
@@ -15898,7 +15898,7 @@
               "type": "mc",
               "prompt": "How do you say \"in other words\" in Spanish?",
               "choices": [
-                "finalmente",
+                "de lo contrario",
                 "porque",
                 "es decir",
                 "siempre que"
@@ -15916,28 +15916,28 @@
             {
               "id": "esb1p4q10",
               "type": "mc",
-              "prompt": "How do you say \"finally\" in Spanish?",
+              "prompt": "How do you say \"otherwise\" in Spanish?",
               "choices": [
                 "no obstante",
                 "de hecho",
-                "finalmente",
+                "de lo contrario",
                 "por otro lado"
               ],
               "answer": 2,
-              "explanation": "finally → finalmente. Common linking words for more complex sentences."
+              "explanation": "otherwise → de lo contrario. Common linking words for more complex sentences."
             },
             {
               "id": "esb1p4q11",
               "type": "fill",
-              "prompt": "How do you say \"meanwhile\" in Spanish? ___",
+              "prompt": "How do you say \"likewise\" in Spanish? ___",
               "bank": [
                 "además",
+                "asimismo",
                 "aun cuando",
-                "mientras tanto",
                 "sin embargo"
               ],
-              "answer": "mientras tanto",
-              "explanation": "meanwhile → mientras tanto. Common linking words for more complex sentences."
+              "answer": "asimismo",
+              "explanation": "likewise → asimismo. Common linking words for more complex sentences."
             },
             {
               "id": "esb1p4q12",
@@ -15958,7 +15958,7 @@
               "prompt": "How do you say \"as soon as\" in Spanish? ___",
               "bank": [
                 "tan pronto como",
-                "finalmente",
+                "de lo contrario",
                 "en consecuencia",
                 "por lo tanto"
               ],
@@ -16964,7 +16964,7 @@
             {
               "id": "esb1p7q16",
               "type": "fill",
-              "prompt": "Yo ___ (ser) estudiante.",
+              "prompt": "Yo ___ (ser) profesor.",
               "bank": [
                 "somos",
                 "estás",
@@ -17062,7 +17062,7 @@
             {
               "id": "esb1p7q23",
               "type": "fill",
-              "prompt": "Tú ___ (ser) muy amable.",
+              "prompt": "Tú ___ (ser) muy simpático.",
               "bank": [
                 "es",
                 "estás",
@@ -18435,7 +18435,7 @@
               "prompt": "How do you say \"salary\" in Spanish?",
               "choices": [
                 "trabajo",
-                "horario",
+                "horas extra",
                 "salario"
               ],
               "answer": 2,
@@ -18456,14 +18456,14 @@
             {
               "id": "esb1p13q8",
               "type": "mc",
-              "prompt": "How do you say \"schedule\" in Spanish?",
+              "prompt": "How do you say \"overtime\" in Spanish?",
               "choices": [
-                "horario",
+                "horas extra",
                 "reunión",
                 "trabajo"
               ],
               "answer": 0,
-              "explanation": "schedule → horario. Workplace and profession-related vocabulary."
+              "explanation": "overtime → horas extra. Workplace and profession-related vocabulary."
             },
             {
               "id": "esb1p13q9",
@@ -18527,7 +18527,7 @@
               "choices": [
                 "fecha límite",
                 "carrera",
-                "horario"
+                "horas extra"
               ],
               "answer": 0,
               "explanation": "deadline → fecha límite. Workplace and profession-related vocabulary."
@@ -20067,7 +20067,7 @@
               "type": "fill",
               "prompt": "How do you say \"cushion\" in Spanish? ___",
               "bank": [
-                "estante",
+                "alféizar",
                 "tejado",
                 "cojín",
                 "toalla"
@@ -20081,7 +20081,7 @@
               "prompt": "How do you say \"rug\" in Spanish?",
               "choices": [
                 "almohada",
-                "cortina",
+                "timbre",
                 "alfombra",
                 "pared"
               ],
@@ -20091,28 +20091,28 @@
             {
               "id": "esb1p21q3",
               "type": "fill",
-              "prompt": "How do you say \"curtain\" in Spanish? ___",
+              "prompt": "How do you say \"doorbell\" in Spanish? ___",
               "bank": [
                 "suelo",
-                "cortina",
+                "timbre",
                 "armario",
                 "sótano"
               ],
-              "answer": "cortina",
-              "explanation": "curtain → cortina. Furniture and parts of a house."
+              "answer": "timbre",
+              "explanation": "doorbell → timbre. Furniture and parts of a house."
             },
             {
               "id": "esb1p21q4",
               "type": "mc",
-              "prompt": "How do you say \"shelf\" in Spanish?",
+              "prompt": "How do you say \"windowsill\" in Spanish?",
               "choices": [
-                "estante",
-                "cajón",
+                "alféizar",
+                "chimenea",
                 "fregadero",
                 "cerca"
               ],
               "answer": 0,
-              "explanation": "shelf → estante. Furniture and parts of a house."
+              "explanation": "windowsill → alféizar. Furniture and parts of a house."
             }
           ]
         },
@@ -20124,15 +20124,15 @@
             {
               "id": "esb1p21q5",
               "type": "fill",
-              "prompt": "How do you say \"drawer\" in Spanish? ___",
+              "prompt": "How do you say \"fireplace\" in Spanish? ___",
               "bank": [
                 "colchón",
                 "sofá",
-                "cajón",
-                "tejado"
+                "tejado",
+                "chimenea"
               ],
-              "answer": "cajón",
-              "explanation": "drawer → cajón. Furniture and parts of a house."
+              "answer": "chimenea",
+              "explanation": "fireplace → chimenea. Furniture and parts of a house."
             },
             {
               "id": "esb1p21q6",
@@ -20214,7 +20214,7 @@
                 "ascensor",
                 "techo",
                 "toalla",
-                "estante"
+                "alféizar"
               ],
               "answer": 2,
               "explanation": "towel → toalla. Furniture and parts of a house."
@@ -20224,10 +20224,10 @@
               "type": "fill",
               "prompt": "How do you say \"sink\" in Spanish? ___",
               "bank": [
+                "timbre",
                 "almohada",
                 "tejado",
-                "fregadero",
-                "cortina"
+                "fregadero"
               ],
               "answer": "fregadero",
               "explanation": "sink → fregadero. Furniture and parts of a house."
@@ -20250,10 +20250,10 @@
               "type": "fill",
               "prompt": "How do you say \"stairs\" in Spanish? ___",
               "bank": [
-                "estante",
                 "escalera",
                 "toalla",
-                "ascensor"
+                "ascensor",
+                "alféizar"
               ],
               "answer": "escalera",
               "explanation": "stairs → escalera. Furniture and parts of a house."
@@ -20322,7 +20322,7 @@
               "type": "mc",
               "prompt": "How do you say \"fence\" in Spanish?",
               "choices": [
-                "cajón",
+                "chimenea",
                 "sótano",
                 "cerca",
                 "fregadero"
@@ -20369,7 +20369,7 @@
               "prompt": "How do you say \"elevator\" in Spanish?",
               "choices": [
                 "ascensor",
-                "estante",
+                "alféizar",
                 "toalla",
                 "tejado"
               ],
@@ -23294,15 +23294,15 @@
             {
               "id": "esb2p4q0",
               "type": "mc",
-              "prompt": "How do you say \"nevertheless\" in Spanish?",
+              "prompt": "How do you say \"furthermore\" in Spanish?",
               "choices": [
-                "no obstante",
+                "además",
                 "al respecto",
                 "siempre y cuando",
                 "sobre todo"
               ],
               "answer": 0,
-              "explanation": "nevertheless → no obstante. Connectors typical of formal writing and argumentation."
+              "explanation": "furthermore → además. Connectors typical of formal writing and argumentation."
             },
             {
               "id": "esb2p4q1",
@@ -23335,7 +23335,7 @@
               "type": "fill",
               "prompt": "How do you say \"in conclusion\" in Spanish? ___",
               "bank": [
-                "no obstante",
+                "además",
                 "en conclusión",
                 "por otra parte",
                 "en primer lugar"
@@ -23466,7 +23466,7 @@
               "type": "fill",
               "prompt": "How do you say \"without a doubt\" in Spanish? ___",
               "bank": [
-                "no obstante",
+                "además",
                 "en primer lugar",
                 "sin lugar a dudas",
                 "dado que"
@@ -24272,15 +24272,15 @@
             {
               "id": "esb2p7q3",
               "type": "mc",
-              "prompt": "How do you say \"mountain\" in Spanish?",
+              "prompt": "How do you say \"habitat\" in Spanish?",
               "choices": [
-                "montaña",
+                "hábitat",
                 "naturaleza",
                 "energía",
                 "ecosistema"
               ],
               "answer": 0,
-              "explanation": "mountain → montaña. Environment and nature vocabulary."
+              "explanation": "habitat → hábitat. Environment and nature vocabulary."
             },
             {
               "id": "esb2p7q4",
@@ -24320,8 +24320,8 @@
               "type": "fill",
               "prompt": "How do you say \"climate\" in Spanish? ___",
               "bank": [
-                "montaña",
                 "especie",
+                "hábitat",
                 "carbono",
                 "clima"
               ],
@@ -24392,7 +24392,7 @@
               "type": "fill",
               "prompt": "How do you say \"species\" in Spanish? ___",
               "bank": [
-                "montaña",
+                "hábitat",
                 "carbono",
                 "especie",
                 "sostenible"
@@ -24408,7 +24408,7 @@
                 "planeta",
                 "reciclaje",
                 "ecosistema",
-                "montaña"
+                "hábitat"
               ],
               "answer": 0,
               "explanation": "planet → planeta. Environment and nature vocabulary."
@@ -24923,14 +24923,14 @@
             {
               "id": "esb2p9q2",
               "type": "mc",
-              "prompt": "Es importante que nosotros ___ (llegar) a tiempo.",
+              "prompt": "Es probable que nosotros ___ (ganar) el partido.",
               "choices": [
                 "termines",
-                "lleguemos",
+                "ganemos",
                 "haga"
               ],
               "answer": 1,
-              "explanation": "\"lleguemos\" is correct here. Subjunctive triggered by impersonal expressions of necessity/possibility."
+              "explanation": "\"ganemos\" is correct here. Subjunctive triggered by impersonal expressions of necessity/possibility."
             },
             {
               "id": "esb2p9q3",
@@ -24993,7 +24993,7 @@
               "prompt": "Es una lástima que tú no ___ (poder) venir.",
               "choices": [
                 "puedas",
-                "lleguemos",
+                "ganemos",
                 "tengan"
               ],
               "answer": 0,
@@ -26162,14 +26162,14 @@
             {
               "id": "esb2p15q1",
               "type": "mc",
-              "prompt": "How do you say \"market\" in Spanish?",
+              "prompt": "How do you say \"bankruptcy\" in Spanish?",
               "choices": [
                 "impuesto",
-                "mercado",
+                "bancarrota",
                 "deuda"
               ],
               "answer": 1,
-              "explanation": "market → mercado. Business and economics vocabulary."
+              "explanation": "bankruptcy → bancarrota. Business and economics vocabulary."
             },
             {
               "id": "esb2p15q2",
@@ -26233,7 +26233,7 @@
               "choices": [
                 "impuesto",
                 "inflación",
-                "préstamo"
+                "subsidio"
               ],
               "answer": 0,
               "explanation": "tax → impuesto. Business and economics vocabulary."
@@ -26244,7 +26244,7 @@
               "prompt": "How do you say \"inflation\" in Spanish?",
               "choices": [
                 "inflación",
-                "mercado",
+                "bancarrota",
                 "importación"
               ],
               "answer": 0,
@@ -26332,14 +26332,14 @@
             {
               "id": "esb2p15q14",
               "type": "mc",
-              "prompt": "How do you say \"loan\" in Spanish?",
+              "prompt": "How do you say \"subsidy\" in Spanish?",
               "choices": [
-                "préstamo",
+                "subsidio",
                 "deuda",
                 "impuesto"
               ],
               "answer": 0,
-              "explanation": "loan → préstamo. Business and economics vocabulary."
+              "explanation": "subsidy → subsidio. Business and economics vocabulary."
             }
           ]
         }
@@ -26584,7 +26584,7 @@
               "type": "mc",
               "prompt": "How do you say \"journalist\" in Spanish?",
               "choices": [
-                "entrevista",
+                "corresponsal",
                 "publicar",
                 "periodista"
               ],
@@ -26637,14 +26637,14 @@
             {
               "id": "esb2p17q5",
               "type": "mc",
-              "prompt": "How do you say \"interview\" in Spanish?",
+              "prompt": "How do you say \"correspondent\" in Spanish?",
               "choices": [
                 "audiencia",
                 "transmisión",
-                "entrevista"
+                "corresponsal"
               ],
               "answer": 2,
-              "explanation": "interview → entrevista. Media and journalism vocabulary."
+              "explanation": "correspondent → corresponsal. Media and journalism vocabulary."
             },
             {
               "id": "esb2p17q6",
@@ -26706,7 +26706,7 @@
               "type": "mc",
               "prompt": "How do you say \"source (of info)\" in Spanish?",
               "choices": [
-                "entrevista",
+                "corresponsal",
                 "fuente",
                 "audiencia"
               ],
@@ -26816,14 +26816,14 @@
             {
               "id": "esb2p18q3",
               "type": "mc",
-              "prompt": "How do you say \"museum\" in Spanish?",
+              "prompt": "How do you say \"curator\" in Spanish?",
               "choices": [
-                "museo",
+                "curador",
                 "tradición",
                 "escultura"
               ],
               "answer": 0,
-              "explanation": "museum → museo. Art and culture vocabulary."
+              "explanation": "curator → curador. Art and culture vocabulary."
             },
             {
               "id": "esb2p18q4",
@@ -26832,7 +26832,7 @@
               "choices": [
                 "actuación",
                 "galería",
-                "artista"
+                "retrato"
               ],
               "answer": 1,
               "explanation": "gallery → galería. Art and culture vocabulary."
@@ -26847,14 +26847,14 @@
             {
               "id": "esb2p18q5",
               "type": "mc",
-              "prompt": "How do you say \"artist\" in Spanish?",
+              "prompt": "How do you say \"portrait\" in Spanish?",
               "choices": [
                 "lienzo",
-                "artista",
+                "retrato",
                 "escultor"
               ],
               "answer": 1,
-              "explanation": "artist → artista. Art and culture vocabulary."
+              "explanation": "portrait → retrato. Art and culture vocabulary."
             },
             {
               "id": "esb2p18q6",
@@ -26886,7 +26886,7 @@
               "prompt": "How do you say \"brush\" in Spanish?",
               "choices": [
                 "pincel",
-                "artista",
+                "retrato",
                 "artesanía"
               ],
               "answer": 0,
@@ -26918,7 +26918,7 @@
               "choices": [
                 "patrimonio",
                 "festival",
-                "museo"
+                "curador"
               ],
               "answer": 0,
               "explanation": "heritage → patrimonio. Art and culture vocabulary."
@@ -26929,7 +26929,7 @@
               "prompt": "How do you say \"festival\" in Spanish?",
               "choices": [
                 "artesanía",
-                "artista",
+                "retrato",
                 "festival"
               ],
               "answer": 2,
@@ -27016,7 +27016,7 @@
               "type": "mc",
               "prompt": "How do you say \"surgery\" in Spanish?",
               "choices": [
-                "síntoma",
+                "inflamación",
                 "receta médica",
                 "cirugía"
               ],
@@ -27069,14 +27069,14 @@
             {
               "id": "esb2p19q6",
               "type": "mc",
-              "prompt": "How do you say \"symptom\" in Spanish?",
+              "prompt": "How do you say \"inflammation\" in Spanish?",
               "choices": [
-                "síntoma",
+                "inflamación",
                 "infección",
                 "sistema inmunológico"
               ],
               "answer": 0,
-              "explanation": "symptom → síntoma. Advanced health and medical vocabulary."
+              "explanation": "inflammation → inflamación. Advanced health and medical vocabulary."
             },
             {
               "id": "esb2p19q7",
@@ -28902,7 +28902,7 @@
               "prompt": "How do you say \"mortgage\" in Spanish?",
               "choices": [
                 "hipoteca",
-                "depósito",
+                "inspección",
                 "tasación",
                 "condominio"
               ],
@@ -28958,15 +28958,15 @@
             {
               "id": "esb2p25q5",
               "type": "mc",
-              "prompt": "How do you say \"deposit\" in Spanish?",
+              "prompt": "How do you say \"inspection\" in Spanish?",
               "choices": [
-                "depósito",
+                "inspección",
                 "alquiler",
                 "vecindario",
                 "sin amueblar"
               ],
               "answer": 0,
-              "explanation": "deposit → depósito. Housing and real-estate vocabulary."
+              "explanation": "inspection → inspección. Housing and real-estate vocabulary."
             },
             {
               "id": "esb2p25q6",
@@ -28975,8 +28975,8 @@
               "bank": [
                 "agente inmobiliario",
                 "depósito de seguridad",
-                "mudarse",
-                "depósito"
+                "inspección",
+                "mudarse"
               ],
               "answer": "agente inmobiliario",
               "explanation": "real estate agent → agente inmobiliario. Housing and real-estate vocabulary."
@@ -29215,7 +29215,7 @@
               "type": "mc",
               "prompt": "How do you say \"security deposit\" in Spanish?",
               "choices": [
-                "depósito",
+                "inspección",
                 "contrato de alquiler",
                 "depósito de seguridad",
                 "tasación"
@@ -29230,7 +29230,7 @@
               "bank": [
                 "tasación",
                 "condominio",
-                "depósito",
+                "inspección",
                 "mercado inmobiliario"
               ],
               "answer": "mercado inmobiliario",
@@ -29271,9 +29271,9 @@
               "prompt": "How do you say \"despite the fact that\" in Spanish? ___",
               "bank": [
                 "a pesar de que",
+                "como resultado",
                 "de cualquier manera",
-                "de todas formas",
-                "sin embargo"
+                "de todas formas"
               ],
               "answer": "a pesar de que",
               "explanation": "despite the fact that → a pesar de que. Advanced connectors expressing contrast or concession."
@@ -29307,15 +29307,15 @@
             {
               "id": "esb2p26q4",
               "type": "mc",
-              "prompt": "How do you say \"however\" in Spanish?",
+              "prompt": "How do you say \"as a result\" in Spanish?",
               "choices": [
                 "de cualquier manera",
                 "de todas formas",
-                "sin embargo",
+                "como resultado",
                 "aunque"
               ],
               "answer": 2,
-              "explanation": "however → sin embargo. Advanced connectors expressing contrast or concession."
+              "explanation": "as a result → como resultado. Advanced connectors expressing contrast or concession."
             }
           ]
         },
@@ -29329,8 +29329,8 @@
               "type": "fill",
               "prompt": "How do you say \"nonetheless\" in Spanish? ___",
               "bank": [
-                "sea como sea",
-                "a pesar de",
+                "al mismo tiempo",
+                "por esta razón",
                 "en última instancia",
                 "no obstante"
               ],
@@ -29353,22 +29353,22 @@
             {
               "id": "esb2p26q7",
               "type": "fill",
-              "prompt": "How do you say \"in spite of\" in Spanish? ___",
+              "prompt": "How do you say \"for this reason\" in Spanish? ___",
               "bank": [
-                "a pesar de",
-                "sin embargo",
+                "como resultado",
+                "por esta razón",
                 "en contraste",
                 "considerando todo"
               ],
-              "answer": "a pesar de",
-              "explanation": "in spite of → a pesar de. Advanced connectors expressing contrast or concession."
+              "answer": "por esta razón",
+              "explanation": "for this reason → por esta razón. Advanced connectors expressing contrast or concession."
             },
             {
               "id": "esb2p26q8",
               "type": "mc",
               "prompt": "How do you say \"granted that\" in Spanish?",
               "choices": [
-                "sea como sea",
+                "al mismo tiempo",
                 "independientemente de",
                 "si bien es cierto que",
                 "en definitiva"
@@ -29381,10 +29381,10 @@
               "type": "fill",
               "prompt": "How do you say \"on the other hand\" in Spanish? ___",
               "bank": [
+                "además de eso",
                 "mientras que",
                 "habiendo dicho esto",
-                "por otro lado",
-                "en cambio"
+                "por otro lado"
               ],
               "answer": "por otro lado",
               "explanation": "on the other hand → por otro lado. Advanced connectors expressing contrast or concession."
@@ -29399,15 +29399,15 @@
             {
               "id": "esb2p26q10",
               "type": "fill",
-              "prompt": "How do you say \"conversely\" in Spanish? ___",
+              "prompt": "How do you say \"on top of that\" in Spanish? ___",
               "bank": [
                 "si bien es cierto que",
-                "en cambio",
                 "a pesar de que",
+                "además de eso",
                 "si bien"
               ],
-              "answer": "en cambio",
-              "explanation": "conversely → en cambio. Advanced connectors expressing contrast or concession."
+              "answer": "además de eso",
+              "explanation": "on top of that → además de eso. Advanced connectors expressing contrast or concession."
             },
             {
               "id": "esb2p26q11",
@@ -29427,8 +29427,8 @@
               "type": "fill",
               "prompt": "How do you say \"in contrast\" in Spanish? ___",
               "bank": [
-                "en cambio",
                 "en contraste",
+                "además de eso",
                 "de cualquier manera",
                 "por el contrario"
               ],
@@ -29443,7 +29443,7 @@
                 "considerando todo",
                 "aun así",
                 "pese a",
-                "sin embargo"
+                "como resultado"
               ],
               "answer": 2,
               "explanation": "notwithstanding → pese a. Advanced connectors expressing contrast or concession."
@@ -29451,15 +29451,15 @@
             {
               "id": "esb2p26q14",
               "type": "fill",
-              "prompt": "How do you say \"be that as it may\" in Spanish? ___",
+              "prompt": "How do you say \"at the same time\" in Spanish? ___",
               "bank": [
-                "sea como sea",
+                "al mismo tiempo",
+                "como resultado",
                 "de todas formas",
-                "considerando todo",
-                "sin embargo"
+                "considerando todo"
               ],
-              "answer": "sea como sea",
-              "explanation": "be that as it may → sea como sea. Advanced connectors expressing contrast or concession."
+              "answer": "al mismo tiempo",
+              "explanation": "at the same time → al mismo tiempo. Advanced connectors expressing contrast or concession."
             }
           ]
         },
@@ -29500,7 +29500,7 @@
               "prompt": "How do you say \"in any case\" in Spanish?",
               "choices": [
                 "de cualquier manera",
-                "en cambio",
+                "además de eso",
                 "en todo caso",
                 "aunque"
               ],
@@ -29512,10 +29512,10 @@
               "type": "fill",
               "prompt": "How do you say \"either way\" in Spanish? ___",
               "bank": [
-                "a pesar de",
                 "en todo caso",
                 "aunque",
-                "de cualquier manera"
+                "de cualquier manera",
+                "por esta razón"
               ],
               "answer": "de cualquier manera",
               "explanation": "either way → de cualquier manera. Advanced connectors expressing contrast or concession."
@@ -29526,7 +29526,7 @@
               "prompt": "How do you say \"that said\" in Spanish?",
               "choices": [
                 "dicho esto",
-                "sin embargo",
+                "como resultado",
                 "de todas formas",
                 "de cualquier manera"
               ],
@@ -29548,7 +29548,7 @@
                 "habiendo dicho esto",
                 "en definitiva",
                 "por el contrario",
-                "en cambio"
+                "además de eso"
               ],
               "answer": 0,
               "explanation": "having said that → habiendo dicho esto. Advanced connectors expressing contrast or concession."
@@ -29558,9 +29558,9 @@
               "type": "fill",
               "prompt": "How do you say \"on balance\" in Spanish? ___",
               "bank": [
-                "a pesar de",
+                "por esta razón",
                 "en definitiva",
-                "sea como sea",
+                "al mismo tiempo",
                 "considerando todo"
               ],
               "answer": "en definitiva",
@@ -29599,8 +29599,8 @@
               "choices": [
                 "en última instancia",
                 "aunque",
-                "a pesar de",
-                "sea como sea"
+                "por esta razón",
+                "al mismo tiempo"
               ],
               "answer": 0,
               "explanation": "ultimately → en última instancia. Advanced connectors expressing contrast or concession."
@@ -29640,9 +29640,9 @@
               "prompt": "Ella actuó como si ___ (saber) todo.",
               "choices": [
                 "supiera",
-                "dijera",
-                "ganáramos",
-                "viviéramos"
+                "hiciera",
+                "pudiera",
+                "viniera"
               ],
               "answer": 0,
               "explanation": "\"supiera\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
@@ -29713,7 +29713,7 @@
               "bank": [
                 "tuviera",
                 "llegaran",
-                "supieran",
+                "supiera",
                 "pudiéramos"
               ],
               "answer": "pudiéramos",
@@ -29735,15 +29735,15 @@
             {
               "id": "esc1p1q8",
               "type": "fill",
-              "prompt": "Si ellos ___ (saber) la verdad, actuarían diferente.",
+              "prompt": "Si ella ___ (saber) conducir, iría en coche.",
               "bank": [
-                "pudiera",
-                "supieran",
-                "pudiéramos",
-                "termináramos"
+                "tuviera",
+                "importara",
+                "estudiaras",
+                "supiera"
               ],
-              "answer": "supieran",
-              "explanation": "\"supieran\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
+              "answer": "supiera",
+              "explanation": "\"supiera\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
             },
             {
               "id": "esc1p1q9",
@@ -29825,7 +29825,7 @@
                 "termináramos",
                 "tuviera",
                 "viniera",
-                "fuera"
+                "fuéramos"
               ],
               "answer": 0,
               "explanation": "\"termináramos\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
@@ -29840,15 +29840,15 @@
             {
               "id": "esc1p1q15",
               "type": "fill",
-              "prompt": "Si yo ___ (ser) rico, ayudaría a más gente.",
+              "prompt": "Si nosotros ___ (ser) más organizados, terminaríamos antes.",
               "bank": [
                 "importara",
                 "supiera",
-                "fuera",
+                "fuéramos",
                 "viviéramos"
               ],
-              "answer": "fuera",
-              "explanation": "\"fuera\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
+              "answer": "fuéramos",
+              "explanation": "\"fuéramos\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
             },
             {
               "id": "esc1p1q16",
@@ -29858,7 +29858,7 @@
                 "supiera",
                 "viviéramos",
                 "te quedaras",
-                "supieran"
+                "fuéramos"
               ],
               "answer": 2,
               "explanation": "\"te quedaras\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
@@ -29940,10 +29940,10 @@
               "type": "fill",
               "prompt": "Me sorprendió que ella ___ (decir) eso.",
               "bank": [
-                "fuera",
-                "supieran",
+                "fuéramos",
                 "dijera",
-                "estuvieran"
+                "estuvieran",
+                "supiera"
               ],
               "answer": "dijera",
               "explanation": "\"dijera\" is correct here. Imperfect subjunctive, used for hypotheticals and past wishes/doubts."
@@ -31550,41 +31550,41 @@
             {
               "id": "esc1p7q0",
               "type": "fill",
-              "prompt": "How do you say \"law\" in Spanish? ___",
+              "prompt": "How do you say \"trial\" in Spanish? ___",
               "bank": [
-                "abogado",
-                "ley",
-                "veredicto",
-                "conclusión"
+                "juicio",
+                "inocente",
+                "conclusión",
+                "fiscal"
               ],
-              "answer": "ley",
-              "explanation": "law → ley. Legal and academic register vocabulary."
+              "answer": "juicio",
+              "explanation": "trial → juicio. Legal and academic register vocabulary."
             },
             {
               "id": "esc1p7q1",
               "type": "mc",
-              "prompt": "How do you say \"contract\" in Spanish?",
+              "prompt": "How do you say \"guilty\" in Spanish?",
               "choices": [
                 "revisión por pares",
                 "investigación",
-                "contrato",
+                "culpable",
                 "prueba"
               ],
               "answer": 2,
-              "explanation": "contract → contrato. Legal and academic register vocabulary."
+              "explanation": "guilty → culpable. Legal and academic register vocabulary."
             },
             {
               "id": "esc1p7q2",
               "type": "fill",
-              "prompt": "How do you say \"lawyer\" in Spanish? ___",
+              "prompt": "How do you say \"innocent\" in Spanish? ___",
               "bank": [
-                "abogado",
+                "inocente",
                 "demanda",
                 "académico",
                 "hipótesis"
               ],
-              "answer": "abogado",
-              "explanation": "lawyer → abogado. Legal and academic register vocabulary."
+              "answer": "inocente",
+              "explanation": "innocent → inocente. Legal and academic register vocabulary."
             },
             {
               "id": "esc1p7q3",
@@ -31594,7 +31594,7 @@
                 "juez",
                 "reglamento",
                 "metodología",
-                "contrato"
+                "culpable"
               ],
               "answer": 0,
               "explanation": "judge → juez. Legal and academic register vocabulary."
@@ -31604,7 +31604,7 @@
               "type": "fill",
               "prompt": "How do you say \"court\" in Spanish? ___",
               "bank": [
-                "abogado",
+                "inocente",
                 "tribunal",
                 "investigación",
                 "cita"
@@ -31637,10 +31637,10 @@
               "type": "fill",
               "prompt": "How do you say \"lawsuit\" in Spanish? ___",
               "bank": [
-                "veredicto",
                 "conclusión",
                 "juez",
-                "demanda"
+                "demanda",
+                "fiscal"
               ],
               "answer": "demanda",
               "explanation": "lawsuit → demanda. Legal and academic register vocabulary."
@@ -31651,7 +31651,7 @@
               "prompt": "How do you say \"regulation\" in Spanish?",
               "choices": [
                 "reglamento",
-                "ley",
+                "juicio",
                 "cláusula",
                 "cita"
               ],
@@ -31663,10 +31663,10 @@
               "type": "fill",
               "prompt": "How do you say \"clause\" in Spanish? ___",
               "bank": [
-                "veredicto",
+                "culpable",
                 "metodología",
                 "cláusula",
-                "contrato"
+                "fiscal"
               ],
               "answer": "cláusula",
               "explanation": "clause → cláusula. Legal and academic register vocabulary."
@@ -31674,15 +31674,15 @@
             {
               "id": "esc1p7q9",
               "type": "mc",
-              "prompt": "How do you say \"verdict\" in Spanish?",
+              "prompt": "How do you say \"prosecutor\" in Spanish?",
               "choices": [
                 "investigación",
-                "abogado",
-                "veredicto",
+                "inocente",
+                "fiscal",
                 "revisión por pares"
               ],
               "answer": 2,
-              "explanation": "verdict → veredicto. Legal and academic register vocabulary."
+              "explanation": "prosecutor → fiscal. Legal and academic register vocabulary."
             }
           ]
         },
@@ -31696,7 +31696,7 @@
               "type": "mc",
               "prompt": "How do you say \"research\" in Spanish?",
               "choices": [
-                "ley",
+                "juicio",
                 "hipótesis",
                 "investigación",
                 "reglamento"
@@ -31709,10 +31709,10 @@
               "type": "fill",
               "prompt": "How do you say \"thesis\" in Spanish? ___",
               "bank": [
+                "culpable",
                 "cláusula",
                 "conclusión",
-                "tesis",
-                "contrato"
+                "tesis"
               ],
               "answer": "tesis",
               "explanation": "thesis → tesis. Legal and academic register vocabulary."
@@ -31751,7 +31751,7 @@
                 "hipótesis",
                 "demanda",
                 "metodología",
-                "contrato"
+                "culpable"
               ],
               "answer": 2,
               "explanation": "methodology → metodología. Legal and academic register vocabulary."
@@ -31768,8 +31768,8 @@
               "type": "fill",
               "prompt": "How do you say \"citation\" in Spanish? ___",
               "bank": [
-                "veredicto",
-                "abogado",
+                "fiscal",
+                "inocente",
                 "metodología",
                 "cita"
               ],
@@ -31782,7 +31782,7 @@
               "prompt": "How do you say \"conclusion\" in Spanish?",
               "choices": [
                 "conclusión",
-                "veredicto",
+                "fiscal",
                 "revisión por pares",
                 "tribunal"
               ],
@@ -31808,7 +31808,7 @@
               "prompt": "How do you say \"academic\" in Spanish?",
               "choices": [
                 "reglamento",
-                "ley",
+                "juicio",
                 "académico",
                 "metodología"
               ],
@@ -32873,7 +32873,7 @@
               "prompt": "How do you say \"counteroffer\" in Spanish?",
               "choices": [
                 "parte interesada",
-                "compromiso",
+                "arbitraje",
                 "contraoferta"
               ],
               "answer": 2,
@@ -32896,7 +32896,7 @@
               "type": "mc",
               "prompt": "How do you say \"merger\" in Spanish?",
               "choices": [
-                "cláusula",
+                "incumplimiento",
                 "fusión",
                 "términos y condiciones"
               ],
@@ -32980,14 +32980,14 @@
             {
               "id": "esc1p12q10",
               "type": "mc",
-              "prompt": "How do you say \"compromise\" in Spanish?",
+              "prompt": "How do you say \"arbitration\" in Spanish?",
               "choices": [
                 "términos y condiciones",
                 "acuerdo",
-                "compromiso"
+                "arbitraje"
               ],
               "answer": 2,
-              "explanation": "compromise → compromiso. Business negotiation vocabulary."
+              "explanation": "arbitration → arbitraje. Business negotiation vocabulary."
             },
             {
               "id": "esc1p12q11",
@@ -33028,14 +33028,14 @@
             {
               "id": "esc1p12q14",
               "type": "mc",
-              "prompt": "How do you say \"clause\" in Spanish?",
+              "prompt": "How do you say \"breach\" in Spanish?",
               "choices": [
-                "cláusula",
+                "incumplimiento",
                 "plazo",
                 "ingresos"
               ],
               "answer": 0,
-              "explanation": "clause → cláusula. Business negotiation vocabulary."
+              "explanation": "breach → incumplimiento. Business negotiation vocabulary."
             }
           ]
         }
@@ -33686,14 +33686,14 @@
             {
               "id": "esc1p16q0",
               "type": "mc",
-              "prompt": "How do you say \"hypothesis\" in Spanish?",
+              "prompt": "How do you say \"prototype\" in Spanish?",
               "choices": [
                 "avance",
                 "gen",
-                "hipótesis"
+                "prototipo"
               ],
               "answer": 2,
-              "explanation": "hypothesis → hipótesis. Advanced science and technology vocabulary."
+              "explanation": "prototype → prototipo. Advanced science and technology vocabulary."
             },
             {
               "id": "esc1p16q1",
@@ -33701,7 +33701,7 @@
               "prompt": "How do you say \"experiment\" in Spanish?",
               "choices": [
                 "innovación",
-                "hipótesis",
+                "prototipo",
                 "experimento"
               ],
               "answer": 2,
@@ -33871,7 +33871,7 @@
               "prompt": "How do you say \"simulation\" in Spanish?",
               "choices": [
                 "simulación",
-                "hipótesis",
+                "prototipo",
                 "teoría"
               ],
               "answer": 0,
@@ -34177,7 +34177,7 @@
               "choices": [
                 "to not sleep a wink",
                 "to be in one's element",
-                "to give up"
+                "to talk a mile a minute"
               ],
               "answer": 0,
               "explanation": "no pegar ojo → to not sleep a wink. More advanced idiomatic expressions for fluent Spanish."
@@ -34264,14 +34264,14 @@
             {
               "id": "esc1p18q12",
               "type": "mc",
-              "prompt": "What does \"tirar la toalla\" mean?",
+              "prompt": "What does \"hablar por los codos\" mean?",
               "choices": [
                 "to be extremely difficult",
-                "to give up",
+                "to talk a mile a minute",
                 "to not care at all"
               ],
               "answer": 1,
-              "explanation": "tirar la toalla → to give up. More advanced idiomatic expressions for fluent Spanish."
+              "explanation": "hablar por los codos → to talk a mile a minute. More advanced idiomatic expressions for fluent Spanish."
             },
             {
               "id": "esc1p18q13",
@@ -36636,7 +36636,7 @@
               "prompt": "How do you say \"in a manner of speaking\" in Spanish?",
               "choices": [
                 "en sentido amplio",
-                "a todos los efectos",
+                "al fin y al cabo",
                 "por así decirlo",
                 "en estas circunstancias"
               ],
@@ -36707,9 +36707,9 @@
               "type": "fill",
               "prompt": "How do you say \"suffice it to say\" in Spanish? ___",
               "bank": [
+                "al fin y al cabo",
                 "en sentido estricto",
                 "baste decir",
-                "a todos los efectos",
                 "en aras de"
               ],
               "answer": "baste decir",
@@ -36826,7 +36826,7 @@
               "prompt": "How do you say \"to the extent possible\" in Spanish?",
               "choices": [
                 "en sentido estricto",
-                "a todos los efectos",
+                "al fin y al cabo",
                 "en la medida de lo posible",
                 "siendo así"
               ],
@@ -36854,7 +36854,7 @@
                 "en retrospectiva",
                 "huelga decir",
                 "con miras a",
-                "a todos los efectos"
+                "al fin y al cabo"
               ],
               "answer": 0,
               "explanation": "in retrospect → en retrospectiva. Further advanced discourse markers."
@@ -36874,7 +36874,7 @@
                 "pensándolo bien",
                 "huelga decir",
                 "con miras a",
-                "a todos los efectos"
+                "al fin y al cabo"
               ],
               "answer": 0,
               "explanation": "on second thought → pensándolo bien. Further advanced discourse markers."
@@ -36908,15 +36908,15 @@
             {
               "id": "esc1p26q23",
               "type": "fill",
-              "prompt": "How do you say \"for all intents and purposes\" in Spanish? ___",
+              "prompt": "How do you say \"when all is said and done\" in Spanish? ___",
               "bank": [
+                "al fin y al cabo",
                 "en sentido amplio",
                 "en estas circunstancias",
-                "en el gran esquema de las cosas",
-                "a todos los efectos"
+                "en el gran esquema de las cosas"
               ],
-              "answer": "a todos los efectos",
-              "explanation": "for all intents and purposes → a todos los efectos. Further advanced discourse markers."
+              "answer": "al fin y al cabo",
+              "explanation": "when all is said and done → al fin y al cabo. Further advanced discourse markers."
             },
             {
               "id": "esc1p26q24",
