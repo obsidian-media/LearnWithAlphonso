@@ -277,6 +277,11 @@ private final class CampaignTurnRecorder {
     private var fileURL: URL?
 
     func start() throws {
+        // Set before touching the session, so the flag is already true
+        // when iOS delivers interruption-began to the podcast player --
+        // that is how it tells an in-app mic takeover from a phone call.
+        // See RecordingState.
+        RecordingState.shared.began()
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default)
         try session.setActive(true)
@@ -295,6 +300,7 @@ private final class CampaignTurnRecorder {
     }
 
     func stop() -> Data? {
+        RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
         defer { fileURL = nil }
