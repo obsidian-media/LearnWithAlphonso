@@ -70,6 +70,7 @@ struct SpeakQuestionCard: View {
                     course: course)
             }
         }
+        .aiDisclosureGate()
     }
 
     private var phraseCard: some View {

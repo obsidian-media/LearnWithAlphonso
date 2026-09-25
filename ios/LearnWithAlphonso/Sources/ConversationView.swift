@@ -99,6 +99,7 @@ private struct ConversationSessionView: View {
         .background(AlphonsoColor.surface)
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
+        .aiDisclosureGate()
         .task {
             turns = [ChatMessage(role: "assistant", content: scenario.opener)]
             // Best-effort -- if this fails, chat() just gets nil and skips

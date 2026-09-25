@@ -182,6 +182,7 @@ private struct HectorConversationView: View {
             micButton.padding()
         }
         .background(AlphonsoColor.surface)
+        .aiDisclosureGate()
         .task { await loadMemoryContext() }
         .onDisappear {
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
