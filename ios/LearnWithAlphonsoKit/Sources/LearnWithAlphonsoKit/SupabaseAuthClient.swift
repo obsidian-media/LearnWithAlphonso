@@ -107,6 +107,42 @@ public final class SupabaseAuthClient: Sendable {
         return try Self.decodeSession(from: data)
     }
 
+    /// Completes native Sign in with Apple: exchanges the identity token
+    /// `ASAuthorizationAppleIDCredential` hands the app for a Supabase
+    /// session via GoTrue's id_token grant. `nonce` must be the *raw*
+    /// (unhashed) nonce the app generated -- GoTrue hashes it itself
+    /// (SHA-256, hex) and compares it against the `nonce` claim embedded in
+    /// `idToken`, which Apple populated from the *hashed* nonce the app
+    /// set on the authorization request. Sending the hashed value here
+    /// instead would never match. Also works for native Google sign-in
+    /// (`provider: "google"`) if this app ever adds that; only Apple uses
+    /// it today.
+    ///
+    /// Whether this links to an existing user with the same verified email
+    /// (rather than erroring, or silently creating a second account)
+    /// depends on this Supabase project's own linking configuration --
+    /// verify that directly rather than assuming; see this PR's
+    /// description. An Apple private-relay email won't match a user's real
+    /// email either way, so a user who hides their email is unaffected by
+    /// that setting and simply gets his or her own account.
+    public func signInWithIDToken(provider: String, idToken: String, nonce: String) async throws -> SupabaseSession {
+        var components = URLComponents(url: supabaseURL.appendingPathComponent("auth/v1/token"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "grant_type", value: "id_token")]
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "provider": provider,
+            "id_token": idToken,
+            "nonce": nonce,
+        ])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        return try Self.decodeSession(from: data)
+    }
+
     public func refresh(_ session: SupabaseSession) async throws -> SupabaseSession {
         var components = URLComponents(url: supabaseURL.appendingPathComponent("auth/v1/token"), resolvingAgainstBaseURL: false)!
         components.queryItems = [URLQueryItem(name: "grant_type", value: "refresh_token")]

@@ -22,6 +22,19 @@ final class Session {
 
     private let authClient: SupabaseAuthClient
     private let googleSignInPresenter = GoogleSignInPresenter()
+    private let appleSignInPresenter = AppleSignInPresenter()
+
+    /// Set right after a successful Apple sign-in; cleared on sign-out.
+    /// Apple's revoke endpoint (required on account deletion, per App
+    /// Store Guideline 5.1.1(v)) needs a client_secret signed with the
+    /// Sign in with Apple private key -- that must never ship in this app,
+    /// so revocation itself can only happen server-side. This just
+    /// captures the one-time authorization code (valid for a few minutes)
+    /// while it's still fresh, so an account-deletion flow started in the
+    /// same session can forward it to a server-side revoke step. It does
+    /// NOT survive relaunch, and no server-side revoke step exists yet --
+    /// see this PR's description for what's still needed.
+    private(set) var appleAuthorizationCodeForRevocation: String?
 
     init(authClient: SupabaseAuthClient = SupabaseAuthClient(
         supabaseURL: AppConfig.supabaseURL,
@@ -102,9 +115,35 @@ final class Session {
         }
     }
 
+    /// Signs in with the system Apple ID dialog (ASAuthorizationController)
+    /// and completes Supabase's native id_token exchange -- no browser
+    /// sheet, unlike Google's flow above. Required alongside Google per
+    /// App Store Guideline 4.8: an app offering a third-party social login
+    /// must also offer Sign in with Apple.
+    func signInWithApple() async {
+        errorMessage = nil
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            let result = try await appleSignInPresenter.authenticate()
+            let session = try await authClient.signInWithIDToken(
+                provider: "apple",
+                idToken: result.identityToken,
+                nonce: result.rawNonce
+            )
+            appleAuthorizationCodeForRevocation = result.authorizationCode
+            state = .signedIn(session)
+        } catch AppleSignInPresenterError.cancelled {
+            // The user dismissed the dialog -- not a real error.
+        } catch {
+            errorMessage = Self.message(for: error)
+        }
+    }
+
     func signOut() {
         state = .signedOut
         errorMessage = nil
+        appleAuthorizationCodeForRevocation = nil
     }
 
     private static func message(for error: Error) -> String {
