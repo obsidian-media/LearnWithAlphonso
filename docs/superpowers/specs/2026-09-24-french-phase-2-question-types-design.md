@@ -256,6 +256,19 @@ bun run test
 bun run build         # ONLY this catches TanStack's import-protection
 ```
 
+Plus, whenever the change touches `ios/LearnWithAlphonso/Sources/`:
+
+**the `LearnWithAlphonsoKit` test suite is not evidence about the app
+target.** PR4 shipped with all 285 kit tests green and the app target
+not compiling — `TranslateQuestionCard.swift` passed a `course:`
+argument to a struct that had no `course` property, the 11th call site
+in a sweep of 10. The kit builds fine without the app; only
+`ios-app-build` compiles app-target files, and it runs in CI, not
+locally (importing SwiftUI fails on a machine with no SDK, which is
+exactly why nothing local caught it). So for an iOS change, **wait for
+`ios-app-build` on the PR before reporting green** — grepping call
+sites for consistency is not a compile.
+
 `bun run build` is listed because phase 4's session shipped a broken
 build with `tsc`, lint and tests all green — a `.client.ts` helper was
 unbundleable into a server-rendered route, and nothing but the build
