@@ -139,8 +139,8 @@ function ReviewPage() {
     // The same helper the grade-review server uses, so what the learner is
     // shown here and what happens to the item's schedule cannot disagree --
     // which for a spoken answer means the tolerant transcript match.
-    return deriveAnswerCorrectness(q, submittedAnswer);
-  }, [q, submittedAnswer]);
+    return deriveAnswerCorrectness(q, submittedAnswer, course);
+  }, [q, submittedAnswer, course]);
 
   // What the learner is shown. For translate that is the server's verdict,
   // which is the only one that knows about the AI second opinion.

@@ -7,6 +7,7 @@
 // congratulated and having the item lapsed in the same breath, which is
 // invisible from either side alone.
 import { matchesSpokenAnswer } from "./spoken-answer.ts";
+import { matchesSpokenAnswerFr } from "./spoken-answer-fr.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
 
@@ -38,19 +39,29 @@ export type QuestionRow = {
  * Async only because of "translate", whose grading may need a network call.
  * Every other type resolves synchronously and never awaits anything.
  */
-export async function deriveAnswerCorrectness(question: QuestionRow, answer: string): Promise<boolean> {
+export async function deriveAnswerCorrectness(
+  question: QuestionRow,
+  answer: string,
+  course: "en" | "fr" | "es" = "en",
+): Promise<boolean> {
   if (question.type === "mc") {
     return (question.choices ?? [])[question.answer_index ?? -1] === answer;
   }
   // A "speak" answer is a speech-to-text transcript, so it is compared with
   // the spoken normaliser rather than a bare trim. This MUST agree with
-  // src/lib/spoken-answer.ts: the player grades with that copy and shows the
-  // learner a verdict, and this function then re-derives it. If the two
-  // disagreed, the learner would see "Still got it" and have the item lapsed
-  // anyway. srs.test.ts here mirrors the source's vectors, and CI's deno-tests
-  // job is what catches drift.
+  // src/lib/spoken-answer.ts (or spoken-answer-fr.ts for course "fr"): the
+  // player grades with that same copy and shows the learner a verdict, and
+  // this function then re-derives it. If the two disagreed, the learner
+  // would see "Still got it" and have the item lapsed anyway.
+  // spoken-answer-fr.test.ts here mirrors the source's vectors, and CI's
+  // deno-tests job is what catches drift. English's rules are actively
+  // wrong for French ('s -> "is" is an auxiliary-verb contraction; French
+  // elision is a different, phonological rule) -- see spoken-answer-fr.ts's
+  // header for why this is a course-selected sibling, not a language flag.
   if (question.type === "speak") {
-    return matchesSpokenAnswer(answer, question.answer_text ?? "");
+    return course === "fr"
+      ? matchesSpokenAnswerFr(answer, question.answer_text ?? "")
+      : matchesSpokenAnswer(answer, question.answer_text ?? "");
   }
   // A written translation is graded against the whole curated list first, and
   // only what that rejects is put to the AI grader -- the same two-step the

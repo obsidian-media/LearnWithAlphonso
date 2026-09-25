@@ -83,15 +83,15 @@ column, kept in sync):
 | Course  | A1  | A2  | B1  | B2  | C1  | Total lessons |
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 137 | 119 | 119 | 117 | 117 | **609**       |
-| French  | 110 | 110 | 110 | 110 | 110 | **550**       |
+| French  | 115 | 115 | 115 | 115 | 115 | **575**       |
 | Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
 
 French and Spanish reached structural parity with English on 2026-09-21
 (both grew from a 25-pack/125-lesson starting point, reusing the same
 bank-engine pack pipeline). English pulled ahead on 2026-09-24 by adding
-`listening`, `speak` and `translate`, and French is now closing that gap
-— **phase 2** (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`),
-in progress, four PRs, one per generator change / question type:
+`listening`, `speak` and `translate`, and French closed that gap —
+**phase 2** (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`),
+done, four PRs, one per generator change / question type:
 
 - **PR 1** (merged): taught `bank-engine.ts` — the shared generator French
   and Spanish use — the `listening`/`speak`/`translate` kinds. Spanish
@@ -101,20 +101,27 @@ in progress, four PRs, one per generator change / question type:
   language-neutral confusability ordering for `listening`.
 - **PR 2** (merged): French `translate` content, 5 packs (one per CEFR
   level), 125 questions.
-- **PR 3** (this work): French `listening` content, 5 packs, 125
+- **PR 3** (merged): French `listening` content, 5 packs, 125
   questions — French minimal pairs (dessus/dessous, poisson/poison,
   ces/ses, mer/mère, pain/pin, cou/coup, vert/verre), verified at 96%
   confusability the same way the English audit measured its own listening
   content (a distractor sharing ≥50% of the answer's content words).
-- **PR 4** (not started): French `speak`. Needs a new `spoken-answer-fr.ts`
-  module (elision, liaison, a French number map) landed across all three
-  ports (TS/Deno/Swift) with mirrored test vectors — the one part of this
-  phase that is genuinely new engineering, not content authoring.
+- **PR 4** (this work): French `speak` — a new `spoken-answer-fr.ts`
+  module (elision, a French number map) landed across all three ports
+  (TS/Deno/Swift) with mirrored test vectors, then 5 speak packs, 125
+  questions, each authored against and round-tripped through the real
+  normaliser (`matchesSpokenAnswerFr`) rather than assumed correct — one
+  line (`aujourd'hui`) was cut during that check because it isn't one of
+  the normaliser's elidable clitics, so an STT rendering that
+  space-separates it would never rejoin. The normaliser itself is
+  UNVERIFIED AGAINST REAL PRODUCTION TRANSCRIPTS (no French speak content
+  existed before this PR to build one from) — see `spoken-answer-fr.ts`'s
+  header comment.
 
-**Question types, current**: English has six (`mc`, `fill`, `reorder`,
-`listening`, `speak`, `translate`); French has five (all but `speak`,
-pending PR 4); Spanish still has the original three (`mc`, `fill`,
-`reorder`) — its content is a separate job once the generator work is
+**Question types, current**: English and French both have all six
+(`mc`, `fill`, `reorder`, `listening`, `speak`, `translate`) — full
+type parity; Spanish still has the original three (`mc`, `fill`,
+`reorder`) — its content is a separate job now that the generator work is
 proven on French.
 
 Content correctness (grammar, natural phrasing) for French and Spanish

@@ -4,7 +4,9 @@
 
 import type { Question } from "../data/curriculum";
 import { matchesSpokenAnswer } from "./spoken-answer";
+import { matchesSpokenAnswerFr } from "./spoken-answer-fr";
 import { matchesAcceptableAnswer } from "./translation-answer";
+import type { Course } from "../data/courses";
 
 /**
  * gradeReview used to trust a raw `correct: boolean` from the client --
@@ -15,8 +17,22 @@ import { matchesAcceptableAnswer } from "./translation-answer";
  * deriveLessonCompletion already uses for lesson completions. Mirrors the
  * comparison logic already duplicated client-side in review.tsx and
  * lesson.$id.tsx.
+ *
+ * `course` defaults to "en" so every pre-existing call site (all of them,
+ * before French phase 2 PR 4) keeps its exact prior behaviour without
+ * changes. Only "speak" branches on it -- every other type's comparison is
+ * already language-neutral (an index match, a trim/lowercase, or a curated
+ * list matched by matchesAcceptableAnswer, which itself delegates to the
+ * English normaliser today; see spoken-answer-fr.ts's header for why that is
+ * a French phase 2 non-goal, not an oversight -- translate content authors
+ * accented French directly, and normaliseWritten's accent-fold already
+ * preserves it, unlike a wrong elision rule actively corrupting a match).
  */
-export function deriveAnswerCorrectness(question: Question, answer: string): boolean {
+export function deriveAnswerCorrectness(
+  question: Question,
+  answer: string,
+  course: Course = "en",
+): boolean {
   if (question.type === "mc") return question.choices[question.answer] === answer;
   // A spoken answer arrives as a speech-to-text transcript, whose spelling of
   // the same utterance varies run to run ("she is"/"she's"/"shes"). It needs
@@ -25,7 +41,17 @@ export function deriveAnswerCorrectness(question: Question, answer: string): boo
   // from this same rule. If the tolerant match lived only in the player, the
   // learner would be shown "Still got it" and then have the item lapsed
   // behind their back.
-  if (question.type === "speak") return matchesSpokenAnswer(answer, question.answer);
+  //
+  // English's rules are actively wrong for French ('s -> "is" encodes an
+  // English auxiliary-verb contraction; French elision is an unrelated
+  // phonological rule) -- see spoken-answer-fr.ts's header for the full
+  // architectural reasoning for why this is a course-selected sibling
+  // rather than one function with a language flag.
+  if (question.type === "speak") {
+    return course === "fr"
+      ? matchesSpokenAnswerFr(answer, question.answer)
+      : matchesSpokenAnswer(answer, question.answer);
+  }
   // The LOCAL half of translate grading, and only that. The AI half cannot
   // live here -- this function is synchronous and is mirrored into a Deno edge
   // function -- so the three server-side graders call it first and ask an AI

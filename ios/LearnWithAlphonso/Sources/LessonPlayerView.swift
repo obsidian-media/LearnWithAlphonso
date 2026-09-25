@@ -196,7 +196,7 @@ struct LessonPlayerView: View {
         if case .translate = question, let translationVerdict {
             correct = translationVerdict.correct
         } else {
-            correct = isAnswerCorrect(question, picked: picked)
+            correct = isAnswerCorrect(question, picked: picked, course: course)
         }
         if correct {
             correctCount += 1
@@ -400,7 +400,7 @@ private struct QuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.choices[q.answer] == choice)
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
         case .fillInBlank(let q):
@@ -423,7 +423,7 @@ private struct QuestionCard: View {
                     }
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
         case .reorder(let q):
@@ -432,7 +432,7 @@ private struct QuestionCard: View {
                 assembledArea(tokens: q.tokens)
                 tokenPool(tokens: q.tokens)
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
             .onChange(of: orderPicks) {
@@ -463,13 +463,13 @@ private struct QuestionCard: View {
                     choiceButton(choice, isCorrectChoice: q.answer == choice)
                 }
                 if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation)
+                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
                 }
             }
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict)
+                    verdict: $translationVerdict, course: course)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,

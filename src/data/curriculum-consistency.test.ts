@@ -246,11 +246,18 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
     const byPrompt = new Map<string, { key: string; packId: string; answer: string }[]>();
     for (const { lesson, question } of allQuestions(units)) {
       const packId = question.id.replace(/q\d+$/, "");
-      // "listening" questions share one fixed instructional prompt ("What did
-      // you hear?") across every question in the course by design -- the
-      // content being compared is audioText, not prompt. Using prompt here
-      // would flag every listening question as a duplicate of every other.
-      const dedupText = question.type === "listening" ? question.audioText : question.prompt;
+      // "listening" and "speak" questions each share one fixed instructional
+      // prompt ("What did you hear?" / "Say this aloud:") across every
+      // question of that type in the course by design -- the content being
+      // compared is audioText/answer, not prompt. Using prompt here would
+      // flag every listening (or speak) question as a duplicate of every
+      // other one of its type.
+      const dedupText =
+        question.type === "listening"
+          ? question.audioText
+          : question.type === "speak"
+            ? question.answer
+            : question.prompt;
       const norm = dedupText
         .trim()
         .replace(/\s*___\s*$/, "")

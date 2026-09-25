@@ -165,7 +165,7 @@ function LessonPage() {
     // Graded through the shared helper rather than inline, because the review
     // server re-derives correctness from that same helper. A spoken answer in
     // particular needs its tolerant transcript match here and there alike.
-    let isCorrect = deriveAnswerCorrectness(q, submittedAnswer);
+    let isCorrect = deriveAnswerCorrectness(q, submittedAnswer, course);
     // A written translation gets a second opinion when the curated phrasings
     // do not already accept it -- there are more right ways to say a thing
     // than any list anticipates. A null verdict (offline, vendor down, quota
@@ -295,7 +295,7 @@ function LessonPage() {
   const answered =
     q.type === "translate" && translationVerdict
       ? translationVerdict.correct
-      : deriveAnswerCorrectness(q, submittedAnswer ?? "");
+      : deriveAnswerCorrectness(q, submittedAnswer ?? "", course);
 
   return (
     <LessonFrame>
