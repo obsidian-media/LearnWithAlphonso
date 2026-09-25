@@ -357,6 +357,32 @@ same generative-not-tagging architecture French's own spike
 recommended) needs the Spanish morphology decision from this same
 section, which remains open and is not this session's to make.
 
+**Correction to what "the fix" means — this is not a ranking problem,
+and porting `orderDistractorCandidates` would not fix it.** A Spanish
+conjugation pack holds one form each of several *different* verbs
+(`hablar` → `hablo`, `comer` → `como`, `tener` → `tengo`, ...), not
+several forms of the *same* verb. So a cross-verb distractor isn't the
+ranking misbehaving — the pool contains almost no same-verb
+alternatives to rank in the first place. This is unlike English's
+`a1p15` (#117), where both word classes were genuinely present in the
+pool and 25 hand labels were enough to reorder them into a working
+question; here there is nothing to reorder, because the candidates a
+ranking layer would need to promote mostly don't exist in the pool at
+all. Porting the ranking layer onto this pool would compile, pass
+review, and change nothing measurable.
+
+The defect is real — `Yo ___ (hablar) español.` with choices
+`[hablo, como, tengo, estoy]` is answerable by matching the stem alone,
+testing recognition rather than conjugation, exactly the opposite of
+what the pack's own note claims to teach. But the fix is **structural**,
+not a ranking port: either generate same-verb distractors (which needs
+the conjugation/morphology data this section has already said is not
+this session's decision), or restructure conjugation packs to drill one
+verb across several persons so the pool actually contains same-verb
+alternatives to draw from. Both are their own scoped pieces of future
+work — recorded here so the next reader reaches for one of those, not
+for `orderDistractorCandidates`.
+
 ---
 
 ## 6. Phase 2 — the three missing question types
