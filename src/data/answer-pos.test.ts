@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ANSWER_POS } from "./answer-pos";
+import { ANSWER_POS, PACK_ANSWER_POS } from "./answer-pos";
 
 /**
  * Hand-labelled ground truth, written independently of the generator.
@@ -35,44 +35,22 @@ const HAND_LABELLED: Record<string, string> = {
   freezing: "Adjective",
   sunny: "Adjective",
 
-  // Pair-pack answers, which carried no tag until their packs' templates were
-  // read as declarations (src/data/pair-answer-class.ts). Labelled here by how
-  // each word reads in its own pack.
+  // Deliberately NOT extended with pair-pack answers.
   //
-  // Be clear about what this half of the sample proves, because the figure
-  // flatters it: 36 of 36 tagged, 100% agreement. For a DECLARED word the label
-  // below and the declaration are the same judgement written twice, so this
-  // catches a wiring fault -- a declaration not reaching the map, the wrong pack,
-  // a too-aggressive multi-word filter -- and NOT a wrong declaration. The checks
-  // that can actually falsify a declaration are pair-pack-class.test.ts, which
-  // requires a mixed pool to declare nothing, and pair-distractor-quality.test.ts,
-  // which measures the output against a hand-written notion of shape vs. size.
-  // The cloze half above remains a genuine accuracy check, because there the tag
-  // comes from a tagger and the label does not.
+  // An earlier version of this branch added 20 of them and reported "36 of 36,
+  // 100%". Two things were wrong with that. Those words are tagged from a hand
+  // label, so the label here and the table there are one judgement written twice
+  // -- the check could only fail on a wiring fault, never on a wrong label. And
+  // adding them DILUTED this test: the threshold is a ratio, so allowed failures
+  // went from floor(16*0.2)=3 to floor(36*0.2)=7, meaning four of the sixteen
+  // genuine tagger labels could regress with this still green. A sample that
+  // cannot fail does not merely add nothing, it subtracts from the sample that
+  // can.
   //
-  // Four of these are the words bare-word tagging gets wrong, which is why they
-  // are worth pinning: `square`, `circle`, `cube` and `eyes` all come back Verb
-  // from `compromise` with no context.
-  children: "Noun", // a1p1  Plural of "child"
-  teeth: "Noun", // a1p1
-  teacher: "Noun", // a1p12 Someone who "teaches students" is a…
-  elephant: "Noun", // a1p13
-  square: "Noun", // a1p15
-  circle: "Noun", // a1p15
-  cube: "Noun", // a1p15
-  knife: "Noun", // a1p18 Which noun goes with "sharp"?
-  eyes: "Noun", // a1p21
-  happiness: "Noun", // b1p8  Noun form of "happy"
-  analysis: "Noun", // b2p6
-  take: "Verb", // a1p5  Which verb goes with "a shower"?
-  went: "Verb", // a2p1  Past simple of "go"
-  ascertain: "Verb", // c1p2  Formal equivalent of "find out"
-  assert: "Verb", // c1p5  Which verb means "state something as true"?
-  small: "Adjective", // a1p3  Opposite of "big"
-  bigger: "Adjective", // a2p3  Comparative of "big"
-  biggest: "Adjective", // a2p10
-  huge: "Adjective", // a1p15
-  meticulous: "Adjective", // c1p8  Which trait means "extremely careful"?
+  // What guards the hand labels instead: pair-pack-class.test.ts (a labelled
+  // pool must be genuinely mixed and fully labelled) and
+  // pair-distractor-quality.test.ts (the output, against an independent
+  // hand-written notion of shape vs. size).
 };
 
 describe("ANSWER_POS", () => {
@@ -84,31 +62,42 @@ describe("ANSWER_POS", () => {
   });
 
   it("does not tag as verbs the nouns that bare-word tagging calls verbs", () => {
-    // This replaces a share-of-map proxy, and the replacement is the point.
+    // ADDED alongside the share-of-map check below, not in place of it, because
+    // that check turns out not to catch the thing it was built for.
     //
-    // The old test required no tag to exceed 44%, chosen to sit just under the
-    // 44.8%-Verb map that the bare-word generator produced. Declaring pair-pack
-    // answers moves Noun to 45.7% (689 of 1507) while Verb FALLS to 30.8% from
-    // ~37% -- so the guard fired on a change that moves the corpus away from the
-    // failure it was built to detect. A bound that fires on an improvement is
-    // measuring corpus composition, not correctness, and raising it until green
-    // would have left a number that asserts nothing.
+    // Reconstructed the failure to find out: tagging every single-word answer in
+    // the bank from the bare word gives 1,541 entries peaking at **41.0% Verb**
+    // -- under the 44% bound, so the old guard passes a full bare-word
+    // regression. (ARCHITECTURE.md cites 44.8% for the map that actually
+    // shipped; the reconstruction lands lower, which only makes the bound
+    // looser than it looks.) The threshold was calibrated against one historical
+    // artifact and does not generalise.
     //
-    // So assert the failure by name. Each of these comes back Verb from
-    // `compromise` with no context (measured 2026-09-24) and was tagged Verb by
-    // that old map, which is precisely how it promoted nouns into verb slots.
-    for (const word of ["square", "circle", "cube", "rock", "eyes"]) {
-      expect(ANSWER_POS[word], `${word} tagged Verb -- has the generator gone bare-word?`).not.toBe(
-        "Verb",
+    // This assertion names the failure instead. Every word here comes back Verb
+    // from `compromise` with no context, and the shipped bad map tagged them that
+    // way, which is exactly how it promoted nouns into verb slots. They are all
+    // cloze answers, so they are genuinely in this map and this genuinely bites --
+    // an earlier draft named `square`, `circle`, `cube`, `rock` and `eyes`, which
+    // are pair-pack answers and absent from ANSWER_POS entirely, so
+    // `undefined !== "Verb"` passed whatever the generator did.
+    for (const word of ["card", "refund", "balance", "discount", "tax"]) {
+      expect(ANSWER_POS[word], `${word} is tagged Verb -- has the generator gone bare-word?`).toBe(
+        "Noun",
       );
     }
   });
 
-  it("has not collapsed onto one tag", () => {
-    // What survives of the dominance idea, at a bound that still asserts
-    // something true: a corpus legitimately 46% nominal is fine, a generator
-    // emitting one tag for everything is not. The named check above now carries
-    // the job this used to do badly.
+  it("is not dominated by a single tag", () => {
+    // Kept at 44%, unchanged. An earlier version of this branch loosened it to
+    // 60% because pair declarations pushed Noun to 45.7% -- but those
+    // declarations were withdrawn (they could not affect any ordering, and their
+    // side effects degraded 43 questions), so the map is byte-identical to before
+    // and the original bound holds with room to spare. Recorded because loosening
+    // a bound to make a change pass is a move worth being suspicious of, and the
+    // right answer here was to withdraw the change, not the bound.
+    //
+    // Left in place as a coarse collapse tripwire. It does NOT catch a bare-word
+    // regression -- see the named check above, and the 41.0% measurement there.
     const counts = Object.values(ANSWER_POS).reduce<Record<string, number>>((acc, tag) => {
       acc[tag] = (acc[tag] ?? 0) + 1;
       return acc;
@@ -116,24 +105,36 @@ describe("ANSWER_POS", () => {
     const total = Object.keys(ANSWER_POS).length;
     expect(total).toBeGreaterThan(500);
     for (const [tag, n] of Object.entries(counts)) {
-      expect(n / total, `${tag} dominates the map`).toBeLessThan(0.6);
+      expect(n / total, `${tag} dominates the map`).toBeLessThan(0.44);
     }
   });
 
-  it("drops a word that two packs class differently", () => {
-    // `light` is a noun in a1p18 ("Which noun goes with 'not heavy'?") and an
-    // adjective in a1p15 ("Something that 'is not heavy' is…"). Both are right,
-    // so neither pack may win: the generator's agree-or-drop rule must discard
-    // it rather than arbitrate. Absence here is load-bearing, not a gap -- it is
-    // what stops a declaration overriding sentence evidence.
-    expect(ANSWER_POS["light"]).toBeUndefined();
-    expect(ANSWER_POS["leaves"]).toBeUndefined();
+  it("lets one word be a noun corpus-wide and an adjective inside a1p15", () => {
+    // The whole reason hand labels live in a separate, pack-scoped map, and it
+    // took a regression to learn it.
+    //
+    // `light` is a noun in the cloze sentence "Turn off the ___ before you sleep."
+    // (lesson-bank.ts:1100) and again in "In ___ of the above" (:3804), so the
+    // corpus map reads Noun -- correctly. In a1p15 the clue is "is not heavy",
+    // where it is an adjective -- also correctly.
+    //
+    // Put the label in ANSWER_POS and those two readings collide, so agree-or-drop
+    // discards `light` everywhere. That is not the neutral abstention it sounds
+    // like: rank() resolves an untagged candidate to the ANSWER's class, so a
+    // dropped word is offered as a perfect match. `light` was offered as a
+    // preposition in 8 of c1p20's questions that way. Scoped, both readings stand
+    // and nothing outside a1p15 moves at all.
+    expect(ANSWER_POS["light"], "corpus reading, from two cloze sentences").toBe("Noun");
+    expect(PACK_ANSWER_POS["a1p15"]?.["light"], "a1p15's reading").toBe("Adjective");
+    // The override shadows per word, it does not replace the map: a1p15 carries
+    // no opinion about words it never mentions.
+    expect(PACK_ANSWER_POS["a1p15"]?.["money"]).toBeUndefined();
   });
 
   it("emits no empty key or tag", () => {
-    // Renamed: a tag no longer implies a sentence. It means the word was either
-    // read in a cloze sentence or declared by its pair pack's template, and that
-    // every piece of evidence agreed.
+    // Absence means "no preference" and must stay meaningful: a tag is only
+    // emitted when the word was seen inside a cloze sentence and every occurrence
+    // agreed. Hand labels are emitted separately, into PACK_ANSWER_POS.
     for (const [word, tag] of Object.entries(ANSWER_POS)) {
       expect(word.trim(), "empty key in ANSWER_POS").not.toBe("");
       expect(tag.trim(), `empty tag for ${word}`).not.toBe("");

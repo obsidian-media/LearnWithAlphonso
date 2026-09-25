@@ -23,6 +23,48 @@ Vitest.
 (Phase 1 correctness audit; this closes its last deferred structural item).
 Audit log: `docs/superpowers/english-content-audit-log.md`.
 
+> **Superseded in execution — read this first.**
+>
+> The plan's central mechanism was withdrawn after whole-branch review measured
+> it. Both of its load-bearing claims were wrong, and both were wrong in ways the
+> plan's own self-critique did not reach, so they are worth stating plainly.
+>
+> **1. Reading a pair pack's prompt template as a declaration of its answers'
+> class is inert.** "Which verb goes with ...?" cannot be answered by a noun, so
+> the declaration is *true* — but a declaration applies to every answer in the
+> pool equally, and distractor ranking is relative *within* the pool. A uniformly
+> tagged pool ranks exactly as an untagged one does. Ablated: nulling all 27
+> template declarations left a1p15's cross-class count unchanged. The 22 packs it
+> covered are exactly the packs that never had the defect, and the packs that have
+> it are the mixed ones no template can describe. The plan never asked whether a
+> uniform tag *could* change an outcome; it only checked whether the tags were
+> accurate.
+>
+> **2. "A wrong tag is worse than no tag" — stated in Global Constraints below, and
+> in three source files — is false for a candidate.** `rank()` resolves an
+> untagged candidate to the ANSWER's own class, so a candidate with no tag sorts
+> as a perfect distractor. Withholding a tag is not an abstention, it is the
+> strongest possible endorsement. The declarations collided with sentence evidence,
+> the agree-or-drop rule discarded 12 words, and those words were promoted into
+> pools where they are ungrammatical: measured **43 questions degraded across 11
+> packs, 0 improved**, against 16 fixed in a1p15. The generator printed the 12
+> losses and the commit described them as "the conservative rule working".
+>
+> **What shipped**: only Task 1's Step 2 idea survives — hand labels for pools that
+> genuinely mix classes — emitted as a per-pack override map the course-wide map
+> never sees, so a label cannot be dropped and no other pack can change. a1p15
+> goes 23/25 → **0/25**, and its 25 questions are the only ones in the course whose
+> choices move. Two further alternatives were measured and declined: demoting
+> untagged candidates (150 of 2,675 questions would draw the same handful of
+> distractors every time) and scoping the whole map per pack (loses the
+> corpus-wide agreement check, which doubles as an accuracy filter — it tagged
+> `coins` a Verb from "Can I pay in ___ instead of cash?").
+>
+> The tasks below are left as written. They are the record of a plan that was
+> careful about the wrong thing: it ablated two tagging approaches, refused to
+> touch pack data, and was honest about which tests proved what, while never
+> opening the six-line function whose default decided the whole design.
+
 ## Global Constraints
 
 - **English only.** `lesson-bank-fr.ts` / `-es.ts` are untouched.

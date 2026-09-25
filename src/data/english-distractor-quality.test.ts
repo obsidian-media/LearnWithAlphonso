@@ -1,6 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { getCourse } from "./courses";
-import { ANSWER_POS } from "./answer-pos";
+import { ANSWER_POS, PACK_ANSWER_POS } from "./answer-pos";
+
+/**
+ * The effective class of a word for a given pack: a hand label if that pack has
+ * one, otherwise the corpus-wide reading. Mirrors what distractor-affinity's
+ * rank() actually consults, so this metric measures the ranking learners get
+ * rather than one of its two inputs.
+ */
+function posIn(packId: string, word: string): string | undefined {
+  return PACK_ANSWER_POS[packId]?.[word] ?? ANSWER_POS[word];
+}
+
+/**
+ * Candidates that carry no class at all, bank-wide. Measured, then pinned.
+ *
+ * Not a quality target -- a tripwire on tag COVERAGE. rank() resolves an
+ * untagged candidate to the answer's own class, so an untagged candidate is
+ * offered as a perfect match. That makes losing tags a silent way to make
+ * questions worse, and it makes the ratio below IMPROVE while it happens,
+ * because an untagged candidate is skipped rather than counted as a mismatch.
+ * Exactly that happened once: 12 words lost their tags, the ratio moved from
+ * 0.0361 to 0.0269, and 43 questions across 11 packs got worse.
+ *
+ * Measured at 482 on this branch. Set AT the measured value, not above it, so
+ * any future loss of coverage trips it rather than being absorbed by slack.
+ */
+const UNTAGGED_CANDIDATE_BUDGET = 482;
 
 function choicesFor(key: string): string[] {
   const ref = getCourse("en").questionIndex[key];
@@ -101,21 +127,32 @@ describe("English distractor plausibility", () => {
   it("detects the ranking layer being disabled", () => {
     let mismatched = 0;
     let comparable = 0;
+    let untagged = 0;
     for (const ref of Object.values(getCourse("en").questionIndex)) {
       const q = ref.question;
       if (q.type !== "mc") continue;
+      const packId = q.id.replace(/q\d+$/, "");
       const answer = q.choices[q.answer];
-      const answerPos = answer ? ANSWER_POS[answer] : undefined;
+      const answerPos = answer ? posIn(packId, answer) : undefined;
       if (!answerPos) continue;
       for (const choice of q.choices) {
         if (choice === answer) continue;
-        const pos = ANSWER_POS[choice];
-        if (!pos) continue;
+        const pos = posIn(packId, choice);
+        if (!pos) {
+          // Skipped by the ratio, but NOT harmless: rank() treats this as a
+          // perfect match, so it is offered ahead of a known wrong-class word.
+          // Counted separately so tag loss cannot hide in the denominator.
+          untagged++;
+          continue;
+        }
         comparable++;
         if (pos !== answerPos) mismatched++;
       }
     }
     expect(comparable).toBeGreaterThan(500);
     expect(mismatched / comparable).toBeLessThan(0.2);
+    expect(untagged, "tag coverage fell -- untagged candidates are PROMOTED").toBeLessThanOrEqual(
+      UNTAGGED_CANDIDATE_BUDGET,
+    );
   });
 });

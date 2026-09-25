@@ -1,6 +1,10 @@
 import type { Lesson, Question, Unit } from "./curriculum";
 import type { Level } from "./levels";
-import { orderByLexicalSimilarity, orderDistractorCandidates } from "@/lib/distractor-affinity";
+import {
+  orderByLexicalSimilarity,
+  orderDistractorCandidates,
+  packAnswerPos,
+} from "@/lib/distractor-affinity";
 
 /**
  * Compact content bank. Each pack holds 25 items written as terse lines;
@@ -3953,6 +3957,8 @@ function pickDistractors(
   seed: string,
   prompt?: string,
   preferConfusable = false,
+  /** Hand-labelled word classes for this pack only -- see packAnswerPos. */
+  overrides: Record<string, string> = {},
 ) {
   const others = pool.filter((o) => o.toLowerCase() !== answer.toLowerCase());
   const start = hash(seed) % Math.max(1, others.length);
@@ -3977,7 +3983,7 @@ function pickDistractors(
   // word-spotting.
   const ordered = preferConfusable
     ? orderByLexicalSimilarity(answer, walk)
-    : orderDistractorCandidates(answer, walk, prompt);
+    : orderDistractorCandidates(answer, walk, prompt, overrides);
   const out: string[] = [];
   // Dedupe case-insensitively -- see bank-engine.ts's pickDistractors
   // (duplicated here; English's generator predates the shared engine and
@@ -4045,7 +4051,14 @@ function packQuestions(pack: Pack): Question[] {
             // asks for it explicitly.
             (pack.prompt ?? "What did you hear?").replace("%s", left!)
           : left!;
-    const distractors = pickDistractors(answer, pool, seed, prompt, pack.kind === "listening");
+    const distractors = pickDistractors(
+      answer,
+      pool,
+      seed,
+      prompt,
+      pack.kind === "listening",
+      packAnswerPos(pack.id),
+    );
     const explanation =
       pack.kind === "pair"
         ? `${left} → ${answer}. ${pack.note}`

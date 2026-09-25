@@ -212,7 +212,7 @@ pattern". It is at **91.17%**, as are its siblings (`chat.ts` 96.29%,
 describes the codebase — don't cite it to justify skipping tests on a
 new server route.
 
-### Four traps that have each cost a session real time
+### Traps that have each cost a session real time
 
 **`user.type` on a controlled input can leave only the last character in
 state.** The symptom is not "the typing failed" — it is that whatever consumes
@@ -232,6 +232,18 @@ from the dump, which went red because the deletion perturbed the mapping, not
 because the assertion pinned any content. The assertion still could not catch
 the thing its own comment claimed. When a mutation passes, check which axis it
 actually attacked.
+
+**Check which direction a missing value pushes you before calling it safe.**
+"Leave it out rather than guess" is usually the cautious choice, and in distractor
+ranking it is the opposite. `rank()` resolves an untagged candidate to the
+ANSWER's word class, so a candidate with no tag sorts as a perfect distractor:
+removing a tag PROMOTES that word. A change that dropped 12 tags degraded 43
+questions across 11 packs while its own bank-wide metric improved — because that
+metric skipped untagged candidates, so the same deletion removed the mismatch
+from the numerator and promoted the word in the product. Three files of this
+branch's prose asserted "no tag merely declines to express a preference" without
+anyone reading the six-line function that decides it. When a design rests on what
+a default does, open the default.
 
 **A measurement can be a fact about your instrument rather than your data.**
 Pair-pack answers had no part-of-speech tag, and the obvious fix was to drop the

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { curriculum } from "./curriculum";
+import { HAND_LABELLED_PACKS } from "./pair-answer-class";
 
 /**
  * Hand-written, deliberately NOT read from ANSWER_POS or pair-answer-class.ts.
@@ -69,7 +70,7 @@ describe("a1p15 Shapes & Sizes offers distractors from the answer's own class", 
       }
     }
     expect(questions.length, "a1p15 no longer has 25 questions -- ids have moved").toBe(25);
-    expect(crossed, `cross-class distractors:\n  ${offenders.join("\n  ")}`).toBeLessThanOrEqual(7);
+    expect(crossed, `cross-class distractors:\n  ${offenders.join("\n  ")}`).toBe(0);
   });
 
   it("never offers three wrong-class choices at once", () => {
@@ -77,17 +78,54 @@ describe("a1p15 Shapes & Sizes offers distractors from the answer's own class", 
     // question free: if every other choice is from the other class, the answer is
     // identifiable without knowing the material. This is the assertion that must
     // never regress, whatever the count above does.
+    //
+    // Covers fill as well as mc. An earlier version skipped fill, which was a
+    // latent hole rather than a real one -- a1p15 happened to produce no fill
+    // questions then, and produces 12 now, whose `bank` is four visible choices
+    // exactly like `choices`.
     for (const q of packQuestions("a1p15")) {
-      if (q.type !== "mc") continue;
-      const answer = q.choices[q.answer]!;
+      if (q.type !== "mc" && q.type !== "fill") continue;
+      const choices = q.type === "mc" ? q.choices : q.bank;
+      const answer = q.type === "mc" ? choices[q.answer]! : q.answer;
       const answerIsShape = A1P15_SHAPES.has(answer.toLowerCase());
-      const wrongClass = q.choices.filter(
+      const wrongClass = choices.filter(
         (c) => c !== answer && A1P15_SHAPES.has(c.toLowerCase()) !== answerIsShape,
       );
       expect(
         wrongClass.length,
-        `${q.id} (${answer}) offers only wrong-class choices: ${q.choices.join(", ")}`,
+        `${q.id} (${answer}) offers only wrong-class choices: ${choices.join(", ")}`,
       ).toBeLessThan(3);
+    }
+  });
+});
+
+describe("a1p15's hand labels agree with the shape list above", () => {
+  it("labels every shape a Noun and everything else an Adjective", () => {
+    // Cross-checks two enumerations written separately for different purposes:
+    // A1P15_SHAPES above (to measure the output) and HAND_LABELLED_PACKS (to rank
+    // it). Neither reads the other.
+    //
+    // Added because a mutation survived: relabelling `huge` as a Noun changed no
+    // visible choice, because which rank-0 candidate gets drawn depends on the
+    // hashed walk and `huge` happened not to be reached. An output metric can only
+    // catch a mislabel that manifests, so a single wrong label can hide behind the
+    // walk. A direct comparison catches it immediately.
+    //
+    // Be clear what this proves: two independent enumerations agreeing rules out a
+    // typo or a slip in one of them, not a misconception shared by both. It is the
+    // cheapest real check available for 25 hand labels.
+    const labels = HAND_LABELLED_PACKS["a1p15"]!;
+    expect(Object.keys(labels).length).toBe(25);
+    for (const [word, tag] of Object.entries(labels)) {
+      const expected = A1P15_SHAPES.has(word.toLowerCase()) ? "Noun" : "Adjective";
+      expect(tag, `${word} is labelled ${tag} but reads as ${expected} in this pack`).toBe(
+        expected,
+      );
+    }
+    // And every shape named above carries a label, so the two lists cannot drift
+    // apart by omission.
+    for (const shape of A1P15_SHAPES) {
+      expect(labels[shape], `${shape} is in the shape list but carries no label`).toBe("Noun");
     }
   });
 });

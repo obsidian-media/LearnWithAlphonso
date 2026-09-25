@@ -1013,21 +1013,31 @@ note in README.md's Documentation section for why.)
   review-item ids are keyed against (`lessonId:questionId`), so it needs
   its own careful pass confirming lesson/unit id output is byte-for-byte
   identical before/after, not a rider on an unrelated bug fix.
-- **Distractor part-of-speech ranking has two evidence sources, and neither is
-  a tagger run on a bare word.** `src/lib/distractor-affinity.ts` ranks
-  candidates by `ANSWER_POS`, which `scripts/gen-answer-pos.ts` builds from (a)
-  the answer read inside its own cloze sentence and (b) for pair packs, what the
-  prompt template *declares* -- "Which verb goes with ...?" cannot be answered by
-  a noun (`src/data/pair-answer-class.ts`). Pair packs carried no tags at all
-  until 2026-09-24, which is why a1p15 "Shapes & Sizes" offered size adjectives
-  as distractors for shape questions in 23 of its 25 questions. Two automated
-  alternatives are recorded as rejected, both measured: tagging the bare word
-  calls `square`, `circle` and `cube` verbs (this failure shipped once, tagging
-  44.8% of the bank Verb), and dropping the answer into a synthetic sentence
-  frame imposes a class rather than reading one. A word two packs class
-  differently is dropped, never arbitrated. The map is keyed by word course-wide
-  while distractors are drawn per pack, so pack-scoping it is a known
-  improvement, not yet done.
+- **In distractor ranking, a MISSING part-of-speech tag is a promotion, not an
+  abstention.** `src/lib/distractor-affinity.ts`'s `rank()` resolves an untagged
+  candidate to the answer's own class, so it sorts as a perfect distractor. The
+  default is deliberate (demoting unknowns was measured: 150 of 2,675 questions
+  have fewer than three known same-class candidates and would draw the same
+  handful every time), but it inverts the intuition that withholding a tag is the
+  cautious choice. A change that *removed* 12 tags degraded 43 questions across 11
+  packs while its own headline metric improved, because the bank-wide ratio in
+  `english-distractor-quality.test.ts` skips untagged candidates. That test now
+  also pins the untagged-candidate count for exactly this reason.
+- **Tags have two sources and neither is a tagger on a bare word.** `ANSWER_POS`
+  (course-wide) comes from each answer read inside its own cloze sentence, with
+  any word its sentences disagree about dropped -- a rule that doubles as an
+  accuracy filter, since a word this tagger reads inconsistently is one it is
+  probably reading wrongly somewhere. `PACK_ANSWER_POS` (per pack) holds hand
+  labels for pools that genuinely mix classes, and is consulted first; it is kept
+  out of the course-wide map so a label cannot be discarded by that drop rule.
+  Only mixed pools are labelled, because ranking is relative within a pool, so a
+  class shared by every candidate expresses no preference — which is why reading
+  each pair pack's prompt template as a declaration of its answers' class was
+  inert across 22 packs and was withdrawn. Rejected and measured: bare-word
+  tagging (calls `square`, `circle`, `cube` verbs; shipped once at 44.8% Verb),
+  synthetic sentence frames (impose a class rather than read one), and scoping the
+  whole map per pack (loses the accuracy filter — tagged `coins` a Verb from "Can
+  I pay in ___ instead of cash?").
 - **`bun run vitest run` (the full ~90-file suite, one isolated worker
   per file) can hang indefinitely with zero output in this project's
   Windows development sandbox, after a long agent session has

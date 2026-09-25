@@ -3316,9 +3316,9 @@
               "prompt": "Opposite of \"cheap\": ___",
               "bank": [
                 "dangerous",
+                "sad",
                 "expensive",
-                "dry",
-                "closed"
+                "dry"
               ],
               "answer": "expensive",
               "explanation": "cheap → expensive. Learning adjectives in pairs doubles your vocabulary."
@@ -3341,9 +3341,9 @@
               "type": "fill",
               "prompt": "Opposite of \"open\": ___",
               "bank": [
+                "weak",
+                "different",
                 "closed",
-                "quiet",
-                "cold",
                 "dirty"
               ],
               "answer": "closed",
@@ -3400,10 +3400,10 @@
               "type": "mc",
               "prompt": "Opposite of \"near\":",
               "choices": [
-                "cold",
-                "hard",
+                "weak",
+                "different",
                 "far",
-                "closed"
+                "old"
               ],
               "answer": 2,
               "explanation": "near → far. Learning adjectives in pairs doubles your vocabulary."
@@ -3462,7 +3462,7 @@
                 "difficult",
                 "different",
                 "quiet",
-                "far"
+                "old"
               ],
               "answer": 2,
               "explanation": "loud → quiet. Learning adjectives in pairs doubles your vocabulary."
@@ -7691,7 +7691,7 @@
                 "rectangle",
                 "circle",
                 "sphere",
-                "light"
+                "octagon"
               ],
               "answer": "rectangle",
               "explanation": "has four sides, two longer than the others → rectangle. Basic shapes and size adjectives."
@@ -7701,10 +7701,10 @@
               "type": "mc",
               "prompt": "Something that \"has five sides\" is…",
               "choices": [
-                "light",
+                "octagon",
                 "circle",
                 "pentagon",
-                "octagon"
+                "cone"
               ],
               "answer": 2,
               "explanation": "has five sides → pentagon. Basic shapes and size adjectives."
@@ -7736,8 +7736,8 @@
               "choices": [
                 "oval",
                 "pentagon",
-                "long",
-                "cube"
+                "cube",
+                "square"
               ],
               "answer": 0,
               "explanation": "is shaped like an egg → oval. Basic shapes and size adjectives."
@@ -7819,8 +7819,8 @@
               "type": "fill",
               "prompt": "Something that \"is longer than usual\" is… ___",
               "bank": [
-                "triangle",
-                "octagon",
+                "thick",
+                "narrow",
                 "long",
                 "heavy"
               ],
@@ -7891,10 +7891,10 @@
               "type": "mc",
               "prompt": "Something that \"is not heavy\" is…",
               "choices": [
+                "broad",
                 "tiny",
-                "circle",
                 "light",
-                "broad"
+                "oversized"
               ],
               "answer": 2,
               "explanation": "is not heavy → light. Basic shapes and size adjectives."
@@ -7919,8 +7919,8 @@
               "choices": [
                 "cube",
                 "hexagon",
-                "long",
-                "sphere"
+                "sphere",
+                "circle"
               ],
               "answer": 0,
               "explanation": "is a perfect cube shape → cube. Basic shapes and size adjectives."
@@ -7950,8 +7950,8 @@
               "type": "fill",
               "prompt": "Something that \"has a pointed top\" is… ___",
               "bank": [
-                "light",
                 "rectangle",
+                "octagon",
                 "triangle",
                 "cone"
               ],
@@ -14043,8 +14043,8 @@
               "prompt": "We're renting a small ___ downtown.",
               "bank": [
                 "bathroom",
+                "garden",
                 "dining room",
-                "light",
                 "flat"
               ],
               "answer": "flat",
@@ -18542,7 +18542,7 @@
                 "quick",
                 "simple",
                 "tall",
-                "long"
+                "small"
               ],
               "answer": 2,
               "explanation": "\"tall\" is correct here. A2-level equal comparison structures."
@@ -18578,8 +18578,8 @@
               "type": "fill",
               "prompt": "This soup is as ___ as the last one.",
               "bank": [
-                "long",
                 "quick",
+                "difficult",
                 "spicy",
                 "small"
               ],
@@ -18697,9 +18697,9 @@
               "prompt": "This coffee is as ___ as the one at home.",
               "choices": [
                 "strong",
-                "long",
                 "small",
-                "difficult"
+                "difficult",
+                "cold"
               ],
               "answer": 0,
               "explanation": "\"strong\" is correct here. A2-level equal comparison structures."
@@ -18710,7 +18710,7 @@
               "prompt": "The journey was as ___ as we expected.",
               "bank": [
                 "fluent",
-                "fun",
+                "warm",
                 "tall",
                 "long"
               ],
@@ -18744,7 +18744,7 @@
               "bank": [
                 "sturdy",
                 "busy",
-                "long",
+                "interesting",
                 "quick"
               ],
               "answer": "busy",
@@ -23556,10 +23556,10 @@
               "type": "mc",
               "prompt": "The teacher gave us some homework to ___ overnight.",
               "choices": [
-                "tutoring",
+                "caught",
                 "submit",
                 "complete",
-                "distinction"
+                "revise"
               ],
               "answer": 2,
               "explanation": "\"complete\" is correct here. B1-level vocabulary for talking about education."
@@ -23615,10 +23615,10 @@
               "type": "mc",
               "prompt": "We have a ___ exam at the end of term.",
               "choices": [
+                "due",
                 "registered",
-                "complete",
                 "final",
-                "due"
+                "hall"
               ],
               "answer": 2,
               "explanation": "\"final\" is correct here. B1-level vocabulary for talking about education."
@@ -23643,8 +23643,8 @@
               "choices": [
                 "tutor",
                 "habits",
-                "complete",
-                "feedback"
+                "feedback",
+                "degree"
               ],
               "answer": 0,
               "explanation": "\"tutor\" is correct here. B1-level vocabulary for talking about education."
@@ -23675,8 +23675,8 @@
               "prompt": "Attendance is compulsory for all ___ students.",
               "bank": [
                 "final",
+                "feedback",
                 "due",
-                "complete",
                 "registered"
               ],
               "answer": "registered",
@@ -23774,8 +23774,8 @@
               "choices": [
                 "feedback",
                 "habits",
-                "complete",
-                "tutoring"
+                "tutoring",
+                "distinction"
               ],
               "answer": 0,
               "explanation": "\"feedback\" is correct here. B1-level vocabulary for talking about education."
@@ -23786,9 +23786,9 @@
               "prompt": "He is ___ to graduate next summer.",
               "bank": [
                 "final",
-                "complete",
                 "due",
-                "registered"
+                "registered",
+                "tutor"
               ],
               "answer": "due",
               "explanation": "\"due\" is correct here. B1-level vocabulary for talking about education."
@@ -23858,9 +23858,9 @@
               "prompt": "He passed every subject except ___, which he must repeat.",
               "bank": [
                 "distinction",
-                "complete",
                 "tutoring",
-                "chemistry"
+                "chemistry",
+                "degree"
               ],
               "answer": "chemistry",
               "explanation": "\"chemistry\" is correct here. B1-level vocabulary for talking about education."
@@ -23984,10 +23984,10 @@
               "type": "fill",
               "prompt": "The trend shows a gradual ___ in average income.",
               "bank": [
-                "remained",
+                "peak",
                 "increase",
-                "fall",
-                "shrank"
+                "surge",
+                "fall"
               ],
               "answer": "increase",
               "explanation": "\"increase\" is correct here. B1-level language for describing statistics and change over time."
@@ -24000,7 +24000,7 @@
                 "dropped",
                 "stable",
                 "levelled",
-                "decline"
+                "grew"
               ],
               "answer": 2,
               "explanation": "\"levelled\" is correct here. B1-level language for describing statistics and change over time."
@@ -24012,7 +24012,7 @@
               "bank": [
                 "fluctuated",
                 "increased",
-                "increase",
+                "stable",
                 "risen"
               ],
               "answer": "risen",
@@ -24045,8 +24045,8 @@
               "choices": [
                 "fluctuated",
                 "dropped",
-                "decline",
-                "grew"
+                "grew",
+                "levelled"
               ],
               "answer": 0,
               "explanation": "\"fluctuated\" is correct here. B1-level language for describing statistics and change over time."
@@ -24056,10 +24056,10 @@
               "type": "fill",
               "prompt": "The chart shows a steady ___ in pollution levels.",
               "bank": [
+                "dip",
                 "rise",
                 "decline",
-                "peak",
-                "changed"
+                "peak"
               ],
               "answer": "decline",
               "explanation": "\"decline\" is correct here. B1-level language for describing statistics and change over time."
@@ -24115,8 +24115,8 @@
               "type": "fill",
               "prompt": "The number of students ___ every year since 2020.",
               "bank": [
+                "fluctuated",
                 "dropped",
-                "increase",
                 "increased",
                 "increases"
               ],
@@ -24155,9 +24155,9 @@
               "prompt": "Demand ___ rapidly after the advertising campaign.",
               "choices": [
                 "grew",
-                "decline",
                 "fall",
-                "fell"
+                "fell",
+                "risen"
               ],
               "answer": 0,
               "explanation": "\"grew\" is correct here. B1-level language for describing statistics and change over time."
@@ -25684,7 +25684,7 @@
                 "opinion",
                 "view",
                 "point",
-                "far"
+                "say"
               ],
               "answer": "opinion",
               "explanation": "\"opinion\" is correct here. B1-level phrases for discussion and debate."
@@ -25694,10 +25694,10 @@
               "type": "mc",
               "prompt": "I ___ agree with what you're saying.",
               "choices": [
-                "far",
+                "say",
                 "view",
                 "totally",
-                "say"
+                "not"
               ],
               "answer": 2,
               "explanation": "\"totally\" is correct here. B1-level phrases for discussion and debate."
@@ -25735,8 +25735,8 @@
               "bank": [
                 "agree",
                 "view",
-                "concur",
-                "far"
+                "say",
+                "concur"
               ],
               "answer": "agree",
               "explanation": "\"agree\" is correct here. B1-level phrases for discussion and debate."
@@ -25780,9 +25780,9 @@
               "prompt": "As ___ as I'm concerned, it's a bad idea.",
               "choices": [
                 "far",
-                "opinion",
                 "not",
-                "hardly"
+                "view",
+                "say"
               ],
               "answer": 0,
               "explanation": "\"far\" is correct here. B1-level phrases for discussion and debate."
@@ -25865,8 +25865,8 @@
               "prompt": "I tend to ___ with the majority here.",
               "bank": [
                 "view",
-                "far",
                 "can't",
+                "differ",
                 "side"
               ],
               "answer": "side",
@@ -25912,8 +25912,8 @@
               "choices": [
                 "me",
                 "view",
-                "far",
-                "say"
+                "say",
+                "not"
               ],
               "answer": 0,
               "explanation": "\"me\" is correct here. B1-level phrases for discussion and debate."
@@ -25982,10 +25982,10 @@
               "type": "mc",
               "prompt": "I really don't think that's ___.",
               "choices": [
-                "far",
+                "say",
                 "view",
                 "true",
-                "say"
+                "not"
               ],
               "answer": 2,
               "explanation": "\"true\" is correct here. B1-level phrases for discussion and debate."
@@ -26064,9 +26064,9 @@
               "prompt": "Eating a ___ diet keeps you healthy.",
               "bank": [
                 "warm",
+                "fruit",
                 "rest",
-                "balanced",
-                "swimming"
+                "balanced"
               ],
               "answer": "balanced",
               "explanation": "\"balanced\" is correct here. B1-level vocabulary for talking about fitness and wellbeing."
@@ -26306,9 +26306,9 @@
               "prompt": "I go ___ every weekend to stay active.",
               "bank": [
                 "swimming",
-                "stress",
-                "gym",
-                "vitamin"
+                "cool",
+                "work",
+                "runs"
               ],
               "answer": "swimming",
               "explanation": "\"swimming\" is correct here. B1-level vocabulary for talking about fitness and wellbeing."
@@ -28602,9 +28602,9 @@
               "type": "fill",
               "prompt": "Which fits: \"few / less (with countable nouns)\"? ___",
               "bank": [
-                "classical",
                 "continuous",
                 "economical",
+                "infer",
                 "few"
               ],
               "answer": "few",
@@ -29853,10 +29853,10 @@
               "type": "fill",
               "prompt": "Which word pairs with \"___ failure (total)\"? ___",
               "bank": [
-                "compelling",
                 "heartfelt",
                 "complete",
-                "strict"
+                "strict",
+                "fierce"
               ],
               "answer": "complete",
               "explanation": "___ failure (total) → complete. Advanced fluency lives in collocation."
@@ -31852,7 +31852,7 @@
               "prompt": "She was promoted to ___ the new division.",
               "bank": [
                 "head",
-                "quote",
+                "close",
                 "build",
                 "make"
               ],
@@ -32080,8 +32080,8 @@
               "type": "fill",
               "prompt": "The company issued new ___ to investors.",
               "bank": [
+                "deal",
                 "shares",
-                "head",
                 "compromise",
                 "shift"
               ],
@@ -32119,10 +32119,10 @@
               "type": "mc",
               "prompt": "Negotiations are still ___ ongoing.",
               "choices": [
+                "vote",
                 "cut",
-                "head",
                 "very much",
-                "vote"
+                "close"
               ],
               "answer": 2,
               "explanation": "\"very much\" is correct here. B2-level vocabulary for meetings and negotiations."
@@ -36842,9 +36842,9 @@
               "type": "fill",
               "prompt": "Formal equivalent of \"end\": ___",
               "bank": [
-                "decline",
                 "terminate",
                 "reduce",
+                "consider",
                 "demonstrate"
               ],
               "answer": "terminate",
@@ -36956,7 +36956,7 @@
                 "decline",
                 "require",
                 "increase",
-                "reduce"
+                "examine"
               ],
               "answer": 2,
               "explanation": "go up → increase. Academic and professional writing prefers Latinate verbs."
@@ -36967,8 +36967,8 @@
               "prompt": "Formal equivalent of \"go down\": ___",
               "bank": [
                 "conduct",
-                "address",
-                "terminate",
+                "constitute",
+                "establish",
                 "decline"
               ],
               "answer": "decline",
@@ -37001,8 +37001,8 @@
               "bank": [
                 "demonstrate",
                 "address",
-                "increase",
-                "reduce"
+                "reduce",
+                "examine"
               ],
               "answer": "address",
               "explanation": "deal with → address. Academic and professional writing prefers Latinate verbs."
@@ -37072,7 +37072,7 @@
               "prompt": "Formal equivalent of \"cut down\": ___",
               "bank": [
                 "demonstrate",
-                "increase",
+                "examine",
                 "constitute",
                 "reduce"
               ],
@@ -43495,10 +43495,10 @@
               "type": "mc",
               "prompt": "In ___ of the above, further research is needed.",
               "choices": [
-                "address",
-                "back",
+                "worth",
+                "following",
                 "light",
-                "on"
+                "section"
               ],
               "answer": 2,
               "explanation": "\"light\" is correct here. C1-level cohesive devices for academic writing."
@@ -43534,8 +43534,8 @@
               "type": "fill",
               "prompt": "The ___ mentioned study supports this conclusion.",
               "bank": [
-                "light",
                 "following",
+                "subsequent",
                 "above",
                 "other"
               ],
@@ -43580,8 +43580,8 @@
               "type": "fill",
               "prompt": "The argument outlined above rests upon ___ core assumptions.",
               "bank": [
-                "light",
                 "next",
+                "onward",
                 "following",
                 "three"
               ],
@@ -43594,9 +43594,9 @@
               "prompt": "Taking this ___ account, the results seem reliable.",
               "choices": [
                 "into",
-                "light",
                 "as",
-                "on"
+                "on",
+                "with"
               ],
               "answer": 0,
               "explanation": "\"into\" is correct here. C1-level cohesive devices for academic writing."
@@ -43639,10 +43639,10 @@
               "type": "fill",
               "prompt": "The data ___ referred to can be found in the appendix.",
               "bank": [
-                "light",
                 "previously",
                 "naturally",
-                "following"
+                "following",
+                "address"
               ],
               "answer": "previously",
               "explanation": "\"previously\" is correct here. C1-level cohesive devices for academic writing."
@@ -43665,9 +43665,9 @@
               "type": "fill",
               "prompt": "This ___ leads into a discussion of policy implications.",
               "bank": [
-                "light",
                 "naturally",
                 "previously",
+                "shown",
                 "following"
               ],
               "answer": "naturally",
@@ -43678,10 +43678,10 @@
               "type": "mc",
               "prompt": "The ___ analysis reveals a clear pattern.",
               "choices": [
+                "following",
                 "next",
-                "light",
                 "subsequent",
-                "following"
+                "above"
               ],
               "answer": 2,
               "explanation": "\"subsequent\" is correct here. C1-level cohesive devices for academic writing."
@@ -43698,10 +43698,10 @@
               "type": "mc",
               "prompt": "As ___ in Table 2, the results vary by region.",
               "choices": [
-                "light",
+                "brings",
                 "turn",
                 "shown",
-                "brings"
+                "speaking"
               ],
               "answer": 2,
               "explanation": "\"shown\" is correct here. C1-level cohesive devices for academic writing."
@@ -43750,10 +43750,10 @@
               "type": "mc",
               "prompt": "In ___ words, the results were not as expected.",
               "choices": [
+                "following",
                 "next",
-                "light",
                 "other",
-                "following"
+                "subsequent"
               ],
               "answer": 2,
               "explanation": "\"other\" is correct here. C1-level cohesive devices for academic writing."
