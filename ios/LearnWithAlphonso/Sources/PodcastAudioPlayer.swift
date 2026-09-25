@@ -57,7 +57,18 @@ final class PodcastAudioPlayer {
 
     // MARK: - Playback
 
-    func play(_ episode: PodcastEpisode) {
+    /// Plays an episode, preferring a downloaded copy.
+    ///
+    /// `localURL` is passed in rather than looked up, so the player stays
+    /// ignorant of the download manager -- it is an AVPlayer wrapper, and
+    /// giving it a second responsibility is how this file grows into the
+    /// thing nothing can test.
+    ///
+    /// The resume clamp already measures against what AVPlayerItem
+    /// reports, which for a downloaded episode is the local file. That
+    /// stays correct by construction: the position is applied to whichever
+    /// asset is actually playing.
+    func play(_ episode: PodcastEpisode, localURL: URL? = nil) {
         if self.episode?.id != episode.id {
             teardownObserver()
             self.episode = episode
@@ -68,7 +79,7 @@ final class PodcastAudioPlayer {
             elapsedSeconds = Double(episode.positionSeconds)
             failed = false
 
-            let item = AVPlayerItem(url: episode.audioURL)
+            let item = AVPlayerItem(url: localURL ?? episode.audioURL)
             let player = AVPlayer(playerItem: item)
             self.player = player
             observeTime(on: player)

@@ -40,9 +40,22 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   release. The schema and the `podcast-audio` bucket are live (migrations
   auto-apply on merge). Play events are written only through
   `record_podcast_play_event`, not by a direct insert — that table is the
-  evidence base Phase 2 will build on. Transcripts, comprehension questions,
-  XP and SRS wiring are Phase 2. See
+  evidence base Phase 2 will build on. Transcripts shipped in Phase 2a;
+  **comprehension questions, XP and SRS wiring are Phase 2b and are not
+  built**. On iOS, episodes can be **downloaded for offline listening**
+  (Phase 3): downloads are explicit, nothing is ever deleted without you
+  asking, and offline the downloaded set is listed flat rather than as the
+  folder tree. See
   `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
+- **Admin app** (`bun run dev:admin`, port 8081) — a separately-deployed
+  surface for managing the podcast library: folders, episode metadata,
+  audio upload, publish/unlist, and transcripts. Access is an explicit
+  allowlist (`admin_users`) that only the server can read; the first
+  admin is added by hand in the Supabase SQL editor, because every
+  self-bootstrapping admin mechanism is a bypass waiting to happen. It
+  shares every validation rule with `scripts/podcast-tool.ts` rather than
+  reimplementing them, so the CLI and the UI cannot drift. See
+  `docs/superpowers/specs/2026-09-25-podcast-phase4-admin-design.md`.
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page

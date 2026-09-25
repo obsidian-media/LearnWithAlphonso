@@ -126,3 +126,9 @@ ios/LearnWithAlphonso/LearnWithAlphonsoWidget/*.entitlements
 
 # Phase 1 content-audit dumps (regenerate with scripts/dump-english-questions.ts)
 /.audit/
+
+# The admin app (vite.admin.config.ts) build output. Its routeTree.gen.ts
+# is deliberately NOT ignored: src/routeTree.gen.ts is committed, and the
+# generator only runs under `vite dev`, so an ignored admin tree makes
+# `build:admin` fail in CI with "Could not resolve './routeTree.gen'".
+dist-admin/

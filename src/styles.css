@@ -1,5 +1,12 @@
 @import "tailwindcss" source(none);
 @source "../src";
+/* The admin app (vite.admin.config.ts) renders from admin/routes and
+   shares this stylesheet. Without this line Tailwind never scans those
+   files, so every utility they use is absent from the generated CSS and
+   the admin app renders unstyled -- with no error anywhere to say why.
+   Cost to the learner bundle is only the utilities admin/ adds that src/
+   does not already use. */
+@source "../admin";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

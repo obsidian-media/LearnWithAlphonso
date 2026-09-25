@@ -18,8 +18,12 @@ struct ListenView: View {
     let session: Session
     let networkMonitor: NetworkMonitor
     let player: PodcastAudioPlayer
+    let downloads: PodcastDownloadManager
 
     @State private var folders: [PodcastFolder] = []
+    /// Every episode seen this session, so an offline listing can name what
+    /// was downloaded. Downloads outlive any one folder fetch.
+    @State private var knownEpisodes: [PodcastEpisode] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
 
@@ -37,7 +41,8 @@ struct ListenView: View {
                         query: searchQuery,
                         results: searchResults,
                         isSearching: isSearching,
-                        player: player
+                        player: player,
+                        downloads: downloads
                     )
                 }
             }
@@ -76,13 +81,26 @@ struct ListenView: View {
                 .tint(AlphonsoColor.moss)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if !networkMonitor.isConnected && folders.isEmpty {
-            ContentUnavailableView {
-                Label("You're offline", systemImage: "wifi.slash")
-            } description: {
-                Text("Listening needs a connection for now. Downloads are coming.")
-            } actions: {
-                Button("Try again") { Task { await load() } }
-                    .tint(AlphonsoColor.moss)
+            // Offline shows the DOWNLOADED set, flat, rather than an error.
+            // That is the difference between "the app works on a plane" and
+            // "the audio happens to still play". Nothing downloaded is its
+            // own state: telling someone who downloaded three episodes that
+            // there are none would be a lie about their own device.
+            let offline = PodcastCache.offlineListing(
+                entries: downloads.entries(),
+                episodes: knownEpisodes
+            )
+            if offline.isEmpty {
+                ContentUnavailableView {
+                    Label("You're offline", systemImage: "wifi.slash")
+                } description: {
+                    Text("Download episodes while you have a connection and they'll play here.")
+                } actions: {
+                    Button("Try again") { Task { await load() } }
+                        .tint(AlphonsoColor.moss)
+                }
+            } else {
+                OfflineEpisodeList(episodes: offline, player: player, downloads: downloads)
             }
         } else if let errorMessage {
             ContentUnavailableView {
@@ -98,9 +116,19 @@ struct ListenView: View {
                 folder: nil,
                 folders: folders,
                 session: session,
-                player: player
+                player: player,
+                downloads: downloads,
+                onEpisodesLoaded: rememberEpisodes
             )
         }
+    }
+
+    /// Keeps one entry per episode id, so the offline listing can name a
+    /// download whose folder has not been opened this launch.
+    private func rememberEpisodes(_ loaded: [PodcastEpisode]) {
+        var byID = Dictionary(knownEpisodes.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
+        for episode in loaded { byID[episode.id] = episode }
+        knownEpisodes = Array(byID.values)
     }
 
     private func load() async {
@@ -133,6 +161,8 @@ private struct PodcastFolderListing: View {
     let folders: [PodcastFolder]
     let session: Session
     let player: PodcastAudioPlayer
+    let downloads: PodcastDownloadManager
+    let onEpisodesLoaded: ([PodcastEpisode]) -> Void
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var isLoadingEpisodes = false
@@ -151,7 +181,9 @@ private struct PodcastFolderListing: View {
                                 folder: child,
                                 folders: folders,
                                 session: session,
-                                player: player
+                                player: player,
+                                downloads: downloads,
+                                onEpisodesLoaded: onEpisodesLoaded
                             )
                         } label: {
                             AlphonsoRowCard(
@@ -168,18 +200,30 @@ private struct PodcastFolderListing: View {
             if !episodes.isEmpty {
                 Section {
                     ForEach(episodes) { episode in
-                        Button {
-                            player.play(episode)
-                        } label: {
-                            AlphonsoRowCard(
-                                title: episode.title,
-                                subtitle: subtitle(for: episode),
-                                accent: episode.positionSeconds > 0
-                                    ? AlphonsoColor.ember
-                                    : AlphonsoColor.moss
+                        HStack(spacing: AlphonsoSpacing.sm) {
+                            Button {
+                                player.play(
+                                    episode,
+                                    localURL: downloads.localURL(episodeID: episode.id)
+                                )
+                                downloads.markPlayed(episodeID: episode.id)
+                            } label: {
+                                AlphonsoRowCard(
+                                    title: episode.title,
+                                    subtitle: subtitle(for: episode),
+                                    accent: episode.positionSeconds > 0
+                                        ? AlphonsoColor.ember
+                                        : AlphonsoColor.moss
+                                )
+                            }
+                            .buttonStyle(.plain)
+
+                            PodcastDownloadButton(
+                                episode: episode,
+                                downloads: downloads,
+                                player: player
                             )
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -212,6 +256,7 @@ private struct PodcastFolderListing: View {
         guard let folder, let client = makePodcastClient(session: session) else { return }
         isLoadingEpisodes = true
         episodes = (try? await client.fetchEpisodes(folderID: folder.id)) ?? []
+        onEpisodesLoaded(episodes)
         isLoadingEpisodes = false
     }
 }
@@ -247,6 +292,9 @@ private struct PodcastSearchResultsView: View {
     let results: [PodcastEpisode]
     let isSearching: Bool
     let player: PodcastAudioPlayer
+    /// Search results play the downloaded copy too -- a result found while
+    /// offline is useless if tapping it reaches for the network.
+    let downloads: PodcastDownloadManager
 
     var body: some View {
         if PodcastSearch.normalizeQuery(query) == nil {
@@ -259,7 +307,11 @@ private struct PodcastSearchResultsView: View {
             List {
                 ForEach(results) { episode in
                     Button {
-                        player.play(episode)
+                        player.play(
+                            episode,
+                            localURL: downloads.localURL(episodeID: episode.id)
+                        )
+                        downloads.markPlayed(episodeID: episode.id)
                     } label: {
                         AlphonsoRowCard(
                             title: episode.title,
@@ -288,5 +340,145 @@ private struct PodcastSearchResultsView: View {
         let minutes = episode.durationSeconds / 60
         let seconds = episode.durationSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+/// Download / delete for one episode.
+///
+/// Refusal is a prompt, never a silent deletion: exceeding the budget
+/// names what could be removed and waits for the learner to choose.
+private struct PodcastDownloadButton: View {
+    let episode: PodcastEpisode
+    let downloads: PodcastDownloadManager
+    let player: PodcastAudioPlayer
+
+    @State private var refusal: PodcastDownloadRefusal?
+    @State private var showRefusal = false
+
+    var body: some View {
+        Group {
+            switch downloads.state(for: episode.id) {
+            case .downloading(let progress):
+                ProgressView(value: progress)
+                    .progressViewStyle(.circular)
+                    .tint(AlphonsoColor.moss)
+            case .downloaded:
+                Button {
+                    deleteRespectingPlayback()
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AlphonsoColor.moss)
+                }
+                .accessibilityLabel("Downloaded. Tap to remove.")
+            case .failed:
+                Button { start() } label: {
+                    Image(systemName: "exclamationmark.arrow.circlepath")
+                        .foregroundStyle(AlphonsoColor.destructive)
+                }
+                .accessibilityLabel("Download failed. Tap to retry.")
+            case .notDownloaded:
+                Button { start() } label: {
+                    Image(systemName: "arrow.down.circle")
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                }
+                .accessibilityLabel("Download for offline")
+            }
+        }
+        .buttonStyle(.plain)
+        .alert("Not enough space set aside", isPresented: $showRefusal) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(refusalMessage)
+        }
+    }
+
+    private var refusalMessage: String {
+        guard case let .budgetExceeded(candidates, _)? = refusal else {
+            return "That download didn't finish. Please try again."
+        }
+        guard !candidates.isEmpty else {
+            return "This episode is larger than the space set aside for downloads."
+        }
+        // Names what to remove; removes nothing. A deliberate download is a
+        // promise, and breaking it silently to make room for another would
+        // be the app deciding which of the learner's choices mattered.
+        return "Remove \(candidates.count) downloaded episode\(candidates.count == 1 ? "" : "s") "
+            + "to make room, starting with the ones you haven't played."
+    }
+
+    private func start() {
+        Task {
+            do {
+                try await downloads.download(episode: episode)
+            } catch let error as PodcastDownloadRefusal {
+                refusal = error
+                showRefusal = true
+            } catch {
+                refusal = .transferFailed(error.localizedDescription)
+                showRefusal = true
+            }
+        }
+    }
+
+    /// Deleting the file underneath a playing AVPlayer is plausible and
+    /// misbehaves quietly, so playback stops first and the learner can see
+    /// why. Silently continuing from a deleted file, or stalling with no
+    /// explanation, are both worse than a clear stop.
+    private func deleteRespectingPlayback() {
+        if player.episode?.id == episode.id {
+            player.close()
+        }
+        downloads.delete(episodeID: episode.id)
+    }
+}
+
+/// The flat downloaded set, shown when there is no network.
+///
+/// Flat and title-ordered on purpose: folders are a browsing aid for a
+/// library you can see all of, and offline you can only see what you
+/// downloaded. The banner explains why the shape changed, so the tree's
+/// absence reads as a state rather than a fault.
+private struct OfflineEpisodeList: View {
+    let episodes: [PodcastEpisode]
+    let player: PodcastAudioPlayer
+    let downloads: PodcastDownloadManager
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(episodes) { episode in
+                    HStack(spacing: AlphonsoSpacing.sm) {
+                        Button {
+                            player.play(
+                            episode,
+                            localURL: downloads.localURL(episodeID: episode.id)
+                        )
+                        downloads.markPlayed(episodeID: episode.id)
+                        } label: {
+                            AlphonsoRowCard(
+                                title: episode.title,
+                                subtitle: "Downloaded",
+                                leadingEmoji: "🎧"
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        PodcastDownloadButton(
+                            episode: episode,
+                            downloads: downloads,
+                            player: player
+                        )
+                    }
+                }
+            } header: {
+                Text("Offline — showing your downloads")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
+            }
+            .listRowBackground(Color.clear)
+        }
+        .scrollContentBackground(.hidden)
+        .background(AlphonsoColor.surface)
     }
 }

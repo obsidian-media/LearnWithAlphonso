@@ -89,6 +89,129 @@ because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
 
+**Podcast admin (Phase 4).** A second TanStack Start build from the same
+repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
+the key that moves the app, and `router.routesDirectory` alone does
+nothing, because it resolves *relative to* `srcDirectory` (passing both
+creates an empty `admin/admin/routes/`, and passing only the latter kills
+the build inside the manifest plugin with `Cannot convert undefined or
+null to object`). No admin route can reach the learner bundle, and
+`src/lib/admin-route-isolation.test.ts` checks both directions: losing
+that override silently turns the admin app into a copy of the learner
+app, which is invisible in review.
+
+Two consequences worth knowing before touching it. `admin/routeTree.gen.ts`
+is **committed**, like `src/routeTree.gen.ts`, because the generator only
+runs under `vite dev` — ignoring it builds on the machine that made it
+and fails in CI. And `src/styles.css` carries **`@source "../admin"`**:
+it declares `source(none)`, so without that line Tailwind never scans the
+admin files and every utility they use is missing from the generated CSS,
+producing an unstyled app with no error anywhere. The admin shell sets
+`data-theme="canopy"` explicitly, since `:root` is Meadow.
+
+Authorization is `admin_users`: **RLS enabled with zero policies**, plus
+`REVOKE ALL FROM anon, authenticated`, so only `service_role` (which
+bypasses RLS) can read it. An allowlist the guarded application can read
+is one an attacker can enumerate, and one it can write is not an
+allowlist; the revoked grant means a future migration that adds a
+permissive policy for some other reason still does not open the table.
+The first row is inserted by hand in the SQL editor — there is
+deliberately no bootstrap endpoint, because every self-bootstrapping
+admin mechanism is an authentication bypass waiting for a
+misconfiguration. It is excluded from the GDPR export for documented
+reasons (see `account.functions.test.ts`'s `NOT_PERSONAL_DATA`); deletion
+rides on `ON DELETE CASCADE` from `auth.users`.
+
+`requireAdmin` chains `requireSupabaseAuth` and then checks the allowlist
+with the service-role client. It throws `UNAUTHORIZED_MESSAGE`, which is
+copied **verbatim** from one of `requireSupabaseAuth`'s own failures and
+pinned to it by a test — every message there is suffixed, so the bare
+`"Unauthorized"` it threw at first was a string no bad token could
+produce, which is exactly the oracle it was meant to avoid. Endpoint
+existence still leaks through the HTTP status a framework gives a thrown
+error, so the property this actually buys is the narrower and achievable
+one: **a non-admin cannot be distinguished from a bad token.** Every admin server function lives in `src/lib/admin.functions.ts`
+so one test can enumerate them and fail if any lacks the middleware —
+that test reads the **source**, because TanStack does not expose the
+middleware chain at runtime.
+
+**There is no separate identity provider and cannot be one:** the admin
+writes to the same database the learner app reads. What is separate is
+the deployment, the origin — and therefore the browser storage holding
+the Supabase session, since this repo authenticates with a Bearer token
+rather than a cookie — and the authorization check.
+
+Audio upload goes **straight to Storage through a signed URL**, never
+through a server function: a serverless body is capped near 4.5 MB and
+base64 inflates by a third, so an ordinary 3 MB episode would fail at the
+platform. The signed URL targets a **staging key** (`<audio_path>.incoming`),
+never the live object, and the server promotes it onto `audio_path` only
+after proving it is audio from its **signature rather than its
+extension**; every failure removes the staging object and leaves the live
+one untouched. The first version uploaded onto the live path and deleted
+on failure, which destroyed a published episode's audio on one mis-picked
+file — unrecoverably, with no bucket versioning and no backup, while the
+row stayed `published` and pointed at nothing. Same rule as the iOS
+cache: a file at the final path always means a finished, verified object.
+
+The storage path is resolved **server-side from the episode id** and
+never accepted from the client — an id and a path arriving as unrelated
+fields let one episode's duration be written onto another's row, which
+iOS's `durationDisagrees` then reads as a truncated download forever. The
+metadata parse is wrapped, because it throws on input the sniffer accepts
+(three `ID3` bytes and anything after them), and an escaping throw would
+leave the object in the bucket. `Content-Type` is set from the sniffed
+bytes, not from what the browser sent, since the stored type is what the
+bucket serves with and sniffing alone does not control that. Transcripts go through the same
+`normalizeTranscript` the CLI uses, which *throws* on markup rather than
+returning null; null means empty, and a handler that conflated them would
+save an empty transcript and report success.
+
+**Offline download (Phase 3).** Downloaded episodes live in
+**Application Support**, not Caches: the system may purge Caches under
+memory pressure, and a file someone deliberately asked for should not
+evaporate. The directory is **excluded from iCloud backup** — it is
+re-downloadable content, which Apple has rejected apps for including.
+
+Every rule lives in `PodcastCache`/`PodcastCacheBudget` in the Kit and
+nothing decides anything in `PodcastDownloadManager`, because
+`ios-swift-tests` covers the Kit and **nothing in this repo covers the
+app target**. A rule decided in the app target is a rule no test can
+reach.
+
+The write order is staging name → verify byte count against
+`Content-Length` → atomic move → *then* insert the row, so a file at the
+final path always means a finished download and a row pointing at no
+file cannot exist. `reconcile()` runs at launch in both directions,
+because being killed mid-transfer is ordinary on iOS rather than
+exceptional. The budget is re-checked against the **real** size after
+the transfer, not only the pre-flight estimate.
+
+**Nothing is ever deleted automatically.** Exceeding the budget names
+what could be removed — never-played episodes first, least recently
+played after — and waits for the learner. The first draft evicted
+automatically while exempting explicit downloads, and since automatic
+downloading is out of scope, every download is explicit: the policy
+could never have run. The budget is a parameter at every level rather
+than a constant read internally, so a test can pass 2 MB and actually
+reach the refusal path; at the 500 MB default and a library this small
+that guard would never execute.
+
+Republish detection uses the Supabase `ETag`, which **is the MD5 of the
+object's content** (probed 2026-09-25 against the live object: the header
+matched the hash of the downloaded bytes and was stable through
+Cloudflare). Content-derived means it changes when the content changes,
+which is what makes this work with no server-side marker and therefore
+no migration. When nothing is known — offline — a cached copy is never
+discarded: a slightly old episode beats no episode.
+
+Offline browsing is a **flat, title-ordered list** of the downloaded
+set, not the folder tree. Folders are a browsing aid for a library you
+can see all of; offline you can only see what you downloaded. "Offline
+with nothing downloaded" is a distinct state from "no episodes", because
+telling someone who downloaded three episodes that there are none would
+be a lie about their own device.
+
 **Podcast audio storage.** Episodes live in a **public-read** Supabase
 Storage bucket, `podcast-audio`, with no client write policy — only
 `scripts/podcast-tool.ts` (service role) uploads. Consequence worth

@@ -9,6 +9,7 @@ struct RootView: View {
     let remotePushRegistrar: RemotePushRegistrar
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    let podcastDownloadManager: PodcastDownloadManager
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -53,7 +54,12 @@ struct RootView: View {
                         .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Learn", systemImage: "book.fill") }
                         .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
-                    ListenView(session: session, networkMonitor: networkMonitor, player: podcastPlayer)
+                    ListenView(
+                        session: session,
+                        networkMonitor: networkMonitor,
+                        player: podcastPlayer,
+                        downloads: podcastDownloadManager
+                    )
                         .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Listen", systemImage: "headphones") }
                     ConversationView(contentStore: contentStore, session: session)

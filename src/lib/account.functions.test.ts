@@ -153,13 +153,43 @@ describe("GDPR export table coverage", () => {
     expect(createTableBlocks.length).toBeGreaterThan(20);
   });
 
+  // Tables keyed by user_id that are deliberately NOT part of the export.
+  // Each needs a reason, because the default must stay "export it" --
+  // this list is the only way a table with personal data in it can
+  // silently escape the guard.
+  const NOT_PERSONAL_DATA = new Set<string>([
+    // admin_users is an access-control list, not the account's own data.
+    // Three reasons it is excluded rather than added:
+    //  1. The export runs as the CALLER. admin_users has RLS enabled with
+    //     no policies and no grant to `authenticated`, so the query would
+    //     return an empty array for everyone, admin or not -- an export
+    //     field that is always empty is worse than no field.
+    //  2. Reading it needs the service role, and reaching for that here
+    //     would put an allowlist read into a user-triggered endpoint,
+    //     which is precisely what the table's design forbids.
+    //  3. Deletion is already handled: user_id REFERENCES auth.users
+    //     ON DELETE CASCADE, so the row goes when the account does.
+    "admin_users",
+  ]);
+
   it("exports every table that has a user_id column", () => {
     const withUserId = createTableBlocks
       .filter(({ body }) => /^\s*user_id\s+uuid/im.test(body))
-      .map(({ table }) => table);
+      .map(({ table }) => table)
+      .filter((t) => !NOT_PERSONAL_DATA.has(t));
 
     const missing = withUserId.filter((t) => !exportTables.includes(t));
     expect(missing).toEqual([]);
+  });
+
+  it("keeps the exclusion list honest", () => {
+    // An exclusion list is a hole in a guard. This pins that every name
+    // in it still exists as a table -- otherwise a renamed table leaves a
+    // stale exemption behind, and the real table slips through unnoticed.
+    const allTables = new Set(createTableBlocks.map(({ table }) => table));
+    for (const excluded of NOT_PERSONAL_DATA) {
+      expect(allTables.has(excluded)).toBe(true);
+    }
   });
 
   it("exports every table that references auth.users by some other column", () => {
@@ -173,6 +203,7 @@ describe("GDPR export table coverage", () => {
       // `created_by ... ON DELETE SET NULL`, i.e. a team deliberately
       // outlives the account that made it.
       "teams",
+      ...NOT_PERSONAL_DATA,
     ]);
     const referencing = createTableBlocks
       .filter(({ body }) => /references\s+auth\.users/i.test(body))

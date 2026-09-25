@@ -16,6 +16,7 @@ struct LearnWithAlphonsoApp: App {
     @State private var networkMonitor = NetworkMonitor()
     private let contentStore: ContentStore?
     private let syncQueueStore: SyncQueueStore
+    private let podcastDownloadManager: PodcastDownloadManager
 
     init() {
         // ContentStore reads JSON bundled at build time (see that type's
@@ -37,6 +38,10 @@ struct LearnWithAlphonsoApp: App {
             PendingReviewGradeRecord.self,
             CachedDueReviewRecord.self,
             AppSyncStateRecord.self,
+            // Offline podcast downloads share this container rather than
+            // opening a second store -- one more thing to migrate, for no
+            // benefit.
+            PodcastDownloadRecord.self,
         ])
         // Falls back to an in-memory-only store on failure (e.g. disk full,
         // a corrupt store from a prior crash) rather than crashing launch --
@@ -46,6 +51,10 @@ struct LearnWithAlphonsoApp: App {
         let container = (try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)]))
             ?? (try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]))
         syncQueueStore = SyncQueueStore(modelContext: ModelContext(container))
+        // Same container, its own context: the download manager and the
+        // sync queue touch different models and should not contend for
+        // one context's pending changes.
+        podcastDownloadManager = PodcastDownloadManager(modelContext: ModelContext(container))
     }
 
     var body: some Scene {
@@ -58,7 +67,8 @@ struct LearnWithAlphonsoApp: App {
                     notificationScheduler: notificationScheduler,
                     remotePushRegistrar: remotePushRegistrar,
                     networkMonitor: networkMonitor,
-                    syncQueueStore: syncQueueStore
+                    syncQueueStore: syncQueueStore,
+                    podcastDownloadManager: podcastDownloadManager
                 )
                 .task { await entitlementStore.refresh() }
             } else {

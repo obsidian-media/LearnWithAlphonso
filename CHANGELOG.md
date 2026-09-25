@@ -86,6 +86,62 @@ lazily so commands that never read audio no longer die at import; and the
 iOS mini bar docks inside each tab rather than on the `TabView`, which
 had left it overlapping the tab bar on device.
 
+**A podcast admin app, separately deployed** (Phase 4). The account
+owner can now manage the library from a browser instead of a terminal:
+folders, episode metadata, audio upload, publish/unlist and transcripts.
+It is a **second TanStack Start build from the same repo** pointed at
+`admin/routes`, so no admin code reaches the learner bundle, and a test
+checks that in both directions.
+
+Access is an allowlist table with **RLS enabled and zero policies**, plus
+a revoked grant, so only the service role can read it — an allowlist the
+guarded app can read is one an attacker can enumerate. The first admin is
+inserted by hand; there is deliberately no bootstrap endpoint. Every
+admin server function lives in one file so a single test can enumerate
+them and fail if any lacks the gate, and that test reads the source,
+because TanStack does not expose its middleware chain at runtime.
+
+Audio uploads go straight to Storage through a signed URL — a serverless
+body is capped near 4.5 MB and base64 inflates by a third, so an ordinary
+3 MB episode would have failed at the platform — and the server then
+verifies the stored object by **signature rather than extension**,
+deleting it when it is not audio. Validation reuses the CLI's tested
+functions throughout, so the two publishing paths cannot drift.
+
+Two defects found by mutation rather than by reading: a sniff test that
+passed with its guard removed (`bytes(0xff)` returns null either way),
+and the plan's assumption that `normalizeTranscript` returns null for
+markup when it actually throws — a handler built on that would have saved
+an empty transcript and reported success.
+
+**Offline download for podcasts on iOS** (#133, #136). Listening happens
+on trains and planes, which is where the Listen tab previously stopped
+working. Downloaded episodes live in **Application Support** rather than
+Caches (the system purges Caches; a deliberate download should not
+evaporate) and are excluded from iCloud backup. Staging name → byte-count
+verification → atomic move → *then* the database row, so a file at the
+final path always means a finished download; launch reconciles both
+directions, since being killed mid-transfer is ordinary on iOS.
+
+**Nothing is ever deleted automatically** — exceeding the budget names
+what could be removed and waits. The first design evicted automatically
+while exempting explicit downloads, and with automatic downloading out of
+scope every download is explicit, so that policy could never have run.
+The budget is injectable at every level for the same reason the old one
+was unreachable: at the 500 MB default, a library this small can never
+reach the refusal path, and a guard that cannot execute is the defect,
+not the test. Republish detection rides on Supabase's `ETag`, probed and
+confirmed to be the **MD5 of the object's content** and stable through
+Cloudflare — so it needed no migration. Offline browsing is flat and
+title-ordered rather than the folder tree, and "offline with nothing
+downloaded" is its own state.
+
+Every rule lives in the Kit and none in the app target, because
+`ios-swift-tests` covers the Kit and nothing covers the app target;
+`ios-app-build` compiles it and runs nothing. **The app-target half is
+compile-checked only** and carries seven device checks in #136, plus two
+still outstanding from earlier phases.
+
 **`maxWorkers` pinned in `vitest.config.ts`** (#116). A starved run had
 been printing `124 passed (124)` beside `Errors 6 errors` — six files
 that never executed, next to a line that reads as success. Three sessions
