@@ -355,6 +355,22 @@ does not round-trip through `matchesSpokenAnswer` does not ship.
   America on the plural. **Pick one variety, state it in the spec, and
   hold it** — French only had `tu`/`vous`. Gender agreement applies as
   it did for French (_cansado_ / _cansada_).
+
+  **Decision (2026-09-25): standard Latin American Spanish — `tú` /
+  `usted` / `ustedes` for all plural (no `vosotros`, no `vos`).** Not a
+  preference call — measured against the existing bank first:
+  `grep -c` on `lesson-bank-es.ts` finds `tú` 34 times, `usted` 9,
+  `ustedes` 10, and **`vosotros` zero, `vos` zero**. The existing 2,540
+  questions are already written in this variety, unanimously on the
+  plural question (`vosotros` never appears) — adopting anything else
+  for Phase 2 would introduce the first Spain/Latin-America split into a
+  bank that currently has none, and would need to justify overriding
+  2,540 already-shipped questions rather than 375 new ones. This also
+  matches the majority-speaker variety (Latin America over Spain by
+  population) and the convention most mainstream language-learning
+  products default to, but neither of those is why it was chosen — the
+  bank's own existing content is. Gender agreement applies as it did for
+  French (_cansado_ / _cansada_).
 - **`listening` second.** Minimal pairs are the good exercise here, and
   Spanish supplies excellent ones: `pero`/`perro` (tap vs. trill),
   `caro`/`carro`, `pesa`/`besa`, `cala`/`cara`. Better than
@@ -446,3 +462,85 @@ Confidence order within Phase 2 is the same as French's: `translate`
 most defensible, `listening` next, `speak` least — with the added
 caveat that the variety decision in §6.2 affects all three and is
 harder to reverse than any single line.
+
+---
+
+## Appendix: folded in from the superseded 2026-09-24 draft
+
+The account owner's instruction on superseding was to fold in "detail
+this one lacks," not to re-measure everything independently. Everything
+below was measured in the superseded draft and re-verified here as
+still true against `6366f59` before folding; nothing here contradicts
+§§1–10 above, and none of it changes any figure already stated there.
+
+### A.1 A fourth measured candidate set: `audit-scan.ts`'s answer-leak / self-ref flags
+
+Separate from and additional to §3's 57 duplicate-prompt groups. Run
+2026-09-24 via `scripts/dump-english-questions.ts es` then
+`scripts/audit-scan.ts es` (both already course-generalised, no code
+change needed — confirmed by running them, not by reading the type
+signature):
+
+| Level     | Questions | answer-leak | self-ref | pos | dup-clue |
+| --------- | --------- | ----------- | -------- | --- | -------- |
+| A1        | 500       | 6           | 1        | 0   | 0        |
+| A2        | 505       | 19          | 2        | 0   | 0        |
+| B1        | 520       | 21          | 7        | 0   | 0        |
+| B2        | 510       | 8           | 9        | 0   | 0        |
+| C1        | 505       | 18          | 0        | 0   | 0        |
+| placement | 45        | 2           | 0        | 0   | 0        |
+| **Total** | **2,585** | **74**      | **19**   | 0   | 0        |
+
+`pos` and `dup-clue` are correctly 0 everywhere — `pos` only runs for
+`course === "en"`, and `dup-clue`'s English-only stopword gate (added
+after it false-flagged ~15,000 French lines during the French audit) is
+already in place. None of these 93 flags (74 + 19) has been triaged by
+a human. **§7's sequencing does not currently include a step for this**
+— it belongs alongside step 3/4 (both are "known-check found candidates,
+needs human triage") and should be folded into whichever of those steps
+picks it up, or added as its own step, rather than silently dropped.
+`audit-scan.ts` is a triage tool, not a judge, same caveat as English's
+and French's own use of it.
+
+This also covers `placement-es.ts` (45 questions, 2 answer-leak flags)
+— the superseded draft left "is placement in scope" as an open
+question; this table answers "it has at least 2 flagged candidates,"
+which argues for including it rather than deferring the question
+further.
+
+### A.2 Encoding baseline: 11 distinct non-ASCII characters
+
+Scanned `lesson-bank-es.ts` byte-level, not assumed: `¡ ¿ É á é í ñ ó ú
+ü →`. The arrow is the vocab-card `term → gloss` convention English and
+French both use. `curriculum-consistency.test.ts` has a French-only
+test ("every known accented/typographic character still appears
+somewhere in the bank") guarding against an entire character class
+silently disappearing (e.g. an export step stripping diacritics) — no
+Spanish equivalent exists yet. Worth adding with this 11-character list
+as part of whichever §7 step touches `curriculum-consistency.test.ts`
+(steps 2–4 all do).
+
+### A.3 Morphology decision (§5) — additional method detail
+
+§5 correctly says a Spanish morphology decision is not the agent's to
+make unilaterally and should only be measured, not fixed. Two points
+from the superseded draft's more detailed framing of *how* that decision
+should eventually be evaluated, once someone is authorized to make it —
+carried forward as context, not as new instruction:
+
+- **Whatever candidate library is proposed must be spike-verified
+  against a known-correct conjugation table across every mood/tense the
+  bank's cloze packs actually use** — not just the present tense. This
+  is exactly the gap French's own spike had to close after an initial,
+  insufficient present-only pass (`docs/superpowers/french-distractor-quality-evidence.md`
+  §8.5.4).
+- **Generative, not tagging** — produce a line's distractors from its
+  own hinted verb, not by tagging a pool. This sidesteps the bare-word
+  hazard entirely (§5's own point about untagged candidates being a
+  promotion, not an abstention) rather than mitigating it after the
+  fact.
+- Watch for **caller-side agreement gotchas**, the class of bug French's
+  `agreeNumber` gap was — a library can conjugate correctly and still
+  produce a wrong answer if the integration doesn't pass every argument
+  it needs (gender *and* number, for instance). This is a test to write
+  once a library is chosen, not a property to assume.

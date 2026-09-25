@@ -384,4 +384,41 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
       expect(missing, `missing characters: ${missing.join(" ")}`).toEqual([]);
     });
   }
+
+  if (name === "es") {
+    it("Spanish: every known accented/typographic character still appears somewhere in the bank", () => {
+      // Verified 2026-09-25 by scanning lesson-bank-es.ts source directly: 11
+      // distinct non-ASCII characters -- docs/superpowers/specs/
+      // 2026-09-25-spanish-content-audit-design.md appendix A.2. Same
+      // reasoning as the French block above: a floor, not a per-question
+      // check, catching a whole character class silently disappearing (e.g.
+      // an export step stripping diacritics), which the mojibake check
+      // cannot see since a missing character isn't a corrupted one.
+      const expectedChars = ["¡", "¿", "É", "á", "é", "í", "ñ", "ó", "ú", "ü", "→"];
+      const questionText = allQuestions(units)
+        .map(({ question }) => {
+          const anyQ = question as unknown as {
+            prompt: string;
+            explanation?: string;
+            choices?: string[];
+            bank?: string[];
+          };
+          return [
+            anyQ.prompt,
+            anyQ.explanation ?? "",
+            ...(anyQ.choices ?? []),
+            ...(anyQ.bank ?? []),
+          ].join(" ");
+        })
+        .join(" ");
+      const unitText = units
+        .map((u) =>
+          [u.title, u.description, ...u.lessons.flatMap((l) => [l.title, l.subtitle])].join(" "),
+        )
+        .join(" ");
+      const allText = questionText + " " + unitText;
+      const missing = expectedChars.filter((c) => !allText.includes(c));
+      expect(missing, `missing characters: ${missing.join(" ")}`).toEqual([]);
+    });
+  }
 });
