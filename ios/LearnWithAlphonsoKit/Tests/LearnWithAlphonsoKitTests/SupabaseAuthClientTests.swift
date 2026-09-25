@@ -137,6 +137,47 @@ final class SupabaseAuthClientTests: XCTestCase {
         }
     }
 
+    // MARK: - signInWithIDToken
+
+    func testSignInWithIDTokenPostsTheProviderTokenAndNonceAndDecodesASession() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.response(for: request.url!, body: [
+                "access_token": "at-4", "refresh_token": "rt-4", "expires_in": 3600,
+                "user": ["id": "user-1"],
+            ])
+        }
+
+        let session = try await client.signInWithIDToken(provider: "apple", idToken: "apple-id-token", nonce: "raw-nonce-1")
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/token?grant_type=id_token")
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["provider"] as? String, "apple")
+        XCTAssertEqual(payload["id_token"] as? String, "apple-id-token")
+        XCTAssertEqual(payload["nonce"] as? String, "raw-nonce-1")
+
+        XCTAssertEqual(session.accessToken, "at-4")
+        XCTAssertEqual(session.userID, "user-1")
+    }
+
+    func testSignInWithIDTokenThrowsWhenAppleRejectsTheToken() async {
+        let client = makeClient { request in
+            self.response(for: request.url!, body: ["msg": "Invalid id_token"], status: 400)
+        }
+
+        do {
+            _ = try await client.signInWithIDToken(provider: "apple", idToken: "bad-token", nonce: "raw-nonce-1")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? SupabaseAuthError, .server(status: 400, message: "Invalid id_token"))
+        }
+    }
+
     // MARK: - refresh
 
     func testRefreshPostsTheRefreshTokenAndDecodesANewSession() async throws {

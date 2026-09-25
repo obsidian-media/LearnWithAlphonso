@@ -64,6 +64,47 @@ struct AuthView: View {
 
     private var emailStep: some View {
         VStack(spacing: AlphonsoSpacing.sm) {
+            // App Store Guideline 4.8: an app offering a third-party social
+            // login (Google, below) must also offer an equivalent
+            // privacy-preserving option -- Apple first, per the sign-in
+            // audit's ordering.
+            Button {
+                Task { await session.signInWithApple() }
+            } label: {
+                if session.isBusy {
+                    ProgressView()
+                } else {
+                    Label("Continue with Apple", systemImage: "apple.logo")
+                }
+            }
+            .buttonStyle(.alphonsoSecondary)
+            .disabled(session.isBusy)
+
+            Button {
+                Task { await session.signInWithGoogle() }
+            } label: {
+                if session.isBusy {
+                    ProgressView()
+                } else {
+                    Text("Continue with Google")
+                }
+            }
+            .buttonStyle(.alphonsoSecondary)
+            .disabled(session.isBusy)
+
+            HStack(spacing: AlphonsoSpacing.sm) {
+                // A plain Divider() in an HStack wants to stretch to fill
+                // all available cross-axis (vertical) height -- a real bug
+                // found on a real device, where this pushed "Continue with
+                // Google" almost to the bottom of the screen. Give it an
+                // explicit height so it stays a plain 1pt rule.
+                Divider().frame(height: 1)
+                Text("or")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Divider().frame(height: 1)
+            }
+
             TextField("Email", text: $email)
                 .textFieldStyle(.plain)
                 .padding(AlphonsoSpacing.sm + 2)
@@ -84,31 +125,6 @@ struct AuthView: View {
             }
             .buttonStyle(.alphonsoPrimary)
             .disabled(session.isBusy || !email.contains("@"))
-
-            HStack(spacing: AlphonsoSpacing.sm) {
-                // A plain Divider() in an HStack wants to stretch to fill
-                // all available cross-axis (vertical) height -- a real bug
-                // found on a real device, where this pushed "Continue with
-                // Google" almost to the bottom of the screen. Give it an
-                // explicit height so it stays a plain 1pt rule.
-                Divider().frame(height: 1)
-                Text("or")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                Divider().frame(height: 1)
-            }
-
-            Button {
-                Task { await session.signInWithGoogle() }
-            } label: {
-                if session.isBusy {
-                    ProgressView()
-                } else {
-                    Text("Continue with Google")
-                }
-            }
-            .buttonStyle(.alphonsoSecondary)
-            .disabled(session.isBusy)
         }
     }
 

@@ -51,6 +51,18 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.obsidianmedia.learnwithalphonso
+        # Required for Sign in with Apple (App Store Guideline 4.8). NOTE:
+        # this generated file is currently NOT what either Debug or Release
+        # actually builds against -- both configs override
+        # CODE_SIGN_ENTITLEMENTS below to hand-written files (a pre-existing
+        # gap, not introduced here; it's presumably also why the App Group
+        # entitlement above hasn't been confirmed working on a signed
+        # build). Listed here anyway so intent stays visible in the
+        # generator spec, but the key that's actually effective today is
+        # the one added directly to LearnWithAlphonso-Debug.entitlements
+        # and LearnWithAlphonso-Release.entitlements.
+        com.apple.developer.applesignin:
+          - Default
     dependencies:
       - package: LearnWithAlphonsoKit
       - package: RevenueCat
