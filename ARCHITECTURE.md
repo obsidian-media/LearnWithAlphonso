@@ -178,7 +178,7 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 counts, verified 2026-09-25 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
 kept in sync): English 609 lessons / 3,096 questions, French 575 lessons
-/ 2,875 questions, Spanish 533 lessons / 2,665 questions. French's phase 2
+/ 2,875 questions, Spanish 558 lessons / 2,790 questions. French's phase 2
 (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
 closed the type gap English opened on 2026-09-24 by porting
 `listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
@@ -198,7 +198,9 @@ against real Spanish content rather than inferred from French's passing
 tests) and `translate` content (PR 2, done — 125 questions, Latin
 American variety `tú`/`usted`/`ustedes`, no `vosotros`/`vos`, matching
 what the existing 2,665 questions already used exclusively).
-`listening`/`speak` (PRs 3-4) are not started; `speak` needs its own
+and `listening` content (PR 3 — 125 questions, minimal pairs across
+seseo, b/v and yeísmo mergers, measured at 96.0% confusability).
+`speak` (PR 4) is not started; it needs its own
 `spoken-answer-es.ts` across the same three ports before any speak
 content can be authored against it. French/Spanish still need a
 native-speaker review pass for grammar/naturalness (`docs/BACKLOG.md`,

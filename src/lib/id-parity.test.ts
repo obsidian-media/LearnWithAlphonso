@@ -92,15 +92,15 @@ describe.each(COURSES)(
         // catches drift elsewhere in this repo. The 10/15/20 buckets are the
         // §2 short-pack decision and change only if that decision changes;
         // the 25 bucket also grows as phase-2 packs land (each one full-length
-        // by construction), most recently +5 for the translate packs (step 7
-        // PR 2, docs/superpowers/specs/2026-09-25-spanish-content-audit-
-        // design.md).
+        // by construction): +5 for the translate packs and +5 for the
+        // listening packs (docs/superpowers/specs/2026-09-25-spanish-content-
+        // audit-design.md §7 step 7, PRs 2 and 3). PR 4's speak packs add +5.
         const stats = packLineStats(course);
         const distribution: Record<number, number> = {};
         for (const s of Object.values(stats)) {
           distribution[s.lines] = (distribution[s.lines] ?? 0) + 1;
         }
-        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 52 });
+        expect(distribution).toEqual({ 10: 3, 15: 53, 20: 27, 25: 57 });
       });
     }
 

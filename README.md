@@ -84,7 +84,7 @@ session:
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
 | **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
-| **Spanish** | 105 | 106 | 109 | 107 | 106 | **533**       | 2,665           |
+| **Spanish** | 110 | 111 | 114 | 112 | 111 | **558**       | 2,790           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
 types — **listening comprehension**, **speaking practice** and **free-form
@@ -110,10 +110,13 @@ auxiliary-verb-contraction rules — see that module's header comment.
 **Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`)
 is following the same path: `bank-engine.ts` needed zero Spanish-specific
 changes (verified against real Spanish content, not inferred from
-French), and Spanish now has **translate** content too (125 new
-questions) in Latin American Spanish (`tú`/`usted`/`ustedes`, no
-`vosotros`/`vos` — measured against the existing bank rather than chosen
-from preference). `listening` and `speak` are the remaining PRs.
+French), and Spanish now has **translate** and **listening** content
+(125 new questions each). Translate is in Latin American Spanish
+(`tú`/`usted`/`ustedes`, no `vosotros`/`vos` — measured against the
+existing bank rather than chosen from preference); listening uses
+Spanish minimal pairs across seseo, b/v and yeísmo mergers, measured
+(not assumed) at 96.0% confusability, matching French's own benchmark.
+`speak` is the remaining PR.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just
@@ -127,7 +130,7 @@ The app uses an SM-2-style algorithm (with two deliberate departures from
 vanilla SM-2, added 2026-09-20 — see `src/lib/srs.ts`'s doc comments) to
 schedule review of missed items:
 
-- **Wrong answer**: repetitions *halve* (not reset to zero), ease
+- **Wrong answer**: repetitions _halve_ (not reset to zero), ease
   decreases, a lapse is recorded — one slip no longer erases arbitrarily
   much earned progress, a well-known real weakness of vanilla SM-2
 - **Correct answer**: interval grows (1 day → 3 days → interval × ease ×
