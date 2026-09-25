@@ -120,6 +120,7 @@ private struct CampaignSessionView: View {
         .background(AlphonsoColor.surface)
         .navigationTitle(campaign.title)
         .navigationBarTitleDisplayMode(.inline)
+        .aiDisclosureGate()
         .tint(AlphonsoColor.moss)
         .toolbar {
             if !finished {
