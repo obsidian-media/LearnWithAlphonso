@@ -8,6 +8,7 @@
 // invisible from either side alone.
 import { matchesSpokenAnswer } from "./spoken-answer.ts";
 import { matchesSpokenAnswerFr } from "./spoken-answer-fr.ts";
+import { matchesSpokenAnswerEs } from "./spoken-answer-es.ts";
 import { matchesAcceptableAnswer } from "./translation-answer.ts";
 import { gradeTranslationWithAi } from "./translation-grader.ts";
 
@@ -59,9 +60,9 @@ export async function deriveAnswerCorrectness(
   // elision is a different, phonological rule) -- see spoken-answer-fr.ts's
   // header for why this is a course-selected sibling, not a language flag.
   if (question.type === "speak") {
-    return course === "fr"
-      ? matchesSpokenAnswerFr(answer, question.answer_text ?? "")
-      : matchesSpokenAnswer(answer, question.answer_text ?? "");
+    if (course === "fr") return matchesSpokenAnswerFr(answer, question.answer_text ?? "");
+    if (course === "es") return matchesSpokenAnswerEs(answer, question.answer_text ?? "");
+    return matchesSpokenAnswer(answer, question.answer_text ?? "");
   }
   // A written translation is graded against the whole curated list first, and
   // only what that rejects is put to the AI grader -- the same two-step the

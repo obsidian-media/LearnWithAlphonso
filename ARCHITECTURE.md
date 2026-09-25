@@ -178,7 +178,7 @@ with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 counts, verified 2026-09-25 (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
 kept in sync): English 609 lessons / 3,096 questions, French 575 lessons
-/ 2,875 questions, Spanish 558 lessons / 2,790 questions. French's phase 2
+/ 2,875 questions, Spanish 583 lessons / 2,915 questions. French's phase 2
 (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
 closed the type gap English opened on 2026-09-24 by porting
 `listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
@@ -192,19 +192,23 @@ for why it's a sibling of `spoken-answer.ts` rather than an extension of
 it.
 
 **Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`
-§7 step 7) is following the same four-PR sequence: generator check (PR 1,
-done — `bank-engine.ts` needed zero Spanish-specific changes, verified
+§6-7) followed the same four-PR sequence, all done: generator check (PR
+1 — `bank-engine.ts` needed zero Spanish-specific changes, verified
 against real Spanish content rather than inferred from French's passing
-tests) and `translate` content (PR 2, done — 125 questions, Latin
-American variety `tú`/`usted`/`ustedes`, no `vosotros`/`vos`, matching
-what the existing 2,665 questions already used exclusively).
-and `listening` content (PR 3 — 125 questions, minimal pairs across
-seseo, b/v and yeísmo mergers, measured at 96.0% confusability).
-`speak` (PR 4) is not started; it needs its own
-`spoken-answer-es.ts` across the same three ports before any speak
-content can be authored against it. French/Spanish still need a
-native-speaker review pass for grammar/naturalness (`docs/BACKLOG.md`,
-gitignored), and each new pack adds to that same unreviewed surface.
+tests); `translate` content (PR 2 — 125 questions, Latin American
+variety `tú`/`usted`/`ustedes`, no `vosotros`/`vos`, matching what the
+existing 2,540 questions already used exclusively); `listening` content
+(PR 3 — 125 questions, minimal pairs across seseo, b/v and yeísmo
+mergers, measured at 96.0% confusability); and `speak` content (PR 4 —
+125 questions plus its own `spoken-answer-es.ts` module across all three
+ports, a categorical silent-h rule (h is silent except inside the "ch"
+digraph) rather than French's elision rule, since Spanish has no
+phonological equivalent to elision — round-tripped through the real
+normaliser before authoring). Spanish now has full type parity with
+English and French at 583 lessons / 2,915 questions. French/Spanish
+still need a native-speaker review pass for grammar/naturalness
+(`docs/BACKLOG.md`, gitignored), and each new pack adds to that same
+unreviewed surface.
 
 **There are six question types**, not three: `mc`, `fill`, `reorder`,
 `listening`, `speak`, and `translate`. `listening` (added 2026-09-24) plays

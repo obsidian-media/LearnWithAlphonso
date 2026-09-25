@@ -724,6 +724,58 @@ be quiet|cállate
 pay attention|presta atención`,
   },
   {
+    id: "esa1p29",
+    title: "Speaking: Basic Everyday Phrases",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Short everyday greetings and phrases to practise saying.",
+    // Each line is the same text twice: what is shown is what must be said.
+    // UNVERIFIED AGAINST REAL PRODUCTION TRANSCRIPTS -- see
+    // spoken-answer-es.ts's header for the full reasoning. Authored against
+    // the real normaliser (every line round-trips through
+    // matchesSpokenAnswerEs, and every number word was checked against its
+    // digit-rendered STT variant too, per
+    // docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §6.1),
+    // not against intuition. Four things are avoided on purpose:
+    //   - compound numbers 31+ ("treinta y uno" etc.), which will not
+    //     survive smart_format, the same reasoning as English's and
+    //     French's own compound-number avoidance
+    //   - un/una used as a spoken NUMBER (kept only as the article, which
+    //     the normaliser never maps -- see spoken-answer-es.ts's
+    //     NUMBER_WORDS comment on this exact bare-word hazard)
+    //   - ordinals, for the same smart_format reason English avoids them
+    //   - any pair relying on seseo/ceceo, the b/v merger, or yeísmo to be
+    //     distinguishable -- these are genuine phonemic mergers for most
+    //     speakers, so no minimal pair built on them could ever be graded
+    //     reliably from audio alone (see this pack's design doc §6.1)
+    data: `Hola, ¿cómo estás?|Hola, ¿cómo estás?
+Buenos días.|Buenos días.
+Buenas noches.|Buenas noches.
+¿Cómo te llamas?|¿Cómo te llamas?
+Me llamo Ana.|Me llamo Ana.
+Mucho gusto.|Mucho gusto.
+¿De dónde eres?|¿De dónde eres?
+Soy de España.|Soy de España.
+Tengo hambre.|Tengo hambre.
+Tengo sed.|Tengo sed.
+¿Dónde está el baño?|¿Dónde está el baño?
+Muchas gracias.|Muchas gracias.
+De nada.|De nada.
+Por favor.|Por favor.
+Lo siento.|Lo siento.
+¿Qué hora es?|¿Qué hora es?
+Hasta luego.|Hasta luego.
+Hasta mañana.|Hasta mañana.
+¿Habla usted inglés?|¿Habla usted inglés?
+No entiendo.|No entiendo.
+¿Puede repetir, por favor?|¿Puede repetir, por favor?
+Tengo dos hermanos.|Tengo dos hermanos.
+Tengo tres hermanas.|Tengo tres hermanas.
+Son las cinco.|Son las cinco.
+Vivo aquí.|Vivo aquí.`,
+  },
+  {
     id: "esa1p27",
     title: "Write It Yourself: Everyday Needs",
     subtitle: "Say it your own way",
@@ -1493,6 +1545,41 @@ Nosotros ___ (concluir) la reunión temprano.|concluimos
 Nosotros ___ (sonreír) mucho.|sonreímos
 Nosotros ___ (reír) con sus chistes.|reímos
 Nosotros ___ (freír) las papas.|freímos`,
+  },
+  {
+    id: "esa2p29",
+    title: "Speaking: Daily Routine & Plans",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Everyday routine and near-future plans to practise saying.",
+    // See esa1p29's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same hazards avoided).
+    data: `Me levanto a las siete.|Me levanto a las siete.
+Desayuno a las ocho.|Desayuno a las ocho.
+Voy al trabajo en autobús.|Voy al trabajo en autobús.
+Trabajo hasta las cinco.|Trabajo hasta las cinco.
+Vuelvo a casa cansado.|Vuelvo a casa cansado.
+Ceno con mi familia.|Ceno con mi familia.
+Veo la televisión un rato.|Veo la televisión un rato.
+Me acuesto a las diez.|Me acuesto a las diez.
+Los fines de semana descanso.|Los fines de semana descanso.
+A veces voy al cine.|A veces voy al cine.
+Me gusta cocinar los domingos.|Me gusta cocinar los domingos.
+Prefiero el té al café.|Prefiero el té al café.
+Necesito comprar leche.|Necesito comprar leche.
+Voy al mercado los sábados.|Voy al mercado los sábados.
+Hoy hace mucho calor.|Hoy hace mucho calor.
+Mañana va a llover.|Mañana va a llover.
+El invierno aquí es frío.|El invierno aquí es frío.
+Me encanta la primavera.|Me encanta la primavera.
+Tengo una reunión a las nueve.|Tengo una reunión a las nueve.
+Llego tarde a veces.|Llego tarde a veces.
+Estudio español todos los días.|Estudio español todos los días.
+Practico con mis amigos.|Practico con mis amigos.
+Quiero viajar el próximo año.|Quiero viajar el próximo año.
+Voy a visitar a mis abuelos.|Voy a visitar a mis abuelos.
+Espero verte pronto.|Espero verte pronto.`,
   },
   {
     id: "esa2p27",
@@ -2278,6 +2365,41 @@ Ella es amable ___ (with) los niños.|con
 Estamos satisfechos ___ (with) el servicio.|con`,
   },
   {
+    id: "esb1p29",
+    title: "Speaking: Opinions & Feelings",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Opinions, feelings, and hypotheticals to practise saying.",
+    // See esa1p29's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same hazards avoided).
+    data: `Creo que tienes razón.|Creo que tienes razón.
+En mi opinión, es una buena idea.|En mi opinión, es una buena idea.
+Me parece interesante.|Me parece interesante.
+No estoy de acuerdo contigo.|No estoy de acuerdo contigo.
+Depende de la situación.|Depende de la situación.
+Me siento un poco cansado hoy.|Me siento un poco cansado hoy.
+Estoy muy contento con los resultados.|Estoy muy contento con los resultados.
+Me preocupa el examen de mañana.|Me preocupa el examen de mañana.
+Espero que todo salga bien.|Espero que todo salga bien.
+Ojalá pudiera ayudarte.|Ojalá pudiera ayudarte.
+Es posible que llueva esta tarde.|Es posible que llueva esta tarde.
+Dudo que llegue a tiempo.|Dudo que llegue a tiempo.
+Prefiero quedarme en casa.|Prefiero quedarme en casa.
+Me gustaría aprender a tocar la guitarra.|Me gustaría aprender a tocar la guitarra.
+Si tuviera tiempo, viajaría más.|Si tuviera tiempo, viajaría más.
+Cuando era niño, vivía en el campo.|Cuando era niño, vivía en el campo.
+Antes trabajaba en una oficina.|Antes trabajaba en una oficina.
+Ahora trabajo desde casa.|Ahora trabajo desde casa.
+He decidido cambiar de trabajo.|He decidido cambiar de trabajo.
+Todavía no he terminado el proyecto.|Todavía no he terminado el proyecto.
+Ya he leído ese libro.|Ya he leído ese libro.
+Nunca he estado en Argentina.|Nunca he estado en Argentina.
+Siempre digo la verdad.|Siempre digo la verdad.
+A veces me equivoco.|A veces me equivoco.
+Al final, todo salió bien.|Al final, todo salió bien.`,
+  },
+  {
     id: "esb1p27",
     title: "Write It Yourself: Opinions and Reasons",
     subtitle: "Say it your own way",
@@ -3049,6 +3171,42 @@ on balance|en definitiva
 all things considered|considerando todo
 in the end|al final
 ultimately|en última instancia`,
+  },
+  {
+    id: "esb2p29",
+    title: "Speaking: Professional & Abstract Topics",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Professional and abstract topics to practise saying.",
+    // See esa1p29's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same hazards avoided). No numbers at all
+    // here, so the number-word traps don't apply to this pack.
+    data: `El cambio climático afecta a todo el planeta.|El cambio climático afecta a todo el planeta.
+La economía global sigue siendo incierta.|La economía global sigue siendo incierta.
+Es fundamental proteger el medio ambiente.|Es fundamental proteger el medio ambiente.
+La tecnología avanza más rápido que nunca.|La tecnología avanza más rápido que nunca.
+Muchas empresas apuestan por el trabajo remoto.|Muchas empresas apuestan por el trabajo remoto.
+La educación es la base del desarrollo.|La educación es la base del desarrollo.
+El gobierno anunció nuevas medidas económicas.|El gobierno anunció nuevas medidas económicas.
+La inflación preocupa a los consumidores.|La inflación preocupa a los consumidores.
+Es importante fomentar la igualdad de oportunidades.|Es importante fomentar la igualdad de oportunidades.
+La innovación impulsa el crecimiento empresarial.|La innovación impulsa el crecimiento empresarial.
+Debemos reducir nuestra huella de carbono.|Debemos reducir nuestra huella de carbono.
+La inteligencia artificial cambiará muchos empleos.|La inteligencia artificial cambiará muchos empleos.
+Las energías renovables son el futuro.|Las energías renovables son el futuro.
+La comunicación efectiva es clave en el trabajo.|La comunicación efectiva es clave en el trabajo.
+El liderazgo requiere paciencia y empatía.|El liderazgo requiere paciencia y empatía.
+La globalización conecta mercados distintos.|La globalización conecta mercados distintos.
+Muchas startups buscan financiación externa.|Muchas startups buscan financiación externa.
+Las redes sociales influyen en la opinión pública.|Las redes sociales influyen en la opinión pública.
+La salud mental merece más atención.|La salud mental merece más atención.
+El teletrabajo cambió nuestra rutina diaria.|El teletrabajo cambió nuestra rutina diaria.
+La productividad no depende solo de las horas trabajadas.|La productividad no depende solo de las horas trabajadas.
+Las negociaciones comerciales fueron complicadas.|Las negociaciones comerciales fueron complicadas.
+Se espera que la economía crezca este año.|Se espera que la economía crezca este año.
+La sostenibilidad debe ser una prioridad.|La sostenibilidad debe ser una prioridad.
+El acuerdo beneficiará a ambas partes.|El acuerdo beneficiará a ambas partes.`,
   },
   {
     id: "esb2p27",
@@ -3823,6 +3981,42 @@ all told|en total
 by and large|en general
 when all is said and done|al fin y al cabo
 in the grand scheme of things|en el gran esquema de las cosas`,
+  },
+  {
+    id: "esc1p29",
+    title: "Speaking: Idiomatic and Formal Phrasing",
+    subtitle: "Say it out loud",
+    kind: "speak",
+    prompt: "Say this aloud:",
+    note: "Idiomatic and formal phrasing said aloud.",
+    // See esa1p29's comment for the full authoring rationale (round-tripped
+    // against the real normaliser, same hazards avoided). No numbers at all
+    // here, so the number-word traps don't apply to this pack.
+    data: `Huelga decir que este proyecto es fundamental.|Huelga decir que este proyecto es fundamental.
+Ni que decir tiene.|Ni que decir tiene.
+Le ruego que disculpe las molestias.|Le ruego que disculpe las molestias.
+Tenemos el placer de informarle de nuestra decisión.|Tenemos el placer de informarle de nuestra decisión.
+Adjunto encontrará el documento solicitado.|Adjunto encontrará el documento solicitado.
+En la medida de lo posible, haremos lo necesario.|En la medida de lo posible, haremos lo necesario.
+Sea como fuere, debemos avanzar.|Sea como fuere, debemos avanzar.
+No cabe duda de ello.|No cabe duda de ello.
+No obstante, el problema persiste.|No obstante, el problema persiste.
+A decir verdad, no lo sé.|A decir verdad, no lo sé.
+En definitiva, fue una buena decisión.|En definitiva, fue una buena decisión.
+Al fin y al cabo, eso no importa.|Al fin y al cabo, eso no importa.
+Huelga decirlo.|Huelga decirlo.
+Le agradezco de antemano su confianza.|Le agradezco de antemano su confianza.
+Quedamos a su entera disposición.|Quedamos a su entera disposición.
+Es cuestión de sentido común.|Es cuestión de sentido común.
+Dicho esto, hay que ser prudentes.|Dicho esto, hay que ser prudentes.
+Donde hay humo, hay fuego.|Donde hay humo, hay fuego.
+Más vale tarde que nunca.|Más vale tarde que nunca.
+Cada cosa a su tiempo.|Cada cosa a su tiempo.
+Le agradecería que respondiera con prontitud.|Le agradecería que respondiera con prontitud.
+Le pedimos disculpas por las molestias ocasionadas.|Le pedimos disculpas por las molestias ocasionadas.
+Es el mundo al revés.|Es el mundo al revés.
+En una palabra, todo va bien.|En una palabra, todo va bien.
+Sin más preámbulos, comencemos.|Sin más preámbulos, comencemos.`,
   },
   {
     id: "esc1p27",

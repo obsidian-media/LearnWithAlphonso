@@ -43,10 +43,16 @@ public func isAnswerCorrect(_ question: Question, picked: String?, course: Cours
         // English's rules are actively wrong for French ('s -> "is" is an
         // auxiliary-verb contraction; French elision is a different,
         // phonological rule) -- see SpokenAnswerFr.swift's header for why
-        // this is a course-selected sibling, not a language flag.
-        return course == .french
-            ? SpokenAnswerFr.matches(transcript: picked, expected: q.answer)
-            : SpokenAnswer.matches(transcript: picked, expected: q.answer)
+        // this is a course-selected sibling, not a language flag. Same
+        // reasoning for Spanish -- see SpokenAnswerEs.swift's header.
+        switch course {
+        case .french:
+            return SpokenAnswerFr.matches(transcript: picked, expected: q.answer)
+        case .spanish:
+            return SpokenAnswerEs.matches(transcript: picked, expected: q.answer)
+        case .english:
+            return SpokenAnswer.matches(transcript: picked, expected: q.answer)
+        }
     }
 }
 

@@ -104,6 +104,9 @@ jobs:
       - name: Test grade-review's spoken-answer-fr.ts port
         run: deno test supabase/functions/grade-review/spoken-answer-fr.test.ts
 
+      - name: Test grade-review's spoken-answer-es.ts port
+        run: deno test supabase/functions/grade-review/spoken-answer-es.test.ts
+
       - name: Test grade-review's translation-answer.ts port
         run: deno test supabase/functions/grade-review/translation-answer.test.ts
 

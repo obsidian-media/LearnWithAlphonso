@@ -18,7 +18,7 @@ import { z } from "zod";
 import { computeReviewOutcome } from "./srs.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "./answer-correctness.ts";
 
-const courseSchema = z.enum(["en", "fr"]);
+const courseSchema = z.enum(["en", "fr", "es"]);
 const itemKeySchema = z
   .string()
   .min(1)

@@ -84,7 +84,7 @@ session:
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
 | **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
 | **French**  | 115 | 115 | 115 | 115 | 115 | **575**       | 2,875           |
-| **Spanish** | 110 | 111 | 114 | 112 | 111 | **558**       | 2,790           |
+| **Spanish** | 115 | 116 | 119 | 117 | 116 | **583**       | 2,915           |
 
 English pulled ahead of parity on 2026-09-24: it gained three question
 types — **listening comprehension**, **speaking practice** and **free-form
@@ -107,16 +107,23 @@ required its own French speech-normalisation module
 (TS/Deno/Swift) the same way English's `spoken-answer.ts` is, because
 French elision is a phonological rule with no relationship to English's
 auxiliary-verb-contraction rules — see that module's header comment.
-**Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`)
-is following the same path: `bank-engine.ts` needed zero Spanish-specific
-changes (verified against real Spanish content, not inferred from
-French), and Spanish now has **translate** and **listening** content
-(125 new questions each). Translate is in Latin American Spanish
-(`tú`/`usted`/`ustedes`, no `vosotros`/`vos` — measured against the
-existing bank rather than chosen from preference); listening uses
-Spanish minimal pairs across seseo, b/v and yeísmo mergers, measured
-(not assumed) at 96.0% confusability, matching French's own benchmark.
-`speak` is the remaining PR.
+**Spanish's own phase 2**
+(`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md` §6-7)
+followed the same one-PR-per-question-type shape, all four PRs now
+merged: `bank-engine.ts` needed zero Spanish-specific changes (verified
+against real Spanish content, not inferred from French); **translate**
+content (125 questions) in Latin American Spanish (`tú`/`usted`/
+`ustedes`, no `vosotros`/`vos` — measured against the existing bank
+rather than chosen from preference); **listening** content (125
+questions) using Spanish minimal pairs across seseo, b/v and yeísmo
+mergers, measured (not assumed) at 96.0% confusability, matching
+French's own benchmark; and **speak** content (125 questions) plus its
+own speech-normalisation module (`spoken-answer-es.ts`, hand-kept in
+sync across TS/Deno/Swift the same way French's is) — Spanish's
+phonology needed different rules than either sibling (no elision like
+French, but a categorical silent-h rule neither English nor French
+needs). Spanish now has full six-type parity with English and French at
+583 lessons / 2,915 questions.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs a real native-speaker review pass — not done for either, just
