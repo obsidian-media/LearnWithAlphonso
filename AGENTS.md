@@ -84,7 +84,7 @@ column, kept in sync):
 | ------- | --- | --- | --- | --- | --- | ------------- |
 | English | 137 | 119 | 119 | 117 | 117 | **609**       |
 | French  | 115 | 115 | 115 | 115 | 115 | **575**       |
-| Spanish | 100 | 101 | 104 | 102 | 101 | **508**       |
+| Spanish | 105 | 106 | 109 | 107 | 106 | **533**       |
 
 French and Spanish reached structural parity with English on 2026-09-21
 (both grew from a 25-pack/125-lesson starting point, reusing the same
@@ -118,11 +118,25 @@ done, four PRs, one per generator change / question type:
   existed before this PR to build one from) — see `spoken-answer-fr.ts`'s
   header comment.
 
+**Spanish's own phase 2** (`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md`
+§7 step 7), in progress, four PRs mirroring French's exactly:
+
+- **PR 1** (merged): verified `bank-engine.ts` needs zero Spanish-specific
+  changes — checked against real Spanish content (a `pesa`/`besa`
+  minimal-pair fixture testing Spanish's own accent range, `ñ`/`¿`/`¡`,
+  none of which appear in French), not inferred from French's passing
+  tests.
+- **PR 2** (this work): Spanish `translate` content, 5 packs (one per
+  CEFR level), 125 questions, Latin American variety (`tú`/`usted`/
+  `ustedes`, no `vosotros`/`vos` — measured against the existing bank,
+  which already used that variety exclusively).
+- **PR 3, PR 4**: not started (`listening`, then `speak` +
+  `spoken-answer-es.ts` across three ports).
+
 **Question types, current**: English and French both have all six
 (`mc`, `fill`, `reorder`, `listening`, `speak`, `translate`) — full
-type parity; Spanish still has the original three (`mc`, `fill`,
-`reorder`) — its content is a separate job now that the generator work is
-proven on French.
+type parity; Spanish now has four (`mc`, `fill`, `reorder`,
+`translate`) — `listening`/`speak` are its own phase 2's remaining PRs.
 
 Content correctness (grammar, natural phrasing) for French and Spanish
 still needs native-speaker review — not done for either, just

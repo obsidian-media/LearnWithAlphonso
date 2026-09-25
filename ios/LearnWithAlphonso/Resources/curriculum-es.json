@@ -7303,6 +7303,325 @@
       ]
     },
     {
+      "id": "esa1p27u1",
+      "level": "A1",
+      "eyebrow": "Unit 27",
+      "title": "Write It Yourself: Everyday Needs",
+      "description": "Say it your own way — Greetings, needs and everyday small talk -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esa1p27l1",
+          "title": "Write It Yourself: Everyday Needs 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q0",
+              "type": "translate",
+              "prompt": "Ask someone their name.",
+              "acceptableAnswers": [
+                "¿Cómo te llamas?",
+                "¿Cuál es tu nombre?",
+                "¿Cómo se llama usted?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo te llamas?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q1",
+              "type": "translate",
+              "prompt": "Say your name is Ana.",
+              "acceptableAnswers": [
+                "Me llamo Ana.",
+                "Mi nombre es Ana.",
+                "Soy Ana."
+              ],
+              "explanation": "One way to say it: \"Me llamo Ana.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q2",
+              "type": "translate",
+              "prompt": "Ask how someone is doing.",
+              "acceptableAnswers": [
+                "¿Cómo estás?",
+                "¿Qué tal?",
+                "¿Cómo te va?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo estás?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q3",
+              "type": "translate",
+              "prompt": "Say you are fine, thanks.",
+              "acceptableAnswers": [
+                "Estoy bien, gracias.",
+                "Bien, gracias.",
+                "Muy bien, gracias."
+              ],
+              "explanation": "One way to say it: \"Estoy bien, gracias.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q4",
+              "type": "translate",
+              "prompt": "Say good morning.",
+              "acceptableAnswers": [
+                "Buenos días.",
+                "Buen día.",
+                "Muy buenos días."
+              ],
+              "explanation": "One way to say it: \"Buenos días.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l2",
+          "title": "Write It Yourself: Everyday Needs 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q5",
+              "type": "translate",
+              "prompt": "Ask where the bathroom is.",
+              "acceptableAnswers": [
+                "¿Dónde está el baño?",
+                "¿Dónde queda el baño?",
+                "¿Dónde puedo encontrar el baño?"
+              ],
+              "explanation": "One way to say it: \"¿Dónde está el baño?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q6",
+              "type": "translate",
+              "prompt": "Say you don't understand.",
+              "acceptableAnswers": [
+                "No entiendo.",
+                "No comprendo.",
+                "No te entiendo."
+              ],
+              "explanation": "One way to say it: \"No entiendo.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q7",
+              "type": "translate",
+              "prompt": "Ask someone to repeat that.",
+              "acceptableAnswers": [
+                "¿Puedes repetir eso?",
+                "¿Podrías repetirlo?",
+                "¿Me lo repites, por favor?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes repetir eso?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q8",
+              "type": "translate",
+              "prompt": "Say you are hungry.",
+              "acceptableAnswers": [
+                "Tengo hambre.",
+                "Estoy hambriento.",
+                "Me muero de hambre."
+              ],
+              "explanation": "One way to say it: \"Tengo hambre.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q9",
+              "type": "translate",
+              "prompt": "Say you are thirsty.",
+              "acceptableAnswers": [
+                "Tengo sed.",
+                "Estoy sediento.",
+                "Me muero de sed."
+              ],
+              "explanation": "One way to say it: \"Tengo sed.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l3",
+          "title": "Write It Yourself: Everyday Needs 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q10",
+              "type": "translate",
+              "prompt": "Ask for a coffee.",
+              "acceptableAnswers": [
+                "Quiero un café, por favor.",
+                "Me gustaría un café.",
+                "¿Me da un café, por favor?"
+              ],
+              "explanation": "One way to say it: \"Quiero un café, por favor.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q11",
+              "type": "translate",
+              "prompt": "Say thank you very much.",
+              "acceptableAnswers": [
+                "Muchas gracias.",
+                "Muchísimas gracias.",
+                "Te lo agradezco mucho."
+              ],
+              "explanation": "One way to say it: \"Muchas gracias.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q12",
+              "type": "translate",
+              "prompt": "Say you're welcome.",
+              "acceptableAnswers": [
+                "De nada.",
+                "No hay de qué.",
+                "Con gusto."
+              ],
+              "explanation": "One way to say it: \"De nada.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q13",
+              "type": "translate",
+              "prompt": "Ask what time it is.",
+              "acceptableAnswers": [
+                "¿Qué hora es?",
+                "¿Tienes la hora?",
+                "¿Me dices qué hora es?"
+              ],
+              "explanation": "One way to say it: \"¿Qué hora es?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q14",
+              "type": "translate",
+              "prompt": "Say it's five o'clock.",
+              "acceptableAnswers": [
+                "Son las cinco.",
+                "Son las cinco en punto.",
+                "Ya son las cinco."
+              ],
+              "explanation": "One way to say it: \"Son las cinco.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l4",
+          "title": "Write It Yourself: Everyday Needs 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q15",
+              "type": "translate",
+              "prompt": "Ask where someone lives.",
+              "acceptableAnswers": [
+                "¿Dónde vives?",
+                "¿Dónde vive usted?",
+                "¿En dónde vives?"
+              ],
+              "explanation": "One way to say it: \"¿Dónde vives?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q16",
+              "type": "translate",
+              "prompt": "Say you live in Mexico.",
+              "acceptableAnswers": [
+                "Vivo en México.",
+                "Yo vivo en México.",
+                "Resido en México."
+              ],
+              "explanation": "One way to say it: \"Vivo en México.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q17",
+              "type": "translate",
+              "prompt": "Ask someone's age.",
+              "acceptableAnswers": [
+                "¿Cuántos años tienes?",
+                "¿Qué edad tienes?",
+                "¿Cuántos años tiene usted?"
+              ],
+              "explanation": "One way to say it: \"¿Cuántos años tienes?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q18",
+              "type": "translate",
+              "prompt": "Say you are twenty years old.",
+              "acceptableAnswers": [
+                "Tengo veinte años.",
+                "Tengo veinte.",
+                "Ya tengo veinte años."
+              ],
+              "explanation": "One way to say it: \"Tengo veinte años.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q19",
+              "type": "translate",
+              "prompt": "Say goodbye to a friend.",
+              "acceptableAnswers": [
+                "Adiós.",
+                "Nos vemos.",
+                "Chao."
+              ],
+              "explanation": "One way to say it: \"Adiós.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa1p27l5",
+          "title": "Write It Yourself: Everyday Needs 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa1p27q20",
+              "type": "translate",
+              "prompt": "Say see you tomorrow.",
+              "acceptableAnswers": [
+                "Hasta mañana.",
+                "Nos vemos mañana.",
+                "Te veo mañana."
+              ],
+              "explanation": "One way to say it: \"Hasta mañana.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q21",
+              "type": "translate",
+              "prompt": "Ask for the check at a restaurant.",
+              "acceptableAnswers": [
+                "La cuenta, por favor.",
+                "¿Me trae la cuenta?",
+                "¿Nos puede traer la cuenta, por favor?"
+              ],
+              "explanation": "One way to say it: \"La cuenta, por favor.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q22",
+              "type": "translate",
+              "prompt": "Say you like the food.",
+              "acceptableAnswers": [
+                "Me gusta la comida.",
+                "La comida me gusta.",
+                "Me encanta la comida."
+              ],
+              "explanation": "One way to say it: \"Me gusta la comida.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q23",
+              "type": "translate",
+              "prompt": "Ask how much something costs.",
+              "acceptableAnswers": [
+                "¿Cuánto cuesta?",
+                "¿Cuánto es?",
+                "¿Qué precio tiene?"
+              ],
+              "explanation": "One way to say it: \"¿Cuánto cuesta?\" Greetings, needs and everyday small talk -- more than one wording is right."
+            },
+            {
+              "id": "esa1p27q24",
+              "type": "translate",
+              "prompt": "Say good night.",
+              "acceptableAnswers": [
+                "Buenas noches.",
+                "Que descanses.",
+                "Que duermas bien."
+              ],
+              "explanation": "One way to say it: \"Buenas noches.\" Greetings, needs and everyday small talk -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esa2p1u1",
       "level": "A2",
       "eyebrow": "Unit 1",
@@ -14645,6 +14964,325 @@
               ],
               "answer": "freímos",
               "explanation": "\"freímos\" is correct here. Present-tense \"nosotros\" conjugation, including stem-changing and irregular verbs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esa2p27u1",
+      "level": "A2",
+      "eyebrow": "Unit 27",
+      "title": "Write It Yourself: Asking and Arranging",
+      "description": "Say it your own way — Asking, arranging and explaining -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esa2p27l1",
+          "title": "Write It Yourself: Asking and Arranging 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q0",
+              "type": "translate",
+              "prompt": "Ask someone if they are free tonight.",
+              "acceptableAnswers": [
+                "¿Estás libre esta noche?",
+                "¿Tienes tiempo esta noche?",
+                "¿Puedes esta noche?"
+              ],
+              "explanation": "One way to say it: \"¿Estás libre esta noche?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q1",
+              "type": "translate",
+              "prompt": "Suggest meeting tomorrow.",
+              "acceptableAnswers": [
+                "¿Nos vemos mañana?",
+                "¿Quedamos mañana?",
+                "Podríamos vernos mañana."
+              ],
+              "explanation": "One way to say it: \"¿Nos vemos mañana?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q2",
+              "type": "translate",
+              "prompt": "Say you have to leave now.",
+              "acceptableAnswers": [
+                "Tengo que irme ahora.",
+                "Debo irme ya.",
+                "Ya me tengo que ir."
+              ],
+              "explanation": "One way to say it: \"Tengo que irme ahora.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q3",
+              "type": "translate",
+              "prompt": "Ask for directions to the station.",
+              "acceptableAnswers": [
+                "¿Cómo llego a la estación?",
+                "¿Dónde queda la estación?",
+                "¿Por dónde se va a la estación?"
+              ],
+              "explanation": "One way to say it: \"¿Cómo llego a la estación?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q4",
+              "type": "translate",
+              "prompt": "Say turn left at the corner.",
+              "acceptableAnswers": [
+                "Gira a la izquierda en la esquina.",
+                "Dobla a la izquierda en la esquina.",
+                "En la esquina, gira a la izquierda."
+              ],
+              "explanation": "One way to say it: \"Gira a la izquierda en la esquina.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l2",
+          "title": "Write It Yourself: Asking and Arranging 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q5",
+              "type": "translate",
+              "prompt": "Ask if the store is open.",
+              "acceptableAnswers": [
+                "¿Está abierta la tienda?",
+                "¿La tienda está abierta?",
+                "¿Abrió ya la tienda?"
+              ],
+              "explanation": "One way to say it: \"¿Está abierta la tienda?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q6",
+              "type": "translate",
+              "prompt": "Say you would like to reserve a table.",
+              "acceptableAnswers": [
+                "Quisiera reservar una mesa.",
+                "Me gustaría reservar una mesa.",
+                "Quiero hacer una reservación."
+              ],
+              "explanation": "One way to say it: \"Quisiera reservar una mesa.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q7",
+              "type": "translate",
+              "prompt": "Ask if there is a room available.",
+              "acceptableAnswers": [
+                "¿Hay una habitación disponible?",
+                "¿Tienen alguna habitación libre?",
+                "¿Queda alguna habitación?"
+              ],
+              "explanation": "One way to say it: \"¿Hay una habitación disponible?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q8",
+              "type": "translate",
+              "prompt": "Ask what time the train leaves.",
+              "acceptableAnswers": [
+                "¿A qué hora sale el tren?",
+                "¿Cuándo sale el tren?",
+                "¿A qué hora parte el tren?"
+              ],
+              "explanation": "One way to say it: \"¿A qué hora sale el tren?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q9",
+              "type": "translate",
+              "prompt": "Say you need to see a doctor.",
+              "acceptableAnswers": [
+                "Necesito ver a un médico.",
+                "Necesito un doctor.",
+                "Tengo que consultar a un médico."
+              ],
+              "explanation": "One way to say it: \"Necesito ver a un médico.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l3",
+          "title": "Write It Yourself: Asking and Arranging 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q10",
+              "type": "translate",
+              "prompt": "Say you don't feel well.",
+              "acceptableAnswers": [
+                "No me siento bien.",
+                "Me siento mal.",
+                "No me encuentro bien."
+              ],
+              "explanation": "One way to say it: \"No me siento bien.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q11",
+              "type": "translate",
+              "prompt": "Ask what someone is doing this weekend.",
+              "acceptableAnswers": [
+                "¿Qué vas a hacer este fin de semana?",
+                "¿Qué haces este fin de semana?",
+                "¿Tienes planes para el fin de semana?"
+              ],
+              "explanation": "One way to say it: \"¿Qué vas a hacer este fin de semana?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q12",
+              "type": "translate",
+              "prompt": "Say you work in an office.",
+              "acceptableAnswers": [
+                "Trabajo en una oficina.",
+                "Yo trabajo en una oficina.",
+                "Mi trabajo es en una oficina."
+              ],
+              "explanation": "One way to say it: \"Trabajo en una oficina.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q13",
+              "type": "translate",
+              "prompt": "Say you have been studying Spanish for two years.",
+              "acceptableAnswers": [
+                "Llevo dos años estudiando español.",
+                "Estudio español desde hace dos años.",
+                "Hace dos años que estudio español."
+              ],
+              "explanation": "One way to say it: \"Llevo dos años estudiando español.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q14",
+              "type": "translate",
+              "prompt": "Say you have lived here for a long time.",
+              "acceptableAnswers": [
+                "Vivo aquí desde hace mucho tiempo.",
+                "Llevo mucho tiempo viviendo aquí.",
+                "Hace mucho tiempo que vivo aquí."
+              ],
+              "explanation": "One way to say it: \"Vivo aquí desde hace mucho tiempo.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l4",
+          "title": "Write It Yourself: Asking and Arranging 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q15",
+              "type": "translate",
+              "prompt": "Say she arrives in ten minutes.",
+              "acceptableAnswers": [
+                "Ella llega en diez minutos.",
+                "Llega en diez minutos.",
+                "En diez minutos, ella llega."
+              ],
+              "explanation": "One way to say it: \"Ella llega en diez minutos.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q16",
+              "type": "translate",
+              "prompt": "Say he left last night.",
+              "acceptableAnswers": [
+                "Él se fue anoche.",
+                "Se fue anoche.",
+                "Anoche, él se fue."
+              ],
+              "explanation": "One way to say it: \"Él se fue anoche.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q17",
+              "type": "translate",
+              "prompt": "Ask if someone can come with us.",
+              "acceptableAnswers": [
+                "¿Puedes venir con nosotros?",
+                "¿Quieres venir con nosotros?",
+                "¿Te gustaría acompañarnos?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes venir con nosotros?\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q18",
+              "type": "translate",
+              "prompt": "Say that's a good idea.",
+              "acceptableAnswers": [
+                "Es una buena idea.",
+                "Buena idea.",
+                "Me parece una buena idea."
+              ],
+              "explanation": "One way to say it: \"Es una buena idea.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q19",
+              "type": "translate",
+              "prompt": "Say you agree with someone.",
+              "acceptableAnswers": [
+                "Estoy de acuerdo contigo.",
+                "Estoy de acuerdo.",
+                "Concuerdo contigo."
+              ],
+              "explanation": "One way to say it: \"Estoy de acuerdo contigo.\" Asking, arranging and explaining -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esa2p27l5",
+          "title": "Write It Yourself: Asking and Arranging 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esa2p27q20",
+              "type": "translate",
+              "prompt": "Say you don't agree.",
+              "acceptableAnswers": [
+                "No estoy de acuerdo.",
+                "No estoy de acuerdo contigo.",
+                "Yo no pienso lo mismo."
+              ],
+              "explanation": "One way to say it: \"No estoy de acuerdo.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q21",
+              "type": "translate",
+              "prompt": "Suggest meeting in front of the station.",
+              "acceptableAnswers": [
+                "Nos vemos frente a la estación.",
+                "Quedamos delante de la estación.",
+                "Encontrémonos frente a la estación."
+              ],
+              "explanation": "One way to say it: \"Nos vemos frente a la estación.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q22",
+              "type": "translate",
+              "prompt": "Ask someone to call you back.",
+              "acceptableAnswers": [
+                "Llámame, por favor.",
+                "¿Me puedes llamar luego?",
+                "Devuélveme la llamada, por favor."
+              ],
+              "explanation": "One way to say it: \"Llámame, por favor.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q23",
+              "type": "translate",
+              "prompt": "Say you'll be there in five minutes.",
+              "acceptableAnswers": [
+                "Llego en cinco minutos.",
+                "Estaré ahí en cinco minutos.",
+                "En cinco minutos estoy ahí."
+              ],
+              "explanation": "One way to say it: \"Llego en cinco minutos.\" Asking, arranging and explaining -- more than one wording is right."
+            },
+            {
+              "id": "esa2p27q24",
+              "type": "translate",
+              "prompt": "Ask someone to speak more slowly.",
+              "acceptableAnswers": [
+                "¿Puedes hablar más despacio?",
+                "Habla más despacio, por favor.",
+                "¿Podrías hablar más lento?"
+              ],
+              "explanation": "One way to say it: \"¿Puedes hablar más despacio?\" Asking, arranging and explaining -- more than one wording is right."
             }
           ]
         }
@@ -22245,6 +22883,325 @@
       ]
     },
     {
+      "id": "esb1p27u1",
+      "level": "B1",
+      "eyebrow": "Unit 27",
+      "title": "Write It Yourself: Opinions and Reasons",
+      "description": "Say it your own way — Opinions, reasons and comparisons -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esb1p27l1",
+          "title": "Write It Yourself: Opinions and Reasons 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q0",
+              "type": "translate",
+              "prompt": "Say you think it's a good idea.",
+              "acceptableAnswers": [
+                "Creo que es una buena idea.",
+                "Pienso que es una buena idea.",
+                "Me parece una buena idea."
+              ],
+              "explanation": "One way to say it: \"Creo que es una buena idea.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q1",
+              "type": "translate",
+              "prompt": "Say in your opinion, he is right.",
+              "acceptableAnswers": [
+                "En mi opinión, él tiene razón.",
+                "A mi parecer, él tiene razón.",
+                "Yo creo que él tiene razón."
+              ],
+              "explanation": "One way to say it: \"En mi opinión, él tiene razón.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q2",
+              "type": "translate",
+              "prompt": "Say you are not convinced by that argument.",
+              "acceptableAnswers": [
+                "No estoy convencido por ese argumento.",
+                "Ese argumento no me convence.",
+                "No me convence ese argumento."
+              ],
+              "explanation": "One way to say it: \"No estoy convencido por ese argumento.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q3",
+              "type": "translate",
+              "prompt": "Say this movie is more interesting than the other one.",
+              "acceptableAnswers": [
+                "Esta película es más interesante que la otra.",
+                "Esta película es más interesante que la otra película.",
+                "La otra película es menos interesante que esta."
+              ],
+              "explanation": "One way to say it: \"Esta película es más interesante que la otra.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q4",
+              "type": "translate",
+              "prompt": "Say you prefer coffee to tea.",
+              "acceptableAnswers": [
+                "Prefiero el café al té.",
+                "Prefiero el café en vez del té.",
+                "Me gusta más el café que el té."
+              ],
+              "explanation": "One way to say it: \"Prefiero el café al té.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l2",
+          "title": "Write It Yourself: Opinions and Reasons 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q5",
+              "type": "translate",
+              "prompt": "Say it's better to leave early.",
+              "acceptableAnswers": [
+                "Es mejor salir temprano.",
+                "Más vale salir temprano.",
+                "Conviene salir temprano."
+              ],
+              "explanation": "One way to say it: \"Es mejor salir temprano.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q6",
+              "type": "translate",
+              "prompt": "Say that in your opinion, it's too expensive.",
+              "acceptableAnswers": [
+                "Según yo, es demasiado caro.",
+                "A mi juicio, es demasiado caro.",
+                "Me parece demasiado caro."
+              ],
+              "explanation": "One way to say it: \"Según yo, es demasiado caro.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q7",
+              "type": "translate",
+              "prompt": "Say you find this book boring.",
+              "acceptableAnswers": [
+                "Me parece aburrido este libro.",
+                "Encuentro este libro aburrido.",
+                "Este libro me aburre."
+              ],
+              "explanation": "One way to say it: \"Me parece aburrido este libro.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q8",
+              "type": "translate",
+              "prompt": "Say she is probably right.",
+              "acceptableAnswers": [
+                "Ella probablemente tiene razón.",
+                "Es probable que ella tenga razón.",
+                "Seguramente ella tiene razón."
+              ],
+              "explanation": "One way to say it: \"Ella probablemente tiene razón.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q9",
+              "type": "translate",
+              "prompt": "Say it's important to eat well.",
+              "acceptableAnswers": [
+                "Es importante comer bien.",
+                "Importa comer bien.",
+                "Es necesario comer bien."
+              ],
+              "explanation": "One way to say it: \"Es importante comer bien.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l3",
+          "title": "Write It Yourself: Opinions and Reasons 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q10",
+              "type": "translate",
+              "prompt": "Say it's necessary to book in advance.",
+              "acceptableAnswers": [
+                "Es necesario reservar con anticipación.",
+                "Hay que reservar con anticipación.",
+                "Hace falta reservar con anticipación."
+              ],
+              "explanation": "One way to say it: \"Es necesario reservar con anticipación.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q11",
+              "type": "translate",
+              "prompt": "Say you are happy with your results.",
+              "acceptableAnswers": [
+                "Estoy contento con mis resultados.",
+                "Estoy satisfecho con mis resultados.",
+                "Me siento contento con mis resultados."
+              ],
+              "explanation": "One way to say it: \"Estoy contento con mis resultados.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q12",
+              "type": "translate",
+              "prompt": "Say we are proud of our work.",
+              "acceptableAnswers": [
+                "Estamos orgullosos de nuestro trabajo.",
+                "Nos sentimos orgullosos de nuestro trabajo.",
+                "Es un orgullo nuestro trabajo."
+              ],
+              "explanation": "One way to say it: \"Estamos orgullosos de nuestro trabajo.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q13",
+              "type": "translate",
+              "prompt": "Say it's difficult to explain.",
+              "acceptableAnswers": [
+                "Es difícil de explicar.",
+                "Es complicado explicarlo.",
+                "Cuesta explicarlo."
+              ],
+              "explanation": "One way to say it: \"Es difícil de explicar.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q14",
+              "type": "translate",
+              "prompt": "Say it's not that simple.",
+              "acceptableAnswers": [
+                "No es tan simple.",
+                "No es tan sencillo.",
+                "No es así de simple."
+              ],
+              "explanation": "One way to say it: \"No es tan simple.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l4",
+          "title": "Write It Yourself: Opinions and Reasons 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q15",
+              "type": "translate",
+              "prompt": "Say you would like to change your mind.",
+              "acceptableAnswers": [
+                "Me gustaría cambiar de opinión.",
+                "Quisiera cambiar de opinión.",
+                "Quiero cambiar de parecer."
+              ],
+              "explanation": "One way to say it: \"Me gustaría cambiar de opinión.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q16",
+              "type": "translate",
+              "prompt": "Say everything depends on the situation.",
+              "acceptableAnswers": [
+                "Todo depende de la situación.",
+                "Todo depende de las circunstancias.",
+                "Depende de la situación."
+              ],
+              "explanation": "One way to say it: \"Todo depende de la situación.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q17",
+              "type": "translate",
+              "prompt": "Say that seems reasonable to you.",
+              "acceptableAnswers": [
+                "Eso me parece razonable.",
+                "Me parece razonable.",
+                "Eso suena razonable."
+              ],
+              "explanation": "One way to say it: \"Eso me parece razonable.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q18",
+              "type": "translate",
+              "prompt": "Say you doubt that's true.",
+              "acceptableAnswers": [
+                "Dudo que eso sea verdad.",
+                "No creo que eso sea verdad.",
+                "Dudo que eso sea cierto."
+              ],
+              "explanation": "One way to say it: \"Dudo que eso sea verdad.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q19",
+              "type": "translate",
+              "prompt": "Say one must be patient.",
+              "acceptableAnswers": [
+                "Hay que ser paciente.",
+                "Uno debe ser paciente.",
+                "Es necesario tener paciencia."
+              ],
+              "explanation": "One way to say it: \"Hay que ser paciente.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb1p27l5",
+          "title": "Write It Yourself: Opinions and Reasons 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb1p27q20",
+              "type": "translate",
+              "prompt": "Say we must make a decision.",
+              "acceptableAnswers": [
+                "Debemos tomar una decisión.",
+                "Tenemos que tomar una decisión.",
+                "Hace falta tomar una decisión."
+              ],
+              "explanation": "One way to say it: \"Debemos tomar una decisión.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q21",
+              "type": "translate",
+              "prompt": "Say this is the best possible solution.",
+              "acceptableAnswers": [
+                "Esta es la mejor solución posible.",
+                "Es la mejor solución que hay.",
+                "No hay mejor solución que esta."
+              ],
+              "explanation": "One way to say it: \"Esta es la mejor solución posible.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q22",
+              "type": "translate",
+              "prompt": "Say you understand someone's point of view.",
+              "acceptableAnswers": [
+                "Entiendo tu punto de vista.",
+                "Comprendo tu punto de vista.",
+                "Entiendo cómo ves las cosas."
+              ],
+              "explanation": "One way to say it: \"Entiendo tu punto de vista.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q23",
+              "type": "translate",
+              "prompt": "Say you finally agree.",
+              "acceptableAnswers": [
+                "Finalmente estoy de acuerdo.",
+                "Al final estoy de acuerdo.",
+                "Por fin estoy de acuerdo."
+              ],
+              "explanation": "One way to say it: \"Finalmente estoy de acuerdo.\" Opinions, reasons and comparisons -- more than one wording is right."
+            },
+            {
+              "id": "esb1p27q24",
+              "type": "translate",
+              "prompt": "Say the meeting was very productive.",
+              "acceptableAnswers": [
+                "La reunión fue muy productiva.",
+                "La reunión resultó muy productiva.",
+                "Fue una reunión muy productiva."
+              ],
+              "explanation": "One way to say it: \"La reunión fue muy productiva.\" Opinions, reasons and comparisons -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esb2p1u1",
       "level": "B2",
       "eyebrow": "Unit 1",
@@ -29610,6 +30567,325 @@
       ]
     },
     {
+      "id": "esb2p27u1",
+      "level": "B2",
+      "eyebrow": "Unit 27",
+      "title": "Write It Yourself: Multi-Clause Sentences",
+      "description": "Say it your own way — Multi-clause sentences -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esb2p27l1",
+          "title": "Write It Yourself: Multi-Clause Sentences 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q0",
+              "type": "translate",
+              "prompt": "Say that when you finish work, you'll go for a walk.",
+              "acceptableAnswers": [
+                "Cuando termine el trabajo, iré a caminar.",
+                "Cuando acabe el trabajo, saldré a caminar.",
+                "Iré a caminar cuando termine el trabajo."
+              ],
+              "explanation": "One way to say it: \"Cuando termine el trabajo, iré a caminar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q1",
+              "type": "translate",
+              "prompt": "Say that if you have time, you could have lunch together.",
+              "acceptableAnswers": [
+                "Si tienes tiempo, podríamos almorzar juntos.",
+                "Si tienes tiempo, podríamos comer juntos.",
+                "Podríamos almorzar juntos si tienes tiempo."
+              ],
+              "explanation": "One way to say it: \"Si tienes tiempo, podríamos almorzar juntos.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q2",
+              "type": "translate",
+              "prompt": "Say that although it's difficult, you're going to try.",
+              "acceptableAnswers": [
+                "Aunque es difícil, voy a intentarlo.",
+                "Aunque sea difícil, lo voy a intentar.",
+                "Voy a intentarlo aunque sea difícil."
+              ],
+              "explanation": "One way to say it: \"Aunque es difícil, voy a intentarlo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q3",
+              "type": "translate",
+              "prompt": "Say that since it's raining, you'll stay home.",
+              "acceptableAnswers": [
+                "Como está lloviendo, nos quedaremos en casa.",
+                "Ya que está lloviendo, nos quedamos en casa.",
+                "Nos quedaremos en casa porque está lloviendo."
+              ],
+              "explanation": "One way to say it: \"Como está lloviendo, nos quedaremos en casa.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q4",
+              "type": "translate",
+              "prompt": "Say that when you arrive, you'll call.",
+              "acceptableAnswers": [
+                "Cuando llegue, te llamaré.",
+                "Cuando llegue, llamo.",
+                "Te llamaré en cuanto llegue."
+              ],
+              "explanation": "One way to say it: \"Cuando llegue, te llamaré.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l2",
+          "title": "Write It Yourself: Multi-Clause Sentences 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q5",
+              "type": "translate",
+              "prompt": "Say that if we leave now, you think we'll arrive on time.",
+              "acceptableAnswers": [
+                "Creo que si salimos ahora, llegaremos a tiempo.",
+                "Pienso que si nos vamos ahora, llegaremos a tiempo.",
+                "Si salimos ahora, creo que llegaremos a tiempo."
+              ],
+              "explanation": "One way to say it: \"Creo que si salimos ahora, llegaremos a tiempo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q6",
+              "type": "translate",
+              "prompt": "Say she said she would come, but she didn't come.",
+              "acceptableAnswers": [
+                "Ella dijo que vendría, pero no vino.",
+                "Dijo que iba a venir, pero no llegó.",
+                "Ella dijo que vendría y no vino."
+              ],
+              "explanation": "One way to say it: \"Ella dijo que vendría, pero no vino.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q7",
+              "type": "translate",
+              "prompt": "Say that even if it's expensive, you're going to buy it.",
+              "acceptableAnswers": [
+                "Aunque sea caro, lo voy a comprar.",
+                "Incluso si es caro, lo compraré.",
+                "Lo voy a comprar aunque sea caro."
+              ],
+              "explanation": "One way to say it: \"Aunque sea caro, lo voy a comprar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q8",
+              "type": "translate",
+              "prompt": "Say that as soon as you have news, you'll let me know.",
+              "acceptableAnswers": [
+                "En cuanto tenga noticias, te aviso.",
+                "Tan pronto tenga noticias, te avisaré.",
+                "Te aviso apenas tenga noticias."
+              ],
+              "explanation": "One way to say it: \"En cuanto tenga noticias, te aviso.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q9",
+              "type": "translate",
+              "prompt": "Say it's necessary that you finish before tonight.",
+              "acceptableAnswers": [
+                "Es necesario que termines antes de esta noche.",
+                "Hace falta que termines antes de esta noche.",
+                "Tienes que terminar antes de esta noche."
+              ],
+              "explanation": "One way to say it: \"Es necesario que termines antes de esta noche.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l3",
+          "title": "Write It Yourself: Multi-Clause Sentences 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q10",
+              "type": "translate",
+              "prompt": "Say you would like him to help you with this project.",
+              "acceptableAnswers": [
+                "Quisiera que me ayudara con este proyecto.",
+                "Me gustaría que me ayudara con este proyecto.",
+                "Quiero que me ayude con este proyecto."
+              ],
+              "explanation": "One way to say it: \"Quisiera que me ayudara con este proyecto.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q11",
+              "type": "translate",
+              "prompt": "Say you hope everything goes well.",
+              "acceptableAnswers": [
+                "Espero que todo salga bien.",
+                "Ojalá que todo salga bien.",
+                "Espero que todo vaya bien."
+              ],
+              "explanation": "One way to say it: \"Espero que todo salga bien.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q12",
+              "type": "translate",
+              "prompt": "Say that since it was cold, you came home early.",
+              "acceptableAnswers": [
+                "Como hacía frío, volvimos temprano a casa.",
+                "Como hacía frío, regresamos temprano.",
+                "Volvimos temprano porque hacía frío."
+              ],
+              "explanation": "One way to say it: \"Como hacía frío, volvimos temprano a casa.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q13",
+              "type": "translate",
+              "prompt": "Say that as long as you agree, we can continue.",
+              "acceptableAnswers": [
+                "Mientras estés de acuerdo, podemos continuar.",
+                "Siempre que estés de acuerdo, seguimos.",
+                "Podemos seguir mientras estés de acuerdo."
+              ],
+              "explanation": "One way to say it: \"Mientras estés de acuerdo, podemos continuar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q14",
+              "type": "translate",
+              "prompt": "Say before leaving, check that everything is closed.",
+              "acceptableAnswers": [
+                "Antes de salir, verifica que todo esté cerrado.",
+                "Antes de irte, revisa que todo esté cerrado.",
+                "Antes de salir, asegúrate de que todo esté cerrado."
+              ],
+              "explanation": "One way to say it: \"Antes de salir, verifica que todo esté cerrado.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l4",
+          "title": "Write It Yourself: Multi-Clause Sentences 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q15",
+              "type": "translate",
+              "prompt": "Say that after eating, you went for a walk.",
+              "acceptableAnswers": [
+                "Después de comer, salimos a caminar.",
+                "Después de comer, fuimos a caminar.",
+                "Salimos a caminar después de comer."
+              ],
+              "explanation": "One way to say it: \"Después de comer, salimos a caminar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q16",
+              "type": "translate",
+              "prompt": "Say that although he is tired, he keeps working.",
+              "acceptableAnswers": [
+                "Aunque está cansado, sigue trabajando.",
+                "A pesar de estar cansado, sigue trabajando.",
+                "Sigue trabajando aunque esté cansado."
+              ],
+              "explanation": "One way to say it: \"Aunque está cansado, sigue trabajando.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q17",
+              "type": "translate",
+              "prompt": "Say since you insist, you accept.",
+              "acceptableAnswers": [
+                "Ya que insistes, acepto.",
+                "Puesto que insistes, acepto.",
+                "Como insistes, acepto."
+              ],
+              "explanation": "One way to say it: \"Ya que insistes, acepto.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q18",
+              "type": "translate",
+              "prompt": "Say whatever happens, you'll be there for them.",
+              "acceptableAnswers": [
+                "Pase lo que pase, estaré ahí para ellos.",
+                "Ocurra lo que ocurra, estaré con ellos.",
+                "Pase lo que pase, los voy a apoyar."
+              ],
+              "explanation": "One way to say it: \"Pase lo que pase, estaré ahí para ellos.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q19",
+              "type": "translate",
+              "prompt": "Say if you had known, you wouldn't have come.",
+              "acceptableAnswers": [
+                "Si lo hubiera sabido, no habría venido.",
+                "Si lo hubiese sabido, no hubiera venido.",
+                "De haberlo sabido, no habría venido."
+              ],
+              "explanation": "One way to say it: \"Si lo hubiera sabido, no habría venido.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esb2p27l5",
+          "title": "Write It Yourself: Multi-Clause Sentences 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esb2p27q20",
+              "type": "translate",
+              "prompt": "Say every time you see him, he talks about work.",
+              "acceptableAnswers": [
+                "Cada vez que lo veo, habla del trabajo.",
+                "Cada vez que lo veo, me habla de su trabajo.",
+                "Siempre que lo veo, habla de trabajo."
+              ],
+              "explanation": "One way to say it: \"Cada vez que lo veo, habla del trabajo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q21",
+              "type": "translate",
+              "prompt": "Say the more you think about it, the more convinced you are.",
+              "acceptableAnswers": [
+                "Cuanto más lo pienso, más convencido estoy.",
+                "Mientras más lo pienso, más me convenzo.",
+                "Entre más lo pienso, más seguro estoy."
+              ],
+              "explanation": "One way to say it: \"Cuanto más lo pienso, más convencido estoy.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q22",
+              "type": "translate",
+              "prompt": "Say whether you like it or not, it has to be done.",
+              "acceptableAnswers": [
+                "Te guste o no, hay que hacerlo.",
+                "Quieras o no, se tiene que hacer.",
+                "Aunque no te guste, hay que hacerlo."
+              ],
+              "explanation": "One way to say it: \"Te guste o no, hay que hacerlo.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q23",
+              "type": "translate",
+              "prompt": "Say although you're busy, you're going to help.",
+              "acceptableAnswers": [
+                "Aunque estoy ocupado, voy a ayudar.",
+                "Aunque esté ocupado, ayudaré.",
+                "Voy a ayudar aunque esté ocupado."
+              ],
+              "explanation": "One way to say it: \"Aunque estoy ocupado, voy a ayudar.\" Multi-clause sentences -- more than one wording is right."
+            },
+            {
+              "id": "esb2p27q24",
+              "type": "translate",
+              "prompt": "Say once this is finished, we can leave.",
+              "acceptableAnswers": [
+                "Una vez que esto termine, podemos irnos.",
+                "En cuanto esto termine, nos podemos ir.",
+                "Cuando esto termine, podremos irnos."
+              ],
+              "explanation": "One way to say it: \"Una vez que esto termine, podemos irnos.\" Multi-clause sentences -- more than one wording is right."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "esc1p1u1",
       "level": "C1",
       "eyebrow": "Unit 1",
@@ -36930,6 +38206,325 @@
               ],
               "answer": 0,
               "explanation": "in the grand scheme of things → en el gran esquema de las cosas. Further advanced discourse markers."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esc1p27u1",
+      "level": "C1",
+      "eyebrow": "Unit 27",
+      "title": "Write It Yourself: Idiomatic and Formal Phrasing",
+      "description": "Say it your own way — Idiomatic and formal phrasing -- more than one wording is right.",
+      "lessons": [
+        {
+          "id": "esc1p27l1",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 1",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q0",
+              "type": "translate",
+              "prompt": "Say it goes without saying that this project is important.",
+              "acceptableAnswers": [
+                "Ni que decir tiene que este proyecto es importante.",
+                "Huelga decir que este proyecto es importante.",
+                "Sobra decir que este proyecto es importante."
+              ],
+              "explanation": "One way to say it: \"Ni que decir tiene que este proyecto es importante.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q1",
+              "type": "translate",
+              "prompt": "Say that goes without saying.",
+              "acceptableAnswers": [
+                "Eso ni se pregunta.",
+                "Eso se sobreentiende.",
+                "Ni hace falta decirlo."
+              ],
+              "explanation": "One way to say it: \"Eso ni se pregunta.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q2",
+              "type": "translate",
+              "prompt": "Say please excuse this delay.",
+              "acceptableAnswers": [
+                "Le ruego que disculpe este retraso.",
+                "Le pido disculpas por este retraso.",
+                "Disculpe usted este retraso, por favor."
+              ],
+              "explanation": "One way to say it: \"Le ruego que disculpe este retraso.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q3",
+              "type": "translate",
+              "prompt": "Say we are pleased to inform you of our decision.",
+              "acceptableAnswers": [
+                "Nos complace informarle de nuestra decisión.",
+                "Tenemos el gusto de comunicarle nuestra decisión.",
+                "Nos es grato informarle nuestra decisión."
+              ],
+              "explanation": "One way to say it: \"Nos complace informarle de nuestra decisión.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q4",
+              "type": "translate",
+              "prompt": "Say please find attached the requested document.",
+              "acceptableAnswers": [
+                "Adjunto encontrará el documento solicitado.",
+                "Le envío adjunto el documento solicitado.",
+                "Encontrará adjunto el documento que pidió."
+              ],
+              "explanation": "One way to say it: \"Adjunto encontrará el documento solicitado.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l2",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 2",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q5",
+              "type": "translate",
+              "prompt": "Say we will do our best.",
+              "acceptableAnswers": [
+                "Haremos todo lo posible.",
+                "Haremos lo que esté a nuestro alcance.",
+                "Pondremos todo de nuestra parte."
+              ],
+              "explanation": "One way to say it: \"Haremos todo lo posible.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q6",
+              "type": "translate",
+              "prompt": "Say be that as it may, we must move forward.",
+              "acceptableAnswers": [
+                "Sea como sea, debemos avanzar.",
+                "Como quiera que sea, tenemos que seguir adelante.",
+                "De todos modos, hay que avanzar."
+              ],
+              "explanation": "One way to say it: \"Sea como sea, debemos avanzar.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q7",
+              "type": "translate",
+              "prompt": "Say there is no doubt about that.",
+              "acceptableAnswers": [
+                "No cabe duda de eso.",
+                "No hay ninguna duda al respecto.",
+                "Eso está fuera de toda duda."
+              ],
+              "explanation": "One way to say it: \"No cabe duda de eso.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q8",
+              "type": "translate",
+              "prompt": "Say the problem persists nonetheless.",
+              "acceptableAnswers": [
+                "El problema persiste sin embargo.",
+                "No obstante, el problema sigue ahí.",
+                "A pesar de todo, el problema continúa."
+              ],
+              "explanation": "One way to say it: \"El problema persiste sin embargo.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q9",
+              "type": "translate",
+              "prompt": "Say to tell the truth, you have no idea.",
+              "acceptableAnswers": [
+                "La verdad, no tengo ni idea.",
+                "A decir verdad, no tengo idea.",
+                "Para serte sincero, no sé nada."
+              ],
+              "explanation": "One way to say it: \"La verdad, no tengo ni idea.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l3",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 3",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q10",
+              "type": "translate",
+              "prompt": "Say all things considered, it was a good decision.",
+              "acceptableAnswers": [
+                "Considerando todo, fue una buena decisión.",
+                "Bien mirado, fue una buena decisión.",
+                "En resumidas cuentas, fue una buena decisión."
+              ],
+              "explanation": "One way to say it: \"Considerando todo, fue una buena decisión.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q11",
+              "type": "translate",
+              "prompt": "Say in the end, it doesn't matter.",
+              "acceptableAnswers": [
+                "Al final, no importa.",
+                "Al fin y al cabo, no importa.",
+                "A fin de cuentas, no importa."
+              ],
+              "explanation": "One way to say it: \"Al final, no importa.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q12",
+              "type": "translate",
+              "prompt": "Say you would like to thank someone for their trust.",
+              "acceptableAnswers": [
+                "Quisiera agradecerle su confianza.",
+                "Le agradezco mucho su confianza.",
+                "Deseo expresarle mi agradecimiento por su confianza."
+              ],
+              "explanation": "One way to say it: \"Quisiera agradecerle su confianza.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q13",
+              "type": "translate",
+              "prompt": "Say we remain at your entire disposal.",
+              "acceptableAnswers": [
+                "Quedamos a su entera disposición.",
+                "Estamos a su disposición para lo que necesite.",
+                "Seguimos a su disposición."
+              ],
+              "explanation": "One way to say it: \"Quedamos a su entera disposición.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q14",
+              "type": "translate",
+              "prompt": "Say that's a matter of common sense.",
+              "acceptableAnswers": [
+                "Eso es cuestión de sentido común.",
+                "Eso es de sentido común.",
+                "Es una cuestión de lógica."
+              ],
+              "explanation": "One way to say it: \"Eso es cuestión de sentido común.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l4",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 4",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q15",
+              "type": "translate",
+              "prompt": "Say that said, you should remain cautious.",
+              "acceptableAnswers": [
+                "Dicho esto, debemos ser cautelosos.",
+                "Aun así, conviene ser prudentes.",
+                "Dicho lo cual, hay que tener cuidado."
+              ],
+              "explanation": "One way to say it: \"Dicho esto, debemos ser cautelosos.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q16",
+              "type": "translate",
+              "prompt": "Say there's no smoke without fire.",
+              "acceptableAnswers": [
+                "No hay humo sin fuego.",
+                "Cuando el río suena, agua lleva.",
+                "Algo de cierto habrá cuando tanto se dice."
+              ],
+              "explanation": "One way to say it: \"No hay humo sin fuego.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q17",
+              "type": "translate",
+              "prompt": "Say better late than never.",
+              "acceptableAnswers": [
+                "Más vale tarde que nunca.",
+                "Mejor tarde que nunca.",
+                "Vale más tarde que nunca."
+              ],
+              "explanation": "One way to say it: \"Más vale tarde que nunca.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q18",
+              "type": "translate",
+              "prompt": "Say each thing in its own time.",
+              "acceptableAnswers": [
+                "Cada cosa a su tiempo.",
+                "Todo a su debido tiempo.",
+                "Cada cosa en su momento."
+              ],
+              "explanation": "One way to say it: \"Cada cosa a su tiempo.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q19",
+              "type": "translate",
+              "prompt": "Say things are getting worse.",
+              "acceptableAnswers": [
+                "Las cosas van de mal en peor.",
+                "Todo va cada vez peor.",
+                "La situación empeora cada vez más."
+              ],
+              "explanation": "One way to say it: \"Las cosas van de mal en peor.\" Idiomatic and formal phrasing -- more than one wording is right."
+            }
+          ]
+        },
+        {
+          "id": "esc1p27l5",
+          "title": "Write It Yourself: Idiomatic and Formal Phrasing 5",
+          "subtitle": "Say it your own way",
+          "questions": [
+            {
+              "id": "esc1p27q20",
+              "type": "translate",
+              "prompt": "Say you would be grateful if someone could reply quickly.",
+              "acceptableAnswers": [
+                "Le agradecería que respondiera pronto.",
+                "Le quedaría muy agradecido si contesta pronto.",
+                "Agradecería una respuesta rápida."
+              ],
+              "explanation": "One way to say it: \"Le agradecería que respondiera pronto.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q21",
+              "type": "translate",
+              "prompt": "Say we apologize for the inconvenience caused.",
+              "acceptableAnswers": [
+                "Le pedimos disculpas por las molestias ocasionadas.",
+                "Lamentamos las molestias que esto haya causado.",
+                "Rogamos disculpe las molestias causadas."
+              ],
+              "explanation": "One way to say it: \"Le pedimos disculpas por las molestias ocasionadas.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q22",
+              "type": "translate",
+              "prompt": "Say this is the world turned upside down.",
+              "acceptableAnswers": [
+                "Esto es el mundo al revés.",
+                "Este es un mundo al revés.",
+                "Aquí todo está al revés."
+              ],
+              "explanation": "One way to say it: \"Esto es el mundo al revés.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q23",
+              "type": "translate",
+              "prompt": "Say in a word, everything is fine.",
+              "acceptableAnswers": [
+                "En una palabra, todo está bien.",
+                "En resumen, todo va bien.",
+                "En pocas palabras, todo marcha bien."
+              ],
+              "explanation": "One way to say it: \"En una palabra, todo está bien.\" Idiomatic and formal phrasing -- more than one wording is right."
+            },
+            {
+              "id": "esc1p27q24",
+              "type": "translate",
+              "prompt": "Say we look forward to hearing from you.",
+              "acceptableAnswers": [
+                "Quedamos a la espera de su respuesta.",
+                "Esperamos su pronta respuesta.",
+                "Aguardamos noticias suyas."
+              ],
+              "explanation": "One way to say it: \"Quedamos a la espera de su respuesta.\" Idiomatic and formal phrasing -- more than one wording is right."
             }
           ]
         }

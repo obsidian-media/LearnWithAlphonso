@@ -723,6 +723,38 @@ open the window|abre la ventana
 be quiet|cállate
 pay attention|presta atención`,
   },
+  {
+    id: "esa1p27",
+    title: "Write It Yourself: Everyday Needs",
+    subtitle: "Say it your own way",
+    kind: "translate",
+    note: "Greetings, needs and everyday small talk -- more than one wording is right.",
+    data: `Ask someone their name.|¿Cómo te llamas?;¿Cuál es tu nombre?;¿Cómo se llama usted?
+Say your name is Ana.|Me llamo Ana.;Mi nombre es Ana.;Soy Ana.
+Ask how someone is doing.|¿Cómo estás?;¿Qué tal?;¿Cómo te va?
+Say you are fine, thanks.|Estoy bien, gracias.;Bien, gracias.;Muy bien, gracias.
+Say good morning.|Buenos días.;Buen día.;Muy buenos días.
+Ask where the bathroom is.|¿Dónde está el baño?;¿Dónde queda el baño?;¿Dónde puedo encontrar el baño?
+Say you don't understand.|No entiendo.;No comprendo.;No te entiendo.
+Ask someone to repeat that.|¿Puedes repetir eso?;¿Podrías repetirlo?;¿Me lo repites, por favor?
+Say you are hungry.|Tengo hambre.;Estoy hambriento.;Me muero de hambre.
+Say you are thirsty.|Tengo sed.;Estoy sediento.;Me muero de sed.
+Ask for a coffee.|Quiero un café, por favor.;Me gustaría un café.;¿Me da un café, por favor?
+Say thank you very much.|Muchas gracias.;Muchísimas gracias.;Te lo agradezco mucho.
+Say you're welcome.|De nada.;No hay de qué.;Con gusto.
+Ask what time it is.|¿Qué hora es?;¿Tienes la hora?;¿Me dices qué hora es?
+Say it's five o'clock.|Son las cinco.;Son las cinco en punto.;Ya son las cinco.
+Ask where someone lives.|¿Dónde vives?;¿Dónde vive usted?;¿En dónde vives?
+Say you live in Mexico.|Vivo en México.;Yo vivo en México.;Resido en México.
+Ask someone's age.|¿Cuántos años tienes?;¿Qué edad tienes?;¿Cuántos años tiene usted?
+Say you are twenty years old.|Tengo veinte años.;Tengo veinte.;Ya tengo veinte años.
+Say goodbye to a friend.|Adiós.;Nos vemos.;Chao.
+Say see you tomorrow.|Hasta mañana.;Nos vemos mañana.;Te veo mañana.
+Ask for the check at a restaurant.|La cuenta, por favor.;¿Me trae la cuenta?;¿Nos puede traer la cuenta, por favor?
+Say you like the food.|Me gusta la comida.;La comida me gusta.;Me encanta la comida.
+Ask how much something costs.|¿Cuánto cuesta?;¿Cuánto es?;¿Qué precio tiene?
+Say good night.|Buenas noches.;Que descanses.;Que duermas bien.`,
+  },
 ];
 
 const A2: Pack[] = [
@@ -1428,6 +1460,38 @@ Nosotros ___ (concluir) la reunión temprano.|concluimos
 Nosotros ___ (sonreír) mucho.|sonreímos
 Nosotros ___ (reír) con sus chistes.|reímos
 Nosotros ___ (freír) las papas.|freímos`,
+  },
+  {
+    id: "esa2p27",
+    title: "Write It Yourself: Asking and Arranging",
+    subtitle: "Say it your own way",
+    kind: "translate",
+    note: "Asking, arranging and explaining -- more than one wording is right.",
+    data: `Ask someone if they are free tonight.|¿Estás libre esta noche?;¿Tienes tiempo esta noche?;¿Puedes esta noche?
+Suggest meeting tomorrow.|¿Nos vemos mañana?;¿Quedamos mañana?;Podríamos vernos mañana.
+Say you have to leave now.|Tengo que irme ahora.;Debo irme ya.;Ya me tengo que ir.
+Ask for directions to the station.|¿Cómo llego a la estación?;¿Dónde queda la estación?;¿Por dónde se va a la estación?
+Say turn left at the corner.|Gira a la izquierda en la esquina.;Dobla a la izquierda en la esquina.;En la esquina, gira a la izquierda.
+Ask if the store is open.|¿Está abierta la tienda?;¿La tienda está abierta?;¿Abrió ya la tienda?
+Say you would like to reserve a table.|Quisiera reservar una mesa.;Me gustaría reservar una mesa.;Quiero hacer una reservación.
+Ask if there is a room available.|¿Hay una habitación disponible?;¿Tienen alguna habitación libre?;¿Queda alguna habitación?
+Ask what time the train leaves.|¿A qué hora sale el tren?;¿Cuándo sale el tren?;¿A qué hora parte el tren?
+Say you need to see a doctor.|Necesito ver a un médico.;Necesito un doctor.;Tengo que consultar a un médico.
+Say you don't feel well.|No me siento bien.;Me siento mal.;No me encuentro bien.
+Ask what someone is doing this weekend.|¿Qué vas a hacer este fin de semana?;¿Qué haces este fin de semana?;¿Tienes planes para el fin de semana?
+Say you work in an office.|Trabajo en una oficina.;Yo trabajo en una oficina.;Mi trabajo es en una oficina.
+Say you have been studying Spanish for two years.|Llevo dos años estudiando español.;Estudio español desde hace dos años.;Hace dos años que estudio español.
+Say you have lived here for a long time.|Vivo aquí desde hace mucho tiempo.;Llevo mucho tiempo viviendo aquí.;Hace mucho tiempo que vivo aquí.
+Say she arrives in ten minutes.|Ella llega en diez minutos.;Llega en diez minutos.;En diez minutos, ella llega.
+Say he left last night.|Él se fue anoche.;Se fue anoche.;Anoche, él se fue.
+Ask if someone can come with us.|¿Puedes venir con nosotros?;¿Quieres venir con nosotros?;¿Te gustaría acompañarnos?
+Say that's a good idea.|Es una buena idea.;Buena idea.;Me parece una buena idea.
+Say you agree with someone.|Estoy de acuerdo contigo.;Estoy de acuerdo.;Concuerdo contigo.
+Say you don't agree.|No estoy de acuerdo.;No estoy de acuerdo contigo.;Yo no pienso lo mismo.
+Suggest meeting in front of the station.|Nos vemos frente a la estación.;Quedamos delante de la estación.;Encontrémonos frente a la estación.
+Ask someone to call you back.|Llámame, por favor.;¿Me puedes llamar luego?;Devuélveme la llamada, por favor.
+Say you'll be there in five minutes.|Llego en cinco minutos.;Estaré ahí en cinco minutos.;En cinco minutos estoy ahí.
+Ask someone to speak more slowly.|¿Puedes hablar más despacio?;Habla más despacio, por favor.;¿Podrías hablar más lento?`,
   },
 ];
 
@@ -2147,6 +2211,38 @@ Estoy libre ___ (of) compromisos.|de
 Ella es amable ___ (with) los niños.|con
 Estamos satisfechos ___ (with) el servicio.|con`,
   },
+  {
+    id: "esb1p27",
+    title: "Write It Yourself: Opinions and Reasons",
+    subtitle: "Say it your own way",
+    kind: "translate",
+    note: "Opinions, reasons and comparisons -- more than one wording is right.",
+    data: `Say you think it's a good idea.|Creo que es una buena idea.;Pienso que es una buena idea.;Me parece una buena idea.
+Say in your opinion, he is right.|En mi opinión, él tiene razón.;A mi parecer, él tiene razón.;Yo creo que él tiene razón.
+Say you are not convinced by that argument.|No estoy convencido por ese argumento.;Ese argumento no me convence.;No me convence ese argumento.
+Say this movie is more interesting than the other one.|Esta película es más interesante que la otra.;Esta película es más interesante que la otra película.;La otra película es menos interesante que esta.
+Say you prefer coffee to tea.|Prefiero el café al té.;Prefiero el café en vez del té.;Me gusta más el café que el té.
+Say it's better to leave early.|Es mejor salir temprano.;Más vale salir temprano.;Conviene salir temprano.
+Say that in your opinion, it's too expensive.|Según yo, es demasiado caro.;A mi juicio, es demasiado caro.;Me parece demasiado caro.
+Say you find this book boring.|Me parece aburrido este libro.;Encuentro este libro aburrido.;Este libro me aburre.
+Say she is probably right.|Ella probablemente tiene razón.;Es probable que ella tenga razón.;Seguramente ella tiene razón.
+Say it's important to eat well.|Es importante comer bien.;Importa comer bien.;Es necesario comer bien.
+Say it's necessary to book in advance.|Es necesario reservar con anticipación.;Hay que reservar con anticipación.;Hace falta reservar con anticipación.
+Say you are happy with your results.|Estoy contento con mis resultados.;Estoy satisfecho con mis resultados.;Me siento contento con mis resultados.
+Say we are proud of our work.|Estamos orgullosos de nuestro trabajo.;Nos sentimos orgullosos de nuestro trabajo.;Es un orgullo nuestro trabajo.
+Say it's difficult to explain.|Es difícil de explicar.;Es complicado explicarlo.;Cuesta explicarlo.
+Say it's not that simple.|No es tan simple.;No es tan sencillo.;No es así de simple.
+Say you would like to change your mind.|Me gustaría cambiar de opinión.;Quisiera cambiar de opinión.;Quiero cambiar de parecer.
+Say everything depends on the situation.|Todo depende de la situación.;Todo depende de las circunstancias.;Depende de la situación.
+Say that seems reasonable to you.|Eso me parece razonable.;Me parece razonable.;Eso suena razonable.
+Say you doubt that's true.|Dudo que eso sea verdad.;No creo que eso sea verdad.;Dudo que eso sea cierto.
+Say one must be patient.|Hay que ser paciente.;Uno debe ser paciente.;Es necesario tener paciencia.
+Say we must make a decision.|Debemos tomar una decisión.;Tenemos que tomar una decisión.;Hace falta tomar una decisión.
+Say this is the best possible solution.|Esta es la mejor solución posible.;Es la mejor solución que hay.;No hay mejor solución que esta.
+Say you understand someone's point of view.|Entiendo tu punto de vista.;Comprendo tu punto de vista.;Entiendo cómo ves las cosas.
+Say you finally agree.|Finalmente estoy de acuerdo.;Al final estoy de acuerdo.;Por fin estoy de acuerdo.
+Say the meeting was very productive.|La reunión fue muy productiva.;La reunión resultó muy productiva.;Fue una reunión muy productiva.`,
+  },
 ];
 
 const B2: Pack[] = [
@@ -2854,6 +2950,38 @@ on balance|en definitiva
 all things considered|considerando todo
 in the end|al final
 ultimately|en última instancia`,
+  },
+  {
+    id: "esb2p27",
+    title: "Write It Yourself: Multi-Clause Sentences",
+    subtitle: "Say it your own way",
+    kind: "translate",
+    note: "Multi-clause sentences -- more than one wording is right.",
+    data: `Say that when you finish work, you'll go for a walk.|Cuando termine el trabajo, iré a caminar.;Cuando acabe el trabajo, saldré a caminar.;Iré a caminar cuando termine el trabajo.
+Say that if you have time, you could have lunch together.|Si tienes tiempo, podríamos almorzar juntos.;Si tienes tiempo, podríamos comer juntos.;Podríamos almorzar juntos si tienes tiempo.
+Say that although it's difficult, you're going to try.|Aunque es difícil, voy a intentarlo.;Aunque sea difícil, lo voy a intentar.;Voy a intentarlo aunque sea difícil.
+Say that since it's raining, you'll stay home.|Como está lloviendo, nos quedaremos en casa.;Ya que está lloviendo, nos quedamos en casa.;Nos quedaremos en casa porque está lloviendo.
+Say that when you arrive, you'll call.|Cuando llegue, te llamaré.;Cuando llegue, llamo.;Te llamaré en cuanto llegue.
+Say that if we leave now, you think we'll arrive on time.|Creo que si salimos ahora, llegaremos a tiempo.;Pienso que si nos vamos ahora, llegaremos a tiempo.;Si salimos ahora, creo que llegaremos a tiempo.
+Say she said she would come, but she didn't come.|Ella dijo que vendría, pero no vino.;Dijo que iba a venir, pero no llegó.;Ella dijo que vendría y no vino.
+Say that even if it's expensive, you're going to buy it.|Aunque sea caro, lo voy a comprar.;Incluso si es caro, lo compraré.;Lo voy a comprar aunque sea caro.
+Say that as soon as you have news, you'll let me know.|En cuanto tenga noticias, te aviso.;Tan pronto tenga noticias, te avisaré.;Te aviso apenas tenga noticias.
+Say it's necessary that you finish before tonight.|Es necesario que termines antes de esta noche.;Hace falta que termines antes de esta noche.;Tienes que terminar antes de esta noche.
+Say you would like him to help you with this project.|Quisiera que me ayudara con este proyecto.;Me gustaría que me ayudara con este proyecto.;Quiero que me ayude con este proyecto.
+Say you hope everything goes well.|Espero que todo salga bien.;Ojalá que todo salga bien.;Espero que todo vaya bien.
+Say that since it was cold, you came home early.|Como hacía frío, volvimos temprano a casa.;Como hacía frío, regresamos temprano.;Volvimos temprano porque hacía frío.
+Say that as long as you agree, we can continue.|Mientras estés de acuerdo, podemos continuar.;Siempre que estés de acuerdo, seguimos.;Podemos seguir mientras estés de acuerdo.
+Say before leaving, check that everything is closed.|Antes de salir, verifica que todo esté cerrado.;Antes de irte, revisa que todo esté cerrado.;Antes de salir, asegúrate de que todo esté cerrado.
+Say that after eating, you went for a walk.|Después de comer, salimos a caminar.;Después de comer, fuimos a caminar.;Salimos a caminar después de comer.
+Say that although he is tired, he keeps working.|Aunque está cansado, sigue trabajando.;A pesar de estar cansado, sigue trabajando.;Sigue trabajando aunque esté cansado.
+Say since you insist, you accept.|Ya que insistes, acepto.;Puesto que insistes, acepto.;Como insistes, acepto.
+Say whatever happens, you'll be there for them.|Pase lo que pase, estaré ahí para ellos.;Ocurra lo que ocurra, estaré con ellos.;Pase lo que pase, los voy a apoyar.
+Say if you had known, you wouldn't have come.|Si lo hubiera sabido, no habría venido.;Si lo hubiese sabido, no hubiera venido.;De haberlo sabido, no habría venido.
+Say every time you see him, he talks about work.|Cada vez que lo veo, habla del trabajo.;Cada vez que lo veo, me habla de su trabajo.;Siempre que lo veo, habla de trabajo.
+Say the more you think about it, the more convinced you are.|Cuanto más lo pienso, más convencido estoy.;Mientras más lo pienso, más me convenzo.;Entre más lo pienso, más seguro estoy.
+Say whether you like it or not, it has to be done.|Te guste o no, hay que hacerlo.;Quieras o no, se tiene que hacer.;Aunque no te guste, hay que hacerlo.
+Say although you're busy, you're going to help.|Aunque estoy ocupado, voy a ayudar.;Aunque esté ocupado, ayudaré.;Voy a ayudar aunque esté ocupado.
+Say once this is finished, we can leave.|Una vez que esto termine, podemos irnos.;En cuanto esto termine, nos podemos ir.;Cuando esto termine, podremos irnos.`,
   },
 ];
 
@@ -3563,6 +3691,38 @@ all told|en total
 by and large|en general
 when all is said and done|al fin y al cabo
 in the grand scheme of things|en el gran esquema de las cosas`,
+  },
+  {
+    id: "esc1p27",
+    title: "Write It Yourself: Idiomatic and Formal Phrasing",
+    subtitle: "Say it your own way",
+    kind: "translate",
+    note: "Idiomatic and formal phrasing -- more than one wording is right.",
+    data: `Say it goes without saying that this project is important.|Ni que decir tiene que este proyecto es importante.;Huelga decir que este proyecto es importante.;Sobra decir que este proyecto es importante.
+Say that goes without saying.|Eso ni se pregunta.;Eso se sobreentiende.;Ni hace falta decirlo.
+Say please excuse this delay.|Le ruego que disculpe este retraso.;Le pido disculpas por este retraso.;Disculpe usted este retraso, por favor.
+Say we are pleased to inform you of our decision.|Nos complace informarle de nuestra decisión.;Tenemos el gusto de comunicarle nuestra decisión.;Nos es grato informarle nuestra decisión.
+Say please find attached the requested document.|Adjunto encontrará el documento solicitado.;Le envío adjunto el documento solicitado.;Encontrará adjunto el documento que pidió.
+Say we will do our best.|Haremos todo lo posible.;Haremos lo que esté a nuestro alcance.;Pondremos todo de nuestra parte.
+Say be that as it may, we must move forward.|Sea como sea, debemos avanzar.;Como quiera que sea, tenemos que seguir adelante.;De todos modos, hay que avanzar.
+Say there is no doubt about that.|No cabe duda de eso.;No hay ninguna duda al respecto.;Eso está fuera de toda duda.
+Say the problem persists nonetheless.|El problema persiste sin embargo.;No obstante, el problema sigue ahí.;A pesar de todo, el problema continúa.
+Say to tell the truth, you have no idea.|La verdad, no tengo ni idea.;A decir verdad, no tengo idea.;Para serte sincero, no sé nada.
+Say all things considered, it was a good decision.|Considerando todo, fue una buena decisión.;Bien mirado, fue una buena decisión.;En resumidas cuentas, fue una buena decisión.
+Say in the end, it doesn't matter.|Al final, no importa.;Al fin y al cabo, no importa.;A fin de cuentas, no importa.
+Say you would like to thank someone for their trust.|Quisiera agradecerle su confianza.;Le agradezco mucho su confianza.;Deseo expresarle mi agradecimiento por su confianza.
+Say we remain at your entire disposal.|Quedamos a su entera disposición.;Estamos a su disposición para lo que necesite.;Seguimos a su disposición.
+Say that's a matter of common sense.|Eso es cuestión de sentido común.;Eso es de sentido común.;Es una cuestión de lógica.
+Say that said, you should remain cautious.|Dicho esto, debemos ser cautelosos.;Aun así, conviene ser prudentes.;Dicho lo cual, hay que tener cuidado.
+Say there's no smoke without fire.|No hay humo sin fuego.;Cuando el río suena, agua lleva.;Algo de cierto habrá cuando tanto se dice.
+Say better late than never.|Más vale tarde que nunca.;Mejor tarde que nunca.;Vale más tarde que nunca.
+Say each thing in its own time.|Cada cosa a su tiempo.;Todo a su debido tiempo.;Cada cosa en su momento.
+Say things are getting worse.|Las cosas van de mal en peor.;Todo va cada vez peor.;La situación empeora cada vez más.
+Say you would be grateful if someone could reply quickly.|Le agradecería que respondiera pronto.;Le quedaría muy agradecido si contesta pronto.;Agradecería una respuesta rápida.
+Say we apologize for the inconvenience caused.|Le pedimos disculpas por las molestias ocasionadas.;Lamentamos las molestias que esto haya causado.;Rogamos disculpe las molestias causadas.
+Say this is the world turned upside down.|Esto es el mundo al revés.;Este es un mundo al revés.;Aquí todo está al revés.
+Say in a word, everything is fine.|En una palabra, todo está bien.;En resumen, todo va bien.;En pocas palabras, todo marcha bien.
+Say we look forward to hearing from you.|Quedamos a la espera de su respuesta.;Esperamos su pronta respuesta.;Aguardamos noticias suyas.`,
   },
 ];
 
