@@ -123,10 +123,14 @@ reasons (see `account.functions.test.ts`'s `NOT_PERSONAL_DATA`); deletion
 rides on `ON DELETE CASCADE` from `auth.users`.
 
 `requireAdmin` chains `requireSupabaseAuth` and then checks the allowlist
-with the service-role client. It throws a message identical to an
-ordinary auth failure: a distinct "you are not an admin" tells an
-attacker that the endpoint exists and that their token was otherwise
-valid. Every admin server function lives in `src/lib/admin.functions.ts`
+with the service-role client. It throws `UNAUTHORIZED_MESSAGE`, which is
+copied **verbatim** from one of `requireSupabaseAuth`'s own failures and
+pinned to it by a test — every message there is suffixed, so the bare
+`"Unauthorized"` it threw at first was a string no bad token could
+produce, which is exactly the oracle it was meant to avoid. Endpoint
+existence still leaks through the HTTP status a framework gives a thrown
+error, so the property this actually buys is the narrower and achievable
+one: **a non-admin cannot be distinguished from a bad token.** Every admin server function lives in `src/lib/admin.functions.ts`
 so one test can enumerate them and fail if any lacks the middleware —
 that test reads the **source**, because TanStack does not expose the
 middleware chain at runtime.
@@ -140,11 +144,25 @@ rather than a cookie — and the authorization check.
 Audio upload goes **straight to Storage through a signed URL**, never
 through a server function: a serverless body is capped near 4.5 MB and
 base64 inflates by a third, so an ordinary 3 MB episode would fail at the
-platform. The server then reads the object back, proves it is audio from
-its **signature rather than its extension**, and **deletes it** when it
-is not — verification necessarily happens after the write, and the bucket
-is public-read and served from our own domain, so reporting without
-deleting is not enough. Transcripts go through the same
+platform. The signed URL targets a **staging key** (`<audio_path>.incoming`),
+never the live object, and the server promotes it onto `audio_path` only
+after proving it is audio from its **signature rather than its
+extension**; every failure removes the staging object and leaves the live
+one untouched. The first version uploaded onto the live path and deleted
+on failure, which destroyed a published episode's audio on one mis-picked
+file — unrecoverably, with no bucket versioning and no backup, while the
+row stayed `published` and pointed at nothing. Same rule as the iOS
+cache: a file at the final path always means a finished, verified object.
+
+The storage path is resolved **server-side from the episode id** and
+never accepted from the client — an id and a path arriving as unrelated
+fields let one episode's duration be written onto another's row, which
+iOS's `durationDisagrees` then reads as a truncated download forever. The
+metadata parse is wrapped, because it throws on input the sniffer accepts
+(three `ID3` bytes and anything after them), and an escaping throw would
+leave the object in the bucket. `Content-Type` is set from the sniffed
+bytes, not from what the browser sent, since the stored type is what the
+bucket serves with and sniffing alone does not control that. Transcripts go through the same
 `normalizeTranscript` the CLI uses, which *throws* on markup rather than
 returning null; null means empty, and a handler that conflated them would
 save an empty transcript and report success.

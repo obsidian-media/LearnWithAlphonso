@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { isAdminUser } from "./admin-auth";
+import { readFileSync } from "node:fs";
+import { isAdminUser, UNAUTHORIZED_MESSAGE } from "./admin-auth";
 
 /** Minimal PostgREST-shaped stub: .from().select().eq().maybeSingle() */
 function clientReturning(result: { data: unknown; error: unknown }) {
@@ -51,6 +52,36 @@ describe("isAdminUser", () => {
   });
 });
 
+// requireAdmin's whole claim is that a non-admin cannot tell their
+// refusal apart from an ordinary auth failure. It threw a BARE
+// "Unauthorized" while every requireSupabaseAuth failure is suffixed
+// ("Unauthorized: Invalid token", "Unauthorized: No authorization header
+// provided", ...) -- so a learner with a VALID token got a string no bad
+// token can produce, which is precisely the oracle the comment claimed
+// to avoid. Nothing asserted the parity the comment asserted.
+describe("the admin refusal is indistinguishable from an auth failure", () => {
+  const authSource = readFileSync("src/integrations/supabase/auth-middleware.ts", "utf8");
+  const authMessages = [...authSource.matchAll(/new Error\("(Unauthorized[^"]*)"\)/g)].map(
+    (m) => m[1],
+  );
+
+  it("finds the auth middleware's messages (guards a silently-empty scan)", () => {
+    expect(authMessages.length).toBeGreaterThan(2);
+  });
+
+  it("reuses one of them verbatim rather than inventing its own", () => {
+    expect(authMessages).toContain(UNAUTHORIZED_MESSAGE);
+  });
+
+  it("is the string requireAdmin actually throws", () => {
+    const middleware = readFileSync("src/lib/admin-middleware.ts", "utf8");
+    // Pins the import, not a copy: a literal here would drift the moment
+    // auth-middleware's wording changed, and the drift would be silent.
+    expect(middleware).toContain("UNAUTHORIZED_MESSAGE");
+    expect(middleware).not.toMatch(/throw new Error\("Unauthorized/);
+  });
+});
+
 // The spec names this as the one test that proves the central claim of
 // the whole design -- and the one most likely to be written as a test
 // that cannot fail. It asserts on a real PostgREST response, not on a
@@ -59,18 +90,39 @@ describe("isAdminUser", () => {
 describe("admin_users is unreadable by a non-service client", () => {
   const url = process.env.SUPABASE_URL;
   const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  // Set by the CI step that runs this file against the real project,
+  // AFTER migrations are pushed. Without it, "CI has them so CI runs it"
+  // was simply false: `bun run test` runs in lint-and-typecheck, which
+  // sets no Supabase env at all, and the only job that sets any uses
+  // PLACEHOLDER values for Playwright. This test therefore never ran
+  // anywhere -- the purest form of a test that cannot fail, guarding
+  // the single most important claim in the design.
+  const required = process.env.ADMIN_RLS_TEST_REQUIRED === "1";
 
-  // Skipped rather than failed without credentials: a red suite on every
-  // machine that lacks env vars gets muted, and a muted test is worse
-  // than a skipped one. CI has them, so CI runs it.
+  it("refuses to be silently skipped where it is required", () => {
+    // The skip below is fine on a laptop and unacceptable in CI. This
+    // assertion is what makes the difference observable instead of
+    // trusting a comment.
+    if (required) expect(Boolean(url && anonKey)).toBe(true);
+    else expect(required).toBe(false);
+  });
+
   it.skipIf(!url || !anonKey)("returns no rows to an anon client", async () => {
     const { createClient } = await import("@supabase/supabase-js");
     const client = createClient(url!, anonKey!);
     const { data, error } = await client.from("admin_users").select("user_id");
-    // RLS with zero policies yields an empty set for a role that holds
-    // the SELECT grant; we REVOKEd the grant too, so PostgREST refuses
-    // outright. Either outcome is safe. A row is not.
+
+    // A row is the failure this exists to catch.
     expect(data ?? []).toHaveLength(0);
-    if (error) expect(error.message).toMatch(/permission denied|does not exist|not find/i);
+
+    if (error) {
+      // "does not exist" is NOT accepted: that is also what a project
+      // where the migration was never applied returns, so accepting it
+      // would let this pass green against a database with no
+      // admin_users table at all -- proving nothing while looking like
+      // proof. Only an actual refusal counts.
+      expect(error.message).toMatch(/permission denied|not authorized|insufficient/i);
+      expect(error.message).not.toMatch(/does not exist|could not find|not find the table/i);
+    }
   });
 });

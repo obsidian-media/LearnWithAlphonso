@@ -1,6 +1,27 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
+ * What requireAdmin throws when the caller is not on the allowlist.
+ *
+ * Copied VERBATIM from one of requireSupabaseAuth's own failures
+ * (src/integrations/supabase/auth-middleware.ts). That is the entire
+ * point: every message there is suffixed -- "Unauthorized: Invalid
+ * token", "Unauthorized: No authorization header provided" -- so a bare
+ * "Unauthorized" would be a string no bad token can produce, telling an
+ * attacker with a valid learner token both that the endpoint exists and
+ * that their token was otherwise fine.
+ *
+ * Endpoint existence still leaks through the HTTP status a framework
+ * assigns a thrown error, so the property this buys is narrower than
+ * "reveals nothing": it is "a non-admin cannot be distinguished from a
+ * bad token". That is the achievable one, and it is worth having.
+ *
+ * A test asserts this string appears in auth-middleware.ts, so the two
+ * cannot drift apart silently.
+ */
+export const UNAUTHORIZED_MESSAGE = "Unauthorized: Invalid token";
+
+/**
  * The one authorization decision in the admin subsystem.
  *
  * MUST be called with a service-role client: `admin_users` has RLS

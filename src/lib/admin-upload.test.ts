@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { sniffAudioType, MAX_UPLOAD_BYTES, validateUpload } from "./admin-upload";
+import {
+  sniffAudioType,
+  MAX_UPLOAD_BYTES,
+  validateUpload,
+  stagingPathFor,
+  contentTypeFor,
+} from "./admin-upload";
 
 function bytes(...values: number[]) {
   return new Uint8Array(values);
@@ -80,5 +86,43 @@ describe("validateUpload", () => {
     // Zero bytes is under the cap and is not audio; the message must be
     // the content one, not a silent pass.
     expect(validateUpload(bytes(), 0)).toMatch(/not an audio file/i);
+  });
+});
+
+describe("stagingPathFor", () => {
+  // The live object must never hold unverified bytes. Uploading onto
+  // audio_path and deleting on failure destroyed a published episode's
+  // audio on one mis-click, with no versioning and no backup to recover
+  // from, while the row stayed published and pointing at nothing.
+  it("differs from the live path", () => {
+    expect(stagingPathFor("en/a1/coffee/ordering.mp3")).not.toBe("en/a1/coffee/ordering.mp3");
+  });
+
+  it("keeps the live path as a prefix, so an orphan is traceable", () => {
+    // A staging object left behind by an interrupted upload should be
+    // obviously attributable to its episode when someone browses the
+    // bucket, not a loose uuid nobody can place.
+    expect(stagingPathFor("en/a1/coffee/ordering.mp3")).toContain("en/a1/coffee/ordering.mp3");
+  });
+
+  it("is stable, so a retry overwrites its own staging object", () => {
+    expect(stagingPathFor("a/b.mp3")).toBe(stagingPathFor("a/b.mp3"));
+  });
+});
+
+describe("contentTypeFor", () => {
+  // The sniffed type used to be discarded and everything parsed as
+  // audio/mpeg, while the file picker advertised M4A.
+  it("maps each sniffed kind to its real media type", () => {
+    expect(contentTypeFor("mp3")).toBe("audio/mpeg");
+    expect(contentTypeFor("mp4")).toBe("audio/mp4");
+  });
+
+  it("never returns a non-audio type", () => {
+    // The stored Content-Type is what the bucket serves with. Anything
+    // but audio/* here reopens the hole byte-sniffing exists to close.
+    for (const kind of ["mp3", "mp4"] as const) {
+      expect(contentTypeFor(kind)).toMatch(/^audio\//);
+    }
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 import { ADMIN_FUNCTION_NAMES, wouldCreateCycle } from "./admin.functions";
 import { normalizeTranscript } from "./podcast-transcript";
 
@@ -13,7 +14,12 @@ import { normalizeTranscript } from "./podcast-transcript";
 // middleware chain at runtime -- and a test that cannot observe the
 // thing it claims to check is worse than no test.
 describe("every admin server function is gated", () => {
-  const source = readFileSync("src/lib/admin.functions.ts", "utf8");
+  const rawSource = readFileSync("src/lib/admin.functions.ts", "utf8");
+  // Comments are stripped before counting. The file DISCUSSES
+  // `.middleware([requireAdmin])` in its own header prose, so a
+  // count over raw text could be satisfied by a comment while a real
+  // gate was missing -- the guard would pass at the moment it mattered.
+  const source = rawSource.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 
   it("exports at least one admin function", () => {
     // Guards the guard: if the list were empty, every assertion below
@@ -30,6 +36,32 @@ describe("every admin server function is gated", () => {
   it("carries requireAdmin on every createServerFn", () => {
     const gated = source.match(/\.middleware\(\[requireAdmin\]\)/g)?.length ?? 0;
     expect(gated).toBe(ADMIN_FUNCTION_NAMES.length);
+  });
+
+  it("defines no admin server function outside this file", () => {
+    // The counts above are only meaningful because every admin function
+    // is supposed to live in admin.functions.ts -- and until this test,
+    // nothing enforced that. A later `src/lib/admin-tags.functions.ts`
+    // exporting an ungated `adminCreateTag` would leave all four other
+    // assertions green while any authenticated learner could write to
+    // the library. That is exactly the failure this suite exists for.
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+          continue;
+        }
+        if (!entry.name.endsWith(".ts") && !entry.name.endsWith(".tsx")) continue;
+        if (entry.name.endsWith(".test.ts") || entry.name.endsWith(".test.tsx")) continue;
+        if (full.endsWith(path.join("lib", "admin.functions.ts"))) continue;
+        const body = readFileSync(full, "utf8");
+        if (/^export const admin[A-Z]\w*\s*=\s*createServerFn/m.test(body)) offenders.push(full);
+      }
+    };
+    walk("src");
+    expect(offenders).toEqual([]);
   });
 
   it("never uses requireSupabaseAuth alone in this file", () => {

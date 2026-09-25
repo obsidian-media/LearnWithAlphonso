@@ -118,18 +118,24 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
     setBusy(true);
     setStatus("Uploading…");
     try {
+      // The server resolves the storage path from the episode id. It is
+      // deliberately not sent from here: an id and a path arriving as
+      // two unrelated fields let a stale tab write one episode's
+      // duration onto another's row.
       const { signedUrl } = await adminCreateAudioUploadUrl({
-        data: { episodeId: episode.id, audioPath: episode.audioPath, declaredBytes: file.size },
+        data: { episodeId: episode.id, declaredBytes: file.size },
       });
+      // Goes to a STAGING key, so the live object is untouched until the
+      // bytes have been proven to be audio.
       const put = await fetch(signedUrl, {
         method: "PUT",
-        headers: { "content-type": "audio/mpeg" },
+        headers: { "content-type": file.type || "application/octet-stream" },
         body: file,
       });
       if (!put.ok) throw new Error("The upload did not complete.");
       setStatus("Checking…");
       const { durationSeconds } = await adminVerifyUploadedAudio({
-        data: { episodeId: episode.id, audioPath: episode.audioPath },
+        data: { episodeId: episode.id },
       });
       setStatus(
         `Replaced — ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")}`,

@@ -31,6 +31,35 @@ export function sniffAudioType(head: Uint8Array): "mp3" | "mp4" | null {
   return null;
 }
 
+/**
+ * Where an upload is written before it has been proven to be audio.
+ *
+ * The live object is never in an unverified state. Uploading straight
+ * onto `audio_path` and deleting on failure destroyed a published
+ * episode's audio on a single mis-click -- irrecoverably, since the
+ * bucket has no versioning and no backup, while the row stayed
+ * `published=true` pointing at nothing.
+ *
+ * Mirrors the iOS cache's staging rule (PodcastCache.temporaryFileName):
+ * a file at the final path always means a finished, verified object.
+ */
+export function stagingPathFor(audioPath: string): string {
+  return `${audioPath}.incoming`;
+}
+
+/**
+ * The media type to store, and to hand the metadata parser, derived from
+ * the sniffed bytes rather than from anything the browser said.
+ *
+ * `sniffAudioType`'s result used to be discarded and everything was
+ * parsed as audio/mpeg. The file picker advertises M4A, so an M4A parsed
+ * as MPEG plausibly yields no duration -- which, under the old
+ * delete-on-failure flow, deleted a file the UI had invited.
+ */
+export function contentTypeFor(kind: "mp3" | "mp4"): string {
+  return kind === "mp3" ? "audio/mpeg" : "audio/mp4";
+}
+
 /** A human-readable problem, or null when the upload is acceptable. */
 export function validateUpload(head: Uint8Array, totalBytes: number): string | null {
   if (totalBytes > MAX_UPLOAD_BYTES) {

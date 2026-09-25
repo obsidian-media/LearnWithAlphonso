@@ -290,6 +290,21 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
+      # The one test that proves the admin allowlist is unreadable by a
+      # client token. It has to run HERE, after `supabase db push`, and
+      # nowhere else: `bun run test` runs in lint-and-typecheck, which
+      # sets no Supabase env, and the only other job that sets any uses
+      # PLACEHOLDER values for Playwright -- so before this step the test
+      # skipped in every job, silently, while its own comment claimed CI
+      # ran it. ADMIN_RLS_TEST_REQUIRED=1 makes the test FAIL rather than
+      # skip if the credentials are absent, so it can never go quiet again.
+      - name: admin_users is unreadable by a client token
+        run: bunx vitest run src/lib/admin-auth.test.ts
+        env:
+          ADMIN_RLS_TEST_REQUIRED: "1"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+
   ios-swift-tests:
     # macOS runners ship a working Swift/Xcode toolchain natively, so none
     # of the Windows-specific workarounds in

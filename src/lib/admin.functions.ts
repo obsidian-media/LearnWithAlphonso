@@ -3,7 +3,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
 import { findCycle, isValidSlug, type PodcastFolder } from "./podcast-tree";
-import { validateUpload, MAX_UPLOAD_BYTES } from "./admin-upload";
+import {
+  validateUpload,
+  sniffAudioType,
+  stagingPathFor,
+  contentTypeFor,
+  MAX_UPLOAD_BYTES,
+} from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 
 /**
@@ -300,12 +306,41 @@ export const adminSetPublished = createServerFn({ method: "POST" })
   });
 
 /**
+ * Resolves an episode's real storage path from its id.
+ *
+ * The caller used to pass `audioPath` alongside `episodeId` with nothing
+ * tying them together, so a stale tab could upload episode B's file and
+ * have B's duration written onto A's row -- which iOS
+ * `PodcastCache.durationDisagrees` then reads as a truncated download
+ * and re-fetches on every launch, forever. It also let a signed upload
+ * URL be minted for any key in the bucket, including one no episode
+ * points at. The path is now never accepted from the client.
+ */
+async function audioPathForEpisode(client: SupabaseClient, episodeId: string): Promise<string> {
+  const { data, error } = await client
+    .from("podcast_episodes")
+    .select("audio_path")
+    .eq("id", episodeId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("That episode no longer exists.");
+  return data.audio_path as string;
+}
+
+/**
  * A short-lived signed URL the browser uploads the audio to directly.
  *
  * Direct-to-storage, not a POST of the bytes through here: a serverless
  * function body is capped near 4.5 MB on Vercel and base64 inflates by a
  * third, so an ordinary 3 MB episode routed through a server function
  * would fail at the platform rather than in any code we could fix.
+ *
+ * The URL targets a STAGING key, never the live object. The live audio
+ * of a published episode must not hold unverified bytes for even a
+ * moment: an earlier version uploaded straight onto `audio_path` and
+ * deleted on failure, so one mis-picked file destroyed a published
+ * episode's audio -- unrecoverably, with no bucket versioning and no
+ * backup, while the row stayed published and pointing at nothing.
  */
 export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
@@ -313,7 +348,6 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
     z
       .object({
         episodeId: z.string().uuid(),
-        audioPath: z.string().min(1).max(400),
         declaredBytes: z.number().int().positive(),
       })
       .parse(d),
@@ -327,57 +361,90 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
         `That file is too large (${Math.round(data.declaredBytes / 1024 / 1024)} MB). The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`,
       );
     }
-    const { data: signed, error } = await untyped(context.supabaseAdmin)
-      .storage.from(BUCKET)
-      .createSignedUploadUrl(data.audioPath, { upsert: true });
+    const client = untyped(context.supabaseAdmin);
+    const audioPath = await audioPathForEpisode(client, data.episodeId);
+    const { data: signed, error } = await client.storage
+      .from(BUCKET)
+      .createSignedUploadUrl(stagingPathFor(audioPath), { upsert: true });
     if (error || !signed) throw new Error(error?.message ?? "Could not start the upload.");
     return { signedUrl: signed.signedUrl, token: signed.token };
   });
 
 /**
- * Reads the stored object back, proves it is audio, and only then writes
- * the duration onto the row.
+ * Verifies the staged object and, only if it is real audio, promotes it
+ * onto the live path and writes the new duration.
  *
- * Deletes the object when it is not audio. Verification necessarily
- * happens after the write, so a bad object genuinely exists for a
- * moment; leaving it there would mean a public URL under our own domain
- * serving whatever was uploaded. Reporting without deleting is not
- * enough.
+ * Every failure removes the staging object and leaves the live one
+ * untouched, so a rejected upload costs the admin nothing but the
+ * message. That ordering is the whole fix: verification necessarily
+ * happens after a write, and the bucket is public-read and served from
+ * our own domain, so the write must land somewhere nothing points at.
  */
 export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((d: unknown) =>
-    z.object({ episodeId: z.string().uuid(), audioPath: z.string().min(1).max(400) }).parse(d),
-  )
+  .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
     const client = untyped(context.supabaseAdmin);
+    const audioPath = await audioPathForEpisode(client, data.episodeId);
+    const staging = stagingPathFor(audioPath);
+
+    /** Removes the staged object, then reports why it was refused. */
+    const reject = async (message: string): Promise<never> => {
+      await client.storage.from(BUCKET).remove([staging]);
+      throw new Error(message);
+    };
+
     const { data: blob, error: downloadError } = await client.storage
       .from(BUCKET)
-      .download(data.audioPath);
+      .download(staging);
     if (downloadError || !blob) throw new Error("The upload did not arrive. Try again.");
 
     const buffer = Buffer.from(await blob.arrayBuffer());
-    const problem = validateUpload(new Uint8Array(buffer.subarray(0, 16)), buffer.byteLength);
-    if (problem) {
-      await client.storage.from(BUCKET).remove([data.audioPath]);
-      throw new Error(problem);
-    }
+    const head = new Uint8Array(buffer.subarray(0, 16));
+    const problem = validateUpload(head, buffer.byteLength);
+    if (problem) return reject(problem);
+
+    // Non-null: validateUpload already refused anything sniffAudioType
+    // does not recognise.
+    const kind = sniffAudioType(head)!;
 
     // music-metadata is imported lazily, matching podcast-tool.ts: a
     // top-level import made commands that never read audio die at import
     // time, and the same would apply to every admin request here.
-    const { parseBuffer } = await import("music-metadata");
-    const metadata = await parseBuffer(buffer, { mimeType: "audio/mpeg" });
-    const durationSeconds = Math.round(metadata.format.duration ?? 0);
+    //
+    // The parse is wrapped because it THROWS on input the sniffer
+    // accepts -- three "ID3" bytes followed by anything is enough. An
+    // unguarded throw used to escape the handler with the object still
+    // sitting in the bucket, which is the exact outcome byte-sniffing
+    // exists to prevent.
+    let durationSeconds = 0;
+    try {
+      const { parseBuffer } = await import("music-metadata");
+      // The sniffed kind, not a hardcoded audio/mpeg. Parsing an M4A as
+      // MPEG plausibly yields no duration, and under the old flow that
+      // deleted a file the picker had invited.
+      const metadata = await parseBuffer(buffer, { mimeType: contentTypeFor(kind) });
+      durationSeconds = Math.round(metadata.format.duration ?? 0);
+    } catch {
+      return reject("That file could not be read as audio. It may be truncated.");
+    }
     if (durationSeconds <= 0) {
-      await client.storage.from(BUCKET).remove([data.audioPath]);
-      throw new Error("Could not read a duration from that file. It may be truncated.");
+      return reject("Could not read a duration from that file. It may be truncated.");
     }
 
-    // Written only after the object is proven good. A row claiming a
-    // duration the file does not have is exactly what the iOS cache's
-    // durationDisagrees check reads as a truncated download -- it would
-    // re-download the episode on every launch.
+    // Promote: copy onto the live path, then drop the staging object.
+    // Content type is set from the sniffed bytes rather than from
+    // whatever the browser PUT, because the stored type is what the
+    // bucket serves with -- sniffing alone does not control that.
+    const { error: promoteError } = await client.storage
+      .from(BUCKET)
+      .upload(audioPath, buffer, { contentType: contentTypeFor(kind), upsert: true });
+    if (promoteError) return reject(promoteError.message);
+    await client.storage.from(BUCKET).remove([staging]);
+
+    // Written only after the live object is the verified one. A row
+    // claiming a duration the file does not have is exactly what the iOS
+    // cache's durationDisagrees check reads as a truncated download.
     const { error } = await client
       .from("podcast_episodes")
       .update({ duration_seconds: durationSeconds })

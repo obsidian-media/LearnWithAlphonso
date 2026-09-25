@@ -1,6 +1,6 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isAdminUser } from "./admin-auth";
+import { isAdminUser, UNAUTHORIZED_MESSAGE } from "./admin-auth";
 
 /**
  * Gate for every admin server function.
@@ -10,10 +10,11 @@ import { isAdminUser } from "./admin-auth";
  * client, because admin_users is unreadable with the caller's own token
  * by design.
  *
- * The thrown message is deliberately identical to an ordinary auth
- * failure and names nothing. A distinct "you are not an admin" tells an
- * attacker two things worth having: that the endpoint exists, and that
- * their token was otherwise valid.
+ * The thrown message is byte-identical to one requireSupabaseAuth
+ * already produces (UNAUTHORIZED_MESSAGE), so a non-admin holding a
+ * valid token cannot be told apart from someone holding a bad one. An
+ * earlier version threw a bare "Unauthorized", which no auth failure
+ * ever produces -- it was the oracle this comment claims to prevent.
  */
 export const requireAdmin = createMiddleware({ type: "function" })
   .middleware([requireSupabaseAuth])
@@ -23,7 +24,7 @@ export const requireAdmin = createMiddleware({ type: "function" })
     // construction and must never be pulled into a client bundle.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (!(await isAdminUser(supabaseAdmin, context.userId))) {
-      throw new Error("Unauthorized");
+      throw new Error(UNAUTHORIZED_MESSAGE);
     }
     return next({ context: { ...context, supabaseAdmin } });
   });
