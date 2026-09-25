@@ -27,6 +27,19 @@ if (!ACCESS_TOKEN) {
   process.exit(1);
 }
 
+/**
+ * One body for both templates. The learner cannot tell whether Supabase
+ * treated this as a sign-in or a signup, so the mail must not either --
+ * and a single constant makes it impossible to fix one and forget the
+ * other, which is exactly what happened the first time.
+ */
+const CODE_EMAIL =
+  "<h2>Your sign-in code</h2>" +
+  "<p>Enter this code in the app to sign in:</p>" +
+  '<p style="font-size:32px;font-weight:700;letter-spacing:6px;">{{ .Token }}</p>' +
+  "<p>This code expires shortly and can only be used once. If you didn't request this, you can safely ignore this email.</p>" +
+  '<p>Prefer a link? <a href="{{ .ConfirmationURL }}">Click here to sign in instead</a>.</p>';
+
 async function main() {
   const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth`, {
     method: "PATCH",
@@ -35,20 +48,20 @@ async function main() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      // Returning users: the address already has a confirmed user.
       mailer_subjects_magic_link: "{{ .Token }} is your Alphonso sign-in code",
-      mailer_templates_magic_link_content:
-        "<h2>Your sign-in code</h2>" +
-        "<p>Enter this code in the app to sign in:</p>" +
-        '<p style="font-size:32px;font-weight:700;letter-spacing:6px;">{{ .Token }}</p>' +
-        "<p>This code expires shortly and can only be used once. If you didn't request this, you can safely ignore this email.</p>" +
-        '<p>Prefer a link? <a href="{{ .ConfirmationURL }}">Click here to sign in instead</a>.</p>',
+      mailer_templates_magic_link_content: CODE_EMAIL,
+      // First-time users: Supabase sends THIS one instead, and shipping
+      // it without {{ .Token }} is what broke every new signup.
+      mailer_subjects_confirmation: "{{ .Token }} is your Alphonso sign-in code",
+      mailer_templates_confirmation_content: CODE_EMAIL,
     }),
   });
   if (!res.ok) {
     console.error(`Failed (${res.status}): ${await res.text()}`);
     process.exit(1);
   }
-  console.log("Updated the magic-link/OTP email template to show the 6-digit code prominently.");
+  console.log("Updated BOTH the magic-link and confirm-signup templates to show the 6-digit code.");
 }
 
 main();
