@@ -325,6 +325,38 @@ What you _can_ do, and should:
   looking conservative. That cost the English session 43 degraded
   questions across 11 packs.
 
+**Measured 2026-09-25 (step 6) — `src/data/spanish-distractor-quality.test.ts`.**
+No POS tagger, no morphology library, no ranking change. Spanish has no
+`answer-pos.ts` equivalent to measure "class" with, so this measures
+the narrower, mechanically-derivable signal §8.1's original hypothesis
+was actually about: for `cloze` lines whose parenthetical hint is a
+genuine verb infinitive (`"Yo ___ (hacer) mi tarea."`, matched by
+ending in `-ar`/`-er`/`-ir`, reflexive included — no external tool, the
+hint is already in the content), is a distractor drawn from a line
+testing the *same* verb or a *different* one?
+
+| Metric               | Count | Share of resolvable |
+| --------------------- | ----- | -------------------- |
+| Verb-hinted mc/fill questions measured | 645   | —      |
+| Distractors from the same verb (`sameVerb`) | 84 | 5.0% |
+| Distractors from a different verb (`crossVerb`) | 1,611 | **95.0%** |
+| Unresolved (candidate's source line untraceable) | 103 | — |
+
+**95% of resolvable distractors in Spanish's verb-conjugation cloze
+questions come from a different verb than the one asked about.**
+Confirms §8.1's hypothesis directly rather than leaving it inferred:
+these questions overwhelmingly test "recognize this conjugated word,"
+not "conjugate this verb correctly." Mutation-tested (narrowed the
+infinitive regex to drop reflexive verbs, confirmed the count moved
+from 645 to 592, reverted) so this baseline is confirmed able to catch
+drift, not just able to pass once.
+
+**Still not fixed, per this section's own instruction** — the fix
+(generate a line's distractors from its own verb's other forms, the
+same generative-not-tagging architecture French's own spike
+recommended) needs the Spanish morphology decision from this same
+section, which remains open and is not this session's to make.
+
 ---
 
 ## 6. Phase 2 — the three missing question types
@@ -425,7 +457,10 @@ Ship each as its own PR. Do not bundle.
    review.
 5. **Short-pack decision** (§2) — either the fill, or a documented
    acceptance.
-6. **Distractor-quality measurement** (§5). Reported by assertion.
+6. **Distractor-quality measurement** (§5). Reported by assertion. Done
+   2026-09-25 — 95.0% of resolvable cloze distractors are cross-verb.
+   Measured, not fixed; the fix is still gated on the open morphology
+   decision.
 7. **Phase 2**, in the order of §6: generator check, `translate`,
    `listening`, `speak`.
 
