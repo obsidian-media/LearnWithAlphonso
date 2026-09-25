@@ -19,7 +19,10 @@ describe("POST /api/account-export", () => {
     exportMyData.mockResolvedValue({
       exported_at: "2026-09-25T00:00:00.000Z",
       user_id: "user-1",
-      tables: JSON.stringify({ review_items: [{ item_key: "u1l1:q1" }], profiles: { display_name: "Ada" } }),
+      tables: JSON.stringify({
+        review_items: [{ item_key: "u1l1:q1" }],
+        profiles: { display_name: "Ada" },
+      }),
     });
 
     const res = await handler();

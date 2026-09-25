@@ -33,14 +33,16 @@ describe("POST /api/account-delete", () => {
   });
 
   it("rejects a request with no JSON body", async () => {
-    const res = await handler({ request: new Request("https://example.com/api/account-delete", { method: "POST" }) });
+    const res = await handler({
+      request: new Request("https://example.com/api/account-delete", { method: "POST" }),
+    });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Invalid JSON" });
     expect(deleteMyAccount).not.toHaveBeenCalled();
   });
 
   it("maps deleteMyAccount's own confirm-literal rejection to 400", async () => {
-    deleteMyAccount.mockRejectedValue(new Error("Invalid input: expected \"DELETE\""));
+    deleteMyAccount.mockRejectedValue(new Error('Invalid input: expected "DELETE"'));
     const res = await handler({ request: req({ confirm: "delete" }) });
     expect(res.status).toBe(400);
   });
@@ -52,7 +54,9 @@ describe("POST /api/account-delete", () => {
   });
 
   it("maps a missing-env-var failure to 500", async () => {
-    deleteMyAccount.mockRejectedValue(new Error("Missing Supabase environment variable(s): SUPABASE_URL."));
+    deleteMyAccount.mockRejectedValue(
+      new Error("Missing Supabase environment variable(s): SUPABASE_URL."),
+    );
     const res = await handler({ request: req({ confirm: "DELETE" }) });
     expect(res.status).toBe(500);
   });
