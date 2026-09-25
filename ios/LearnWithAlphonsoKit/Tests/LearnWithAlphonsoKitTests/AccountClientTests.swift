@@ -1,0 +1,88 @@
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+import XCTest
+@testable import LearnWithAlphonsoKit
+
+final class AccountClientTests: XCTestCase {
+    private let baseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
+
+    private func makeClient(
+        response: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)
+    ) -> AccountClient {
+        AccountClient(baseURL: baseURL, accessToken: { "user-access-token" }, requester: response)
+    }
+
+    // MARK: - exportMyData
+
+    func testExportMyDataPostsWithBearerTokenAndReturnsTheRawBody() async throws {
+        var captured: URLRequest?
+        let payload = try! JSONSerialization.data(withJSONObject: [
+            "exported_at": "2026-09-25T00:00:00.000Z",
+            "user_id": "user-1",
+            "review_items": [["item_key": "u1l1:q1"]],
+        ])
+        let client = makeClient { request in
+            captured = request
+            return (payload, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let result = try await client.exportMyData()
+
+        XCTAssertEqual(result, payload)
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/account-export"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+    }
+
+    func testExportMyDataSurfacesAnAuthError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "Unauthorized: Invalid token"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            _ = try await client.exportMyData()
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 401, message: "Unauthorized: Invalid token"))
+        }
+    }
+
+    // MARK: - deleteMyAccount
+
+    func testDeleteMyAccountPostsTheConfirmLiteralWithBearerToken() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["deleted": true])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        try await client.deleteMyAccount()
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/account-delete"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["confirm"] as? String, "DELETE")
+    }
+
+    func testDeleteMyAccountSurfacesAServerError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "Something went wrong"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            try await client.deleteMyAccount()
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 500, message: "Something went wrong"))
+        }
+    }
+}

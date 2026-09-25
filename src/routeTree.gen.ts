@@ -26,6 +26,8 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated/review'
 import { Route as AuthenticatedSeasonRouteImport } from './routes/_authenticated/season'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
+import { Route as ApiAccountDeleteRouteImport } from './routes/api/account-delete'
+import { Route as ApiAccountExportRouteImport } from './routes/api/account-export'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
@@ -124,6 +126,16 @@ const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
+  id: '/api/account-delete',
+  path: '/api/account-delete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAccountExportRoute = ApiAccountExportRouteImport.update({
+  id: '/api/account-export',
+  path: '/api/account-export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
   id: '/api/analyze-weaknesses',
   path: '/api/analyze-weaknesses',
@@ -213,6 +225,8 @@ export interface FileRoutesByFullPath {
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
   '/teams': typeof AuthenticatedTeamsRoute
+  '/api/account-delete': typeof ApiAccountDeleteRoute
+  '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -244,6 +258,8 @@ export interface FileRoutesByTo {
   '/review': typeof AuthenticatedReviewRoute
   '/season': typeof AuthenticatedSeasonRoute
   '/teams': typeof AuthenticatedTeamsRoute
+  '/api/account-delete': typeof ApiAccountDeleteRoute
+  '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -277,6 +293,8 @@ export interface FileRoutesById {
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/season': typeof AuthenticatedSeasonRoute
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
+  '/api/account-delete': typeof ApiAccountDeleteRoute
+  '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
@@ -310,6 +328,8 @@ export interface FileRouteTypes {
     | '/review'
     | '/season'
     | '/teams'
+    | '/api/account-delete'
+    | '/api/account-export'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -341,6 +361,8 @@ export interface FileRouteTypes {
     | '/review'
     | '/season'
     | '/teams'
+    | '/api/account-delete'
+    | '/api/account-export'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -373,6 +395,8 @@ export interface FileRouteTypes {
     | '/_authenticated/review'
     | '/_authenticated/season'
     | '/_authenticated/teams'
+    | '/api/account-delete'
+    | '/api/account-export'
     | '/api/analyze-weaknesses'
     | '/api/chat'
     | '/api/generate-practice'
@@ -396,6 +420,8 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
+  ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
@@ -524,6 +550,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/teams'
       preLoaderRoute: typeof AuthenticatedTeamsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/account-delete': {
+      id: '/api/account-delete'
+      path: '/api/account-delete'
+      fullPath: '/api/account-delete'
+      preLoaderRoute: typeof ApiAccountDeleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/account-export': {
+      id: '/api/account-export'
+      path: '/api/account-export'
+      fullPath: '/api/account-export'
+      preLoaderRoute: typeof ApiAccountExportRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/analyze-weaknesses': {
       id: '/api/analyze-weaknesses'
@@ -679,6 +719,8 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiAccountDeleteRoute: ApiAccountDeleteRoute,
+  ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
