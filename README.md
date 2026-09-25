@@ -47,7 +47,8 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   asking, and offline the downloaded set is listed flat rather than as the
   folder tree. See
   `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
-- **Admin app** (`bun run dev:admin`, port 8081) — a separately-deployed
+- **Admin app** — live at `admin.alphonsoecosystem.app`, run locally with
+  `bun run dev:admin` (port 8081). A separately-deployed
   surface for managing the podcast library: folders, episode metadata,
   audio upload, publish/unlist, and transcripts. Access is an explicit
   allowlist (`admin_users`) that only the server can read; the first

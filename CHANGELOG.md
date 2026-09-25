@@ -121,6 +121,30 @@ lazily so commands that never read audio no longer die at import; and the
 iOS mini bar docks inside each tab rather than on the `TabView`, which
 had left it overlapping the tab bar on device.
 
+**The admin app is live** at `admin.alphonsoecosystem.app`, on its own
+Vercel project built with `bun run build:admin`. Vercel Auth stays at
+`all_except_custom_domains`, which means the `*.vercel.app` URLs answer
+with an SSO redirect before the app loads and only the custom domain
+reaches it -- so the custom domain is the only place a "non-admin is
+refused" check exercises the allowlist rather than Vercel. The
+service-role and publishable keys are scoped to production only, so
+previews build but cannot reach Supabase; a preview URL of a
+service-role-holding app is a liability rather than a convenience.
+
+**Four follow-ups from the branch review.** No admin write reports a
+success it did not have: a PostgREST update or delete against a vanished
+id succeeds with zero rows touched, and every mutation returned
+`{ ok: true }` for it, so deleting an already-deleted folder was reported
+as done -- this repo's recurring defect in its plainest form. The folder
+move refusal now **names the cycle** (`findCycle` always returned the
+path and the caller discarded it), and a **parent picker** finally makes
+that move reachable: it was gated, counted and tested but callable from
+nowhere, so the cycle guard protected nothing a person could do. Two CI
+comments were corrected rather than left to mislead -- `admin-build`
+catches a *missing* route tree, not a stale one, and the allowlist RLS
+check runs in `deploy-supabase`, which is `push && ref == main`, so it
+fires **post-merge, not on the PR**: a regression alarm, not a merge gate.
+
 **A podcast admin app, separately deployed** (Phase 4). The account
 owner can now manage the library from a browser instead of a terminal:
 folders, episode metadata, audio upload, publish/unlist and transcripts.

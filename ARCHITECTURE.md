@@ -89,6 +89,37 @@ because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
 
+**Podcast admin deployment.** Live at **admin.alphonsoecosystem.app**,
+served by a **separate Vercel project** (`learnwithalphonso-admin`) built
+from this same repo with `bun run build:admin`. No admin code is in the
+learner project's build and no key was added to it.
+
+One behaviour to understand before testing anything: the project keeps
+Vercel Auth at **`all_except_custom_domains`**, so the `*.vercel.app`
+deployment URLs answer with a 302 to Vercel's SSO before the app is
+reached, while the **custom domain serves the app directly**. That makes
+the custom domain the only place where the allowlist is the thing being
+exercised -- a "non-admin is refused" check run against a deployment URL
+is checking Vercel, not `admin_users`, and would pass no matter what the
+allowlist said.
+
+`SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_PUBLISHABLE_KEY` are scoped to
+the **production** target only. Preview deployments therefore build but
+cannot reach Supabase, which is the right trade for an admin surface:
+a preview URL of a service-role-holding app is a liability, not a
+convenience.
+
+The allowlist is seeded by hand in the SQL editor, once:
+
+```sql
+insert into public.admin_users (user_id, note)
+select id, 'account owner' from auth.users where email = '<owner email>';
+```
+
+There is deliberately no bootstrap endpoint, no seed script and no
+environment variable naming an email -- every self-bootstrapping admin
+mechanism is an authentication bypass waiting for a misconfiguration.
+
 **Podcast admin (Phase 4).** A second TanStack Start build from the same
 repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
 the key that moves the app, and `router.routesDirectory` alone does
@@ -140,6 +171,26 @@ writes to the same database the learner app reads. What is separate is
 the deployment, the origin — and therefore the browser storage holding
 the Supabase session, since this repo authenticates with a Bearer token
 rather than a cookie — and the authorization check.
+
+**No admin write reports a success it did not have.** A PostgREST
+`update`/`delete` against an id that no longer exists succeeds with no
+error and zero rows touched, and every admin mutation returned
+`{ ok: true }` for it -- so deleting a folder someone had already removed
+was reported as done. `affectedOrThrow` asks for an exact count and
+refuses zero, and treats a NULL count as nothing-matched rather than
+success, so a caller that ever stops asking for the count fails loudly
+instead of sliding back. The database's own error still wins: reporting a
+constraint violation as "nothing matched" sends someone hunting for a
+missing row.
+
+The folder move refusal **names the cycle** it found (`cycleFor` returns
+the path `findCycle` always produced and the first version discarded),
+and the folder list carries a **parent picker** -- without it
+`adminMoveFolder` was gated, counted and tested but unreachable, so the
+cycle guard protected nothing a person could actually do. The picker
+offers every folder including the illegal ones: the server owns that rule
+and explains itself, and a pre-filtering picker would be a second copy of
+the rule that could disagree with the first.
 
 Audio upload goes **straight to Storage through a signed URL**, never
 through a server function: a serverless body is capped near 4.5 MB and
