@@ -44,17 +44,26 @@ struct RootView: View {
                 //
                 // Every tab's SF Symbol is distinct -- League and
                 // Achievements both used "trophy.fill" before this change.
+                // The mini bar is applied to each tab's CONTENT, not to
+                // the TabView: an inset on the TabView is consumed inside
+                // the tab bar's own region and the bar overlaps it (device
+                // check #12). See View.podcastMiniBar.
                 TabView {
                     LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                        .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Learn", systemImage: "book.fill") }
                         .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
                     ListenView(session: session, networkMonitor: networkMonitor, player: podcastPlayer)
+                        .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Listen", systemImage: "headphones") }
                     ConversationView(contentStore: contentStore, session: session)
+                        .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Practice", systemImage: "mic.fill") }
                     HectorView(session: session, entitlementStore: entitlementStore)
+                        .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Hector", systemImage: "sparkles") }
                     ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+                        .podcastMiniBar(player: podcastPlayer, session: session)
                         .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                 }
                 // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
@@ -63,12 +72,6 @@ struct RootView: View {
                 .tint(AlphonsoColor.moss)
                 .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                 .toolbarBackground(.visible, for: .tabBar)
-                // safeAreaInset rather than an overlay: the bar then sits
-                // above the tab bar and pushes content up, instead of
-                // covering the last row of whatever list is showing.
-                .safeAreaInset(edge: .bottom) {
-                    PodcastMiniBar(player: podcastPlayer, session: session)
-                }
                 .task {
                     // The player builds a client per call rather than
                     // holding one, because PodcastClient cannot refresh the

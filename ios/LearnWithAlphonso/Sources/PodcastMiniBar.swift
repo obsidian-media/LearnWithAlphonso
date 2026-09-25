@@ -173,3 +173,30 @@ private struct PodcastTranscriptSheet: View {
         .tint(AlphonsoColor.moss)
     }
 }
+
+extension View {
+    /// Docks the podcast mini-bar above this view's own bottom edge.
+    ///
+    /// Applied to each tab's ROOT CONTENT, never to the TabView.
+    ///
+    /// It was on the TabView, under a comment asserting the bar would "sit
+    /// above the tab bar and push content up". Device check #12 found the
+    /// opposite: the inset is consumed inside the tab bar's own region and
+    /// the bar overlaps it. That comment was reasoning rather than
+    /// observation, and it told the next reader the broken arrangement was
+    /// correct -- which is worse than the overlap itself.
+    ///
+    /// Applied per tab, the inset belongs to that tab's content, so the bar
+    /// sits between the content and the tab bar.
+    ///
+    /// **Unverified on hardware at the time of writing.** swift.exe is
+    /// blocked by an Application Control policy on the development machine,
+    /// so this was not run locally, and no automated check can see layout.
+    /// Re-run device check #12 before trusting this comment any further
+    /// than the last one.
+    func podcastMiniBar(player: PodcastAudioPlayer, session: Session) -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            PodcastMiniBar(player: player, session: session)
+        }
+    }
+}
