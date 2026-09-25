@@ -41,31 +41,32 @@ over "what the answer currently is," since the latter goes stale fast.
 
 ## Database (see `supabase/migrations/*.sql` for the source of truth)
 
-| Table                                                | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `profiles`                                           | Display name, avatar seed, country — one row per `auth.users` row (see `handle_new_user` trigger)                                                                                                                                                                                                                                                                                                                                                           |
-| `user_progress`                                      | Account-wide state: streak, longest streak, hearts, hearts refill timestamp, streak freezes                                                                                                                                                                                                                                                                                                                                                                 |
-| `language_progress`                                  | Per-course state: xp, cefr_level, placement result, league tier. PK `(user_id, language)`                                                                                                                                                                                                                                                                                                                                                                   |
-| `lesson_completions`                                 | Best score per lesson per course                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `activity_days`                                      | XP earned per calendar day, powers the activity heatmap and weekly-XP leaderboard scope                                                                                                                                                                                                                                                                                                                                                                     |
-| `achievements` / `user_achievements`                 | Achievement catalogue + unlocks                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `friendships`                                        | `(user_id, friend_id, status)`, written both directions atomically by `accept_friend_invite`                                                                                                                                                                                                                                                                                                                                                                |
-| `friend_activity_events`                             | Feed rows (`lesson_completed`/`streak_milestone`/`league_promotion`) written by `complete-lesson`/`completeLessonRemote` when something feed-worthy happens; read scoped to friends via `friendships`                                                                                                                                                                                                                                                     |
-| `nudges`                                              | `(sender_id, recipient_id, read_at)` — the weaker, polling-based nudge-a-friend feature (see "Native iOS app" below); recipient's app checks for unread rows on foreground, not real push                                                                                                                                                                                                                                                                 |
-| `review_items`                                       | SRS queue: `(user_id, item_key, language)` unique, `ease`/`interval_days`/`repetitions`/`due_on`/`lapses`. `source` (`"lesson"` default / `"weakness"`) discriminates a real lesson-question item from a synthetic weakness-detection item (`weakness_label`/`weakness_display`/`prompt`/`choices`/`answer_index`/`explanation` — embedded gradable content, no `lessons`/`questions` row to point at). See "AI integrations" below.                    |
-| `ai_usage`                                           | Daily per-kind (chat/stt/tts) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                   |
-| `ai_rate_limits`                                     | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                        |
-| `levels` / `units` / `lessons` / `questions`         | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`. |
-| `vocab_images` / `placement_questions` / `scenarios` | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet                                                                                                                                                                                                                                                                                  |
-| `teams` / `team_members` / `team_weekly_rewards`     | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`.                                                                                                                                                                                                                            |
-| `season_cohorts` / `season_cohort_members` / `season_placements` | V4 #7 — Duolingo-style weekly promotion/demotion ladder, ~30-person cohorts ranked by weekly XP, 5 divisions. Resolved by the `get-season-status` Edge Function (below), not raw SQL — the ranking/promotion math (`floor(size/3)` promote, `floor(size/6)` demote) is unit-tested Deno/TS, not PL/pgSQL. No client RLS policy — only the Edge Function (service_role) touches these directly. Added `supabase/migrations/20260922050000_season_ladder.sql`.                                                                                                                                                                                                                                          |
-| `challenge_templates` / `challenge_completions`      | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `duel_queue`                                          | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch.                                                    |
+| Table                                                            | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profiles`                                                       | Display name, avatar seed, country — one row per `auth.users` row (see `handle_new_user` trigger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `user_progress`                                                  | Account-wide state: streak, longest streak, hearts, hearts refill timestamp, streak freezes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `language_progress`                                              | Per-course state: xp, cefr_level, placement result, league tier. PK `(user_id, language)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `lesson_completions`                                             | Best score per lesson per course                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `activity_days`                                                  | XP earned per calendar day, powers the activity heatmap and weekly-XP leaderboard scope                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `achievements` / `user_achievements`                             | Achievement catalogue + unlocks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `friendships`                                                    | `(user_id, friend_id, status)`, written both directions atomically by `accept_friend_invite`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `friend_activity_events`                                         | Feed rows (`lesson_completed`/`streak_milestone`/`league_promotion`) written by `complete-lesson`/`completeLessonRemote` when something feed-worthy happens; read scoped to friends via `friendships`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `nudges`                                                         | `(sender_id, recipient_id, read_at)` — the weaker, polling-based nudge-a-friend feature (see "Native iOS app" below); recipient's app checks for unread rows on foreground, not real push                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `review_items`                                                   | SRS queue: `(user_id, item_key, language)` unique, `ease`/`interval_days`/`repetitions`/`due_on`/`lapses`. `source` (`"lesson"` default / `"weakness"`) discriminates a real lesson-question item from a synthetic weakness-detection item (`weakness_label`/`weakness_display`/`prompt`/`choices`/`answer_index`/`explanation` — embedded gradable content, no `lessons`/`questions` row to point at). See "AI integrations" below.                                                                                                                                                                                                            |
+| `ai_usage`                                                       | Daily per-kind (chat/stt/tts) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `ai_rate_limits`                                                 | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `levels` / `units` / `lessons` / `questions`                     | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`.                                                                                                                                                                                     |
+| `vocab_images` / `placement_questions` / `scenarios`             | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `teams` / `team_members` / `team_weekly_rewards`                 | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`.                                                                                                                                                                       |
+| `season_cohorts` / `season_cohort_members` / `season_placements` | V4 #7 — Duolingo-style weekly promotion/demotion ladder, ~30-person cohorts ranked by weekly XP, 5 divisions. Resolved by the `get-season-status` Edge Function (below), not raw SQL — the ranking/promotion math (`floor(size/3)` promote, `floor(size/6)` demote) is unit-tested Deno/TS, not PL/pgSQL. No client RLS policy — only the Edge Function (service_role) touches these directly. Added `supabase/migrations/20260922050000_season_ladder.sql`.                                                                                                                                                                                    |
+| `challenge_templates` / `challenge_completions`                  | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                  |
+| `duel_queue`                                                     | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch. |
 
 | `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. |
+| `podcast_transcripts` | Podcast library Phase 2a. One row per episode (`episode_id` PRIMARY KEY, cascade), plain text with blank-line paragraph breaks. **An accessibility obligation, not a feature**: the players carry no captions, so without text on screen an episode is unavailable to deaf and hard-of-hearing learners. A separate table rather than a column on `podcast_episodes` because the episode row is read by every folder listing and every search, and a transcript is kilobytes nobody needs until they open one episode. Plain text only -- timed cues need forced alignment against the audio, which is the Deepgram path and is gated on the unrun chunk-join probe. Added `supabase/migrations/20260927230000_podcast_transcripts.sql`, versioned deliberately after **both** `20260926030000` and `20260926223031`: wall-clock "now" was 2026-09-25, which sorts below both, because the library migration was itself renumbered forward out of a version collision. **A transcript is not the TTS script** -- `--transcript` rejects markup, since episode 1's script carries ElevenLabs SSML that would otherwise render to the exact readers the feature exists for. |
 
 **Podcast on iOS (Phase 1b).** `PodcastClient` in `LearnWithAlphonsoKit` is the
-first time the iOS app fetches *content* from the server rather than its
+first time the iOS app fetches _content_ from the server rather than its
 bundle — `ContentStore` is deliberately "No network calls, no async" because
 curriculum ships in the binary, which podcast content cannot do if the library
 is to grow without an App Store release. Models, folder-tree logic, resume
@@ -83,7 +84,7 @@ Audio is one `AVPlayer` owned by `RootView` above the view tree, with
 `UIBackgroundModes=audio` (App Store review-visible) and the `.playback`
 category. Interruptions are handled **by type**: `.shouldResume` is honoured for
 a call, alarm or Siri, and suppressed only when one of the app's own mic screens
-took the session, tracked by `RecordingState` and read at interruption-*began*
+took the session, tracked by `RecordingState` and read at interruption-_began_
 because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
@@ -239,12 +240,11 @@ wordings. Four things about them are load bearing:
   the same call that scheduled the item** rather than grading it a second
   time — `gradeReview` returns `correct` on web, and `grade-review` does the
   same for iOS, which grades on Check rather than on Next so there is one call
-  and one verdict. A first attempt had iOS *displaying* a verdict from
+  and one verdict. A first attempt had iOS _displaying_ a verdict from
   `/api/grade-translation` while `grade-review` independently decided the
   schedule: two AI calls, two answers, no guarantee they matched. A `null` from the grader (vendor
   down, no key, quota spent, unparseable reply) always means "no opinion" and
   leaves the local verdict standing — it never means "wrong".
-
 
 **The placement exam assesses three of the six types**, not one: `mc`,
 `listening` and `translate`. It used to be multiple-choice only, which meant a
@@ -265,7 +265,7 @@ Two properties hold the exam together and are easy to break:
 
 - **Every question must resolve to an answer.** There is no skip. A translation
   with no network keeps its local verdict; listening questions are removed from
-  the pool entirely on a browser with no TTS, *before* the three-per-band draw
+  the pool entirely on a browser with no TTS, _before_ the three-per-band draw
   (`playablePool`), rather than falling back to printing the sentence the way a
   lesson does — here the sentence is the answer. Filtering after the draw is the
   same bug in the other direction: it can leave a band holding one question,
@@ -323,7 +323,7 @@ questions does it have."
 Added 2026-09-22 (PR #76) — a `generate` subcommand on
 `scripts/pack-tool.ts` that produces real course content from
 hand-authored grammar templates and an LLM-proposed, compiler-validated
-vocabulary dataset, feeding the *existing*, unmodified
+vocabulary dataset, feeding the _existing_, unmodified
 `validate`/`preview`/`apply --confirm` pipeline (`src/lib/
 pack-authoring.ts`) — a generated pack looks identical to a
 hand-authored one once it lands in `lesson-bank.ts`.
@@ -374,7 +374,7 @@ beyond the 7 spike-verified ones (have/go/do/walk/run/eat/play) is
 never re-checked against a known-correct conjugation table before
 compiling; the POS cross-check still false-rejects some genuinely
 ambiguous common words (book/cook-class) — a context-based fix was
-investigated and found to be a *worse* regression (verified it
+investigated and found to be a _worse_ regression (verified it
 wrongly accepts "coffee" as a verb, "relax" as a noun), so the
 fail-safe bare-word check stays. Full detail, every finding, and the
 verified spike data: `docs/superpowers/specs/
@@ -510,7 +510,7 @@ hand-clicked/committed).
 There is no local Xcode/macOS in this development environment. The Kit
 was written and tested on Windows via
 `ios/LearnWithAlphonsoKit/swift-test.ps1` (zero UIKit/SwiftUI
-dependency, so this works); the app target's *only* compile
+dependency, so this works); the app target's _only_ compile
 verification is CI — `.github/workflows/ci.yml`'s `ios-app-build` job
 runs a real `xcodebuild` on a macOS GitHub Actions runner on every PR,
 and `.github/workflows/ios-release.yml` (manual trigger) produces a
@@ -523,6 +523,7 @@ empty keychain — no certificate-persistence (`.p12`/fastlane-match)
 infrastructure was needed.
 
 **Two separate AI-conversation modes, two separate backends:**
+
 - **Free** — `ConversationView.swift` / `AIConversationClient.swift`:
   calls this repo's own already-deployed AI endpoints directly (same
   backend, same Supabase account/session the rest of the app uses).
@@ -593,7 +594,7 @@ as Copy Bundle Resources.
 `RootView` applies `.preferredColorScheme(theme.colorScheme)` around
 the whole app (including `AuthView`, shown before sign-in) so SwiftUI's
 own dynamic/system colors — navigation-bar titles, `ContentUnavailableView`,
-segmented-Picker tint — resolve against the *active theme's*
+segmented-Picker tint — resolve against the _active theme's_
 light-or-dark-ness rather than the device's own system Dark Mode
 setting. This is a real-bug fix, not speculative hardening: a Meadow-
 only build (no `preferredColorScheme` override) shipped to TestFlight
@@ -708,7 +709,7 @@ against `mossDeep` in the new banner's two-stop gradient). Full design:
 `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md`.
 
 See `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` for the
-original design (note: that doc's plan to reuse Cloud Voice for *all* AI
+original design (note: that doc's plan to reuse Cloud Voice for _all_ AI
 conversation, and its V2 deferral of hearts/streak-freezes, were both
 superseded in practice — see this file's git history / session
 decisions rather than trusting that doc's roadmap section as current).
@@ -750,16 +751,16 @@ note in README.md's Documentation section for why.)
   is a fixed/explicit value.** Found for real on TestFlight (2026-09-22):
   the iOS design system's Meadow palette (`AlphonsoColor`, all fixed
   hex values, not adaptive) shipped without a `.preferredColorScheme`
-  override. On a device in Dark Mode, every *system*-styled element this
+  override. On a device in Dark Mode, every _system_-styled element this
   app didn't explicitly restyle (`.navigationTitle` text,
   `ContentUnavailableView`'s icon/title, segmented-Picker chrome) still
-  resolves its color against the *device's* Dark Mode setting via
+  resolves its color against the _device's_ Dark Mode setting via
   SwiftUI's dynamic/semantic colors (`.primary`, etc.) — so those
   elements rendered light-colored text, while this app's fixed-light
   background colors stayed put, making titles and empty states
   unreadable. Fixed by applying `.preferredColorScheme(theme.colorScheme)`
   at the app root (`RootView`) — this pins every dynamic system color to
-  resolve against the *chosen theme's* light-or-dark-ness instead of the
+  resolve against the _chosen theme's_ light-or-dark-ness instead of the
   device's setting. Generalizes beyond Meadow: Studio Ink is
   legitimately a dark theme (see "Design system" above), and this same
   mechanism is what makes its dynamic system colors resolve correctly
@@ -800,7 +801,7 @@ note in README.md's Documentation section for why.)
   `{{ .Token }}` code the iOS UI asks the user to type in — so even a
   successfully-delivered email was the wrong shape for iOS's flow.
   `scripts/configure-custom-smtp.ts` (Resend) and `scripts/
-  update-auth-email-template.ts` fix these via the Supabase Management
+update-auth-email-template.ts` fix these via the Supabase Management
   API directly (no CLI/MCP wrapper exists for either setting), runnable
   via the `configure-auth-emails.yml` workflow. Also surfaced a real
   scope gap, not a regression: iOS has no Google OAuth at all —
@@ -825,7 +826,7 @@ note in README.md's Documentation section for why.)
   `.github/workflows/ci.yml` — previously every file in
   `supabase/migrations/` needed a manual `supabase db push`, and every
   `supabase/functions/` change needed its own manual `supabase functions
-  deploy`, both easy to forget (this bit a real session that added several
+deploy`, both easy to forget (this bit a real session that added several
   migrations in one sitting). The CI job needs `SUPABASE_ACCESS_TOKEN`,
   `SUPABASE_DB_PASSWORD`, and `LESSON_SESSION_SECRET` set as repo secrets
   (see the job's own comment) — if those lapse or the job is disabled, the
@@ -845,7 +846,7 @@ note in README.md's Documentation section for why.)
   pkg 4a's new question formats.
   `seed-curriculum-db.ts` got a CI step first (`deploy-supabase` job,
   no-ops without `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`). This entry
-  used to argue that `export-ios-content.ts` *couldn't* have one, because
+  used to argue that `export-ios-content.ts` _couldn't_ have one, because
   its output is committed JSON rather than a DB write — **that reasoning
   was wrong**, and the fix is the standard generated-artifact pattern:
   `ci.yml`'s "Bundled iOS content is up to date" step regenerates and
@@ -862,14 +863,14 @@ note in README.md's Documentation section for why.)
   specifiers differently), but `supabase functions deploy` (the Supabase
   CLI's own bundler, used by the `deploy-supabase` job) fails with
   `Relative import path "@supabase/supabase-js" not prefixed with / or
-  ./ or ../`. The fix is a `deno.json` with
+./ or ../`. The fix is a `deno.json` with
   `{"imports": {"@supabase/supabase-js": "npm:@supabase/supabase-js@2"}}`,
   matching every sibling function directory — copy one of theirs when
   creating a new Edge Function.
   **CI-enforced since 2026-09-24**: the deno-tests job checks that every
   `supabase/functions/*/` directory except `_shared` has a `deno.json`.
   This mattered more than it looks: `deploy-supabase` runs on `main`
-  *after* merge, so a missing import map used to break `main` rather than
+  _after_ merge, so a missing import map used to break `main` rather than
   the PR that introduced it.
 - **`eslint .` used to lint every other branch's code** (fixed 2026-09-24,
   PR #85). `.claude/worktrees/` holds full checkouts of other branches
@@ -880,7 +881,7 @@ note in README.md's Documentation section for why.)
   `eslint.config.js` rather than by deleting worktrees, so a future one
   can't reintroduce it.
   **The more important half of this**: CI never saw that noise (it lints
-  a clean checkout), but it *was* failing on one of the two real
+  a clean checkout), but it _was_ failing on one of the two real
   findings — a `prettier/prettier` break in
   `scripts/upload-review-screenshot.ts`, introduced in `566b71c`. That
   quietly red-X'd `lint-and-typecheck` on **every open PR** until PR #84
@@ -907,7 +908,7 @@ note in README.md's Documentation section for why.)
   each silent because neither handler checks query errors; the fourth was
   the whole gamification + push batch — 9 user-scoped tables added by PRs
   #59/#64–67 that `exportMyData` never exported, so every "download my
-  data" file had been incomplete since those landed. Account *deletion*
+  data" file had been incomplete since those landed. Account _deletion_
   was unaffected: all 9 are `ON DELETE CASCADE` from `auth.users`, so
   `deleteUser()` always cleaned them up.
   The list is now split in two, because the two handlers genuinely need
@@ -943,7 +944,7 @@ note in README.md's Documentation section for why.)
   device (online) in the meantime, it applies on top of stale SM-2 state
   — single-device usage (the overwhelming common case, since there's only
   ever one local queue) has no such issue. Separately, `complete-lesson`
-  derives the completion date from the sync's *execution* time, not when
+  derives the completion date from the sync's _execution_ time, not when
   the lesson was actually played offline — a lesson played on day N but
   synced on day N+1 records as completed on day N+1, which can break a
   streak the user was relying on that lesson to keep alive. Neither is
@@ -963,7 +964,7 @@ note in README.md's Documentation section for why.)
   end-to-end test — a plain `git push` to `main` (no manual trigger)
   produced a new deployment with `source: "git"` on its own within
   ~90 seconds, proving the webhook itself fires correctly, not just
-  that Vercel *can* pull from the repo when asked. Auto-deploy-on-push
+  that Vercel _can_ pull from the repo when asked. Auto-deploy-on-push
   is genuinely restored. `.vercelignore` (added the same day, still
   relevant for any future manual CLI deploy as a fallback) scopes what
   gets uploaded — without it, a deploy from this local machine picks
@@ -972,22 +973,22 @@ note in README.md's Documentation section for why.)
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46** — now 502
   tests across 72 files, ~91% line / ~90% statement coverage (`bun run
-  test:coverage`, see `AGENTS.md`'s Testing section for the full
+test:coverage`, see `AGENTS.md`'s Testing section for the full
   per-file breakdown and what's still thin: `HeartsModal.tsx` ~70%,
   `__root.tsx` ~18%, `analyze-weaknesses.ts` ~8% — server routes this
   codebase doesn't unit-test as a matter of established pattern, not an
   oversight).
 - **Nudge-a-friend (iOS) is deliberately the weaker V2 approach, not the
   finished feature** — a `nudges` table (`supabase/migrations/
-  20260920020000_nudges.sql`) the recipient's app polls for on foreground/
+20260920020000_nudges.sql`) the recipient's app polls for on foreground/
   screen-appear, not real push. A nudge only surfaces once the recipient
   next opens the Friends tab, which the kickoff doc (`docs/v2-kickoffs/
-  04-friends-and-social.md`) flagged as largely defeating the point of a
-  "nudge" (reaching someone who *hasn't* opened the app). Built anyway per
+04-friends-and-social.md`) flagged as largely defeating the point of a
+  "nudge" (reaching someone who _hasn't_ opened the app). Built anyway per
   explicit direction, with this note as the promised V3 follow-up marker.
   A real V3 version needs: an APNs Auth Key (Apple Developer Console →
   Keys), a `device_tokens` table (RLS-scoped to `auth.uid()`), device-token
-  registration on app launch requesting *remote* notification permission
+  registration on app launch requesting _remote_ notification permission
   (a materially different flow than this app's existing local-only
   `NotificationScheduler`), and a server-side trigger — Supabase has no
   built-in cron for Edge Functions as of this note; verify current
@@ -1033,7 +1034,7 @@ note in README.md's Documentation section for why.)
   default is deliberate (demoting unknowns was measured: 150 of 2,675 questions
   have fewer than three known same-class candidates and would draw the same
   handful every time), but it inverts the intuition that withholding a tag is the
-  cautious choice. A change that *removed* 12 tags degraded 43 questions across 11
+  cautious choice. A change that _removed_ 12 tags degraded 43 questions across 11
   packs while its own headline metric improved, because the bank-wide ratio in
   `english-distractor-quality.test.ts` skips untagged candidates. That test now
   also pins the untagged-candidate count for exactly this reason.
@@ -1058,7 +1059,7 @@ note in README.md's Documentation section for why.)
   accumulated enough lingering `bun.exe`/`node.exe` processes.** Hit
   repeatedly 2026-09-22 (multiple 10-20+ minute hangs across two
   separate sessions, each confirmed via `tasklist | grep -i bun` showing
-  8-9+ stale processes at the time). Not a code defect — a *scoped* run
+  8-9+ stale processes at the time). Not a code defect — a _scoped_ run
   (`bun run vitest run <specific files/dirs>`) against the exact same
   code consistently completes in seconds. If the full suite hangs,
   don't assume a real regression: scope to the changed files first, and

@@ -5,12 +5,74 @@ Versioned history of Learn with Alphonso (repo internal name
 per PR — see `gh pr list --state merged` or `git log` for the literal
 commit-by-commit history. PR numbers are given for traceability; this
 file itself won't be kept perfectly current — treat entries as a guide
-to *when* something shipped, and re-check the actual code for *how it
-works now*.
+to _when_ something shipped, and re-check the actual code for _how it
+works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
-**Placement exam stops reusing lesson questions** (#TBD) — the exam decides which
+**Spanish content audit — 57 duplicate prompts to 0, and the 95% nobody
+had measured** (#122, #127, #130, #132). Spanish had no
+`.audit-baseline/spanish-ids.json` at all, so an inserted line would have
+silently repointed real learners' review items with nothing to catch it;
+that baseline exists now. Of the 57 cross-pack duplicates the newly-gated
+check surfaced, **40 were true repeats** and **17 were contradictory** —
+the same prompt with different correct answers, which marks a correct
+learner wrong: `"nurse"` accepted `enfermero` in one pack and `enfermera`
+in another, and `yo ___ (hacer) mi tarea.` wanted `hago` in one and
+`he hecho` in another with no tense cue in the prompt to choose between
+them. All fixed by 1:1 in-place replacement, so no question id moved.
+
+Two decisions were recorded rather than left implicit. **Variety: Latin
+American** — measured, not preferred: `vosotros` and `vos` each appear
+**zero** times across the existing 2,540 questions, so anything else
+would have introduced the first Spain/Latin-America split into shipped
+content. **Short packs: accepted and documented, not filled** — 83 of 130
+packs carry fewer than 25 lines, and filling them means authoring ~710
+unreviewed lines under audit cover.
+
+And a measurement worth more than a fix: **95.0% of resolvable distractors
+in Spanish verb-conjugation drills come from a different verb** (1,611 of
+1,695), so `Yo ___ (hablar) español.` is answerable by matching the stem
+rather than knowing the conjugation. **This is not a ranking defect** — a
+conjugation pack holds one form each of several different verbs, so the
+pool contains almost no same-verb alternatives to rank, and porting
+`orderDistractorCandidates` would look like a fix and change nothing.
+Closing it is structural, and separately scoped.
+
+**Podcast library gets transcripts, search, and three guards** (#114,
+#118, #119, #120, #123, #125, #126, #129). Episode 1 ("Ordering Coffee",
+English A1, 2:52) is published — the first real audio behind the Listen
+tab. **Phase 2a adds transcripts on web and iOS**, an accessibility
+obligation rather than a feature: the players carry no captions, so
+without text on screen an episode is unavailable to deaf and
+hard-of-hearing learners. `--transcript` **rejects markup**, because a
+TTS script is not a transcript — episode 1's script carries ElevenLabs
+SSML that would otherwise have rendered to exactly those readers. Flat
+search escapes both LIKE wildcards and PostgREST `or=()` syntax, each
+mutation-tested separately, since both return plausible results for the
+wrong query. `podcast-tool` stopped silently dry-running on a mistyped
+`--confirm`; `validate` exits non-zero when it reports problems instead
+of printing `[ERROR]` lines and returning 0; `music-metadata` is imported
+lazily so commands that never read audio no longer die at import; and the
+iOS mini bar docks inside each tab rather than on the `TabView`, which
+had left it overlapping the tab bar on device.
+
+**`maxWorkers` pinned in `vitest.config.ts`** (#116). A starved run had
+been printing `124 passed (124)` beside `Errors 6 errors` — six files
+that never executed, next to a line that reads as success. Three sessions
+lost time to it in a single day. Suite is now **137 files / 1,189 tests**.
+The pin fixed CPU contention and cannot fix memory: a starved run on this
+machine can still fake a _named_ test failure.
+
+**French reaches question-type parity with English** (#115). `speak`
+joins `listening` and `translate`, backed by `spoken-answer-fr.ts` ported
+across TypeScript, Deno and Swift with mirrored vectors and a CI step, and
+5 packs authored against the real normaliser. French: 115 packs, 575
+lessons, 2,875 questions, six question types. The generator work landed in
+`bank-engine.ts` rather than a French-only file, so **Spanish inherits all
+five pack kinds for free**.
+
+**Placement exam stops reusing lesson questions** (#128) — the exam decides which
 band a learner starts in, and **25 of English's 60 placement questions were also
 lesson questions**, so anyone who had met one was scored on recall of that item
 rather than on level. The error only ran upward, and a learner placed a band too
@@ -28,7 +90,7 @@ questions were re-authored on the placement side, keeping band and construct —
 placement ids are not review keys, so no learner's saved review state was touched.
 
 **English content quality — 8 repeated questions removed, and the check that
-found them stops whispering** (#TBD) — `curriculum-consistency.test.ts` looks for
+found them stops whispering** (#121) — `curriculum-consistency.test.ts` looks for
 the same sentence appearing in two packs, which a learner experiences as a
 repeat. For English and Spanish it was report-only and printed via `console.log`,
 which vitest intercepts: every run showed 46/46 passed and printed nothing while
@@ -37,7 +99,7 @@ that check as "already clean" on the strength of a quiet run.
 
 The reported 7 was itself understated. A hand-written question's id is `q7`, so
 the check's pack-id derivation produced `""` and collapsed every hand-written
-question into one pseudo-pack, making duplicates *between* hand-written units
+question into one pseudo-pack, making duplicates _between_ hand-written units
 invisible — that hid two more, including an identical question with an identical
 answer in two units. A third bug rendered `listening` and `translate` answers as
 `(undefined)`, so three real findings looked like reporting artifacts. All three
@@ -47,7 +109,7 @@ the message. English content: 8 duplicates fixed in place, no question id moved.
 The two worst put an identical A1 task in the A2 translation pack.
 
 **English content quality — a1p15's distractors stop crossing word classes**
-(#TBD) — closes the content audit's one deferred defect. Multiple-choice
+(#117) — closes the content audit's one deferred defect. Multiple-choice
 distractors are drawn from a pack's own answers and ranked by part of speech, but
 tags are read from each answer's own cloze sentence and a "pair" pack line has
 none. So a1p15 "Shapes & Sizes", which mixes shape nouns with size adjectives,
@@ -73,7 +135,7 @@ measurements.
 episode, keep playing with the screen locked, and resume across devices. **This lifts the
 Phase 0/1b release constraint**: Listen is no longer a placeholder.
 
-`PodcastClient` is the first time the iOS app fetches *content* from the server rather than
+`PodcastClient` is the first time the iOS app fetches _content_ from the server rather than
 its bundle — `ContentStore` is explicitly "No network calls, no async" because curriculum
 ships in the binary, which podcast content cannot do if the library is to grow without an
 App Store release. Models, folder-tree logic, resume clamping and URL building are ported
@@ -92,7 +154,7 @@ Three decisions worth knowing:
 - **Interruptions are handled by type.** `.shouldResume` is honoured for a call, an alarm
   or Siri — never resuming would make a podcast silently die after a phone call — and
   suppressed only when one of the app's own mic screens took the session. The four
-  recorders now mark `RecordingState`, read at interruption-*began* because a recorder's
+  recorders now mark `RecordingState`, read at interruption-_began_ because a recorder's
   `stop()` is itself what makes iOS send `.shouldResume`.
 
 `UIBackgroundModes=audio` is new and App Store review-visible. The audio layer has no
@@ -152,7 +214,6 @@ and its read-only policy are created by that same migration. iOS landed in Phase
 above; transcripts, questions, XP and SRS are Phase 2. Spec:
 `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
 
-
 V5 work runs as parallel isolated worktrees, one per feature, kicked off
 from `docs/v5-kickoffs/` (gitignored). Three PRs merged 2026-09-24 in
 one sitting (#84 → #83 → #85, in that order and for a reason — see
@@ -179,7 +240,7 @@ audit of all 534 English lessons. Adds `src/data/answer-pos.ts`
 baseline (`.audit-baseline/english-ids.json`) and scanning tooling
 (`scripts/audit-scan.ts`, `snapshot-english-ids.ts`,
 `gen-answer-pos.ts`), with ID-parity and distractor-quality tests.
-Lesson *counts* are unchanged — this changed question quality, not
+Lesson _counts_ are unchanged — this changed question quality, not
 structure.
 
 **GDPR export fix + lint scope (#85)** — `exportMyData` had been
@@ -206,7 +267,7 @@ were other branches' code and 2 were real.
 misleading. #83 and #85 both showed `lint-and-typecheck` failing, which
 looked like two broken PRs. Neither was: a pre-existing
 `prettier/prettier` break in `scripts/upload-review-screenshot.ts`
-(landed in `566b71c`) was failing CI on *every* PR, and #84 happened to
+(landed in `566b71c`) was failing CI on _every_ PR, and #84 happened to
 contain the fix. Merging #84 first turned both others green with no
 work. #83 and #85 both touched `ARCHITECTURE.md` but in different
 sections, so they auto-merged with zero conflicts (verified by
@@ -360,7 +421,7 @@ grading code changed on either platform**, since `srs.ts` and both web players
 already compare `answer.trim()` for non-`mc` types.
 
 Two things it forced that were not obvious up front. A new question type has to
-be wired into *both* players on *both* platforms plus three Kit switches — six
+be wired into _both_ players on _both_ platforms plus three Kit switches — six
 exhaustive switches on iOS, including `ReviewQueueView.swift`, a second iOS
 player; a type handled only in the lesson player renders a blank card in spaced
 review (silently on web, as a compile error on iOS). And it needed a migration:
@@ -414,10 +475,11 @@ out to need a second round for the widget extension target.
 events, explicitly deferred — see
 `docs/superpowers/specs/2026-09-22-deeper-gamification-design.md`'s
 own "Deferred" section for whoever picks it up):
-- *Teams* — persistent groups (invite code, public discovery,
+
+- _Teams_ — persistent groups (invite code, public discovery,
   auto-assign, 7-day switch lock), weekly-XP-sum leaderboard, a lazy-
   resolved weekly win bonus (+100 XP to last week's #1 team, no cron).
-- *Challenges* — fixed weekly solo goals (6 DB-seeded templates, same
+- _Challenges_ — fixed weekly solo goals (6 DB-seeded templates, same
   pattern as `achievements`) plus open/stranger duel matchmaking
   (`join_open_duel_queue`, `FOR UPDATE SKIP LOCKED`). Also shipped the
   first duel UI on either platform (web `/duels`, iOS `DuelsView`) —
@@ -425,7 +487,7 @@ own "Deferred" section for whoever picks it up):
   surfaced them, an unplanned-but-approved scope addition. Along the
   way, fixed a real bug live since the V4 #1 Spanish launch: `duels`'
   `course` CHECK constraint only allowed `('en','fr')`.
-- *Season ladder* — Duolingo-style weekly promotion/demotion cohorts
+- _Season ladder_ — Duolingo-style weekly promotion/demotion cohorts
   (~30 members, 5 divisions, `floor(size/3)` promote / `floor(size/6)`
   demote), distinct from the permanent `league_tier` badge. The one
   system complex enough to be an Edge Function (`get-season-status`)
@@ -464,7 +526,7 @@ TestFlight. Found two things: (1) almost every screen was near-illegible
 Dark Mode and the app's fixed-light palette didn't account for that;
 (2) the sign-in screen had a real layout bug (a `Divider()` in an
 `HStack` stretching to fill the screen) and looked sparse. Root-cause
-fix for (1): the design system became a real *theme system* (Meadow +
+fix for (1): the design system became a real _theme system_ (Meadow +
 the web's other two themes, Studio Ink and Manuscript, all three now on
 iOS) with `.preferredColorScheme` pinned to whichever theme is active,
 so system-styled chrome resolves colors against the theme's own
@@ -543,7 +605,7 @@ its first run it found 5 real questions across all 3 languages with
 duplicate-looking answer choices (e.g. English "may"/"May", French
 "est"/"Est") — traced to `pickDistractors` (duplicated in both
 `lesson-bank.ts` and `bank-engine.ts`) deduping candidates
-case-*sensitively*, so a cloze pack reusing the same word as the
+case-_sensitively_, so a cloze pack reusing the same word as the
 correct answer for two differently-capitalized lines could surface
 both casings as separate choices. One logic fix in both duplicated
 copies, not 5 content edits, since content regenerates from packs on
@@ -556,7 +618,7 @@ candidate vocabulary for a topic, a real morphological library
 around two confirmed bugs in the library's own subject-agreement
 detection — is the sole authority that conjugates verbs and compiles
 final sentences. Grammar templates are hand-authored, never
-LLM-proposed. Output feeds the *existing*, unmodified
+LLM-proposed. Output feeds the _existing_, unmodified
 `validate`/`preview`/`apply --confirm` pipeline. Built via
 brainstorming → spec → 11-task TDD implementation plan → a fresh
 whole-branch review (dispatched on a separate model, not
@@ -564,7 +626,7 @@ self-reviewed) → a fix pass on 3 Critical + 6 Important findings the
 review caught (sampler skew that silently omitted 3rd-person subjects
 from generated packs; ambiguous/duplicate-answer questions; missing
 capitalization and articles). One suggested review fix was
-investigated and *declined* after verification showed it would be a
+investigated and _declined_ after verification showed it would be a
 regression. Full detail: `docs/superpowers/specs/
 2026-09-22-generative-sentence-content-design.md`'s "Final-review
 fixes" section. English-only; French/Spanish, and the residual
@@ -663,7 +725,7 @@ also live: `TutorMemoryContext.buildPrimingMessage` (Kit, pure/tested)
 turns a learner's current CEFR level + open weakness categories into one
 priming history entry, prepended to every `TutorConversationClient.
 respond()` call in `HectorView.swift` but never appended to the visible
-`turns` transcript itself. This is *not* Hector recalling actual past
+`turns` transcript itself. This is _not_ Hector recalling actual past
 conversation -- that transcript lives entirely on AlphonsoEcosystem's
 Cloud Voice backend, which this repo can't read (see the Hector
 weakness-detection design doc's "what this does NOT change" section);
@@ -707,7 +769,7 @@ comment), closing the same class of "manual script, easy to forget" gap
 that already motivated the job's migration/function auto-deploy. Caught a
 real instance of exactly that gap while regenerating `scripts/
 export-ios-content.ts`'s bundled JSON for this work: package 2's
-18->24 achievement catalog expansion, *and* package 3a's 6 new
+18->24 achievement catalog expansion, _and_ package 3a's 6 new
 conversation scenarios, had never been re-exported -- iOS had silently
 been stuck on 18 achievements and the original 6 scenarios (missing
 hotel/directions/apartment/returns/negotiation/debate entirely) since
@@ -736,11 +798,11 @@ questions with distractors and shuffling. This closes out package 4a.
 question now queues one extra practice question testing the same concept
 (pulled from a sibling lesson in the same unit/pack) right there in the
 lesson, not just later in spaced review. Shown as its own "Quick practice"
-interstitial *after* the missed question's own feedback (never replacing
+interstitial _after_ the missed question's own feedback (never replacing
 it), and never affects correct/missed/hearts/XP regardless of its own
 outcome -- purely supplementary. No difficulty metadata exists on
 individual questions, so "skew toward easier or harder based on how
-you're doing this session" is implemented as a *pool* skew instead:
+you're doing this session" is implemented as a _pool_ skew instead:
 `pickReinforcementQuestion` (mirrored in `bank-engine.ts` and a new
 `LessonReinforcement.swift` in the Kit) draws from the tightly-scaffolded
 same-unit pool by default, or the wider same-CEFR-level pool once recent
@@ -816,6 +878,7 @@ route components), 90.55% statement / 91.56% line coverage. Added
 `vitest.setup.ts` (React Testing Library + jsdom).
 
 **Infrastructure fixes made along the way:**
+
 - Repo transferred from a personal GitHub account to the `obsidian-media`
   org (fixed a GitHub Actions billing block) — broke Vercel's GitHub
   integration in the process; still needs manual reconnection (see

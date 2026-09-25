@@ -171,11 +171,13 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest. 129 files / 1,094 tests as of 2026-09-24,
-                      # taken from a CI run, NOT from this machine -- see the
-                      # verification-hygiene note below. Treat the CI number as
-                      # the baseline: a local run reporting FEWER files has not
-                      # found a regression, it has been starved.
+bun run test         # Vitest. 137 files / 1,189 tests as of 2026-09-25,
+                      # taken from a CI run on main, NOT from this machine --
+                      # see the verification-hygiene note below. Treat the CI
+                      # number as the baseline: a local run reporting FEWER
+                      # files has not found a regression, it has been starved.
+                      # maxWorkers is pinned in vitest.config.ts since #116,
+                      # so do NOT pass --maxWorkers by hand.
 bun run test:coverage # Vitest with v8 coverage report
 bun run test:e2e     # Playwright (e2e/*.spec.ts)
 swift test --package-path ios/LearnWithAlphonsoKit   # or, on Windows, ios/LearnWithAlphonsoKit/swift-test.ps1
@@ -272,7 +274,7 @@ noun, and `They X.` puts it in a verbal slot so sixteen nouns come back verbs. A
 frame does not read a word's class, it imposes one, and its accuracy is a fact
 about the frame's syntax and the sample's composition. The same shape shows up
 whenever a metric shares a mechanism with the thing it measures -- the existing
-part-of-speech *ratio* check has the identical flaw and says so. Before trusting
+part-of-speech _ratio_ check has the identical flaw and says so. Before trusting
 a number, ask what it would say if the data were wrong.
 
 **Nothing else may touch the tree while a verification command runs.** A second
@@ -305,6 +307,31 @@ another session running `vitest run --maxWorkers=4` in a sibling worktree, and
 re-running made it worse because both sessions were then competing. The same
 run came back 131 files / 1096 tests / 0 errors once that finished.
 
+**#116 pinned `maxWorkers` in `vitest.config.ts`, which fixed the CPU half
+and cannot fix the memory half.** Do not advise passing `--maxWorkers=4`
+by hand; it is the default now, and advice that reads as manual outlives
+the fix.
+
+**Memory starvation can fake a NAMED TEST FAILURE, not just spawn errors
+(2026-09-25).** A run reported 1 failed test in `ai-quota.server.test.ts`
+beside six worker-spawn errors, with eight competing vitest processes and
+806 MB free; it passes 15/15 alone. That is materially harder to spot than
+a short file count, because a red test in a file you just touched is the
+most convincing possible evidence that you broke something. **Re-run an
+unexpected single failure on its own before believing it.** Measured cause:
+the machine has 7.86 GB of RAM and runs several `claude` processes at
+~2 GB combined -- it is not disk (190 GB free) and not the stray node/bun
+processes (26 of them, 732 MB combined). Running the suite in chunks and
+reconciling against the collected file count is the correct method here,
+not a workaround.
+
+**`swift.exe` is blocked by an Application Control policy (2026-09-25).**
+For app-target code under `ios/LearnWithAlphonso/Sources/` there is no
+local RED/GREEN at all: `ios-app-build` compiles without running tests,
+and `ios-swift-tests` covers only `LearnWithAlphonsoKit`. Put as much
+logic as possible in the Kit, where CI still runs real tests, and leave
+only wiring and UI in the app target.
+
 A worker-spawn timeout is not a test failure. Diagnose it before believing a
 suite result, and check by worktree so you do not kill another session's run:
 
@@ -319,6 +346,34 @@ Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
 
 Wait for the other run, then re-verify. Never kill a process belonging to
 another worktree.
+
+### Content guards, and what each one ratchets
+
+Content defects in this repo are not caught by reading the content. Five
+guards now hold a number that must not rise. **If you change content and
+one of these fails, the guard is almost certainly right.** If you fix
+something, lower the number in the same commit -- never separately.
+
+| Guard                                                               | Holds                                    | Notes                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `curriculum-consistency.test.ts` -- `CROSS_PACK_DUPLICATE_BASELINE` | `{ en: 0, fr: 0, es: 0 }`                | Same prompt in two packs. Was report-only and **vitest swallowed its `console.log`**, so it found 57 Spanish and 7 English duplicates and discarded them for weeks. Never write a report-only content check.                                                                        |
+| `placement-lesson-overlap.test.ts`                                  | 0, all courses                           | Placement questions must not duplicate course content. 25 of the exam's 60 English questions did -- the exam was scoring recall of specific lesson items. Also gates the pool repeating _itself_, which matters because it is sampled three-per-band.                               |
+| `migration-order.test.ts`                                           | no violations                            | A migration must not reference a table created by a later-versioned one. A real timestamp guarantees uniqueness, **not dependency order** -- `20260926030000` was itself renumbered forward out of a collision, so "now" can sort below it.                                         |
+| `id-parity.test.ts`                                                 | exact id sets + pack-length distribution | Question ids are **index-derived**. Inserting or deleting a line repoints every later id in the pack, which silently reassigns real learners' SRS history. Fix content by **1:1 in-place replacement**; append, never insert.                                                       |
+| `spanish-distractor-quality.test.ts`                                | 95.0% cross-verb                         | Measurement, not a gate. **This is not a ranking defect** -- a Spanish conjugation pack holds one form each of several different verbs, so the pool has almost no same-verb alternatives to rank, and porting `orderDistractorCandidates` would look like a fix and change nothing. |
+
+Two habits these encode:
+
+- **Count "unresolved" separately from either bucket.** English once lost
+  12 part-of-speech tags; 43 questions degraded while its own ratio metric
+  _improved_, because untagged candidates were silently dropped from the
+  denominator. An absent tag is a promotion, not an abstention.
+- **Mutation-test on the axis the guard claims to hold.** The
+  migration-order guard was mutation-tested against a `REVOKE` case and
+  shipped with a hole the same size as the one it closed: it matched
+  `ALTER`/`REVOKE`/`GRANT`/`CREATE INDEX`/`CREATE POLICY` and missed a
+  foreign key inside `CREATE TABLE`. A mutation test proves the axis you
+  broke, not the ones you did not.
 
 ## Assets
 
