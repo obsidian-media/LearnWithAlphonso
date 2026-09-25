@@ -10,6 +10,35 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Spanish reaches question-type parity** (#134, #137, #138, #139),
+closing the audit's step 7 and making it the first time all three
+courses have carried the same set. Spanish gains `translate`,
+`listening` and `speak` — 375 questions, 15 packs — taking it to **583
+lessons / 2,915 questions**. `speak` is backed by `spoken-answer-es.ts`
+across TypeScript, Deno and Swift with mirrored, mutation-tested
+vectors and a CI step, and wiring `es` through every grading call site
+exposed a real gap: `grade-review/index.ts`'s schema did not permit
+`"es"` at all. Every speak line was round-tripped through the real
+normaliser before shipping.
+
+Spanish needed no generator change — `bank-engine.ts` had learned all
+five pack kinds during French's phase 2, which was the point of putting
+that work in the shared engine rather than a French-only file, and PR 1
+verified it against real Spanish content rather than inferring it from
+French's passing tests.
+
+The three content PRs all appended to the same five arrays, and
+reconciling them is where the interesting failure lived: two locations
+had **independently made the identical edit by the same delta from the
+same base**, so git saw "same change on both sides" and kept one `+5`
+instead of summing. No conflict marker, clean type-check, wrong answer.
+Caught by recomputing every count from the merged content rather than
+trusting the arithmetic. Resolving those conflicts as text also
+destroyed content twice in review — once eating an object boundary so
+125 questions vanished while the file still type-checked, once
+mojibaking every accented character — so the merges were rebuilt
+structurally and verified on four independent axes.
+
 **Spanish content audit — 57 duplicate prompts to 0, and the 95% nobody
 had measured** (#122, #127, #130, #132). Spanish had no
 `.audit-baseline/spanish-ids.json` at all, so an inserted line would have

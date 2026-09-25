@@ -209,7 +209,7 @@ in this development environment):
 ```sh
 bun run lint         # ESLint
 bunx tsc --noEmit    # TypeScript
-bun run test         # Vitest. 137 files / 1,189 tests as of 2026-09-25,
+bun run test         # Vitest. 139 files / 1,206 tests as of 2026-09-25,
                       # taken from a CI run on main, NOT from this machine --
                       # see the verification-hygiene note below. Treat the CI
                       # number as the baseline: a local run reporting FEWER
@@ -418,7 +418,7 @@ Two habits these encode:
 See `LESSON_ASSETS.md` for the asset list (audio, images, icons,
 animations) — but read that file's own status banner first: it was
 written against a 300-lesson premise that is long stale. The real total
-is **1,542 lessons** across the three courses (see Content Structure
+is **1,767 lessons** across the three courses (609 + 575 + 583) (see Content Structure
 above), and its image-assets section is superseded.
 
 ## Deployment
