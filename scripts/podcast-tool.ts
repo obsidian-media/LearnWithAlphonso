@@ -40,40 +40,49 @@ import {
 } from "../src/lib/podcast-authoring";
 import { findCycle, isValidSlug, resolveFolderPath } from "../src/lib/podcast-tree";
 import { chunkScript } from "../src/lib/podcast-tts";
+import {
+  CliArgError,
+  parseCliArgs,
+  requireIntFlag,
+  requireOneOf,
+  requireStringFlag,
+  type CliFlags,
+} from "../src/lib/podcast-cli-args";
+import { COURSES } from "../src/data/courses";
+import { LEVELS } from "../src/data/levels";
 
 const BUCKET = "podcast-audio";
 const DEFAULT_VOICE = "aura-2-thalia-en";
 
-type Flags = Record<string, string | boolean>;
+/**
+ * Flags this tool understands. The parser rejects anything else by name
+ * rather than ignoring it, and rejects a boolean carrying a value rather
+ * than treating it as truthy -- see src/lib/podcast-cli-args.ts for the
+ * silent dry-run that motivated all of this.
+ */
+const FLAG_SPEC = {
+  booleans: ["confirm"],
+  values: [
+    "parent",
+    "folder",
+    "slug",
+    "title",
+    "description",
+    "course",
+    "level",
+    "sort",
+    "file",
+    "script",
+    "voice",
+  ],
+} as const;
 
-/** Tiny argv parser: `<command> [--flag [value]]...` -- no dependency needed for a 5-command CLI. */
-function parseArgs(argv: string[]): { command?: string; flags: Flags } {
-  const [command, ...rest] = argv;
-  const flags: Flags = {};
-  for (let i = 0; i < rest.length; i++) {
-    const arg = rest[i]!;
-    if (!arg.startsWith("--")) continue;
-    const key = arg.slice(2);
-    const next = rest[i + 1];
-    if (next !== undefined && !next.startsWith("--")) {
-      flags[key] = next;
-      i++;
-    } else {
-      flags[key] = true;
-    }
-  }
-  return { command, flags };
-}
+const COURSE_IDS = COURSES.map((course) => course.id);
+const LEVEL_IDS = LEVELS.map((level) => level.id);
 
 function fail(message: string): never {
   console.error(`Error: ${message}`);
   process.exit(1);
-}
-
-function requireString(flags: Flags, key: string, hint: string): string {
-  const value = flags[key];
-  if (typeof value !== "string" || !value) fail(`--${key} is required (${hint})`);
-  return value;
 }
 
 function supabase() {
@@ -178,11 +187,18 @@ async function durationSecondsOf(audio: Uint8Array): Promise<number> {
   return Math.round(duration);
 }
 
-async function cmdFolder(flags: Flags) {
-  const slug = requireString(flags, "slug", "e.g. --slug a1");
-  const title = requireString(flags, "title", 'e.g. --title "A1 Beginner"');
-  const parent = typeof flags.parent === "string" ? flags.parent : "root";
+async function cmdFolder(flags: CliFlags) {
+  const slug = requireStringFlag(flags, "slug", "e.g. --slug a1");
+  const title = requireStringFlag(flags, "title", 'e.g. --title "A1 Beginner"');
+  const parent = (flags.parent as string | undefined) ?? "root";
   if (!isValidSlug(slug)) fail(`invalid slug "${slug}": use lowercase kebab-case.`);
+
+  // Validate every flag BEFORE touching credentials or the network. A typo'd
+  // --sort or --course should fail on the typo, not on a missing key, and
+  // certainly not after a partial write.
+  const course = requireOneOf(flags, "course", COURSE_IDS);
+  const levelId = requireOneOf(flags, "level", LEVEL_IDS);
+  const sortOrder = requireIntFlag(flags, "sort", 0);
 
   const db = supabase();
   const rows = await loadFolders(db);
@@ -218,21 +234,21 @@ async function cmdFolder(flags: Flags) {
     parent_id: parentId,
     slug,
     title,
-    description: typeof flags.description === "string" ? flags.description : null,
-    course: typeof flags.course === "string" ? flags.course : null,
-    level_id: typeof flags.level === "string" ? flags.level : null,
-    sort_order: typeof flags.sort === "string" ? Number(flags.sort) : 0,
+    description: (flags.description as string | undefined) ?? null,
+    course,
+    level_id: levelId,
+    sort_order: sortOrder,
   });
   if (error) fail(`insert failed: ${error.message}`);
   console.log(`Created folder ${parent === "root" ? "" : `${parent}/`}${slug}.`);
 }
 
-async function cmdAdd(flags: Flags) {
-  const folderPath = requireString(flags, "folder", "e.g. --folder en/a1");
-  const slug = requireString(flags, "slug", "e.g. --slug ordering-coffee");
-  const title = requireString(flags, "title", 'e.g. --title "Ordering Coffee"');
-  const file = typeof flags.file === "string" ? flags.file : null;
-  const script = typeof flags.script === "string" ? flags.script : null;
+async function cmdAdd(flags: CliFlags) {
+  const folderPath = requireStringFlag(flags, "folder", "e.g. --folder en/a1");
+  const slug = requireStringFlag(flags, "slug", "e.g. --slug ordering-coffee");
+  const title = requireStringFlag(flags, "title", 'e.g. --title "Ordering Coffee"');
+  const file = (flags.file as string | undefined) ?? null;
+  const script = (flags.script as string | undefined) ?? null;
   if (!file && !script) fail("pass either --file <mp3> or --script <txt>.");
   if (file && script) fail("pass --file or --script, not both.");
 
@@ -251,10 +267,10 @@ async function cmdAdd(flags: Flags) {
     folderSlugPath: splitPath(folderPath),
     slug,
     title,
-    description: typeof flags.description === "string" ? flags.description : null,
+    description: (flags.description as string | undefined) ?? null,
     source: script ? "tts" : "upload",
-    course: (typeof flags.course === "string" ? flags.course : null) as EpisodeDraft["course"],
-    levelId: typeof flags.level === "string" ? flags.level : null,
+    course: requireOneOf(flags, "course", COURSE_IDS) as EpisodeDraft["course"],
+    levelId: requireOneOf(flags, "level", LEVEL_IDS),
   };
 
   const problems = validateEpisodeDraft(
@@ -274,7 +290,7 @@ async function cmdAdd(flags: Flags) {
     if (!existsSync(script!)) fail(`script not found: ${script}`);
     audio = await synthesise(
       readFileSync(script!, "utf-8"),
-      typeof flags.voice === "string" ? flags.voice : DEFAULT_VOICE,
+      (flags.voice as string | undefined) ?? DEFAULT_VOICE,
     );
   }
 
@@ -322,9 +338,9 @@ async function cmdAdd(flags: Flags) {
   console.log(`Publish it with: publish --folder ${folderPath} --slug ${slug} --confirm`);
 }
 
-async function cmdValidate(flags: Flags) {
-  const folderPath = requireString(flags, "folder", "e.g. --folder en/a1");
-  const slug = requireString(flags, "slug", "e.g. --slug ordering-coffee");
+async function cmdValidate(flags: CliFlags) {
+  const folderPath = requireStringFlag(flags, "folder", "e.g. --folder en/a1");
+  const slug = requireStringFlag(flags, "slug", "e.g. --slug ordering-coffee");
 
   const db = supabase();
   const folders = toFolders(await loadFolders(db));
@@ -372,9 +388,9 @@ async function cmdValidate(flags: Flags) {
   } else console.log("  audio object exists.");
 }
 
-async function cmdPublish(flags: Flags) {
-  const folderPath = requireString(flags, "folder", "e.g. --folder en/a1");
-  const slug = requireString(flags, "slug", "e.g. --slug ordering-coffee");
+async function cmdPublish(flags: CliFlags) {
+  const folderPath = requireStringFlag(flags, "folder", "e.g. --folder en/a1");
+  const slug = requireStringFlag(flags, "slug", "e.g. --slug ordering-coffee");
 
   const db = supabase();
   const folders = toFolders(await loadFolders(db));
@@ -405,7 +421,7 @@ const USAGE = `usage:
   podcast-tool.ts publish  --folder <path> --slug <slug> [--confirm]`;
 
 async function main() {
-  const { command, flags } = parseArgs(process.argv.slice(2));
+  const { command, flags } = parseCliArgs(process.argv.slice(2), FLAG_SPEC);
   switch (command) {
     case "folder":
       await cmdFolder(flags);
@@ -426,5 +442,8 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
+  // A CliArgError is the operator's typo, not a crash: print the message
+  // it carries, which already names the flag and what to type instead.
+  if (error instanceof CliArgError) fail(error.message);
   fail(error instanceof Error ? error.message : String(error));
 });
