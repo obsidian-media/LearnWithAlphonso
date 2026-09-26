@@ -62,8 +62,14 @@ describe("Privacy route", () => {
   it("names the AI processors, not just that AI is used", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    expect(screen.getByText(/NVIDIA/)).toBeInTheDocument();
-    expect(screen.getByText(/Deepgram/)).toBeInTheDocument();
+    // getAllByText: both are named in the processors list AND again in
+    // the Hector section, which says Hector's chat does NOT reach NVIDIA
+    // while its audio still reaches Deepgram. That distinction was wrong
+    // in the submission docs until 2026-09-26, so naming them twice is
+    // deliberate.
+    expect(screen.getAllByText(/NVIDIA/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Deepgram/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Cloud Voice/).length).toBeGreaterThan(0);
   });
 
   // Regression guard: Hector is a second account in a separate Supabase
@@ -84,8 +90,11 @@ describe("Privacy route", () => {
   it("describes the in-app export and deletion path, not only the web one", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    expect(screen.getByText(/Settings → Export My Data/)).toBeInTheDocument();
-    expect(screen.getByText(/Settings → Delete My Account/)).toBeInTheDocument();
+    // The full path, matching app-review-notes.md and the shipped build:
+    // Profile -> Settings -> Account -> ... A policy that names a screen
+    // which moved is worse than one that names none.
+    expect(screen.getByText(/Settings → Account → Export My Data/)).toBeInTheDocument();
+    expect(screen.getByText(/Settings → Account → Delete My Account/)).toBeInTheDocument();
   });
 });
 
