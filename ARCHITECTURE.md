@@ -64,6 +64,8 @@ over "what the answer currently is," since the latter goes stale fast.
 
 | `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. |
 | `podcast_transcripts` | Podcast library Phase 2a. One row per episode (`episode_id` PRIMARY KEY, cascade), plain text with blank-line paragraph breaks. **An accessibility obligation, not a feature**: the players carry no captions, so without text on screen an episode is unavailable to deaf and hard-of-hearing learners. A separate table rather than a column on `podcast_episodes` because the episode row is read by every folder listing and every search, and a transcript is kilobytes nobody needs until they open one episode. Plain text only -- timed cues need forced alignment against the audio, which is the Deepgram path and is gated on the unrun chunk-join probe. Added `supabase/migrations/20260927230000_podcast_transcripts.sql`, versioned deliberately after **both** `20260926030000` and `20260926223031`: wall-clock "now" was 2026-09-25, which sorts below both, because the library migration was itself renumbered forward out of a version collision. **A transcript is not the TTS script** -- `--transcript` rejects markup, since episode 1's script carries ElevenLabs SSML that would otherwise render to the exact readers the feature exists for. |
+| `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. |
+| `apple_auth_tokens` | Apple refresh tokens, stored **only** so account deletion can revoke the Sign in with Apple grant -- which Apple requires and checks. **RLS enabled with zero policies** plus `REVOKE ALL FROM anon, authenticated`: a refresh token a client can read is a credential it can exfiltrate, and this one authorises Apple identity operations for the whole app. Deliberately no own-row policy -- the app never reads it back, it only ever posts a fresh authorization code to `/api/apple-link`. We store the refresh token rather than the authorization code because the code is single-use, five-minute-lived, and the app's copy does not survive relaunch, so "sign in with Apple, quit, return tomorrow, delete account" would have had nothing to revoke with. Added `supabase/migrations/20260928030000_apple_auth_tokens.sql`. |
 
 **Podcast on iOS (Phase 1b).** `PodcastClient` in `LearnWithAlphonsoKit` is the
 first time the iOS app fetches _content_ from the server rather than its
@@ -119,7 +121,7 @@ as a rejected login: sign in, land on `/`, `adminWhoAmI` throws, bounce
 back to `/signin`. Nothing in the build, the types or the suite could see
 it, because the missing piece was a file nothing referenced by name.
 `admin-route-isolation.test.ts` now asserts the file exists, registers the
-attacher, and lists the *same* middleware as `src/start.ts` -- add one
+attacher, and lists the _same_ middleware as `src/start.ts` -- add one
 there and it must be added here.
 
 Sign-in offers **Google and email/password**, plus a reset link. Google
@@ -154,10 +156,53 @@ There is deliberately no bootstrap endpoint, no seed script and no
 environment variable naming an email -- every self-bootstrapping admin
 mechanism is an authentication bypass waiting for a misconfiguration.
 
+**App Store compliance surface (2026-09-26).** Four things an external
+audit found missing, all now shipped, recorded together because they are
+one requirement set rather than four features.
+
+**Sign in with Apple** is mandatory under Guideline 4.8 once an app
+offers Google. `AppleSignInPresenter.swift` drives
+`ASAuthorizationController` directly -- a sibling to
+`GoogleSignInPresenter`, not a shared abstraction, because Apple's flow
+is a native controller and Google's is a web session and forcing one
+path would fight both. The nonce detail is the one that matters: the
+**SHA-256 hash** goes to Apple on the request, the **raw** string goes to
+GoTrue, which hashes it and compares against the token's `nonce` claim.
+Getting that backwards is a replay vulnerability that still authenticates
+successfully.
+
+The entitlement is written to **three** places -- `project.yml` and both
+hand-written `.entitlements` files -- because `project.yml`'s generated
+entitlements file is **not** what either build config signs with; both
+override `CODE_SIGN_ENTITLEMENTS`. Adding it only to the obvious place
+compiles fine and fails at runtime with no error.
+
+**Apple token revocation** (`src/lib/apple-revocation.ts`) closes what
+Apple requires on account deletion. It is server-side because the
+`client_secret` is an ES256 JWT signed with the team's `.p8`, which
+cannot ship in a binary. Signed with Node's own crypto rather than a JWT
+dependency; `dsaEncoding: "ieee-p1363"` is load-bearing, since Node
+defaults to DER and Apple answers `invalid_client` without saying the
+encoding is why. **Deletion never fails on it** -- a user's right to
+delete their account cannot depend on Apple being reachable, so the
+outcome is reported as `appleRevoked` and deletion proceeds regardless.
+
+**Native account deletion and export** live in Settings and call the
+_same_ `deleteMyAccount`/`exportMyData` the web uses, through thin routes
+in `src/routes/api/`. Apple requires deletion to be initiated in the app;
+a link out to a web profile is what gets rejected.
+
+**AI data disclosure** gates all four AI entry points --
+`ConversationView`, `HectorView`, `CampaignView` and `SpeakQuestionCard`
+-- through one shared `.aiDisclosureGate()` modifier backed by
+`AIDisclosureGate` in the Kit. One modifier rather than four copies,
+because four copies is how one gets missed and the missed one is the one
+that ships.
+
 **Podcast admin (Phase 4).** A second TanStack Start build from the same
 repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
 the key that moves the app, and `router.routesDirectory` alone does
-nothing, because it resolves *relative to* `srcDirectory` (passing both
+nothing, because it resolves _relative to_ `srcDirectory` (passing both
 creates an empty `admin/admin/routes/`, and passing only the latter kills
 the build inside the manifest plugin with `Cannot convert undefined or
 null to object`). No admin route can reach the learner bundle, and
@@ -248,7 +293,7 @@ metadata parse is wrapped, because it throws on input the sniffer accepts
 leave the object in the bucket. `Content-Type` is set from the sniffed
 bytes, not from what the browser sent, since the stored type is what the
 bucket serves with and sniffing alone does not control that. Transcripts go through the same
-`normalizeTranscript` the CLI uses, which *throws* on markup rather than
+`normalizeTranscript` the CLI uses, which _throws_ on markup rather than
 returning null; null means empty, and a handler that conflated them would
 save an empty transcript and report success.
 
@@ -265,7 +310,7 @@ app target**. A rule decided in the app target is a rule no test can
 reach.
 
 The write order is staging name → verify byte count against
-`Content-Length` → atomic move → *then* insert the row, so a file at the
+`Content-Length` → atomic move → _then_ insert the row, so a file at the
 final path always means a finished download and a row pointing at no
 file cannot exist. `reconcile()` runs at launch in both directions,
 because being killed mid-transfer is ordinary on iOS rather than

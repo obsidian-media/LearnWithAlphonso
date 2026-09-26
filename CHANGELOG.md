@@ -10,6 +10,66 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**App Store compliance: the blockers an external audit found, closed in a
+day** (#144–#151). An audit of the public repo flagged ten P0s. Every
+claim in it was verified against the code before acting — all held, and
+the Hector finding was worse than described.
+
+**Sign in with Apple** (#146), mandatory under Guideline 4.8 once an app
+offers Google. Built as a sibling to the Google presenter rather than a
+shared abstraction, since Apple's is a native controller and Google's is
+a web session. The nonce is the detail that matters: SHA-256 hash to
+Apple, **raw** string to GoTrue — reversed, it still authenticates and is
+a replay hole. The entitlement went to **three** files, because
+`project.yml`'s generated one is not what either build config signs
+with; adding it only to the obvious place compiles and fails at runtime.
+
+**Apple token revocation** (#149). Apple requires revoking the grant on
+account deletion. Server-side, because the `client_secret` is an ES256
+JWT signed with the team's `.p8` and that key cannot ship in a binary.
+We store the **refresh token**, not the authorization code, which is
+single-use and does not survive app relaunch. **Deletion never fails on
+it** — a user's right to delete their account cannot depend on Apple
+being reachable.
+
+**Native account deletion and data export** (#147), calling the _same_
+server functions the web uses rather than a second implementation.
+Apple requires deletion to be initiated in the app; linking out to a web
+profile is what gets rejected.
+
+**AI data disclosure** (#144), gating all four AI entry points through
+one shared modifier — not four copies, because four copies is how one
+gets missed and the missed one ships.
+
+**Block and report** (#150). Apple's UGC rules require both once an app
+carries social features. **The table was the easy half:** a block is
+enforced at seven paths — friends, activity, leaderboards, duel
+matchmaking, duel creation, invites and nudges — because a block that
+stores a row and still shows the user on a leaderboard is a guard that
+cannot act.
+
+**Paywall pricing** (#148). A hard-coded "$9.99/month" sat next to a
+button rendering `localizedPriceString`, so every non-US storefront
+disagreed with itself. StoreKit is now the only source of price and
+period.
+
+**Legal pages** (#145, #151). Contact addresses were still
+`privacy@lingua.app` — pre-rebrand leftovers on pages the product is
+legally held to — **and a test was pinning the wrong one**, so the guard
+protected the stale branding. The privacy policy now discloses that
+**Hector is a second account in a separate Supabase project that
+deleting the main account does not remove**, and names Deepgram and
+NVIDIA as processors. Four new assertions guard all of it.
+
+**Also fixed: new-user signup was broken.** The app asked for a 6-digit
+code Supabase never sends to a first-time address — it sends the
+Confirm-signup template, which shipped without `{{ .Token }}`. A 2026-09-21
+fix had patched only the magic-link template and was "confirmed working"
+by a test run from an account that already existed. Both templates now
+render from one shared constant. Found on a clean simulator by signing
+up as a genuinely new user — the one thing nobody with the app already
+installed can do.
+
 **Podcast admin subsystem, and offline download** (#140, which carried
 #136). A second TanStack Start build from the same repo —
 `vite.admin.config.ts` sets `srcDirectory: "admin"` — so no admin route
@@ -141,7 +201,7 @@ path and the caller discarded it), and a **parent picker** finally makes
 that move reachable: it was gated, counted and tested but callable from
 nowhere, so the cycle guard protected nothing a person could do. Two CI
 comments were corrected rather than left to mislead -- `admin-build`
-catches a *missing* route tree, not a stale one, and the allowlist RLS
+catches a _missing_ route tree, not a stale one, and the allowlist RLS
 check runs in `deploy-supabase`, which is `push && ref == main`, so it
 fires **post-merge, not on the PR**: a regression alarm, not a merge gate.
 
