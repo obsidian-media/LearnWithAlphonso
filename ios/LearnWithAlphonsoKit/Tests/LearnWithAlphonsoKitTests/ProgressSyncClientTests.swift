@@ -728,6 +728,42 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertNil(level)
     }
 
+    // MARK: - fetchPlacementTakenAt (iOS placement exam)
+
+    func testFetchPlacementTakenAtReturnsTheTimestamp() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["placement_taken_at": "2026-09-25T00:00:00Z"]])
+        }
+
+        let takenAt = try await client.fetchPlacementTakenAt(course: "en")
+
+        XCTAssertEqual(takenAt, "2026-09-25T00:00:00Z")
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/language_progress"))
+        XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
+    }
+
+    func testFetchPlacementTakenAtReturnsNilWhenNoRowExistsYet() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        let takenAt = try await client.fetchPlacementTakenAt(course: "en")
+        XCTAssertNil(takenAt)
+    }
+
+    func testFetchPlacementTakenAtReturnsNilWhenTheRowExistsButPlacementWasNeverTaken() async throws {
+        // The exact gap this method exists to close: a language_progress
+        // row from ordinary lesson activity, cefr_level defaulted to 'A1',
+        // placement_taken_at still null.
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["placement_taken_at": NSNull()]])
+        }
+        let takenAt = try await client.fetchPlacementTakenAt(course: "en")
+        XCTAssertNil(takenAt)
+    }
+
     // MARK: - fetchProgress (progress-not-shown-after-update fix, 2026-09-24)
 
     func testFetchProgressComposesBothTables() async throws {

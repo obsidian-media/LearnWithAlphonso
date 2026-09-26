@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildIOSContentBundle, buildIOSScenariosBundle } from "./ios-content-export";
+import {
+  buildIOSContentBundle,
+  buildIOSScenariosBundle,
+  buildIOSPlacementBundle,
+} from "./ios-content-export";
+import { PLACEMENT_ORDER } from "@/data/placement";
 
 describe("buildIOSContentBundle", () => {
   it("exports the full English curriculum with the expected lesson count", () => {
@@ -36,6 +41,27 @@ describe("buildIOSContentBundle", () => {
       expect(s.id).toBeTruthy();
       expect(s.systemPrompt).toBeTruthy();
       expect(s.opener).toBeTruthy();
+    }
+  });
+
+  it("exports the full placement pool for every course, with every band represented", () => {
+    for (const course of ["en", "fr", "es"] as const) {
+      const pool = buildIOSPlacementBundle(course);
+      expect(pool.length).toBeGreaterThan(0);
+      for (const level of PLACEMENT_ORDER) {
+        expect(pool.some((q) => q.level === level)).toBe(true);
+      }
+      // Same pass-through contract as buildIOSContentBundle -- every
+      // question keeps its own id and level, and the type-specific
+      // fields (choices/answer/acceptableAnswers) survive untouched.
+      for (const q of pool) {
+        expect(q.id).toBeTruthy();
+        if (q.type === "mc" || q.type === "listening") {
+          expect(Array.isArray(q.choices)).toBe(true);
+        } else {
+          expect(Array.isArray(q.acceptableAnswers)).toBe(true);
+        }
+      }
     }
   });
 });

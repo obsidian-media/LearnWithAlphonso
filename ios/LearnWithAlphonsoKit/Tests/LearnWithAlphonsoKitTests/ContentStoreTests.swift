@@ -56,4 +56,21 @@ final class ContentStoreTests: XCTestCase {
         let children = try XCTUnwrap(store.vocabImages["children"], "vocab-images.ts's first entry should be keyed 'children'")
         XCTAssertTrue(children.url.hasPrefix("https://images.pexels.com/"))
     }
+
+    func testLoadsThePlacementPoolForEveryCourseWithEveryBandRepresented() throws {
+        let store = try ContentStore()
+        // 12 per band (60 total) for English, 9 per band (45 total) for
+        // French/Spanish -- see src/data/placement.ts/placement-fr.ts/
+        // placement-es.ts. Hardcoded deliberately, same reasoning as this
+        // file's other counts: this is the thing under test.
+        XCTAssertEqual(store.placementPool(for: .english).count, 60)
+        XCTAssertEqual(store.placementPool(for: .french).count, 45)
+        XCTAssertEqual(store.placementPool(for: .spanish).count, 45)
+        for course: Course in [.english, .french, .spanish] {
+            let pool = store.placementPool(for: course)
+            for level in placementOrder {
+                XCTAssertTrue(pool.contains { $0.level == level }, "\(course) placement pool is missing \(level)")
+            }
+        }
+    }
 }

@@ -40,6 +40,13 @@ public final class ContentStore {
     /// deriveVocab(lesson:images:) expects. Empty entries just mean no
     /// image exists for that term -- not an error.
     public let vocabImages: [String: VocabImageRef]
+    /// Full, unsampled placement-question pool per course (9 per CEFR
+    /// band) -- see PlacementLogic.swift's pickPlacementSet, which draws
+    /// a fresh 15-question set from this pool client-side, per attempt,
+    /// exactly like the web app's placement.tsx.
+    private let placementEnglish: [PlacementQuestion]
+    private let placementFrench: [PlacementQuestion]
+    private let placementSpanish: [PlacementQuestion]
 
     public init() throws {
         english = try Self.loadBundle(for: .english)
@@ -49,6 +56,9 @@ public final class ContentStore {
         campaigns = try Self.loadJSON([Campaign].self, resource: "campaigns")
         achievements = try Self.loadJSON([Achievement].self, resource: "achievements")
         vocabImages = try Self.loadJSON([String: VocabImageRef].self, resource: "vocab-images")
+        placementEnglish = try Self.loadJSON([PlacementQuestion].self, resource: "placement-en")
+        placementFrench = try Self.loadJSON([PlacementQuestion].self, resource: "placement-fr")
+        placementSpanish = try Self.loadJSON([PlacementQuestion].self, resource: "placement-es")
     }
 
     public func bundle(for course: Course) -> ContentBundle {
@@ -56,6 +66,14 @@ public final class ContentStore {
         case .english: return english
         case .french: return french
         case .spanish: return spanish
+        }
+    }
+
+    public func placementPool(for course: Course) -> [PlacementQuestion] {
+        switch course {
+        case .english: return placementEnglish
+        case .french: return placementFrench
+        case .spanish: return placementSpanish
         }
     }
 
