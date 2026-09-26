@@ -3,7 +3,7 @@ import Foundation
 /// Publishable/anon keys are meant to ship inside client apps (Supabase's
 /// own docs: they're safe to embed, RLS is the real boundary) -- unlike
 /// SUPABASE_SERVICE_ROLE_KEY, which must never appear here. Points at the
-/// same Supabase project english-buddy-app-33's web app already uses (see
+/// same Supabase project the Learn with Alphonso web app already uses (see
 /// the native app design doc's architecture section: one account, shared
 /// backend, no migration).
 enum AppConfig {
@@ -14,7 +14,15 @@ enum AppConfig {
     /// /api/chat, /api/tts, /api/stt routes directly (see that type's doc
     /// comment for why: same backend the web app already uses, no second
     /// account system).
-    static let apiBaseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
+    ///
+    /// Was the english-buddy-app-33.vercel.app alias until 2026-09-26.
+    /// Both resolve, so nothing was broken -- but Supabase's site_url now
+    /// sends every auth confirmation link to learn.alphonsoecosystem.app
+    /// (scripts/update-auth-email-template.ts), and an app calling one
+    /// origin while its own emails point at another is the kind of split
+    /// that stays invisible right up until a cookie, a CORS rule or a
+    /// redirect depends on them matching.
+    static let apiBaseURL = URL(string: "https://learn.alphonsoecosystem.app")!
 
     /// AlphonsoCompanion's Cloud Voice backend -- a genuinely separate
     /// account system (its own Supabase project, its own email-OTP
