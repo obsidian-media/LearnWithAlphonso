@@ -91,10 +91,9 @@ async function main() {
   // accepted, not that these values are what the project now serves --
   // and this whole file exists because something was assumed rather than
   // observed. Assert the two that are easy to get silently wrong.
-  const check = await fetch(
-    `https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth`,
-    { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } },
-  );
+  const check = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth`, {
+    headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+  });
   if (!check.ok) {
     console.error(`Applied, but reading the config back failed (${check.status}).`);
     process.exit(1);
@@ -102,15 +101,15 @@ async function main() {
   const cfg = (await check.json()) as { site_url?: string; mailer_otp_length?: number };
   const problems: string[] = [];
   if (cfg.site_url !== SITE_URL) {
-    problems.push(`site_url is ${JSON.stringify(cfg.site_url)}, expected ${JSON.stringify(SITE_URL)}`);
+    problems.push(
+      `site_url is ${JSON.stringify(cfg.site_url)}, expected ${JSON.stringify(SITE_URL)}`,
+    );
   }
   if (cfg.mailer_otp_length !== 6) {
     problems.push(`mailer_otp_length is ${cfg.mailer_otp_length}, expected 6`);
   }
   if (problems.length) {
-    console.error("Config did not take:
-  " + problems.join("
-  "));
+    console.error("Config did not take: " + problems.join("; "));
     process.exit(1);
   }
 
