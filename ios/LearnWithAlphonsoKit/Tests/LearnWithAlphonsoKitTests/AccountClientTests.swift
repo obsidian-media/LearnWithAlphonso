@@ -132,4 +132,38 @@ final class AccountClientTests: XCTestCase {
             XCTAssertEqual(error as? AccountError, .server(status: 401, message: "Unauthorized"))
         }
     }
+
+    // MARK: - linkHectorAccount
+
+    func testLinkHectorAccountPostsTheCloudVoiceUserIDWithBearerToken() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["linked": true])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        try await client.linkHectorAccount(cloudVoiceUserID: "cv-user-1")
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/hector-link"))
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
+        let body = try XCTUnwrap(request.httpBody)
+        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertEqual(payload["cloudVoiceUserId"] as? String, "cv-user-1")
+    }
+
+    func testLinkHectorAccountSurfacesAServerError() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "bad-request"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 400, httpVersion: nil, headerFields: nil)!)
+        }
+        do {
+            try await client.linkHectorAccount(cloudVoiceUserID: "cv-user-1")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 400, message: "bad-request"))
+        }
+    }
 }
