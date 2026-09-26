@@ -101,12 +101,20 @@ public final class AccountClient: Sendable {
     /// `linkAppleAuthorization` -- the real Hector enrollment already
     /// succeeded by the time this fires, so the caller
     /// (`HectorView`) fires this fire-and-forget too.
-    public func linkHectorAccount(cloudVoiceUserID: String) async throws {
+    ///
+    /// Sends the Cloud Voice **access token**, not a claimed user id --
+    /// the server derives the real id itself by verifying this token
+    /// against Cloud Voice's own Supabase project
+    /// (`src/lib/cloud-voice-auth.ts`). A previous version of this
+    /// method sent `cloudVoiceUserId` directly, which let anyone who
+    /// knew a victim's id link it without proving they controlled that
+    /// account; never revert to that shape.
+    public func linkHectorAccount(cloudVoiceAccessToken: String) async throws {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/hector-link"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: ["cloudVoiceUserId": cloudVoiceUserID])
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["cloudVoiceAccessToken": cloudVoiceAccessToken])
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
