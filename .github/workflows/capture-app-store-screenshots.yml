@@ -121,6 +121,7 @@ jobs:
             -project LearnWithAlphonso.xcodeproj \
             -scheme LearnWithAlphonso \
             -destination "id=$SIMULATOR_UDID" \
+            -resultBundlePath "${{ github.workspace }}/screenshots/${{ matrix.label }}.xcresult" \
             -only-testing:LearnWithAlphonsoUITests/ScreenshotTests/testCaptureAppStoreScreenshots
 
       - name: Upload screenshots
@@ -136,5 +137,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xcresult-${{ matrix.label }}
-          path: ios/LearnWithAlphonso/**/*.xcresult
-          if-no-files-found: ignore
+          # Not under ios/LearnWithAlphonso/ at all -- xcodebuild puts a
+          # result bundle in DerivedData unless told otherwise, which the
+          # earlier `ios/LearnWithAlphonso/**/*.xcresult` glob never
+          # matched (confirmed live: it always warned "no files found",
+          # silently, even on a passing run). -resultBundlePath above
+          # pins it here instead.
+          path: screenshots/${{ matrix.label }}.xcresult
+          if-no-files-found: warn
