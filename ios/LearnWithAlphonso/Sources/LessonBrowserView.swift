@@ -52,7 +52,12 @@ struct LessonBrowserView: View {
     /// regression this whole feature closes: every unit across every
     /// level used to render in one continuous list, so reaching your
     /// actual level meant scrolling past everything below it first.
-    private var unitsForSelectedLevel: [Unit] {
+    // Fully qualified: Foundation exports its own `Unit` (Measurement's
+    // base class), so a bare `Unit` here is ambiguous and the app target
+    // fails to compile -- while LearnWithAlphonsoKit's own tests pass,
+    // since the kit never sees Foundation's. Same convention as
+    // LessonPlayerView.swift:59, which hit this first.
+    private var unitsForSelectedLevel: [LearnWithAlphonsoKit.Unit] {
         contentStore.bundle(for: course).units.filter { $0.level == selectedLevel }
     }
 
