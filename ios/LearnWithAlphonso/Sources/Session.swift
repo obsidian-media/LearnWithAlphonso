@@ -164,7 +164,13 @@ final class Session {
             )
             appleAuthorizationCodeForRevocation = result.authorizationCode
             establishSession(session)
-            linkAppleAuthorization(code: result.authorizationCode, accessToken: session.accessToken)
+            // Apple does not always return an authorization code. Nil means
+            // there is simply nothing to link -- and nothing to revoke later
+            // either -- so skip rather than force-unwrap. Deletion already
+            // treats a missing token as "could not revoke" and proceeds.
+            if let code = result.authorizationCode {
+                linkAppleAuthorization(code: code, accessToken: session.accessToken)
+            }
         } catch AppleSignInPresenterError.cancelled {
             // The user dismissed the dialog -- not a real error.
         } catch {
