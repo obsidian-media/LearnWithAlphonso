@@ -45,7 +45,10 @@ export const Route = createFileRoute("/api/hector-link")({
         // it ever didn't, the newest link is the one revocation should use.
         const { error } = await supabaseAdmin
           .from("hector_links")
-          .upsert({ user_id: userData.user.id, cloud_voice_user_id: cloudVoiceUserId }, { onConflict: "user_id" });
+          .upsert(
+            { user_id: userData.user.id, cloud_voice_user_id: cloudVoiceUserId },
+            { onConflict: "user_id" },
+          );
         if (error) return Response.json({ linked: false, reason: "store-failed" });
 
         return Response.json({ linked: true });

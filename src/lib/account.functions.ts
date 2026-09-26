@@ -161,7 +161,8 @@ async function revokeHectorLinkForUser(
   userId: string,
 ): Promise<boolean> {
   try {
-    const { hectorRevocationConfigFromEnv, revokeHectorLink } = await import("@/lib/hector-revocation");
+    const { hectorRevocationConfigFromEnv, revokeHectorLink } =
+      await import("@/lib/hector-revocation");
     const config = hectorRevocationConfigFromEnv();
     if (!config) return false;
 
