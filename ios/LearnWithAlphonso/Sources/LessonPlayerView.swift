@@ -598,12 +598,17 @@ private struct OverviewScreen: View {
 
     private func overviewStep(number: Int, label: String, detail: String) -> some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
+            // minWidth/minHeight + a Circle background, not a fixed
+            // .frame(width:height:) + .clipShape(Circle()) -- the number
+            // itself never grows past one digit, but its FONT does with
+            // Dynamic Type, and clipShape crops an oversized glyph instead
+            // of letting the badge grow to fit it. This lets the circle
+            // grow with the text at large accessibility sizes instead.
             Text("\(number)")
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.surface)
-                .frame(width: 28, height: 28)
-                .background(AlphonsoColor.moss)
-                .clipShape(Circle())
+                .frame(minWidth: 28, minHeight: 28)
+                .background(Circle().fill(AlphonsoColor.moss))
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(AlphonsoFont.sans(15, weight: .semiBold))

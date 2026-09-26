@@ -16,31 +16,47 @@ struct StatusHeaderView: View {
     var body: some View {
         if let progress {
             VStack(spacing: AlphonsoSpacing.sm) {
-                HStack(spacing: AlphonsoSpacing.sm) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundStyle(AlphonsoColor.ember)
-                            .pulsingGlow()
-                        Text("\(progress.streak)")
-                            .font(AlphonsoFont.sans(15, weight: .bold))
-                            .foregroundStyle(AlphonsoColor.ink)
+                // Streak/hearts/XP/league in one HStack has no wrap fallback
+                // -- fine at the default text size, but four capsules plus
+                // a badge overflow the screen width once Dynamic Type grows
+                // all four simultaneously at large accessibility sizes.
+                // ViewThatFits measures both candidates and picks whichever
+                // actually fits, so this needs no manual size-category
+                // threshold: the single-row layout is used as long as it
+                // fits, and it drops to two rows only once it doesn't.
+                ViewThatFits(in: .horizontal) {
+                    // 1. Everything in one row -- the original layout,
+                    // used as long as it actually fits.
+                    HStack(spacing: AlphonsoSpacing.sm) {
+                        streakPill(progress: progress)
+                        statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                        statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        Spacer()
+                        leagueBadge(progress: progress)
                     }
-                    .padding(.horizontal, AlphonsoSpacing.sm + 2)
-                    .padding(.vertical, 6)
-                    .background(AlphonsoColor.parchment, in: Capsule())
-                    .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
 
-                    statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                    statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                    // 2. Three stat pills on their own row, league badge
+                    // below -- tried once the full row above no longer fits.
+                    VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                        HStack(spacing: AlphonsoSpacing.sm) {
+                            streakPill(progress: progress)
+                            statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                            statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        }
+                        leagueBadge(progress: progress)
+                    }
 
-                    Spacer()
-
-                    Text(LeagueTierPalette.label(for: progress.leagueTier))
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, AlphonsoSpacing.sm + 2)
-                        .padding(.vertical, 6)
-                        .background(LeagueTierPalette.color(for: progress.leagueTier), in: Capsule())
+                    // 3. Fully stacked -- the fallback ViewThatFits commits
+                    // to if nothing else fits (at the largest accessibility
+                    // sizes, even three pills side by side can overflow).
+                    // Each pill is left-aligned on its own row rather than
+                    // centered/stretched, matching how the rows above read.
+                    VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                        streakPill(progress: progress)
+                        statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                        statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        leagueBadge(progress: progress)
+                    }
                 }
 
                 // Direct user feedback (see this file's own header doc
@@ -72,5 +88,29 @@ struct StatusHeaderView: View {
         .padding(.vertical, 6)
         .background(AlphonsoColor.parchment, in: Capsule())
         .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+    }
+
+    private func streakPill(progress: LessonCompletionProgress) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "flame.fill")
+                .foregroundStyle(AlphonsoColor.ember)
+                .pulsingGlow()
+            Text("\(progress.streak)")
+                .font(AlphonsoFont.sans(15, weight: .bold))
+                .foregroundStyle(AlphonsoColor.ink)
+        }
+        .padding(.horizontal, AlphonsoSpacing.sm + 2)
+        .padding(.vertical, 6)
+        .background(AlphonsoColor.parchment, in: Capsule())
+        .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+    }
+
+    private func leagueBadge(progress: LessonCompletionProgress) -> some View {
+        Text(LeagueTierPalette.label(for: progress.leagueTier))
+            .font(AlphonsoFont.sans(12, weight: .semiBold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, AlphonsoSpacing.sm + 2)
+            .padding(.vertical, 6)
+            .background(LeagueTierPalette.color(for: progress.leagueTier), in: Capsule())
     }
 }
