@@ -45,6 +45,7 @@ export const updateProfile = createServerFn({ method: "POST" })
         display_name: z.string().min(1).max(40).optional(),
         country: z.string().max(2).optional().nullable(),
         theme: z.enum(["meadow", "studio-ink", "manuscript", "canopy"]).optional(),
+        avatar_seed: z.string().min(1).max(32).optional(),
       })
       .parse(d),
   )

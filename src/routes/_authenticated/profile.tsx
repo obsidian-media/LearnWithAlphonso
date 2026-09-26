@@ -45,11 +45,13 @@ function ProfilePage() {
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [saving, setSaving] = useState(false);
+  const [avatarSeed, setAvatarSeed] = useState("");
 
   useEffect(() => {
     if (profile) {
       setName(profile.display_name ?? "");
       setCountry(profile.country ?? "");
+      setAvatarSeed(profile.avatar_seed ?? "");
     }
   }, [profile]);
 
@@ -65,6 +67,15 @@ function ProfilePage() {
     setSaving(false);
   }
 
+  async function shuffleAvatar() {
+    const next = Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join(
+      "",
+    );
+    setAvatarSeed(next);
+    await updateProfile({ data: { avatar_seed: next } });
+    await qc.invalidateQueries({ queryKey: ["me"] });
+  }
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
@@ -73,20 +84,29 @@ function ProfilePage() {
   }
 
   const unlockedSet = new Set(p.unlockedAchievements);
-  const seed = profile?.avatar_seed ?? "a";
 
   return (
     <MobileFrame>
       <div className="px-6 pb-12 pt-6">
         <div className="flex items-center gap-4">
-          <span
-            className="grid size-16 place-items-center rounded-full text-xl font-semibold text-surface"
-            style={{
-              backgroundColor: `hsl(${(seed.charCodeAt(0) * 37) % 360} 40% 45%)`,
-            }}
-          >
-            {(name || "?").slice(0, 1).toUpperCase()}
-          </span>
+          <div className="flex flex-col items-center gap-1.5">
+            <span
+              className="grid size-16 place-items-center rounded-full text-xl font-semibold text-surface"
+              style={{
+                backgroundColor: `hsl(${((avatarSeed || "a").charCodeAt(0) * 37) % 360} 40% 45%)`,
+              }}
+            >
+              {(name || "?").slice(0, 1).toUpperCase()}
+            </span>
+            <button
+              type="button"
+              onClick={shuffleAvatar}
+              aria-label="Shuffle avatar color"
+              className="text-[11px] font-medium text-moss underline underline-offset-4"
+            >
+              Shuffle
+            </button>
+          </div>
           <div className="flex-1">
             <h1 className="font-display text-[22px] font-semibold text-ink">{name || "Learner"}</h1>
             <div className="mt-1 flex items-center gap-2">
