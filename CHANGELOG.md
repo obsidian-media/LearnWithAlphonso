@@ -10,6 +10,27 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Accessibility, from nothing to four features** (#179, #180, #181,
+#182). App Store Connect's Accessibility section had to be answered
+**No** on every count: text locked at fixed sizes across 219 call sites,
+VoiceOver labelling in 6 of 49 files, no reduced-motion handling, and a
+dark theme that `RootView` overrode with `.preferredColorScheme` so the
+system setting did nothing. Dynamic Type now scales at the single
+`AlphonsoFont` chokepoint, every theme has a computed dark variant and
+follows the system, correct/incorrect state is announced to VoiceOver
+(it was previously never exposed at all), and every animation site
+honours Reduce Motion. Still unverified by use -- nothing in the build
+environment runs a simulator -- so the App Store answers stay No until
+someone completes a lesson with VoiceOver on at the largest text size.
+
+**Let people rename themselves and create a team** (#178). Leaderboards
+published whatever Google supplied, usually a real name, with no way to
+change it on iOS. Teams could be joined and never created. Both closed
+-- and building the second surfaced a latent hole: `create_team` is the
+first path that can produce a _private_ team, and `teams`' blanket
+`SELECT USING (true)` would have let any authenticated user read its
+`join_code`. Fixed with column-level grants, since RLS is row-level.
+
 **The iOS app caught up with the web app** (#169, #172/#175, #174).
 The Learn tab had lost its CEFR bands and was one endless scroll; the
 placement exam existed only on the web, so a new iOS user was assigned a
