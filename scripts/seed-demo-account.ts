@@ -161,6 +161,19 @@ async function seedProgress(userId: string): Promise<void> {
         language: "en",
         xp: SEEDED_LESSONS.reduce((sum, l) => sum + l.xpEarned, 0),
         league_tier: "bronze",
+        // Mark placement as already taken. RootView presents PlacementView
+        // once whenever `fetchPlacementTakenAt` is null, so without this a
+        // freshly seeded account lands on the placement exam instead of
+        // the Learn tab -- which broke the screenshot pipeline (the lesson
+        // button reported hit point {-1,-1}: present in the hierarchy,
+        // covered on screen).
+        //
+        // It is also what makes the account COHERENT. The review notes
+        // promise a reviewer an established learner with lessons done, a
+        // streak and due reviews; an account with all of that which has
+        // somehow never been placed is a state no real user reaches.
+        placement_taken_at: new Date(Date.now() - streakDays * 86_400_000).toISOString(),
+        placement_level: "A1",
       },
       { onConflict: "user_id,language" },
     ),
