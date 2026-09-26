@@ -38,12 +38,28 @@ final class ScreenshotTests: XCTestCase {
     }
 
     func testCaptureAppStoreScreenshots() throws {
+        captureLaunchDiagnostic()
         captureLearnTab()
         captureLessonPlayer()
         captureReviewQueue()
         captureHector()
         captureListenLibrary()
         captureProfileHub()
+    }
+
+    /// Unconditional -- taken and dumped regardless of what's on screen,
+    /// before any navigation attempt. Every other shot in this file
+    /// soft-fails (records a note, keeps going) rather than asserting, on
+    /// purpose, which means "the test passed" does not imply any real
+    /// screenshot was captured -- confirmed live: a run where every single
+    /// shot's target element went missing still reported as passed. This
+    /// is the one unconditional source of truth for what actually
+    /// rendered, independent of every navigation guess after it.
+    private func captureLaunchDiagnostic() {
+        _ = app.wait(for: .runningForeground, timeout: 15)
+        print("=== accessibility tree at launch ===")
+        print(app.debugDescription)
+        save("00-launch-diagnostic")
     }
 
     // MARK: - Shots
