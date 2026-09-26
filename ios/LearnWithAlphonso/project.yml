@@ -101,7 +101,7 @@ targets:
         # D:\AgentDevWork\repos\Hackaton\Shipaton\02-launch-checklist\
         # execution-record.md for the full RevenueCat/App Store Connect
         # wiring this build depends on.
-        CURRENT_PROJECT_VERSION: "22"
+        CURRENT_PROJECT_VERSION: "23"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -201,7 +201,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "22"
+        CURRENT_PROJECT_VERSION: "23"
         SKIP_INSTALL: true
       configs:
         Release:
