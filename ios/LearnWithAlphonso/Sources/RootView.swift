@@ -20,7 +20,7 @@ struct RootView: View {
     @State private var podcastPlayer = PodcastAudioPlayer()
 
     var body: some View {
-        // Group wraps both branches so .preferredColorScheme below covers
+        // Group wraps every branch so .preferredColorScheme below covers
         // AuthView too, not just the signed-in TabView -- forces every
         // screen (system-styled chrome included: navigation titles,
         // segmented pickers, ContentUnavailableView) to resolve colors
@@ -31,84 +31,95 @@ struct RootView: View {
         // and empty states unreadable. See AlphonsoTheme.swift's
         // AlphonsoPalette.colorScheme doc comment.
         Group {
-            switch session.state {
-            case .signedOut, .awaitingCode:
-                AuthView(session: session)
-            case .signedIn:
-                // Exactly five tabs, deliberately. iPhone renders five and
-                // collapses the rest into a system "More" list, so the
-                // seven declared here previously meant Achievements was
-                // already buried before Listen needed a slot. League,
-                // Friends and Achievements now live behind Profile; Review
-                // is reachable from a row at the top of Learn, which is
-                // also what the badge below points at.
-                //
-                // Every tab's SF Symbol is distinct -- League and
-                // Achievements both used "trophy.fill" before this change.
-                // The mini bar is applied to each tab's CONTENT, not to
-                // the TabView: an inset on the TabView is consumed inside
-                // the tab bar's own region and the bar overlaps it (device
-                // check #12). See View.podcastMiniBar.
-                TabView {
-                    LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                        .podcastMiniBar(player: podcastPlayer, session: session)
-                        .tabItem { Label("Learn", systemImage: "book.fill") }
-                        .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
-                    ListenView(
-                        session: session,
-                        networkMonitor: networkMonitor,
-                        player: podcastPlayer,
-                        downloads: podcastDownloadManager
-                    )
-                        .podcastMiniBar(player: podcastPlayer, session: session)
-                        .tabItem { Label("Listen", systemImage: "headphones") }
-                    ConversationView(contentStore: contentStore, session: session)
-                        .podcastMiniBar(player: podcastPlayer, session: session)
-                        .tabItem { Label("Practice", systemImage: "mic.fill") }
-                    HectorView(session: session, entitlementStore: entitlementStore)
-                        .podcastMiniBar(player: podcastPlayer, session: session)
-                        .tabItem { Label("Hector", systemImage: "sparkles") }
-                    ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
-                        .podcastMiniBar(player: podcastPlayer, session: session)
-                        .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
-                }
-                // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
-                // for selected tab items, parchment tab-bar background instead
-                // of the system default, matching the web app's brand.
-                .tint(AlphonsoColor.moss)
-                .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
-                .toolbarBackground(.visible, for: .tabBar)
-                .task {
-                    // The player builds a client per call rather than
-                    // holding one, because PodcastClient cannot refresh the
-                    // token it was given.
-                    podcastPlayer.makeClient = { makePodcastClient(session: session) }
-                    await triggerSync()
-                    await hydrateThemeFromServer()
-                    notificationScheduler.scheduleWeeklyRecap()
-                    await registerRemotePushIfNeeded()
-                }
-                .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
-                    if !wasConnected && isConnected {
-                        Task { await triggerSync() }
+            if session.isRestoring {
+                // Keeps this identical, briefly, to a cold launch that has
+                // no persisted session at all -- see Session.restoreSession's
+                // own doc comment. Avoids flashing AuthView and then
+                // flipping straight to the signed-in app a moment later on
+                // every single launch, which is the exact scenario this
+                // whole persistence effort exists to fix.
+                AlphonsoColor.surface.ignoresSafeArea()
+            } else {
+                switch session.state {
+                case .signedOut, .awaitingCode:
+                    AuthView(session: session)
+                case .signedIn:
+                    // Exactly five tabs, deliberately. iPhone renders five and
+                    // collapses the rest into a system "More" list, so the
+                    // seven declared here previously meant Achievements was
+                    // already buried before Listen needed a slot. League,
+                    // Friends and Achievements now live behind Profile; Review
+                    // is reachable from a row at the top of Learn, which is
+                    // also what the badge below points at.
+                    //
+                    // Every tab's SF Symbol is distinct -- League and
+                    // Achievements both used "trophy.fill" before this change.
+                    // The mini bar is applied to each tab's CONTENT, not to
+                    // the TabView: an inset on the TabView is consumed inside
+                    // the tab bar's own region and the bar overlaps it (device
+                    // check #12). See View.podcastMiniBar.
+                    TabView {
+                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .tabItem { Label("Learn", systemImage: "book.fill") }
+                            .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
+                        ListenView(
+                            session: session,
+                            networkMonitor: networkMonitor,
+                            player: podcastPlayer,
+                            downloads: podcastDownloadManager
+                        )
+                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .tabItem { Label("Listen", systemImage: "headphones") }
+                        ConversationView(contentStore: contentStore, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .tabItem { Label("Practice", systemImage: "mic.fill") }
+                        HectorView(session: session, entitlementStore: entitlementStore)
+                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .tabItem { Label("Hector", systemImage: "sparkles") }
+                        ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                     }
-                }
-                .onChange(of: scenePhase) { _, newPhase in
-                    if newPhase == .active {
-                        Task { await triggerSync() }
-                    } else if newPhase == .background {
-                        // Flush the listening position before the system can
-                        // suspend or kill the process. Audio itself keeps
-                        // going -- that is what UIBackgroundModes=audio buys.
-                        podcastPlayer.applicationDidBackground()
+                    // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
+                    // for selected tab items, parchment tab-bar background instead
+                    // of the system default, matching the web app's brand.
+                    .tint(AlphonsoColor.moss)
+                    .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
+                    .toolbarBackground(.visible, for: .tabBar)
+                    .task {
+                        // The player builds a client per call rather than
+                        // holding one, because PodcastClient cannot refresh the
+                        // token it was given.
+                        podcastPlayer.makeClient = { makePodcastClient(session: session) }
+                        await triggerSync()
+                        await hydrateThemeFromServer()
+                        notificationScheduler.scheduleWeeklyRecap()
+                        await registerRemotePushIfNeeded()
                     }
-                }
-                .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
-                    guard let newToken else { return }
-                    Task { await uploadDeviceToken(newToken) }
+                    .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
+                        if !wasConnected && isConnected {
+                            Task { await triggerSync() }
+                        }
+                    }
+                    .onChange(of: scenePhase) { _, newPhase in
+                        if newPhase == .active {
+                            Task { await triggerSync() }
+                        } else if newPhase == .background {
+                            // Flush the listening position before the system can
+                            // suspend or kill the process. Audio itself keeps
+                            // going -- that is what UIBackgroundModes=audio buys.
+                            podcastPlayer.applicationDidBackground()
+                        }
+                    }
+                    .onChange(of: remotePushRegistrar.deviceTokenHex) { _, newToken in
+                        guard let newToken else { return }
+                        Task { await uploadDeviceToken(newToken) }
+                    }
                 }
             }
         }
+        .task { await session.restoreSession() }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
     }
 

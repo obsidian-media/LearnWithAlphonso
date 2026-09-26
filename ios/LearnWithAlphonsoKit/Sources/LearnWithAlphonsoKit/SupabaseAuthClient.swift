@@ -10,7 +10,7 @@ import FoundationNetworking
 /// doc's architecture section: two backends, each reused for what it's
 /// already good at -- this app's own Supabase project for auth/content,
 /// AlphonsoEcosystem's voice backend for AI conversation only).
-public struct SupabaseSession: Sendable, Equatable {
+public struct SupabaseSession: Sendable, Equatable, Codable {
     public let accessToken: String
     public let refreshToken: String
     public let expiresAt: Date
