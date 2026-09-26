@@ -76,9 +76,23 @@ final class ScreenshotTests: XCTestCase {
 
     private func captureLearnTab() {
         guard tapTab("Learn") else { return }
-        // The seeded account's real streak/due-review badge needs a moment
-        // to load from the network after the tab appears.
-        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
+        // Wait for a SYNC-DEPENDENT element, not just any text. The title
+        // "Learn with Alphonso" renders instantly from the bundle, so the
+        // old `staticTexts.firstMatch` wait returned immediately and the
+        // shot caught the PRE-SYNC empty state -- A1 selected, no streak
+        // banner, no XP/league pills, "Nothing due" -- even though the DB
+        // has this account as a seeded Sapphire/B2 learner with a 12-day
+        // streak (confirmed by querying it directly). The streak banner
+        // only renders once the server sync lands, and waiting for it also
+        // means the band picker has loaded the real level (B2) rather than
+        // the A1 default. The data is known to be present, so this appears
+        // given enough time; 30s covers a cold sync racing the launch task.
+        let synced = app.staticTexts
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "streak"))
+            .firstMatch
+        if !synced.waitForExistence(timeout: 30) {
+            XCTContext.runActivity(named: "Learn never synced -- shot may be empty") { _ in }
+        }
         save("01-learn")
     }
 
