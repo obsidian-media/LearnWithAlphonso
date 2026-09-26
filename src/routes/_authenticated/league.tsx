@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
+import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { LEAGUE_TIER_META, LEAGUE_TIERS, type LeagueTier } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
@@ -32,7 +33,7 @@ function LeaguePage() {
   const [period, setPeriod] = useState<"weekly" | "all-time">("weekly");
   const tier = useProgress((s) => s.leagueTier);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["leaderboard", scope, period],
     queryFn: () => getLeaderboard({ data: { scope, period } }),
   });
@@ -174,6 +175,13 @@ function LeaguePage() {
                   )}
                 </div>
                 <span className="tnum text-sm font-semibold text-ink">{row.xp} XP</span>
+                {!row.isYou && (
+                  <SocialSafetyMenu
+                    userId={row.user_id}
+                    displayName={row.display_name}
+                    onBlocked={() => refetch()}
+                  />
+                )}
               </li>
             ))}
           </ol>

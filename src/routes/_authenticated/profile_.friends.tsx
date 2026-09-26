@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
+import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { getFriends, removeFriend, type FriendEntry } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { useTheme } from "../../lib/theme";
@@ -186,6 +187,15 @@ function FriendsPage() {
                     >
                       ✕
                     </button>
+                    <SocialSafetyMenu
+                      userId={f.userId}
+                      displayName={f.displayName}
+                      onBlocked={() =>
+                        queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
+                          (prev ?? []).filter((x) => x.userId !== f.userId),
+                        )
+                      }
+                    />
                   </>
                 )}
               </div>
