@@ -15,6 +15,23 @@ struct LessonBrowserView: View {
     @State private var course: Course = .english
     @State private var showingSettings = false
     @State private var showingReview = false
+    /// Which CEFR band is currently showing. Defaults to A1 until
+    /// `loadLevel()` resolves the real value (or a placement test hasn't
+    /// been taken yet, in which case A1 is also the right default) --
+    /// mirrors web's `learn.tsx` `level` state exactly, so the two clients
+    /// group lessons by level the same way and don't drift.
+    @State private var selectedLevel: String = LessonBrowserView.levels[0].id
+
+    /// Ordered CEFR bands -- mirrors web's `src/data/levels.ts` LEVELS
+    /// exactly (same ids, same order, same names) so iOS and web group
+    /// lessons into identical bands rather than each deriving its own.
+    static let levels: [(id: String, name: String)] = [
+        ("A1", "Beginner"),
+        ("A2", "Elementary"),
+        ("B1", "Intermediate"),
+        ("B2", "Upper Int."),
+        ("C1", "Advanced"),
+    ]
 
     /// Due reviews from the offline cache -- no network call, same posture
     /// as StatusHeaderView above. See ReviewBadge's doc comment for why a
@@ -29,6 +46,14 @@ struct LessonBrowserView: View {
         case 1: return "1 item ready to review"
         default: return "\(dueReviewCount) items ready to review"
         }
+    }
+
+    /// Only this course's units at the selected band -- the fix for the
+    /// regression this whole feature closes: every unit across every
+    /// level used to render in one continuous list, so reaching your
+    /// actual level meant scrolling past everything below it first.
+    private var unitsForSelectedLevel: [Unit] {
+        contentStore.bundle(for: course).units.filter { $0.level == selectedLevel }
     }
 
     var body: some View {
@@ -65,7 +90,15 @@ struct LessonBrowserView: View {
 
                 WeeklyChallengesSection(session: session)
 
-                ForEach(contentStore.bundle(for: course).units) { unit in
+                LevelBandPicker(selectedLevel: $selectedLevel)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .onChange(of: selectedLevel) { _, newLevel in
+                        saveLevel(newLevel)
+                    }
+
+                ForEach(unitsForSelectedLevel) { unit in
                     let lessonRows = ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
                         NavigationLink(value: lesson.id) {
                             AlphonsoRowCard(
@@ -95,6 +128,13 @@ struct LessonBrowserView: View {
             }
             .scrollContentBackground(.hidden)
             .background(AlphonsoColor.surface)
+            // Re-fetches on every course switch too, since CEFR level is
+            // tracked per-language server-side (language_progress), not
+            // once per account -- the level that was right for English
+            // isn't necessarily right for French. Keyed by `course.code`
+            // (a String) rather than `course` itself -- Course declares
+            // only Sendable, not Equatable, which .task(id:) requires.
+            .task(id: course.code) { await loadLevel() }
             .navigationTitle("Learn with Alphonso")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -130,6 +170,81 @@ struct LessonBrowserView: View {
             }
         }
         .tint(AlphonsoColor.moss)
+    }
+
+    /// Mirrors web's `learn.tsx` on load: reads the server's saved CEFR
+    /// level for this course and lands there directly, rather than always
+    /// opening on A1 -- "a way to land on your current level instead of
+    /// scrolling" is the whole point of this fetch. Best-effort: a failed
+    /// fetch or no saved level yet (never placed) just keeps the A1
+    /// default, same posture as this file's other best-effort network calls.
+    private func loadLevel() async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        if let level = try? await client.fetchCefrLevel(course: course.code), !level.isEmpty {
+            selectedLevel = level
+        }
+    }
+
+    /// Fire-and-forget persist, mirroring web's `pick()`: the local band
+    /// switch is never blocked on the network round trip, and a failure
+    /// here just means the next launch re-lands on whatever was last
+    /// successfully saved rather than today's tap.
+    private func saveLevel(_ level: String) {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        Task {
+            try? await client.setCefrLevel(course: course.code, level: level)
+        }
+    }
+}
+
+private extension Course {
+    var code: String {
+        switch self {
+        case .english: return "en"
+        case .french: return "fr"
+        case .spanish: return "es"
+        }
+    }
+}
+
+/// A horizontally-scrolling row of CEFR band capsules -- iOS's equivalent
+/// of web's `SegmentedControl` in `learn.tsx`. A plain custom row instead
+/// of a native `Picker` since AlphonsoComponents has no segmented-capsule
+/// style to reuse today (CoursePicker above uses `.pickerStyle(.menu)`,
+/// wrong shape for "show all five bands at once").
+private struct LevelBandPicker: View {
+    @Binding var selectedLevel: String
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AlphonsoSpacing.sm) {
+                ForEach(LessonBrowserView.levels, id: \.id) { level in
+                    Button {
+                        selectedLevel = level.id
+                    } label: {
+                        VStack(spacing: 1) {
+                            Text(level.id)
+                                .font(AlphonsoFont.sans(13, weight: .semiBold))
+                            Text(level.name)
+                                .font(AlphonsoFont.sans(9))
+                        }
+                        .padding(.horizontal, AlphonsoSpacing.sm + 2)
+                        .padding(.vertical, AlphonsoSpacing.sm - 2)
+                        .foregroundStyle(level.id == selectedLevel ? AlphonsoColor.onPrimary : AlphonsoColor.ink)
+                        .background(
+                            Capsule().fill(level.id == selectedLevel ? AlphonsoColor.moss : AlphonsoColor.parchment)
+                        )
+                        .overlay(
+                            Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: level.id == selectedLevel ? 0 : 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 1)
+        }
     }
 }
 
