@@ -85,15 +85,24 @@ final class EntitlementStore {
             packages = offerings.current?.availablePackages ?? []
         } catch {
             packages = []
-            // TEMPORARY debug instrumentation (2026-09-23) -- surfaces the
-            // real underlying RevenueCat/StoreKit error in the UI itself,
-            // since there's no Mac available to read Xcode's device
-            // console for this TestFlight build. Revert to the plain
-            // "Couldn't load subscription options. Try again later."
-            // message once the real offerings() failure is diagnosed.
-            let nsError = error as NSError
+            // The 2026-09-23 debug instrumentation that dumped the raw
+            // NSError here has served its purpose and is removed. It said
+            // to revert "once the real offerings() failure is diagnosed",
+            // and it is: RevenueCat's current offering is correct and
+            // contains com.obsidianmedia.learnwithalphonso.pro.monthly
+            // (verified against the same endpoint the SDK uses); products
+            // simply cannot be fetched until App Store Connect approves a
+            // FIRST auto-renewable subscription, which only happens
+            // alongside the build's own review.
+            //
+            // So this is the EXPECTED pre-approval state, not a fault --
+            // and a reviewer was being shown a wall of red SDK text with
+            // rev.cat troubleshooting URLs, which reads as broken and
+            // contradicts what our own review notes tell them to expect.
+            // The underlying error still goes to the console for us.
+            print("[EntitlementStore] offerings() failed: \(error)")
             errorMessage =
-                "Couldn't load subscription options: \(nsError.domain) code \(nsError.code): \(error.localizedDescription)"
+                "Subscription options aren't available yet. This unlocks once the App Store finishes reviewing our subscription."
         }
     }
 
