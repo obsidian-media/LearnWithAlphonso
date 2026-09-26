@@ -399,6 +399,8 @@ final class AIConversationClientTests: XCTestCase {
 
         XCTAssertEqual(audio, Data([0xFF, 0xD8]))
         XCTAssertEqual(callCount, 2)
+    }
+
     // MARK: - gradeTranslation (no prior coverage -- added alongside the
     // new placementId overload the iOS placement exam needs)
 
