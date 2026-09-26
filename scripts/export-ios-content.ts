@@ -28,6 +28,7 @@ import {
   buildIOSCampaignsBundle,
   buildIOSAchievementsBundle,
   buildIOSVocabImagesBundle,
+  buildIOSPlacementBundle,
 } from "../src/lib/ios-content-export";
 
 const OUT_DIRS = [
@@ -55,3 +56,6 @@ writeJSON("scenarios.json", buildIOSScenariosBundle());
 writeJSON("campaigns.json", buildIOSCampaignsBundle());
 writeJSON("achievements.json", buildIOSAchievementsBundle());
 writeJSON("vocab-images.json", buildIOSVocabImagesBundle());
+writeJSON("placement-en.json", buildIOSPlacementBundle("en"));
+writeJSON("placement-fr.json", buildIOSPlacementBundle("fr"));
+writeJSON("placement-es.json", buildIOSPlacementBundle("es"));

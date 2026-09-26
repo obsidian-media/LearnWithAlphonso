@@ -18,6 +18,14 @@ struct RootView: View {
     /// makes playback survive navigation for free on iOS -- the web app had
     /// to be restructured to get the same property.
     @State private var podcastPlayer = PodcastAudioPlayer()
+    /// Presents PlacementView once, right after a fresh sign-in, when this
+    /// account's English placement has genuinely never been taken -- see
+    /// PlacementView.swift's own doc comment for why this is keyed on that
+    /// durable signal rather than a one-time "just signed up" event. Not a
+    /// hard gate: PlacementView's own exit button dismisses it the same as
+    /// this, and LessonBrowserView's persistent banner is the fallback for
+    /// anyone who skips it here.
+    @State private var showPlacementGate = false
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -87,6 +95,11 @@ struct RootView: View {
                     .tint(AlphonsoColor.moss)
                     .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                     .toolbarBackground(.visible, for: .tabBar)
+                    .fullScreenCover(isPresented: $showPlacementGate) {
+                        PlacementView(contentStore: contentStore, session: session, course: .english) {
+                            showPlacementGate = false
+                        }
+                    }
                     .task {
                         // The player builds a client per call rather than
                         // holding one, because PodcastClient cannot refresh the
@@ -96,6 +109,7 @@ struct RootView: View {
                         await hydrateThemeFromServer()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
+                        await checkPlacementGate()
                         // Hector re-parenting Phase 1's own prerequisite:
                         // aliases RevenueCat's subscriber identity to this
                         // account so a server endpoint can verify "is this
@@ -165,6 +179,27 @@ struct RootView: View {
             syncQueueStore.updateLastKnownProgress(fetched)
         } else {
             syncQueueStore.markSyncedNow()
+        }
+    }
+
+    /// Whether English placement has genuinely never been taken for this
+    /// account -- see PlacementView.swift's doc comment for why this
+    /// checks `fetchPlacementTakenAt` rather than `fetchCefrLevel`
+    /// returning nil (a `language_progress` row from ordinary lesson
+    /// activity, `cefr_level` defaulted to 'A1', is not the same as
+    /// placement having run). Best-effort by design: a failed check just
+    /// means no prompt this launch, same posture as hydrateThemeFromServer
+    /// below -- LessonBrowserView's persistent banner is the fallback
+    /// that still catches this on its own next successful check.
+    private func checkPlacementGate() async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            if try await client.fetchPlacementTakenAt(course: "en") == nil {
+                showPlacementGate = true
+            }
+        } catch {
+            // See doc comment above -- deliberately silent.
         }
     }
 

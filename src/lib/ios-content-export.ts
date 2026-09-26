@@ -4,6 +4,7 @@ import { CAMPAIGNS, type Campaign } from "@/data/campaigns";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
+import type { PlacementQuestion } from "@/data/placement";
 
 export type IOSContentBundle = {
   course: Course;
@@ -57,4 +58,18 @@ export function buildIOSAchievementsBundle(): Achievement[] {
 /** Same pass-through reasoning as buildIOSContentBundle, for VOCAB_IMAGES. */
 export function buildIOSVocabImagesBundle(): Record<string, VocabImage> {
   return VOCAB_IMAGES;
+}
+
+/**
+ * The full, unsampled placement-question pool for one course (9 per CEFR
+ * band -- see placement.ts's PLACEMENT_QUESTIONS doc comment). Same
+ * pass-through reasoning as buildIOSContentBundle: iOS decodes this into
+ * the mirrored `PlacementQuestion` enum in PlacementModels.swift and runs
+ * its own port of pickPlacementSet/groupByBand/nextAdaptiveBand/
+ * scorePlacement (PlacementLogic.swift) client-side, exactly like the web
+ * app's placement.tsx -- so the *sampling* happens on-device, fresh per
+ * attempt, from this same fixed pool.
+ */
+export function buildIOSPlacementBundle(course: Course): PlacementQuestion[] {
+  return getCourse(course).placementPool;
 }

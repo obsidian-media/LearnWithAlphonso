@@ -95,6 +95,13 @@ struct LessonBrowserView: View {
 
                 WeeklyChallengesSection(session: session)
 
+                // Fallback for anyone RootView's post-sign-in placement
+                // gate didn't reach (skipped it, or it fires for the
+                // account's default course only) -- mirrors learn.tsx's
+                // own persistent "Take the placement test" banner
+                // exactly. See PlacementView.swift's doc comment.
+                PlacementBannerSection(contentStore: contentStore, session: session, course: course)
+
                 LevelBandPicker(selectedLevel: $selectedLevel)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
                     .listRowSeparator(.hidden)
@@ -103,6 +110,11 @@ struct LessonBrowserView: View {
                         saveLevel(newLevel)
                     }
 
+                // Filtered, not the whole bundle: showing every unit at
+                // every level in one list is the regression the CEFR
+                // bands exist to close. The placement banner above and
+                // the band picker are complementary -- placement chooses
+                // your level, the picker lets you move off it.
                 ForEach(unitsForSelectedLevel) { unit in
                     let lessonRows = ForEach(Array(unit.lessons.enumerated()), id: \.element.id) { index, lesson in
                         NavigationLink(value: lesson.id) {
@@ -301,5 +313,73 @@ private struct WeeklyChallengesSection: View {
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         challenges = (try? await client.getWeeklyChallenges()) ?? []
         isLoading = false
+    }
+}
+
+/// Mirrors learn.tsx's own persistent "Take the placement test" banner:
+/// hidden until the check resolves (same `!hydrated` guard reasoning as
+/// WeeklyChallengesSection above), then shown only when this course's
+/// placement genuinely hasn't been taken. Re-checks whenever `course`
+/// changes -- placement is per-course, and this view's own CoursePicker
+/// can switch it at any time.
+private struct PlacementBannerSection: View {
+    let contentStore: ContentStore
+    let session: Session
+    let course: Course
+
+    @State private var isChecking = true
+    @State private var isTaken = false
+    @State private var showingPlacementTest = false
+
+    var body: some View {
+        Group {
+            if !isChecking && !isTaken {
+                Section {
+                    Button {
+                        showingPlacementTest = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Not sure where to start?")
+                                .font(AlphonsoFont.sans(15, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ink)
+                            Text("Take a quick placement test and we'll set your CEFR level for you.")
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                            Text("Take the placement test")
+                                .font(AlphonsoFont.sans(12, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.moss)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listRowBackground(AlphonsoColor.ember.opacity(0.1))
+            }
+        }
+        // Same stable-identity-across-loading reasoning as
+        // WeeklyChallengesSection's own .task -- fires once per
+        // appearance, and again whenever `course` changes.
+        .task(id: course) { await check() }
+        .fullScreenCover(isPresented: $showingPlacementTest) {
+            PlacementView(contentStore: contentStore, session: session, course: course) {
+                showingPlacementTest = false
+                isTaken = true
+            }
+        }
+    }
+
+    private func check() async {
+        isChecking = true
+        guard let accessToken = session.accessToken else { isChecking = false; return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            isTaken = try await client.fetchPlacementTakenAt(course: course.code) != nil
+        } catch {
+            // Best-effort: leave the banner hidden for this check rather
+            // than showing it on a network hiccup -- same posture as
+            // WeeklyChallengesSection.load().
+            isTaken = true
+        }
+        isChecking = false
     }
 }
