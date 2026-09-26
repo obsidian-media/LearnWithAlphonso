@@ -73,7 +73,13 @@ jobs:
 
       - name: Find and boot ${{ matrix.device }}
         run: |
-          UDID=$(xcrun simctl list devices available | grep -F "${{ matrix.device }} (" | head -1 | grep -oE '[0-9A-F-]{36}')
+          # `|| true` on the pipeline itself, not just the later boot call --
+          # under `set -e` (this step's shell), a failing last command in a
+          # `var=$(...)` assignment aborts the script immediately, before
+          # the `if [ -z "$UDID" ]` diagnostic branch below ever runs. Found
+          # live: the first real run of this step failed with no diagnostic
+          # output at all, for exactly this reason.
+          UDID=$(xcrun simctl list devices available | grep -F "${{ matrix.device }} (" | head -1 | grep -oE '[0-9A-F-]{36}' || true)
           if [ -z "$UDID" ]; then
             echo "No simulator matching '${{ matrix.device }}'. Available device types:"
             xcrun simctl list devicetypes
