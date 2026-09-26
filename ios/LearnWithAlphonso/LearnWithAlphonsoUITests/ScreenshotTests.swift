@@ -113,26 +113,31 @@ final class ScreenshotTests: XCTestCase {
 
     private func captureListenLibrary() {
         guard tapTab("Listen") else { return }
-        // Confirmed live: the other five shots' content is either bundled
-        // (Learn) or already-cached (review/Hector/Profile) -- this is the
-        // first shot in the sequence that waits on a real, cold network
-        // fetch (the folder tree), while RootView's own launch .task is
-        // also mid-flight (triggerSync/hydrateThemeFromServer/entitlement
-        // login all fire at once) -- 15s wasn't enough on a real run
-        // ("English" -- a real top-level folder, confirmed against the
-        // live podcast_folders table -- never appeared in time), and a
-        // later run showed 25s still isn't a hard guarantee (one of two
-        // simulator jobs missed it at t=95s with 25s in place, while the
-        // other job's identical wait succeeded) -- this is CI runner/
-        // network jitter, not a wrong selector, so more margin helps but
-        // doesn't fully remove the risk; the shot is allowed to soft-fail.
-        guard tapContaining(app.staticTexts, "English", timeout: 40) else { return }
-        guard tapContaining(app.staticTexts, "A1", timeout: 10) else { return }
-        // Seeded resumed 40% into "Ordering Coffee" (scripts/seed-demo-account.ts)
-        // so the mini player should already be docked, mid-playback, without
-        // needing to tap play.
-        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
+
+        // Capture the library root FIRST, unconditionally. Everything
+        // below this line is a network-dependent enhancement, and the
+        // previous version made the whole shot depend on it: two taps
+        // ("English", then "A1") that wait on a cold fetch of the folder
+        // tree while RootView's launch .task is still in flight. When
+        // either timed out the function simply returned, so 05-listen was
+        // MISSING from both device sets -- a soft-fail that cost the
+        // entire screenshot rather than the extra detail it was guarding.
+        //
+        // The root view is worth shipping on its own: it is the audio
+        // library, which is what the App Store description promises.
+        // Never let an optional improvement take the guaranteed shot
+        // down with it.
+        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 15)
         save("05-listen")
+
+        // Now the richer shot, best-effort. Seeded resumed 40% into
+        // "Ordering Coffee" (scripts/seed-demo-account.ts) so the mini
+        // player should already be docked mid-playback without tapping
+        // play. If the fetch is slow we keep 05-listen and lose only this.
+        guard tapContaining(app.staticTexts, "English", timeout: 40) else { return }
+        guard tapContaining(app.staticTexts, "A1", timeout: 15) else { return }
+        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
+        save("05b-listen-episodes")
     }
 
     private func captureProfileHub() {
