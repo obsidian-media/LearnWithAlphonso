@@ -1,0 +1,41 @@
+-- Security fix (pre-launch review, 2026-09-26): fr_insert_own
+-- (20260725012934_...sql) lets any authenticated user directly
+-- `POST /rest/v1/friendships` with `{user_id: me, friend_id: <anyone>,
+-- status: 'accepted'}` -- its WITH CHECK only verifies `user_id =
+-- auth.uid()`. It never checks `friend_id` or `status`, and the table's
+-- own real gate, accept_friend_invite (SECURITY DEFINER), only ever
+-- exists to require the OTHER party's consent by inserting both
+-- directions atomically -- a fact this table-level grant/policy quietly
+-- bypasses entirely.
+--
+-- Confirmed live and exploitable end to end with two throwaway accounts
+-- (no real user touched): a one-sided `friendships` row was inserted
+-- unilaterally targeting a second account that never invited or
+-- accepted anything, and that forged row was then enough to satisfy
+-- create_duel's own `EXISTS (... status = 'accepted')` check --
+-- producing a real, unsolicited duel challenge against a stranger.
+-- create_duel's "must be mutual, accepted friends" restriction is the
+-- security review's whole design justification for creating duels this
+-- way at all; this bypass defeats it completely, no consent required
+-- from the target on either side.
+--
+-- Worse than the duel case alone: block_user only DELETEs existing
+-- friendships rows -- it does not, and structurally cannot, prevent a
+-- future forged INSERT the way this migration now does. Before this
+-- fix, a user who had just been blocked (or unblocked-then-reblocked)
+-- could re-insert the same one-sided row and immediately resume
+-- reaching the blocked party through create_duel (and, contingent on a
+-- separate, correctly-behaving blocked_users check in
+-- nudges_insert_to_friend, possibly nudges) -- directly undermining the
+-- Block and Report feature's own purpose
+-- (20260928020000_block_and_report.sql).
+--
+-- The fix: revoke the client's ability to write this table directly at
+-- all, the same "no client grant, only the SECURITY DEFINER RPC touches
+-- it" shape this codebase already uses for duel_queue, team_members and
+-- team_weekly_rewards. Grepped src/ for `.from("friendships").insert(`
+-- first -- zero matches; the app's own friend-request flow has only
+-- ever gone through accept_friend_invite, which runs as the function
+-- owner and needs no client-facing INSERT grant to keep working.
+DROP POLICY IF EXISTS "fr_insert_own" ON public.friendships;
+REVOKE INSERT ON public.friendships FROM authenticated;
