@@ -117,27 +117,25 @@ jobs:
           SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/screenshots/${{ matrix.label }}
         run: |
           mkdir -p "$SCREENSHOT_OUTPUT_DIR"
-          # TEST_RUNNER_<name> is the specific convention xcodebuild uses to
-          # inject an env var into the XCTest bundle's OWN process (running
-          # inside the simulator), stripped of that prefix -- confirmed live
-          # this is load-bearing: setting UI_TEST_ACCESS_TOKEN etc. as this
-          # *step's* shell env (as done for the mint-session step above)
-          # never reached the xctest process at all. ScreenshotTests then
-          # forwards them again, unprefixed, to the APP under test via
-          # app.launchEnvironment -- that second hop was already correct;
-          # this first one was missing, so the app sat on the plain sign-in
-          # screen for all six shots, every run, until now.
+          # A TEST_RUNNER_-prefixed xcodebuild argument (tried first) did
+          # NOT reach the xctest process -- confirmed live: the app was
+          # still on the plain sign-in screen after that change shipped.
+          # These plain NAME=value overrides instead resolve project.yml's
+          # scheme-level `environmentVariables` ($(UI_TEST_ACCESS_TOKEN)
+          # etc.), the actual first-class Xcode Test-action-environment
+          # feature, not a CLI convention -- see that scheme block's own
+          # comment for why this replaces rather than stacks on the guess.
           xcodebuild test-without-building \
             -project LearnWithAlphonso.xcodeproj \
             -scheme LearnWithAlphonso \
             -destination "id=$SIMULATOR_UDID" \
             -resultBundlePath "${{ github.workspace }}/screenshots/${{ matrix.label }}.xcresult" \
             -only-testing:LearnWithAlphonsoUITests/ScreenshotTests/testCaptureAppStoreScreenshots \
-            TEST_RUNNER_SCREENSHOT_OUTPUT_DIR="$SCREENSHOT_OUTPUT_DIR" \
-            TEST_RUNNER_UI_TEST_ACCESS_TOKEN="$UI_TEST_ACCESS_TOKEN" \
-            TEST_RUNNER_UI_TEST_REFRESH_TOKEN="$UI_TEST_REFRESH_TOKEN" \
-            TEST_RUNNER_UI_TEST_USER_ID="$UI_TEST_USER_ID" \
-            TEST_RUNNER_UI_TEST_EXPIRES_AT="$UI_TEST_EXPIRES_AT"
+            SCREENSHOT_OUTPUT_DIR="$SCREENSHOT_OUTPUT_DIR" \
+            UI_TEST_ACCESS_TOKEN="$UI_TEST_ACCESS_TOKEN" \
+            UI_TEST_REFRESH_TOKEN="$UI_TEST_REFRESH_TOKEN" \
+            UI_TEST_USER_ID="$UI_TEST_USER_ID" \
+            UI_TEST_EXPIRES_AT="$UI_TEST_EXPIRES_AT"
 
       - name: Upload screenshots
         if: always()

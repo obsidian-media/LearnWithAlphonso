@@ -32,8 +32,18 @@ final class ScreenshotTests: XCTestCase {
         // UI_TEST_* come from seed-demo-account.ts's session (minted by
         // scripts/mint-demo-session.ts) via the workflow's env, forwarded
         // here as launch environment -- see Session.uiTestBootstrapSession.
-        app.launchEnvironment = ProcessInfo.processInfo.environment
-        outputDir = ProcessInfo.processInfo.environment["SCREENSHOT_OUTPUT_DIR"] ?? NSTemporaryDirectory()
+        let env = ProcessInfo.processInfo.environment
+        // Prints regardless of outcome -- the previous two attempts to get
+        // UI_TEST_ACCESS_TOKEN from the CI shell into this process each
+        // silently failed a different way (a TEST_RUNNER_-prefixed
+        // xcodebuild argument, then still nothing after that fix), and
+        // both were only diagnosable after guessing a specific cause and
+        // burning a full CI round-trip on it. This says directly, every
+        // run, whether this process actually has the value, instead of
+        // inferring it from whether the app happened to sign in.
+        print("=== UI_TEST_ACCESS_TOKEN present in this process's env: \(env["UI_TEST_ACCESS_TOKEN"] != nil) ===")
+        app.launchEnvironment = env
+        outputDir = env["SCREENSHOT_OUTPUT_DIR"] ?? NSTemporaryDirectory()
         app.launch()
     }
 
