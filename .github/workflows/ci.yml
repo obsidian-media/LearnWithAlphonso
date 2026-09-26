@@ -218,9 +218,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned, NOT `latest`. `latest` makes setup-cli resolve the release
+      # through the GitHub API, which is rate-limited on shared runners --
+      # it failed this job twice on 2026-09-26 with "rate limit exceeded",
+      # before a single migration ran. A red X here reads exactly like a
+      # broken migration, and this job applies migrations, deploys Edge
+      # Functions, syncs APNs and seeds the curriculum, so misreading it is
+      # expensive. Bump deliberately; that is the trade being made.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.118.0
 
       - name: Link Supabase project
         run: supabase link --project-ref qhcjpfbxfcltjbiuknyt
