@@ -53,6 +53,22 @@ jobs:
       # on every PR is the same cheap-loud-failure shape as that check. The
       # fix when this fails is `gh workflow run regenerate-supabase-types.yml`,
       # never a hand edit.
+      #
+      # KNOWN FALSE-POSITIVE MODE (not fixed by this comment, only named):
+      # this regenerates against PRODUCTION, not against what this PR's own
+      # pending migrations would produce -- migrations only apply post-merge,
+      # in deploy-supabase below. A PR that adds a migration AND updates
+      # types.ts in the same PR to use the new table (the normal way to avoid
+      # an `as any` cast, per PR #153/#158) will ALWAYS fail here, correctly
+      # regenerating the pre-migration shape and diffing it against the
+      # forward-looking committed one -- and re-running the suggested fix
+      # would not help, since it hits the same unmigrated production schema.
+      # The real fix needs generating against a database with THIS PR's
+      # migrations applied (a local/ephemeral Postgres in CI, which does not
+      # exist here yet -- see podcast-schema.test.ts's comment on the same
+      # gap), not a one-line change. Until then: land the migration alone,
+      # merge, let deploy-supabase apply it, then regenerate types.ts in a
+      # follow-up PR/commit.
       - uses: supabase/setup-cli@v1
         with:
           version: 2.118.0
@@ -62,7 +78,7 @@ jobs:
           supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > src/integrations/supabase/types.ts
           bunx prettier --write src/integrations/supabase/types.ts
           if ! git diff --quiet -- src/integrations/supabase/types.ts; then
-            echo "::error::src/integrations/supabase/types.ts is stale. Run the 'Regenerate Supabase Types' workflow (gh workflow run regenerate-supabase-types.yml) and let it commit the result -- never hand-edit this file."
+            echo "::error::src/integrations/supabase/types.ts is stale. Run the 'Regenerate Supabase Types' workflow (gh workflow run regenerate-supabase-types.yml) and let it commit the result -- never hand-edit this file. If this PR ALSO adds a new migration, this failure is expected until that migration is merged and deployed -- see this step's header comment; re-running this exact fix will not help yet."
             git diff --stat -- src/integrations/supabase/types.ts
             git diff -- src/integrations/supabase/types.ts | head -100
             exit 1
@@ -239,7 +255,20 @@ jobs:
     name: Deploy Supabase migrations + Edge Functions
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint-and-typecheck, e2e]
+    # deno-tests added deliberately: it is the ONLY CI job that ever runs or
+    # type-checks anything under supabase/functions/ (tsc's own include is
+    # scoped to src/**, and vitest's is scoped to src/**/*.test.ts) -- and
+    # this job deploys those exact files with `supabase functions deploy
+    # complete-lesson`/`grade-review`. Without this, a red deno-tests result
+    # (a broken hand-synced port, a missing deno.json, a duplicate migration
+    # version) has zero effect on whether the deploy proceeds: GitHub Actions
+    # only blocks a job on what's in its OWN `needs`, and this job's deploy
+    # step ships the identical code deno-tests was supposed to have vetted.
+    # Found by auditing this file for exactly this shape, not by an incident
+    # -- confirmed via real run history that deno-tests happens to finish
+    # first today (it's fast), which is why this hasn't caused a visible
+    # failure yet; that's luck, not protection.
+    needs: [lint-and-typecheck, e2e, deno-tests]
     steps:
       - uses: actions/checkout@v4
 
