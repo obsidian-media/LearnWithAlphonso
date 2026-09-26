@@ -155,8 +155,19 @@ final class ScreenshotTests: XCTestCase {
             XCTContext.runActivity(named: "Missing tab: \(label)") { _ in }
             return false
         }
-        button.tap()
-        return true
+        // Verify the tap actually SELECTED the tab. A tap that lands on a
+        // sheet still "succeeds" as far as XCUITest is concerned, and the
+        // caller then screenshots whatever was already on screen -- which
+        // is how three captures came back byte-identical while the run
+        // reported success. Returning false here means the caller skips
+        // the shot instead of saving a wrong one.
+        for _ in 0..<3 {
+            if button.isHittable { button.tap() }
+            if button.isSelected { return true }
+            _ = button.waitForExistence(timeout: 1)
+        }
+        XCTContext.runActivity(named: "Tab never became selected: \(label)") { _ in }
+        return false
     }
 
     /// `label CONTAINS` rather than an exact dictionary lookup -- SwiftUI
@@ -180,14 +191,35 @@ final class ScreenshotTests: XCTestCase {
     }
 
     private func dismissSheet() {
-        // Sheets in this app are dismissed by a "Cancel"/"Done"-style
-        // top-bar button or a swipe; try the common label first, fall back
-        // to a swipe-down gesture.
-        let closeButton = app.navigationBars.buttons["Done"]
-        if closeButton.waitForExistence(timeout: 3) {
-            closeButton.tap()
-        } else {
-            app.swipeDown()
+        // A single swipeDown() is NOT reliable: on scrollable sheet
+        // content it scrolls the content instead of dismissing, and the
+        // old version never checked whether it worked. When it silently
+        // failed the sheet stayed up and EVERY later capture photographed
+        // it -- 03-review, 04-hector and 05-listen came back
+        // byte-identical, and the run reported success. That is worse
+        // than a missing shot: a duplicate labelled "listen" looks
+        // uploadable.
+        //
+        // Retry, and confirm the tab bar is actually reachable again.
+        for attempt in 0..<4 {
+            if app.tabBars.buttons.firstMatch.isHittable { return }
+            let done = app.navigationBars.buttons["Done"]
+            if done.exists && done.isHittable {
+                done.tap()
+            } else if attempt == 0 {
+                app.swipeDown()
+            } else {
+                // Drag from well inside the sheet to the bottom edge --
+                // a real dismissal gesture rather than a flick that a
+                // scroll view can swallow.
+                let top = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25))
+                let bottom = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95))
+                top.press(forDuration: 0.1, thenDragTo: bottom)
+            }
+            _ = app.tabBars.buttons.firstMatch.waitForExistence(timeout: 2)
+        }
+        if !app.tabBars.buttons.firstMatch.isHittable {
+            XCTContext.runActivity(named: "Sheet would not dismiss") { _ in }
         }
     }
 
