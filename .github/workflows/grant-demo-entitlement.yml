@@ -1,0 +1,50 @@
+name: Grant Demo Account Pro Entitlement
+
+# Grants the Pro entitlement to the App Review demo account via
+# RevenueCat's promotional-entitlement API, and reads it back to prove
+# it took.
+#
+# WHY THIS IS NEEDED AT ALL: "Alphonso Pro Monthly" is our first
+# auto-renewable subscription, so Apple will not let `offerings()` load
+# until it is reviewed alongside the build. Nobody can buy it yet --
+# reviewer included. A promotional grant is server-side and independent
+# of that gate, so it is the only way the reviewer reaches Hector, and
+# the only way the screenshot pipeline avoids depending on a paywall
+# that cannot succeed.
+#
+# WHY THERE IS NO EMAIL INPUT: this repository is PUBLIC and
+# workflow_dispatch inputs are visible in run logs. The account is read
+# from the DEMO_ACCOUNT_EMAIL secret instead.
+#
+# Re-runnable: granting an entitlement that already exists simply
+# refreshes it.
+on:
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: "RevenueCat promotional duration"
+        required: false
+        default: lifetime
+        type: choice
+        options: [lifetime, yearly, six_month, three_month, monthly, weekly]
+
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bunx tsx scripts/grant-demo-entitlement.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # The SECRET key, not REVENUECAT_API_KEY -- that one is the
+          # public SDK key baked into Info.plist and cannot grant
+          # anything. Same name the Phase 1 server gate reads, so a
+          # mismatch here would also mean that gate is misconfigured.
+          REVENUECAT_SECRET_API_KEY: ${{ secrets.REVENUECAT_SECRET_API_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+          DURATION: ${{ inputs.duration }}

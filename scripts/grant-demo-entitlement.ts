@@ -1,0 +1,136 @@
+/**
+ * Grants the Pro entitlement to the App Review demo account, via
+ * RevenueCat's promotional-entitlement API.
+ *
+ * **Why a promotional grant rather than a purchase.** "Alphonso Pro
+ * Monthly" is our FIRST auto-renewable subscription, so per Apple's own
+ * rules `offerings()` cannot load until it is reviewed alongside the
+ * build -- nobody, reviewer included, can buy it yet. A promotional
+ * entitlement is granted server-side and is independent of that gate, so
+ * it is the only way the reviewer can reach Hector at all. The same
+ * grant serves the screenshot pipeline, which must not depend on the
+ * paywall for the identical reason.
+ *
+ * **Why this is a workflow and not a local script.** The RevenueCat
+ * *secret* key and the service-role key live in repo secrets and must
+ * never pass through an agent session. This runs in CI, reads them from
+ * the environment, and prints neither.
+ *
+ * **Why the account comes from a secret and not a workflow input.** This
+ * repository is PUBLIC, and `workflow_dispatch` inputs are visible in
+ * run logs to anyone. The demo account's address is not something to
+ * publish, so it is read from `DEMO_ACCOUNT_EMAIL` instead.
+ *
+ * Usage: dispatch `.github/workflows/grant-demo-entitlement.yml`.
+ */
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const REVENUECAT_SECRET_API_KEY = process.env.REVENUECAT_SECRET_API_KEY;
+const DEMO_ACCOUNT_EMAIL = process.env.DEMO_ACCOUNT_EMAIL;
+const ENTITLEMENT = process.env.ENTITLEMENT || "pro";
+const DURATION = process.env.DURATION || "lifetime";
+
+const missing = [
+  ["SUPABASE_URL", SUPABASE_URL],
+  ["SUPABASE_SERVICE_ROLE_KEY", SERVICE_ROLE_KEY],
+  ["REVENUECAT_SECRET_API_KEY", REVENUECAT_SECRET_API_KEY],
+  ["DEMO_ACCOUNT_EMAIL", DEMO_ACCOUNT_EMAIL],
+]
+  .filter(([, v]) => !v)
+  .map(([k]) => k);
+if (missing.length) {
+  console.error(`Missing environment variable(s): ${missing.join(", ")}`);
+  process.exit(1);
+}
+
+/** A uuid is not a secret, but this runs in a PUBLIC repo's logs. */
+function short(id: string): string {
+  return `${id.slice(0, 8)}...${id.slice(-4)}`;
+}
+
+/**
+ * The Supabase user id IS RevenueCat's `app_user_id` -- that is the key
+ * `isProSubscriber` looks the subscriber up by
+ * (`revenuecat-entitlement.ts`). Granting against anything else would
+ * produce an entitlement the server gate can never see.
+ */
+async function resolveUserId(): Promise<string> {
+  const target = DEMO_ACCOUNT_EMAIL!.trim().toLowerCase();
+  // GoTrue's admin list is paginated; walk it rather than assuming the
+  // account is on page one.
+  for (let page = 1; page <= 20; page++) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=200`, {
+      headers: {
+        apikey: SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
+      },
+    });
+    if (!res.ok) throw new Error(`admin/users -> ${res.status}: ${await res.text()}`);
+    const body = (await res.json()) as { users?: Array<{ id: string; email?: string }> };
+    const users = body.users ?? [];
+    if (users.length === 0) break;
+    const match = users.find((u) => (u.email ?? "").trim().toLowerCase() === target);
+    if (match) return match.id;
+  }
+  throw new Error(
+    "No account matches DEMO_ACCOUNT_EMAIL. Check the secret's value -- " +
+      "the address must already have signed up at least once.",
+  );
+}
+
+async function main() {
+  const appUserId = await resolveUserId();
+  console.log(`Resolved demo account -> app_user_id ${short(appUserId)}`);
+
+  console.log(`Granting "${ENTITLEMENT}" (${DURATION})...`);
+  const grant = await fetch(
+    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}` +
+      `/entitlements/${encodeURIComponent(ENTITLEMENT)}/promotional`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REVENUECAT_SECRET_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ duration: DURATION }),
+    },
+  );
+  if (!grant.ok) {
+    throw new Error(`grant -> ${grant.status}: ${await grant.text()}`);
+  }
+
+  // Read it back rather than trusting the 201. This asserts the exact
+  // property that matters -- that `isProSubscriber` will now answer true
+  // for this account -- using the same shape that function reads
+  // (`subscriber.entitlements[id].expires_date`, null meaning lifetime).
+  const check = await fetch(
+    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`,
+    { headers: { Authorization: `Bearer ${REVENUECAT_SECRET_API_KEY}` } },
+  );
+  if (!check.ok) throw new Error(`verify -> ${check.status}: ${await check.text()}`);
+  const body = (await check.json()) as {
+    subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> };
+  };
+  const ent = body.subscriber?.entitlements?.[ENTITLEMENT];
+  if (!ent) {
+    throw new Error(
+      `Granted, but "${ENTITLEMENT}" is absent when reading the subscriber back. ` +
+        `Check the entitlement identifier matches RevenueCat's dashboard.`,
+    );
+  }
+  const active = !ent.expires_date || new Date(ent.expires_date).getTime() > Date.now();
+  if (!active) {
+    throw new Error(`Granted, but "${ENTITLEMENT}" reads back expired at ${ent.expires_date}.`);
+  }
+
+  console.log(
+    `Verified: "${ENTITLEMENT}" is active for ${short(appUserId)} ` +
+      `(expires: ${ent.expires_date ?? "never"}).`,
+  );
+  console.log("The reviewer's account can now open Hector, and screenshots need no paywall.");
+}
+
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
+});
