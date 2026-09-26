@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
 import { findCycle, isValidSlug, type PodcastFolder } from "./podcast-tree";
@@ -104,32 +105,22 @@ export function affectedOrThrow(
   if (!result.count) throw new Error(missingMessage);
 }
 
-/**
- * The generated Database type does not know the podcast tables (see
- * podcast.functions.ts's note -- regenerating needs the live project).
- * Same workaround, same reason: talk to an untyped client rather than
- * hand-edit a generated file.
- */
-function untyped(client: unknown): SupabaseClient {
-  return client as SupabaseClient;
-}
-
 /** The whole folder tree, including branches with nothing published. */
 export const adminListFolders = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async ({ context }): Promise<PodcastFolder[]> => {
-    const { data, error } = await untyped(context.supabaseAdmin)
+    const { data, error } = await context.supabaseAdmin
       .from("podcast_folders")
       .select("id,parent_id,slug,title,description,sort_order")
       .order("sort_order", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []).map((row) => ({
-      id: row.id as string,
-      parentId: (row.parent_id as string | null) ?? null,
-      slug: row.slug as string,
-      title: row.title as string,
-      description: (row.description as string | null) ?? null,
-      sortOrder: row.sort_order as number,
+      id: row.id,
+      parentId: row.parent_id ?? null,
+      slug: row.slug,
+      title: row.title,
+      description: row.description ?? null,
+      sortOrder: row.sort_order,
     }));
   });
 
@@ -160,7 +151,7 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ id: string }> => {
-    const { data: row, error } = await untyped(context.supabaseAdmin)
+    const { data: row, error } = await context.supabaseAdmin
       .from("podcast_folders")
       .insert({
         parent_id: data.parentId,
@@ -184,7 +175,7 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
           : error.message,
       );
     }
-    return { id: row.id as string };
+    return { id: row.id };
   });
 
 export const adminRenameFolder = createServerFn({ method: "POST" })
@@ -202,7 +193,7 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
     // Title and description only. The slug is part of every episode's
     // storage path underneath this folder, so changing it here would
     // orphan audio without moving a single object.
-    const result = await untyped(context.supabaseAdmin)
+    const result = await context.supabaseAdmin
       .from("podcast_folders")
       .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
@@ -216,18 +207,18 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), parentId: z.string().uuid().nullable() }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const client = untyped(context.supabaseAdmin);
+    const client = context.supabaseAdmin;
     const { data: rows, error: readError } = await client
       .from("podcast_folders")
       .select("id,parent_id,slug,title,description,sort_order");
     if (readError) throw new Error(readError.message);
     const folders: PodcastFolder[] = (rows ?? []).map((row) => ({
-      id: row.id as string,
-      parentId: (row.parent_id as string | null) ?? null,
-      slug: row.slug as string,
-      title: row.title as string,
-      description: (row.description as string | null) ?? null,
-      sortOrder: row.sort_order as number,
+      id: row.id,
+      parentId: row.parent_id ?? null,
+      slug: row.slug,
+      title: row.title,
+      description: row.description ?? null,
+      sortOrder: row.sort_order,
     }));
     // Checked here rather than by a trigger for the same reason the CLI
     // checks it: only trusted writers reach these tables, so the rule
@@ -253,7 +244,7 @@ export const adminDeleteFolder = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const client = untyped(context.supabaseAdmin);
+    const client = context.supabaseAdmin;
     // Checked here even though the database already refuses: both
     // podcast_folders.parent_id and podcast_episodes.folder_id are
     // ON DELETE RESTRICT (see 20260926030000), so Postgres raises 23503
@@ -296,21 +287,21 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ folderId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<AdminEpisode[]> => {
-    const { data: rows, error } = await untyped(context.supabaseAdmin)
+    const { data: rows, error } = await context.supabaseAdmin
       .from("podcast_episodes")
       .select("id,folder_id,slug,title,description,duration_seconds,published,audio_path")
       .eq("folder_id", data.folderId)
       .order("slug", { ascending: true });
     if (error) throw new Error(error.message);
     return (rows ?? []).map((row) => ({
-      id: row.id as string,
-      folderId: row.folder_id as string,
-      slug: row.slug as string,
-      title: row.title as string,
-      description: (row.description as string | null) ?? null,
-      durationSeconds: row.duration_seconds as number,
-      published: row.published as boolean,
-      audioPath: row.audio_path as string,
+      id: row.id,
+      folderId: row.folder_id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description ?? null,
+      durationSeconds: row.duration_seconds,
+      published: row.published,
+      audioPath: row.audio_path,
     }));
   });
 
@@ -331,7 +322,7 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
     // without moving the object orphans the audio -- and moving the
     // object is a different, riskier operation than editing a title.
     // Publish under a new slug instead.
-    const result = await untyped(context.supabaseAdmin)
+    const result = await context.supabaseAdmin
       .from("podcast_episodes")
       .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
@@ -349,7 +340,7 @@ export const adminSetPublished = createServerFn({ method: "POST" })
     // the podcast-audio bucket is public-read, so an unpublished
     // episode's audio stays fetchable by anyone holding the URL. Any UI
     // built on this must say "not listed", never "private".
-    const result = await untyped(context.supabaseAdmin)
+    const result = await context.supabaseAdmin
       .from("podcast_episodes")
       .update({ published: data.published }, { count: "exact" })
       .eq("id", data.id);
@@ -368,7 +359,10 @@ export const adminSetPublished = createServerFn({ method: "POST" })
  * URL be minted for any key in the bucket, including one no episode
  * points at. The path is now never accepted from the client.
  */
-async function audioPathForEpisode(client: SupabaseClient, episodeId: string): Promise<string> {
+async function audioPathForEpisode(
+  client: SupabaseClient<Database>,
+  episodeId: string,
+): Promise<string> {
   const { data, error } = await client
     .from("podcast_episodes")
     .select("audio_path")
@@ -376,7 +370,7 @@ async function audioPathForEpisode(client: SupabaseClient, episodeId: string): P
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("That episode no longer exists.");
-  return data.audio_path as string;
+  return data.audio_path;
 }
 
 /**
@@ -413,7 +407,7 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
         `That file is too large (${Math.round(data.declaredBytes / 1024 / 1024)} MB). The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`,
       );
     }
-    const client = untyped(context.supabaseAdmin);
+    const client = context.supabaseAdmin;
     const audioPath = await audioPathForEpisode(client, data.episodeId);
     const { data: signed, error } = await client.storage
       .from(BUCKET)
@@ -436,7 +430,7 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
-    const client = untyped(context.supabaseAdmin);
+    const client = context.supabaseAdmin;
     const audioPath = await audioPathForEpisode(client, data.episodeId);
     const staging = stagingPathFor(audioPath);
 
@@ -509,13 +503,13 @@ export const adminGetTranscript = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ text: string | null }> => {
-    const { data: row, error } = await untyped(context.supabaseAdmin)
+    const { data: row, error } = await context.supabaseAdmin
       .from("podcast_transcripts")
       .select("text")
       .eq("episode_id", data.episodeId)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return { text: (row?.text as string | undefined) ?? null };
+    return { text: row?.text ?? null };
   });
 
 export const adminSaveTranscript = createServerFn({ method: "POST" })
@@ -544,14 +538,14 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
       // Empty is a deletion request, not an error: clearing the box is
       // how an admin removes a transcript that should never have been
       // published. Refusing would leave them no way to undo it.
-      const { error: deleteError } = await untyped(context.supabaseAdmin)
+      const { error: deleteError } = await context.supabaseAdmin
         .from("podcast_transcripts")
         .delete()
         .eq("episode_id", data.episodeId);
       if (deleteError) throw new Error(deleteError.message);
       return { ok: true };
     }
-    const { error } = await untyped(context.supabaseAdmin)
+    const { error } = await context.supabaseAdmin
       .from("podcast_transcripts")
       .upsert({ episode_id: data.episodeId, text: normalized }, { onConflict: "episode_id" });
     if (error) throw new Error(error.message);

@@ -56,12 +56,7 @@ export const Route = createFileRoute("/api/apple-link")({
 
         // Upsert: signing in with Apple again issues a new grant, and the
         // newest token is the one revocation must use.
-        // The `as any` is the same stale-generated-types gap the rest of
-        // this codebase works around (see account.functions.ts's `from`
-        // helper): src/integrations/supabase/types.ts predates several
-        // migrations, so a table added after it types as `never`.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabaseAdmin as any).from("apple_auth_tokens").upsert(
+        const { error } = await supabaseAdmin.from("apple_auth_tokens").upsert(
           {
             user_id: userData.user.id,
             refresh_token: refreshToken,
