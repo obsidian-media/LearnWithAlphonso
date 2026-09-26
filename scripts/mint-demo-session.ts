@@ -65,7 +65,13 @@ async function main(): Promise<void> {
       "Content-Type": "application/json",
       apikey: SUPABASE_SERVICE_ROLE_KEY,
     },
-    body: JSON.stringify({ type: "magiclink", token: hashedToken }),
+    // token_hash, not token -- GoTrue's /verify rejects a hashed link
+    // token under the `token` field with "Only an email address or phone
+    // number should be provided on verify" (confirmed live, 2026-09-26).
+    // `token` pairs with `email`/`phone` for a short OTP *code*
+    // (SupabaseAuthClient.verifyEmailOTP's shape); `token_hash` is the
+    // separate field for the hashed token generateLink() returns.
+    body: JSON.stringify({ type: "magiclink", token_hash: hashedToken }),
   });
   if (!verifyResponse.ok) {
     const text = await verifyResponse.text().catch(() => "");
