@@ -10,6 +10,30 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**The iOS app caught up with the web app** (#169, #172/#175, #174).
+The Learn tab had lost its CEFR bands and was one endless scroll; the
+placement exam existed only on the web, so a new iOS user was assigned a
+default level and never asked. Both closed, the placement port verified
+against `scorePlacement`'s actual rules rather than self-consistency --
+pass at two of three, break at the first failure, place into the band
+after the last passed, cap at C1. `/support` was a 404 while every other
+legal page resolved, and App Store Connect requires it.
+
+**Screenshot automation, and a test hook that ran nowhere** (#171). The
+UI-test pipeline drove a signed-out app for several runs: the CI step's
+shell environment never reached the simulator-hosted xctest process, so
+the bootstrap never fired and the screenshots went to the simulator's
+own sandbox. Fixed with a scheme-level Test-action variable. The hook
+itself is `#if DEBUG` and cannot ship in Release.
+
+**A PR with no CI at all** (#172 -> #175). GitHub silently withheld every
+Actions run because the stale branch appeared to modify
+`.github/workflows/`. No red X, no queued job -- just absence, which
+reads as "unchecked" rather than "unverified". Two compile errors rode
+in behind it. Worth knowing as a failure mode: with no branch
+protection, a PR that has never run is indistinguishable at a glance
+from one that passed.
+
 **Hector re-parenting, and the defect the fix introduced** (#157, #159,
 #160, #163). Phase 0 linked each account to its separate Cloud Voice
 account so deletion can revoke it; Phase 1 added a server-side Pro gate
