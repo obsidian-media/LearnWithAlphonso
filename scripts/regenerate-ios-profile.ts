@@ -116,12 +116,25 @@ async function main() {
 
   console.log(`Looking up the bundle ID resource for ${BUNDLE_ID}...`);
   const bundleIdResp = await api(`/bundleIds?filter[identifier]=${encodeURIComponent(BUNDLE_ID)}`);
-  const bundleIdResource = (bundleIdResp.data as unknown as AscResource[])[0];
-  if (!bundleIdResource) throw new Error(`No bundle ID resource found for ${BUNDLE_ID}`);
+  // Apple's filter[identifier] is a PREFIX match, not an exact one, so
+  // querying "com.obsidianmedia.learnwithalphonso" also returns
+  // ".widget". Taking [0] silently built three profiles against the
+  // WIDGET App ID -- which has no Sign in with Apple, so the capability
+  // check failed and looked like the App ID was misconfigured. It was
+  // not; the lookup was. Match exactly.
+  const candidates = bundleIdResp.data as unknown as AscResource[];
+  const bundleIdResource = candidates.find((b) => b.attributes?.identifier === BUNDLE_ID);
+  if (!bundleIdResource) {
+    throw new Error(
+      `No bundle ID resource exactly matching ${BUNDLE_ID}. The filter returned: ` +
+        candidates.map((b) => String(b.attributes?.identifier)).join(", "),
+    );
+  }
+  console.log(`Matched bundle ID ${bundleIdResource.id} (${BUNDLE_ID})`);
 
   // The name carries a timestamp so a stale profile is identifiable at a
   // glance in the portal, matching the existing convention.
-  const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
+  const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
   const name = `LearnWithAlphonso CI App Store ${stamp}`;
   console.log(`Creating provisioning profile "${name}"...`);
   const profileResp = await api("/profiles", "POST", {
@@ -156,7 +169,7 @@ async function main() {
   // check below fails, the useful question is not "is it missing" but
   // "what IS in here" -- a capability named differently, or an App ID that
   // genuinely lacks it, look identical from a single boolean.
-  const entKeys = [...plistXml.matchAll(/<key>([a-z0-9.\-]+)<\/key>/gi)]
+  const entKeys = [...plistXml.matchAll(/<key>([a-z0-9.-]+)<\/key>/gi)]
     .map((m) => m[1] as string)
     .filter((k) => k.includes("com.apple"));
   console.log("Entitlements present in the new profile:");
