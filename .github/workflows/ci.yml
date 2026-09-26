@@ -406,6 +406,29 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
 
+      # Guards REMOTE state, which is why it lives here rather than in a
+      # pull request: GoTrue's auth config is editable from a dashboard
+      # with no review, no diff and no history, so nothing in a PR can
+      # catch it drifting. Three separate production bugs have shipped in
+      # it -- both email templates missing {{ .Token }} at different
+      # times, and site_url still pointing at localhost while
+      # mailer_otp_length was 8 (docs/BACKLOG.md sec 0.0, sec 0.0r).
+      #
+      # Same SCOPE caveat as the admin_users check above: this job is
+      # `push && ref == main`, so this runs POST-MERGE. It is a drift
+      # alarm, not a merge gate.
+      #
+      # The assertions themselves are unit-tested in
+      # src/lib/auth-config-guard.test.ts against every shape that
+      # actually shipped, so the failing branch is exercised by the
+      # normal test run rather than only ever meeting a correct config.
+      # This step cannot prove DELIVERY -- only receiving a real signup
+      # email does that.
+      - name: Auth email config has not drifted
+        run: bunx tsx scripts/check-auth-config.ts
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
   ios-swift-tests:
     # macOS runners ship a working Swift/Xcode toolchain natively, so none
     # of the Windows-specific workarounds in
