@@ -45,6 +45,31 @@ jobs:
             exit 1
           fi
 
+      # src/integrations/supabase/types.ts is generated from the LIVE schema,
+      # not derived from anything in this repo, so nothing here could catch
+      # drift the way the iOS content check above catches its own kind --
+      # until now. This went stale by 19 tables across several migration
+      # batches before anyone noticed (see PR #153); regenerating and diffing
+      # on every PR is the same cheap-loud-failure shape as that check. The
+      # fix when this fails is `gh workflow run regenerate-supabase-types.yml`,
+      # never a hand edit.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.118.0
+
+      - name: Generated Supabase types are up to date
+        run: |
+          supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > src/integrations/supabase/types.ts
+          bunx prettier --write src/integrations/supabase/types.ts
+          if ! git diff --quiet -- src/integrations/supabase/types.ts; then
+            echo "::error::src/integrations/supabase/types.ts is stale. Run the 'Regenerate Supabase Types' workflow (gh workflow run regenerate-supabase-types.yml) and let it commit the result -- never hand-edit this file."
+            git diff --stat -- src/integrations/supabase/types.ts
+            git diff -- src/integrations/supabase/types.ts | head -100
+            exit 1
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
   admin-build:
     runs-on: ubuntu-latest
     steps:

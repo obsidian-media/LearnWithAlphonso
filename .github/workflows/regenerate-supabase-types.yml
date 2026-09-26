@@ -15,6 +15,15 @@ name: Regenerate Supabase Types
 on:
   workflow_dispatch:
 
+# The default GITHUB_TOKEN is read-only on contents unless a workflow says
+# otherwise. Without this, the commit step below authenticates fine (checkout
+# wires that up) but the push is refused: "Permission to
+# obsidian-media/LearnWithAlphonso.git denied to github-actions[bot] ...
+# 403" -- found by actually dispatching this workflow, not guessed. A
+# workflow whose one job is to push a commit needs this declared explicitly.
+permissions:
+  contents: write
+
 jobs:
   regenerate:
     name: Regenerate types.ts from the live schema and commit
@@ -22,9 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned, same reason as ci.yml's deploy-supabase job: `latest`
+      # resolves through the GitHub API and can fail on rate limits alone.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.118.0
 
       - uses: oven-sh/setup-bun@v2
         with:
