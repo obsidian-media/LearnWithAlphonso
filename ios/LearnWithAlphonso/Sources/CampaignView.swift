@@ -222,11 +222,19 @@ private struct CampaignSessionView: View {
     }
 
     private func sendTurn(audio: Data) async {
-        guard let accessToken = session.accessToken else {
+        guard let accessToken = await session.freshAccessToken() else {
             errorMessage = "You've been signed out. Please sign in again."
             return
         }
-        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+        let client = AIConversationClient(
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { accessToken },
+            // See ConversationView.swift's ConversationSessionView.sendTurn
+            // for the full story -- same fix, same reasoning, same
+            // duplication-over-sharing posture this file's other helpers
+            // already use.
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+        )
         do {
             phase = .transcribing
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")

@@ -242,4 +242,162 @@ final class AIConversationClientTests: XCTestCase {
             XCTAssertEqual(error as? AIConversationError, .server(status: 400, message: "Empty or missing audio"))
         }
     }
+
+    // MARK: - 401 retry (chat/transcribe/synthesizeSpeech only -- these
+    // three are the ones a Practice-tab turn actually calls; see
+    // Session.freshAccessToken's own doc comment in the main repo for the
+    // root cause this exists to work around: a token minted once at cold
+    // launch and never refreshed again until this fix).
+
+    func testChatRetriesOnceAfter401WithARefreshedToken() async throws {
+        var capturedAuthHeaders: [String?] = []
+        var callCount = 0
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                callCount += 1
+                capturedAuthHeaders.append(request.value(forHTTPHeaderField: "Authorization"))
+                if callCount == 1 {
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+                }
+                let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi there!"])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        let reply = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+
+        XCTAssertEqual(reply, "Hi there!")
+        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(capturedAuthHeaders, ["Bearer stale-token", "Bearer fresh-token"])
+    }
+
+    func testChatDoesNotRetryWhenNoRefreshHandlerIsProvided() async {
+        var callCount = 0
+        // makeClient's default has no refreshAccessToken -- unaffected callers
+        // (export/delete, and every existing test above) must see identical
+        // behavior to before this fix: exactly one attempt, the 401 surfaced.
+        let client = makeClient { request in
+            callCount += 1
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+        }
+        XCTAssertEqual(callCount, 1)
+    }
+
+    func testChatSurfacesTheOriginal401WhenRefreshFails() async {
+        var callCount = 0
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { nil },
+            requester: { request in
+                callCount += 1
+                return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        do {
+            _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+        }
+        // A refresh failure (e.g. the refresh token itself is dead) means
+        // Session has already signed out -- retrying with the same stale
+        // token again would just 401 a second time for no new information.
+        XCTAssertEqual(callCount, 1)
+    }
+
+    func testChatDoesNotRetryASecondTimeIfTheRefreshedTokenAlsoGets401() async {
+        var callCount = 0
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "still-somehow-bad-token" },
+            requester: { request in
+                callCount += 1
+                return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        do {
+            _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+        }
+        XCTAssertEqual(callCount, 2)
+    }
+
+    func testChatDoesNotInvokeRefreshOnSuccess() async throws {
+        var refreshCalled = false
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "user-access-token" },
+            refreshAccessToken: {
+                refreshCalled = true
+                return "fresh-token"
+            },
+            requester: { request in
+                let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi there!"])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+
+        XCTAssertFalse(refreshCalled)
+    }
+
+    func testTranscribeRetriesOnceAfter401WithARefreshedToken() async throws {
+        var callCount = 0
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                callCount += 1
+                if callCount == 1 {
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+                }
+                let body = try! JSONSerialization.data(withJSONObject: ["text": "good morning", "confidence": 0.93])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        let result = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a")
+
+        XCTAssertEqual(result.text, "good morning")
+        XCTAssertEqual(callCount, 2)
+    }
+
+    func testSynthesizeSpeechRetriesOnceAfter401WithARefreshedToken() async throws {
+        var callCount = 0
+        let client = AIConversationClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                callCount += 1
+                if callCount == 1 {
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+                }
+                return (Data([0xFF, 0xD8]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        let audio = try await client.synthesizeSpeech(text: "hello")
+
+        XCTAssertEqual(audio, Data([0xFF, 0xD8]))
+        XCTAssertEqual(callCount, 2)
+    }
 }

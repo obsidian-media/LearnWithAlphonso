@@ -56,6 +56,44 @@ final class Session {
         return nil
     }
 
+    /// Returns a token that's valid *right now* -- refreshing first if the
+    /// current one is expired or within 60 seconds of it (same buffer
+    /// `restoreSession()` already uses), or unconditionally when
+    /// `forceRefresh` is true. Nil means "no signed-in session" or "the
+    /// refresh itself failed" -- the latter signs out, same posture as
+    /// `restoreSession()`'s own failure path: a session backed by a
+    /// refresh token nothing will accept is worse than being asked to
+    /// sign in again.
+    ///
+    /// **Why this exists.** Before this, a token was refreshed exactly
+    /// once, at cold launch, and never again for the rest of a live
+    /// session. Any authenticated call made more than ~an hour into a
+    /// session (Supabase's default access-token lifetime, confirmed:
+    /// no `jwt_expiry` override in `supabase/config.toml`) 401'd with no
+    /// way for the learner to understand why -- confirmed against real
+    /// production logs (`/api/stt` 401s from an actual device test), not
+    /// assumed from reading the code. Callers pass this as both the
+    /// initial token AND the `refreshAccessToken` closure on
+    /// `AccountClient`/`AIConversationClient` (`forceRefresh: true` in
+    /// that closure -- a 401 already means the proactive check above
+    /// wasn't enough, so there's no reason to re-check expiry before
+    /// trying again), so proactive refresh and the one-retry-on-401
+    /// backstop share this exact same logic rather than two copies of it.
+    func freshAccessToken(forceRefresh: Bool = false) async -> String? {
+        guard case .signedIn(let current) = state else { return nil }
+        if !forceRefresh && current.expiresAt > Date().addingTimeInterval(60) {
+            return current.accessToken
+        }
+        do {
+            let refreshed = try await authClient.refresh(current)
+            establishSession(refreshed)
+            return refreshed.accessToken
+        } catch {
+            signOut()
+            return nil
+        }
+    }
+
     /// The signed-in user's own id -- for anything that needs to reference
     /// "me" client-side (building an invite link, comparing a leaderboard
     /// row to "is this me"). See SupabaseSession.userID's doc comment.
@@ -173,7 +211,7 @@ final class Session {
             // either -- so skip rather than force-unwrap. Deletion already
             // treats a missing token as "could not revoke" and proceeds.
             if let code = result.authorizationCode {
-                linkAppleAuthorization(code: code, accessToken: session.accessToken)
+                linkAppleAuthorization(code: code)
             }
         } catch AppleSignInPresenterError.cancelled {
             // The user dismissed the dialog -- not a real error.
@@ -205,9 +243,22 @@ final class Session {
     /// own async flow -- not awaited -- so a slow or failing network call
     /// here can never delay or block a sign-in the identity token already
     /// completed; `try?` swallows the result entirely, on purpose.
-    private func linkAppleAuthorization(code: String, accessToken: String) {
+    ///
+    /// Reads its own access token via `freshAccessToken()` rather than
+    /// taking one as a parameter, and wires the same method as the 401
+    /// retry -- even though this fires with a token minted moments
+    /// earlier by the sign-in that just succeeded, so proactive refresh
+    /// isn't expected to ever trigger here. If this call still 401s after
+    /// that retry, staleness is not the explanation -- see this fix's PR
+    /// description for that open question.
+    private func linkAppleAuthorization(code: String) {
         Task {
-            let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            guard let accessToken = await freshAccessToken() else { return }
+            let client = AccountClient(
+                baseURL: AppConfig.apiBaseURL,
+                accessToken: { accessToken },
+                refreshAccessToken: { await self.freshAccessToken(forceRefresh: true) }
+            )
             try? await client.linkAppleAuthorization(code: code)
         }
     }

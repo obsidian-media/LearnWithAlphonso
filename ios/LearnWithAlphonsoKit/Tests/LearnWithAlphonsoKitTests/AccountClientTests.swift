@@ -169,4 +169,114 @@ final class AccountClientTests: XCTestCase {
             XCTAssertEqual(error as? AccountError, .server(status: 400, message: "bad-request"))
         }
     }
+
+    // MARK: - 401 retry (linkAppleAuthorization/linkHectorAccount only --
+    // see AIConversationClient's own "401 retry" tests for the shared
+    // root cause this works around).
+
+    func testLinkAppleAuthorizationRetriesOnceAfter401WithARefreshedToken() async throws {
+        var capturedAuthHeaders: [String?] = []
+        var callCount = 0
+        let client = AccountClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                callCount += 1
+                capturedAuthHeaders.append(request.value(forHTTPHeaderField: "Authorization"))
+                if callCount == 1 {
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+                }
+                let body = try! JSONSerialization.data(withJSONObject: ["linked": true])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        try await client.linkAppleAuthorization(code: "c-123")
+
+        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(capturedAuthHeaders, ["Bearer stale-token", "Bearer fresh-token"])
+    }
+
+    func testLinkAppleAuthorizationDoesNotRetryWhenNoRefreshHandlerIsProvided() async {
+        var callCount = 0
+        let client = makeClient { request in
+            callCount += 1
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            try await client.linkAppleAuthorization(code: "c-123")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 401, message: nil))
+        }
+        XCTAssertEqual(callCount, 1)
+    }
+
+    func testLinkHectorAccountRetriesOnceAfter401WithARefreshedToken() async throws {
+        var capturedAuthHeaders: [String?] = []
+        var callCount = 0
+        let client = AccountClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                callCount += 1
+                capturedAuthHeaders.append(request.value(forHTTPHeaderField: "Authorization"))
+                if callCount == 1 {
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+                }
+                let body = try! JSONSerialization.data(withJSONObject: ["linked": true])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        try await client.linkHectorAccount(cloudVoiceAccessToken: "cv-access-token-1")
+
+        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(capturedAuthHeaders, ["Bearer stale-token", "Bearer fresh-token"])
+    }
+
+    func testLinkHectorAccountSurfacesTheOriginal401WhenRefreshFails() async {
+        var callCount = 0
+        let client = AccountClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { nil },
+            requester: { request in
+                callCount += 1
+                return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        do {
+            try await client.linkHectorAccount(cloudVoiceAccessToken: "cv-access-token-1")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 401, message: nil))
+        }
+        XCTAssertEqual(callCount, 1)
+    }
+
+    func testExportMyDataDoesNotRetryOn401EvenWhenConstructedWithoutRefreshSupport() async {
+        // exportMyData/deleteMyAccount were deliberately left out of this
+        // fix (see AccountClient.perform's doc comment) -- makeClient's
+        // default AccountClient has no refreshAccessToken, so this is
+        // really just confirming those two methods' behavior is
+        // unchanged by this file's other edits.
+        var callCount = 0
+        let client = makeClient { request in
+            callCount += 1
+            return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
+        }
+
+        do {
+            _ = try await client.exportMyData()
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? AccountError, .server(status: 401, message: nil))
+        }
+        XCTAssertEqual(callCount, 1)
+    }
 }
