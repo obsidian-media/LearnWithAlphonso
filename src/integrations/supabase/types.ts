@@ -382,6 +382,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      hector_links: {
+        Row: {
+          cloud_voice_user_id: string;
+          linked_at: string;
+          user_id: string;
+        };
+        Insert: {
+          cloud_voice_user_id: string;
+          linked_at?: string;
+          user_id: string;
+        };
+        Update: {
+          cloud_voice_user_id?: string;
+          linked_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       language_progress: {
         Row: {
           cefr_level: string;

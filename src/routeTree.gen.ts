@@ -33,6 +33,7 @@ import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
+import { Route as ApiHectorLinkRouteImport } from './routes/api/hector-link'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
@@ -162,6 +163,11 @@ const ApiGradeTranslationRoute = ApiGradeTranslationRouteImport.update({
   path: '/api/grade-translation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHectorLinkRoute = ApiHectorLinkRouteImport.update({
+  id: '/api/hector-link',
+  path: '/api/hector-link',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
+  '/api/hector-link': typeof ApiHectorLinkRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -272,6 +279,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
+  '/api/hector-link': typeof ApiHectorLinkRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
+  '/api/hector-link': typeof ApiHectorLinkRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
+    | '/api/hector-link'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
+    | '/api/hector-link'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
+    | '/api/hector-link'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/campaign_/$campaignId'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
+  ApiHectorLinkRoute: typeof ApiHectorLinkRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
@@ -613,6 +626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGradeTranslationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hector-link': {
+      id: '/api/hector-link'
+      path: '/api/hector-link'
+      fullPath: '/api/hector-link'
+      preLoaderRoute: typeof ApiHectorLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stt': {
       id: '/api/stt'
       path: '/api/stt'
@@ -746,6 +766,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
+  ApiHectorLinkRoute: ApiHectorLinkRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }

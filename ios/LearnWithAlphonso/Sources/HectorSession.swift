@@ -22,6 +22,21 @@ final class HectorSession {
     private(set) var state: State = .signedOut
     private(set) var errorMessage: String?
     private(set) var isBusy = false
+    /// Hector re-parenting Phase 0 (docs/superpowers/specs/
+    /// 2026-09-26-hector-reparenting-design.md): the Cloud Voice
+    /// account's own user id, set the moment enrollment succeeds -- the
+    /// one thing this session knows that the main `Session` doesn't.
+    /// `HectorView` observes this (`.onChange`, same pattern RootView
+    /// already uses for `remotePushRegistrar.deviceTokenHex`) to record
+    /// the pairing so a later account deletion can reach it. A plain
+    /// observed property rather than an injected callback closure,
+    /// deliberately -- this type stays agnostic of anything outside
+    /// Cloud Voice's own auth, and a `@MainActor` type's stored closure
+    /// property is exactly the kind of actor-isolation edge case that
+    /// can't be verified without a real compiler here (`ios-app-build`
+    /// is the only signal for this file); reacting from the view's own
+    /// already-`@MainActor` body sidesteps the question entirely.
+    private(set) var enrolledCloudVoiceUserID: String?
 
     private let authClient: SupabaseAuthClient
     private let enrollmentClient: DeviceEnrollmentClient
@@ -62,6 +77,7 @@ final class HectorSession {
             state = .enrolling
             try await enrollmentClient.enroll(deviceID: deviceID, displayName: UIDevice.current.name, accessToken: session.accessToken)
             state = .ready(accessToken: session.accessToken)
+            enrolledCloudVoiceUserID = session.userID
         } catch {
             state = .awaitingCode(email: email)
             errorMessage = Self.message(for: error)
@@ -71,6 +87,7 @@ final class HectorSession {
     func signOut() {
         state = .signedOut
         errorMessage = nil
+        enrolledCloudVoiceUserID = nil
     }
 
     private static func message(for error: Error) -> String {

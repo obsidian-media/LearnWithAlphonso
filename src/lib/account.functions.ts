@@ -135,6 +135,44 @@ async function revokeAppleGrantForUser(
   }
 }
 
+/**
+ * Hector re-parenting, Phase 0
+ * (docs/superpowers/specs/2026-09-26-hector-reparenting-design.md):
+ * revokes the linked Cloud Voice (Hector) account, if there is one,
+ * reporting whether it happened. Never throws -- see the call site in
+ * deleteMyAccount, and hector-revocation.ts's own doc comment for the
+ * endpoint contract this still needs from AlphonsoEcosystem.
+ *
+ * Returns false for every "we could not", not distinguished to the
+ * caller: no link recorded (the user never used Hector, or used it
+ * before Phase 0 shipped and hasn't gone through Phase 2's
+ * reconciliation yet), the revoke endpoint isn't configured (true
+ * today), or that endpoint refused. Only a confirmed revocation
+ * returns true.
+ */
+async function revokeHectorLinkForUser(
+  supabaseAdmin: SupabaseClient<Database>,
+  userId: string,
+): Promise<boolean> {
+  try {
+    const { hectorRevocationConfigFromEnv, revokeHectorLink } = await import("@/lib/hector-revocation");
+    const config = hectorRevocationConfigFromEnv();
+    if (!config) return false;
+
+    const { data } = await supabaseAdmin
+      .from("hector_links")
+      .select("cloud_voice_user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const cloudVoiceUserId = data?.cloud_voice_user_id;
+    if (!cloudVoiceUserId) return false;
+
+    return await revokeHectorLink(config, cloudVoiceUserId);
+  } catch {
+    return false;
+  }
+}
+
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ confirm: z.literal("DELETE") }).parse(d))
@@ -165,10 +203,15 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // one.
     const appleRevoked = await revokeAppleGrantForUser(supabaseAdmin, userId);
 
+    // Same reasoning, same ordering constraint (FK'd to auth.users
+    // ON DELETE CASCADE, so the row is gone once deleteUser() runs
+    // below): revoke the linked Hector account, if any, before it goes.
+    const hectorRevoked = await revokeHectorLinkForUser(supabaseAdmin, userId);
+
     // Friend rows pointing at this user are not owned by them.
     await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
 
-    return { deleted: true, appleRevoked };
+    return { deleted: true, appleRevoked, hectorRevoked };
   });

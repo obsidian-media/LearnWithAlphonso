@@ -108,11 +108,12 @@ describe("deleteMyAccount", () => {
 
     const result = await deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } });
 
-    // appleRevoked reports whether Apple's grant was actually revoked.
-    // false here because no Apple secrets are configured in tests, which
-    // is the same answer production gives until they are -- and deletion
-    // proceeds either way by design.
-    expect(result).toEqual({ deleted: true, appleRevoked: false });
+    // appleRevoked/hectorRevoked report whether each grant was actually
+    // revoked. Both false here because no Apple secrets and no Hector
+    // revoke endpoint are configured in tests -- the same answer
+    // production gives until they are -- and deletion proceeds either
+    // way by design.
+    expect(result).toEqual({ deleted: true, appleRevoked: false, hectorRevoked: false });
     expect(supabaseAdminFrom).toHaveBeenCalledWith("friendships");
     expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
@@ -203,6 +204,16 @@ describe("GDPR export table coverage", () => {
     // -- user_id REFERENCES auth.users ON DELETE CASCADE -- and the grant
     // itself is revoked with Apple before the row goes.
     "apple_auth_tokens",
+    // hector_links (supabase/migrations/20260928040000_hector_links.sql):
+    // an identity mapping (this account -> its Cloud Voice account in a
+    // different Supabase project), not the account's own data -- same
+    // admin_users/apple_auth_tokens mechanics: RLS on with no policies
+    // and no grant to `authenticated`, so the caller-scoped export would
+    // return empty anyway. Deletion is handled -- user_id REFERENCES
+    // auth.users ON DELETE CASCADE -- and the linked Hector account
+    // itself is revoked before the row goes (see account.functions.ts's
+    // revokeHectorLinkForUser).
+    "hector_links",
   ]);
 
   it("exports every table that has a user_id column", () => {
