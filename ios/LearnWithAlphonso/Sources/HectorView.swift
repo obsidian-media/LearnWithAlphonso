@@ -36,6 +36,22 @@ struct HectorView: View {
             .navigationTitle("Hector")
         }
         .tint(AlphonsoColor.ember)
+        // Hector re-parenting Phase 0 (docs/superpowers/specs/
+        // 2026-09-26-hector-reparenting-design.md): records the pairing
+        // between this account and the Cloud Voice account Hector just
+        // enrolled, so a later account deletion can reach it. Same
+        // reaction-to-state-change shape as RootView's own
+        // `.onChange(of: remotePushRegistrar.deviceTokenHex)`.
+        // Fire-and-forget: enrollment already succeeded by the time this
+        // fires, so a slow or failing link call must never affect the
+        // Hector session itself.
+        .onChange(of: hectorSession.enrolledCloudVoiceUserID) { _, cloudVoiceUserID in
+            guard let cloudVoiceUserID, let accessToken = session.accessToken else { return }
+            Task {
+                let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+                try? await client.linkHectorAccount(cloudVoiceUserID: cloudVoiceUserID)
+            }
+        }
     }
 
     private var signInBody: some View {
