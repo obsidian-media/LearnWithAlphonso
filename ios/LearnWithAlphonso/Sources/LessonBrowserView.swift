@@ -383,13 +383,3 @@ private struct PlacementBannerSection: View {
         isChecking = false
     }
 }
-
-private extension Course {
-    var code: String {
-        switch self {
-        case .english: return "en"
-        case .french: return "fr"
-        case .spanish: return "es"
-        }
-    }
-}
