@@ -29,6 +29,7 @@ import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/
 import { Route as ApiAccountDeleteRouteImport } from './routes/api/account-delete'
 import { Route as ApiAccountExportRouteImport } from './routes/api/account-export'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
+import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
@@ -141,6 +142,11 @@ const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
   path: '/api/analyze-weaknesses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppleLinkRoute = ApiAppleLinkRouteImport.update({
+  id: '/api/apple-link',
+  path: '/api/apple-link',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
+  '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/apple-link'
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/apple-link'
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/api/account-delete'
     | '/api/account-export'
     | '/api/analyze-weaknesses'
+    | '/api/apple-link'
     | '/api/chat'
     | '/api/generate-practice'
     | '/api/grade-translation'
@@ -423,6 +435,7 @@ export interface RootRouteChildren {
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
+  ApiAppleLinkRoute: typeof ApiAppleLinkRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       path: '/api/analyze-weaknesses'
       fullPath: '/api/analyze-weaknesses'
       preLoaderRoute: typeof ApiAnalyzeWeaknessesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/apple-link': {
+      id: '/api/apple-link'
+      path: '/api/apple-link'
+      fullPath: '/api/apple-link'
+      preLoaderRoute: typeof ApiAppleLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -722,6 +742,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
+  ApiAppleLinkRoute: ApiAppleLinkRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
