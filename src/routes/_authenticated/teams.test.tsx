@@ -26,11 +26,13 @@ const getMyTeam = vi.fn();
 const getTeamLeaderboard = vi.fn();
 const joinTeamByCode = vi.fn();
 const autoJoinTeam = vi.fn();
+const createTeam = vi.fn();
 vi.mock("../../lib/teams.functions", () => ({
   getMyTeam,
   getTeamLeaderboard,
   joinTeamByCode,
   autoJoinTeam,
+  createTeam,
 }));
 
 const { Route } = await import("./teams");
@@ -51,6 +53,7 @@ beforeEach(() => {
   getTeamLeaderboard.mockReset();
   joinTeamByCode.mockReset();
   autoJoinTeam.mockReset();
+  createTeam.mockReset();
 });
 
 describe("Teams page", () => {
@@ -104,5 +107,41 @@ describe("Teams page", () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith({ to: "/teams/$teamId", params: { teamId: "t2" } }),
     );
+  });
+
+  it("creates a team and navigates to its detail route", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    createTeam.mockResolvedValue({ ok: true, reason: null, teamId: "t9", joinCode: "XYZ999" });
+    renderPage();
+
+    fireEvent.change(screen.getByPlaceholderText("Team name"), { target: { value: "Night Owls" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create team" }));
+
+    await waitFor(() =>
+      expect(createTeam).toHaveBeenCalledWith({
+        data: { name: "Night Owls", visibility: "public" },
+      }),
+    );
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({ to: "/teams/$teamId", params: { teamId: "t9" } }),
+    );
+  });
+
+  it("shows the reason when team creation fails", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    createTeam.mockResolvedValue({
+      ok: false,
+      reason: "invalid-name",
+      teamId: null,
+      joinCode: null,
+    });
+    renderPage();
+
+    fireEvent.change(screen.getByPlaceholderText("Team name"), { target: { value: "x" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create team" }));
+
+    expect(await screen.findByText("invalid-name")).toBeInTheDocument();
   });
 });

@@ -54,6 +54,40 @@ export const autoJoinTeam = createServerFn({ method: "POST" })
     return toJoinResult(rows?.[0]);
   });
 
+export type CreateTeamResult = {
+  ok: boolean;
+  reason: string | null;
+  teamId: string | null;
+  joinCode: string | null;
+};
+
+function toCreateResult(
+  row:
+    | { ok: boolean; reason: string | null; team_id: string | null; join_code: string | null }
+    | undefined,
+): CreateTeamResult {
+  if (!row) return { ok: false, reason: "unknown-error", teamId: null, joinCode: null };
+  return { ok: row.ok, reason: row.reason, teamId: row.team_id, joinCode: row.join_code };
+}
+
+export const createTeam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        name: z.string().trim().min(1).max(40),
+        visibility: z.enum(["public", "private"]).default("public"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<CreateTeamResult> => {
+    const { data: rows } = await context.supabase.rpc("create_team", {
+      _name: data.name,
+      _visibility: data.visibility,
+    });
+    return toCreateResult(rows?.[0]);
+  });
+
 export const leaveTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ ok: boolean; reason: string | null }> => {

@@ -1479,6 +1479,15 @@ export type Database = {
           reason: string;
         }[];
       };
+      create_team: {
+        Args: { _member_cap?: number; _name: string; _visibility?: string };
+        Returns: {
+          join_code: string;
+          ok: boolean;
+          reason: string;
+          team_id: string;
+        }[];
+      };
       get_cohort_weekly_xp: {
         Args: { _cohort_id: string; _week_start: string };
         Returns: {

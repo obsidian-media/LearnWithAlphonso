@@ -22,8 +22,15 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-const { joinTeamByCode, joinPublicTeam, autoJoinTeam, leaveTeam, getTeamLeaderboard, getMyTeam } =
-  asTestFns(await import("./teams.functions"));
+const {
+  joinTeamByCode,
+  joinPublicTeam,
+  autoJoinTeam,
+  leaveTeam,
+  getTeamLeaderboard,
+  getMyTeam,
+  createTeam,
+} = asTestFns(await import("./teams.functions"));
 
 function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
   return { supabase, userId: "user-1" };
@@ -146,6 +153,50 @@ describe("getTeamLeaderboard", () => {
   it("returns an empty list rather than throwing when there are no rows", async () => {
     const supabase = rpcReturning(null);
     await expect(getTeamLeaderboard({ context: ctx(supabase) })).resolves.toEqual([]);
+  });
+});
+
+describe("createTeam", () => {
+  it("passes the name and visibility to create_team and unwraps the row", async () => {
+    const supabase = rpcReturning([{ ok: true, reason: null, team_id: "t9", join_code: "XYZ999" }]);
+    const result = await createTeam({
+      context: ctx(supabase),
+      data: { name: "Night Owls", visibility: "private" },
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith("create_team", {
+      _name: "Night Owls",
+      _visibility: "private",
+    });
+    expect(result).toEqual({ ok: true, reason: null, teamId: "t9", joinCode: "XYZ999" });
+  });
+
+  it("defaults visibility to public", async () => {
+    const supabase = rpcReturning([{ ok: true, reason: null, team_id: "t9", join_code: "AAA111" }]);
+    await createTeam({ context: ctx(supabase), data: { name: "Night Owls" } });
+    expect(supabase.rpc).toHaveBeenCalledWith("create_team", {
+      _name: "Night Owls",
+      _visibility: "public",
+    });
+  });
+
+  it("trims the name and rejects an empty one before hitting the network", async () => {
+    const supabase = rpcReturning([]);
+    await expect(createTeam({ context: ctx(supabase), data: { name: "   " } })).rejects.toThrow();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the RPC returns no rows", async () => {
+    const supabase = rpcReturning([]);
+    const result = await createTeam({ context: ctx(supabase), data: { name: "Night Owls" } });
+    expect(result).toEqual({ ok: false, reason: "unknown-error", teamId: null, joinCode: null });
+  });
+
+  it("surfaces the server's own refusal reason unchanged", async () => {
+    const supabase = rpcReturning([
+      { ok: false, reason: "switch-locked", team_id: null, join_code: null },
+    ]);
+    const result = await createTeam({ context: ctx(supabase), data: { name: "Night Owls" } });
+    expect(result).toEqual({ ok: false, reason: "switch-locked", teamId: null, joinCode: null });
   });
 });
 
