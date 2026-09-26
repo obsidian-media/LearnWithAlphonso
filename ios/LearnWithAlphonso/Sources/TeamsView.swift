@@ -13,6 +13,8 @@ struct TeamsView: View {
     @State private var code = ""
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var newTeamName = ""
+    @State private var newTeamVisibility = "public"
 
     var body: some View {
         List {
@@ -49,6 +51,25 @@ struct TeamsView: View {
                         .tint(AlphonsoColor.moss)
                 } header: {
                     Text("Join a team")
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+
+                Section {
+                    TextField("Team name", text: $newTeamName)
+                        .font(AlphonsoFont.sans(15))
+                    Picker("Visibility", selection: $newTeamVisibility) {
+                        Text("Public").tag("public")
+                        Text("Private").tag("private")
+                    }
+                    .pickerStyle(.segmented)
+                    Button("Create team") { Task { await createTeam() } }
+                        .tint(AlphonsoColor.moss)
+                        .disabled(newTeamName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                } header: {
+                    Text("Create a team")
                         .font(AlphonsoFont.sans(12, weight: .semiBold))
                         .tracking(0.4)
                         .foregroundStyle(AlphonsoColor.ember)
@@ -108,6 +129,19 @@ struct TeamsView: View {
         errorMessage = nil
         let result = try? await client.autoJoinTeam()
         if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+    }
+
+    private func createTeam() async {
+        guard let client else { return }
+        errorMessage = nil
+        let name = newTeamName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let result = try? await client.createTeam(name: name, visibility: newTeamVisibility)
+        if result?.ok == true {
+            newTeamName = ""
+            await loadAll()
+        } else {
+            errorMessage = result?.reason
+        }
     }
 
     private func leave() async {
