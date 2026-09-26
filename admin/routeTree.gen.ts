@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FoldersRouteImport } from './routes/folders'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as FolderIdRouteImport } from './routes/folder.$id'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const FoldersRoute = FoldersRouteImport.update({
   id: '/folders',
   path: '/folders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -38,12 +44,14 @@ const FolderIdRoute = FolderIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
+  '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
   '/folder/$id': typeof FolderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
+  '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
   '/folder/$id': typeof FolderIdRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/folders': typeof FoldersRoute
+  '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
   '/folder/$id': typeof FolderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/folders' | '/signin' | '/folder/$id'
+  fullPaths: '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/folders' | '/signin' | '/folder/$id'
-  id: '__root__' | '/' | '/folders' | '/signin' | '/folder/$id'
+  to: '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
+  id: '__root__' | '/' | '/folders' | '/reports' | '/signin' | '/folder/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FoldersRoute: typeof FoldersRoute
+  ReportsRoute: typeof ReportsRoute
   SigninRoute: typeof SigninRoute
   FolderIdRoute: typeof FolderIdRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/folders'
       fullPath: '/folders'
       preLoaderRoute: typeof FoldersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FoldersRoute: FoldersRoute,
+  ReportsRoute: ReportsRoute,
   SigninRoute: SigninRoute,
   FolderIdRoute: FolderIdRoute,
 }

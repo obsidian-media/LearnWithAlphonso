@@ -28,6 +28,9 @@ function Home() {
         <Link to="/folders" className="text-moss underline">
           Folders
         </Link>
+        <Link to="/reports" className="text-moss underline">
+          Reports
+        </Link>
       </nav>
     </main>
   );

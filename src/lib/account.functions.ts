@@ -111,8 +111,14 @@ export const exportMyData = createServerFn({ method: "POST" })
  * token (the user never used Apple sign-in), or Apple refused. Only a
  * confirmed revocation returns true, because the one thing worth
  * asserting is that the grant is definitely gone.
+ *
+ * Exported so admin.functions.ts's adminDeleteReportedUser can reuse the
+ * exact same revoke-then-delete step for an admin-initiated deletion --
+ * Apple's requirement to revoke on account deletion applies regardless of
+ * who deletes the account, and this is the only place that talks to
+ * apple_auth_tokens + the revoke API.
  */
-async function revokeAppleGrantForUser(
+export async function revokeAppleGrantForUser(
   supabaseAdmin: SupabaseClient<Database>,
   userId: string,
 ): Promise<boolean> {
