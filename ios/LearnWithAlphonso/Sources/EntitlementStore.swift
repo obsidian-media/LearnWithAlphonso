@@ -27,6 +27,35 @@ final class EntitlementStore {
     /// accessed before `Purchases.configure` ran.
     private let isConfigured = AppConfig.revenueCatAPIKey != nil
 
+    /// Hector re-parenting Phase 1's own prerequisite
+    /// (docs/superpowers/specs/2026-09-26-hector-reparenting-design.md):
+    /// aliases RevenueCat's own subscriber identity to this app's own
+    /// Supabase user id, so a server endpoint can look up "is this user
+    /// Pro" by that same id later (see revenuecat-entitlement.ts). Without
+    /// this, RevenueCat only ever knows this install's own anonymous
+    /// `$RCAnonymousID:...` -- `Purchases.configure` is never given an
+    /// explicit `appUserID`, so nothing before this linked the two.
+    /// Called once per sign-in/restore (RootView), not on every launch
+    /// regardless of session state -- there is no user id to alias
+    /// before one exists.
+    ///
+    /// Updates `isPro` from the result: the identified account's
+    /// purchase history can genuinely differ from whatever the earlier
+    /// anonymous `refresh()` found (e.g. restoring a subscription tied
+    /// to this real account from another device), so this needs its own
+    /// read of `customerInfo`, not just a re-run of `refresh()` after.
+    func login(userID: String) async {
+        guard isConfigured else { return }
+        do {
+            let result = try await Purchases.shared.logIn(userID)
+            isPro = result.customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
+        } catch {
+            // Best-effort -- same posture as every other call in this
+            // file: a failed logIn just leaves whatever isPro value the
+            // earlier anonymous refresh() already found.
+        }
+    }
+
     func refresh() async {
         guard isConfigured else {
             isPro = false

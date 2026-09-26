@@ -96,6 +96,14 @@ struct RootView: View {
                         await hydrateThemeFromServer()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
+                        // Hector re-parenting Phase 1's own prerequisite:
+                        // aliases RevenueCat's subscriber identity to this
+                        // account so a server endpoint can verify "is this
+                        // user Pro" later -- see EntitlementStore.login's
+                        // own doc comment.
+                        if let userID = session.userID {
+                            await entitlementStore.login(userID: userID)
+                        }
                     }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
