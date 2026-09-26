@@ -172,6 +172,25 @@ targets:
   # live), and a distribution provisioning profile was generated for it
   # reusing the existing certificate (no new cert minted). See
   # docs/BACKLOG.md sec 1.4 for the full trail.
+  # App Store / Devpost screenshot automation (screenshot-shot-list.md,
+  # Hackaton/Shipaton/03-submission-materials/). Drives the real app --
+  # signed in as the seeded demo account (scripts/seed-demo-account.ts) via
+  # Session.uiTestBootstrapSession's #if DEBUG hook, never a mock -- and
+  # captures each shot-list screen. Must build/run with the Debug config
+  # (see the `schemes:` block below): that bootstrap hook does not exist
+  # in Release.
+  LearnWithAlphonsoUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: LearnWithAlphonsoUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso.uitests
+        GENERATE_INFOPLIST_FILE: true
+        TEST_TARGET_NAME: LearnWithAlphonso
+
   LearnWithAlphonsoWidget:
     type: app-extension
     platform: iOS
@@ -215,3 +234,26 @@ targets:
           # the real UUID (IOS_WIDGET_PROVISIONING_PROFILE_UUID secret)
           # with `sed`, same pattern as the app target's placeholder.
           PROVISIONING_PROFILE_SPECIFIER: "PLACEHOLDER_WIDGET_PROVISIONING_PROFILE_UUID"
+
+# An explicit scheme, replacing XcodeGen's auto-generated one, so
+# LearnWithAlphonsoUITests actually runs as part of `-scheme
+# LearnWithAlphonso`'s test action -- an auto-generated per-target scheme
+# would only ever build/run the app target alone. `build.targets` still
+# includes the app target (`all`) so ios-app-build.yml's existing
+# `xcodebuild build -scheme LearnWithAlphonso` keeps working unchanged.
+# `test.config: Debug` is load-bearing: Session.uiTestBootstrapSession's
+# #if DEBUG hook does not exist in a Release build, so the screenshot
+# pipeline must run against Debug or the seeded demo account can never
+# sign in non-interactively.
+schemes:
+  LearnWithAlphonso:
+    build:
+      targets:
+        LearnWithAlphonso: all
+        LearnWithAlphonsoUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - LearnWithAlphonsoUITests
+    run:
+      config: Debug

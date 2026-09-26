@@ -99,6 +99,10 @@ final class Session {
     /// to a user who's staring at what looks like a normal signed-in app).
     func restoreSession() async {
         defer { isRestoring = false }
+        if let bootstrapped = Self.uiTestBootstrapSession() {
+            establishSession(bootstrapped)
+            return
+        }
         guard let stored = KeychainSessionStore.load() else { return }
         if stored.expiresAt > Date().addingTimeInterval(60) {
             establishSession(stored)
@@ -206,6 +210,39 @@ final class Session {
             let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             try? await client.linkAppleAuthorization(code: code)
         }
+    }
+
+    /// UI-testing only: lets the App Store screenshot pipeline (see
+    /// .github/workflows/capture-app-store-screenshots.yml) sign in as the
+    /// seeded demo account non-interactively. This is a REAL session for a
+    /// REAL account that already has real seeded progress
+    /// (scripts/seed-demo-account.ts) and real Pro entitlement, granted by
+    /// hand in the RevenueCat dashboard -- it bypasses the interactive
+    /// login UI only, never any entitlement or authorization check itself.
+    /// Inert without every one of these environment variables set, which a
+    /// real device or App Store build never has, and compiles to a plain
+    /// `return nil` outside DEBUG so it cannot ship in Release regardless.
+    private static func uiTestBootstrapSession() -> SupabaseSession? {
+        #if DEBUG
+        let env = ProcessInfo.processInfo.environment
+        guard let accessToken = env["UI_TEST_ACCESS_TOKEN"],
+              let refreshToken = env["UI_TEST_REFRESH_TOKEN"],
+              let userID = env["UI_TEST_USER_ID"] else {
+            return nil
+        }
+        let expiresAt = env["UI_TEST_EXPIRES_AT"]
+            .flatMap { TimeInterval($0) }
+            .map { Date(timeIntervalSince1970: $0) }
+            ?? Date().addingTimeInterval(3600)
+        return SupabaseSession(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            expiresAt: expiresAt,
+            userID: userID
+        )
+        #else
+        return nil
+        #endif
     }
 
     private static func message(for error: Error) -> String {

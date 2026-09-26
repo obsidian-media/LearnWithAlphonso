@@ -1,0 +1,107 @@
+name: Capture App Store Screenshots
+
+# Manual only. Boots two simulators (the App Store 6.7" size and the
+# Devpost-spec 6.1" size -- screenshot-shot-list.md), mints a real
+# session for the already-seeded demo account (scripts/seed-demo-account.ts
+# must have been run against it first) via scripts/mint-demo-session.ts,
+# and runs LearnWithAlphonsoUITests/ScreenshotTests to capture every
+# screen it can automate. Does not attempt Hector's shot (a real voice
+# exchange) -- see that test file's own header comment for why.
+#
+# Uses SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY -- same secrets ci.yml
+# already uses, nothing new needed.
+on:
+  workflow_dispatch:
+    inputs:
+      demo_account_email:
+        description: "Seeded demo account email (scripts/seed-demo-account.ts)"
+        required: true
+        type: string
+
+jobs:
+  screenshots:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Apple accepts 1290x2796 for the 6.9"/6.7" App Store slot.
+          - device: "iPhone 16 Pro Max"
+            label: appstore-69
+          # Devpost's own spec, exactly: 1179x2556, no device frame.
+          - device: "iPhone 16"
+            label: devpost
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - run: bun install --frozen-lockfile
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios/LearnWithAlphonso
+        run: xcodegen generate
+
+      - name: Mint a real session for the seeded demo account
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          bun scripts/mint-demo-session.ts --email "${{ inputs.demo_account_email }}" >> "$GITHUB_ENV"
+
+      - name: Find and boot ${{ matrix.device }}
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -F "${{ matrix.device }} (" | head -1 | grep -oE '[0-9A-F-]{36}')
+          if [ -z "$UDID" ]; then
+            echo "No simulator matching '${{ matrix.device }}'. Available device types:"
+            xcrun simctl list devicetypes
+            echo "Available devices:"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Booting $UDID (${{ matrix.device }})"
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+
+      - name: Build for testing
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          xcodebuild build-for-testing \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -destination "id=$SIMULATOR_UDID" \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run screenshot UI test
+        working-directory: ios/LearnWithAlphonso
+        env:
+          SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/screenshots/${{ matrix.label }}
+        run: |
+          mkdir -p "$SCREENSHOT_OUTPUT_DIR"
+          xcodebuild test-without-building \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -destination "id=$SIMULATOR_UDID" \
+            -only-testing:LearnWithAlphonsoUITests/ScreenshotTests/testCaptureAppStoreScreenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.label }}
+          path: screenshots/${{ matrix.label }}/*.png
+          if-no-files-found: warn
+
+      - name: Upload test result bundle (screenshots are attached here too)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult-${{ matrix.label }}
+          path: ios/LearnWithAlphonso/**/*.xcresult
+          if-no-files-found: ignore
