@@ -78,9 +78,31 @@ async function resolveUserId(): Promise<string> {
   );
 }
 
+/** RevenueCat's v1 GET is "get OR CREATE" -- see `main`'s use of it. */
+async function fetchSubscriber(appUserId: string) {
+  const res = await fetch(
+    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`,
+    { headers: { Authorization: `Bearer ${REVENUECAT_SECRET_API_KEY}` } },
+  );
+  if (!res.ok) throw new Error(`subscriber -> ${res.status}: ${await res.text()}`);
+  return (await res.json()) as {
+    subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> };
+  };
+}
+
 async function main() {
   const appUserId = await resolveUserId();
   console.log(`Resolved demo account -> app_user_id ${short(appUserId)}`);
+
+  // The promotional endpoint 404s with `{"code":7259,"subscriber was not
+  // found"}` for an app_user_id RevenueCat has never seen -- which is the
+  // normal state for an account that has not opened the app since
+  // `EntitlementStore.login(userID:)` started aliasing the Supabase id to
+  // RevenueCat. v1's GET is documented as get-OR-CREATE, so touching it
+  // first materialises the subscriber without requiring anyone to launch
+  // the app. Observed live: run 36228241619.
+  await fetchSubscriber(appUserId);
+  console.log("Subscriber exists (created if RevenueCat had not seen it).");
 
   console.log(`Granting "${ENTITLEMENT}" (${DURATION})...`);
   const grant = await fetch(
@@ -103,14 +125,7 @@ async function main() {
   // property that matters -- that `isProSubscriber` will now answer true
   // for this account -- using the same shape that function reads
   // (`subscriber.entitlements[id].expires_date`, null meaning lifetime).
-  const check = await fetch(
-    `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`,
-    { headers: { Authorization: `Bearer ${REVENUECAT_SECRET_API_KEY}` } },
-  );
-  if (!check.ok) throw new Error(`verify -> ${check.status}: ${await check.text()}`);
-  const body = (await check.json()) as {
-    subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> };
-  };
+  const body = await fetchSubscriber(appUserId);
   const ent = body.subscriber?.entitlements?.[ENTITLEMENT];
   if (!ent) {
     throw new Error(
