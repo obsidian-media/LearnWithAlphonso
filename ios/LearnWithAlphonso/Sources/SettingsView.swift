@@ -143,23 +143,20 @@ struct SettingsView: View {
                 }
                 .disabled(deleteConfirmationText != "DELETE")
             } message: {
-                // Hector/Cloud Voice is a separate account in a separate
-                // Supabase project this backend has no admin access to (see
-                // AccountClient's header comment) -- said here rather than
-                // silently implying a full-account erasure this can't
-                // actually perform. Wording matches privacy.tsx's "Hector
-                // (advanced voice tutor)" section word-for-word on purpose:
-                // this exact sentence, "sign out of Hector separately",
-                // used to imply deletion when it was really just a local
-                // sign-out -- an accurate statement the day it was written
-                // that drifted out of step with the policy a day later, once
-                // the policy described the real (manual, privacy@) process.
-                // Matching the policy's wording here is what keeps that from
-                // happening again silently.
+                // Hector re-parenting Phase 0 (docs/superpowers/specs/
+                // 2026-09-26-hector-reparenting-design.md): deletion now
+                // *attempts* to reach a linked Hector account, but linking
+                // only happens automatically for Hector sign-ins from here
+                // on -- anyone who enrolled before this shipped has no
+                // recorded link yet (Phase 2 adds the one-time prompt that
+                // covers them too). Still true, still worth saying plainly
+                // rather than overclaiming "always deleted": update this
+                // again once Phase 2 ships and most existing users have
+                // had a chance to link.
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
 
-                This does not delete a separate Hector account, if you have one -- they are on a different system and not currently linked for deletion. To delete a Hector account, write to privacy@alphonsoecosystem.app and we will action it manually.
+                This also removes a linked Hector account, if you have one. If your Hector account isn't linked yet, write to privacy@alphonsoecosystem.app to have it deleted separately.
                 """)
             }
         }
