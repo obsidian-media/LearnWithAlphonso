@@ -17,6 +17,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 const { Route: CookiesRoute } = await import("./cookies");
 const { Route: TermsRoute } = await import("./terms");
 const { Route: PrivacyRoute } = await import("./privacy");
+const { Route: SupportRoute } = await import("./support");
 
 describe("Cookies route", () => {
   it("renders the cookie policy with its sections", () => {
@@ -85,5 +86,38 @@ describe("Privacy route", () => {
     render(<Privacy />);
     expect(screen.getByText(/Settings → Export My Data/)).toBeInTheDocument();
     expect(screen.getByText(/Settings → Delete My Account/)).toBeInTheDocument();
+  });
+});
+
+describe("Support route", () => {
+  it("renders the support page with its sections", () => {
+    const Support = SupportRoute.options.component!;
+    render(<Support />);
+    expect(screen.getByRole("heading", { name: "Support" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Contact us" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Subscriptions" })).toBeInTheDocument();
+  });
+
+  // App Store Connect REQUIRES a Support URL, and the page it points at
+  // has to actually offer a way to reach someone. A support page with no
+  // contact address is the same defect as the 404 it replaced, just
+  // harder to notice.
+  it("gives a reachable contact address", () => {
+    const Support = SupportRoute.options.component!;
+    render(<Support />);
+    // Appears more than once by design -- contact, data deletion and
+    // reporting each name it, so someone skimming one section does not
+    // have to hunt for it.
+    expect(screen.getAllByText(/privacy@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
+  });
+
+  // The address must match the one the legal pages already use. An
+  // invented support@ alias would be a mailbox nobody created, on the
+  // one page a reviewer is most likely to write to.
+  it("uses no address the rest of the site does not", () => {
+    const Support = SupportRoute.options.component!;
+    const { container } = render(<Support />);
+    const addresses = (container.textContent ?? "").match(/[\w.+-]+@[\w.-]+/g) ?? [];
+    expect([...new Set(addresses)]).toEqual(["privacy@alphonsoecosystem.app"]);
   });
 });
