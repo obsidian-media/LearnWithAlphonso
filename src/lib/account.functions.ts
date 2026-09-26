@@ -105,6 +105,37 @@ export const exportMyData = createServerFn({ method: "POST" })
   });
 
 /** Permanently delete the account and all associated data (GDPR erasure). */
+/**
+ * Revokes the user's Apple grant if there is one, reporting whether it
+ * happened. Never throws -- see the call site in deleteMyAccount.
+ *
+ * Returns false for every "we could not", which are deliberately not
+ * distinguished to the caller: no Apple secrets configured, no stored
+ * token (the user never used Apple sign-in), or Apple refused. Only a
+ * confirmed revocation returns true, because the one thing worth
+ * asserting is that the grant is definitely gone.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function revokeAppleGrantForUser(supabaseAdmin: any, userId: string): Promise<boolean> {
+  try {
+    const { appleConfigFromEnv, revokeAppleGrant } = await import("@/lib/apple-revocation");
+    const config = appleConfigFromEnv();
+    if (!config) return false;
+
+    const { data } = await supabaseAdmin
+      .from("apple_auth_tokens")
+      .select("refresh_token")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const refreshToken = (data as { refresh_token?: string } | null)?.refresh_token;
+    if (!refreshToken) return false;
+
+    return await revokeAppleGrant(config, refreshToken);
+  } catch {
+    return false;
+  }
+}
+
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ confirm: z.literal("DELETE") }).parse(d))
@@ -126,11 +157,25 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     );
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Apple requires an app offering Sign in with Apple to revoke the
+    // user's grant when they delete their account. Done BEFORE deleteUser,
+    // because the row is FK'd to auth.users ON DELETE CASCADE and would be
+    // gone afterwards.
+    //
+    // Deliberately never throws. A user's right to delete their account
+    // cannot depend on Apple being reachable, or on these secrets being
+    // configured -- so the outcome is reported, and deletion proceeds
+    // either way. `appleRevoked: false` means a grant is still live and is
+    // a compliance problem to chase; refusing the deletion would be a worse
+    // one.
+    const appleRevoked = await revokeAppleGrantForUser(supabaseAdmin, userId);
+
     // Friend rows pointing at this user are not owned by them.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabaseAdmin.from("friendships") as any).delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
 
-    return { deleted: true };
+    return { deleted: true, appleRevoked };
   });

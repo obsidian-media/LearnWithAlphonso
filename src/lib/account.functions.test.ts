@@ -108,7 +108,11 @@ describe("deleteMyAccount", () => {
 
     const result = await deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } });
 
-    expect(result).toEqual({ deleted: true });
+    // appleRevoked reports whether Apple's grant was actually revoked.
+    // false here because no Apple secrets are configured in tests, which
+    // is the same answer production gives until they are -- and deletion
+    // proceeds either way by design.
+    expect(result).toEqual({ deleted: true, appleRevoked: false });
     expect(supabaseAdminFrom).toHaveBeenCalledWith("friendships");
     expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
@@ -187,6 +191,18 @@ describe("GDPR export table coverage", () => {
     // (reason 1: an export field that's always empty is worse than no
     // field). Deletion is already handled the same CASCADE way.
     "content_reports",
+    // apple_auth_tokens (supabase/migrations/20260928030000_apple_auth_tokens.sql):
+    // a CREDENTIAL, not the account's own data. Exporting it would hand
+    // the user -- and anyone who ever receives a copy of their export
+    // file -- a live refresh token that authorises Apple identity
+    // operations for this whole app. That is a security hole dressed as
+    // transparency, and it is the one case where "export it by default"
+    // is the wrong default. Same admin_users mechanics otherwise: RLS on
+    // with no policies and no grant to `authenticated`, so the
+    // caller-scoped export would return empty anyway. Deletion is handled
+    // -- user_id REFERENCES auth.users ON DELETE CASCADE -- and the grant
+    // itself is revoked with Apple before the row goes.
+    "apple_auth_tokens",
   ]);
 
   it("exports every table that has a user_id column", () => {
