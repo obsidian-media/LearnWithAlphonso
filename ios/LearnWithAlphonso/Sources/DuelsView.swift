@@ -30,6 +30,8 @@ struct DuelsView: View {
     @State private var waitingInQueue = false
     @State private var errorMessage: String?
     @State private var isLoading = true
+    @State private var duelBlockTarget: SocialTarget?
+    @State private var duelReportTarget: SocialTarget?
 
     private var myID: String? { session.userID }
     private var pending: [Duel] { duels.filter { $0.status == "pending" && $0.opponentID == myID } }
@@ -61,6 +63,57 @@ struct DuelsView: View {
         .navigationTitle("Duels")
         .tint(AlphonsoColor.moss)
         .task { await loadAll() }
+        .confirmationDialog(
+            "Block this opponent?",
+            isPresented: Binding(
+                get: { duelBlockTarget != nil },
+                set: { if !$0 { duelBlockTarget = nil } },
+            ),
+            titleVisibility: .visible,
+        ) {
+            Button("Block", role: .destructive) {
+                if let target = duelBlockTarget {
+                    Task { await block(target) }
+                }
+                duelBlockTarget = nil
+            }
+            Button("Cancel", role: .cancel) { duelBlockTarget = nil }
+        } message: {
+            Text(SocialSafetyCopy.blockConfirmationMessage("This person"))
+        }
+        .sheet(item: $duelReportTarget) { target in
+            ReportSheet(target: target, session: session)
+        }
+    }
+
+    /// Neither `pending` nor `active` duel rows carry a display name (this
+    /// view never has shown opponent names, only course), so the block/
+    /// report menu targets by id with a generic label rather than adding
+    /// new name-resolution plumbing just for this.
+    private func opponentTarget(for d: Duel) -> SocialTarget {
+        SocialTarget(id: d.challengerID == myID ? d.opponentID : d.challengerID, displayName: "this opponent")
+    }
+
+    @ViewBuilder
+    private func socialSafetyMenu(for d: Duel) -> some View {
+        SocialSafetyMenu(
+            onBlock: { duelBlockTarget = opponentTarget(for: d) },
+            onReport: { duelReportTarget = opponentTarget(for: d) },
+        )
+    }
+
+    /// Existing duels with the now-blocked opponent are left as-is (block
+    /// only prevents *future* challenges/matching -- see the migration's
+    /// header comment); this only stops new contact, same as leaving past
+    /// interactions alone rather than erasing history.
+    private func block(_ target: SocialTarget) async {
+        guard let client else { return }
+        do {
+            let result = try await client.blockUser(target.id)
+            errorMessage = result.ok ? nil : (result.message.isEmpty ? "Couldn't block. Try again." : result.message)
+        } catch {
+            errorMessage = "Couldn't block. Try again."
+        }
     }
 
     private var sectionHeaderFont: Font { AlphonsoFont.sans(12, weight: .semiBold) }
@@ -76,6 +129,7 @@ struct DuelsView: View {
                     .buttonStyle(.alphonsoPrimary(fullWidth: false))
                 Button("Decline") { Task { await respond(d, accept: false) } }
                     .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                socialSafetyMenu(for: d)
             }
         }
         return Section {
@@ -111,6 +165,7 @@ struct DuelsView: View {
                             Text("Them: +\(oppXPNow - oppXPStart)")
                                 .font(AlphonsoFont.sans(13))
                                 .foregroundStyle(AlphonsoColor.inkSoft)
+                            socialSafetyMenu(for: d)
                         }
                     }
                 }
