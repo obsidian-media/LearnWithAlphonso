@@ -42,11 +42,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Apple accepts 1290x2796 for the 6.9"/6.7" App Store slot.
-          - device: "iPhone 16 Pro Max"
+          # 1320x2868 -- the shot list's own table says Apple accepts this
+          # OR 1290x2796 for the 6.9"/6.7" slot. Chosen because it's this
+          # one that's actually pre-created on GitHub's macOS runner image
+          # (confirmed live: "iPhone 16 Pro Max" -- 1290x2796 -- is a valid
+          # device *type* but has no pre-created device *instance* here,
+          # which `simctl create` below sidesteps anyway, but no reason to
+          # fight the runner's defaults for a resolution the shot list
+          # already says is optional).
+          - device: "iPhone 17 Pro Max"
+            device_type_id: "iPhone-17-Pro-Max"
             label: appstore-69
           # Devpost's own spec, exactly: 1179x2556, no device frame.
           - device: "iPhone 16"
+            device_type_id: "iPhone-16"
             label: devpost
     steps:
       - uses: actions/checkout@v4
@@ -71,25 +80,26 @@ jobs:
         run: |
           bun scripts/mint-demo-session.ts --email "${{ inputs.demo_account_email }}" >> "$GITHUB_ENV"
 
-      - name: Find and boot ${{ matrix.device }}
+      - name: Create and boot ${{ matrix.device }}
         run: |
-          # `|| true` on the pipeline itself, not just the later boot call --
-          # under `set -e` (this step's shell), a failing last command in a
-          # `var=$(...)` assignment aborts the script immediately, before
-          # the `if [ -z "$UDID" ]` diagnostic branch below ever runs. Found
-          # live: the first real run of this step failed with no diagnostic
-          # output at all, for exactly this reason.
-          UDID=$(xcrun simctl list devices available | grep -F "${{ matrix.device }} (" | head -1 | grep -oE '[0-9A-F-]{36}' || true)
-          if [ -z "$UDID" ]; then
-            echo "No simulator matching '${{ matrix.device }}'. Available device types:"
-            xcrun simctl list devicetypes
-            echo "Available devices:"
-            xcrun simctl list devices available
+          # Create a fresh device instance rather than searching for a
+          # pre-existing one -- found live: this runner image only
+          # pre-creates a specific subset of devices per iOS runtime
+          # (iPhone 17 Pro/Pro Max/Air/17/16e on iOS 26.2 here), not the
+          # full type x runtime matrix, so "iPhone 16 Pro Max" and
+          # "iPhone 16" -- both valid device *types* -- had no instance to
+          # find. `simctl create` doesn't depend on the runner's defaults.
+          RUNTIME_ID=$(xcrun simctl list runtimes available ios | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | tail -1 || true)
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "No available iOS runtime found:"
+            xcrun simctl list runtimes
             exit 1
           fi
-          echo "Booting $UDID (${{ matrix.device }})"
+          echo "Using runtime $RUNTIME_ID"
+          UDID=$(xcrun simctl create "screenshot-${{ matrix.label }}" "com.apple.CoreSimulator.SimDeviceType.${{ matrix.device_type_id }}" "$RUNTIME_ID")
+          echo "Created $UDID (${{ matrix.device }})"
           echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
-          xcrun simctl boot "$UDID" || true
+          xcrun simctl boot "$UDID"
 
       - name: Build for testing
         working-directory: ios/LearnWithAlphonso
