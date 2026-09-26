@@ -1,0 +1,89 @@
+name: Measure Types Drift (throwaway)
+
+# Not a real gate -- a one-off diagnostic to answer one question before
+# touching ci.yml's types-staleness guard: does `supabase gen types
+# --project-id <prod>` (what the guard currently compares against)
+# actually agree with types generated from a local stack built purely
+# from supabase/migrations/*.sql (what the guard should compare
+# against)? If they agree, the guard's reference can switch safely. If
+# they don't, that disagreement IS the finding -- report it, don't
+# switch anything yet. See docs/superpowers/specs/ or the PR/commit
+# history around "types-staleness guard" for the full context.
+#
+# Uses the CLI for every generation, never the Supabase MCP server's
+# generator -- the MCP output omits graphql_public, which the CLI
+# includes, so comparing CLI-vs-MCP would report drift that is really
+# just that known difference, not real schema drift.
+#
+# Delete this workflow file once the measurement is reported.
+on:
+  workflow_dispatch:
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.118.0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Generate types from production (what the guard currently uses)
+        run: supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > /tmp/types.prod.ts
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Start a local stack and apply supabase/migrations/*.sql to it
+        run: supabase start
+
+      - name: Generate types from the local stack (what the guard should use)
+        run: supabase gen types typescript --local > /tmp/types.local.ts
+
+      - name: Format all three the same way for a fair diff
+        run: |
+          cp src/integrations/supabase/types.ts /tmp/types.checked-in.ts
+          bunx prettier --write /tmp/types.prod.ts /tmp/types.local.ts /tmp/types.checked-in.ts
+
+      - name: Report every comparison that matters
+        run: |
+          echo "############################################"
+          echo "# 1) production vs local-from-migrations"
+          echo "#    (the core question: do they actually differ?)"
+          echo "############################################"
+          if diff -u /tmp/types.prod.ts /tmp/types.local.ts; then
+            echo "IDENTICAL: production and local-from-migrations agree."
+          else
+            echo "DIFFERENT: see diff above. This is real drift between"
+            echo "the live database and supabase/migrations/*.sql."
+          fi
+
+          echo ""
+          echo "############################################"
+          echo "# 2) checked-in types.ts (this branch) vs local-from-migrations"
+          echo "#    (would switching the guard's reference pass on main today?)"
+          echo "############################################"
+          if diff -u /tmp/types.checked-in.ts /tmp/types.local.ts; then
+            echo "IDENTICAL: checked-in types.ts already matches the migrations."
+          else
+            echo "DIFFERENT: see diff above. checked-in types.ts would still"
+            echo "fail a migrations-based guard for a reason other than the"
+            echo "prod-vs-PR-timing issue."
+          fi
+
+          echo ""
+          echo "############################################"
+          echo "# 3) checked-in types.ts (this branch) vs production"
+          echo "#    (restates today's actual failing check, for context)"
+          echo "############################################"
+          if diff -u /tmp/types.checked-in.ts /tmp/types.prod.ts; then
+            echo "IDENTICAL."
+          else
+            echo "DIFFERENT: see diff above -- this is what's failing PRs today."
+          fi
