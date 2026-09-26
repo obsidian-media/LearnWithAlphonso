@@ -119,21 +119,6 @@ async function main() {
   const bundleIdResource = (bundleIdResp.data as unknown as AscResource[])[0];
   if (!bundleIdResource) throw new Error(`No bundle ID resource found for ${BUNDLE_ID}`);
 
-  // Apple rejects a second profile with the same name, so retire the old
-  // one first. Safe: the profile in CI's secrets is a downloaded copy, and
-  // a fresh one replaces it in the same run.
-  console.log("Removing any existing CI App Store profile with the same name...");
-  const existing = await api("/profiles?filter[profileType]=IOS_APP_STORE&limit=200");
-  for (const p of existing.data as unknown as AscResource[]) {
-    if (
-      typeof p.attributes?.name === "string" &&
-      (p.attributes.name as string).startsWith("LearnWithAlphonso CI App Store")
-    ) {
-      await api(`/profiles/${p.id}`, "DELETE");
-      console.log(`  deleted ${String(p.attributes?.name)} (${p.id})`);
-    }
-  }
-
   // The name carries a timestamp so a stale profile is identifiable at a
   // glance in the portal, matching the existing convention.
   const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12);
@@ -178,6 +163,26 @@ async function main() {
         " -> Sign in with Apple -> Save,\nthen run this again. A profile cannot add a capability the App ID lacks.",
     );
     process.exit(1);
+  }
+
+  // Only NOW retire the superseded profiles. An earlier version deleted
+  // them BEFORE verifying, which left three working profiles gone and an
+  // unusable one in their place. Same principle as the audio-upload
+  // staging key: never destroy the old thing until the new one is known
+  // good.
+  console.log("
+New profile verified. Retiring superseded CI profiles...");
+  const existing = await api("/profiles?filter[profileType]=IOS_APP_STORE&limit=200");
+  for (const old of existing.data as unknown as AscResource[]) {
+    const oldName = old.attributes?.name;
+    if (
+      typeof oldName === "string" &&
+      oldName.startsWith("LearnWithAlphonso CI App Store") &&
+      old.id !== profileResp.data.id
+    ) {
+      await api(`/profiles/${old.id}`, "DELETE");
+      console.log(`  deleted ${oldName} (${old.id})`);
+    }
   }
 
   writeFileSync("out/profile-info.txt", `UUID=${uuid}\nName=${name}\n`, "utf-8");
