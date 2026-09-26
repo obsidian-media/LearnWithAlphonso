@@ -32,18 +32,44 @@ final class ScreenshotTests: XCTestCase {
         // UI_TEST_* come from seed-demo-account.ts's session (minted by
         // scripts/mint-demo-session.ts) via the workflow's env, forwarded
         // here as launch environment -- see Session.uiTestBootstrapSession.
-        app.launchEnvironment = ProcessInfo.processInfo.environment
-        outputDir = ProcessInfo.processInfo.environment["SCREENSHOT_OUTPUT_DIR"] ?? NSTemporaryDirectory()
+        let env = ProcessInfo.processInfo.environment
+        // Prints regardless of outcome -- the previous two attempts to get
+        // UI_TEST_ACCESS_TOKEN from the CI shell into this process each
+        // silently failed a different way (a TEST_RUNNER_-prefixed
+        // xcodebuild argument, then still nothing after that fix), and
+        // both were only diagnosable after guessing a specific cause and
+        // burning a full CI round-trip on it. This says directly, every
+        // run, whether this process actually has the value, instead of
+        // inferring it from whether the app happened to sign in.
+        print("=== UI_TEST_ACCESS_TOKEN present in this process's env: \(env["UI_TEST_ACCESS_TOKEN"] != nil) ===")
+        app.launchEnvironment = env
+        outputDir = env["SCREENSHOT_OUTPUT_DIR"] ?? NSTemporaryDirectory()
         app.launch()
     }
 
     func testCaptureAppStoreScreenshots() throws {
+        captureLaunchDiagnostic()
         captureLearnTab()
         captureLessonPlayer()
         captureReviewQueue()
         captureHector()
         captureListenLibrary()
         captureProfileHub()
+    }
+
+    /// Unconditional -- taken and dumped regardless of what's on screen,
+    /// before any navigation attempt. Every other shot in this file
+    /// soft-fails (records a note, keeps going) rather than asserting, on
+    /// purpose, which means "the test passed" does not imply any real
+    /// screenshot was captured -- confirmed live: a run where every single
+    /// shot's target element went missing still reported as passed. This
+    /// is the one unconditional source of truth for what actually
+    /// rendered, independent of every navigation guess after it.
+    private func captureLaunchDiagnostic() {
+        _ = app.wait(for: .runningForeground, timeout: 15)
+        print("=== accessibility tree at launch ===")
+        print(app.debugDescription)
+        save("00-launch-diagnostic")
     }
 
     // MARK: - Shots
@@ -87,7 +113,20 @@ final class ScreenshotTests: XCTestCase {
 
     private func captureListenLibrary() {
         guard tapTab("Listen") else { return }
-        guard tapContaining(app.staticTexts, "English", timeout: 15) else { return }
+        // Confirmed live: the other five shots' content is either bundled
+        // (Learn) or already-cached (review/Hector/Profile) -- this is the
+        // first shot in the sequence that waits on a real, cold network
+        // fetch (the folder tree), while RootView's own launch .task is
+        // also mid-flight (triggerSync/hydrateThemeFromServer/entitlement
+        // login all fire at once) -- 15s wasn't enough on a real run
+        // ("English" -- a real top-level folder, confirmed against the
+        // live podcast_folders table -- never appeared in time), and a
+        // later run showed 25s still isn't a hard guarantee (one of two
+        // simulator jobs missed it at t=95s with 25s in place, while the
+        // other job's identical wait succeeded) -- this is CI runner/
+        // network jitter, not a wrong selector, so more margin helps but
+        // doesn't fully remove the risk; the shot is allowed to soft-fail.
+        guard tapContaining(app.staticTexts, "English", timeout: 40) else { return }
         guard tapContaining(app.staticTexts, "A1", timeout: 10) else { return }
         // Seeded resumed 40% into "Ordering Coffee" (scripts/seed-demo-account.ts)
         // so the mini player should already be docked, mid-playback, without

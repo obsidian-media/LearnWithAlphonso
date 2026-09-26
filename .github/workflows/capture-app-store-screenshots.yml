@@ -1,15 +1,17 @@
 name: Capture App Store Screenshots
 
-# Manual only. Boots two simulators (the App Store 6.7" size and the
-# Devpost-spec 6.1" size -- screenshot-shot-list.md), mints a real
-# session for the already-seeded demo account (scripts/seed-demo-account.ts
-# must have been run against it first) via scripts/mint-demo-session.ts,
-# and runs LearnWithAlphonsoUITests/ScreenshotTests to capture every
-# screen it can automate. Does not attempt Hector's shot (a real voice
-# exchange) -- see that test file's own header comment for why.
+# Manual only. Seeds the demo account once (scripts/seed-demo-account.ts),
+# then boots two simulators (the App Store 6.7" size and the Devpost-spec
+# 6.1" size -- screenshot-shot-list.md) in parallel, each minting its own
+# real session (scripts/mint-demo-session.ts) and running
+# LearnWithAlphonsoUITests/ScreenshotTests to capture every screen it can
+# automate. Does not attempt Hector's shot (a real voice exchange) -- see
+# that test file's own header comment for why.
 #
 # Uses SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY -- same secrets ci.yml
-# already uses, nothing new needed.
+# already uses, nothing new needed. Seeding is its own job (not repeated
+# per simulator) so two parallel runs of the delete-then-reinsert reseed
+# in seed-demo-account.ts can't race each other.
 on:
   workflow_dispatch:
     inputs:
@@ -19,17 +21,41 @@ on:
         type: string
 
 jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Seed the demo account
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: bun scripts/seed-demo-account.ts --email "${{ inputs.demo_account_email }}"
+
   screenshots:
+    needs: seed
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Apple accepts 1290x2796 for the 6.9"/6.7" App Store slot.
-          - device: "iPhone 16 Pro Max"
+          # 1320x2868 -- the shot list's own table says Apple accepts this
+          # OR 1290x2796 for the 6.9"/6.7" slot. Chosen because it's this
+          # one that's actually pre-created on GitHub's macOS runner image
+          # (confirmed live: "iPhone 16 Pro Max" -- 1290x2796 -- is a valid
+          # device *type* but has no pre-created device *instance* here,
+          # which `simctl create` below sidesteps anyway, but no reason to
+          # fight the runner's defaults for a resolution the shot list
+          # already says is optional).
+          - device: "iPhone 17 Pro Max"
+            device_type_id: "iPhone-17-Pro-Max"
             label: appstore-69
           # Devpost's own spec, exactly: 1179x2556, no device frame.
           - device: "iPhone 16"
+            device_type_id: "iPhone-16"
             label: devpost
     steps:
       - uses: actions/checkout@v4
@@ -54,19 +80,26 @@ jobs:
         run: |
           bun scripts/mint-demo-session.ts --email "${{ inputs.demo_account_email }}" >> "$GITHUB_ENV"
 
-      - name: Find and boot ${{ matrix.device }}
+      - name: Create and boot ${{ matrix.device }}
         run: |
-          UDID=$(xcrun simctl list devices available | grep -F "${{ matrix.device }} (" | head -1 | grep -oE '[0-9A-F-]{36}')
-          if [ -z "$UDID" ]; then
-            echo "No simulator matching '${{ matrix.device }}'. Available device types:"
-            xcrun simctl list devicetypes
-            echo "Available devices:"
-            xcrun simctl list devices available
+          # Create a fresh device instance rather than searching for a
+          # pre-existing one -- found live: this runner image only
+          # pre-creates a specific subset of devices per iOS runtime
+          # (iPhone 17 Pro/Pro Max/Air/17/16e on iOS 26.2 here), not the
+          # full type x runtime matrix, so "iPhone 16 Pro Max" and
+          # "iPhone 16" -- both valid device *types* -- had no instance to
+          # find. `simctl create` doesn't depend on the runner's defaults.
+          RUNTIME_ID=$(xcrun simctl list runtimes available ios | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | tail -1 || true)
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "No available iOS runtime found:"
+            xcrun simctl list runtimes
             exit 1
           fi
-          echo "Booting $UDID (${{ matrix.device }})"
+          echo "Using runtime $RUNTIME_ID"
+          UDID=$(xcrun simctl create "screenshot-${{ matrix.label }}" "com.apple.CoreSimulator.SimDeviceType.${{ matrix.device_type_id }}" "$RUNTIME_ID")
+          echo "Created $UDID (${{ matrix.device }})"
           echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
-          xcrun simctl boot "$UDID" || true
+          xcrun simctl boot "$UDID"
 
       - name: Build for testing
         working-directory: ios/LearnWithAlphonso
@@ -84,11 +117,25 @@ jobs:
           SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/screenshots/${{ matrix.label }}
         run: |
           mkdir -p "$SCREENSHOT_OUTPUT_DIR"
+          # A TEST_RUNNER_-prefixed xcodebuild argument (tried first) did
+          # NOT reach the xctest process -- confirmed live: the app was
+          # still on the plain sign-in screen after that change shipped.
+          # These plain NAME=value overrides instead resolve project.yml's
+          # scheme-level `environmentVariables` ($(UI_TEST_ACCESS_TOKEN)
+          # etc.), the actual first-class Xcode Test-action-environment
+          # feature, not a CLI convention -- see that scheme block's own
+          # comment for why this replaces rather than stacks on the guess.
           xcodebuild test-without-building \
             -project LearnWithAlphonso.xcodeproj \
             -scheme LearnWithAlphonso \
             -destination "id=$SIMULATOR_UDID" \
-            -only-testing:LearnWithAlphonsoUITests/ScreenshotTests/testCaptureAppStoreScreenshots
+            -resultBundlePath "${{ github.workspace }}/screenshots/${{ matrix.label }}.xcresult" \
+            -only-testing:LearnWithAlphonsoUITests/ScreenshotTests/testCaptureAppStoreScreenshots \
+            SCREENSHOT_OUTPUT_DIR="$SCREENSHOT_OUTPUT_DIR" \
+            UI_TEST_ACCESS_TOKEN="$UI_TEST_ACCESS_TOKEN" \
+            UI_TEST_REFRESH_TOKEN="$UI_TEST_REFRESH_TOKEN" \
+            UI_TEST_USER_ID="$UI_TEST_USER_ID" \
+            UI_TEST_EXPIRES_AT="$UI_TEST_EXPIRES_AT"
 
       - name: Upload screenshots
         if: always()
@@ -103,5 +150,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xcresult-${{ matrix.label }}
-          path: ios/LearnWithAlphonso/**/*.xcresult
-          if-no-files-found: ignore
+          # Not under ios/LearnWithAlphonso/ at all -- xcodebuild puts a
+          # result bundle in DerivedData unless told otherwise, which the
+          # earlier `ios/LearnWithAlphonso/**/*.xcresult` glob never
+          # matched (confirmed live: it always warned "no files found",
+          # silently, even on a passing run). -resultBundlePath above
+          # pins it here instead.
+          path: screenshots/${{ matrix.label }}.xcresult
+          if-no-files-found: warn

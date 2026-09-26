@@ -245,6 +245,17 @@ targets:
 # #if DEBUG hook does not exist in a Release build, so the screenshot
 # pipeline must run against Debug or the seeded demo account can never
 # sign in non-interactively.
+#
+# `environmentVariables` here is the actual first-class Xcode mechanism
+# (a Test action's own environment, same as Xcode's Scheme Editor UI) for
+# getting a value into the xctest bundle's process -- used instead of, not
+# just alongside, a `TEST_RUNNER_`-prefixed xcodebuild argument: that CLI
+# convention did NOT reach the process (confirmed live -- the accessibility
+# tree still showed the plain sign-in screen after adding it), so this
+# replaces that guess with a documented feature rather than stacking a
+# second guess on top of a wrong one. Each `$(VAR)` resolves against
+# whatever plain `VAR=value` xcodebuild is invoked with -- the workflow
+# still passes those, just no longer TEST_RUNNER_-prefixed.
 schemes:
   LearnWithAlphonso:
     build:
@@ -253,6 +264,22 @@ schemes:
         LearnWithAlphonsoUITests: [test]
     test:
       config: Debug
+      environmentVariables:
+        - variable: UI_TEST_ACCESS_TOKEN
+          value: "$(UI_TEST_ACCESS_TOKEN)"
+          isEnabled: true
+        - variable: UI_TEST_REFRESH_TOKEN
+          value: "$(UI_TEST_REFRESH_TOKEN)"
+          isEnabled: true
+        - variable: UI_TEST_USER_ID
+          value: "$(UI_TEST_USER_ID)"
+          isEnabled: true
+        - variable: UI_TEST_EXPIRES_AT
+          value: "$(UI_TEST_EXPIRES_AT)"
+          isEnabled: true
+        - variable: SCREENSHOT_OUTPUT_DIR
+          value: "$(SCREENSHOT_OUTPUT_DIR)"
+          isEnabled: true
       targets:
         - LearnWithAlphonsoUITests
     run:
