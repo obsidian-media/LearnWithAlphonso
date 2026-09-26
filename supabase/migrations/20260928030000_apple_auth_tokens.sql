@@ -8,8 +8,13 @@
 -- tomorrow, delete account" would leave nothing to revoke with. The server
 -- exchanges that code for a refresh token once and keeps it here.
 --
--- VERSIONING: deliberately above 20260928010000_admin_users.sql, the current
--- latest. Wall-clock "now" when this was written was 2026-09-25, which sorts
+-- VERSIONING: 20260928030000, deliberately above 20260928010000_admin_users
+-- AND above 20260928020000_block_and_report -- which was written in parallel
+-- and originally collided with this file on that exact version. Git does not
+-- see such a collision (the filenames differ, so neither PR conflicts and
+-- both go green), and the duplicate-version guard only fires once BOTH are
+-- on main, breaking the deploy and blaming whichever merged second. Caught
+-- during review, not by a check. See docs/BACKLOG.md section 0.9. Wall-clock "now" when this was written was 2026-09-25, which sorts
 -- BELOW several existing migrations because 20260926030000 was itself
 -- renumbered forward out of a collision. A real timestamp guarantees
 -- uniqueness, not dependency order -- see src/lib/migration-order.test.ts.
