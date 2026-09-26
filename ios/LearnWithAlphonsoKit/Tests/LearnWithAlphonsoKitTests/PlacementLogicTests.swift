@@ -101,7 +101,12 @@ final class PlacementLogicTests: XCTestCase {
     func testGroupByBandReturnsAnEmptyArrayForABandWithNoCandidates() {
         let a1Only = fullPoolFixture().filter { $0.level == "A1" }
         let grouped = groupByBand(a1Only)
-        XCTAssertEqual(grouped["B1"], [])
+        // Compares count rather than the array: PlacementQuestion is not
+        // Equatable, and making it so purely to satisfy a test would put
+        // the requirement in the model instead of the assertion. `?.count`
+        // still distinguishes a MISSING key (nil) from a present-but-empty
+        // one, which is the property this test is named for.
+        XCTAssertEqual(grouped["B1"]?.count, 0)
     }
 
     // MARK: - nextAdaptiveBand

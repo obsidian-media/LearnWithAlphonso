@@ -412,9 +412,12 @@ final class AIConversationClientTests: XCTestCase {
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
-        let verdict = try XCTUnwrap(await client.gradeTranslation(
+        // Hoisted out of XCTUnwrap: its argument is an autoclosure, which
+        // cannot carry an `await`.
+        let graded = await client.gradeTranslation(
             lessonId: "u1l1", questionId: "q1", submission: "Good morning.", course: "en"
-        ))
+        )
+        let verdict = try XCTUnwrap(graded)
 
         XCTAssertTrue(verdict.correct)
         XCTAssertNil(verdict.reason)
@@ -434,9 +437,10 @@ final class AIConversationClientTests: XCTestCase {
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
-        let verdict = try XCTUnwrap(await client.gradeTranslation(
+        let graded = await client.gradeTranslation(
             placementId: "p60", submission: "Good day.", course: "en"
-        ))
+        )
+        let verdict = try XCTUnwrap(graded)
 
         XCTAssertFalse(verdict.correct)
         XCTAssertEqual(verdict.reason, "not quite")
