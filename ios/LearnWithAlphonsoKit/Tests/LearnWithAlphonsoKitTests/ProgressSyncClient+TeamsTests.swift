@@ -79,6 +79,44 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/auto_join_team"))
     }
 
+    func testCreateTeamPostsNameAndVisibilityAndReturnsTheJoinCode() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t9", "join_code": "XYZ999"]])
+        }
+        let result = try await client.createTeam(name: "Night Owls", visibility: "private")
+        XCTAssertTrue(result.ok)
+        XCTAssertEqual(result.teamID, "t9")
+        XCTAssertEqual(result.joinCode, "XYZ999")
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/create_team"))
+        let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(body["_name"] as? String, "Night Owls")
+        XCTAssertEqual(body["_visibility"] as? String, "private")
+    }
+
+    func testCreateTeamDefaultsVisibilityToPublic() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t9", "join_code": "AAA111"]])
+        }
+        _ = try await client.createTeam(name: "Night Owls")
+        let request = try XCTUnwrap(captured)
+        let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(body["_visibility"] as? String, "public")
+    }
+
+    func testCreateTeamSurfacesASwitchLockedRejectionAsAFalseOkNotAThrow() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "reason": "switch-locked", "team_id": NSNull(), "join_code": NSNull()]])
+        }
+        let result = try await client.createTeam(name: "Night Owls", visibility: "public")
+        XCTAssertFalse(result.ok)
+        XCTAssertEqual(result.reason, "switch-locked")
+    }
+
     func testLeaveTeamSurfacesASwitchLockedRejectionAsAFalseOkNotAThrow() async throws {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: [["ok": false, "reason": "switch-locked"]])
