@@ -198,11 +198,23 @@ private struct ConversationSessionView: View {
     }
 
     private func sendTurn(audio: Data) async {
-        guard let accessToken = session.accessToken else {
+        guard let accessToken = await session.freshAccessToken() else {
             errorMessage = "You've been signed out. Please sign in again."
             return
         }
-        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+        let client = AIConversationClient(
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { accessToken },
+            // Session used to refresh its token only once, at cold
+            // launch -- a turn attempted more than ~an hour into a
+            // session always 401'd here with no visible reason (this
+            // was Hector re-parenting Phase 0's own bug report; see
+            // Session.freshAccessToken's doc comment for the full
+            // story). `freshAccessToken` above already refreshes
+            // proactively when close to expiry; this closure is the
+            // one-retry backstop for what that can still miss.
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+        )
         do {
             phase = .transcribing
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")

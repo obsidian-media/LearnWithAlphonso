@@ -28,16 +28,48 @@ public final class AccountClient: Sendable {
 
     private let baseURL: URL
     private let accessToken: @Sendable () -> String
+    /// Mints a new access token when the server rejects the current one --
+    /// see `perform`'s doc comment (AIConversationClient carries the same
+    /// mechanism, same reasoning, for its own three AI endpoints). Nil
+    /// (the default) means "no refresh available" -- every caller that
+    /// doesn't pass this keeps its exact prior behavior: one attempt, a
+    /// 401 surfaces as `.server(401, _)` same as any other status.
+    private let refreshAccessToken: (@Sendable () async -> String?)?
     private let requester: Requester
 
     public init(
         baseURL: URL,
         accessToken: @escaping @Sendable () -> String,
+        refreshAccessToken: (@Sendable () async -> String?)? = nil,
         requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
     ) {
         self.baseURL = baseURL
         self.accessToken = accessToken
+        self.refreshAccessToken = refreshAccessToken
         self.requester = requester
+    }
+
+    /// Sends `request` (already carrying the current access token) and,
+    /// on a 401 with a `refreshAccessToken` configured, mints one new
+    /// token and retries exactly once with it. See
+    /// `AIConversationClient.perform`'s doc comment for the full story:
+    /// `Session` used to refresh its token only once, at cold launch, so
+    /// any call made after the token's ~1-hour lifetime elapsed 401'd
+    /// with no visible reason. `linkAppleAuthorization` and
+    /// `linkHectorAccount` wire this up; `exportMyData` and
+    /// `deleteMyAccount` don't -- unaffected on purpose, not an oversight.
+    private func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        let (data, response) = try await requester(request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 401,
+              let refreshAccessToken else {
+            return (data, response)
+        }
+        guard let refreshedToken = await refreshAccessToken() else {
+            return (data, response)
+        }
+        var retryRequest = request
+        retryRequest.setValue("Bearer \(refreshedToken)", forHTTPHeaderField: "Authorization")
+        return try await requester(retryRequest)
     }
 
     /// POST /api/account-export -- returns the raw JSON body exactly as the
@@ -87,7 +119,7 @@ public final class AccountClient: Sendable {
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["authorizationCode": code])
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
     }
 
@@ -116,7 +148,7 @@ public final class AccountClient: Sendable {
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["cloudVoiceAccessToken": cloudVoiceAccessToken])
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
     }
 

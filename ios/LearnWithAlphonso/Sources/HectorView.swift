@@ -51,11 +51,18 @@ struct HectorView: View {
             // Cloud Voice's own project (see AccountClient.linkHectorAccount's
             // doc comment for why trusting a claimed id here was the bug).
             guard cloudVoiceUserID != nil,
-                  let accessToken = session.accessToken,
                   case .ready(let hectorAccessToken) = hectorSession.state
             else { return }
             Task {
-                let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+                guard let accessToken = await session.freshAccessToken() else { return }
+                let client = AccountClient(
+                    baseURL: AppConfig.apiBaseURL,
+                    accessToken: { accessToken },
+                    // Same fix as ConversationView/CampaignView's own
+                    // sendTurn -- see Session.freshAccessToken's doc
+                    // comment.
+                    refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+                )
                 try? await client.linkHectorAccount(cloudVoiceAccessToken: hectorAccessToken)
             }
         }

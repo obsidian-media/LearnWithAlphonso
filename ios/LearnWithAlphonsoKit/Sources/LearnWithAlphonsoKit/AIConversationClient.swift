@@ -58,16 +58,57 @@ public final class AIConversationClient: Sendable {
 
     private let baseURL: URL
     private let accessToken: @Sendable () -> String
+    /// Mints a new access token when the server rejects the current one --
+    /// see `perform`'s doc comment. Nil (the default) means "no refresh
+    /// available," which is every existing caller's exact prior behavior:
+    /// one attempt, a 401 surfaces as `.server(401, _)` same as any other
+    /// status.
+    private let refreshAccessToken: (@Sendable () async -> String?)?
     private let requester: Requester
 
     public init(
         baseURL: URL,
         accessToken: @escaping @Sendable () -> String,
+        refreshAccessToken: (@Sendable () async -> String?)? = nil,
         requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
     ) {
         self.baseURL = baseURL
         self.accessToken = accessToken
+        self.refreshAccessToken = refreshAccessToken
         self.requester = requester
+    }
+
+    /// Sends `request` (already carrying the current access token) and,
+    /// on a 401 with a `refreshAccessToken` configured, mints one new
+    /// token and retries exactly once with it.
+    ///
+    /// **Why this exists.** `Session` (the main app's auth state, not this
+    /// package) used to refresh its access token only once, at cold
+    /// launch -- nothing refreshed it again for the rest of a live
+    /// session. A session left open past the token's ~1-hour lifetime
+    /// 401'd on every call here with no way for the learner to know why
+    /// (confirmed against production logs: real `/api/stt` 401s from a
+    /// real device test, not a hypothetical). Session now refreshes
+    /// proactively before most calls, so this retry is the backstop for
+    /// what proactive refresh can still miss -- the token expiring in the
+    /// last few seconds before the request lands, or being invalidated
+    /// server-side between the check and the call.
+    ///
+    /// Retries **at most once**: a refreshed token that still gets 401
+    /// means something other than staleness is wrong, and looping would
+    /// just hide that behind repeated network calls.
+    private func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        let (data, response) = try await requester(request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 401,
+              let refreshAccessToken else {
+            return (data, response)
+        }
+        guard let refreshedToken = await refreshAccessToken() else {
+            return (data, response)
+        }
+        var retryRequest = request
+        retryRequest.setValue("Bearer \(refreshedToken)", forHTTPHeaderField: "Authorization")
+        return try await requester(retryRequest)
     }
 
     /// POST /api/chat -- returns the assistant's reply text. `cefrLevel`
@@ -85,7 +126,7 @@ public final class AIConversationClient: Sendable {
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let content = object["content"] as? String else {
@@ -192,7 +233,7 @@ public final class AIConversationClient: Sendable {
         if let voice { payload["voice"] = voice }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
         return data
     }
@@ -211,7 +252,7 @@ public final class AIConversationClient: Sendable {
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = audio
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let text = object["text"] as? String else {
