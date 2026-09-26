@@ -170,8 +170,8 @@ async function main() {
   // unusable one in their place. Same principle as the audio-upload
   // staging key: never destroy the old thing until the new one is known
   // good.
-  console.log("
-New profile verified. Retiring superseded CI profiles...");
+  console.log("");
+  console.log("New profile verified. Retiring superseded CI profiles...");
   const existing = await api("/profiles?filter[profileType]=IOS_APP_STORE&limit=200");
   for (const old of existing.data as unknown as AscResource[]) {
     const oldName = old.attributes?.name;
