@@ -120,8 +120,13 @@ final class ScreenshotTests: XCTestCase {
         // also mid-flight (triggerSync/hydrateThemeFromServer/entitlement
         // login all fire at once) -- 15s wasn't enough on a real run
         // ("English" -- a real top-level folder, confirmed against the
-        // live podcast_folders table -- never appeared in time).
-        guard tapContaining(app.staticTexts, "English", timeout: 25) else { return }
+        // live podcast_folders table -- never appeared in time), and a
+        // later run showed 25s still isn't a hard guarantee (one of two
+        // simulator jobs missed it at t=95s with 25s in place, while the
+        // other job's identical wait succeeded) -- this is CI runner/
+        // network jitter, not a wrong selector, so more margin helps but
+        // doesn't fully remove the risk; the shot is allowed to soft-fail.
+        guard tapContaining(app.staticTexts, "English", timeout: 40) else { return }
         guard tapContaining(app.staticTexts, "A1", timeout: 10) else { return }
         // Seeded resumed 40% into "Ordering Coffee" (scripts/seed-demo-account.ts)
         // so the mini player should already be docked, mid-playback, without
