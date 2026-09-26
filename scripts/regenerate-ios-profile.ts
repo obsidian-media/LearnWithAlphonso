@@ -152,6 +152,16 @@ async function main() {
   // Proof the capability actually made it in. Without this the script can
   // "succeed" and hand back a profile that fails the archive exactly as
   // before -- the whole reason this run exists.
+  // Print every entitlement key the profile actually carries. When the
+  // check below fails, the useful question is not "is it missing" but
+  // "what IS in here" -- a capability named differently, or an App ID that
+  // genuinely lacks it, look identical from a single boolean.
+  const entKeys = [...plistXml.matchAll(/<key>([a-z0-9.\-]+)<\/key>/gi)]
+    .map((m) => m[1] as string)
+    .filter((k) => k.includes("com.apple"));
+  console.log("Entitlements present in the new profile:");
+  for (const k of [...new Set(entKeys)].sort()) console.log("  " + k);
+
   const hasAppleSignIn = plistXml.includes("com.apple.developer.applesignin");
   console.log(`\nSign in with Apple entitlement present in profile: ${hasAppleSignIn}`);
   if (!hasAppleSignIn) {
