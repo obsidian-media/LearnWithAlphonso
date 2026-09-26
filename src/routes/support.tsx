@@ -13,12 +13,17 @@ import { LegalPage, Section, Bullets } from "../components/LegalPage";
  * Both are served by a working address and honest answers to the
  * questions people actually arrive with -- not a marketing page.
  */
-// Deliberately the SAME address the legal pages already use, not an
-// invented support@ alias. A mailbox nobody has created is worse here
-// than anywhere else: this is the one page App Store Connect requires,
-// and a reviewer may well write to it. Switch to a dedicated address
-// only once that mailbox is confirmed to exist and is monitored.
-const CONTACT = "privacy@alphonsoecosystem.app";
+// support@ is a real, monitored mailbox (confirmed by the account owner
+// 2026-09-26) -- which is the only reason it is used here. This is the
+// one page App Store Connect requires and the address a reviewer is
+// most likely to write to, so an alias nobody had created would be
+// worse here than anywhere else.
+//
+// Deletion still routes to privacy@, because that is the address the
+// privacy policy itself names for it; sending someone to a different
+// one than the policy states is how a promise quietly stops matching.
+const CONTACT = "support@alphonsoecosystem.app";
+const PRIVACY_CONTACT = "privacy@alphonsoecosystem.app";
 
 export const Route = createFileRoute("/support")({
   component: Support,
@@ -78,7 +83,7 @@ function Support() {
             "Export: Profile, then Settings, then Account, then Export My Data.",
             "Deletion: the same screen, Delete My Account. It is permanent and removes your learning history.",
             "Hector uses a separate account on a different system and is not currently linked for deletion. To delete a Hector account, write to " +
-              CONTACT +
+              PRIVACY_CONTACT +
               " and we will action it manually.",
           ]}
         />

@@ -108,7 +108,7 @@ describe("Support route", () => {
     // Appears more than once by design -- contact, data deletion and
     // reporting each name it, so someone skimming one section does not
     // have to hunt for it.
-    expect(screen.getAllByText(/privacy@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/support@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
   });
 
   // The address must match the one the legal pages already use. An
@@ -118,6 +118,12 @@ describe("Support route", () => {
     const Support = SupportRoute.options.component!;
     const { container } = render(<Support />);
     const addresses = (container.textContent ?? "").match(/[\w.+-]+@[\w.-]+/g) ?? [];
-    expect([...new Set(addresses)]).toEqual(["privacy@alphonsoecosystem.app"]);
+    // Both are real mailboxes. Deletion deliberately routes to privacy@,
+    // matching what the privacy policy itself names -- the page must not
+    // introduce a THIRD address beyond these two.
+    expect([...new Set(addresses)].sort()).toEqual([
+      "privacy@alphonsoecosystem.app",
+      "support@alphonsoecosystem.app",
+    ]);
   });
 });
