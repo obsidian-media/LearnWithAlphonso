@@ -13,12 +13,12 @@ name: Capture App Store Screenshots
 # per simulator) so two parallel runs of the delete-then-reinsert reseed
 # in seed-demo-account.ts can't race each other.
 on:
+  # No email input: this repository is PUBLIC and workflow_dispatch
+  # inputs are visible in run logs to anyone. The demo account is read
+  # from the DEMO_ACCOUNT_EMAIL secret instead, the same one
+  # grant-demo-entitlement.yml uses -- one source of truth, and nothing
+  # published.
   workflow_dispatch:
-    inputs:
-      demo_account_email:
-        description: "Seeded demo account email (scripts/seed-demo-account.ts)"
-        required: true
-        type: string
 
 jobs:
   seed:
@@ -33,7 +33,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: bun scripts/seed-demo-account.ts --email "${{ inputs.demo_account_email }}"
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+        run: bun scripts/seed-demo-account.ts --email "$DEMO_ACCOUNT_EMAIL"
 
   screenshots:
     needs: seed
@@ -77,8 +78,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
         run: |
-          bun scripts/mint-demo-session.ts --email "${{ inputs.demo_account_email }}" >> "$GITHUB_ENV"
+          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
 
       - name: Create and boot ${{ matrix.device }}
         run: |
