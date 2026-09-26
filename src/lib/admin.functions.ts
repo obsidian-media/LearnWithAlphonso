@@ -12,6 +12,7 @@ import {
   MAX_UPLOAD_BYTES,
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
+import { revokeAppleGrantForUser } from "./account.functions";
 
 /**
  * Every admin server function lives in this one file so
@@ -38,6 +39,8 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminVerifyUploadedAudio",
   "adminGetTranscript",
   "adminSaveTranscript",
+  "adminListReports",
+  "adminDeleteReportedUser",
 ] as const;
 
 const BUCKET = "podcast-audio";
@@ -549,5 +552,109 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
       .from("podcast_transcripts")
       .upsert({ episode_id: data.episodeId, text: normalized }, { onConflict: "episode_id" });
     if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export type AdminReport = {
+  id: string;
+  reporterId: string;
+  reporterName: string;
+  reportedId: string;
+  reportedName: string;
+  reason: string;
+  createdAt: string;
+};
+
+/**
+ * Every abuse report, newest first, with both accounts' display names
+ * joined on. content_reports is insert-only from the client (RLS has no
+ * select policy at all -- supabase/migrations/20260928020000_block_and_report.sql)
+ * and service_role bypasses that, so this is the only place these rows
+ * are ever read back. Before this existed, a report went into a table
+ * nobody looked at -- storage without action, the same defect class
+ * blocking itself was until enforcement was wired into every read/write
+ * path in that same migration.
+ *
+ * Two queries, not a PostgREST embed: content_reports.reporter/reported
+ * both reference auth.users, and profiles.id also references auth.users,
+ * but there is no FK between content_reports and profiles directly for
+ * PostgREST to embed across.
+ */
+export const adminListReports = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async ({ context }): Promise<AdminReport[]> => {
+    const { data: reports, error } = await context.supabaseAdmin
+      .from("content_reports")
+      .select("id, reporter, reported, reason, created_at")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    if (!reports || reports.length === 0) return [];
+
+    const userIds = [...new Set(reports.flatMap((r) => [r.reporter, r.reported]))];
+    const { data: profiles, error: profilesError } = await context.supabaseAdmin
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", userIds);
+    if (profilesError) throw new Error(profilesError.message);
+    const nameById = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
+
+    // A missing profile means the account was already deleted through
+    // some other path since the report was filed -- content_reports rows
+    // for a deleted account are gone too (ON DELETE CASCADE on both
+    // reporter and reported), so this is a display-timing gap, not a
+    // real case the admin needs to act on. Named plainly rather than
+    // left blank.
+    return reports.map((r) => ({
+      id: r.id,
+      reporterId: r.reporter,
+      reporterName: nameById.get(r.reporter) ?? "(deleted account)",
+      reportedId: r.reported,
+      reportedName: nameById.get(r.reported) ?? "(deleted account)",
+      reason: r.reason,
+      createdAt: r.created_at,
+    }));
+  });
+
+/**
+ * The one action on a report: delete the reported account. There is no
+ * separate "dismiss" -- content_reports.reported REFERENCES auth.users
+ * ON DELETE CASCADE, so deleting the account also removes every report
+ * against them (this one and any others) from the queue, with no status
+ * column needed. Revokes the Apple grant first, same as self-service
+ * deleteMyAccount, because Apple requires that on any account deletion
+ * regardless of who initiates it -- see revokeAppleGrantForUser's own
+ * doc comment for why it lives in account.functions.ts and is reused
+ * here rather than duplicated.
+ *
+ * Keyed by the report, not a bare userId: the server looks up which
+ * account a report actually names rather than trusting an id the client
+ * could otherwise send unchecked.
+ *
+ * Deliberately skips the USER_DELETE_TABLES pre-delete step
+ * deleteMyAccount does -- that step exists only because deleteMyAccount
+ * issues DELETEs as the caller, whose RLS grants don't cover every
+ * table (see account.functions.test.ts's "only tries to delete rows the
+ * caller's own RLS role can delete"). Every user-scoped table has
+ * ON DELETE CASCADE from auth.users, so an admin acting as service_role
+ * needs nothing pre-deleted for auth.admin.deleteUser to clean it all up.
+ */
+export const adminDeleteReportedUser = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => z.object({ reportId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { data: report, error } = await context.supabaseAdmin
+      .from("content_reports")
+      .select("reported")
+      .eq("id", data.reportId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!report) throw new Error("That report no longer exists.");
+
+    await revokeAppleGrantForUser(context.supabaseAdmin, report.reported);
+    const { error: deleteError } = await context.supabaseAdmin.auth.admin.deleteUser(
+      report.reported,
+    );
+    if (deleteError) throw new Error(deleteError.message);
+
     return { ok: true };
   });
