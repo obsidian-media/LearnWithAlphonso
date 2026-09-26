@@ -141,7 +141,12 @@ async function resetSeededRows(userId: string): Promise<void> {
 }
 
 async function seedProgress(userId: string): Promise<void> {
-  const streakDays = 5;
+  // An established learner, not a fresh account -- this is both the App
+  // Store hero screenshot and the account a reviewer signs into, so it
+  // should read as someone who has genuinely been using the app. Mirrors
+  // the account owner's own real device (Sapphire, advanced band, real
+  // streak).
+  const streakDays = 12;
 
   await Promise.all([
     supabaseAdmin.from("user_progress").upsert({
@@ -152,15 +157,18 @@ async function seedProgress(userId: string): Promise<void> {
       hearts: 5,
       hearts_refill_at: null,
       streak_freezes: 0,
-      league_tier: "bronze",
-      cefr_level: "A1",
+      league_tier: "sapphire",
+      cefr_level: "B2",
     }),
     supabaseAdmin.from("language_progress").upsert(
       {
         user_id: userId,
         language: "en",
-        xp: SEEDED_LESSONS.reduce((sum, l) => sum + l.xpEarned, 0),
-        league_tier: "bronze",
+        // High enough to read as an advanced learner at a glance; the
+        // hero shows this number directly. Not tied to the seeded lesson
+        // count -- the app displays language_progress.xp as-is.
+        xp: 3600,
+        league_tier: "sapphire",
         // Mark placement as already taken. RootView presents PlacementView
         // once whenever `fetchPlacementTakenAt` is null, so without this a
         // freshly seeded account lands on the placement exam instead of
@@ -173,7 +181,7 @@ async function seedProgress(userId: string): Promise<void> {
         // streak and due reviews; an account with all of that which has
         // somehow never been placed is a state no real user reaches.
         placement_taken_at: new Date(Date.now() - streakDays * 86_400_000).toISOString(),
-        placement_level: "A1",
+        placement_level: "B2",
       },
       { onConflict: "user_id,language" },
     ),
