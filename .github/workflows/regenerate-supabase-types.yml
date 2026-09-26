@@ -22,9 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned, same reason as ci.yml's deploy-supabase job: `latest`
+      # resolves through the GitHub API and can fail on rate limits alone.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.118.0
 
       - uses: oven-sh/setup-bun@v2
         with:
