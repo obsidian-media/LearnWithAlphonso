@@ -1,0 +1,25 @@
+-- Security fix (pre-launch review, 2026-09-26): public.weekly_xp(_user_id,
+-- _week_start) never got a `REVOKE ALL ... FROM PUBLIC, anon` in
+-- 20260922030000_weekly_xp_helper.sql, and it never checks auth.uid() --
+-- it has no authorization logic at all, just a SUM over activity_days for
+-- whatever _user_id it's given.
+--
+-- Confirmed reachable fully unauthenticated: `POST
+-- /rest/v1/rpc/weekly_xp` with an arbitrary uuid and no Authorization
+-- header returns 200 with that user's real weekly XP total for the
+-- requested week -- an anonymous, unauthenticated way to check whether a
+-- given account exists and how active it's been in any given week, for
+-- any uuid an attacker has (teams/duels/leaderboard responses already
+-- hand out other users' uuids to any signed-in caller).
+--
+-- Not client-reachable in the app today -- grepped for
+-- `.rpc('weekly_xp'` across src/, zero matches. It's only ever called
+-- from inside other SECURITY DEFINER functions (get_leaderboard,
+-- get_team_leaderboard, get_my_team), which run as the function owner
+-- and so don't need EXECUTE granted to any client role to keep working --
+-- same reasoning as _join_team_impl's own REVOKE
+-- (20260929020000_fix_join_team_impl_authz_bypass.sql). Revoking from
+-- `authenticated` too, not just `anon`: an authenticated caller passing
+-- someone else's _user_id has the exact same read-anyone's-activity
+-- problem, just gated behind having any account instead of none.
+REVOKE ALL ON FUNCTION public.weekly_xp(uuid, date) FROM PUBLIC, anon, authenticated;
