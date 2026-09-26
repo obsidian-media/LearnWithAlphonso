@@ -22,6 +22,16 @@
 const ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || "qhcjpfbxfcltjbiuknyt";
 
+/**
+ * Where a confirmation link must land. GoTrue appends its verify
+ * redirect to this, so the destination has to actually serve the app --
+ * both this and the older english-buddy-app-33.vercel.app alias were
+ * checked live (200) before switching. NOTE: the shipping iOS build
+ * still points AppConfig.apiBaseURL at that older alias; it resolves, so
+ * nothing is broken, but the two should converge on the next build.
+ */
+const SITE_URL = process.env.SITE_URL || "https://learn.alphonsoecosystem.app";
+
 if (!ACCESS_TOKEN) {
   console.error("Missing environment variable: SUPABASE_ACCESS_TOKEN");
   process.exit(1);
@@ -55,13 +65,57 @@ async function main() {
       // it without {{ .Token }} is what broke every new signup.
       mailer_subjects_confirmation: "{{ .Token }} is your Alphonso sign-in code",
       mailer_templates_confirmation_content: CODE_EMAIL,
+      // Every sign-in mail carries a "Prefer a link?" fallback built from
+      // {{ .ConfirmationURL }}, and GoTrue builds that URL's redirect_to
+      // from site_url. It was still the default http://localhost:3000, so
+      // the fallback link in EVERY signup email pointed at the user's own
+      // machine and did nothing. Found 2026-09-26 by actually receiving
+      // the mail -- three code audits the same night could not see it,
+      // because the defect only exists in the delivered message.
+      site_url: SITE_URL,
+      // The code is rendered as {{ .Token }} and the app asks for a
+      // "6-digit code" (AuthView.swift, HectorView.swift). GoTrue was
+      // issuing EIGHT digits, so every user was told to type six and
+      // handed eight. Pinning the length here rather than editing the two
+      // labels: the length is the thing both labels describe, and a
+      // constant in one place cannot drift the way two strings can.
+      mailer_otp_length: 6,
     }),
   });
   if (!res.ok) {
     console.error(`Failed (${res.status}): ${await res.text()}`);
     process.exit(1);
   }
-  console.log("Updated BOTH the magic-link and confirm-signup templates to show the 6-digit code.");
+
+  // Read the config back. A 200 on the PATCH says the request was
+  // accepted, not that these values are what the project now serves --
+  // and this whole file exists because something was assumed rather than
+  // observed. Assert the two that are easy to get silently wrong.
+  const check = await fetch(
+    `https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth`,
+    { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } },
+  );
+  if (!check.ok) {
+    console.error(`Applied, but reading the config back failed (${check.status}).`);
+    process.exit(1);
+  }
+  const cfg = (await check.json()) as { site_url?: string; mailer_otp_length?: number };
+  const problems: string[] = [];
+  if (cfg.site_url !== SITE_URL) {
+    problems.push(`site_url is ${JSON.stringify(cfg.site_url)}, expected ${JSON.stringify(SITE_URL)}`);
+  }
+  if (cfg.mailer_otp_length !== 6) {
+    problems.push(`mailer_otp_length is ${cfg.mailer_otp_length}, expected 6`);
+  }
+  if (problems.length) {
+    console.error("Config did not take:
+  " + problems.join("
+  "));
+    process.exit(1);
+  }
+
+  console.log("Updated BOTH the magic-link and confirm-signup templates to show the code.");
+  console.log(`Verified: site_url=${cfg.site_url}, mailer_otp_length=${cfg.mailer_otp_length}`);
 }
 
 main();
