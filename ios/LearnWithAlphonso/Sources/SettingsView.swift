@@ -27,6 +27,7 @@ struct SettingsView: View {
     @State private var isPresentingDeleteConfirmation = false
     @State private var deleteConfirmationText = ""
     @State private var accountErrorMessage: String?
+    @State private var isPresentingLinkHector = false
 
     var body: some View {
         NavigationStack {
@@ -67,6 +68,22 @@ struct SettingsView: View {
                         } else {
                             Text("Export My Data")
                         }
+                    }
+                    .font(AlphonsoFont.sans(15, weight: .medium))
+                    .disabled(isExportingData || isDeletingAccount)
+
+                    // Hector re-parenting Phase 2 (docs/superpowers/specs/
+                    // 2026-09-26-hector-reparenting-design.md): the one
+                    // moment someone who signed into Hector before Phase 0
+                    // shipped -- and hasn't reopened Hector since -- can
+                    // still be reached. Always offered, not just shown
+                    // when unlinked (no read endpoint exists to check
+                    // that, and re-linking an already-linked account is a
+                    // harmless no-op upsert).
+                    Button {
+                        isPresentingLinkHector = true
+                    } label: {
+                        Text("Link Hector Account")
                     }
                     .font(AlphonsoFont.sans(15, weight: .medium))
                     .disabled(isExportingData || isDeletingAccount)
@@ -127,6 +144,9 @@ struct SettingsView: View {
                 }
                 exportDocument = nil
             }
+            .sheet(isPresented: $isPresentingLinkHector) {
+                LinkHectorAccountSheet(session: session)
+            }
             // Two-step type-to-confirm, matching profile.tsx's "Your data"
             // section on web -- disabling the destructive action until the
             // typed text matches exactly is the whole point of the gate, so
@@ -143,20 +163,17 @@ struct SettingsView: View {
                 }
                 .disabled(deleteConfirmationText != "DELETE")
             } message: {
-                // Hector re-parenting Phase 0 (docs/superpowers/specs/
-                // 2026-09-26-hector-reparenting-design.md): deletion now
-                // *attempts* to reach a linked Hector account, but linking
-                // only happens automatically for Hector sign-ins from here
-                // on -- anyone who enrolled before this shipped has no
-                // recorded link yet (Phase 2 adds the one-time prompt that
-                // covers them too). Still true, still worth saying plainly
-                // rather than overclaiming "always deleted": update this
-                // again once Phase 2 ships and most existing users have
-                // had a chance to link.
+                // Hector re-parenting Phase 2 (docs/superpowers/specs/
+                // 2026-09-26-hector-reparenting-design.md): "Link Hector
+                // Account" above is how someone who signed into Hector
+                // before Phase 0 shipped -- and hasn't reopened Hector
+                // since -- gets covered by this same deletion. Pointing
+                // at it here, right where it matters, rather than only
+                // in the Account section above.
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
 
-                This also removes a linked Hector account, if you have one. If your Hector account isn't linked yet, write to privacy@alphonsoecosystem.app to have it deleted separately.
+                This also removes a linked Hector account, if you have one. If you haven't linked one yet, use "Link Hector Account" above first, or write to privacy@alphonsoecosystem.app to have it deleted separately.
                 """)
             }
         }

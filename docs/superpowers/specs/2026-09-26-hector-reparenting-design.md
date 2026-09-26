@@ -151,28 +151,29 @@ Two sub-cases:
   email/OTP flow at all; shadow-provisioned transparently. No migration
   needed for these — they don't exist yet.
 - **Existing Hector users (already enrolled via email/OTP):** cannot be
-  silently mapped. The main account's email and the Cloud Voice
-  account's email are not guaranteed to match (Apple private-relay
-  emails are explicitly called out as a case where they never will —
-  see `SupabaseAuthClient.signInWithIDToken`'s doc comment), so there is
-  no safe automatic pairing. Two honest options, not mutually
-  exclusive:
-  1. **One-time explicit reconciliation:** next time an existing Hector
-     user opens Hector, if a `hector_links` row for their main account
-     doesn't exist yet, ask them to confirm ("Is this your existing
-     Hector sign-in?") rather than guessing, then write the link. Their
-     existing device enrollment and any server-side history stay
-     exactly as-is.
-  2. **Treat as orphaned, re-provision fresh:** simpler, but only
-     defensible if Cloud Voice retains no meaningful per-user history
-     worth preserving (needs checking against Cloud Voice's actual
-     schema/retention before deciding — not verified as part of this
-     doc; flagged as an open question below).
-  
-  Recommendation: (1), because it is strictly safer and doesn't require
-  first proving (2)'s assumption. It also directly produces the
-  `hector_links` row Question 3 needs, for the population that needs it
-  most (existing users deletion currently *cannot* reach).
+  silently mapped by matching emails — the main account's email and the
+  Cloud Voice account's email are not guaranteed to match (Apple
+  private-relay emails are explicitly called out as a case where they
+  never will — see `SupabaseAuthClient.signInWithIDToken`'s doc
+  comment). **Correction, found while implementing Phase 0:** that
+  turns out not to be the mechanism at all. `HectorSession` holds no
+  persisted session (same "in-memory only" caveat `Session.swift` used
+  to have, before Keychain persistence — Hector never got that
+  treatment). So "next time an existing Hector user opens Hector"
+  already re-authenticates via the *same* real email/OTP flow they've
+  always used, and Phase 0's automatic link (fired the moment that
+  succeeds) already covers this population with **no guessing and no
+  extra prompt** — the pairing is directly witnessed (this main
+  account, right now, successfully authenticated as this Cloud Voice
+  account), never inferred from an email match.
+
+  The population Phase 0 alone genuinely cannot reach is narrower:
+  **someone who deletes their main account without ever reopening
+  Hector after Phase 0 shipped.** For them, the only remaining moment
+  they can still be reached is Settings/deletion itself — Phase 2 is a
+  "Link Hector Account" entry point there (reusing the same real
+  email/OTP flow, still no guessing), most usefully surfaced right next
+  to the delete confirmation.
 
 ## Question 3: What's the smallest step that makes deletion reach it?
 
@@ -227,11 +228,12 @@ needs one more new endpoint (`/v1/voice/link-account`) on Cloud Voice's
 side. `hector_links` from Phase 0 is reused unchanged as the mapping
 table.
 
-**Phase 2** is Question 2's answer, applied: the one-time explicit
-reconciliation prompt for existing Hector users, so Phase 0's deletion
-step reaches people who enrolled before any of this shipped, not just
-new links going forward. Depends on Phase 0's schema; does not depend
-on Phase 1.
+**Phase 2** is Question 2's answer, applied: a "Link Hector Account"
+entry point in Settings (reusing the same real email/OTP flow, no
+guessing), for the one population Phase 0's automatic link genuinely
+can't reach on its own — someone who deletes their main account
+without ever reopening Hector after Phase 0 shipped. Depends on Phase
+0's schema and client code; does not depend on Phase 1.
 
 **Full re-parenting** (Cloud Voice becomes tenant-aware, the second
 identity disappears entirely) is **not** one of the three approved
@@ -253,17 +255,17 @@ team takes it up. Tracked here as a non-goal, not a future phase.
 
 ## Decided, so a future reader doesn't have to re-derive it
 
-- **A user who never answers Phase 2's reconciliation prompt stays
+- **A user who never taps "Link Hector Account" (Phase 2) stays
   unlinked, permanently, by default.** Their main-account deletion
   still proceeds in full — `hectorRevoked: false` (same shape as
   `appleRevoked: false`) — and their old Cloud Voice account is simply
   never reached, exactly the status quo before any of this shipped.
-  Nothing re-prompts them automatically; re-prompting on every
-  deletion attempt would block deletion on a decision that isn't
-  theirs to be forced into at that moment. Silent auto-pairing on an
-  email match was considered and rejected: private-relay and
-  mismatched emails mean it would eventually join two strangers'
-  accounts, which is unrecoverable.
+  Nothing forces the flow on them; blocking deletion on it would make
+  their own account's deletion depend on a second sign-in they may not
+  even remember the credentials for. Silent auto-pairing on an email
+  match was considered and rejected: private-relay and mismatched
+  emails mean it would eventually join two strangers' accounts, which
+  is unrecoverable.
 
 ## Open questions still needing a human answer
 
