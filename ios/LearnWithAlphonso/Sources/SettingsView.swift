@@ -20,6 +20,12 @@ struct SettingsView: View {
 
     @State private var selectedTheme = AlphonsoThemeManager.shared.themeID
 
+    @State private var displayName = ""
+    @State private var avatarSeed = ""
+    @State private var isSavingName = false
+    @State private var isShufflingAvatar = false
+    @State private var identityErrorMessage: String?
+
     @State private var isExportingData = false
     @State private var exportDocument: AccountExportDocument?
     @State private var isPresentingExporter = false
@@ -49,6 +55,63 @@ struct SettingsView: View {
                 }
             }
             List {
+                Section {
+                    HStack(spacing: AlphonsoSpacing.sm + 4) {
+                        Circle()
+                            .fill(AvatarColor.forSeed(avatarSeed.isEmpty ? "a" : avatarSeed))
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Text(displayName.prefix(1).uppercased())
+                                    .font(AlphonsoFont.sans(16, weight: .semiBold))
+                                    .foregroundStyle(.white)
+                            )
+                        Button {
+                            Task { await shuffleAvatar() }
+                        } label: {
+                            if isShufflingAvatar {
+                                ProgressView().tint(AlphonsoColor.moss)
+                            } else {
+                                Text("Shuffle")
+                            }
+                        }
+                        .font(AlphonsoFont.sans(14, weight: .medium))
+                        .disabled(isShufflingAvatar)
+                    }
+                    TextField("Display name", text: $displayName)
+                        .font(AlphonsoFont.sans(15))
+                        .onSubmit { Task { await saveDisplayName() } }
+                    Button {
+                        Task { await saveDisplayName() }
+                    } label: {
+                        if isSavingName {
+                            ProgressView().tint(AlphonsoColor.moss)
+                        } else {
+                            Text("Save Name")
+                        }
+                    }
+                    .font(AlphonsoFont.sans(15, weight: .medium))
+                    .disabled(isSavingName || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    if let identityErrorMessage {
+                        Text(identityErrorMessage)
+                            .font(AlphonsoFont.sans(13))
+                            .foregroundStyle(AlphonsoColor.destructive)
+                    }
+                } header: {
+                    Text("Profile")
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                } footer: {
+                    // Visible on LeaderboardView, FriendsView, and DuelsView
+                    // (see AvatarColor.swift's own doc comment) -- this is
+                    // the same "shown to strangers" surface the report/block
+                    // menu on those screens already exists for.
+                    Text("Your name and avatar color are visible to other learners on leaderboards, friends, and duels.")
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+
                 Section {
                     themeRows
                 } header: {
@@ -133,6 +196,7 @@ struct SettingsView: View {
             .background(AlphonsoColor.surface)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await loadIdentity() }
             .fileExporter(
                 isPresented: $isPresentingExporter,
                 document: exportDocument,
@@ -192,6 +256,51 @@ struct SettingsView: View {
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         Task {
             try? await client.updateProfileTheme(themeID.rawValue, userID: userID)
+        }
+    }
+
+    private func loadIdentity() async {
+        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        if let identity = try? await client.fetchProfileIdentity(userID: userID) {
+            displayName = identity.displayName
+            avatarSeed = identity.avatarSeed
+        }
+    }
+
+    private func saveDisplayName() async {
+        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        identityErrorMessage = nil
+        isSavingName = true
+        defer { isSavingName = false }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            try await client.updateProfileDisplayName(trimmed, userID: userID)
+            displayName = trimmed
+        } catch {
+            identityErrorMessage = "Couldn't save your name. Try again."
+        }
+    }
+
+    /// A fresh 8-hex-character seed, same shape as the server default
+    /// (`substr(md5(random()::text), 1, 8)` in the profiles table) -- only
+    /// used as input to AvatarColor.forSeed's hash, so any string works,
+    /// but matching the existing shape keeps seeds looking consistent
+    /// regardless of which client generated them.
+    private func shuffleAvatar() async {
+        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        let next = String((0..<8).map { _ in "0123456789abcdef".randomElement()! })
+        identityErrorMessage = nil
+        isShufflingAvatar = true
+        defer { isShufflingAvatar = false }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            try await client.updateProfileAvatarSeed(next, userID: userID)
+            avatarSeed = next
+        } catch {
+            identityErrorMessage = "Couldn't shuffle your avatar. Try again."
         }
     }
 

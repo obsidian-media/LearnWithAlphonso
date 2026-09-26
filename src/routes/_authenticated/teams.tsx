@@ -2,11 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
+import { SegmentedControl } from "../../components/SegmentedControl";
 import {
   getMyTeam,
   getTeamLeaderboard,
   joinTeamByCode,
   autoJoinTeam,
+  createTeam,
 } from "../../lib/teams.functions";
 
 export const Route = createFileRoute("/_authenticated/teams")({
@@ -33,6 +35,8 @@ function TeamsPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [teamName, setTeamName] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
 
   if (!loadingMyTeam && myTeam) {
     navigate({ to: "/teams/$teamId", params: { teamId: myTeam.teamId } });
@@ -56,6 +60,19 @@ function TeamsPage() {
     setBusy(true);
     setError(null);
     const result = await autoJoinTeam();
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.reason);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+    navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
+  }
+
+  async function handleCreate() {
+    setBusy(true);
+    setError(null);
+    const result = await createTeam({ data: { name: teamName, visibility } });
     setBusy(false);
     if (!result.ok) {
       setError(result.reason);
@@ -99,6 +116,34 @@ function TeamsPage() {
             Put me on a team
           </button>
           {error && <p className="text-xs text-rose-500">{error}</p>}
+        </div>
+
+        <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Create a team</h2>
+        <div className="mt-3 space-y-3">
+          <input
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+            placeholder="Team name"
+            maxLength={40}
+            className="w-full rounded-xl border border-hairline px-4 py-2.5 text-sm"
+          />
+          <SegmentedControl
+            ariaLabel="Team visibility"
+            value={visibility}
+            onChange={setVisibility}
+            options={[
+              { value: "public", label: "Public" },
+              { value: "private", label: "Private" },
+            ]}
+          />
+          <button
+            type="button"
+            onClick={handleCreate}
+            disabled={busy || !teamName.trim()}
+            className="w-full rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+          >
+            Create team
+          </button>
         </div>
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">

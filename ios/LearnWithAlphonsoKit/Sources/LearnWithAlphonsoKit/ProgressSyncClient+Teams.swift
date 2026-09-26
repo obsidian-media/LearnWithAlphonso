@@ -99,6 +99,28 @@ extension ProgressSyncClient {
         try await teamJoinRequest(rpc: "auto_join_team", body: [String: String]())
     }
 
+    /// Separate from `teamJoinRequest` -- that helper's return shape has no
+    /// room for `join_code`, which the creator needs back immediately (it's
+    /// the only way to invite anyone to a private team; a re-fetch via
+    /// `getMyTeam` would work too, but this avoids the extra round trip).
+    public func createTeam(name: String, visibility: String = "public") async throws -> (ok: Bool, reason: String?, teamID: String?, joinCode: String?) {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/create_team"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_name": name, "_visibility": visibility])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return (ok, row["reason"] as? String, row["team_id"] as? String, row["join_code"] as? String)
+    }
+
     public func leaveTeam() async throws -> (ok: Bool, reason: String?) {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/leave_team"))
         request.httpMethod = "POST"

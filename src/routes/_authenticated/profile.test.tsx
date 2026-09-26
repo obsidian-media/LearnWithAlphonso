@@ -143,6 +143,20 @@ describe("Profile page", () => {
     );
   });
 
+  it("shuffles the avatar and saves the new seed immediately", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByLabelText("Display name");
+
+    await user.click(screen.getByRole("button", { name: "Shuffle avatar color" }));
+
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
+    const call = updateProfile.mock.calls[0][0];
+    expect(call.data).toHaveProperty("avatar_seed");
+    expect(typeof call.data.avatar_seed).toBe("string");
+    expect(call.data.avatar_seed).not.toBe("a");
+  });
+
   it("switches theme, persisting it through updateProfile", async () => {
     const user = userEvent.setup();
     renderPage();
