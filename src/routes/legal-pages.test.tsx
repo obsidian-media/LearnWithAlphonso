@@ -41,6 +41,13 @@ describe("Terms route", () => {
     expect(screen.getByRole("heading", { name: "Terms of Service" })).toBeInTheDocument();
     expect(screen.getByText(/support@alphonsoecosystem\.app/)).toBeInTheDocument();
   });
+
+  it("names the AI processors", () => {
+    const Terms = TermsRoute.options.component!;
+    render(<Terms />);
+    expect(screen.getByText(/NVIDIA/)).toBeInTheDocument();
+    expect(screen.getByText(/Deepgram/)).toBeInTheDocument();
+  });
 });
 
 describe("Privacy route", () => {
@@ -49,5 +56,34 @@ describe("Privacy route", () => {
     render(<Privacy />);
     expect(screen.getByRole("heading", { name: "Privacy Policy" })).toBeInTheDocument();
     expect(screen.getByText("Your rights")).toBeInTheDocument();
+  });
+
+  it("names the AI processors, not just that AI is used", () => {
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    expect(screen.getByText(/NVIDIA/)).toBeInTheDocument();
+    expect(screen.getByText(/Deepgram/)).toBeInTheDocument();
+  });
+
+  // Regression guard: Hector is a second account in a separate Supabase
+  // project (AppConfig.swift's cloudVoice*), and deleting the main account
+  // does not delete it -- SettingsView's confirmation copy says so, but
+  // this policy used to say nothing about Hector existing at all. Fails if
+  // that disclosure quietly disappears again, the same way this file's
+  // contact-address assertion used to quietly pin a wrong email instead of
+  // catching one.
+  it("discloses Hector as a separate account that account deletion does not remove", () => {
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    expect(screen.getByRole("heading", { name: /Hector/ })).toBeInTheDocument();
+    expect(screen.getByText(/second, separate account/)).toBeInTheDocument();
+    expect(screen.getByText(/delete a Hector account or its data/)).toBeInTheDocument();
+  });
+
+  it("describes the in-app export and deletion path, not only the web one", () => {
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    expect(screen.getByText(/Settings → Export My Data/)).toBeInTheDocument();
+    expect(screen.getByText(/Settings → Delete My Account/)).toBeInTheDocument();
   });
 });
