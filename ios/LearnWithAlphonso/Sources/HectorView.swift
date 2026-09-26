@@ -168,6 +168,8 @@ private struct HectorConversationView: View {
     let session: Session
     let hectorSession: HectorSession
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var turns: [TutorConversationMessage] = []
     @State private var recorder = HectorTurnRecorder()
     @State private var isRecording = false
@@ -198,7 +200,11 @@ private struct HectorConversationView: View {
                     .padding()
                 }
                 .onChange(of: turns.count) {
-                    withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    if reduceMotion {
+                        proxy.scrollTo(turns.count - 1, anchor: .bottom)
+                    } else {
+                        withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    }
                 }
             }
 

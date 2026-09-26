@@ -26,6 +26,16 @@ struct ToastBanner: View {
         .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
         .shadow(color: AlphonsoColor.ink.opacity(0.12), radius: 6, y: 2)
     }
+
+    /// The `.transition(...)` each call site applies to a conditionally-
+    /// rendered `ToastBanner` -- centralized here (both current call sites
+    /// use it verbatim) rather than each one separately deciding whether to
+    /// honor Reduced Motion. Still needs to be read from the call site's
+    /// own `@Environment(\.accessibilityReduceMotion)` and passed in: an
+    /// `AnyTransition` value has no environment access of its own.
+    static func transition(reduceMotion: Bool) -> AnyTransition {
+        reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity)
+    }
 }
 
 /// Shows `message` via `binding` for a few seconds, then clears it --

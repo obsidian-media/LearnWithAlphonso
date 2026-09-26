@@ -32,6 +32,7 @@ struct FriendsView: View {
     @State private var reportTarget: SocialTarget?
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var inviteLink: URL? {
         guard let userID = session.userID else { return nil }
@@ -116,7 +117,7 @@ struct FriendsView: View {
                 if let nudgeBannerMessage {
                     ToastBanner(message: nudgeBannerMessage, iconName: "hand.wave.fill")
                         .padding(.top, 4)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(ToastBanner.transition(reduceMotion: reduceMotion))
                 }
             }
             .navigationTitle("Friends")

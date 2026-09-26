@@ -416,6 +416,7 @@ private struct ReviewQuestionCard: View {
     let lessonId: String
     let isConnected: Bool
     let checked: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var picked: String?
     @Binding var translationVerdict: TranslationVerdict?
 
@@ -515,7 +516,11 @@ private struct ReviewQuestionCard: View {
                     isConnected: isConnected, checked: checked, picked: $picked)
             }
         }
-        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
+        // Same reduced-motion handling as LessonPlayerView's identical
+        // pattern: AlphonsoTipCard's own transition already drops to a
+        // plain fade, so this container spring is disabled outright rather
+        // than also animating its relayout.
+        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func assembledArea(tokens: [String]) -> some View {

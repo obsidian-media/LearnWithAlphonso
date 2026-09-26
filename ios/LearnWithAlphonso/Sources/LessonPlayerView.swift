@@ -372,6 +372,7 @@ private struct QuestionCard: View {
     @Binding var picked: String?
     /// Settled by the player before it scores -- see settledTranslationVerdict.
     @Binding var translationVerdict: TranslationVerdict?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // "reorder" questions accumulate tapped token *indices* (not values,
     // since a sentence can repeat a word) -- reset automatically per
@@ -478,8 +479,12 @@ private struct QuestionCard: View {
         }
         // Drives ExplanationView's AlphonsoTipCard .transition -- without
         // an explicit animation tied to `checked`, the card would just pop
-        // in instantly instead of sliding in from the trailing edge.
-        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
+        // in instantly instead of sliding in from the trailing edge. nil
+        // under Reduced Motion: AlphonsoTipCard's own transition already
+        // drops to a plain opacity fade in that case, and a spring on the
+        // surrounding container would still animate its relayout/resize
+        // otherwise.
+        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func assembledArea(tokens: [String]) -> some View {
@@ -817,6 +822,8 @@ private struct GeneratedPracticeSection: View {
     let course: Course
     let session: Session
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private enum Status: Equatable { case idle, loading, ready, empty, error }
 
     @State private var status: Status = .idle
@@ -915,7 +922,7 @@ private struct GeneratedPracticeSection: View {
             .disabled(!checked && picked == nil)
         }
         .padding(.top, 8)
-        .animation(.spring(response: 0.5, dampingFraction: 0.75), value: checked)
+        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
     private func generate() async {

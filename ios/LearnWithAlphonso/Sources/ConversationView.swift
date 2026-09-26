@@ -53,6 +53,8 @@ private struct ConversationSessionView: View {
     let scenario: Scenario
     let session: Session
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var turns: [ChatMessage] = []
     @State private var recorder = TurnRecorder()
     @State private var isRecording = false
@@ -82,7 +84,11 @@ private struct ConversationSessionView: View {
                     .padding()
                 }
                 .onChange(of: turns.count) {
-                    withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    if reduceMotion {
+                        proxy.scrollTo(turns.count - 1, anchor: .bottom)
+                    } else {
+                        withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    }
                 }
             }
 
