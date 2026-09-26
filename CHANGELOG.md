@@ -10,6 +10,23 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Submission-readiness pass** (build 24, build 25, #183 and the
+supporting CI). Two things only a person opening the app could catch,
+both found by the account owner on a real device and neither visible to
+any audit, test or CI job: three "distinct" screenshots that were the
+same screen with a different clock (the capture pipeline was leaving a
+sheet open and re-photographing it -- fixed so navigation is verified,
+not assumed), and the Hector paywall rendering a raw RevenueCat SDK
+error to users (#183 -- debug instrumentation from 2026-09-23 whose own
+comment said to remove it once diagnosed; it was). Also: the screenshot
+pipeline's demo-account email moved off a public workflow input onto a
+secret, the seed marks placement as taken so a seeded account is a
+coherent established learner rather than one dropped onto the placement
+gate, a read-only check confirms RevenueCat's current offering contains
+the exact product id the App Store subscription must match, and
+`/accessibility` and `/support` pages were added for the App Store
+Connect URLs they require.
+
 **Accessibility, from nothing to four features** (#179, #180, #181,
 #182). App Store Connect's Accessibility section had to be answered
 **No** on every count: text locked at fixed sizes across 219 call sites,
