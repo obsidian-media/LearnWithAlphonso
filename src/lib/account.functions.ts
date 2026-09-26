@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 // Every table with a `user_id` column, exported via `.eq("user_id", ...)`.
 // NOTE: "achievements" is the static catalogue (no user_id column at all --
@@ -65,24 +67,19 @@ export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    // `src/integrations/supabase/types.ts` is stale -- 7 tables added by the
-    // gamification/push batches were never regenerated into it, so `from()`'s
-    // literal-union parameter rejects real, existing table names. Widening the
-    // client here rather than hand-editing a generated file; the per-table
-    // query-builder types never unified across a heterogeneous loop like this
-    // anyway, so nothing is lost that the old per-call cast was providing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const from = (table: string) => (supabase as any).from(table);
     // Independent selects -- batched instead of a sequential loop, so a GDPR
     // export stays one round trip's worth of latency rather than one per
     // table as this list grows.
     const [userIdRows, otherOwnedRows, { data: profile }] = await Promise.all([
       Promise.all(
-        USER_ID_EXPORT_TABLES.map((table) => from(table).select("*").eq("user_id", userId)),
+        USER_ID_EXPORT_TABLES.map((table) =>
+          supabase.from(table).select("*").eq("user_id", userId),
+        ),
       ),
       Promise.all(
         OTHER_OWNED_EXPORT_TABLES.map(({ table, columns }) =>
-          from(table)
+          supabase
+            .from(table)
             .select("*")
             .or(columns.map((c) => `${c}.eq.${userId}`).join(",")),
         ),
@@ -115,8 +112,10 @@ export const exportMyData = createServerFn({ method: "POST" })
  * confirmed revocation returns true, because the one thing worth
  * asserting is that the grant is definitely gone.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function revokeAppleGrantForUser(supabaseAdmin: any, userId: string): Promise<boolean> {
+async function revokeAppleGrantForUser(
+  supabaseAdmin: SupabaseClient<Database>,
+  userId: string,
+): Promise<boolean> {
   try {
     const { appleConfigFromEnv, revokeAppleGrant } = await import("@/lib/apple-revocation");
     const config = appleConfigFromEnv();
@@ -127,7 +126,7 @@ async function revokeAppleGrantForUser(supabaseAdmin: any, userId: string): Prom
       .select("refresh_token")
       .eq("user_id", userId)
       .maybeSingle();
-    const refreshToken = (data as { refresh_token?: string } | null)?.refresh_token;
+    const refreshToken = data?.refresh_token;
     if (!refreshToken) return false;
 
     return await revokeAppleGrant(config, refreshToken);
@@ -148,12 +147,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
     await Promise.all(
-      USER_DELETE_TABLES.map((table) =>
-        // Same generated-types gap as exportMyData's `from` helper above --
-        // this list is the narrow one, but the cast keeps the loop uniform.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from(table) as any).delete().eq("user_id", userId),
-      ),
+      USER_DELETE_TABLES.map((table) => supabase.from(table).delete().eq("user_id", userId)),
     );
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -172,8 +166,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     const appleRevoked = await revokeAppleGrantForUser(supabaseAdmin, userId);
 
     // Friend rows pointing at this user are not owned by them.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabaseAdmin.from("friendships") as any).delete().eq("friend_id", userId);
+    await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
 

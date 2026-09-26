@@ -59,6 +59,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_users: {
+        Row: {
+          added_at: string;
+          added_by: string | null;
+          note: string | null;
+          user_id: string;
+        };
+        Insert: {
+          added_at?: string;
+          added_by?: string | null;
+          note?: string | null;
+          user_id: string;
+        };
+        Update: {
+          added_at?: string;
+          added_by?: string | null;
+          note?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       ai_rate_limits: {
         Row: {
           count: number;
@@ -103,6 +124,173 @@ export type Database = {
           day?: string;
           kind?: string;
           updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      apple_auth_tokens: {
+        Row: {
+          created_at: string;
+          refresh_token: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          refresh_token: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          refresh_token?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      blocked_users: {
+        Row: {
+          blocked: string;
+          blocker: string;
+          created_at: string;
+        };
+        Insert: {
+          blocked: string;
+          blocker: string;
+          created_at?: string;
+        };
+        Update: {
+          blocked?: string;
+          blocker?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      challenge_completions: {
+        Row: {
+          completed_at: string;
+          template_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Insert: {
+          completed_at?: string;
+          template_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Update: {
+          completed_at?: string;
+          template_id?: string;
+          user_id?: string;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "challenge_completions_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "challenge_templates";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      challenge_templates: {
+        Row: {
+          description: string;
+          id: string;
+          threshold: number;
+          title: string;
+          type: string;
+        };
+        Insert: {
+          description: string;
+          id: string;
+          threshold: number;
+          title: string;
+          type: string;
+        };
+        Update: {
+          description?: string;
+          id?: string;
+          threshold?: number;
+          title?: string;
+          type?: string;
+        };
+        Relationships: [];
+      };
+      content_reports: {
+        Row: {
+          created_at: string;
+          id: string;
+          reason: string;
+          reported: string;
+          reporter: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          reason: string;
+          reported: string;
+          reporter?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          reason?: string;
+          reported?: string;
+          reporter?: string;
+        };
+        Relationships: [];
+      };
+      device_tokens: {
+        Row: {
+          created_at: string;
+          id: string;
+          platform: string;
+          token: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          platform?: string;
+          token: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          platform?: string;
+          token?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      duel_queue: {
+        Row: {
+          cefr_level: string;
+          course: string;
+          match_by_level: boolean;
+          queued_at: string;
+          user_id: string;
+        };
+        Insert: {
+          cefr_level: string;
+          course: string;
+          match_by_level?: boolean;
+          queued_at?: string;
+          user_id: string;
+        };
+        Update: {
+          cefr_level?: string;
+          course?: string;
+          match_by_level?: boolean;
+          queued_at?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -345,28 +533,40 @@ export type Database = {
       };
       placement_questions: {
         Row: {
-          answer_index: number;
-          choices: Json;
+          answer_index: number | null;
+          answer_text: string | null;
+          audio_text: string | null;
+          bank: Json | null;
+          choices: Json | null;
           course: string;
           id: string;
           level_id: string;
           prompt: string;
+          type: string;
         };
         Insert: {
-          answer_index: number;
-          choices: Json;
+          answer_index?: number | null;
+          answer_text?: string | null;
+          audio_text?: string | null;
+          bank?: Json | null;
+          choices?: Json | null;
           course: string;
           id: string;
           level_id: string;
           prompt: string;
+          type?: string;
         };
         Update: {
-          answer_index?: number;
-          choices?: Json;
+          answer_index?: number | null;
+          answer_text?: string | null;
+          audio_text?: string | null;
+          bank?: Json | null;
+          choices?: Json | null;
           course?: string;
           id?: string;
           level_id?: string;
           prompt?: string;
+          type?: string;
         };
         Relationships: [
           {
@@ -374,6 +574,219 @@ export type Database = {
             columns: ["level_id"];
             isOneToOne: false;
             referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_episodes: {
+        Row: {
+          audio_path: string;
+          course: string | null;
+          created_at: string;
+          description: string | null;
+          duration_seconds: number;
+          folder_id: string;
+          id: string;
+          level_id: string | null;
+          published: boolean;
+          published_at: string | null;
+          slug: string;
+          sort_order: number;
+          source: string;
+          title: string;
+        };
+        Insert: {
+          audio_path: string;
+          course?: string | null;
+          created_at?: string;
+          description?: string | null;
+          duration_seconds: number;
+          folder_id: string;
+          id?: string;
+          level_id?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          slug: string;
+          sort_order?: number;
+          source: string;
+          title: string;
+        };
+        Update: {
+          audio_path?: string;
+          course?: string | null;
+          created_at?: string;
+          description?: string | null;
+          duration_seconds?: number;
+          folder_id?: string;
+          id?: string;
+          level_id?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          slug?: string;
+          sort_order?: number;
+          source?: string;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_episodes_folder_id_fkey";
+            columns: ["folder_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "podcast_episodes_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_folders: {
+        Row: {
+          course: string | null;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          level_id: string | null;
+          parent_id: string | null;
+          slug: string;
+          sort_order: number;
+          title: string;
+        };
+        Insert: {
+          course?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          level_id?: string | null;
+          parent_id?: string | null;
+          slug: string;
+          sort_order?: number;
+          title: string;
+        };
+        Update: {
+          course?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          level_id?: string | null;
+          parent_id?: string | null;
+          slug?: string;
+          sort_order?: number;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_folders_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "podcast_folders_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_folders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_play_events: {
+        Row: {
+          episode_id: string;
+          id: string;
+          seconds_listened: number;
+          started_at: string;
+          user_id: string;
+        };
+        Insert: {
+          episode_id: string;
+          id?: string;
+          seconds_listened?: number;
+          started_at?: string;
+          user_id: string;
+        };
+        Update: {
+          episode_id?: string;
+          id?: string;
+          seconds_listened?: number;
+          started_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_play_events_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_playback: {
+        Row: {
+          completed_at: string | null;
+          episode_id: string;
+          position_seconds: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          episode_id: string;
+          position_seconds?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          episode_id?: string;
+          position_seconds?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_playback_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: false;
+            referencedRelation: "podcast_episodes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      podcast_transcripts: {
+        Row: {
+          created_at: string;
+          episode_id: string;
+          text: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          episode_id: string;
+          text: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          episode_id?: string;
+          text?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "podcast_transcripts_episode_id_fkey";
+            columns: ["episode_id"];
+            isOneToOne: true;
+            referencedRelation: "podcast_episodes";
             referencedColumns: ["id"];
           },
         ];
@@ -386,7 +799,7 @@ export type Database = {
           created_at: string;
           display_name: string;
           id: string;
-          theme: string;
+          theme: string | null;
           updated_at: string;
         };
         Insert: {
@@ -396,7 +809,7 @@ export type Database = {
           created_at?: string;
           display_name: string;
           id: string;
-          theme?: string;
+          theme?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -406,7 +819,7 @@ export type Database = {
           created_at?: string;
           display_name?: string;
           id?: string;
-          theme?: string;
+          theme?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -560,6 +973,156 @@ export type Database = {
         };
         Relationships: [];
       };
+      season_cohort_members: {
+        Row: {
+          cohort_id: string;
+          user_id: string;
+        };
+        Insert: {
+          cohort_id: string;
+          user_id: string;
+        };
+        Update: {
+          cohort_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "season_cohort_members_cohort_id_fkey";
+            columns: ["cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "season_cohorts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      season_cohorts: {
+        Row: {
+          division: number;
+          id: string;
+          resolved_at: string | null;
+          week_start: string;
+        };
+        Insert: {
+          division: number;
+          id?: string;
+          resolved_at?: string | null;
+          week_start: string;
+        };
+        Update: {
+          division?: number;
+          id?: string;
+          resolved_at?: string | null;
+          week_start?: string;
+        };
+        Relationships: [];
+      };
+      season_placements: {
+        Row: {
+          cohort_size: number;
+          division: number;
+          rank_in_cohort: number;
+          user_id: string;
+          week_start: string;
+        };
+        Insert: {
+          cohort_size: number;
+          division: number;
+          rank_in_cohort: number;
+          user_id: string;
+          week_start: string;
+        };
+        Update: {
+          cohort_size?: number;
+          division?: number;
+          rank_in_cohort?: number;
+          user_id?: string;
+          week_start?: string;
+        };
+        Relationships: [];
+      };
+      team_members: {
+        Row: {
+          joined_at: string;
+          team_id: string;
+          user_id: string;
+        };
+        Insert: {
+          joined_at?: string;
+          team_id: string;
+          user_id: string;
+        };
+        Update: {
+          joined_at?: string;
+          team_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      team_weekly_rewards: {
+        Row: {
+          resolved_at: string | null;
+          team_id: string;
+          week_start: string;
+        };
+        Insert: {
+          resolved_at?: string | null;
+          team_id: string;
+          week_start: string;
+        };
+        Update: {
+          resolved_at?: string | null;
+          team_id?: string;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_weekly_rewards_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      teams: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          join_code: string;
+          member_cap: number;
+          name: string;
+          visibility: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          join_code: string;
+          member_cap?: number;
+          name: string;
+          visibility: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          join_code?: string;
+          member_cap?: number;
+          name?: string;
+          visibility?: string;
+        };
+        Relationships: [];
+      };
       units: {
         Row: {
           course: string;
@@ -627,27 +1190,6 @@ export type Database = {
           },
         ];
       };
-      user_weekly_quest_claims: {
-        Row: {
-          claimed_at: string;
-          quest_id: string;
-          user_id: string;
-          week_start: string;
-        };
-        Insert: {
-          claimed_at?: string;
-          quest_id: string;
-          user_id: string;
-          week_start: string;
-        };
-        Update: {
-          claimed_at?: string;
-          quest_id?: string;
-          user_id?: string;
-          week_start?: string;
-        };
-        Relationships: [];
-      };
       user_progress: {
         Row: {
           cefr_level: string;
@@ -699,6 +1241,27 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           xp?: number;
+        };
+        Relationships: [];
+      };
+      user_weekly_quest_claims: {
+        Row: {
+          claimed_at: string;
+          quest_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Insert: {
+          claimed_at?: string;
+          quest_id: string;
+          user_id: string;
+          week_start: string;
+        };
+        Update: {
+          claimed_at?: string;
+          quest_id?: string;
+          user_id?: string;
+          week_start?: string;
         };
         Relationships: [];
       };
@@ -785,6 +1348,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      _join_team_impl: {
+        Args: { _me: string; _team_id: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
+          team_id: string;
+        }[];
+      };
+      _random_team_name: { Args: never; Returns: string };
       accept_friend_invite: {
         Args: { _inviter_id: string };
         Returns: {
@@ -796,8 +1368,15 @@ export type Database = {
         Args: never;
         Returns: {
           ok: boolean;
-          reason: string | null;
-          team_id: string | null;
+          reason: string;
+          team_id: string;
+        }[];
+      };
+      block_user: {
+        Args: { _target: string };
+        Returns: {
+          message: string;
+          ok: boolean;
         }[];
       };
       buy_heart_with_xp: {
@@ -855,6 +1434,13 @@ export type Database = {
           duel_id: string;
           ok: boolean;
           reason: string;
+        }[];
+      };
+      get_cohort_weekly_xp: {
+        Args: { _cohort_id: string; _week_start: string };
+        Returns: {
+          user_id: string;
+          xp: number;
         }[];
       };
       get_friends_progress: {
@@ -927,7 +1513,7 @@ export type Database = {
       join_open_duel_queue: {
         Args: { _course: string; _match_by_level?: boolean };
         Returns: {
-          duel_id: string | null;
+          duel_id: string;
           matched: boolean;
         }[];
       };
@@ -935,27 +1521,24 @@ export type Database = {
         Args: { _team_id: string };
         Returns: {
           ok: boolean;
-          reason: string | null;
-          team_id: string | null;
+          reason: string;
+          team_id: string;
         }[];
       };
       join_team: {
         Args: { _code: string };
         Returns: {
           ok: boolean;
-          reason: string | null;
-          team_id: string | null;
+          reason: string;
+          team_id: string;
         }[];
       };
-      leave_duel_queue: {
-        Args: never;
-        Returns: undefined;
-      };
+      leave_duel_queue: { Args: never; Returns: undefined };
       leave_team: {
         Args: never;
         Returns: {
           ok: boolean;
-          reason: string | null;
+          reason: string;
         }[];
       };
       lose_heart: {
@@ -964,6 +1547,10 @@ export type Database = {
           hearts: number;
           hearts_refill_at: string;
         }[];
+      };
+      record_podcast_play_event: {
+        Args: { _episode_id: string; _seconds_listened: number };
+        Returns: undefined;
       };
       remove_friend: {
         Args: { _friend_id: string };
@@ -993,6 +1580,10 @@ export type Database = {
       set_cefr_level: {
         Args: { _language: string; _level: string };
         Returns: undefined;
+      };
+      weekly_xp: {
+        Args: { _user_id: string; _week_start: string };
+        Returns: number;
       };
     };
     Enums: {
