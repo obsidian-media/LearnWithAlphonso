@@ -79,6 +79,13 @@ struct AuthView: View {
             }
             .buttonStyle(.alphonsoSecondary)
             .disabled(session.isBusy)
+            // Every busy-state button on this screen swaps its label for a
+            // bare ProgressView with no text -- fine for a sighted user
+            // (the spinner itself communicates "working"), but VoiceOver
+            // then has no accessible name for the button at all. Setting
+            // the label explicitly, in both branches, means it's always
+            // correct regardless of which one renders.
+            .accessibilityLabel(session.isBusy ? "Signing in" : "Continue with Apple")
 
             Button {
                 Task { await session.signInWithGoogle() }
@@ -91,6 +98,7 @@ struct AuthView: View {
             }
             .buttonStyle(.alphonsoSecondary)
             .disabled(session.isBusy)
+            .accessibilityLabel(session.isBusy ? "Signing in" : "Continue with Google")
 
             HStack(spacing: AlphonsoSpacing.sm) {
                 // A plain Divider() in an HStack wants to stretch to fill
@@ -125,6 +133,7 @@ struct AuthView: View {
             }
             .buttonStyle(.alphonsoPrimary)
             .disabled(session.isBusy || !email.contains("@"))
+            .accessibilityLabel(session.isBusy ? "Sending code" : "Send code")
         }
     }
 
@@ -152,6 +161,7 @@ struct AuthView: View {
             }
             .buttonStyle(.alphonsoPrimary)
             .disabled(session.isBusy || code.isEmpty)
+            .accessibilityLabel(session.isBusy ? "Verifying" : "Verify")
         }
     }
 }

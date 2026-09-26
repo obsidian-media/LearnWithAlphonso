@@ -532,8 +532,10 @@ private struct QuestionCard: View {
                 Spacer()
                 if checked && isCorrectChoice {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
+                        .accessibilityHidden(true)
                 } else if checked && picked == choice {
                     Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(AlphonsoSpacing.sm + 4)
@@ -548,6 +550,22 @@ private struct QuestionCard: View {
         }
         .disabled(checked)
         .foregroundStyle(AlphonsoColor.ink)
+        // The checkmark/xmark above is the ONLY place correct/incorrect
+        // per-choice state lived before this -- hidden now (it duplicated
+        // whatever this label already says) but that means this label is
+        // the sole place VoiceOver can learn "which choice was right" and
+        // "was mine right," so it has to say both explicitly, not just the
+        // choice text.
+        .accessibilityLabel(choiceAccessibilityLabel(choice, isCorrectChoice: isCorrectChoice))
+        .accessibilityAddTraits(picked == choice ? .isSelected : [])
+    }
+
+    private func choiceAccessibilityLabel(_ choice: String, isCorrectChoice: Bool) -> String {
+        guard checked else { return choice }
+        if isCorrectChoice {
+            return picked == choice ? "\(choice), your answer, correct" : "\(choice), correct answer"
+        }
+        return picked == choice ? "\(choice), your answer, incorrect" : choice
     }
 }
 

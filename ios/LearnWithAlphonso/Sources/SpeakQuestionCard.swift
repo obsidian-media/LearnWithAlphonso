@@ -116,6 +116,17 @@ struct SpeakQuestionCard: View {
                             .font(.title2)
                     )
                     .accessibilityLabel("Hold to say the phrase")
+                    // VoiceOver normally intercepts touches on a control to
+                    // drive its own swipe/explore navigation instead of
+                    // passing them to a custom gesture recognizer -- a raw
+                    // DragGesture like this one would otherwise never fire
+                    // for a VoiceOver user at all. requiresActivation is the
+                    // safer of the two direct-touch modes: a VoiceOver user
+                    // must double-tap-and-hold to "activate" this element
+                    // before their touch passes through to the drag gesture,
+                    // so a normal exploratory swipe across the screen can't
+                    // accidentally start a recording.
+                    .accessibilityDirectTouch(true, options: .requiresActivation)
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in if phase != .recording { startRecording() } }
