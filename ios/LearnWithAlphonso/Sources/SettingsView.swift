@@ -57,14 +57,19 @@ struct SettingsView: View {
             List {
                 Section {
                     HStack(spacing: AlphonsoSpacing.sm + 4) {
-                        Circle()
-                            .fill(AvatarColor.forSeed(avatarSeed.isEmpty ? "a" : avatarSeed))
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Text(displayName.prefix(1).uppercased())
-                                    .font(AlphonsoFont.sans(16, weight: .semiBold))
-                                    .foregroundStyle(.white)
-                            )
+                        // A single letter never grows in length, but its
+                        // FONT does with Dynamic Type -- a fixed 40x40
+                        // frame with the letter as an .overlay doesn't clip
+                        // it (overlay isn't clipped to its base shape by
+                        // default), so it would spill outside the circle
+                        // at large accessibility sizes instead. Background,
+                        // not overlay, plus a minimum (not fixed) frame on
+                        // the TEXT lets the circle grow to actually contain it.
+                        Text(displayName.prefix(1).uppercased())
+                            .font(AlphonsoFont.sans(16, weight: .semiBold))
+                            .foregroundStyle(.white)
+                            .frame(minWidth: 40, minHeight: 40)
+                            .background(Circle().fill(AvatarColor.forSeed(avatarSeed.isEmpty ? "a" : avatarSeed)))
                         Button {
                             Task { await shuffleAvatar() }
                         } label: {
