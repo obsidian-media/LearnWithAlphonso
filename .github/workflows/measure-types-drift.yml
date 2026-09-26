@@ -41,8 +41,24 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
+      - name: Report production's actual platform version (Management API)
+        run: |
+          curl -s "https://api.supabase.com/v1/projects/qhcjpfbxfcltjbiuknyt" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            | jq '{database, status, region}' || true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Start a local stack and apply supabase/migrations/*.sql to it
         run: supabase start
+
+      - name: Report the local stack's actual versions
+        run: |
+          supabase status -o json | jq '{DB_VERSION: .DB_VERSION}' || supabase status
+          echo "--- postgres server_version (local) ---"
+          docker exec supabase_db_LearnWithAlphonso psql -U postgres -t -c "show server_version;" || true
+          echo "--- postgrest version (local image tag) ---"
+          docker ps --format '{{.Image}}' | grep -i rest || true
 
       - name: Generate types from the local stack (what the guard should use)
         run: supabase gen types typescript --local > /tmp/types.local.ts
