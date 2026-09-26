@@ -61,10 +61,19 @@ struct LinkHectorAccountSheet: View {
         // than a shared abstraction for five lines. Fire-and-forget:
         // Hector enrollment already succeeded by the time this fires.
         .onChange(of: hectorSession.enrolledCloudVoiceUserID) { _, cloudVoiceUserID in
-            guard let cloudVoiceUserID, let accessToken = session.accessToken else { return }
+            // Sends the Cloud Voice ACCESS TOKEN, never the id. Phase 2
+            // was written before #163, when this posted a claimed
+            // cloudVoiceUserId -- which let anyone who knew a victim's id
+            // plant it and later revoke their Hector. The server now
+            // derives the id by verifying this token against Cloud
+            // Voice's own project; see AccountClient.linkHectorAccount.
+            guard cloudVoiceUserID != nil,
+                  let accessToken = session.accessToken,
+                  case .ready(let hectorAccessToken) = hectorSession.state
+            else { return }
             Task {
                 let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-                try? await client.linkHectorAccount(cloudVoiceUserID: cloudVoiceUserID)
+                try? await client.linkHectorAccount(cloudVoiceAccessToken: hectorAccessToken)
                 didLink = true
             }
         }
