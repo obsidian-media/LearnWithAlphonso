@@ -106,16 +106,34 @@ public final class AIConversationClient: Sendable {
     public func gradeTranslation(
         lessonId: String, questionId: String, submission: String, course: String
     ) async -> TranslationVerdict? {
-        var request = URLRequest(url: baseURL.appendingPathComponent("api/grade-translation"))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        let payload: [String: Any] = [
+        await postGradeTranslation([
             "lessonId": lessonId,
             "questionId": questionId,
             "submission": submission,
             "course": course,
-        ]
+        ])
+    }
+
+    /// Same endpoint and same "never throws, nil means no second opinion"
+    /// contract as the lessonId/questionId overload above -- placement
+    /// questions live outside the curriculum's question index (see
+    /// api/grade-translation.ts's own `placementId` branch), so they're
+    /// resolved by id from the placement pool instead of a lesson lookup.
+    public func gradeTranslation(
+        placementId: String, submission: String, course: String
+    ) async -> TranslationVerdict? {
+        await postGradeTranslation([
+            "placementId": placementId,
+            "submission": submission,
+            "course": course,
+        ])
+    }
+
+    private func postGradeTranslation(_ payload: [String: Any]) async -> TranslationVerdict? {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/grade-translation"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
 
         // Destructured on its own line rather than inside the guard: optional

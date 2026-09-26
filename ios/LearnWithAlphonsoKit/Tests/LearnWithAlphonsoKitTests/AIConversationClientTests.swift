@@ -242,4 +242,58 @@ final class AIConversationClientTests: XCTestCase {
             XCTAssertEqual(error as? AIConversationError, .server(status: 400, message: "Empty or missing audio"))
         }
     }
+
+    // MARK: - gradeTranslation (no prior coverage -- added alongside the
+    // new placementId overload the iOS placement exam needs)
+
+    func testGradeTranslationWithLessonIdPostsTheExpectedBody() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["correct": true, "reason": NSNull()])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let verdict = try XCTUnwrap(await client.gradeTranslation(
+            lessonId: "u1l1", questionId: "q1", submission: "Good morning.", course: "en"
+        ))
+
+        XCTAssertTrue(verdict.correct)
+        XCTAssertNil(verdict.reason)
+        let request = try XCTUnwrap(captured)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/grade-translation"))
+        let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
+        XCTAssertEqual(payload["questionId"] as? String, "q1")
+        XCTAssertNil(payload["placementId"])
+    }
+
+    func testGradeTranslationWithPlacementIdPostsTheExpectedBody() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["correct": false, "reason": "not quite"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        let verdict = try XCTUnwrap(await client.gradeTranslation(
+            placementId: "p60", submission: "Good day.", course: "en"
+        ))
+
+        XCTAssertFalse(verdict.correct)
+        XCTAssertEqual(verdict.reason, "not quite")
+        let request = try XCTUnwrap(captured)
+        let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(payload["placementId"] as? String, "p60")
+        XCTAssertNil(payload["lessonId"])
+        XCTAssertNil(payload["questionId"])
+    }
+
+    func testGradeTranslationReturnsNilOnAnyFailureRatherThanThrowing() async {
+        let client = makeClient { request in
+            (Data(), HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!)
+        }
+        let verdict = await client.gradeTranslation(placementId: "p60", submission: "x", course: "en")
+        XCTAssertNil(verdict)
+    }
 }

@@ -936,6 +936,29 @@ public final class ProgressSyncClient: Sendable {
         return rows.first?["cefr_level"] as? String
     }
 
+    /// Whether -- and when -- this course's placement test has been taken.
+    /// **Not** the same question as `fetchCefrLevel` returning non-nil:
+    /// `language_progress.cefr_level` defaults to `'A1'` and that row can
+    /// exist from ordinary lesson-completion activity with placement never
+    /// having run at all (mirrors the web app's own `learn.tsx`, which
+    /// gates its placement banner on `Boolean(placementTakenAt)`, not on
+    /// whether a course row exists). Nil means either no row yet or a row
+    /// whose `placement_taken_at` is still null -- both read as "not
+    /// placed yet" to every caller.
+    public func fetchPlacementTakenAt(course: String) async throws -> String? {
+        var request = restRequest(path: "language_progress", query: [
+            URLQueryItem(name: "select", value: "placement_taken_at"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.first?["placement_taken_at"] as? String
+    }
+
     /// Mirrors weakness-trend.functions.ts's getWeaknessTrend exactly: reads
     /// the full `weakness_events` history for this user and aggregates it
     /// into per-category detected/resolved counts client-side (a few
