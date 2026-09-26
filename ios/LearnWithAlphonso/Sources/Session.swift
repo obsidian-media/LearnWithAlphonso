@@ -3,10 +3,12 @@ import Observation
 import LearnWithAlphonsoKit
 
 /// App-wide auth state, driving which root view (AuthView vs. the signed-in
-/// app) is shown. In-memory only for this first scaffold slice -- no
-/// Keychain persistence yet, so the app re-prompts for sign-in on every
-/// cold launch. A real app ships with session persistence before
-/// submission; tracked as follow-up, not silently skipped.
+/// app) is shown. The session (including its refresh token) is persisted
+/// to the Keychain -- not UserDefaults, see KeychainSessionStore's own
+/// doc comment -- so the app restores a prior sign-in on cold launch
+/// instead of re-prompting every time. `restoreSession()` must be called
+/// once at launch (RootView does this) before `state`/`isRestoring` mean
+/// anything; until then this reads as freshly signed out.
 @Observable
 @MainActor
 final class Session {
@@ -19,6 +21,12 @@ final class Session {
     private(set) var state: AuthState = .signedOut
     private(set) var errorMessage: String?
     private(set) var isBusy = false
+    /// True until `restoreSession()` has resolved (found nothing, restored
+    /// a still-valid session, or refreshed an expired one) -- RootView
+    /// shows a blank/loading screen while this is true rather than
+    /// flashing AuthView and then flipping to the signed-in app a moment
+    /// later.
+    private(set) var isRestoring = true
 
     private let authClient: SupabaseAuthClient
     private let googleSignInPresenter = GoogleSignInPresenter()
@@ -75,9 +83,32 @@ final class Session {
         defer { isBusy = false }
         do {
             let session = try await authClient.verifyEmailOTP(email: email, code: code)
-            state = .signedIn(session)
+            establishSession(session)
         } catch {
             errorMessage = Self.message(for: error)
+        }
+    }
+
+    /// Restores a Keychain-persisted session on cold launch. A session
+    /// that's still valid (with a small buffer so it can't expire mid-
+    /// restore) is used as-is; an expired one is refreshed first. A
+    /// refresh failure means the stored session is unusable -- clearing
+    /// it and staying signed out is the right outcome here, not a
+    /// signed-in shell backed by a refresh token nothing will accept
+    /// (every subsequent API call would 401, with no obvious reason why
+    /// to a user who's staring at what looks like a normal signed-in app).
+    func restoreSession() async {
+        defer { isRestoring = false }
+        guard let stored = KeychainSessionStore.load() else { return }
+        if stored.expiresAt > Date().addingTimeInterval(60) {
+            establishSession(stored)
+            return
+        }
+        do {
+            let refreshed = try await authClient.refresh(stored)
+            establishSession(refreshed)
+        } catch {
+            KeychainSessionStore.clear()
         }
     }
 
@@ -107,7 +138,7 @@ final class Session {
                 return
             }
             let session = try await authClient.exchangeOAuthCode(code, codeVerifier: challenge.verifier)
-            state = .signedIn(session)
+            establishSession(session)
         } catch GoogleSignInPresenterError.cancelled {
             // The user dismissed the sheet -- not a real error.
         } catch {
@@ -132,7 +163,14 @@ final class Session {
                 nonce: result.rawNonce
             )
             appleAuthorizationCodeForRevocation = result.authorizationCode
-            state = .signedIn(session)
+            establishSession(session)
+            // Apple does not always return an authorization code. Nil means
+            // there is simply nothing to link -- and nothing to revoke later
+            // either -- so skip rather than force-unwrap. Deletion already
+            // treats a missing token as "could not revoke" and proceeds.
+            if let code = result.authorizationCode {
+                linkAppleAuthorization(code: code, accessToken: session.accessToken)
+            }
         } catch AppleSignInPresenterError.cancelled {
             // The user dismissed the dialog -- not a real error.
         } catch {
@@ -144,6 +182,30 @@ final class Session {
         state = .signedOut
         errorMessage = nil
         appleAuthorizationCodeForRevocation = nil
+        KeychainSessionStore.clear()
+    }
+
+    /// The one place `state` transitions to `.signedIn` -- every path
+    /// (email OTP, Google, Apple, and a cold-launch restore) routes
+    /// through here so Keychain persistence is never something a future
+    /// sign-in method could forget to wire up.
+    private func establishSession(_ session: SupabaseSession) {
+        state = .signedIn(session)
+        KeychainSessionStore.save(session)
+    }
+
+    /// Fire-and-forget: posts the one-time Apple authorization code to
+    /// /api/apple-link so a later account deletion can revoke that grant
+    /// (see AccountClient.linkAppleAuthorization's own doc comment for
+    /// the full trust-boundary reasoning). Detached from signInWithApple's
+    /// own async flow -- not awaited -- so a slow or failing network call
+    /// here can never delay or block a sign-in the identity token already
+    /// completed; `try?` swallows the result entirely, on purpose.
+    private func linkAppleAuthorization(code: String, accessToken: String) {
+        Task {
+            let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            try? await client.linkAppleAuthorization(code: code)
+        }
     }
 
     private static func message(for error: Error) -> String {

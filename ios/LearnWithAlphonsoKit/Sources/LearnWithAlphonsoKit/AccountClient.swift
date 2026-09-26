@@ -69,6 +69,28 @@ public final class AccountClient: Sendable {
         try Self.requireSuccess(data: data, response: response)
     }
 
+    /// POST /api/apple-link -- forwards the one-time Apple authorization
+    /// code (captured right after a native Sign in with Apple) so a later
+    /// account deletion can revoke that grant, which Apple requires.
+    /// Every failure here is meant to be silent to the user (see
+    /// api/apple-link.ts's own doc comment: the identity token already
+    /// authenticated them, this is only groundwork for a future deletion)
+    /// -- this method still throws, same as every other call here, so the
+    /// caller (Session.signInWithApple) is the one that decides to swallow
+    /// it with `try?` in a detached, un-awaited Task rather than that
+    /// posture being silently baked in here where a future caller
+    /// wouldn't expect it.
+    public func linkAppleAuthorization(code: String) async throws {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/apple-link"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["authorizationCode": code])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+    }
+
     private static func requireSuccess(data: Data, response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw AccountError.badResponse
