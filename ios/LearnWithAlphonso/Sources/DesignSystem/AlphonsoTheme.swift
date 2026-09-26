@@ -89,6 +89,10 @@ enum AlphonsoPaletteCatalog {
     /// exact conversion used. Font base names come from inspecting each
     /// bundled `.ttf`'s `name` table (`fontTools`) since UIFont(name:)
     /// needs an exact PostScript name, not a family name.
+    ///
+    /// This is the LIGHT variant of each theme, except `.studioInk`, which
+    /// has no light variant at all (see `dark` below and
+    /// `AlphonsoThemeManager.palette`'s own doc comment for why).
     static let all: [AlphonsoThemeID: AlphonsoPalette] = [
         .meadow: AlphonsoPalette(
             surface: Color(hex: 0xF5_F0_E8),
@@ -118,7 +122,21 @@ enum AlphonsoPaletteCatalog {
             mossDeep: Color(hex: 0x00_46_99),
             ember: Color(hex: 0x00_72_D5),
             emberSoft: Color(hex: 0x00_2E_5D),
-            destructive: Color(hex: 0xE7_00_0B),
+            // 0xE7000B (every other theme's shared destructive red, tuned
+            // for reading as dark saturated text/icon on a LIGHT surface)
+            // only measures 4.07:1 against this theme's own dark surface
+            // and 3.80:1 against parchment -- both under the 4.5:1 AA text
+            // threshold. Found while deriving dark-mode destructive values
+            // for the newly-added dark variants below (same computed,
+            // minimal-brightening method, same target); Studio Ink already
+            // being dark meant it had this same latent gap today, so it's
+            // fixed here rather than left as a second inconsistent red.
+            // 0xF8000C: 4.62:1 against surface, 4.31:1 against parchment
+            // (parchment falls just short -- destructive text/icons render
+            // there rarely enough, e.g. a nested card's own delete action,
+            // that this is accepted rather than brightening further and
+            // drifting the red away from recognizability).
+            destructive: Color(hex: 0xF8_00_0C),
             hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
             onPrimary: Color(hex: 0x0B_0D_12),
             onAccent: Color(hex: 0x0B_0D_12),
@@ -172,6 +190,95 @@ enum AlphonsoPaletteCatalog {
             sansFontBaseName: "Geist-Regular"
         ),
     ]
+
+    /// Dark variant of each LIGHT theme -- `.studioInk` deliberately has no
+    /// entry here (see `AlphonsoThemeManager.palette`'s doc comment): it's
+    /// already dark and stays that way regardless of system appearance,
+    /// the same "pick a dark-styled look on purpose" pattern several apps
+    /// offer independent of following the system setting.
+    ///
+    /// Every accent (moss/mossDeep/ember) below is UNCHANGED from its light
+    /// variant except where noted: each was already dark/saturated enough
+    /// to host its light-mode `onPrimary`/`onAccent`/`onMossGradient` text,
+    /// which is a property of the accent's own lightness relative to
+    /// near-black-or-near-white, not of the page background around it --
+    /// so most needed no adjustment to keep working here too. Only the
+    /// neutrals (surface/parchment/ink/inkSoft) and the few accents noted
+    /// inline were computed fresh, via a script (HSL lightness inversion
+    /// for neutrals derived from each theme's own `ink`/`surface` hue, so
+    /// the dark surface still reads as "this theme" rather than a generic
+    /// gray; minimal-lightness-increase search against WCAG contrast math
+    /// for the few accents that needed it), not eyeballed -- every ratio
+    /// cited below is that script's actual output, re-verifiable the same
+    /// way `onMossGradient`'s light-mode contrast numbers already are.
+    static let dark: [AlphonsoThemeID: AlphonsoPalette] = [
+        .meadow: AlphonsoPalette(
+            surface: Color(hex: 0x0C_18_10),
+            parchment: Color(hex: 0x15_26_1B),
+            ink: Color(hex: 0xF4_F1_EC),
+            inkSoft: Color(hex: 0xB9_B0_A2),
+            moss: Color(hex: 0x2F_62_43),
+            mossDeep: Color(hex: 0x15_3C_25),
+            ember: Color(hex: 0xD7_59_28),
+            emberSoft: Color(hex: 0x4F_30_17),
+            // Same gap and same fix as Studio Ink's destructive above:
+            // 0xE7000B under-contrasts a dark surface. 0xFF0A15 (brightened
+            // against THIS theme's own near-black/near-white pair, same
+            // computed method): 4.60:1 against surface.
+            destructive: Color(hex: 0xFF_0A_15),
+            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
+            // ink/moss: 6.32:1. surface/ember: 4.64:1. ink/mossDeep: 10.93:1.
+            onPrimary: Color(hex: 0xF4_F1_EC),
+            onAccent: Color(hex: 0x0C_18_10),
+            onMossGradient: Color(hex: 0xF4_F1_EC),
+            colorScheme: .dark,
+            displayFontBaseName: "Fraunces-Regular",
+            displayFontOpszRange: 9...144,
+            sansFontBaseName: "Geist-Regular"
+        ),
+        .manuscript: AlphonsoPalette(
+            surface: Color(hex: 0x0E_11_15),
+            parchment: Color(hex: 0x18_1D_23),
+            ink: Color(hex: 0xEC_EF_F4),
+            inkSoft: Color(hex: 0xA2_AB_B9),
+            moss: Color(hex: 0x8D_18_28),
+            mossDeep: Color(hex: 0x65_00_14),
+            ember: Color(hex: 0x8D_18_28),
+            emberSoft: Color(hex: 0x4F_18_17),
+            destructive: Color(hex: 0xFB_00_0C),
+            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
+            // ink/moss: 7.94:1 (moss and ember are the same color in this
+            // theme, light or dark -- see the light palette's own values).
+            // ink/mossDeep: 11.65:1.
+            onPrimary: Color(hex: 0xEC_EF_F4),
+            onAccent: Color(hex: 0xEC_EF_F4),
+            onMossGradient: Color(hex: 0xEC_EF_F4),
+            colorScheme: .dark,
+            displayFontBaseName: "Newsreader16pt-Regular",
+            displayFontOpszRange: 6...72,
+            sansFontBaseName: "SourceSans3-Roman"
+        ),
+        .canopy: AlphonsoPalette(
+            surface: Color(hex: 0x0C_18_13),
+            parchment: Color(hex: 0x15_26_1F),
+            ink: Color(hex: 0xEC_F4_EF),
+            inkSoft: Color(hex: 0xA2_B9_AC),
+            moss: Color(hex: 0x0C_69_44),
+            mossDeep: Color(hex: 0x13_3F_2B),
+            ember: Color(hex: 0xE4_57_3F),
+            emberSoft: Color(hex: 0x4F_21_17),
+            destructive: Color(hex: 0xFF_0B_16),
+            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
+            // ink/moss: 6.01:1. surface/ember: 4.96:1. ink/mossDeep: 10.57:1.
+            onPrimary: Color(hex: 0xEC_F4_EF),
+            onAccent: Color(hex: 0x0C_18_13),
+            onMossGradient: Color(hex: 0xEC_F4_EF),
+            colorScheme: .dark,
+            displayFontBaseName: "Baloo2-Regular",
+            displayFontOpszRange: nil,
+            sansFontBaseName: "Geist-Regular"
+        ),
+    ]
 }
 
 /// Shared theme state -- the iOS equivalent of the web's `theme.ts`
@@ -187,8 +294,36 @@ public final class AlphonsoThemeManager {
 
     public private(set) var themeID: AlphonsoThemeID
 
+    /// The device's raw system appearance, pushed in by `RootView` (the one
+    /// place in the app with `@Environment(\.colorScheme)` access before
+    /// this app's own `.preferredColorScheme` override applies -- see
+    /// `RootView.body`'s `.onChange(of: systemColorScheme, initial: true)`).
+    /// Defaults to `.light` before that first push on a fresh launch, the
+    /// same "best guess until real data arrives" posture as every other
+    /// best-effort default in this manager.
+    public private(set) var systemColorScheme: ColorScheme = .light
+
+    /// Dark Interface support (App Store accessibility label, BACKLOG item):
+    /// `.studioInk` has no light variant and is unaffected by system
+    /// appearance -- it's a dark-styled theme a user can pick on purpose,
+    /// the same as several apps offer an "always dark" option independent
+    /// of following the system setting; there is no light Studio Ink to
+    /// fall back to, and inventing one is a different, much larger design
+    /// exercise than "the app respects Dark Mode." Every other theme now
+    /// has a real dark variant (`AlphonsoPaletteCatalog.dark`) and switches
+    /// to it automatically whenever `systemColorScheme` is `.dark` --
+    /// that's the actual fix: previously `.preferredColorScheme` forced
+    /// every screen to whichever single appearance the selected theme
+    /// happened to be, so a user with system Dark Mode on saw a light app
+    /// unless they specifically chose Studio Ink.
     public var palette: AlphonsoPalette {
-        AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
+        if themeID == .studioInk {
+            return AlphonsoPaletteCatalog.all[.studioInk] ?? AlphonsoPaletteCatalog.all[.meadow]!
+        }
+        if systemColorScheme == .dark {
+            return AlphonsoPaletteCatalog.dark[themeID] ?? AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
+        }
+        return AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
     }
 
     private static let storageKey = "alphonso.theme"
@@ -218,6 +353,15 @@ public final class AlphonsoThemeManager {
     public func hydrate(fromServerValue serverValue: String?) {
         guard let serverValue, let id = AlphonsoThemeID(rawValue: serverValue) else { return }
         setTheme(id)
+    }
+
+    /// Called by `RootView` whenever the device's raw system appearance
+    /// changes (including the very first render, via `initial: true`) --
+    /// see `systemColorScheme`'s own doc comment for why this can't just
+    /// read `@Environment(\.colorScheme)` itself (this is a plain
+    /// `@Observable` class, not a `View`).
+    public func updateSystemColorScheme(_ scheme: ColorScheme) {
+        systemColorScheme = scheme
     }
 }
 

@@ -12,6 +12,7 @@ struct RootView: View {
     let podcastDownloadManager: PodcastDownloadManager
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var systemColorScheme
 
     /// The one podcast player, owned here rather than in any view that can
     /// come and go. Being a reference type above the view tree is what
@@ -32,12 +33,20 @@ struct RootView: View {
         // AuthView too, not just the signed-in TabView -- forces every
         // screen (system-styled chrome included: navigation titles,
         // segmented pickers, ContentUnavailableView) to resolve colors
-        // against the *active theme's* light/dark-ness rather than the
-        // device's own Dark Mode setting, which is what caused a real bug
-        // on a real device: system chrome flipped to light-on-dark text
-        // while this app's fixed-light palette stayed put, making titles
-        // and empty states unreadable. See AlphonsoTheme.swift's
-        // AlphonsoPalette.colorScheme doc comment.
+        // against the *active theme's* light/dark-ness, which is what
+        // caused a real bug on a real device before dark variants existed:
+        // system chrome flipped to light-on-dark text while this app's
+        // then-fixed-light palette stayed put, making titles and empty
+        // states unreadable.
+        //
+        // That's no longer a device-Dark-Mode-vs-app-mismatch bug (Dark
+        // Interface support, BACKLOG item): AlphonsoThemeManager.palette
+        // now resolves its OWN light/dark variant from `systemColorScheme`
+        // below, so `.preferredColorScheme` here just keeps forcing native
+        // chrome to agree with whichever variant that already picked --
+        // same invariant as before, now automatically correct for Dark
+        // Mode instead of fighting it. See AlphonsoTheme.swift's
+        // AlphonsoThemeManager.palette doc comment for the actual switch.
         Group {
             if session.isRestoring {
                 // Keeps this identical, briefly, to a cold launch that has
@@ -142,6 +151,14 @@ struct RootView: View {
             }
         }
         .task { await session.restoreSession() }
+        // initial: true fires this once immediately (not just on the first
+        // actual *change*), so the manager has a real system value before
+        // the very first `.preferredColorScheme` below is ever read --
+        // without it, a fresh launch would render one frame against the
+        // `.light` fallback default even on a device already in Dark Mode.
+        .onChange(of: systemColorScheme, initial: true) { _, newValue in
+            AlphonsoThemeManager.shared.updateSystemColorScheme(newValue)
+        }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
     }
 
