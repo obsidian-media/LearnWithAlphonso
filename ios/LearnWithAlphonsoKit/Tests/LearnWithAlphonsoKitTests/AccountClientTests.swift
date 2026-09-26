@@ -135,7 +135,7 @@ final class AccountClientTests: XCTestCase {
 
     // MARK: - linkHectorAccount
 
-    func testLinkHectorAccountPostsTheCloudVoiceUserIDWithBearerToken() async throws {
+    func testLinkHectorAccountPostsTheCloudVoiceAccessTokenWithBearerToken() async throws {
         var captured: URLRequest?
         let client = makeClient { request in
             captured = request
@@ -143,7 +143,7 @@ final class AccountClientTests: XCTestCase {
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
-        try await client.linkHectorAccount(cloudVoiceUserID: "cv-user-1")
+        try await client.linkHectorAccount(cloudVoiceAccessToken: "cv-access-token-1")
 
         let request = try XCTUnwrap(captured)
         XCTAssertEqual(request.httpMethod, "POST")
@@ -151,7 +151,10 @@ final class AccountClientTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertEqual(payload["cloudVoiceUserId"] as? String, "cv-user-1")
+        // The server derives the Cloud Voice user id itself by verifying
+        // this token -- the body must never carry a claimed id directly.
+        XCTAssertEqual(payload["cloudVoiceAccessToken"] as? String, "cv-access-token-1")
+        XCTAssertNil(payload["cloudVoiceUserId"])
     }
 
     func testLinkHectorAccountSurfacesAServerError() async {
@@ -160,7 +163,7 @@ final class AccountClientTests: XCTestCase {
             return (body, HTTPURLResponse(url: request.url!, statusCode: 400, httpVersion: nil, headerFields: nil)!)
         }
         do {
-            try await client.linkHectorAccount(cloudVoiceUserID: "cv-user-1")
+            try await client.linkHectorAccount(cloudVoiceAccessToken: "cv-access-token-1")
             XCTFail("Expected an error")
         } catch {
             XCTAssertEqual(error as? AccountError, .server(status: 400, message: "bad-request"))

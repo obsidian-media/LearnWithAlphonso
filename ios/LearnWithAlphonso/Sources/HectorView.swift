@@ -46,10 +46,17 @@ struct HectorView: View {
         // fires, so a slow or failing link call must never affect the
         // Hector session itself.
         .onChange(of: hectorSession.enrolledCloudVoiceUserID) { _, cloudVoiceUserID in
-            guard let cloudVoiceUserID, let accessToken = session.accessToken else { return }
+            // Send the Cloud Voice access token, never the id itself --
+            // the server derives the id by verifying this token against
+            // Cloud Voice's own project (see AccountClient.linkHectorAccount's
+            // doc comment for why trusting a claimed id here was the bug).
+            guard cloudVoiceUserID != nil,
+                  let accessToken = session.accessToken,
+                  case .ready(let hectorAccessToken) = hectorSession.state
+            else { return }
             Task {
                 let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-                try? await client.linkHectorAccount(cloudVoiceUserID: cloudVoiceUserID)
+                try? await client.linkHectorAccount(cloudVoiceAccessToken: hectorAccessToken)
             }
         }
     }
