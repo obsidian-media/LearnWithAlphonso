@@ -66,7 +66,7 @@ export const USER_DELETE_TABLES = [
 export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId, claims } = context;
     // Independent selects -- batched instead of a sequential loop, so a GDPR
     // export stays one round trip's worth of latency rather than one per
     // table as this list grows.
@@ -97,6 +97,14 @@ export const exportMyData = createServerFn({ method: "POST" })
     return {
       exported_at: new Date().toISOString(),
       user_id: userId,
+      // The account's own email lives on auth.users, not any table this
+      // handler is scoped to query as the caller -- profiles has no email
+      // column (confirmed against the live schema). It's already right
+      // here in the verified JWT claims from requireSupabaseAuth, so no
+      // extra round trip is needed. Without this, a GDPR "download my
+      // data" export silently omitted the one field the privacy policy's
+      // own "What we collect" section lists first.
+      email: (claims as { email?: string }).email ?? null,
       tables: JSON.stringify(tables),
     };
   });

@@ -49,8 +49,11 @@ const deleteTables: readonly string[] = accountModule.USER_DELETE_TABLES;
 
 const USER_ID = "user-1";
 
-function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
-  return { supabase, userId: USER_ID };
+function ctx(
+  supabase: ReturnType<typeof createSupabaseMock>,
+  claims: Record<string, unknown> = {},
+) {
+  return { supabase, userId: USER_ID, claims };
 }
 
 beforeEach(() => {
@@ -69,10 +72,16 @@ describe("exportMyData", () => {
       return chainable({ data: [] });
     });
 
-    const result = await exportMyData({ context: ctx(supabase) });
+    const result = await exportMyData({
+      context: ctx(supabase, { email: "ada@example.com" }),
+    });
 
     expect(result.user_id).toBe(USER_ID);
     expect(typeof result.exported_at).toBe("string");
+    // The account's own email lives on auth.users, not any table this
+    // handler queries -- it has to come from the verified JWT claims
+    // instead, or a GDPR export silently omits it.
+    expect(result.email).toBe("ada@example.com");
     const tables = JSON.parse(result.tables);
     expect(tables.review_items).toEqual([{ item_key: "u1l1:q1" }]);
     expect(tables.profiles).toEqual({ display_name: "Ada" });
@@ -89,6 +98,13 @@ describe("exportMyData", () => {
     const tables = JSON.parse(result.tables);
     expect(tables.review_items).toEqual([]);
     expect(tables.profiles).toEqual([]);
+  });
+
+  it("exports null for email when the JWT claims don't carry one", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation(() => chainable({ data: [] }));
+    const result = await exportMyData({ context: ctx(supabase) });
+    expect(result.email).toBeNull();
   });
 });
 
