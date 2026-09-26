@@ -21,6 +21,8 @@ struct LeaderboardView: View {
     @State private var errorMessage: String?
     @State private var overtakeToastMessage: String?
     @State private var showingWeeklyRecap = false
+    @State private var blockTarget: SocialTarget?
+    @State private var reportTarget: SocialTarget?
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -50,9 +52,14 @@ struct LeaderboardView: View {
                         } else {
                             List {
                                 ForEach(Array(rows.enumerated()), id: \.element.userID) { index, row in
-                                    LeaderboardRowView(rank: index + 1, row: row, isYou: row.userID == session.userID)
-                                        .listRowBackground(row.userID == session.userID ? AlphonsoColor.emberSoft : AlphonsoColor.parchment)
-                                        .springEntrance(delay: Double(index % 8) * 0.04)
+                                    let isYou = row.userID == session.userID
+                                    LeaderboardRowView(rank: index + 1, row: row, isYou: isYou) {
+                                        blockTarget = SocialTarget(id: row.userID, displayName: row.displayName)
+                                    } onReport: {
+                                        reportTarget = SocialTarget(id: row.userID, displayName: row.displayName)
+                                    }
+                                    .listRowBackground(isYou ? AlphonsoColor.emberSoft : AlphonsoColor.parchment)
+                                    .springEntrance(delay: Double(index % 8) * 0.04)
                                 }
                             }
                             .listStyle(.plain)
@@ -97,6 +104,48 @@ struct LeaderboardView: View {
             if newPhase == .active {
                 Task { await checkForOvertake() }
             }
+        }
+        .confirmationDialog(
+            "Block \(blockTarget?.displayName ?? "this user")?",
+            isPresented: Binding(
+                get: { blockTarget != nil },
+                set: { if !$0 { blockTarget = nil } },
+            ),
+            titleVisibility: .visible,
+        ) {
+            Button("Block", role: .destructive) {
+                if let target = blockTarget {
+                    Task { await block(target) }
+                }
+                blockTarget = nil
+            }
+            Button("Cancel", role: .cancel) { blockTarget = nil }
+        } message: {
+            Text(SocialSafetyCopy.blockConfirmationMessage(blockTarget?.displayName ?? "This person"))
+        }
+        .sheet(item: $reportTarget) { target in
+            ReportSheet(target: target, session: session)
+        }
+    }
+
+    /// Optimistically drops `target` from `rows` on success -- the server
+    /// already excludes a blocked relationship from get_leaderboard, this
+    /// just avoids waiting for the next scope/period reload to see it.
+    /// Reuses the existing toast banner (not the full-screen `errorMessage`
+    /// state, which would blank the whole leaderboard) for feedback.
+    private func block(_ target: SocialTarget) async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            let result = try await client.blockUser(target.id)
+            if result.ok {
+                rows.removeAll { $0.userID == target.id }
+                showToast("\(target.displayName) blocked.", into: $overtakeToastMessage)
+            } else {
+                showToast("Couldn't block \(target.displayName). Try again.", into: $overtakeToastMessage)
+            }
+        } catch {
+            showToast("Couldn't block \(target.displayName). Try again.", into: $overtakeToastMessage)
         }
     }
 
@@ -160,6 +209,8 @@ private struct LeaderboardRowView: View {
     let rank: Int
     let row: LeaderboardRow
     let isYou: Bool
+    let onBlock: () -> Void
+    let onReport: () -> Void
 
     var body: some View {
         HStack(spacing: AlphonsoSpacing.sm + 4) {
@@ -205,6 +256,10 @@ private struct LeaderboardRowView: View {
             Text("\(row.xp) XP")
                 .font(AlphonsoFont.sans(15, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
+
+            if !isYou {
+                SocialSafetyMenu(onBlock: onBlock, onReport: onReport)
+            }
         }
     }
 

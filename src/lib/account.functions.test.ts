@@ -170,6 +170,23 @@ describe("GDPR export table coverage", () => {
     //  3. Deletion is already handled: user_id REFERENCES auth.users
     //     ON DELETE CASCADE, so the row goes when the account does.
     "admin_users",
+    // blocked_users (supabase/migrations/20260928020000_block_and_report.sql):
+    // the `blocker` half is genuinely this account's own data and RLS
+    // does let the caller read it back, but the generic USER_ID_EXPORT_TABLES
+    // loop only matches a literal `user_id` column, and OTHER_OWNED_EXPORT_TABLES
+    // ORs across every listed column -- which would also export the
+    // `blocked` half, i.e. who has blocked *me*. Revealing that to the
+    // blocked-by party defeats the point of blocking, so this needs a
+    // one-column-only export path the current mechanism doesn't have.
+    // Flagged as a real follow-up, not silently accepted as covered.
+    // Deletion is already handled: both columns REFERENCES auth.users
+    // ON DELETE CASCADE.
+    "blocked_users",
+    // content_reports (same migration): RLS has NO select policy for
+    // anyone, reporter included -- same admin_users reasoning above
+    // (reason 1: an export field that's always empty is worse than no
+    // field). Deletion is already handled the same CASCADE way.
+    "content_reports",
   ]);
 
   it("exports every table that has a user_id column", () => {

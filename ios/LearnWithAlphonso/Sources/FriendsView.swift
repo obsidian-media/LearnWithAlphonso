@@ -28,6 +28,8 @@ struct FriendsView: View {
     @State private var errorMessage: String?
     @State private var nudgeBannerMessage: String?
     @State private var friendPendingRemoval: FriendProgress?
+    @State private var friendPendingBlock: FriendProgress?
+    @State private var reportTarget: SocialTarget?
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -71,6 +73,10 @@ struct FriendsView: View {
                             ForEach(friends, id: \.userID) { friend in
                                 FriendRowView(friend: friend) {
                                     await nudge(friend)
+                                } onBlock: {
+                                    friendPendingBlock = friend
+                                } onReport: {
+                                    reportTarget = SocialTarget(id: friend.userID, displayName: friend.displayName)
                                 }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
@@ -147,6 +153,27 @@ struct FriendsView: View {
         } message: {
             Text("You won't see each other's activity or streaks anymore.")
         }
+        .confirmationDialog(
+            "Block \(friendPendingBlock?.displayName ?? "this friend")?",
+            isPresented: Binding(
+                get: { friendPendingBlock != nil },
+                set: { if !$0 { friendPendingBlock = nil } },
+            ),
+            titleVisibility: .visible,
+        ) {
+            Button("Block", role: .destructive) {
+                if let friend = friendPendingBlock {
+                    Task { await block(friend) }
+                }
+                friendPendingBlock = nil
+            }
+            Button("Cancel", role: .cancel) { friendPendingBlock = nil }
+        } message: {
+            Text(SocialSafetyCopy.blockConfirmationMessage(friendPendingBlock?.displayName ?? "This person"))
+        }
+        .sheet(item: $reportTarget) { target in
+            ReportSheet(target: target, session: session)
+        }
     }
 
     private var friendsCountTitle: String {
@@ -191,6 +218,27 @@ struct FriendsView: View {
         }
     }
 
+    /// Optimistically drops `friend` from both `friends` and
+    /// `activityEvents` on success -- the server already filters a
+    /// blocked relationship out of get_friends_progress/friend activity,
+    /// this just avoids waiting for the next full reload to see it.
+    private func block(_ friend: FriendProgress) async {
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            let result = try await client.blockUser(friend.userID)
+            if result.ok {
+                friends.removeAll { $0.userID == friend.userID }
+                activityEvents.removeAll { $0.userID == friend.userID }
+                showToast("\(friend.displayName) blocked.", into: $nudgeBannerMessage)
+            } else {
+                showToast("Couldn't block \(friend.displayName). Try again.", into: $nudgeBannerMessage)
+            }
+        } catch {
+            showToast("Couldn't block \(friend.displayName). Try again.", into: $nudgeBannerMessage)
+        }
+    }
+
     private func removeFriend(_ friend: FriendProgress) async {
         guard let accessToken = session.accessToken else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
@@ -228,6 +276,8 @@ struct FriendsView: View {
 private struct FriendRowView: View {
     let friend: FriendProgress
     let onNudge: () async -> Void
+    let onBlock: () -> Void
+    let onReport: () -> Void
 
     @State private var canNudge = true
 
@@ -270,6 +320,8 @@ private struct FriendRowView: View {
             }
             .buttonStyle(.alphonsoSecondary(fullWidth: false))
             .disabled(!canNudge)
+
+            SocialSafetyMenu(onBlock: onBlock, onReport: onReport)
         }
         .padding(.vertical, 4)
         .onAppear { canNudge = NudgeCooldownCache.canNudge(friendID: friend.userID) }
