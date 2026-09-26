@@ -10,6 +10,34 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Hector re-parenting, and the defect the fix introduced** (#157, #159,
+#160, #163). Phase 0 linked each account to its separate Cloud Voice
+account so deletion can revoke it; Phase 1 added a server-side Pro gate
+that fails closed on every "we could not tell". Phase 0 also shipped an
+endpoint that accepted a Cloud Voice user id as a client-supplied claim
+— anyone who knew a victim's id could plant it and later revoke their
+Hector. #163 made the server derive that id from a verified token
+instead, mirroring `/api/apple-link`. Phase 2 remains open.
+
+**The Practice tab was broken by a stale base URL, not a stale token**
+(#170). `AppConfig.apiBaseURL` still pointed at the old Vercel alias,
+which now 308-redirects cross-origin — and URLSession drops
+`Authorization` across an origin change, so every authenticated call
+arrived anonymous. Session token refresh (#168) landed alongside it and
+is a real fix for a real bug; it just wasn't this one.
+
+**Signup email was broken in two ways only an inbox could see** (2026-09-26).
+`site_url` was still `http://localhost:3000`, so every signup mail's
+fallback link was dead, and the code was eight digits while the app asked
+for six. Found by receiving the mail, not by reading the code; fixed and
+re-verified the same way.
+
+**CI guards that could not fail** (#161, #162). A sweep found that
+`deploy-supabase` didn't depend on the only job validating the Edge
+Function code it deploys, and that `main` has no branch protection at all
+— every check in this repo is advisory. The GDPR export also silently
+omitted the account's own email address.
+
 **App Store compliance: the blockers an external audit found, closed in a
 day** (#144–#151). An audit of the public repo flagged ten P0s. Every
 claim in it was verified against the code before acting — all held, and
