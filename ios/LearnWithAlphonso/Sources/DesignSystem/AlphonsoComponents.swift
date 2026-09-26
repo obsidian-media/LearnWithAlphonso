@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import LearnWithAlphonsoKit
 
 // MARK: - Buttons
@@ -405,10 +406,20 @@ struct AlphonsoRowCard: View {
         HStack(spacing: AlphonsoSpacing.sm + 2) {
             if let leadingEmoji {
                 Text(leadingEmoji).font(.largeTitle)
+                    // Purely decorative here -- the emoji illustrates the
+                    // row, it doesn't carry information title/subtitle
+                    // don't already say. Without this, VoiceOver enumerates
+                    // it as its own stop (reading the emoji's own name,
+                    // e.g. "trophy") right before the title on every single
+                    // one of this component's 11+ call sites, including
+                    // ones on the primary lesson-start flow
+                    // (LessonBrowserView, ListenView).
+                    .accessibilityHidden(true)
             } else {
                 Circle()
                     .fill(accent)
                     .frame(width: 8, height: 8)
+                    .accessibilityHidden(true)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -425,6 +436,13 @@ struct AlphonsoRowCard: View {
         .padding(.vertical, AlphonsoSpacing.sm)
         .padding(.horizontal, AlphonsoSpacing.sm + 4)
         .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+        // Combines title+subtitle (and the now-hidden decoration) into one
+        // VoiceOver stop reading "<title>, <subtitle>" instead of two
+        // separate swipes -- matches how a Button wrapping this already
+        // auto-combines its label, but several call sites use this as bare
+        // List row content with no wrapping Button, which got no such
+        // combining before.
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -509,6 +527,10 @@ struct AlphonsoTipCard: View {
                 SpeechBubbleShape().strokeBorder(AlphonsoColor.ember.opacity(0.45), lineWidth: 1)
             )
 
+            // Portrait, not content -- the mascot's presence is what
+            // "Alphonso says" already tells you; without this it's its own
+            // unlabeled VoiceOver stop (announcing nothing useful, or the
+            // asset name) between "Alphonso says" and the explanation text.
             Image("Alphonso")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -519,11 +541,20 @@ struct AlphonsoTipCard: View {
                         .strokeBorder(AlphonsoColor.ember, lineWidth: 2)
                 )
                 .padding(.leading, -6)
+                .accessibilityHidden(true)
         }
         .transition(.asymmetric(
             insertion: .move(edge: .trailing).combined(with: .opacity),
             removal: .opacity
         ))
+        // "Incorrect" is prepended here, not just implied by which branch of
+        // ExplanationView rendered -- a sighted learner infers wrong-answer
+        // from this card's whole look (Alphonso popping up, the speech-
+        // bubble style); nothing about that is available to VoiceOver
+        // without saying it outright. Combine folds "Alphonso says" +
+        // explanation into one stop instead of two.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Incorrect. Alphonso says: \(explanation)")
     }
 }
 
@@ -550,13 +581,32 @@ struct ExplanationView: View {
     /// "not quite" styling over an answer the learner was just told was right.
     var correctOverride: Bool? = nil
 
+    private var isCorrect: Bool {
+        correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
+    }
+
     var body: some View {
-        if correctOverride ?? isAnswerCorrect(question, picked: picked, course: course) {
-            Text(explanation)
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-        } else {
-            AlphonsoTipCard(explanation: explanation)
+        Group {
+            if isCorrect {
+                Text(explanation)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    // Same reasoning as AlphonsoTipCard's label below: a
+                    // sighted learner reads "no Alphonso popup" as "you got
+                    // it right," which VoiceOver has no equivalent of.
+                    .accessibilityLabel("Correct. \(explanation)")
+            } else {
+                AlphonsoTipCard(explanation: explanation)
+            }
+        }
+        // Proactively announced, not just readable-if-you-swipe-to-it --
+        // this is the moment a sighted learner sees color/icon/card-style
+        // flip to tell them right/wrong; without an explicit announcement
+        // here a VoiceOver user only learns the verdict by manually
+        // navigating to this exact element, which "does it work without
+        // looking at the screen" needs to not require.
+        .onAppear {
+            UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
         }
     }
 }

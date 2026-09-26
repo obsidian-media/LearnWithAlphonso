@@ -43,16 +43,25 @@ struct SettingsView: View {
                 } label: {
                     HStack(spacing: AlphonsoSpacing.sm + 4) {
                         ThemeSwatch(themeID: themeID)
+                            .accessibilityHidden(true)
                         Text(themeID.displayName)
                             .font(AlphonsoFont.sans(15, weight: .medium))
                             .foregroundStyle(AlphonsoColor.ink)
                         Spacer()
                         if selectedTheme == themeID {
+                            // Hidden, not left to be read on its own -- the
+                            // .isSelected trait below is what actually tells
+                            // VoiceOver "this is the current theme"
+                            // ("Meadow, selected"); this checkmark existing
+                            // or not is only how a sighted user sees the
+                            // same fact.
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(AlphonsoColor.moss)
+                                .accessibilityHidden(true)
                         }
                     }
                 }
+                .accessibilityAddTraits(selectedTheme == themeID ? .isSelected : [])
             }
             List {
                 Section {
@@ -65,11 +74,17 @@ struct SettingsView: View {
                         // at large accessibility sizes instead. Background,
                         // not overlay, plus a minimum (not fixed) frame on
                         // the TEXT lets the circle grow to actually contain it.
+                        //
+                        // Hidden from VoiceOver entirely: the color is
+                        // decorative (no meaning a VoiceOver user needs),
+                        // and the name it's paired with is already
+                        // announced by the TextField right below it.
                         Text(displayName.prefix(1).uppercased())
                             .font(AlphonsoFont.sans(16, weight: .semiBold))
                             .foregroundStyle(.white)
                             .frame(minWidth: 40, minHeight: 40)
                             .background(Circle().fill(AvatarColor.forSeed(avatarSeed.isEmpty ? "a" : avatarSeed)))
+                            .accessibilityHidden(true)
                         Button {
                             Task { await shuffleAvatar() }
                         } label: {
@@ -81,6 +96,7 @@ struct SettingsView: View {
                         }
                         .font(AlphonsoFont.sans(14, weight: .medium))
                         .disabled(isShufflingAvatar)
+                        .accessibilityLabel(isShufflingAvatar ? "Shuffling avatar color" : "Shuffle avatar color")
                     }
                     TextField("Display name", text: $displayName)
                         .font(AlphonsoFont.sans(15))
@@ -96,6 +112,7 @@ struct SettingsView: View {
                     }
                     .font(AlphonsoFont.sans(15, weight: .medium))
                     .disabled(isSavingName || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityLabel(isSavingName ? "Saving name" : "Save Name")
                     if let identityErrorMessage {
                         Text(identityErrorMessage)
                             .font(AlphonsoFont.sans(13))
@@ -139,6 +156,7 @@ struct SettingsView: View {
                     }
                     .font(AlphonsoFont.sans(15, weight: .medium))
                     .disabled(isExportingData || isDeletingAccount)
+                    .accessibilityLabel(isExportingData ? "Exporting your data" : "Export My Data")
 
                     // Hector re-parenting Phase 2 (docs/superpowers/specs/
                     // 2026-09-26-hector-reparenting-design.md): the one
@@ -168,6 +186,7 @@ struct SettingsView: View {
                     }
                     .font(AlphonsoFont.sans(15, weight: .medium))
                     .disabled(isExportingData || isDeletingAccount)
+                    .accessibilityLabel(isDeletingAccount ? "Deleting your account" : "Delete My Account")
 
                     if let accountErrorMessage {
                         Text(accountErrorMessage)

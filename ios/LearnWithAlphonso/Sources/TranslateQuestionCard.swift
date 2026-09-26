@@ -68,6 +68,11 @@ struct TranslateQuestionCard: View {
                 .background(
                     AlphonsoColor.surface,
                     in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                // Reason + "ONE WAY TO SAY IT" header + the phrase itself
+                // were three separate VoiceOver stops with no indication
+                // they belong together -- combine reads them in order as
+                // one coherent block instead.
+                .accessibilityElement(children: .combine)
             }
 
             if checked {

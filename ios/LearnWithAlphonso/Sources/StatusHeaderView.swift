@@ -29,8 +29,8 @@ struct StatusHeaderView: View {
                     // used as long as it actually fits.
                     HStack(spacing: AlphonsoSpacing.sm) {
                         streakPill(progress: progress)
-                        statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                        statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                        statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
                         Spacer()
                         leagueBadge(progress: progress)
                     }
@@ -40,8 +40,8 @@ struct StatusHeaderView: View {
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                         HStack(spacing: AlphonsoSpacing.sm) {
                             streakPill(progress: progress)
-                            statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                            statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                            statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                            statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
                         }
                         leagueBadge(progress: progress)
                     }
@@ -53,8 +53,8 @@ struct StatusHeaderView: View {
                     // centered/stretched, matching how the rows above read.
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
                         streakPill(progress: progress)
-                        statPill(icon: "heart.fill", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
-                        statPill(icon: "star.fill", value: "\(progress.xp)", tint: AlphonsoColor.moss)
+                        statPill(icon: "heart.fill", label: "Hearts", value: "\(progress.hearts)", tint: AlphonsoColor.destructive)
+                        statPill(icon: "star.fill", label: "XP", value: "\(progress.xp)", tint: AlphonsoColor.moss)
                         leagueBadge(progress: progress)
                     }
                 }
@@ -77,9 +77,13 @@ struct StatusHeaderView: View {
         streak > 0 ? "Nice \(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"
     }
 
-    private func statPill(icon: String, value: String, tint: Color) -> some View {
+    // icon is decorative (hidden) and value alone is a bare number ("5")
+    // with no unit -- combine + an explicit label ("Hearts: 5") is the only
+    // way VoiceOver can tell this pill apart from any other bare-number
+    // pill next to it.
+    private func statPill(icon: String, label: String, value: String, tint: Color) -> some View {
         HStack(spacing: 4) {
-            Image(systemName: icon).foregroundStyle(tint)
+            Image(systemName: icon).foregroundStyle(tint).accessibilityHidden(true)
             Text(value)
                 .font(AlphonsoFont.sans(15, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ink)
@@ -88,6 +92,8 @@ struct StatusHeaderView: View {
         .padding(.vertical, 6)
         .background(AlphonsoColor.parchment, in: Capsule())
         .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(value)")
     }
 
     private func streakPill(progress: LessonCompletionProgress) -> some View {
@@ -95,6 +101,7 @@ struct StatusHeaderView: View {
             Image(systemName: "flame.fill")
                 .foregroundStyle(AlphonsoColor.ember)
                 .pulsingGlow()
+                .accessibilityHidden(true)
             Text("\(progress.streak)")
                 .font(AlphonsoFont.sans(15, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ink)
@@ -103,6 +110,8 @@ struct StatusHeaderView: View {
         .padding(.vertical, 6)
         .background(AlphonsoColor.parchment, in: Capsule())
         .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Streak: \(progress.streak) day\(progress.streak == 1 ? "" : "s")")
     }
 
     private func leagueBadge(progress: LessonCompletionProgress) -> some View {
