@@ -17,7 +17,8 @@ name: Measure Types Drift (throwaway)
 #
 # Delete this workflow file once the measurement is reported.
 on:
-  workflow_dispatch:
+  push:
+    branches: [worktree-types-guard-fix]
 
 jobs:
   measure:
