@@ -231,13 +231,21 @@ struct SpringEntrance: ViewModifier {
     var minScale: Double = 0.6
 
     @State private var appeared = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(appeared ? 1 : minScale)
+            // The scale-up is the part Reduced Motion guidance actually
+            // targets -- always rendered at full scale when it's on, so
+            // nothing visibly grows into place.
+            .scaleEffect(reduceMotion || appeared ? 1 : minScale)
             .opacity(appeared ? 1 : 0)
             .onAppear {
-                withAnimation(.spring(response: response, dampingFraction: dampingFraction).delay(delay)) {
+                // A plain cross-fade is Apple's own standard substitute for
+                // a showier entrance under Reduced Motion -- not something
+                // that needs disabling itself, just decoupled from the
+                // spring curve that was driving the scale too.
+                withAnimation(reduceMotion ? .easeInOut(duration: 0.2).delay(delay) : .spring(response: response, dampingFraction: dampingFraction).delay(delay)) {
                     appeared = true
                 }
             }
@@ -286,11 +294,18 @@ struct PulsingGlow: ViewModifier {
     var duration: Double = 1.4
 
     @State private var isPulsing = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content
             .scaleEffect(isPulsing ? scale : 1)
             .onAppear {
+                // An infinite, never-stopping loop is exactly what Reduced
+                // Motion guidance calls out first -- unlike SpringEntrance's
+                // one-shot fade, there's no reduced-motion-friendly
+                // substitute for "constantly pulsing" worth keeping; this
+                // element is simply static when it's on.
+                guard !reduceMotion else { return }
                 withAnimation(.easeInOut(duration: duration).repeatForever(autoreverses: true)) {
                     isPulsing = true
                 }
@@ -506,6 +521,8 @@ struct SpeechBubbleShape: InsettableShape {
 struct AlphonsoTipCard: View {
     let explanation: String
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
             VStack(alignment: .leading, spacing: 3) {
@@ -543,10 +560,18 @@ struct AlphonsoTipCard: View {
                 .padding(.leading, -6)
                 .accessibilityHidden(true)
         }
-        .transition(.asymmetric(
-            insertion: .move(edge: .trailing).combined(with: .opacity),
-            removal: .opacity
-        ))
+        // The slide-in-from-trailing-edge is what Reduced Motion targets --
+        // a plain opacity fade in both directions is the substitute,
+        // instead of dropping the transition (and its "something just
+        // appeared" cue) entirely.
+        .transition(
+            reduceMotion
+                ? .opacity
+                : .asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .opacity
+                )
+        )
         // "Incorrect" is prepended here, not just implied by which branch of
         // ExplanationView rendered -- a sighted learner infers wrong-answer
         // from this card's whole look (Alphonso popping up, the speech-

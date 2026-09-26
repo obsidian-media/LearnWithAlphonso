@@ -37,6 +37,8 @@ private struct CampaignSessionView: View {
     let campaign: Campaign
     let session: Session
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var turns: [ChatMessage]
     // Message index where the *current* scene's opener lives -- lets
     // "Restart this scene" truncate back to a known point, and lets the
@@ -102,7 +104,11 @@ private struct CampaignSessionView: View {
                     .padding()
                 }
                 .onChange(of: turns.count) {
-                    withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    if reduceMotion {
+                        proxy.scrollTo(turns.count - 1, anchor: .bottom)
+                    } else {
+                        withAnimation { proxy.scrollTo(turns.count - 1, anchor: .bottom) }
+                    }
                 }
             }
 

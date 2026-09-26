@@ -25,6 +25,7 @@ struct LeaderboardView: View {
     @State private var reportTarget: SocialTarget?
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         NavigationStack {
@@ -74,7 +75,7 @@ struct LeaderboardView: View {
                 if let overtakeToastMessage {
                     ToastBanner(message: overtakeToastMessage, iconName: "arrow.up.arrow.down.circle.fill")
                         .padding(.top, 4)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(ToastBanner.transition(reduceMotion: reduceMotion))
                 }
             }
             .navigationTitle("League")
