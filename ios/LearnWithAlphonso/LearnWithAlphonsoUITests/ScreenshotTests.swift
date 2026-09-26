@@ -113,7 +113,15 @@ final class ScreenshotTests: XCTestCase {
 
     private func captureListenLibrary() {
         guard tapTab("Listen") else { return }
-        guard tapContaining(app.staticTexts, "English", timeout: 15) else { return }
+        // Confirmed live: the other five shots' content is either bundled
+        // (Learn) or already-cached (review/Hector/Profile) -- this is the
+        // first shot in the sequence that waits on a real, cold network
+        // fetch (the folder tree), while RootView's own launch .task is
+        // also mid-flight (triggerSync/hydrateThemeFromServer/entitlement
+        // login all fire at once) -- 15s wasn't enough on a real run
+        // ("English" -- a real top-level folder, confirmed against the
+        // live podcast_folders table -- never appeared in time).
+        guard tapContaining(app.staticTexts, "English", timeout: 25) else { return }
         guard tapContaining(app.staticTexts, "A1", timeout: 10) else { return }
         // Seeded resumed 40% into "Ordering Coffee" (scripts/seed-demo-account.ts)
         // so the mini player should already be docked, mid-playback, without
