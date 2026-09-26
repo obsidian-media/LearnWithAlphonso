@@ -1,0 +1,56 @@
+name: Regenerate iOS Provisioning Profile
+
+# Run this whenever the app gains a CAPABILITY (an entitlement such as
+# Sign in with Apple, push, app groups). A provisioning profile pins the
+# capabilities the App ID had when the profile was created, so adding an
+# entitlement to the app does not update it -- the archive then fails with
+# "Provisioning profile ... doesn't include the X capability" even though
+# the App ID has it.
+#
+# Nothing in CI catches that: ios-app-build compiles for the simulator with
+# CODE_SIGNING_ALLOWED=NO, so signing is never exercised until a real
+# release run. Found live 2026-09-26 when build 23's archive failed on the
+# Sign in with Apple entitlement added in #146.
+#
+# ENABLE THE CAPABILITY ON THE APP ID FIRST, in the Developer portal. This
+# reads whatever the App ID currently has and fails loudly if the new
+# profile does not carry the entitlement -- it cannot add one.
+#
+# Reuses the EXISTING distribution certificate rather than minting one.
+# setup-ios-manual-signing.yml cannot be used for this: it always requests
+# a new certificate, and Apple answers 409 when one already exists. Only
+# IOS_PROVISIONING_PROFILE_BASE64 and IOS_PROVISIONING_PROFILE_UUID change.
+on:
+  workflow_dispatch:
+
+jobs:
+  regenerate:
+    # macOS for `security cms`, which reads the profile's embedded plist.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bunx tsx scripts/regenerate-ios-profile.ts
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+
+      - name: Encode the profile for the secret
+        run: base64 -i out/ios_distribution.mobileprovision -o out/ios_provisioning_profile_base64.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-provisioning-profile
+          # The profile is not a private key -- it is a signed public
+          # document listing the certificate, App ID and capabilities. The
+          # certificate's private key is NOT in this artifact and is not
+          # touched by this workflow.
+          path: |
+            out/ios_distribution.mobileprovision
+            out/ios_provisioning_profile_base64.txt
+            out/profile-info.txt
+          retention-days: 1
