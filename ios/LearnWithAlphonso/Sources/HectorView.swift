@@ -4,17 +4,16 @@ import Observation
 import UIKit
 import LearnWithAlphonsoKit
 
-/// Pro-only "Hector" mode: AlphonsoCompanion's Cloud Voice tutor persona,
-/// an additional premium mode alongside the free standalone scenarios in
-/// ConversationView (not a replacement). Speech-to-text still goes through
-/// this app's own /api/stt (AIConversationClient, the main account's
-/// session) -- only the chat reply + its TTS audio come from Cloud Voice's
-/// TutorConversationClient, which needs HectorSession's separate
-/// sign-in/enrollment first.
+/// Pro-only "Hector" mode: an AI voice tutor persona, an additional
+/// premium mode alongside the free standalone scenarios in
+/// ConversationView (not a replacement). Since the 2026-09-27 decouple it
+/// runs entirely on the main account: speech-to-text, the chat reply, and
+/// its TTS audio all go through this app's own backend
+/// (AIConversationClient's /api/stt and TutorConversationClient's
+/// /api/hector-respond). No separate sign-in or enrollment.
 struct HectorView: View {
     let session: Session
     let entitlementStore: EntitlementStore
-    @State private var hectorSession = HectorSession()
 
     var body: some View {
         NavigationStack {
@@ -22,151 +21,21 @@ struct HectorView: View {
                 if !entitlementStore.isPro {
                     PaywallView(entitlementStore: entitlementStore)
                 } else {
-                    switch hectorSession.state {
-                    case .signedOut, .awaitingCode:
-                        signInBody
-                    case .enrolling:
-                        ProgressView("Connecting to Hector...").tint(AlphonsoColor.ember)
-                    case .ready:
-                        HectorConversationView(session: session, hectorSession: hectorSession)
-                    }
+                    // Hector runs in-account now (the 2026-09-27 decouple):
+                    // no separate Cloud Voice sign-in or enrollment -- a Pro
+                    // user's main session is the only auth Hector needs.
+                    HectorConversationView(session: session)
                 }
             }
             .background(AlphonsoColor.surface)
             .navigationTitle("Hector")
         }
         .tint(AlphonsoColor.ember)
-        // Hector re-parenting Phase 0 (docs/superpowers/specs/
-        // 2026-09-26-hector-reparenting-design.md): records the pairing
-        // between this account and the Cloud Voice account Hector just
-        // enrolled, so a later account deletion can reach it. Same
-        // reaction-to-state-change shape as RootView's own
-        // `.onChange(of: remotePushRegistrar.deviceTokenHex)`.
-        // Fire-and-forget: enrollment already succeeded by the time this
-        // fires, so a slow or failing link call must never affect the
-        // Hector session itself.
-        .onChange(of: hectorSession.enrolledCloudVoiceUserID) { _, cloudVoiceUserID in
-            // Send the Cloud Voice access token, never the id itself --
-            // the server derives the id by verifying this token against
-            // Cloud Voice's own project (see AccountClient.linkHectorAccount's
-            // doc comment for why trusting a claimed id here was the bug).
-            guard cloudVoiceUserID != nil,
-                  case .ready(let hectorAccessToken) = hectorSession.state
-            else { return }
-            Task {
-                guard let accessToken = await session.freshAccessToken() else { return }
-                let client = AccountClient(
-                    baseURL: AppConfig.apiBaseURL,
-                    accessToken: { accessToken },
-                    // Same fix as ConversationView/CampaignView's own
-                    // sendTurn -- see Session.freshAccessToken's doc
-                    // comment.
-                    refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
-                )
-                try? await client.linkHectorAccount(cloudVoiceAccessToken: hectorAccessToken)
-            }
-        }
-    }
-
-    private var signInBody: some View {
-        VStack(spacing: AlphonsoSpacing.md) {
-            Text("Sign in to Hector")
-                .font(AlphonsoFont.display(22, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
-
-            AlphonsoMascotBanner(mascot: .hector, message: "Your personal AI tutor")
-                .springEntrance(response: 0.6, dampingFraction: 0.65, minScale: 0.9)
-
-            Text("Hector uses a separate account from your main Learn with Alphonso sign-in.")
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .multilineTextAlignment(.center)
-
-            switch hectorSession.state {
-            case .signedOut:
-                HectorEmailStep(hectorSession: hectorSession)
-            case .awaitingCode(let email):
-                HectorCodeStep(hectorSession: hectorSession, email: email)
-            default:
-                EmptyView()
-            }
-
-            if let errorMessage = hectorSession.errorMessage {
-                Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding()
-        .frame(maxWidth: 360)
-    }
-}
-
-private struct HectorEmailStep: View {
-    let hectorSession: HectorSession
-    @State private var email = ""
-
-    var body: some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
-            TextField("Email", text: $email)
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm + 2)
-                .alphonsoInputBackground()
-                .textContentType(.emailAddress)
-                .keyboardType(.emailAddress)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-
-            Button {
-                Task { await hectorSession.requestCode(email: email) }
-            } label: {
-                if hectorSession.isBusy {
-                    ProgressView().tint(AlphonsoColor.surface)
-                } else {
-                    Text("Send code")
-                }
-            }
-            .buttonStyle(.alphonsoEmber)
-            .disabled(hectorSession.isBusy || !email.contains("@"))
-        }
-    }
-}
-
-private struct HectorCodeStep: View {
-    let hectorSession: HectorSession
-    let email: String
-    @State private var code = ""
-
-    var body: some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
-            Text("Enter the code sent to \(email)")
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            TextField("6-digit code", text: $code)
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm + 2)
-                .alphonsoInputBackground()
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-            Button {
-                Task { await hectorSession.verifyCodeAndEnroll(code) }
-            } label: {
-                if hectorSession.isBusy {
-                    ProgressView().tint(AlphonsoColor.surface)
-                } else {
-                    Text("Verify")
-                }
-            }
-            .buttonStyle(.alphonsoEmber)
-            .disabled(hectorSession.isBusy || code.isEmpty)
-        }
     }
 }
 
 private struct HectorConversationView: View {
     let session: Session
-    let hectorSession: HectorSession
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -318,10 +187,6 @@ private struct HectorConversationView: View {
             errorMessage = "You've been signed out. Please sign in again."
             return
         }
-        guard case .ready(let hectorAccessToken) = hectorSession.state else {
-            errorMessage = "Hector session expired. Please sign in again."
-            return
-        }
         do {
             // Transcription still goes through our own account's /api/stt.
             phase = .transcribing
@@ -336,12 +201,12 @@ private struct HectorConversationView: View {
 
             phase = .thinking
             let tutorClient = TutorConversationClient(
-                endpoint: AppConfig.cloudVoiceRespondEndpoint,
-                accessToken: { hectorAccessToken },
+                endpoint: AppConfig.hectorRespondEndpoint,
+                accessToken: { accessToken },
                 deviceID: UIDevice.current.identifierForVendor?.uuidString ?? sessionID
             )
             let historyWithMemory = (memoryContext.map { [$0] } ?? []) + turns
-            let reply = try await tutorClient.respond(sessionID: sessionID, text: text, language: "en-US", history: historyWithMemory)
+            let reply = try await tutorClient.respond(sessionID: sessionID, text: text, language: "en", history: historyWithMemory)
             turns.append(TutorConversationMessage(role: "assistant", content: reply.reply))
 
             phase = .speaking

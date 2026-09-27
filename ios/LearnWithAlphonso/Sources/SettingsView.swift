@@ -33,7 +33,6 @@ struct SettingsView: View {
     @State private var isPresentingDeleteConfirmation = false
     @State private var deleteConfirmationText = ""
     @State private var accountErrorMessage: String?
-    @State private var isPresentingLinkHector = false
 
     var body: some View {
         NavigationStack {
@@ -158,22 +157,6 @@ struct SettingsView: View {
                     .disabled(isExportingData || isDeletingAccount)
                     .accessibilityLabel(isExportingData ? "Exporting your data" : "Export My Data")
 
-                    // Hector re-parenting Phase 2 (docs/superpowers/specs/
-                    // 2026-09-26-hector-reparenting-design.md): the one
-                    // moment someone who signed into Hector before Phase 0
-                    // shipped -- and hasn't reopened Hector since -- can
-                    // still be reached. Always offered, not just shown
-                    // when unlinked (no read endpoint exists to check
-                    // that, and re-linking an already-linked account is a
-                    // harmless no-op upsert).
-                    Button {
-                        isPresentingLinkHector = true
-                    } label: {
-                        Text("Link Hector Account")
-                    }
-                    .font(AlphonsoFont.sans(15, weight: .medium))
-                    .disabled(isExportingData || isDeletingAccount)
-
                     Button(role: .destructive) {
                         deleteConfirmationText = ""
                         isPresentingDeleteConfirmation = true
@@ -231,9 +214,6 @@ struct SettingsView: View {
                     accountErrorMessage = "Couldn't save the export. Try again."
                 }
                 exportDocument = nil
-            }
-            .sheet(isPresented: $isPresentingLinkHector) {
-                LinkHectorAccountSheet(session: session)
             }
             // Two-step type-to-confirm, matching profile.tsx's "Your data"
             // section on web -- disabling the destructive action until the

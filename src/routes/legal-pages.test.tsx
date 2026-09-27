@@ -62,29 +62,25 @@ describe("Privacy route", () => {
   it("names the AI processors, not just that AI is used", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
-    // getAllByText: both are named in the processors list AND again in
-    // the Hector section, which says Hector's chat does NOT reach NVIDIA
-    // while its audio still reaches Deepgram. That distinction was wrong
-    // in the submission docs until 2026-09-26, so naming them twice is
-    // deliberate.
+    // NVIDIA (LLM) and Deepgram (speech) are the processors, named in the
+    // processors list. Cloud Voice is gone as of the 2026-09-27 Hector
+    // decouple -- Hector now runs on our own backend, no separate system.
     expect(screen.getAllByText(/NVIDIA/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Deepgram/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Cloud Voice/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Cloud Voice/)).toBeNull();
   });
 
-  // Regression guard: Hector is a second account in a separate Supabase
-  // project (AppConfig.swift's cloudVoice*), and deleting the main account
-  // does not delete it -- SettingsView's confirmation copy says so, but
-  // this policy used to say nothing about Hector existing at all. Fails if
-  // that disclosure quietly disappears again, the same way this file's
-  // contact-address assertion used to quietly pin a wrong email instead of
-  // catching one.
-  it("discloses Hector as a separate account that account deletion does not remove", () => {
+  // Regression guard, updated for the 2026-09-27 decouple: Hector now runs
+  // in-account, so the policy must name Hector AND say deletion covers it.
+  // (The old guard asserted the opposite -- a separate, non-deletable
+  // account -- which was true until the decouple; the sibling test below
+  // pins that the old caveat is gone.)
+  it("names Hector and states deletion covers it", () => {
     const Privacy = PrivacyRoute.options.component!;
     render(<Privacy />);
     expect(screen.getByRole("heading", { name: /Hector/ })).toBeInTheDocument();
-    expect(screen.getByText(/second, separate account/)).toBeInTheDocument();
-    expect(screen.getByText(/delete a Hector account or its data/)).toBeInTheDocument();
+    expect(screen.getByText(/same account and the same systems/i)).toBeInTheDocument();
+    expect(screen.getByText(/deleting your account removes your Hector data/i)).toBeInTheDocument();
   });
 
   it("describes the in-app export and deletion path, not only the web one", () => {
@@ -95,6 +91,19 @@ describe("Privacy route", () => {
     // which moved is worse than one that names none.
     expect(screen.getByText(/Settings → Account → Export My Data/)).toBeInTheDocument();
     expect(screen.getByText(/Settings → Account → Delete My Account/)).toBeInTheDocument();
+  });
+});
+
+describe("Privacy route — Hector decoupled (2026-09-27)", () => {
+  it("no longer claims Hector is a separate, non-deletable system", () => {
+    const Privacy = PrivacyRoute.options.component!;
+    render(<Privacy />);
+    // After the decouple, Hector runs in-account and is deleted with it,
+    // so the old "different system / not currently linked for deletion /
+    // action it manually" caveat must be gone.
+    expect(screen.queryByText(/not currently linked for deletion/i)).toBeNull();
+    expect(screen.queryByText(/different system/i)).toBeNull();
+    expect(screen.queryByText(/second, separate account/i)).toBeNull();
   });
 });
 
