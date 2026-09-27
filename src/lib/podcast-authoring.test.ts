@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   exitCodeForProblems,
   formatProblemSummary,
+  isLikelyMp3,
   storagePathFor,
   validateEpisodeDraft,
   type EpisodeDraft,
@@ -89,5 +90,33 @@ describe("problem reporting", () => {
   it("counts the problems, so a scrolled-away log still shows the total", () => {
     expect(formatProblemSummary(["one"])).toContain("1 problem");
     expect(formatProblemSummary(["one", "two"])).toContain("2 problems");
+  });
+});
+
+// §0.8f: an M4A supplied to `add --file` was stored under an .mp3 name and
+// served as audio/mpeg -- browsers/AVPlayer often sniff past that, which is
+// worse than failing outright. This is the check that should have caught it.
+describe("isLikelyMp3", () => {
+  it("accepts an MP3 with an ID3v2 tag", () => {
+    const bytes = new Uint8Array([0x49, 0x44, 0x33, 0x04, 0x00, 0x00, 0x00, 0x00]);
+    expect(isLikelyMp3(bytes)).toBe(true);
+  });
+
+  it("accepts a raw MPEG frame sync with no ID3 tag", () => {
+    const bytes = new Uint8Array([0xff, 0xfb, 0x90, 0x00]);
+    expect(isLikelyMp3(bytes)).toBe(true);
+  });
+
+  it("rejects an M4A/AAC file (ftyp box)", () => {
+    // "....ftypM4A ", the real header of the episode-2 incident's file.
+    const bytes = new Uint8Array([
+      0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41, 0x20,
+    ]);
+    expect(isLikelyMp3(bytes)).toBe(false);
+  });
+
+  it("rejects empty or too-short input", () => {
+    expect(isLikelyMp3(new Uint8Array([]))).toBe(false);
+    expect(isLikelyMp3(new Uint8Array([0xff]))).toBe(false);
   });
 });

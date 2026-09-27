@@ -104,6 +104,31 @@ export function deriveLessonCompletion(
   return { correct: total - missedSet.size };
 }
 
+/**
+ * The trust-boundary check for the answer-bearing completion payload
+ * (`answers: { questionId, answer }[]`, §0.1-d #6): every real question in
+ * the lesson must have exactly one submitted answer, and no foreign question
+ * id may be present. Correctness itself is derived elsewhere, per-answer,
+ * against the real answer key -- this only guards coverage, the same job
+ * deriveLessonCompletion's membership check did for the old
+ * missedQuestionIds-only payload.
+ */
+export function validateLessonAnswerCoverage(
+  lesson: { questions: { id: string }[] },
+  answers: { questionId: string }[],
+): void {
+  const realIds = lesson.questions.map((q) => q.id);
+  const answeredIds = answers.map((a) => a.questionId);
+  const answeredSet = new Set(answeredIds);
+  if (
+    answeredIds.length !== realIds.length ||
+    answeredSet.size !== realIds.length ||
+    realIds.some((id) => !answeredSet.has(id))
+  ) {
+    throw new Error("Invalid lesson completion payload");
+  }
+}
+
 export type LessonReplayXp = {
   bestCorrect: number;
   bestXp: number;

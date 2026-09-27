@@ -27,6 +27,21 @@ describe("chunkScript", () => {
     for (const chunk of chunks) expect(chunk.length).toBeLessThanOrEqual(100);
   });
 
+  // A hard split at a fixed character offset audibly cuts a word in half.
+  // Falling back to the nearest earlier whitespace keeps every chunk a
+  // whole word, at the cost of a few characters of slack per chunk.
+  it("hard-splits on whitespace, never mid-word", () => {
+    // A limit that is not a multiple of "word "'s 5-character period, so a
+    // fixed-offset cut is guaranteed to land inside a word rather than
+    // between two of them.
+    const monster = `${"word ".repeat(600)}.`;
+    const chunks = chunkScript(monster, 97);
+    for (const chunk of chunks) {
+      expect(chunk).not.toMatch(/\bwor?$/);
+    }
+    expect(chunks.join(" ").replace(/\s+/g, " ")).toBe(monster.trim().replace(/\s+/g, " "));
+  });
+
   it("returns no chunks for an empty or whitespace-only script", () => {
     expect(chunkScript("   \n  ")).toEqual([]);
   });

@@ -8,16 +8,20 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Learn with Alphonso — English, one lesson at a time" },
+      { title: "Learn with Alphonso — English, French and Spanish, one lesson at a time" },
       {
         name: "description",
         content:
-          "A calm, gamified way to build real English skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices.",
+          "A calm, gamified way to build real English, French or Spanish skills. Bite-size lessons, streaks, leagues, and progress that syncs across devices.",
       },
-      { property: "og:title", content: "Learn with Alphonso — English, one lesson at a time" },
+      {
+        property: "og:title",
+        content: "Learn with Alphonso — English, French and Spanish, one lesson at a time",
+      },
       {
         property: "og:description",
-        content: "Bite-size English lessons, streaks, and leagues that stay with you.",
+        content:
+          "Bite-size lessons in English, French or Spanish, with streaks and leagues that stay with you.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -58,10 +62,10 @@ function Landing() {
           className="mt-16"
         >
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
-            English, quietly built
+            English, French &amp; Spanish, quietly built
           </p>
           <h1 className="text-balance font-display text-[40px] font-semibold leading-[1.02] tracking-tight text-ink">
-            Learn English with lessons that actually stick.
+            Learn English, French or Spanish with lessons that actually stick.
           </h1>
           <p className="mt-4 max-w-[320px] text-[15px] leading-relaxed text-ink-soft">
             Bite-size lessons, warm gamified streaks, and weekly leagues — synced to your account so

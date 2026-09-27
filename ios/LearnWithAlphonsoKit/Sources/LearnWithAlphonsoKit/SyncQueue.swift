@@ -12,15 +12,19 @@ import Foundation
 public struct PendingLessonCompletion: Sendable, Equatable {
     public let lessonID: String
     public let total: Int
-    public let missedQuestionIDs: [String]
+    /// §0.1-d #6: was `missedQuestionIDs: [String]`, a claimed pass/fail the
+    /// server trusted outright. Now every real question's raw submission,
+    /// so a queued-offline completion re-grades through the same real
+    /// answer key as an online one once it syncs -- see LessonAnswer.
+    public let answers: [LessonAnswer]
     public let course: String
     public let queuedAt: Date
     public let optimisticXpEstimate: Int
 
-    public init(lessonID: String, total: Int, missedQuestionIDs: [String], course: String, queuedAt: Date, optimisticXpEstimate: Int) {
+    public init(lessonID: String, total: Int, answers: [LessonAnswer], course: String, queuedAt: Date, optimisticXpEstimate: Int) {
         self.lessonID = lessonID
         self.total = total
-        self.missedQuestionIDs = missedQuestionIDs
+        self.answers = answers
         self.course = course
         self.queuedAt = queuedAt
         self.optimisticXpEstimate = optimisticXpEstimate

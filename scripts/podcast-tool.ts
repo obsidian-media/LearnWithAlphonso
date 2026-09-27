@@ -35,6 +35,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   exitCodeForProblems,
   formatProblemSummary,
+  isLikelyMp3,
   storagePathFor,
   validateEpisodeDraft,
   type EpisodeDraft,
@@ -317,6 +318,13 @@ async function cmdAdd(flags: CliFlags) {
   if (file) {
     if (!existsSync(file)) fail(`file not found: ${file}`);
     audio = new Uint8Array(readFileSync(file));
+    // §0.8f: episode 2 was an M4A, stored under an .mp3 name and served as
+    // audio/mpeg -- it would have worked until it silently didn't.
+    // Rejecting is the same posture --transcript takes for SSML markup:
+    // fail with a named error, don't guess or mislabel.
+    if (!isLikelyMp3(audio)) {
+      fail(`${file} doesn't look like an MP3. Transcode it first (this tool only accepts MP3).`);
+    }
   } else {
     if (!existsSync(script!)) fail(`script not found: ${script}`);
     audio = await synthesise(

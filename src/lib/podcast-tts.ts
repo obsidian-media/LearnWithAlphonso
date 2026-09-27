@@ -8,12 +8,22 @@
  */
 const DEEPGRAM_CHARACTER_LIMIT = 2000;
 
-/** Last resort for a "sentence" with no boundary inside the limit. */
+/**
+ * Last resort for a "sentence" with no `.!?` boundary inside the limit.
+ * Prefers the nearest earlier whitespace so a chunk never ends mid-word --
+ * a fixed-offset cut is audible -- falling back to a hard character cut only
+ * when no whitespace exists in range at all (e.g. one very long token).
+ */
 function hardSplit(sentence: string, limit: number): string[] {
   const pieces: string[] = [];
-  for (let i = 0; i < sentence.length; i += limit) {
-    pieces.push(sentence.slice(i, i + limit));
+  let rest = sentence;
+  while (rest.length > limit) {
+    const spaceAt = rest.lastIndexOf(" ", limit);
+    const cut = spaceAt > 0 ? spaceAt : limit;
+    pieces.push(rest.slice(0, cut).trimEnd());
+    rest = rest.slice(cut).trimStart();
   }
+  if (rest) pieces.push(rest);
   return pieces;
 }
 

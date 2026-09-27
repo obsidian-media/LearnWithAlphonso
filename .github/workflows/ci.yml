@@ -164,22 +164,26 @@ jobs:
       - name: Test grade-review's srs.ts port
         run: deno test supabase/functions/grade-review/srs.test.ts
 
-      - name: Test grade-review's spoken-answer.ts port
-        run: deno test supabase/functions/grade-review/spoken-answer.test.ts
+      # spoken-answer{,-fr,-es}.ts, translation-answer.ts and
+      # answer-correctness.ts moved to _shared/ (§0.1-d #6) so
+      # complete-lesson can reuse the exact same grading logic grade-review
+      # already had, instead of a second hand-kept copy.
+      - name: Test the shared spoken-answer.ts port
+        run: deno test supabase/functions/_shared/spoken-answer.test.ts
 
-      - name: Test grade-review's spoken-answer-fr.ts port
-        run: deno test supabase/functions/grade-review/spoken-answer-fr.test.ts
+      - name: Test the shared spoken-answer-fr.ts port
+        run: deno test supabase/functions/_shared/spoken-answer-fr.test.ts
 
-      - name: Test grade-review's spoken-answer-es.ts port
-        run: deno test supabase/functions/grade-review/spoken-answer-es.test.ts
+      - name: Test the shared spoken-answer-es.ts port
+        run: deno test supabase/functions/_shared/spoken-answer-es.test.ts
 
-      - name: Test grade-review's translation-answer.ts port
-        run: deno test supabase/functions/grade-review/translation-answer.test.ts
+      - name: Test the shared translation-answer.ts port
+        run: deno test supabase/functions/_shared/translation-answer.test.ts
 
-      - name: Test grade-review's answer-correctness rule
+      - name: Test the shared answer-correctness rule
         # --allow-env: the translate branch reads NVIDIA_API_KEY to decide
         # whether an AI second opinion is even available.
-        run: deno test --allow-env supabase/functions/grade-review/answer-correctness.test.ts
+        run: deno test --allow-env supabase/functions/_shared/answer-correctness.test.ts
 
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts

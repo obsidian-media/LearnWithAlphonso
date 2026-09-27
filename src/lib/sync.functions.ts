@@ -11,8 +11,9 @@ import {
   computeLeaguePromotion,
   computeLessonReplayXp,
   computeStreakUpdate,
-  deriveLessonCompletion,
+  validateLessonAnswerCoverage,
 } from "./progress-math";
+import { gradeLessonAnswer } from "./grade-lesson-answer.server";
 import {
   MAX_HEARTS,
   XP_HEART_COST,
@@ -199,13 +200,20 @@ export const startLessonSession = createServerFn({ method: "POST" })
 const completeLessonSchema = z.object({
   lessonId: lessonIdSchema,
   total: z.number().int().min(1).max(50),
-  // The question ids (not "<lessonId>:<questionId>" item keys -- just the
-  // bare question id) the client says it got wrong, so the server derives
-  // `correct` from real question membership instead of trusting a raw
-  // count. Doesn't cryptographically prove an answer was checked, but it
-  // does mean a forged claim needs to name real question ids for this
-  // exact lesson rather than an arbitrary number.
-  missedQuestionIds: z.array(z.string().regex(/^[a-z0-9]+$/)).max(50),
+  // §0.1-d #6: this used to be a client-claimed missedQuestionIds list, with
+  // no check that any answer was ever actually graded -- a forged client
+  // could report zero misses regardless of what it submitted. Now the
+  // client submits what it actually answered, one entry per real question,
+  // and the server derives correctness itself (see gradeLessonAnswer)
+  // instead of trusting a claimed pass/fail.
+  answers: z
+    .array(
+      z.object({
+        questionId: z.string().regex(/^[a-z0-9]+$/),
+        answer: z.string().max(2000),
+      }),
+    )
+    .max(50),
   course: courseSchema,
   // Proves startLessonSession was called for this exact user/lesson/course
   // combination before this claim -- see lesson-session.server.ts.
@@ -217,23 +225,38 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { lessonId, total, missedQuestionIds, course, sessionToken } = data;
+    const { lessonId, total, answers, course, sessionToken } = data;
 
     // Trust boundary: the client reports its own score, so verify the
     // lesson exists, that `total` matches its real question count, that
-    // every claimed-missed question id actually belongs to this lesson
-    // (deduped), and that a real lesson session was started, before
-    // paying out XP for it. See deriveLessonCompletion for the pure,
-    // unit-tested membership check.
+    // the answers cover exactly this lesson's real questions (no missing,
+    // no duplicate, no foreign id -- see validateLessonAnswerCoverage), and
+    // that a real lesson session was started, before grading anything.
     const found = getCourse(course).findLesson(lessonId);
-    if (!found) {
+    if (!found || total !== found.lesson.questions.length) {
       throw new Error("Invalid lesson completion payload");
     }
+    validateLessonAnswerCoverage(found.lesson, answers);
     const { verifyLessonSessionToken } = await import("./lesson-session.server");
     if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
       throw new Error("Invalid or expired lesson session");
     }
-    const { correct } = deriveLessonCompletion(found.lesson, total, missedQuestionIds);
+
+    // The actual re-grade: never trust which questions the client says it
+    // missed, derive it from the real answer key. Sequential, not
+    // Promise.all -- a lesson has at most a handful of "translate"
+    // questions capable of an AI call, and each one already re-uses the
+    // exact same local-first check the player showed the learner live.
+    const questionById = new Map(found.lesson.questions.map((q) => [q.id, q]));
+    const missedQuestionIds: string[] = [];
+    for (const { questionId, answer } of answers) {
+      // Safe: validateLessonAnswerCoverage already proved questionId is a
+      // real id in this lesson.
+      const question = questionById.get(questionId)!;
+      const isCorrect = await gradeLessonAnswer(question, answer, course);
+      if (!isCorrect) missedQuestionIds.push(questionId);
+    }
+    const correct = answers.length - missedQuestionIds.length;
 
     const today = todayStr();
 

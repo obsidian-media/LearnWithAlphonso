@@ -6,6 +6,7 @@ import {
   computeXpGain,
   deriveLessonCompletion,
   LEAGUES,
+  validateLessonAnswerCoverage,
 } from "./progress-math";
 
 describe("computeXpGain", () => {
@@ -152,6 +153,51 @@ describe("deriveLessonCompletion", () => {
     expect(() => deriveLessonCompletion(tiny, 1, ["q1", "not-a-real-question"])).toThrow(
       "Invalid lesson completion payload",
     );
+  });
+});
+
+// §0.1-d #6: complete-lesson trusted a client-claimed missedQuestionIds list
+// with no server-side check that any answer was ever actually graded. This
+// is the replacement trust boundary: the server now requires one submitted
+// answer per real question (no more, no fewer, no foreign ids) and derives
+// correctness itself -- see grade-lesson-answer.server.ts.
+describe("validateLessonAnswerCoverage", () => {
+  const lesson = { questions: [{ id: "q1" }, { id: "q2" }, { id: "q3" }] };
+
+  it("accepts one answer per real question, any order", () => {
+    expect(() =>
+      validateLessonAnswerCoverage(lesson, [
+        { questionId: "q3" },
+        { questionId: "q1" },
+        { questionId: "q2" },
+      ]),
+    ).not.toThrow();
+  });
+
+  it("rejects a missing question", () => {
+    expect(() =>
+      validateLessonAnswerCoverage(lesson, [{ questionId: "q1" }, { questionId: "q2" }]),
+    ).toThrow("Invalid lesson completion payload");
+  });
+
+  it("rejects a duplicate answer for the same question", () => {
+    expect(() =>
+      validateLessonAnswerCoverage(lesson, [
+        { questionId: "q1" },
+        { questionId: "q1" },
+        { questionId: "q2" },
+      ]),
+    ).toThrow("Invalid lesson completion payload");
+  });
+
+  it("rejects an answer for a question id that isn't in this lesson", () => {
+    expect(() =>
+      validateLessonAnswerCoverage(lesson, [
+        { questionId: "q1" },
+        { questionId: "q2" },
+        { questionId: "not-a-real-question" },
+      ]),
+    ).toThrow("Invalid lesson completion payload");
   });
 });
 
