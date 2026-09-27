@@ -10,6 +10,19 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Hector decoupled from Alphonso Companion** (#189). The Pro AI tutor
+moved off the separate Cloud Voice backend and account onto our own
+backend and the main Supabase account: a new `/api/hector-respond` route
+(NVIDIA reply + Deepgram audio, stateless, Pro-gated and fail-closed),
+the iOS client repointed to it, and the whole cross-project bridge
+deleted — the `hector_links` table, the link/shadow/revocation routes,
+and the separate Hector sign-in UI. Net roughly -900 lines. This closes
+the audits' one real P0: deleting an account now removes all Hector data
+by construction, because there is no separate account and nothing is
+persisted, and the privacy policy drops its "separate system" caveat.
+Also: leaked-password protection (HaveIBeenPwned) was enabled for the
+password-based web sign-in.
+
 **Submission-readiness pass** (build 24, build 25, #183 and the
 supporting CI). Two things only a person opening the app could catch,
 both found by the account owner on a real device and neither visible to
