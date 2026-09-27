@@ -75,3 +75,20 @@ export function formatProblemSummary(problems: readonly string[]): string | null
   const noun = problems.length === 1 ? "problem" : "problems";
   return `Found ${problems.length} ${noun}.`;
 }
+
+/**
+ * Cheap magic-byte sniff for MP3. Exists because `add --file` once stored an
+ * M4A's bytes under an `.mp3` name and served them as `audio/mpeg` -- browsers
+ * and AVPlayer often sniff past that, which is worse than failing outright
+ * (see docs/BACKLOG.md's episode-2 incident). Not a full format validator,
+ * just enough to reject the common "wrong container" mistake before upload.
+ */
+export function isLikelyMp3(bytes: Uint8Array): boolean {
+  if (bytes.length >= 3 && bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+    return true; // ID3v2 tag ("ID3").
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0) {
+    return true; // A raw MPEG frame sync with no ID3 tag.
+  }
+  return false;
+}

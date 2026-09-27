@@ -8,11 +8,18 @@ import LearnWithAlphonsoKit
 /// Windows, this project's actual local dev environment), so the plain
 /// Kit struct and this persisted record are kept as two separate types,
 /// converted at the boundary.
+///
+/// `answers` (§0.1-d #6, `[LessonAnswer]` on the Kit side) is stored as two
+/// parallel primitive arrays rather than an array of a nested struct --
+/// same reasoning `AppSyncStateRecord` below already gives for flattening
+/// `LessonCompletionProgress`: avoid depending on SwiftData's handling of
+/// nested Codable value types across schema versions.
 @Model
 final class PendingLessonCompletionRecord {
     var lessonID: String
     var total: Int
-    var missedQuestionIDs: [String]
+    var answerQuestionIDs: [String]
+    var answerTexts: [String]
     var course: String
     var queuedAt: Date
     var optimisticXpEstimate: Int
@@ -20,14 +27,22 @@ final class PendingLessonCompletionRecord {
     init(_ pending: PendingLessonCompletion) {
         lessonID = pending.lessonID
         total = pending.total
-        missedQuestionIDs = pending.missedQuestionIDs
+        answerQuestionIDs = pending.answers.map(\.questionId)
+        answerTexts = pending.answers.map(\.answer)
         course = pending.course
         queuedAt = pending.queuedAt
         optimisticXpEstimate = pending.optimisticXpEstimate
     }
 
     var asPending: PendingLessonCompletion {
-        PendingLessonCompletion(lessonID: lessonID, total: total, missedQuestionIDs: missedQuestionIDs, course: course, queuedAt: queuedAt, optimisticXpEstimate: optimisticXpEstimate)
+        PendingLessonCompletion(
+            lessonID: lessonID,
+            total: total,
+            answers: zip(answerQuestionIDs, answerTexts).map { LessonAnswer(questionId: $0, answer: $1) },
+            course: course,
+            queuedAt: queuedAt,
+            optimisticXpEstimate: optimisticXpEstimate
+        )
     }
 }
 

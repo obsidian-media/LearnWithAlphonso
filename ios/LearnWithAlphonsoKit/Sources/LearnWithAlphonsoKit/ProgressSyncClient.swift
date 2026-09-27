@@ -221,6 +221,22 @@ public struct LessonCompletionResult: Sendable, Decodable, Equatable {
     public let progress: LessonCompletionProgress
 }
 
+/// One real question's raw submission -- §0.1-d #6: complete-lesson used to
+/// trust a client-claimed list of which questions were missed, with no
+/// check that any answer was ever actually graded. The server now re-grades
+/// every submission itself (supabase/functions/complete-lesson/index.ts),
+/// so the client sends what it actually answered, one entry per real
+/// question in the lesson, rather than a claimed pass/fail.
+public struct LessonAnswer: Sendable, Equatable {
+    public let questionId: String
+    public let answer: String
+
+    public init(questionId: String, answer: String) {
+        self.questionId = questionId
+        self.answer = answer
+    }
+}
+
 /// Calls for the RLS-safe subset of src/lib/sync.functions.ts -- operations
 /// where a user legitimately controls their own data with no adversarial
 /// trust concern (spending their own heart, setting their own declared CEFR
@@ -348,7 +364,7 @@ public final class ProgressSyncClient: Sendable {
     public func completeLesson(
         lessonID: String,
         total: Int,
-        missedQuestionIDs: [String],
+        answers: [LessonAnswer],
         course: String,
         sessionToken: String
     ) async throws -> LessonCompletionResult {
@@ -360,7 +376,7 @@ public final class ProgressSyncClient: Sendable {
         let payload: [String: Any] = [
             "lessonId": lessonID,
             "total": total,
-            "missedQuestionIds": missedQuestionIDs,
+            "answers": answers.map { ["questionId": $0.questionId, "answer": $0.answer] },
             "course": course,
             "sessionToken": sessionToken,
         ]

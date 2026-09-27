@@ -10,6 +10,26 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**`complete-lesson` now re-grades every answer server-side** (closes
+docs/BACKLOG.md §0.1-d #6, found by the 2026-09-26 red-team pass).
+Previously the trust boundary only checked that a client-claimed
+`missedQuestionIds` list named real questions in the lesson — it never
+verified any answer was actually graded, so a forged client could report
+a perfect score regardless of what it submitted. The request contract
+changed on both platforms: the client now sends `answers: { questionId,
+answer }[]`, one raw submission per real question, and the server
+derives correctness itself against the real answer key (reusing
+`grade-review`'s existing per-question grading, now shared via
+`supabase/functions/_shared/`). Touches web (`sync.functions.ts`,
+`lesson.$id.tsx`), the `complete-lesson` Edge Function, and iOS
+(`ProgressSyncClient.swift`, `LessonPlayerView.swift`, the offline sync
+queue). Full web suite green (153 files / 1,369 tests) and the Kit
+verified locally (`swift test`, 410/410) — the iOS app-target half is
+CI-only (SwiftData/SwiftUI need macOS). Also closed in the same pass:
+the homepage's stale English-only copy (§0.1d), a podcast grants
+cleanup migration, and `podcast-tool.ts` rejecting non-MP3 uploads by
+magic bytes instead of silently mislabeling them.
+
 **Hector decoupled from Alphonso Companion** (#189). The Pro AI tutor
 moved off the separate Cloud Voice backend and account onto our own
 backend and the main Supabase account: a new `/api/hector-respond` route

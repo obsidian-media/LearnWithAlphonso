@@ -172,7 +172,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let result = try await client.completeLesson(
             lessonID: "u1l1",
             total: 8,
-            missedQuestionIDs: [],
+            answers: [LessonAnswer(questionId: "q1", answer: "Good morning.")],
             course: "en",
             sessionToken: "a.b"
         )
@@ -194,7 +194,8 @@ final class ProgressSyncClientTests: XCTestCase {
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
         XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
         XCTAssertEqual(payload["total"] as? Int, 8)
-        XCTAssertEqual(payload["missedQuestionIds"] as? [String], [])
+        let answers = try XCTUnwrap(payload["answers"] as? [[String: String]])
+        XCTAssertEqual(answers, [["questionId": "q1", "answer": "Good morning."]])
         XCTAssertEqual(payload["course"] as? String, "en")
         XCTAssertEqual(payload["sessionToken"] as? String, "a.b")
     }
@@ -207,7 +208,7 @@ final class ProgressSyncClientTests: XCTestCase {
         }
 
         do {
-            _ = try await client.completeLesson(lessonID: "u1l1", total: 8, missedQuestionIDs: [], course: "en", sessionToken: "bad")
+            _ = try await client.completeLesson(lessonID: "u1l1", total: 8, answers: [], course: "en", sessionToken: "bad")
             XCTFail("Expected an error")
         } catch {
             XCTAssertEqual(error as? ProgressSyncError, .server(status: 403, message: "Invalid or expired lesson session"))

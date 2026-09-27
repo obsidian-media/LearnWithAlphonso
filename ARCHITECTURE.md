@@ -663,6 +663,18 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
   any missed questions (folds in `recordMisses`' logic, since this
   function already has the validated lesson/question data recordMisses
   would otherwise need a second session-token round trip to re-verify).
+  **Re-grades every submitted answer itself** (docs/BACKLOG.md §0.1-d #6):
+  the client sends `answers: { questionId, answer }[]` — one raw
+  submission per real question, covering every question, not a claimed
+  pass/fail — and the server derives `correct`/which were missed by
+  running each one through `deriveAnswerCorrectness` (the same function
+  `grade-review` already used, now in `_shared/`), including the same
+  local-first/AI-fallback path for `translate` questions the player uses
+  live. Previously it only checked that a client-claimed
+  `missedQuestionIds` list named real question ids for this lesson —
+  membership-checked, but never actually re-derived from an answer, so a
+  forged client could claim a perfect score regardless of what it
+  submitted.
 - **`start-lesson-session`** — issues the HMAC session token
   `complete-lesson` requires as proof a lesson was actually opened. On
   the web app this comes from `startLessonSession`, a TanStack Start
@@ -708,24 +720,42 @@ protects is "the LLM decides the question content, not the caller,"
 which holds regardless of which key signs the request.
 
 Because Edge Functions bundle each function directory independently,
-each carries its own Deno copies of the pure math it needs
+each carries its own Deno copies of the pure math specific to it
 (`complete-lesson/{progress-math,hearts,lesson-session}.ts`,
 `start-lesson-session/lesson-session.ts`, `grade-review/srs.ts`) rather
 than importing across the `supabase/functions/` boundary — **these must
 be kept byte-for-byte in sync with their TypeScript source of truth by
-hand**. `srs.ts`/`hearts.ts` now have a parity guard (`deno-tests` in
-`.github/workflows/ci.yml`, running `grade-review/srs.test.ts` and
-`complete-lesson/hearts.test.ts`, which mirror `src/lib/srs.test.ts`/
-`hearts.test.ts`'s exact vectors) so a future drift fails CI instead of
-surfacing as a silent behavior mismatch between web and iOS; `progress-math.ts`
-and `lesson-session.ts` don't have this yet. Deployed via `supabase
-functions deploy <name>` (or the Supabase MCP `deploy_edge_function`
-tool); `complete-lesson` and `start-lesson-session` both need the
-`LESSON_SESSION_SECRET` Edge Function secret to match the web app's own
-env value exactly, or tokens issued by one side won't verify on the
-other (`grade-review` doesn't use session tokens at all — the `due_on <=
-today` check is what prevents grading a never-actually-reviewed item).
+hand**. `_shared/` is the one deliberate exception to "no cross-boundary
+imports": genuinely shared code that isn't a source-of-truth port of
+anything on the web side lives there and both call it (`_shared/apns.ts`
+for push; `_shared/{answer-correctness,spoken-answer,spoken-answer-fr,
+spoken-answer-es,translation-answer,translation-grader}.ts`, moved from
+`grade-review/` so `complete-lesson` could reuse the exact same
+per-question grading `grade-review` already had instead of a second
+hand-kept copy — see §0.1-d #6 above). `srs.ts`/`hearts.ts`/the shared
+answer-correctness cluster now have a parity/coverage guard (`deno-tests`
+in `.github/workflows/ci.yml`, running `grade-review/srs.test.ts`,
+`complete-lesson/hearts.test.ts` and the `_shared/*.test.ts` files, which
+mirror `src/lib/srs.test.ts`/`hearts.test.ts`'s exact vectors) so a
+future drift fails CI instead of surfacing as a silent behavior mismatch
+between web and iOS; `progress-math.ts` and `lesson-session.ts` don't
+have this yet. Deployed via `supabase functions deploy <name>` (or the
+Supabase MCP `deploy_edge_function` tool); `complete-lesson` and
+`start-lesson-session` both need the `LESSON_SESSION_SECRET` Edge
+Function secret to match the web app's own env value exactly, or tokens
+issued by one side won't verify on the other (`grade-review` doesn't use
+session tokens at all — the `due_on <= today` check is what prevents
+grading a never-actually-reviewed item).
 See `docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md`.
+
+**Known gap, found while re-deriving `complete-lesson`'s correctness
+(2026-09-27), not fixed here — separate scope:** `complete-lesson`'s own
+`courseSchema` is `z.enum(["en", "fr"])`, missing `"es"` — unlike every
+other course-aware schema in this file (web's `completeLessonSchema`
+already allows `"es"`). A Spanish-course lesson completion from iOS would
+be rejected at validation before it ever reaches the trust-boundary
+logic. Worth a one-line fix and a regression test; flagged rather than
+folded into an unrelated change.
 
 ## Hearts economy
 

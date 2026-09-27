@@ -34,10 +34,20 @@ describe("Landing route", () => {
     getSession.mockResolvedValue({ data: { session: null } });
     const Landing = Route.options.component!;
     render(<Landing />);
-    expect(screen.getByText("Learn English with lessons that actually stick.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/auth");
     await waitFor(() => expect(getSession).toHaveBeenCalled());
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("names all three courses rather than claiming to be English-only", async () => {
+    getSession.mockResolvedValue({ data: { session: null } });
+    const Landing = Route.options.component!;
+    const { container } = render(<Landing />);
+    const text = container.textContent ?? "";
+    expect(text).toMatch(/English/);
+    expect(text).toMatch(/French/);
+    expect(text).toMatch(/Spanish/);
   });
 
   it("redirects to /learn when already signed in", async () => {

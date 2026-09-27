@@ -200,6 +200,29 @@ describe("completeLessonRemote", () => {
     return issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course });
   }
 
+  // u1l1's real question set (q1..q8), all mc/fill, with each one's real
+  // correct submission per src/data/curriculum.ts -- so re-deriving
+  // correctness server-side actually exercises the answer key, not just the
+  // membership check the old missedQuestionIds-only payload had.
+  const CORRECT_ANSWERS: Record<string, string> = {
+    q1: "Good morning.",
+    q2: "meet",
+    q3: "I am fine, thanks.",
+    q4: "Good",
+    q5: "Good night.",
+    q6: "Hey!",
+    q7: "later",
+    q8: "You're welcome.",
+  };
+
+  /** All 8 real answers, correct by default; override to force a miss. */
+  function answers(overrides: Record<string, string> = {}) {
+    return Object.entries(CORRECT_ANSWERS).map(([questionId, correct]) => ({
+      questionId,
+      answer: overrides[questionId] ?? correct,
+    }));
+  }
+
   it("pays full XP for a first-ever perfect completion and awards the perfect-lesson heart", async () => {
     const supabase = createSupabaseMock();
     supabase.from
@@ -235,7 +258,7 @@ describe("completeLessonRemote", () => {
       data: {
         lessonId: LESSON_ID,
         total: 8,
-        missedQuestionIds: [],
+        answers: answers(),
         course: "en",
         sessionToken: validToken(),
       },
@@ -283,7 +306,7 @@ describe("completeLessonRemote", () => {
       data: {
         lessonId: LESSON_ID,
         total: 8,
-        missedQuestionIds: ["q1"], // this attempt is worse than the stored best
+        answers: answers({ q1: "Hey!" }), // this attempt is worse than the stored best
         course: "en",
         sessionToken: validToken(),
       },
@@ -336,7 +359,7 @@ describe("completeLessonRemote", () => {
         data: {
           lessonId: LESSON_ID,
           total: 8,
-          missedQuestionIds: [],
+          answers: answers(),
           course: "en",
           sessionToken: issueLessonSessionToken({
             userId: USER_ID,
@@ -361,7 +384,7 @@ describe("completeLessonRemote", () => {
         data: {
           lessonId: LESSON_ID,
           total: 8,
-          missedQuestionIds: [],
+          answers: answers(),
           course: "en",
           sessionToken: "forged.token",
         },
@@ -377,12 +400,84 @@ describe("completeLessonRemote", () => {
         data: {
           lessonId: LESSON_ID,
           total: 3, // real lesson has 8 questions
-          missedQuestionIds: [],
+          answers: answers(),
           course: "en",
           sessionToken: validToken(),
         },
       }),
     ).rejects.toThrow("Invalid lesson completion payload");
+  });
+
+  it("rejects a payload that doesn't answer every real question in the lesson", async () => {
+    const supabase = createSupabaseMock();
+    await expect(
+      completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          answers: answers().slice(0, 7), // missing q8
+          course: "en",
+          sessionToken: validToken(),
+        },
+      }),
+    ).rejects.toThrow("Invalid lesson completion payload");
+  });
+
+  it("derives correctness from the real answer key, not a client-claimed miss list", async () => {
+    // The trust boundary this whole change exists for (§0.1-d #6): a client
+    // claiming a perfect score while actually submitting wrong answers for
+    // every question must not be paid full XP.
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 5,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      // No friend_activity_events insert: xpGain will be 0 (every answer wrong).
+      .mockReturnValueOnce(chainable({ data: [{ correct: 0, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}))
+      .mockReturnValueOnce(chainable({}));
+
+    const result = await completeLessonRemote({
+      context: ctx(supabase),
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        // Every submitted answer is wrong, but a forged missedQuestionIds:
+        // [] claim on the old contract would have paid full XP for this.
+        answers: [
+          { questionId: "q1", answer: "wrong" },
+          { questionId: "q2", answer: "wrong" },
+          { questionId: "q3", answer: "wrong" },
+          { questionId: "q4", answer: "wrong" },
+          { questionId: "q5", answer: "wrong" },
+          { questionId: "q6", answer: "wrong" },
+          { questionId: "q7", answer: "wrong" },
+          { questionId: "q8", answer: "wrong" },
+        ],
+        course: "en",
+        sessionToken: validToken(),
+      },
+    });
+
+    expect(result.xpGain).toBe(0);
+    expect(result.heartsBonus).toBeNull();
   });
 
   it("unifies weakness signals: a real miss on a real completion triggers weakness detection", async () => {
@@ -441,7 +536,7 @@ describe("completeLessonRemote", () => {
         data: {
           lessonId: LESSON_ID,
           total: 8,
-          missedQuestionIds: ["q1"], // a real miss
+          answers: answers({ q1: "Hey!" }), // a real miss
           course: "en",
           sessionToken: validToken(),
         },

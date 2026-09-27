@@ -25,7 +25,7 @@ final class SyncEngineTests: XCTestCase {
     }
 
     private func pendingCompletion(lessonID: String, queuedAt: Date) -> PendingLessonCompletion {
-        PendingLessonCompletion(lessonID: lessonID, total: 5, missedQuestionIDs: [], course: "en", queuedAt: queuedAt, optimisticXpEstimate: 50)
+        PendingLessonCompletion(lessonID: lessonID, total: 5, answers: [], course: "en", queuedAt: queuedAt, optimisticXpEstimate: 50)
     }
 
     private func pendingGrade(itemKey: String, queuedAt: Date) -> PendingReviewGrade {

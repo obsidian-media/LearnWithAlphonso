@@ -41,7 +41,7 @@ public enum SyncEngine {
                 let result = try await client.completeLesson(
                     lessonID: completion.lessonID,
                     total: completion.total,
-                    missedQuestionIDs: completion.missedQuestionIDs,
+                    answers: completion.answers,
                     course: completion.course,
                     sessionToken: sessionToken
                 )

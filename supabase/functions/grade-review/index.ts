@@ -16,7 +16,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { computeReviewOutcome } from "./srs.ts";
-import { deriveAnswerCorrectness, type QuestionRow } from "./answer-correctness.ts";
+// Moved to _shared/ so complete-lesson can reuse the identical grading
+// logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
+import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 
 const courseSchema = z.enum(["en", "fr", "es"]);
 const itemKeySchema = z

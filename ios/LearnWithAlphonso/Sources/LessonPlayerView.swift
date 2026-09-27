@@ -5,11 +5,12 @@ import LearnWithAlphonsoKit
 
 /// Lesson player: overview -> vocab (when the lesson has any derivable
 /// vocab -- see VocabDerivation.swift) -> quiz -> finish, matching the web
-/// app's lesson.$id.tsx phase flow. Scoring uses
-/// ProgressMath.deriveLessonCompletion's same logic the server re-derives
-/// independently -- this client-side pass is only for the optimistic
-/// "correct/total" the finish screen shows, never trusted as the source of
-/// truth for XP.
+/// app's lesson.$id.tsx phase flow. `correctCount`/`answers` here are only
+/// for the optimistic "correct/total" the finish screen shows and the
+/// completion payload -- never trusted as the source of truth for XP. The
+/// server re-derives correctness itself, per submitted answer, against the
+/// real answer key (§0.1-d #6; see complete-lesson/index.ts's
+/// deriveAnswerCorrectness), not merely re-checking question-id membership.
 struct LessonPlayerView: View {
     let lesson: Lesson
     let course: Course
@@ -24,7 +25,11 @@ struct LessonPlayerView: View {
     @State private var phase: Phase = .overview
     @State private var idx = 0
     @State private var correctCount = 0
-    @State private var missedQuestionIDs: [String] = []
+    // §0.1-d #6: every real (non-reinforcement) question's raw submission,
+    // correct or not -- completeLesson re-derives correctness itself from
+    // these against the real answer key, rather than trusting which ones
+    // this client claims it missed.
+    @State private var answers: [LessonAnswer] = []
     @State private var picked: String?
     // A translation's verdict is settled by TranslateQuestionCard (locally,
     // then by the server when it can be reached) rather than derived here, so
@@ -40,7 +45,7 @@ struct LessonPlayerView: View {
     // V3 pkg 4b: in-lesson reinforcement, staged in two steps -- see
     // pickReinforcementQuestion's doc comment (LessonReinforcement.swift)
     // and lesson.$id.tsx's identical web-side pattern for why. Never
-    // affects correctCount/missedQuestionIDs/hearts/XP.
+    // affects correctCount/answers/hearts/XP.
     @State private var pendingReinforcement: Question?
     @State private var activeReinforcement: Question?
     // Fresh per-mount seed for reinforcement-pick determinism across a
@@ -186,9 +191,10 @@ struct LessonPlayerView: View {
 
     private func recordAnswer() {
         // Reinforcement rounds are supplementary practice only -- they
-        // never touch correctCount/missedQuestionIDs/hearts/XP.
+        // never touch correctCount/answers/hearts/XP.
         guard !isReinforcing else { return }
         let question = lesson.questions[idx]
+        answers.append(LessonAnswer(questionId: questionID(question), answer: picked ?? ""))
         // For a translation the settled verdict outranks the local match: it is
         // what the learner was just shown, and isAnswerCorrect only knows the
         // curated phrasings.
@@ -201,7 +207,6 @@ struct LessonPlayerView: View {
         if correct {
             correctCount += 1
         } else {
-            missedQuestionIDs.append(questionID(question))
             // "Doing well" skews the reinforcement pool wider (see
             // pickReinforcementQuestion's doc comment) -- based on
             // accuracy over prior questions this attempt, not counting
@@ -247,7 +252,7 @@ struct LessonPlayerView: View {
             let completion = try await client.completeLesson(
                 lessonID: lesson.id,
                 total: total,
-                missedQuestionIDs: missedQuestionIDs,
+                answers: answers,
                 course: course.code,
                 sessionToken: sessionToken
             )
@@ -278,14 +283,13 @@ struct LessonPlayerView: View {
     /// (see PendingLessonCompletion's doc comment); the real XP is shown
     /// once sync confirms it.
     private func queueOffline() {
-        let correct = total - missedQuestionIDs.count
         let pending = PendingLessonCompletion(
             lessonID: lesson.id,
             total: total,
-            missedQuestionIDs: missedQuestionIDs,
+            answers: answers,
             course: course.code,
             queuedAt: Date(),
-            optimisticXpEstimate: computeXpGain(correct: correct, total: total)
+            optimisticXpEstimate: computeXpGain(correct: correctCount, total: total)
         )
         syncQueueStore.appendLessonCompletion(pending)
         queuedOffline = pending

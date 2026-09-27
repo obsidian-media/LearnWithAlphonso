@@ -21,7 +21,7 @@ import {
   computeLeaguePromotion,
   computeLessonReplayXp,
   computeStreakUpdate,
-  deriveLessonCompletion,
+  validateLessonAnswerCoverage,
   LEAGUES,
   type LeagueTier,
 } from "./progress-math.ts";
@@ -34,6 +34,10 @@ import {
   streakHeartMilestoneReached,
 } from "./hearts.ts";
 import { sendPushToUser } from "../_shared/apns.ts";
+// §0.1-d #6: re-grades each submitted answer against the real question
+// instead of trusting a client-claimed missedQuestionIds list. The same
+// function grade-review already used to re-derive review-item correctness.
+import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 
 const courseSchema = z.enum(["en", "fr"]);
 const lessonIdSchema = z
@@ -44,7 +48,18 @@ const lessonIdSchema = z
 const completeLessonSchema = z.object({
   lessonId: lessonIdSchema,
   total: z.number().int().min(1).max(50),
-  missedQuestionIds: z.array(z.string().regex(/^[a-z0-9]+$/)).max(50),
+  // §0.1-d #6: was a client-claimed missedQuestionIds list, trusted with no
+  // check that any answer was ever actually graded. Now the client submits
+  // what it actually answered, one entry per real question, and the server
+  // derives correctness itself (see deriveAnswerCorrectness below).
+  answers: z
+    .array(
+      z.object({
+        questionId: z.string().regex(/^[a-z0-9]+$/),
+        answer: z.string().max(2000),
+      }),
+    )
+    .max(50),
   course: courseSchema,
   sessionToken: z.string().min(1).max(2000),
 });
@@ -100,17 +115,22 @@ async function findLesson(
   admin: SupabaseClient,
   course: string,
   lessonId: string,
-): Promise<{ questions: { id: string }[]; level: string } | null> {
+): Promise<{ questions: (QuestionRow & { id: string })[]; level: string } | null> {
   const { data, error } = await admin
     .from("lessons")
-    .select("id, units!inner(course, level_id), questions(id)")
+    .select(
+      "id, units!inner(course, level_id), questions(id, type, prompt, choices, bank, answer_index, answer_text)",
+    )
     .eq("id", lessonId)
     .eq("units.course", course)
     .maybeSingle();
   if (error || !data) return null;
   const units = data.units as unknown as { level_id: string } | { level_id: string }[];
   const level = Array.isArray(units) ? units[0]?.level_id : units.level_id;
-  return { questions: (data.questions ?? []) as { id: string }[], level: level ?? "A1" };
+  return {
+    questions: (data.questions ?? []) as (QuestionRow & { id: string })[],
+    level: level ?? "A1",
+  };
 }
 
 export async function handleRequest(req: Request): Promise<Response> {
@@ -131,7 +151,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       400,
     );
   }
-  const { lessonId, total, missedQuestionIds, course, sessionToken } = parsed;
+  const { lessonId, total, answers, course, sessionToken } = parsed;
 
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -140,7 +160,12 @@ export async function handleRequest(req: Request): Promise<Response> {
   );
 
   const lesson = await findLesson(admin, course, lessonId);
-  if (!lesson) {
+  if (!lesson || total !== lesson.questions.length) {
+    return jsonResponse({ error: "Invalid lesson completion payload" }, 400);
+  }
+  try {
+    validateLessonAnswerCoverage(lesson, answers);
+  } catch {
     return jsonResponse({ error: "Invalid lesson completion payload" }, 400);
   }
 
@@ -148,12 +173,21 @@ export async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
 
-  let correct: number;
-  try {
-    ({ correct } = deriveLessonCompletion(lesson, total, missedQuestionIds));
-  } catch {
-    return jsonResponse({ error: "Invalid lesson completion payload" }, 400);
+  // The actual re-grade: never trust which questions the client says it
+  // missed, derive it from the real answer key. Sequential, not
+  // Promise.all -- at most a handful of "translate" questions can reach the
+  // AI grader, and each one already reuses the exact local-first check the
+  // player showed the learner live (deriveAnswerCorrectness).
+  const questionById = new Map(lesson.questions.map((q) => [q.id, q]));
+  const missedQuestionIds: string[] = [];
+  for (const { questionId, answer } of answers) {
+    // Safe: validateLessonAnswerCoverage already proved questionId is a
+    // real id in this lesson.
+    const question = questionById.get(questionId)!;
+    const isCorrect = await deriveAnswerCorrectness(question, answer, course);
+    if (!isCorrect) missedQuestionIds.push(questionId);
   }
+  const correct = answers.length - missedQuestionIds.length;
 
   const today = todayStr();
 

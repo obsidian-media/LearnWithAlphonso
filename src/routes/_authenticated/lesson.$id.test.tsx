@@ -368,7 +368,10 @@ describe("Lesson page", () => {
       data: {
         lessonId: "u1l1",
         total: 8,
-        missedQuestionIds: ["q2"],
+        answers: ANSWERS.map((a, i) => ({
+          questionId: `q${i + 1}`,
+          answer: i === 1 ? a.wrong : a.correct,
+        })),
         course: "en",
         sessionToken: "session-tok",
       },

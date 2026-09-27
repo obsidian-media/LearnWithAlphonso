@@ -85,6 +85,11 @@ function LessonPage() {
   const [correct, setCorrect] = useState(0);
   const [missed, setMissed] = useState<string[]>([]);
   const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
+  // Every real (non-reinforcement) question's raw submission, correct or
+  // not -- completeLessonRemote re-derives correctness itself from these
+  // against the real answer key (§0.1-d #6), rather than trusting which
+  // ones this client claims it missed.
+  const [answeredQs, setAnsweredQs] = useState<{ questionId: string; answer: string }[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   // "reorder" questions accumulate a sequence of tapped token *indices*
   // (not values, since a sentence can repeat a word) instead of using
@@ -193,6 +198,7 @@ function LessonPage() {
     // Reinforcement rounds are supplementary practice only -- they never
     // touch correct/missed/hearts/XP, regardless of outcome.
     if (isReinforcing) return;
+    setAnsweredQs((a) => [...a, { questionId: q.id, answer: submittedAnswer }]);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
       setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
@@ -261,7 +267,7 @@ function LessonPage() {
         data: {
           lessonId: lesson.id,
           total,
-          missedQuestionIds: missedQs.map(({ q }) => q.id),
+          answers: answeredQs,
           course,
           sessionToken: sessionToken ?? "",
         },
