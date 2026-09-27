@@ -11,13 +11,10 @@ import FoundationNetworking
 /// requireSupabaseAuth, one implementation for both clients. Same
 /// Bearer-token-over-apiBaseURL shape as AIConversationClient.
 ///
-/// deleteMyAccount itself does not reach Hector/Cloud Voice
-/// (AppConfig.cloudVoice* -- a separate Supabase project this app's
-/// backend has no admin access to) directly; SettingsView's confirmation
-/// copy is explicit about the current, still-partial coverage rather
-/// than implying a full erasure. `linkHectorAccount` below is the Hector
-/// re-parenting Phase 0 piece that lets the *server* reach it instead --
-/// see docs/superpowers/specs/2026-09-26-hector-reparenting-design.md.
+/// Hector runs in-account now (the 2026-09-27 decouple, see
+/// docs/superpowers/specs/2026-09-27-hector-decoupling-design.md), so
+/// deleteMyAccount removes Hector data along with the rest -- there is no
+/// separate account to reach.
 public enum AccountError: Error, Equatable {
     case badResponse
     case server(status: Int, message: String?)
@@ -55,9 +52,9 @@ public final class AccountClient: Sendable {
     /// `AIConversationClient.perform`'s doc comment for the full story:
     /// `Session` used to refresh its token only once, at cold launch, so
     /// any call made after the token's ~1-hour lifetime elapsed 401'd
-    /// with no visible reason. `linkAppleAuthorization` and
-    /// `linkHectorAccount` wire this up; `exportMyData` and
-    /// `deleteMyAccount` don't -- unaffected on purpose, not an oversight.
+    /// with no visible reason. `linkAppleAuthorization` wires this up;
+    /// `exportMyData` and `deleteMyAccount` don't -- unaffected on
+    /// purpose, not an oversight.
     private func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
         let (data, response) = try await requester(request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 401,
@@ -118,35 +115,6 @@ public final class AccountClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["authorizationCode": code])
-
-        let (data, response) = try await perform(request)
-        try Self.requireSuccess(data: data, response: response)
-    }
-
-    /// POST /api/hector-link -- Hector re-parenting Phase 0. Records
-    /// which Cloud Voice (Hector) account belongs to this account, so a
-    /// later account deletion can revoke it (see hector-revocation.ts's
-    /// doc comment for the AlphonsoEcosystem endpoint contract that
-    /// still needs building before revocation actually happens -- this
-    /// call itself always succeeds once the pairing is stored). Same
-    /// "throws, caller decides to swallow it" posture as
-    /// `linkAppleAuthorization` -- the real Hector enrollment already
-    /// succeeded by the time this fires, so the caller
-    /// (`HectorView`) fires this fire-and-forget too.
-    ///
-    /// Sends the Cloud Voice **access token**, not a claimed user id --
-    /// the server derives the real id itself by verifying this token
-    /// against Cloud Voice's own Supabase project
-    /// (`src/lib/cloud-voice-auth.ts`). A previous version of this
-    /// method sent `cloudVoiceUserId` directly, which let anyone who
-    /// knew a victim's id link it without proving they controlled that
-    /// account; never revert to that shape.
-    public func linkHectorAccount(cloudVoiceAccessToken: String) async throws {
-        var request = URLRequest(url: baseURL.appendingPathComponent("api/hector-link"))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: ["cloudVoiceAccessToken": cloudVoiceAccessToken])
 
         let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)

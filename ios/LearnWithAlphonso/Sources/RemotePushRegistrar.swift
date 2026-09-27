@@ -41,7 +41,7 @@ final class RemotePushRegistrar {
         // deviceTokenHex is @Observable-tracked, so this assignment from a
         // background-queue callback must land on the main actor -- matches
         // every other cross-boundary callback in this app
-        // (GoogleSignInPresenter, HectorSession) hopping back to @MainActor
+        // (e.g. GoogleSignInPresenter) hopping back to @MainActor
         // explicitly rather than assuming the poster's queue.
         _ = notificationCenter.addObserver(
             forName: AppDelegate.deviceTokenNotification,
