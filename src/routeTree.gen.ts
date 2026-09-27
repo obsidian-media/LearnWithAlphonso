@@ -36,7 +36,6 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorLinkRouteImport } from './routes/api/hector-link'
-import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiHectorShadowAccountRouteImport } from './routes/api/hector-shadow-account'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
@@ -182,11 +181,6 @@ const ApiHectorLinkRoute = ApiHectorLinkRouteImport.update({
   path: '/api/hector-link',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiHectorRespondRoute = ApiHectorRespondRouteImport.update({
-  id: '/api/hector-respond',
-  path: '/api/hector-respond',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiHectorShadowAccountRoute = ApiHectorShadowAccountRouteImport.update({
   id: '/api/hector-shadow-account',
   path: '/api/hector-shadow-account',
@@ -271,7 +265,6 @@ export interface FileRoutesByFullPath {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-link': typeof ApiHectorLinkRoute
-  '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/hector-shadow-account': typeof ApiHectorShadowAccountRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -310,7 +303,6 @@ export interface FileRoutesByTo {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-link': typeof ApiHectorLinkRoute
-  '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/hector-shadow-account': typeof ApiHectorShadowAccountRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -351,7 +343,6 @@ export interface FileRoutesById {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-link': typeof ApiHectorLinkRoute
-  '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/hector-shadow-account': typeof ApiHectorShadowAccountRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
@@ -392,7 +383,6 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-link'
-    | '/api/hector-respond'
     | '/api/hector-shadow-account'
     | '/api/stt'
     | '/api/tts'
@@ -431,7 +421,6 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-link'
-    | '/api/hector-respond'
     | '/api/hector-shadow-account'
     | '/api/stt'
     | '/api/tts'
@@ -471,7 +460,6 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-link'
-    | '/api/hector-respond'
     | '/api/hector-shadow-account'
     | '/api/stt'
     | '/api/tts'
@@ -502,7 +490,6 @@ export interface RootRouteChildren {
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorLinkRoute: typeof ApiHectorLinkRoute
-  ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiHectorShadowAccountRoute: typeof ApiHectorShadowAccountRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
@@ -699,13 +686,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHectorLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/hector-respond': {
-      id: '/api/hector-respond'
-      path: '/api/hector-respond'
-      fullPath: '/api/hector-respond'
-      preLoaderRoute: typeof ApiHectorRespondRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/hector-shadow-account': {
       id: '/api/hector-shadow-account'
       path: '/api/hector-shadow-account'
@@ -849,7 +829,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorLinkRoute: ApiHectorLinkRoute,
-  ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiHectorShadowAccountRoute: ApiHectorShadowAccountRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
