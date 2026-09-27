@@ -129,7 +129,10 @@ describe("deleteMyAccount", () => {
     // revoke endpoint are configured in tests -- the same answer
     // production gives until they are -- and deletion proceeds either
     // way by design.
-    expect(result).toEqual({ deleted: true, appleRevoked: false, hectorRevoked: false });
+    expect(result).toEqual({ deleted: true, appleRevoked: false });
+    // Hector is decoupled (2026-09-27): no separate account to revoke, so
+    // the result carries no hectorRevoked field at all.
+    expect("hectorRevoked" in result).toBe(false);
     expect(supabaseAdminFrom).toHaveBeenCalledWith("friendships");
     expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
@@ -226,9 +229,9 @@ describe("GDPR export table coverage", () => {
     // admin_users/apple_auth_tokens mechanics: RLS on with no policies
     // and no grant to `authenticated`, so the caller-scoped export would
     // return empty anyway. Deletion is handled -- user_id REFERENCES
-    // auth.users ON DELETE CASCADE -- and the linked Hector account
-    // itself is revoked before the row goes (see account.functions.ts's
-    // revokeHectorLinkForUser).
+    // auth.users ON DELETE CASCADE. The table is dropped in the Hector
+    // decouple (2026-09-27); its create migration stays in history, so
+    // this export-coverage scan still sees it and the exclusion must stay.
     "hector_links",
   ]);
 
