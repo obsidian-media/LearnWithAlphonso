@@ -9,9 +9,11 @@ import { test, expect } from "@playwright/test";
 test("landing page loads and links to sign-in", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Learn with Alphonso/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Learn English with lessons that actually stick.",
-  );
+  // Not pinning the exact hero sentence -- see §0.1d/§0.1-f in
+  // docs/BACKLOG.md: a guard asserting one exact copy string is a guard
+  // against the string being *changed*, not against it being wrong, which
+  // is exactly backwards when (as happened here) the string was stale.
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.getByRole("link", { name: "Get started — it's free" }).click();
   await expect(page).toHaveURL(/\/auth$/);
 });

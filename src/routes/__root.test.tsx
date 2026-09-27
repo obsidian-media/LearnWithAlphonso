@@ -139,7 +139,7 @@ describe("head()", () => {
   it("sets the page title and description", () => {
     const meta = head.meta;
     expect(meta).toContainEqual({
-      title: "Learn with Alphonso — English, one lesson at a time",
+      title: "Learn with Alphonso — English, French and Spanish, one lesson at a time",
     });
     expect(meta.find((m) => "name" in m && m.name === "description")).toBeTruthy();
   });

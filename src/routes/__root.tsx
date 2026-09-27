@@ -85,14 +85,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Learn with Alphonso — English, one lesson at a time" },
+      { title: "Learn with Alphonso — English, French and Spanish, one lesson at a time" },
       {
         name: "description",
         content:
-          "A calm, gamified way to build real English skills. Bite-size lessons, streaks, and progress that stays with you.",
+          "A calm, gamified way to build real English, French or Spanish skills. Bite-size lessons, streaks, and progress that stays with you.",
       },
-      { property: "og:title", content: "Learn with Alphonso — English, one lesson at a time" },
-      { property: "og:description", content: "A calm, gamified way to build real English skills." },
+      {
+        property: "og:title",
+        content: "Learn with Alphonso — English, French and Spanish, one lesson at a time",
+      },
+      {
+        property: "og:description",
+        content: "A calm, gamified way to build real English, French or Spanish skills.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
