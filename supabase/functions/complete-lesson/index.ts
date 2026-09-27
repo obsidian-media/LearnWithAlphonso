@@ -39,7 +39,12 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // function grade-review already used to re-derive review-item correctness.
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 
-const courseSchema = z.enum(["en", "fr"]);
+// Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
+// updated, unlike grade-review's identical schema. Silently rejected every
+// Spanish-course lesson completion from iOS (web's completeLessonRemote,
+// grade-review and start-lesson-session's own schema below all already
+// allow "es").
+const courseSchema = z.enum(["en", "fr", "es"]);
 const lessonIdSchema = z
   .string()
   .min(1)

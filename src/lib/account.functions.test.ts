@@ -106,6 +106,43 @@ describe("exportMyData", () => {
     const result = await exportMyData({ context: ctx(supabase) });
     expect(result.email).toBeNull();
   });
+
+  // §2.2's "related, smaller finding not fixed": user_progress.xp has been
+  // frozen since the 2026-09-08 multi-course migration (real xp lives in
+  // language_progress, per course), yet select("*") still exported it --
+  // so a downloaded "your data" file showed two disagreeing xp values with
+  // no way to tell which was real. Same story for cefr_level, league_tier
+  // and all three placement_* columns: every one of them is duplicated on
+  // language_progress and nothing writes the user_progress copy anymore.
+  it("excludes user_progress's columns frozen by the multi-course migration", async () => {
+    const supabase = createSupabaseMock();
+    const perTable = new Map<string, ReturnType<typeof chainable>>();
+    supabase.from.mockImplementation((table: string) => {
+      const c = chainable({ data: [] });
+      perTable.set(table, c);
+      return c;
+    });
+
+    await exportMyData({ context: ctx(supabase) });
+
+    const userProgressCalls = perTable.get("user_progress")!.calls;
+    const selectCall = userProgressCalls.find((c) => c.method === "select");
+    const selectedColumns = selectCall!.args[0] as string;
+    for (const frozen of [
+      "xp",
+      "cefr_level",
+      "league_tier",
+      "placement_level",
+      "placement_score",
+      "placement_taken_at",
+    ]) {
+      expect(selectedColumns.split(",")).not.toContain(frozen);
+    }
+    // Still exports the columns that are actually live.
+    for (const live of ["streak", "hearts", "longest_streak"]) {
+      expect(selectedColumns.split(",")).toContain(live);
+    }
+  });
 });
 
 describe("deleteMyAccount", () => {
