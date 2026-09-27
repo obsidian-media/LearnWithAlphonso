@@ -1,0 +1,101 @@
+name: Maestro E2E
+
+# Real end-to-end tests against the built app in a simulator -- the layer
+# nothing else covers. ios-app-build only compiles; ios-swift-tests only
+# exercises the Kit. Every iOS user-facing flow (sign-in screen, tab
+# navigation, the surfaces a reviewer visits) was previously verified only
+# by hand on TestFlight. Maestro drives the actual app.
+#
+# Manual dispatch: this boots a simulator and installs a Debug build, so
+# it is not something to run on every push. Run it before a release, or
+# after any change to a user-facing flow.
+on:
+  workflow_dispatch:
+    inputs:
+      flow:
+        description: "Which flow(s) to run"
+        required: true
+        default: smoke-only
+        type: choice
+        options:
+          - smoke-only          # 01-smoke.yaml -- unauthenticated, always safe
+          - all                 # smoke + signed-in (needs a demo session)
+
+jobs:
+  maestro:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: ios/LearnWithAlphonso
+        run: xcodegen generate
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Create and boot a simulator
+        run: |
+          RUNTIME_ID=$(xcrun simctl list runtimes available ios | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | tail -1)
+          UDID=$(xcrun simctl create "maestro-sim" "com.apple.CoreSimulator.SimDeviceType.iPhone-16" "$RUNTIME_ID")
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+
+      - name: Build the app (Debug, unsigned) for the simulator
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          xcodebuild build \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -configuration Debug \
+            -destination "id=$SIMULATOR_UDID" \
+            -derivedDataPath build \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Install the app in the simulator
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          APP=$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' | head -1)
+          echo "Installing $APP"
+          xcrun simctl install "$SIMULATOR_UDID" "$APP"
+
+      - name: Mint a demo session (for the signed-in flow)
+        if: ${{ inputs.flow == 'all' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+        run: bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
+
+      - name: Run smoke flow (unauthenticated)
+        run: maestro --device "$SIMULATOR_UDID" test .maestro/01-smoke.yaml
+
+      - name: Run signed-in flow
+        if: ${{ inputs.flow == 'all' }}
+        # SIMCTL_CHILD_* env vars are inherited by apps the simulator
+        # launches, so the DEBUG-only Session.uiTestBootstrapSession sees
+        # UI_TEST_ACCESS_TOKEN and lands signed in -- the same bootstrap
+        # the screenshot pipeline uses, reached a different way because
+        # Maestro (not xcodebuild) is doing the launch here.
+        env:
+          SIMCTL_CHILD_UI_TEST_ACCESS_TOKEN: ${{ env.UI_TEST_ACCESS_TOKEN }}
+          SIMCTL_CHILD_UI_TEST_REFRESH_TOKEN: ${{ env.UI_TEST_REFRESH_TOKEN }}
+          SIMCTL_CHILD_UI_TEST_USER_ID: ${{ env.UI_TEST_USER_ID }}
+          SIMCTL_CHILD_UI_TEST_EXPIRES_AT: ${{ env.UI_TEST_EXPIRES_AT }}
+        run: maestro --device "$SIMULATOR_UDID" test .maestro/02-signed-in.yaml
+
+      - name: Upload Maestro output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results
+          path: ~/.maestro/tests/**
+          if-no-files-found: warn

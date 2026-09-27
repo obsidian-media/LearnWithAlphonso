@@ -1,0 +1,24 @@
+# Authenticated user journey. The app's DEBUG-only
+# Session.uiTestBootstrapSession reads UI_TEST_ACCESS_TOKEN from the
+# process environment; the workflow exports it as SIMCTL_CHILD_* so the
+# simulated app sees it and lands signed in on the Learn tab. If bootstrap
+# or sync breaks, this flow fails at the first tab assertion -- which is
+# exactly the signal we want (it's how the empty-Learn-header bug would
+# surface in an automated run instead of in a screenshot nobody checks).
+appId: com.obsidianmedia.learnwithalphonso
+---
+- launchApp:
+    clearState: false
+# The five-tab bar only exists once signed in.
+- assertVisible: "Learn"
+- assertVisible: "Listen"
+- assertVisible: "Practice"
+- assertVisible: "Hector"
+- assertVisible: "Profile"
+# Walk the primary surfaces a user (and a reviewer) actually visits.
+- tapOn: "Listen"
+- tapOn: "Practice"
+- assertVisible: "Practice speaking"
+- tapOn: "Profile"
+- tapOn: "Learn"
+- assertVisible: "Learn with Alphonso"
