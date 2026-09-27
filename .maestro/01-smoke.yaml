@@ -9,4 +9,4 @@ appId: com.obsidianmedia.learnwithalphonso
 - assertVisible: "Learn with Alphonso"
 - assertVisible: "Sign in to start learning"
 - assertVisible: "Continue with Google"
-- assertVisible: "Sign in with Apple"
+- assertVisible: "Continue with Apple"
