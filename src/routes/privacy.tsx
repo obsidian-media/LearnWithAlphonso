@@ -97,7 +97,6 @@ function Privacy() {
             "Supabase — hosting, database and authentication. Holds your account and all learning data.",
             "Deepgram — converts your recorded speech to text, and the AI tutor's replies to spoken audio. Recordings are sent for processing and are not stored on our servers.",
             "NVIDIA — generates the conversation tutor's responses and grades written translation answers, from the text you send.",
-            "Cloud Voice (voice.obsidianmedia.online) — runs the Hector voice tutor, including its chat text and audio. See the Hector section below.",
             "RevenueCat — manages subscription status. Receives an account identifier and purchase state, not payment details.",
             "Apple and Google — only if you choose to sign in with them, and only to confirm your identity.",
           ]}
@@ -114,16 +113,15 @@ function Privacy() {
 
       <Section heading="Hector (advanced voice tutor)">
         <p>
-          If you use Hector, you sign in to a second, separate account — entirely apart from the
-          Alphonso account described elsewhere in this policy. Hector's account record, its chat
-          text and the voice conversations it processes are held on a separate backend operated only
-          for this feature. Hector's chat does not go to NVIDIA; its audio is transcribed by
-          Deepgram in the same way as the rest of the app.
+          Hector, our advanced AI voice tutor, runs on the same account and the same systems as the
+          rest of Learn with Alphonso — there is no separate sign-in and no separate account. Your
+          spoken audio is transcribed by Deepgram and the tutor's replies are generated the same way
+          as elsewhere in the app; Hector's conversation is not retained on our servers after it
+          answers.
         </p>
         <p>
-          Deleting your main Alphonso account does <strong>not</strong> delete a Hector account or
-          its data — they are on a different system and not currently linked for deletion. To delete
-          a Hector account, write to {CONTACT} and we will action it manually.
+          Because Hector is part of your one account, deleting your account removes your Hector data
+          along with everything else. There is nothing separate to manage.
         </p>
       </Section>
 
@@ -141,8 +139,7 @@ function Privacy() {
         <p>
           We keep your account data for as long as your account exists. When you delete your
           account, your data is removed immediately from our live systems and is purged from routine
-          backups within 30 days. This does not include a separate Hector account — see the Hector
-          section above.
+          backups within 30 days.
         </p>
       </Section>
 
