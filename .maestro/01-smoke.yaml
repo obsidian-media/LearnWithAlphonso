@@ -1,0 +1,12 @@
+# Unauthenticated launch smoke test. Proves the app boots and the first
+# screen actually renders -- the cheapest real E2E signal, and the one
+# that would have caught a crash-on-launch or a broken sign-in screen
+# before a reviewer did. Needs no session, so it can never flake on sync.
+appId: com.obsidianmedia.learnwithalphonso
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Learn with Alphonso"
+- assertVisible: "Sign in to start learning"
+- assertVisible: "Continue with Google"
+- assertVisible: "Sign in with Apple"
