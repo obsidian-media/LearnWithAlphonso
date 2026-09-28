@@ -32,27 +32,29 @@ export const Route = createFileRoute("/api/stt")({
         // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md.
         const rawCourse = inForm?.get("course");
         const course = typeof rawCourse === "string" && isCourse(rawCourse) ? rawCourse : "en";
+        // TEMPORARY (2026-09-28): a live "recorder buffers for a couple
+        // seconds then just goes back to the mic icon, doesn't record
+        // anything" report, with AIConversationClient.transcribe's
+        // matching debugTiming parameter -- see that doc comment. The box
+        // walker below already ruled out the file being corrupt: `moov`
+        // and `mdat` sizes agree with each other and with Deepgram's own
+        // reported duration -- the file is genuinely short, not
+        // mis-parsed. This settles WHY: whether the client's own
+        // press-to-release span was already short (a gesture bug) or
+        // AVAudioRecorder took most of that span just to start actually
+        // capturing (a session-reconfiguration race, most likely right
+        // after Hector's own TTS reply playback).
+        const debugTiming = inForm?.get("debugTiming");
         // Deepgram's pre-recorded /v1/listen endpoint takes the raw audio
         // bytes as the request body with Content-Type set to the audio's
         // actual mime type — it detects webm/mp4/wav/etc. from that header,
         // no multipart wrapper or transcoding needed.
         const forwardedContentType = file.type || "audio/webm";
-        // TEMPORARY (2026-09-28): build 37's AVAudioRecorderDelegate fix
-        // (wait for audioRecorderDidFinishRecording before reading the
-        // file, instead of trusting stop()'s synchronous return) did NOT
-        // fix this -- confirmed on a real build-37 device, same signature
-        // (~0.5s reported duration on a 60KB+ file) as before the fix.
-        // That was the leading theory and it's now ruled out as the WHOLE
-        // story. A raw hex dump of the first request this fired on showed
-        // a 637-byte second top-level box immediately after `ftyp`, far
-        // too small to be `mdat` (the real audio, ~60KB) in a normal
-        // ftyp-then-mdat-then-moov (moov-last) layout -- consistent with
-        // `moov` itself having been written FIRST, fast-start style, with
-        // a sample table describing only a fraction of a second, while
-        // `mdat` afterward holds much more real audio the moov never
-        // accounts for. Walking the actual top-level box structure (type
-        // + size for each) instead of a raw hex dump to confirm this
-        // properly rather than eyeballing hex by hand.
+        // Confirmed live on build 37 (2026-09-28): `moov` and `mdat` sizes
+        // agree with each other and with Deepgram's own reported duration
+        // -- the file itself is genuinely short and internally consistent,
+        // not corrupt or mis-parsed. Kept as a box walker (not a raw hex
+        // dump) since it settled that on the first real sample.
         const audioBuffer = await file.arrayBuffer();
         const audioBytes = new Uint8Array(audioBuffer);
         const view = new DataView(audioBuffer);
@@ -95,8 +97,8 @@ export const Route = createFileRoute("/api/stt")({
         if (!text) {
           console.error(
             `[stt] Empty transcript. file.type="${file.type}" forwarded="${forwardedContentType}"` +
-              ` size=${file.size}\n[stt] boxes=${walkBoxes(audioBytes)}` +
-              `\n[stt] metadata=${JSON.stringify(data.metadata)}`,
+              ` size=${file.size} debugTiming="${typeof debugTiming === "string" ? debugTiming : "none"}"` +
+              `\n[stt] boxes=${walkBoxes(audioBytes)}\n[stt] metadata=${JSON.stringify(data.metadata)}`,
           );
         }
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),

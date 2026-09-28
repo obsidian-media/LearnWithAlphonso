@@ -61,6 +61,11 @@ private struct ConversationSessionView: View {
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
+    // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    // debugTiming doc comment. The real touch-down moment, independent of
+    // however long the async permission-check/record() chain inside
+    // startRecording() takes to actually begin capturing.
+    @State private var pressBeganAt: Date?
     // V3 package 3a: adaptive difficulty + pronunciation-clarity heuristic.
     @State private var cefrLevel: String?
     @State private var confidenceByTurnIndex: [Int: Double] = [:]
@@ -169,7 +174,12 @@ private struct ConversationSessionView: View {
                     .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
                     .gesture(
                         DragGesture(minimumDistance: 0)
-                            .onChanged { _ in if !isRecording { startRecording() } }
+                            .onChanged { _ in
+                                if !isRecording {
+                                    pressBeganAt = Date()
+                                    startRecording()
+                                }
+                            }
                             .onEnded { _ in stopRecordingAndSend() }
                     )
             }
@@ -228,6 +238,11 @@ private struct ConversationSessionView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
+        // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+        // debugTiming doc comment. Captured here, at the true touch-up
+        // moment, not inside the Task below (which can start running
+        // noticeably later).
+        let pressElapsed = pressBeganAt.map { Date().timeIntervalSince($0) }
         Task {
             // A quick tap (or the very first recording of an app launch,
             // before the audio hardware has finished warming up after
@@ -244,12 +259,15 @@ private struct ConversationSessionView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= TurnRecorder.minimumAudioBytes else { return }
-            await sendTurn(audio: audio)
+            let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
+                " capture=\(captureElapsed.map { String(format: "%.2f", $0) } ?? "?")"
+            await sendTurn(audio: audio, debugTiming: debugTiming)
         }
     }
 
-    private func sendTurn(audio: Data) async {
+    private func sendTurn(audio: Data, debugTiming: String) async {
         guard let accessToken = await session.freshAccessToken() else {
             errorMessage = "You've been signed out. Please sign in again."
             return
@@ -269,7 +287,7 @@ private struct ConversationSessionView: View {
         )
         do {
             phase = .transcribing
-            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
+            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a", debugTiming: debugTiming)
             guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
                 // See HectorView's identical guard for why this needs a
                 // message rather than a silent reset: a live report
@@ -407,6 +425,15 @@ private final class TurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let startedAt else { return nil }
         let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
         return remaining > 0 ? remaining : nil
+    }
+
+    /// TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    /// debugTiming doc comment. Reads startedAt without clearing it
+    /// (unlike stop(), which nils it as part of finalizing), so this must
+    /// be called before stop().
+    func elapsedSinceStart() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        return Date().timeIntervalSince(startedAt)
     }
 
     private var finishContinuation: CheckedContinuation<Void, Never>?

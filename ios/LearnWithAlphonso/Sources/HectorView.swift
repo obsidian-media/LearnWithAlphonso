@@ -45,6 +45,11 @@ private struct HectorConversationView: View {
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
+    // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    // debugTiming doc comment. The real touch-down moment, independent of
+    // however long the async permission-check/record() chain inside
+    // startRecording() takes to actually begin capturing.
+    @State private var pressBeganAt: Date?
     // V3 package 3b -- "tutor persona memory." Loaded once per session
     // (this repo has no Hector transcript to recall, only durable facts
     // about the learner -- see TutorMemoryContext's doc comment) and
@@ -157,7 +162,12 @@ private struct HectorConversationView: View {
                     .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
                     .gesture(
                         DragGesture(minimumDistance: 0)
-                            .onChanged { _ in if !isRecording { startRecording() } }
+                            .onChanged { _ in
+                                if !isRecording {
+                                    pressBeganAt = Date()
+                                    startRecording()
+                                }
+                            }
                             .onEnded { _ in stopRecordingAndSend() }
                     )
             }
@@ -205,6 +215,11 @@ private struct HectorConversationView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
+        // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+        // debugTiming doc comment. Captured here, at the true touch-up
+        // moment, not inside the Task below (which can start running
+        // noticeably later).
+        let pressElapsed = pressBeganAt.map { Date().timeIntervalSince($0) }
         Task {
             // Same fix as ConversationView's identical stopRecordingAndSend
             // (found live 2026-09-28): a quick tap or the recorder's own
@@ -216,12 +231,15 @@ private struct HectorConversationView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= HectorTurnRecorder.minimumAudioBytes else { return }
-            await sendTurn(audio: audio)
+            let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
+                " capture=\(captureElapsed.map { String(format: "%.2f", $0) } ?? "?")"
+            await sendTurn(audio: audio, debugTiming: debugTiming)
         }
     }
 
-    private func sendTurn(audio: Data) async {
+    private func sendTurn(audio: Data, debugTiming: String) async {
         // See ConversationView.swift's identical sendTurn for why this is
         // freshAccessToken (not the raw, possibly-stale session.accessToken)
         // plus a refreshAccessToken backstop on the client below: this
@@ -240,7 +258,7 @@ private struct HectorConversationView: View {
         do {
             // Transcription still goes through our own account's /api/stt.
             phase = .transcribing
-            let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
+            let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a", debugTiming: debugTiming)
             let text = sttResult.text
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
                 // Silent-reset-to-idle here (no message) was reported live
@@ -375,6 +393,15 @@ private final class HectorTurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let startedAt else { return nil }
         let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
         return remaining > 0 ? remaining : nil
+    }
+
+    /// TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    /// debugTiming doc comment. Reads startedAt without clearing it
+    /// (unlike stop(), which nils it as part of finalizing), so this must
+    /// be called before stop().
+    func elapsedSinceStart() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        return Date().timeIntervalSince(startedAt)
     }
 
     /// See ConversationView's identical TurnRecorder.stop() for why this

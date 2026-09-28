@@ -293,7 +293,22 @@ public final class AIConversationClient: Sendable {
     public func transcribe(
         audio: Data,
         mimeType: String,
-        course: String? = nil
+        course: String? = nil,
+        // TEMPORARY (2026-09-28): chasing a live report of a recording
+        // that "buffers for a couple seconds then goes back to mic --
+        // doesn't record anything practically." The uploaded file IS
+        // consistently valid (confirmed via api/stt.ts's MP4 box walker)
+        // but its `mdat` (real audio) is only ~0.5s regardless of how
+        // long the button seems held -- suspiciously close to the
+        // client's own minimum-duration floor, suggesting either the
+        // gesture's onEnded fires almost immediately, or record() itself
+        // (session category switch away from Hector's own just-finished
+        // TTS playback) takes near the full press duration to actually
+        // start capturing. This reports both real, independently-measured
+        // elapsed times so the server log settles which one it is,
+        // instead of guessing a third time. Remove once the real cause
+        // is confirmed.
+        debugTiming: String? = nil
     ) async throws -> (text: String, confidence: Double?) {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
         request.httpMethod = "POST"
@@ -314,6 +329,11 @@ public final class AIConversationClient: Sendable {
             body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
             body.append("Content-Disposition: form-data; name=\"course\"\r\n\r\n".data(using: .utf8)!)
             body.append(course.data(using: .utf8)!)
+        }
+        if let debugTiming {
+            body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"debugTiming\"\r\n\r\n".data(using: .utf8)!)
+            body.append(debugTiming.data(using: .utf8)!)
         }
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         request.httpBody = body

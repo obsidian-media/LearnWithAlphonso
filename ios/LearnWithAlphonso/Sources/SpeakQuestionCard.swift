@@ -30,6 +30,11 @@ struct SpeakQuestionCard: View {
     @State private var recorder = SpeakTurnRecorder()
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
+    // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    // debugTiming doc comment. The real touch-down moment, independent of
+    // however long the async permission-check/record() chain inside
+    // startRecording() takes to actually begin capturing.
+    @State private var pressBeganAt: Date?
     /// Set when the microphone itself could not be started (permission denied,
     /// hardware busy). Typing then becomes the only way to answer, so the
     /// fallback is shown for the rest of the question rather than leaving the
@@ -129,7 +134,12 @@ struct SpeakQuestionCard: View {
                     .accessibilityDirectTouch(true, options: .requiresActivation)
                     .gesture(
                         DragGesture(minimumDistance: 0)
-                            .onChanged { _ in if phase != .recording { startRecording() } }
+                            .onChanged { _ in
+                                if phase != .recording {
+                                    pressBeganAt = Date()
+                                    startRecording()
+                                }
+                            }
                             .onEnded { _ in stopRecordingAndGrade() }
                     )
                     .disabled(checked)
@@ -229,6 +239,11 @@ struct SpeakQuestionCard: View {
     private func stopRecordingAndGrade() {
         guard phase == .recording else { return }
         phase = .idle
+        // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+        // debugTiming doc comment. Captured here, at the true touch-up
+        // moment, not inside the Task below (which can start running
+        // noticeably later).
+        let pressElapsed = pressBeganAt.map { Date().timeIntervalSince($0) }
         Task {
             // See ConversationView.swift's identical sendTurn for why this
             // is freshAccessToken (not the raw, possibly-stale
@@ -256,6 +271,7 @@ struct SpeakQuestionCard: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= SpeakTurnRecorder.minimumAudioBytes else {
                 // Nothing captured is not a wrong answer: `picked` is left alone so
                 // Check cannot submit silence. Typing opens up too, because a
@@ -264,11 +280,13 @@ struct SpeakQuestionCard: View {
                 micUnavailable = true
                 return
             }
-            await transcribe(audio: audio, accessToken: accessToken)
+            let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
+                " capture=\(captureElapsed.map { String(format: "%.2f", $0) } ?? "?")"
+            await transcribe(audio: audio, accessToken: accessToken, debugTiming: debugTiming)
         }
     }
 
-    private func transcribe(audio: Data, accessToken: String) async {
+    private func transcribe(audio: Data, accessToken: String, debugTiming: String) async {
         phase = .transcribing
         let client = AIConversationClient(
             baseURL: AppConfig.apiBaseURL,
@@ -281,7 +299,9 @@ struct SpeakQuestionCard: View {
             // course was never being sent, so French/Spanish speaking
             // questions always had their audio transcribed with
             // Deepgram's English model regardless.
-            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a", course: course.sttCourseCode)
+            let result = try await client.transcribe(
+                audio: audio, mimeType: "audio/m4a", course: course.sttCourseCode, debugTiming: debugTiming
+            )
             let text = result.text.trimmingCharacters(in: .whitespaces)
             // Nothing captured is NOT a wrong answer: `picked` stays as it was
             // so Check cannot submit silence and spend a heart on it. The gate
@@ -371,6 +391,15 @@ final class SpeakTurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let startedAt else { return nil }
         let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
         return remaining > 0 ? remaining : nil
+    }
+
+    /// TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
+    /// debugTiming doc comment. Reads startedAt without clearing it
+    /// (unlike stop(), which nils it as part of finalizing), so this must
+    /// be called before stop().
+    func elapsedSinceStart() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        return Date().timeIntervalSince(startedAt)
     }
 
     /// See ConversationView's identical TurnRecorder.stop() for why this
