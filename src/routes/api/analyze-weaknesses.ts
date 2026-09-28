@@ -9,8 +9,16 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Second-opinion audit (2026-09-28): this whole pipeline had zero
+        // observability anywhere -- the client calls it fire-and-forget
+        // (`_ = try? await client.analyzeWeaknesses(...)`), so even a
+        // non-2xx response here was effectively invisible to anyone.
+        // Checkable from Vercel's dashboard now, no device needed.
         const key = process.env.NVIDIA_API_KEY;
-        if (!key) return Response.json({ error: "Analysis is not configured" }, { status: 500 });
+        if (!key) {
+          console.error("[analyze-weaknesses] NVIDIA_API_KEY not configured in this environment");
+          return Response.json({ error: "Analysis is not configured" }, { status: 500 });
+        }
 
         const { consumeQuota } = await import("@/lib/ai-quota.server");
         const quota = await consumeQuota(request, "chat");
@@ -50,6 +58,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         const { data: claims, error: claimsError } = await supabase.auth.getClaims(token);
         const userId = claims?.claims?.sub as string | undefined;
         if (claimsError || !userId) {
+          const reason = claimsError?.message ?? "no user id in claims";
+          console.error(`[analyze-weaknesses] Token claims resolution failed: ${reason}`);
           return Response.json({ error: "Unauthorized: invalid token" }, { status: 401 });
         }
 

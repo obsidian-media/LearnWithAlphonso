@@ -37,16 +37,34 @@ const weaknessSchema = z.object({
 const weaknessesSchema = z.array(weaknessSchema).max(3);
 export type Weakness = z.infer<typeof weaknessSchema>;
 
-/** Never throws -- any parse/shape failure yields an empty array. */
+/**
+ * Never throws -- any parse/shape failure yields an empty array.
+ *
+ * Second-opinion audit (2026-09-28): this whole pipeline had zero
+ * observability anywhere, server or client -- a genuine failure and the
+ * model correctly saying "nothing to flag" both silently produced the
+ * same empty array, with no way to ever tell them apart. Logs the two
+ * real-failure branches specifically (malformed JSON, wrong shape) and
+ * deliberately does NOT log a successfully-parsed empty array, which is
+ * the common, expected, non-error case.
+ */
 export function parseWeaknesses(content: string): Weakness[] {
   const stripped = content.replace(/```json\s*|```\s*/g, "").trim();
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(stripped);
-    const result = weaknessesSchema.safeParse(parsed);
-    return result.success ? result.data : [];
+    parsed = JSON.parse(stripped);
   } catch {
+    console.error(
+      `[weakness-detection] Model response was not valid JSON: ${stripped.slice(0, 200)}`,
+    );
     return [];
   }
+  const result = weaknessesSchema.safeParse(parsed);
+  if (!result.success) {
+    console.error(`[weakness-detection] Response shape mismatch: ${stripped.slice(0, 200)}`);
+    return [];
+  }
+  return result.data;
 }
 
 export function analysisPrompt(sourceDescription: string): string {
@@ -102,10 +120,16 @@ export async function detectAndRecordWeaknesses(params: {
         ],
       }),
     });
-    if (!resp.ok) return 0;
+    if (!resp.ok) {
+      console.error(
+        `[weakness-detection] NVIDIA API returned ${resp.status} for user ${params.userId}`,
+      );
+      return 0;
+    }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     content = data.choices?.[0]?.message?.content ?? "";
-  } catch {
+  } catch (err) {
+    console.error(`[weakness-detection] NVIDIA API call threw for user ${params.userId}: ${err}`);
     return 0;
   }
 
@@ -118,6 +142,9 @@ export async function detectAndRecordWeaknesses(params: {
     if (ok) {
       inserted += 1;
       await params.adminInsertEvent(weakness.label);
+    } else {
+      const { label } = weakness;
+      console.error(`[weakness-detection] Insert failed for "${label}", user ${params.userId}`);
     }
   }
   return inserted;
