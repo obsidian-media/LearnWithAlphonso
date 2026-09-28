@@ -135,6 +135,25 @@
 				<string>1C8F.1</string>
 			</array>
 		</dict>
+		<dict>
+			<!-- File timestamp: PodcastDownloadManager.swift's own doc
+			     comment on this call explains why: attributesOfItem(atPath:)
+			     is one of Apple's specifically enumerated File Timestamp
+			     required-reason APIs regardless of which attribute key is
+			     actually read (only .size here, comparing the staged
+			     download's real size against the server's declared
+			     Content-Length as a belt-and-braces integrity check).
+			     Found missing in a 2026-09-28 audit: the app was using
+			     this API undeclared. 3B52.1 fits: the file being inspected
+			     (a staged podcast download) lives inside the app's own
+			     container, not a user-selected or shared location. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>3B52.1</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

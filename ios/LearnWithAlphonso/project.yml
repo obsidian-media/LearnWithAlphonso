@@ -4,9 +4,11 @@
 # app project exist without ever opening Xcode's GUI -- see
 # docs/superpowers/specs/2026-09-17-native-ios-app-design.md.
 #
-# PRODUCT_BUNDLE_IDENTIFIER below is a placeholder pending a real decision
-# (see that doc's "Open questions" #3) -- cheap to change before an App ID
-# is registered in App Store Connect, so not blocking scaffold work.
+# PRODUCT_BUNDLE_IDENTIFIER below is now frozen, not a placeholder -- an
+# App ID (com.obsidianmedia.learnwithalphonso) is registered in App Store
+# Connect and it's baked into RevenueCat, both entitlements files, APNs,
+# and every provisioning profile. Found stale in a 2026-09-28 audit: this
+# comment still described the pre-registration "cheap to change" state.
 name: LearnWithAlphonso
 options:
   bundleIdPrefix: com.obsidianmedia
