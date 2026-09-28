@@ -10,6 +10,22 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**A second-opinion (ChatGPT) audit, verified and fixed.** The App
+Group entitlement the widget needs was missing from both Debug and
+Release's hand-written entitlements — confirmed missing, fixed, and
+proven with a real signed archive run rather than just a code read.
+`support.tsx` still said Hector needed a separate, manual-email
+deletion, directly contradicting `privacy.tsx`'s already-correct
+"deletes with the account" — fixed, with a regression test added since
+none existed. The paywall had no Terms of Use / Privacy Policy links
+(Guideline 3.1.2 requires them directly on the subscription screen);
+added. The delete-account confirmation now says deleting the account
+does not cancel an active Apple-billed subscription. Separately, a live
+App Store Connect check found the subscription sitting at
+`MISSING_METADATA` because its review screenshot is genuinely absent —
+left as a deliberate, documented gap, since a real non-error paywall
+screenshot can't exist until the app is actually submitted for review.
+
 **Admin: a "New episode" upload form.** Until now, publishing a brand
 new podcast episode's first MP3 had no UI at all — only
 `scripts/podcast-tool.ts add` could do it. Added
