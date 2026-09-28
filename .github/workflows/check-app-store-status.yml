@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       job:
-        description: "check (read-only) or create-group (actually creates the real subscription group) or app-info (read-only, category/age rating) or capabilities (read-only, bundle id capabilities e.g. Sign in with Apple) or subscription-state (read-only, the subscription's own review state) or review-screenshot (read-only, the subscription's review screenshot asset)"
+        description: "check (read-only) or create-group (actually creates the real subscription group) or app-info (read-only, category/age rating) or capabilities (read-only, bundle id capabilities e.g. Sign in with Apple) or subscription-state (read-only, the subscription's own review state) or review-screenshot (read-only, the subscription's review screenshot asset) or builds (read-only, recent TestFlight build processing states)"
         required: true
         type: choice
         options:
@@ -25,6 +25,7 @@ on:
           - capabilities
           - subscription-state
           - review-screenshot
+          - builds
 
 jobs:
   check:

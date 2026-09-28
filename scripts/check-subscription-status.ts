@@ -143,6 +143,18 @@ async function main() {
     );
     console.log(`\nStatus: ${bundles.status}`);
     console.log(JSON.stringify(bundles.json, null, 2));
+  } else if (cmd === "builds") {
+    // Live report (2026-09-28): a user re-tested Hector right after build
+    // 37's "UPLOAD SUCCEEDED" and saw the exact pre-fix symptom again --
+    // most likely explanation is TestFlight was still processing build 37
+    // (virus scan/compliance can take anywhere from minutes to an hour),
+    // so the device was still running build 36. Checking the real
+    // processingState instead of guessing.
+    const builds = await api(
+      `/builds?filter[app]=${APP_ID}&sort=-uploadedDate&limit=5&fields[builds]=version,processingState,uploadedDate,expired`,
+    );
+    console.log(`\nStatus: ${builds.status}`);
+    console.log(JSON.stringify(builds.json, null, 2));
   } else if (cmd === "app-info") {
     // Shipaton Part 2 prep: re-verify category + age rating are still
     // correct via the API rather than trusting prior session notes.
