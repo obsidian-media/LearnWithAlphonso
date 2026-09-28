@@ -115,7 +115,15 @@ async function main() {
     console.log(JSON.stringify(groups.json, null, 2));
   }
 
-  if (cmd === "capabilities") {
+  if (cmd === "subscription-state") {
+    // ChatGPT-sourced audit (2026-09-28), item 4: the subscription's OWN
+    // review state (not the app version's, and not the subscription
+    // GROUP's) is a separate, unread field this session -- read-only.
+    const subscriptionId = process.env.SUBSCRIPTION_ID ?? "6815009725";
+    const sub = await api(`/subscriptions/${subscriptionId}`);
+    console.log(`\nSubscription ${subscriptionId} status: ${sub.status}`);
+    console.log(JSON.stringify(sub.json, null, 2));
+  } else if (cmd === "capabilities") {
     // Submission-readiness audit (2026-09-28): the entitlements files'
     // own comments say Sign in with Apple's Developer Portal capability
     // enablement was "not yet confirmed done" -- this checks the real
