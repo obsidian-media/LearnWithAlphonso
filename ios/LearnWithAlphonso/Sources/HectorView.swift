@@ -216,7 +216,7 @@ private struct HectorConversationView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
-            guard let audio = recorder.stop(), audio.count >= HectorTurnRecorder.minimumAudioBytes else { return }
+            guard let audio = await recorder.stop(), audio.count >= HectorTurnRecorder.minimumAudioBytes else { return }
             await sendTurn(audio: audio)
         }
     }
@@ -233,18 +233,6 @@ private struct HectorConversationView: View {
             let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
             let text = sttResult.text
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
-                // TEMPORARY (2026-09-28): the wire-format fix stopped the
-                // hard "Empty or missing audio" server error, but a live
-                // report immediately after showed the mic button just
-                // resetting with no error -- this empty-transcript branch,
-                // silent by design once the previous bug was believed
-                // fixed. Surfacing the recorded size and confirming this
-                // exact branch fired, on-screen (no Mac to read a console
-                // log), so the next real-device test says definitively
-                // whether the recording itself is reasonably sized (rules
-                // audio capture in/out) rather than guessing a third time.
-                // Remove once the actual cause is found.
-                errorMessage = "DEBUG: recorded \(audio.count) bytes, Deepgram returned an empty transcript."
                 phase = .idle
                 return
             }
@@ -309,7 +297,7 @@ private enum RecordingStartError: Error {
 /// file-private helpers per screen (see LessonPlayerView/ReviewQueueView's
 /// duplicated questionID/Course.code).
 @Observable
-private final class HectorTurnRecorder {
+private final class HectorTurnRecorder: NSObject, AVAudioRecorderDelegate {
     /// See ConversationView's identical TurnRecorder for why: matches
     /// api/stt.ts's own `file.size < 512` floor with margin, caught
     /// locally instead of round-tripping to the server for the same
@@ -320,6 +308,7 @@ private final class HectorTurnRecorder {
     private var recorder: AVAudioRecorder?
     private var fileURL: URL?
     private var startedAt: Date?
+    private var finishContinuation: CheckedContinuation<Void, Never>?
 
     func start() throws {
         // Set before touching the session, so the flag is already true
@@ -343,6 +332,7 @@ private final class HectorTurnRecorder {
                 AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
             ]
             let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            newRecorder.delegate = self
             guard newRecorder.record() else {
                 throw RecordingStartError.recordCallFailed
             }
@@ -361,14 +351,31 @@ private final class HectorTurnRecorder {
         return remaining > 0 ? remaining : nil
     }
 
-    func stop() -> Data? {
+    /// See ConversationView's identical TurnRecorder.stop() for why this
+    /// awaits the delegate callback instead of trusting stop()'s
+    /// synchronous return: the file isn't guaranteed finalized on disk
+    /// until audioRecorderDidFinishRecording fires.
+    func stop() async -> Data? {
         RecordingState.shared.ended()
-        recorder?.stop()
-        recorder = nil
+        guard let recorder, let fileURL else { return nil }
+        await withCheckedContinuation { continuation in
+            finishContinuation = continuation
+            recorder.stop()
+        }
+        self.recorder = nil
         startedAt = nil
-        defer { fileURL = nil }
-        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
+        defer { self.fileURL = nil }
+        guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    // AVAudioRecorderDelegate fires on an arbitrary thread, not
+    // necessarily the main actor -- hop over explicitly.
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor in
+            self.finishContinuation?.resume()
+            self.finishContinuation = nil
+        }
     }
 }

@@ -255,7 +255,7 @@ private struct CampaignSessionView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
-            guard let audio = recorder.stop(), audio.count >= CampaignTurnRecorder.minimumAudioBytes else { return }
+            guard let audio = await recorder.stop(), audio.count >= CampaignTurnRecorder.minimumAudioBytes else { return }
             await sendTurn(audio: audio)
         }
     }
@@ -331,13 +331,14 @@ private enum RecordingStartError: Error {
 /// rather than shared, matching this codebase's existing pattern of small
 /// file-private helpers per screen.
 @Observable
-private final class CampaignTurnRecorder {
+private final class CampaignTurnRecorder: NSObject, AVAudioRecorderDelegate {
     static let minimumAudioBytes = 4_096
     private static let minimumDuration: TimeInterval = 0.4
 
     private var recorder: AVAudioRecorder?
     private var fileURL: URL?
     private var startedAt: Date?
+    private var finishContinuation: CheckedContinuation<Void, Never>?
 
     func start() throws {
         // Set before touching the session, so the flag is already true
@@ -360,6 +361,7 @@ private final class CampaignTurnRecorder {
                 AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
             ]
             let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            newRecorder.delegate = self
             guard newRecorder.record() else {
                 throw RecordingStartError.recordCallFailed
             }
@@ -378,14 +380,31 @@ private final class CampaignTurnRecorder {
         return remaining > 0 ? remaining : nil
     }
 
-    func stop() -> Data? {
+    /// See ConversationView's identical TurnRecorder.stop() for why this
+    /// awaits the delegate callback instead of trusting stop()'s
+    /// synchronous return: the file isn't guaranteed finalized on disk
+    /// until audioRecorderDidFinishRecording fires.
+    func stop() async -> Data? {
         RecordingState.shared.ended()
-        recorder?.stop()
-        recorder = nil
+        guard let recorder, let fileURL else { return nil }
+        await withCheckedContinuation { continuation in
+            finishContinuation = continuation
+            recorder.stop()
+        }
+        self.recorder = nil
         startedAt = nil
-        defer { fileURL = nil }
-        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
+        defer { self.fileURL = nil }
+        guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    // AVAudioRecorderDelegate fires on an arbitrary thread, not
+    // necessarily the main actor -- hop over explicitly.
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor in
+            self.finishContinuation?.resume()
+            self.finishContinuation = nil
+        }
     }
 }

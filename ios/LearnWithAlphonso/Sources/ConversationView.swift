@@ -244,7 +244,7 @@ private struct ConversationSessionView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
-            guard let audio = recorder.stop(), audio.count >= TurnRecorder.minimumAudioBytes else { return }
+            guard let audio = await recorder.stop(), audio.count >= TurnRecorder.minimumAudioBytes else { return }
             await sendTurn(audio: audio)
         }
     }
@@ -271,11 +271,6 @@ private struct ConversationSessionView: View {
             phase = .transcribing
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
             guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
-                // TEMPORARY (2026-09-28) -- see HectorView's identical
-                // branch for the full story. Remove once the actual cause
-                // of an empty Deepgram transcript (post wire-format fix)
-                // is found.
-                errorMessage = "DEBUG: recorded \(audio.count) bytes, Deepgram returned an empty transcript."
                 phase = .idle
                 return
             }
@@ -330,7 +325,7 @@ private enum RecordingStartError: Error {
 /// recording to a fresh temp file, stop() finalizes it and returns the
 /// recorded bytes (nil if nothing was captured).
 @Observable
-private final class TurnRecorder {
+private final class TurnRecorder: NSObject, AVAudioRecorderDelegate {
     /// Below this, `api/stt.ts`'s own floor (`file.size < 512`) would
     /// reject it anyway -- set well above that so a genuinely-too-short
     /// recording is caught locally, instantly, instead of round-tripping
@@ -377,6 +372,7 @@ private final class TurnRecorder {
                 AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
             ]
             let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            newRecorder.delegate = self
             // record() returns false rather than throwing when it can't
             // actually start (a session conflict, an interruption landing
             // at this exact instant) -- the same "reports success,
@@ -407,14 +403,46 @@ private final class TurnRecorder {
         return remaining > 0 ? remaining : nil
     }
 
-    func stop() -> Data? {
+    private var finishContinuation: CheckedContinuation<Void, Never>?
+
+    /// Waits for AVAudioRecorderDelegate's audioRecorderDidFinishRecording
+    /// before reading the file back -- stop() returning is documented to
+    /// itself trigger that delegate callback, which only makes sense if
+    /// finalizing the file (writing its container's real duration/sample
+    /// table) isn't guaranteed complete just because stop() returned.
+    ///
+    /// **Confirmed live, not theoretical** (2026-09-28): production
+    /// Deepgram logs showed every failing request reporting a duration of
+    /// ~0.46-0.51s, tightly clustered, regardless of the actual file size
+    /// (60-61KB -- several real seconds of audio at this bitrate). Reading
+    /// the file immediately after stop() sometimes caught it mid-
+    /// finalization: the raw audio bytes were already flushed (correct
+    /// file size), but the container's own duration metadata still
+    /// reflected an earlier, incomplete snapshot, so Deepgram only
+    /// recognized that first fraction of a second as real audio. Explains
+    /// why one attempt worked at all (pure timing) and most didn't.
+    func stop() async -> Data? {
         RecordingState.shared.ended()
-        recorder?.stop()
-        recorder = nil
+        guard let recorder, let fileURL else { return nil }
+        await withCheckedContinuation { continuation in
+            finishContinuation = continuation
+            recorder.stop()
+        }
+        self.recorder = nil
         startedAt = nil
-        defer { fileURL = nil }
-        guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
+        defer { self.fileURL = nil }
+        guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    // AVAudioRecorderDelegate fires on an arbitrary thread, not
+    // necessarily the main actor -- resume(), unlike touching stored
+    // properties, is documented safe to call from any thread.
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor in
+            self.finishContinuation?.resume()
+            self.finishContinuation = nil
+        }
     }
 }
