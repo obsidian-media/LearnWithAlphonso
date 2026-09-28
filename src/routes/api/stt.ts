@@ -36,17 +36,29 @@ export const Route = createFileRoute("/api/stt")({
         // bytes as the request body with Content-Type set to the audio's
         // actual mime type — it detects webm/mp4/wav/etc. from that header,
         // no multipart wrapper or transcoding needed.
-        // TEMPORARY (2026-09-28): chasing a live report of a genuinely-sized
-        // upload (61KB, well past every size floor) still coming back with
-        // an empty transcript, no error. Leading theory: file.type -- what
-        // this runtime's formData() parser extracted from the multipart
-        // part's own Content-Type header -- doesn't match what was actually
-        // sent, so this falls back to "audio/webm" and Deepgram receives
-        // real M4A/AAC bytes mislabeled as WebM, fails to demux real
-        // samples, and returns empty rather than erroring. Logging the
-        // actual forwarded Content-Type to confirm or rule this out with
-        // real data instead of another guess.
         const forwardedContentType = file.type || "audio/webm";
+        // TEMPORARY (2026-09-28): build 37's AVAudioRecorderDelegate fix
+        // (wait for audioRecorderDidFinishRecording before reading the
+        // file, instead of trusting stop()'s synchronous return) did NOT
+        // fix this -- confirmed on a real build-37 device, same signature
+        // (~0.5s reported duration on a 60KB+ file) as before the fix.
+        // That was the leading theory and it's now ruled out as the WHOLE
+        // story. Reading the file's own bytes here, once, before
+        // forwarding it -- an MPEG-4/M4A container's trailer (the `moov`
+        // atom, holding the real sample table and duration) is written
+        // LAST, once recording finishes, so if the file were still
+        // genuinely incomplete when uploaded, the tail bytes would show a
+        // truncated/missing moov rather than real box data. This settles
+        // whether the file itself is bad (a still-unsolved client-side
+        // race) or arrives intact and something after that -- Deepgram's
+        // own parsing of this specific encoder configuration -- is
+        // misreading it.
+        const audioBuffer = await file.arrayBuffer();
+        const audioBytes = new Uint8Array(audioBuffer);
+        const toHex = (bytes: Uint8Array) =>
+          Array.from(bytes)
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join(" ");
         const resp = await fetch(
           `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true`,
           {
@@ -55,7 +67,7 @@ export const Route = createFileRoute("/api/stt")({
               Authorization: `Token ${key}`,
               "Content-Type": forwardedContentType,
             },
-            body: file,
+            body: audioBytes,
           },
         );
         if (!resp.ok) {
@@ -66,15 +78,17 @@ export const Route = createFileRoute("/api/stt")({
           results?: {
             channels?: { alternatives?: { transcript?: string; confidence?: number }[] }[];
           };
-          metadata?: { duration?: number; channels?: number };
+          metadata?: Record<string, unknown>;
         };
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
         if (!text) {
-          const duration = data.metadata?.duration ?? "unknown";
+          const head = toHex(audioBytes.slice(0, 32));
+          const tail = toHex(audioBytes.slice(-64));
           console.error(
             `[stt] Empty transcript. file.type="${file.type}" forwarded="${forwardedContentType}"` +
-              ` size=${file.size} deepgram_duration=${duration}`,
+              ` size=${file.size}\n[stt] head=${head}\n[stt] tail=${tail}` +
+              `\n[stt] metadata=${JSON.stringify(data.metadata)}`,
           );
         }
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),
