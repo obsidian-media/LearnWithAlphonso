@@ -240,6 +240,42 @@ final class AIConversationClientTests: XCTestCase {
         XCTAssertTrue(body.range(of: audio) != nil)
     }
 
+    /// French/Spanish speaking questions never sent their real course to
+    /// api/stt.ts before this -- found 2026-09-28 alongside the
+    /// wire-format fix above.
+    func testTranscribeIncludesTheCourseFieldWhenProvided() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["text": "bonjour"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        _ = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a", course: "fr")
+
+        let request = try XCTUnwrap(captured)
+        let body = try XCTUnwrap(request.httpBody)
+        let bodyString = String(decoding: body, as: UTF8.self)
+        XCTAssertTrue(bodyString.contains("Content-Disposition: form-data; name=\"course\""))
+        XCTAssertTrue(bodyString.contains("\r\n\r\nfr\r\n"))
+    }
+
+    func testTranscribeOmitsTheCourseFieldWhenNil() async throws {
+        var captured: URLRequest?
+        let client = makeClient { request in
+            captured = request
+            let body = try! JSONSerialization.data(withJSONObject: ["text": "hello"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+
+        _ = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a")
+
+        let request = try XCTUnwrap(captured)
+        let body = try XCTUnwrap(request.httpBody)
+        let bodyString = String(decoding: body, as: UTF8.self)
+        XCTAssertFalse(bodyString.contains("name=\"course\""))
+    }
+
     func testTranscribeReturnsTheConfidenceWhenDeepgramReportsOne() async throws {
         let client = makeClient { request in
             let body = try! JSONSerialization.data(withJSONObject: ["text": "good morning", "confidence": 0.93])

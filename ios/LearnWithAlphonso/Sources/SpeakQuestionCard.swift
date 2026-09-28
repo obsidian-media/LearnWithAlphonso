@@ -266,7 +266,12 @@ struct SpeakQuestionCard: View {
         let client = AIConversationClient(
             baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
         do {
-            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
+            // Found 2026-09-28, alongside the wire-format fix on
+            // AIConversationClient.transcribe itself: this lesson's real
+            // course was never being sent, so French/Spanish speaking
+            // questions always had their audio transcribed with
+            // Deepgram's English model regardless.
+            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a", course: course.sttCourseCode)
             let text = result.text.trimmingCharacters(in: .whitespaces)
             // Nothing captured is NOT a wrong answer: `picked` stays as it was
             // so Check cannot submit silence and spend a heart on it. The gate
@@ -380,6 +385,17 @@ extension Course {
         case .english: return "en-US"
         case .french: return "fr-FR"
         case .spanish: return "es-ES"
+        }
+    }
+
+    /// Bare course code for api/stt.ts's `course` field -- matches
+    /// `isCourse`'s web-side validator exactly ("en"/"fr"/"es"), a
+    /// different format from `speakLanguageCode`'s locale strings above.
+    var sttCourseCode: String {
+        switch self {
+        case .english: return "en"
+        case .french: return "fr"
+        case .spanish: return "es"
         }
     }
 }

@@ -279,7 +279,22 @@ public final class AIConversationClient: Sendable {
     /// every call, unconditionally, regardless of what audio was
     /// actually recorded. Now builds the same multipart/form-data body
     /// the web client sends, field name `"file"`, matching exactly.
-    public func transcribe(audio: Data, mimeType: String) async throws -> (text: String, confidence: Double?) {
+    /// `course` ("en"/"fr"/"es", matching `isCourse`'s web-side validator
+    /// exactly) selects Deepgram's transcription language via
+    /// `api/stt.ts`. Nil (every existing caller's prior behavior) means
+    /// the server's own default of "en" -- correct for Practice, Hector
+    /// and Campaigns, which are English-only features today (their
+    /// content models carry no course/language field at all); real for
+    /// `SpeakQuestionCard`'s lesson speaking questions, which know their
+    /// exact course and, before this parameter existed, always had their
+    /// French/Spanish audio transcribed with the English model regardless
+    /// (found alongside the wire-format fix above, 2026-09-28, while
+    /// re-checking this exact endpoint).
+    public func transcribe(
+        audio: Data,
+        mimeType: String,
+        course: String? = nil
+    ) async throws -> (text: String, confidence: Double?) {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
         request.httpMethod = "POST"
         let boundary = "LWA-\(UUID().uuidString)"
@@ -295,6 +310,11 @@ public final class AIConversationClient: Sendable {
         )
         body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
         body.append(audio)
+        if let course {
+            body.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"course\"\r\n\r\n".data(using: .utf8)!)
+            body.append(course.data(using: .utf8)!)
+        }
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         request.httpBody = body
 
