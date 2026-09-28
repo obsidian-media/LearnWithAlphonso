@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildFolderTree, findCycle, isValidSlug, resolveFolderPath, slugPathFor } from "./podcast-tree";
+import {
+  buildFolderTree,
+  findCycle,
+  isValidSlug,
+  resolveFolderPath,
+  slugPathFor,
+} from "./podcast-tree";
 
 const f = (id: string, parentId: string | null, slug: string, sortOrder = 0) => ({
   id,

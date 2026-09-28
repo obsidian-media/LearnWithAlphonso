@@ -393,7 +393,14 @@ async function audioPathForEpisode(
  */
 async function draftForNewEpisode(
   client: SupabaseClient<Database>,
-  input: { folderId: string; slug: string; title: string; description: string | null; course: EpisodeDraft["course"]; levelId: string | null },
+  input: {
+    folderId: string;
+    slug: string;
+    title: string;
+    description: string | null;
+    course: EpisodeDraft["course"];
+    levelId: string | null;
+  },
 ): Promise<EpisodeDraft> {
   const { data: folderRows, error: folderError } = await client
     .from("podcast_folders")
