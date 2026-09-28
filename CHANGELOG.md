@@ -19,11 +19,14 @@ delete-account alert (dead since the Hector decouple, #189). Confirmed
 live, not just in code, that Sign in with Apple's App ID capability
 (`APPLE_ID_AUTH`) is actually enabled, and that all 4 Apple ID
 revocation secrets are set in Vercel production — both had been sitting
-as "not yet confirmed" for a while. Wrote (but have not yet run) a
-script to fix the age rating declaration, which is still live at 4+
-despite docs/BACKLOG.md sec 0.0y deciding weeks ago it should be
-higher — needs the account owner's go-ahead to actually apply, same as
-the actual App Store submission itself.
+as "not yet confirmed" for a while. Applied docs/BACKLOG.md sec 0.0y's
+age-rating fix (`userGeneratedContent`/`messagingAndChat`/`socialMedia`/
+`contests`, with the account owner's go-ahead) — confirmed live, though
+the *displayed* `appStoreAgeRating` tier still shows 4+ and is expected
+to only recompute at actual App Store submission time, not on every API
+write (a real, if under-documented, quirk of Apple's API). The actual
+App Store submission itself is still a deliberate, separate decision,
+not yet made.
 
 **Three small fixes** (#191): `complete-lesson` and `start-lesson-session`
 were both missing `"es"` from their course schema, predating Spanish's
