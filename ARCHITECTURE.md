@@ -619,6 +619,10 @@ answer, on a question with no skip, which makes the lesson unfinishable — no
 XP, no streak, no unlock, and nothing on screen explaining why. iOS asks for
 microphone permission **explicitly** for the same reason: a denial does not
 throw, `AVAudioRecorder.record()` simply returns false and records silence.
+Found missing on the other three recorder types (`ConversationView`,
+`HectorView`, `CampaignView`) in a 2026-09-28 live bug hunt — this
+explicit-request pattern is now applied consistently across all four, not
+just this one.
 
 Server-side score validation (`completeLessonRemote` in
 `src/lib/sync.functions.ts`) looks lessons up through this same
