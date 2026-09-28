@@ -17,9 +17,15 @@
 	<key>aps-environment</key>
 	<string>production</string>
 	<!-- Sign in with Apple (App Store Guideline 4.8). Requires "Sign in
-	     with Apple" enabled on the App ID and the Distribution provisioning
-	     profile regenerated to include it -- not yet confirmed done; see
-	     this PR's description. -->
+	     with Apple" enabled on the App ID. Confirmed via a read-only App
+	     Store Connect API check (2026-09-28, submission-readiness audit):
+	     bundleIdCapabilities for com.obsidianmedia.learnwithalphonso
+	     includes APPLE_ID_AUTH. The signed archive workflow (manual
+	     signing, this exact entitlements file) has been green through
+	     build 28, which is itself evidence the Distribution provisioning
+	     profile in use does support this entitlement, since a profile
+	     that didn't support it would fail codesigning outright rather
+	     than silently ignore it. -->
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>

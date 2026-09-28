@@ -5,15 +5,14 @@
 	<!-- V4 candidate #2 (real push) -- Debug/Simulator builds' device
 	     tokens register against APNs' sandbox environment. See
 	     docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md.
-	     Harmless with no Push Notifications capability actually enabled
-	     on the App ID yet (the hard blocker that doc flags) -- an
-	     unsigned/Simulator build (ios-app-build CI,
-	     CODE_SIGNING_ALLOWED=NO) never enforces entitlements at all. -->
+	     Push Notifications capability is confirmed enabled on the App ID
+	     (see the Release entitlements file's own comment) -- an unsigned/
+	     Simulator build (ios-app-build CI, CODE_SIGNING_ALLOWED=NO) never
+	     enforces entitlements at all regardless. -->
 	<key>aps-environment</key>
 	<string>development</string>
-	<!-- Sign in with Apple (App Store Guideline 4.8). Requires "Sign in
-	     with Apple" enabled on the App ID in the Apple Developer portal --
-	     not yet confirmed done; see this PR's description. -->
+	<!-- Sign in with Apple (App Store Guideline 4.8) -- see the Release
+	     entitlements file's own comment for the live confirmation. -->
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>
