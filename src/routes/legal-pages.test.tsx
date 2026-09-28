@@ -161,6 +161,8 @@ describe("Support route — must agree with Privacy on Hector deletion (2026-09-
   it("states deletion covers Hector, matching privacy.tsx", () => {
     const Support = SupportRoute.options.component!;
     render(<Support />);
-    expect(screen.getByText(/removes your learning history, including Hector/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/removes your learning history, including Hector/i),
+    ).toBeInTheDocument();
   });
 });
