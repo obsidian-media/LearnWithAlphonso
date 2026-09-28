@@ -92,13 +92,24 @@ async function api(
   return { ok: res.ok, status: res.status, json };
 }
 
-// The specific, honest answers per docs/BACKLOG.md sec 0.0y's reasoning.
-// "contests" covers the competitive/social features (leaderboards,
-// leagues, teams, duels) -- present and real, but not high-stakes/
-// intense, so INFREQUENT_OR_MILD rather than FREQUENT_OR_INTENSE.
+// The specific, honest answers per docs/BACKLOG.md sec 0.0y's reasoning,
+// corrected 2026-09-28 after the first PATCH (userGeneratedContent +
+// messagingAndChat + contests only) left appStoreAgeRating at FOUR_PLUS.
+// Per Apple's own current age-rating tier table, userGeneratedContent
+// and messagingAndChat both sit at 4+ on their own -- they don't cross
+// a threshold by themselves. socialMedia is the field that starts at
+// 13+, and it's the honest answer here: the live privacy policy itself
+// says "Leaderboards, leagues, teams, duels and friend lists show your
+// display name, country and XP to other signed-in learners" -- that is
+// exactly a social-media-shaped feature (public identity + activity
+// visible to other users), not just user-generated content or 1:1 chat.
+// "contests" covers the competitive features (leaderboards, leagues,
+// teams, duels) -- present and real, but not high-stakes/intense, so
+// INFREQUENT_OR_MILD rather than FREQUENT_OR_INTENSE.
 const HONEST_ANSWERS = {
   userGeneratedContent: true,
   messagingAndChat: true,
+  socialMedia: true,
   contests: "INFREQUENT_OR_MILD",
 };
 
