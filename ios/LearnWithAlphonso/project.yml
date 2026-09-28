@@ -65,6 +65,28 @@ targets:
         # and LearnWithAlphonso-Release.entitlements.
         com.apple.developer.applesignin:
           - Default
+        # Push Notifications (V4 candidate #2). Found live 2026-09-28: this
+        # `properties` block is what XcodeGen uses to register a target's
+        # capabilities into the generated .pbxproj's SystemCapabilities --
+        # separate from, and consulted BEFORE, whatever CODE_SIGN_ENTITLEMENTS
+        # override file says. Without an entry here, `xcodebuild archive`
+        # doesn't know Push Notifications is a capability this target has,
+        # so it silently drops aps-environment from the actual signed
+        # binary even though both hand-written .entitlements files declare
+        # it and the provisioning profile supports it -- confirmed by
+        # inspecting the .xcarchive directly: the embedded provisioning
+        # profile HAD aps-environment, the archived .app's own code
+        # signature did NOT. Unlike a missing App Group or Sign-in-with-
+        # Apple capability (which fail codesigning outright), a missing
+        # Push Notifications capability registration fails silently --
+        # that asymmetry is what made this take three earlier fix attempts
+        # aimed at the wrong layer (codesign syntax, profile regeneration)
+        # before landing here. The value below only matters for this
+        # never-actually-signed-against generated file (see this block's
+        # own comment above); Debug vs Release's real aps-environment
+        # value still comes from each config's own CODE_SIGN_ENTITLEMENTS
+        # override, unaffected by this key.
+        aps-environment: production
     dependencies:
       - package: LearnWithAlphonsoKit
       - package: RevenueCat
