@@ -36,13 +36,24 @@ export const Route = createFileRoute("/api/stt")({
         // bytes as the request body with Content-Type set to the audio's
         // actual mime type — it detects webm/mp4/wav/etc. from that header,
         // no multipart wrapper or transcoding needed.
+        // TEMPORARY (2026-09-28): chasing a live report of a genuinely-sized
+        // upload (61KB, well past every size floor) still coming back with
+        // an empty transcript, no error. Leading theory: file.type -- what
+        // this runtime's formData() parser extracted from the multipart
+        // part's own Content-Type header -- doesn't match what was actually
+        // sent, so this falls back to "audio/webm" and Deepgram receives
+        // real M4A/AAC bytes mislabeled as WebM, fails to demux real
+        // samples, and returns empty rather than erroring. Logging the
+        // actual forwarded Content-Type to confirm or rule this out with
+        // real data instead of another guess.
+        const forwardedContentType = file.type || "audio/webm";
         const resp = await fetch(
           `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true`,
           {
             method: "POST",
             headers: {
               Authorization: `Token ${key}`,
-              "Content-Type": file.type || "audio/webm",
+              "Content-Type": forwardedContentType,
             },
             body: file,
           },
@@ -55,9 +66,17 @@ export const Route = createFileRoute("/api/stt")({
           results?: {
             channels?: { alternatives?: { transcript?: string; confidence?: number }[] }[];
           };
+          metadata?: { duration?: number; channels?: number };
         };
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
+        if (!text) {
+          const duration = data.metadata?.duration ?? "unknown";
+          console.error(
+            `[stt] Empty transcript. file.type="${file.type}" forwarded="${forwardedContentType}"` +
+              ` size=${file.size} deepgram_duration=${duration}`,
+          );
+        }
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),
         // used as a lightweight pronunciation-clarity heuristic client-side
         // -- not real phoneme-level pronunciation scoring (see the design
