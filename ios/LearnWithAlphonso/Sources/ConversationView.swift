@@ -243,7 +243,17 @@ private struct ConversationSessionView: View {
             player?.play()
             phase = .idle
         } catch {
-            errorMessage = "Something went wrong. Try again."
+            // Was unconditionally "Something went wrong. Try again." --
+            // discarded the server's own message even when it had one,
+            // e.g. ai-quota.server.ts's real "Daily CHAT limit reached
+            // (60/day). Try again tomorrow." A learner who'd simply used
+            // up today's AI quota saw the same generic text as an actual
+            // crash, with no way to tell the difference.
+            if case let AIConversationError.server(_, message?) = error, !message.isEmpty {
+                errorMessage = message
+            } else {
+                errorMessage = "Something went wrong. Try again."
+            }
             phase = .idle
         }
     }

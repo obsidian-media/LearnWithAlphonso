@@ -216,7 +216,18 @@ private struct HectorConversationView: View {
             }
             phase = .idle
         } catch {
-            errorMessage = "Something went wrong. Try again."
+            // Same fix as ConversationView.swift's identical catch block:
+            // surface the server's own message (e.g. ai-quota.server.ts's
+            // "Daily ... limit reached (N/day). Try again tomorrow.")
+            // instead of a generic string that looks the same whether the
+            // learner hit their daily quota or something actually broke.
+            if case let AIConversationError.server(_, message?) = error, !message.isEmpty {
+                errorMessage = message
+            } else if case let TutorConversationError.server(_, message?) = error, !message.isEmpty {
+                errorMessage = message
+            } else {
+                errorMessage = "Something went wrong. Try again."
+            }
             phase = .idle
         }
     }
