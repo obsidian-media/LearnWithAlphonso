@@ -212,11 +212,33 @@ private struct CampaignSessionView: View {
 
     private func startRecording() {
         errorMessage = nil
-        do {
-            try recorder.start()
-            isRecording = true
-        } catch {
-            errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+        // Permission is asked for EXPLICITLY rather than left to the implicit
+        // prompt AVAudioRecorder.record() raises -- see ConversationView's
+        // identical startRecording for the full story.
+        requestMicrophonePermission { granted in
+            guard granted else {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                return
+            }
+            do {
+                try recorder.start()
+                isRecording = true
+            } catch {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+            }
+        }
+    }
+
+    /// Calls back on the main actor whether or not permission was granted.
+    private func requestMicrophonePermission(_ completion: @escaping @MainActor (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
         }
     }
 

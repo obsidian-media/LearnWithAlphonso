@@ -167,11 +167,38 @@ private struct HectorConversationView: View {
 
     private func startRecording() {
         errorMessage = nil
-        do {
-            try recorder.start()
-            isRecording = true
-        } catch {
-            errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+        // Permission is asked for EXPLICITLY rather than left to the implicit
+        // prompt AVAudioRecorder.record() raises -- see ConversationView's
+        // identical startRecording for the full story (found live testing
+        // Hector specifically, 2026-09-28: the minimum-duration fix alone
+        // did not resolve a repeat "Empty or missing audio" report, because
+        // a denied/never-granted microphone means record() silently returns
+        // false and produces an empty file regardless of how long the
+        // button is held).
+        requestMicrophonePermission { granted in
+            guard granted else {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                return
+            }
+            do {
+                try recorder.start()
+                isRecording = true
+            } catch {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+            }
+        }
+    }
+
+    /// Calls back on the main actor whether or not permission was granted.
+    private func requestMicrophonePermission(_ completion: @escaping @MainActor (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
         }
     }
 

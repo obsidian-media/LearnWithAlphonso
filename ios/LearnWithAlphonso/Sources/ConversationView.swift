@@ -188,11 +188,40 @@ private struct ConversationSessionView: View {
 
     private func startRecording() {
         errorMessage = nil
-        do {
-            try recorder.start()
-            isRecording = true
-        } catch {
-            errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+        // Permission is asked for EXPLICITLY rather than left to the implicit
+        // prompt AVAudioRecorder.record() raises. A denied microphone does
+        // not make start() throw -- record() just returns false and the file
+        // stays empty, which api/stt.ts's own 512-byte floor then rejects as
+        // "Empty or missing audio" -- the minimum-recording-duration fix
+        // (found the same day) only helps a too-short *successful* capture;
+        // it cannot produce audio from a recorder that never actually
+        // started. Same fix SpeakQuestionCard already had for exactly this
+        // reason, applied here after the duration fix alone did not resolve
+        // a live report of the same symptom on Hector.
+        requestMicrophonePermission { granted in
+            guard granted else {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                return
+            }
+            do {
+                try recorder.start()
+                isRecording = true
+            } catch {
+                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+            }
+        }
+    }
+
+    /// Calls back on the main actor whether or not permission was granted.
+    private func requestMicrophonePermission(_ completion: @escaping @MainActor (Bool) -> Void) {
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                Task { @MainActor in completion(granted) }
+            }
         }
     }
 
