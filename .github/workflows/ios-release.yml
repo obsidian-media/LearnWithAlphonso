@@ -275,8 +275,16 @@ jobs:
             exit 1
           fi
 
+          # `--entitlements - --xml` (dash for stdout, explicit --xml),
+          # not `--entitlements :-` -- found the hard way (two failed CI
+          # runs) that `:`-prefixed paths are a DEPRECATED codesign
+          # syntax, and without --xml the modern default is DER, not
+          # text. A stray deprecation notice mixed into the captured
+          # variable is the likely reason PlistBuddy couldn't parse
+          # $ENTITLEMENTS as a real plist even though plain grep still
+          # found key names in it as raw text.
           echo "-- Signed app entitlements include App Groups and Sign in with Apple --"
-          ENTITLEMENTS=$(codesign -d --entitlements :- "$APP" 2>/dev/null)
+          ENTITLEMENTS=$(codesign -d --entitlements - --xml "$APP" 2>/dev/null)
           echo "$ENTITLEMENTS" | grep -q "com.apple.security.application-groups" \
             || { echo "::error::Signed app is missing the application-groups entitlement."; exit 1; }
           echo "$ENTITLEMENTS" | grep -q "com.apple.developer.applesignin" \
@@ -289,7 +297,7 @@ jobs:
           # config being correct doesn't prove the actual signed .appex
           # got the entitlement too.
           echo "-- Widget's own signed entitlements include App Groups --"
-          WIDGET_ENTITLEMENTS=$(codesign -d --entitlements :- "$WIDGET" 2>/dev/null)
+          WIDGET_ENTITLEMENTS=$(codesign -d --entitlements - --xml "$WIDGET" 2>/dev/null)
           echo "$WIDGET_ENTITLEMENTS" | grep -q "com.apple.security.application-groups" \
             || { echo "::error::Signed widget extension is missing the application-groups entitlement -- it would not be able to read the shared UserDefaults."; exit 1; }
 
@@ -297,21 +305,23 @@ jobs:
           # "production" (see both .entitlements files' own comments).
           # This confirms the RIGHT one actually made it into the signed
           # binary, not just that the source file says the right thing.
-          # PlistBuddy, not grep -A1 -- a first version of this check used
-          # grep -A1 "aps-environment" | grep -q production, which failed
-          # on a real signed archive even though the key/value were both
-          # actually correct (confirmed by hand from the run's own
-          # artifact): a two-line grep window is fragile against however
-          # codesign happens to format the plist, unlike a real parser.
+          #
+          # This check went through 3 real attempts before working, kept
+          # here so nobody repeats them: (1) grep -A1 "aps-environment" |
+          # grep -q production -- fragile against line layout, not the
+          # real bug. (2) codesign -d --entitlements :- (piped through a
+          # bash variable) + PlistBuddy on a re-echoed file -- PlistBuddy
+          # reported the key missing even though grep found it as text
+          # two lines above, using the exact same codesign call. (3) the
+          # real cause: `:`-prefixed entitlements paths are a DEPRECATED
+          # codesign syntax, and without an explicit --xml flag the
+          # modern default output is DER, not text -- a stray deprecation
+          # notice most likely contaminated the captured variable, which
+          # broke PlistBuddy's strict parse while a loose grep substring
+          # search still happened to find the key names anyway.
+          # --xml with a real file path is the correct, current form.
           echo "-- Production APNs environment (not sandbox/development) --"
-          # codesign writes XML straight to a file here (:PATH), instead
-          # of piping through $(...) and echo like the attempt before
-          # this one -- that round trip (capture to a bash variable,
-          # re-echo to a file) is what actually broke PlistBuddy's parse
-          # last run (Print :aps-environment came back "key not found"
-          # even though the key was demonstrably present, per the grep
-          # checks above succeeding against the very same codesign call).
-          codesign -d --entitlements :/tmp/app-entitlements.plist "$APP" 2>/dev/null
+          codesign -d --entitlements /tmp/app-entitlements.plist --xml "$APP" 2>/dev/null
           APS_ENV=$(/usr/libexec/PlistBuddy -c "Print :aps-environment" /tmp/app-entitlements.plist 2>/dev/null || echo "MISSING")
           if [ "$APS_ENV" != "production" ]; then
             echo "::error::Signed app's aps-environment is '$APS_ENV', not 'production'."
