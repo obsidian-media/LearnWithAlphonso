@@ -86,6 +86,11 @@ const NEW_VALUES = {
     "english,french,spanish,speaking,vocabulary,grammar,fluency,practice,tutor,podcast,listening,cefr",
   supportUrl: "https://learn.alphonsoecosystem.app/support",
   marketingUrl: "https://learn.alphonsoecosystem.app",
+  // whatsNew deliberately omitted: Apple's API rejects it with a 409
+  // STATE_ERROR ("Attribute 'whatsNew' cannot be edited at this time")
+  // for this version -- confirmed live, not a guess. Expected for a
+  // first release (nothing prior to describe changes from); revisit if
+  // the App Store Connect UI itself later shows the field as editable.
   description: `Learn With Alphonso makes language practice feel possible on a real day.
 
 Build confidence in English, French, and Spanish with focused lessons, speaking practice, listening, and a review routine that helps you return to the words and skills that need another pass.
@@ -112,9 +117,6 @@ PRIVACY
 Learn With Alphonso does not use advertising or tracking. You can manage your account, export your data, or delete your account in the app.
 
 Learn With Alphonso is free to download. Alphonso Pro is an optional auto-renewable subscription that unlocks Hector, the AI voice tutor.`,
-  whatsNew: `First release.
-
-Learn English, French, and Spanish with CEFR-graded lessons, speaking practice, listening, reviews, downloadable audio, and Hector, the optional AI voice tutor.`,
 };
 
 async function main() {
@@ -170,8 +172,9 @@ async function main() {
       : "\nSome fields did not match after write -- check the mismatches above.",
   );
   console.log(
-    "\nNOT written (needs manual confirmation first): Copyright, Subtitle (a separate " +
-      "appInfoLocalizations resource, not this one).",
+    "\nNOT written: Copyright and Subtitle need manual confirmation first (Subtitle is also a " +
+      "separate appInfoLocalizations resource, not this one). What's New was left as-is -- " +
+      "Apple's API rejects editing it for this version (409 STATE_ERROR), expected for a first release.",
   );
 }
 
