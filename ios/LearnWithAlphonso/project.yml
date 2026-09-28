@@ -115,15 +115,16 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # 28 was already uploaded before this session's aps-environment
-        # fix landed; 29 uploaded clean but hung on launch on a real
-        # device (watchdog SIGKILL). 30's temporary on-device logging
-        # (removed again in this build) found it: AlphonsoThemeManager.
-        # updateSystemColorScheme's missing equality guard caused an
-        # infinite RootView.body re-render loop -- see that method's own
-        # doc comment and docs/BACKLOG.md §0.0-e for the full trail. 31
-        # is the fix.
-        CURRENT_PROJECT_VERSION: "31"
+        # 31 fixed the launch hang (AlphonsoThemeManager.
+        # updateSystemColorScheme's missing equality guard -- see that
+        # method's own doc comment and docs/BACKLOG.md §0.0-e) and
+        # confirmed working live. 32 adds the "Empty or missing audio"
+        # fix found testing 31 (a too-quick mic release could finalize
+        # before the recorder captured anything real) across all four
+        # AVAudioRecorder call sites (Practice, Hector, Campaigns, the
+        # "speak" question type), plus Apple-revocation observability
+        # improvements.
+        CURRENT_PROJECT_VERSION: "32"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -251,7 +252,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "31"
+        CURRENT_PROJECT_VERSION: "32"
         SKIP_INSTALL: true
       configs:
         Release:
