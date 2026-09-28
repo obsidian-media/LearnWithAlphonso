@@ -188,6 +188,17 @@ struct SettingsView: View {
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
+                // Apple expects a privacy policy to be "easily accessible"
+                // in the app itself, not just reachable from the paywall or
+                // the AI-disclosure sheet -- the only two places it existed
+                // before this (found in a 2026-09-28 audit). Settings is
+                // the conventional place a reviewer or user looks first.
+                Section {
+                    Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
+                    Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+
                 Section {
                     Button("Sign out", role: .destructive) { session.signOut() }
                         .font(AlphonsoFont.sans(15, weight: .medium))

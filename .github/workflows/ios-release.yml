@@ -72,6 +72,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify Xcode meets Apple's current minimum
+        run: |
+          # Found in a 2026-09-28 audit: runs-on: macos-latest was never
+          # checked against what it actually resolved to. Apple has
+          # required Xcode 26+ for every new App Store submission since
+          # 2026-04-28 -- not a future concern, already in effect. This
+          # doesn't pin an exact version (macos-latest's bundled Xcode
+          # versions change as GitHub updates the image, and hardcoding
+          # one would go stale), it asserts the floor Apple actually
+          # enforces.
+          VERSION=$(xcodebuild -version | head -1 | grep -oE '[0-9]+' | head -1)
+          echo "Detected Xcode major version: $VERSION"
+          if [ "$VERSION" -lt 26 ]; then
+            echo "::error::macos-latest resolved to Xcode $VERSION, but Apple has required Xcode 26+ for App Store submissions since 2026-04-28. This archive would be rejected at upload."
+            exit 1
+          fi
+
       - name: Install XcodeGen
         run: brew install xcodegen
 
@@ -97,6 +114,25 @@ jobs:
           # doesn't touch Info.plist) rather than before, purely to keep
           # this step grouped with the project-generation step logically.
           sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
+
+      - name: Verify RCApiKey isn't a leftover/mistaken test_ key
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          # Found in a 2026-09-28 audit: the sed substitution above never
+          # checked its own result. Empty is fine and expected (Pro
+          # purchases just stay unavailable that build, per
+          # EntitlementStore.swift) -- what must never ship is a
+          # test_-prefixed key, which this project's own prior comment
+          # already knew crashes on launch in a real TestFlight/App Store
+          # build. This can only happen from a misconfigured
+          # REVENUECAT_API_KEY secret, since the placeholder itself is
+          # always fully replaced by the sed above, empty or not.
+          KEY=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" Info.plist)
+          if [[ "$KEY" == test_* ]]; then
+            echo "::error::RCApiKey resolved to a test_ key ('$KEY') -- REVENUECAT_API_KEY is misconfigured. This would crash on launch in a real build. Refusing to archive."
+            exit 1
+          fi
+          echo "RCApiKey OK (empty, or a non-test_ key)."
 
       - name: Write App Store Connect API key
         working-directory: ios/LearnWithAlphonso
@@ -190,6 +226,52 @@ jobs:
             -archivePath build/LearnWithAlphonso.xcarchive \
             -exportPath build/export \
             -exportOptionsPlist ExportOptions.plist
+
+      - name: Validate the exported .ipa itself, not just the source
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          # Found in a 2026-09-28 audit: this workflow archived and
+          # exported but never once looked at what actually came out --
+          # static source checks (this file's own RCApiKey step above,
+          # PrivacyInfo.xcprivacy's existence, the entitlements files)
+          # prove intent, not the signed binary. This unzips the real
+          # .ipa and checks the artifact that would actually be uploaded.
+          IPA=$(ls build/export/*.ipa | head -1)
+          rm -rf build/ipa-check
+          mkdir -p build/ipa-check
+          unzip -q "$IPA" -d build/ipa-check
+          APP=$(find build/ipa-check/Payload -maxdepth 1 -name "*.app" | head -1)
+          echo "Inspecting $APP"
+
+          echo "-- Widget extension embedded? --"
+          WIDGET=$(find "$APP/PlugIns" -maxdepth 1 -name "*.appex" 2>/dev/null | head -1)
+          if [ -z "$WIDGET" ]; then
+            echo "::error::No .appex found in $APP/PlugIns -- the widget is not embedded in the shipped binary."
+            exit 1
+          fi
+          echo "Found: $WIDGET"
+
+          echo "-- Privacy manifest present in the shipped bundle? --"
+          if [ ! -f "$APP/PrivacyInfo.xcprivacy" ]; then
+            echo "::error::PrivacyInfo.xcprivacy is not in the exported app bundle."
+            exit 1
+          fi
+
+          echo "-- Final RCApiKey isn't a test_ key, in the actual shipped Info.plist --"
+          FINAL_KEY=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" "$APP/Info.plist")
+          if [[ "$FINAL_KEY" == test_* ]]; then
+            echo "::error::The shipped .ipa's Info.plist still has a test_ RCApiKey ('$FINAL_KEY')."
+            exit 1
+          fi
+
+          echo "-- Signed entitlements include App Groups and Sign in with Apple --"
+          ENTITLEMENTS=$(codesign -d --entitlements :- "$APP" 2>/dev/null)
+          echo "$ENTITLEMENTS" | grep -q "com.apple.security.application-groups" \
+            || { echo "::error::Signed app is missing the application-groups entitlement."; exit 1; }
+          echo "$ENTITLEMENTS" | grep -q "com.apple.developer.applesignin" \
+            || { echo "::error::Signed app is missing the applesignin entitlement."; exit 1; }
+
+          echo "All post-archive checks passed."
 
       - name: Upload to TestFlight (App Store Connect)
         if: ${{ inputs.upload_to_testflight }}

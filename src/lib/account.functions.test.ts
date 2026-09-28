@@ -161,12 +161,15 @@ describe("deleteMyAccount", () => {
 
     const result = await deleteMyAccount({ context: ctx(supabase), data: { confirm: "DELETE" } });
 
-    // appleRevoked/hectorRevoked report whether each grant was actually
-    // revoked. Both false here because no Apple secrets and no Hector
-    // revoke endpoint are configured in tests -- the same answer
-    // production gives until they are -- and deletion proceeds either
-    // way by design.
-    expect(result).toEqual({ deleted: true, appleRevoked: false });
+    // appleRevocationStatus reports what happened to the Apple grant.
+    // "not_applicable" here because no Apple secrets are configured in
+    // tests -- the same answer production gives until they are -- and
+    // deletion proceeds either way by design. (Was a bare
+    // `appleRevoked: false` before a 2026-09-28 fix that distinguishes
+    // "nothing to revoke" from "revocation actually failed", since the
+    // old boolean collapsed both into the same value and nothing ever
+    // logged the difference.)
+    expect(result).toEqual({ deleted: true, appleRevocationStatus: "not_applicable" });
     // Hector is decoupled (2026-09-27): no separate account to revoke, so
     // the result carries no hectorRevoked field at all.
     expect("hectorRevoked" in result).toBe(false);

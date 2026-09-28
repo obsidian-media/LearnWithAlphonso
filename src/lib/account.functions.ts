@@ -126,14 +126,26 @@ export const exportMyData = createServerFn({ method: "POST" })
 
 /** Permanently delete the account and all associated data (GDPR erasure). */
 /**
- * Revokes the user's Apple grant if there is one, reporting whether it
+ * "revoked": Apple confirmed the grant is gone.
+ * "not_applicable": nothing to revoke -- no Apple secrets configured, or
+ * this user never linked Sign in with Apple. Expected and common; not
+ * worth logging.
+ * "failed": there WAS a stored grant and Apple's revoke call did not
+ * succeed. This is the one outcome worth chasing -- see the call sites.
+ */
+export type AppleRevocationStatus = "revoked" | "not_applicable" | "failed";
+
+/**
+ * Revokes the user's Apple grant if there is one, reporting what
  * happened. Never throws -- see the call site in deleteMyAccount.
  *
- * Returns false for every "we could not", which are deliberately not
- * distinguished to the caller: no Apple secrets configured, no stored
- * token (the user never used Apple sign-in), or Apple refused. Only a
- * confirmed revocation returns true, because the one thing worth
- * asserting is that the grant is definitely gone.
+ * Was a bare boolean that collapsed "nothing to revoke" and "revocation
+ * genuinely failed" into the same `false`, and neither call site (here
+ * nor adminDeleteReportedUser) read the result at all -- found in a
+ * 2026-09-28 audit to be silent end-to-end: a real revocation failure
+ * produced no log, no alert, nothing. Both call sites now log the
+ * "failed" case specifically, which is the one that needs a human to
+ * notice and re-run revocation by hand.
  *
  * Exported so admin.functions.ts's adminDeleteReportedUser can reuse the
  * exact same revoke-then-delete step for an admin-initiated deletion --
@@ -144,11 +156,11 @@ export const exportMyData = createServerFn({ method: "POST" })
 export async function revokeAppleGrantForUser(
   supabaseAdmin: SupabaseClient<Database>,
   userId: string,
-): Promise<boolean> {
+): Promise<AppleRevocationStatus> {
   try {
     const { appleConfigFromEnv, revokeAppleGrant } = await import("@/lib/apple-revocation");
     const config = appleConfigFromEnv();
-    if (!config) return false;
+    if (!config) return "not_applicable";
 
     const { data } = await supabaseAdmin
       .from("apple_auth_tokens")
@@ -156,11 +168,12 @@ export async function revokeAppleGrantForUser(
       .eq("user_id", userId)
       .maybeSingle();
     const refreshToken = data?.refresh_token;
-    if (!refreshToken) return false;
+    if (!refreshToken) return "not_applicable";
 
-    return await revokeAppleGrant(config, refreshToken);
+    const revoked = await revokeAppleGrant(config, refreshToken);
+    return revoked ? "revoked" : "failed";
   } catch {
-    return false;
+    return "failed";
   }
 }
 
@@ -189,15 +202,25 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // Deliberately never throws. A user's right to delete their account
     // cannot depend on Apple being reachable, or on these secrets being
     // configured -- so the outcome is reported, and deletion proceeds
-    // either way. `appleRevoked: false` means a grant is still live and is
-    // a compliance problem to chase; refusing the deletion would be a worse
-    // one.
-    const appleRevoked = await revokeAppleGrantForUser(supabaseAdmin, userId);
+    // either way. "failed" means a grant is still live and is a
+    // compliance problem to chase; refusing the deletion would be a
+    // worse one.
+    const appleRevocationStatus = await revokeAppleGrantForUser(supabaseAdmin, userId);
+    // Was computed and returned to the caller but never actually looked
+    // at anywhere -- neither this server log nor the iOS client read it
+    // (found in a 2026-09-28 audit). This is the one line that makes a
+    // real failure visible at all right now; a proper alert/retry queue
+    // is future work if this ever fires in practice.
+    if (appleRevocationStatus === "failed") {
+      console.error(
+        `[apple-revocation] FAILED to revoke Apple grant for user ${userId} during account deletion -- a live grant may still exist.`,
+      );
+    }
 
     // Friend rows pointing at this user are not owned by them.
     await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
 
-    return { deleted: true, appleRevoked };
+    return { deleted: true, appleRevocationStatus };
   });

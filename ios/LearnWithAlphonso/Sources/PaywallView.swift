@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 import RevenueCat
 import LearnWithAlphonsoKit
 
@@ -16,6 +17,13 @@ import LearnWithAlphonsoKit
 /// or period without reading it from the product.
 struct PaywallView: View {
     let entitlementStore: EntitlementStore
+
+    // Apple's own recommendation is a direct in-app path to subscription
+    // management, not just instructions to go find Settings yourself
+    // (found missing in a 2026-09-28 audit). manageSubscriptionsSheet is
+    // the StoreKit 2 modifier for exactly this -- no navigation, no
+    // Settings.
+    @State private var isPresentingManageSubscriptions = false
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.lg) {
@@ -65,16 +73,21 @@ struct PaywallView: View {
                 }
             }
 
-            Button("Restore Purchases") {
-                Task { await entitlementStore.restorePurchases() }
+            HStack(spacing: AlphonsoSpacing.md) {
+                Button("Restore Purchases") {
+                    Task { await entitlementStore.restorePurchases() }
+                }
+                Button("Manage Subscription") {
+                    isPresentingManageSubscriptions = true
+                }
             }
             .font(AlphonsoFont.sans(13))
             .tint(AlphonsoColor.moss)
 
-            // Renews-automatically + how-to-cancel: standard subscription
-            // disclosure text, not derived from any product field, so it's
-            // shown regardless of loading/empty/error state above.
-            Text("Subscriptions renew automatically unless canceled at least 24 hours before the end of the current period. Cancel anytime in Settings > Subscriptions on your device.")
+            // Renews-automatically disclosure stays -- required regardless
+            // of the button above -- but the manual "go find Settings
+            // yourself" instruction is gone now that there's a direct path.
+            Text("Subscriptions renew automatically unless canceled at least 24 hours before the end of the current period.")
                 .font(AlphonsoFont.sans(11))
                 .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
@@ -103,6 +116,7 @@ struct PaywallView: View {
         .frame(maxWidth: 360)
         .background(AlphonsoColor.surface)
         .task { await entitlementStore.loadOffering() }
+        .manageSubscriptionsSheet(isPresented: $isPresentingManageSubscriptions)
     }
 
     /// Maps RevenueCat's `SubscriptionPeriod` onto Kit's

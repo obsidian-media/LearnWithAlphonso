@@ -96,6 +96,16 @@ public final class AccountClient: Sendable {
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
+
+        // The body's own appleRevocationStatus was computed server-side
+        // but never read by any caller until now (found in a 2026-09-28
+        // audit) -- deletion still always succeeds regardless of this
+        // value, by design; this is purely so a genuine revocation
+        // failure leaves a trace somewhere instead of vanishing entirely.
+        if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let status = object["appleRevocationStatus"] as? String, status == "failed" {
+            print("[AccountClient] Apple grant revocation FAILED during account deletion -- a live grant may still exist server-side.")
+        }
     }
 
     /// POST /api/apple-link -- forwards the one-time Apple authorization
