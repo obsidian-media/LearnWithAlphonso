@@ -842,7 +842,10 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!report) throw new Error("That report no longer exists.");
 
-    const appleRevocationStatus = await revokeAppleGrantForUser(context.supabaseAdmin, report.reported);
+    const appleRevocationStatus = await revokeAppleGrantForUser(
+      context.supabaseAdmin,
+      report.reported,
+    );
     if (appleRevocationStatus === "failed") {
       console.error(
         `[apple-revocation] FAILED to revoke Apple grant for user ${report.reported} during an admin-initiated deletion -- a live grant may still exist.`,
