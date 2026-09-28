@@ -10,6 +10,36 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**A third-opinion (ChatGPT) audit, verified and fixed — 8 findings.**
+Confirmed zero pre-publication content filtering existed anywhere for
+public display names/team names (Guideline 1.2 needs it on top of the
+report/block this project already ships) — added a Postgres trigger on
+`profiles.display_name` (the one write path with no server function to
+validate in) plus an inline check in `create_team`, sharing one
+blocklist. Confirmed Apple-grant revocation failures were silent
+end-to-end — `revokeAppleGrantForUser` now returns a 3-state result
+instead of a boolean, logged on failure, decoded by the iOS client too.
+Completed the privacy manifest fix from the last audit round — it only
+had the required-reason API section filled in, `NSPrivacyCollectedDataTypes`
+was still empty. Hardened `ios-release.yml`: rejects a misconfigured
+`test_` RevenueCat key before archiving and re-checks the actual
+exported `.ipa` after, asserts the resolved Xcode version meets
+Apple's current 26+ floor, and inspects the unzipped `.ipa` for the
+embedded widget/privacy manifest/entitlements instead of trusting
+source-level checks alone. Added a persistent Privacy/Terms link to
+Settings (previously only on the paywall and AI-disclosure sheet) and
+a native "Manage Subscription" button next to Restore Purchases.
+
+**Documentation accuracy pass.** ARCHITECTURE.md and AGENTS.md still
+described Hector as running on AlphonsoCompanion's separate "Cloud
+Voice" backend with its own Supabase project and sign-in — true before
+the 2026-09-27 decouple, false since, and two of the files it named
+(`HectorSession.swift`, `DeviceEnrollmentClient.swift`) no longer exist.
+Both docs also still said RevenueCat had "no real Offering/Package
+yet," which has been confirmed live and working for days. Corrected
+both, plus the same claim in README.md, plus a stale `appleRevoked`
+field-name reference superseded by the audit above.
+
 **A second-opinion (ChatGPT) audit, verified and fixed.** The App
 Group entitlement the widget needs was missing from both Debug and
 Release's hand-written entitlements — confirmed missing, fixed, and

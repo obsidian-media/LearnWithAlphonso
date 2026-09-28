@@ -264,9 +264,9 @@ compile verification that exists):
 - **Free** AI conversation: 6 roleplay scenarios against this repo's own
   `/api/chat`/`/api/tts`/`/api/stt` (same backend the web app uses)
 - **Pro** ($9.99/month, via RevenueCat): "Hector" — a second AI
-  conversation mode using AlphonsoCompanion's Cloud Voice backend, which
-  needs its own separate sign-in (a different Supabase project from this
-  app's own account system)
+  conversation mode, same backend and account as everything else in the
+  app (decoupled from AlphonsoCompanion's separate Cloud Voice system
+  2026-09-27; no separate sign-in anymore)
 - **Weakness detection**: after either conversation mode ends (4+ turns),
   NVIDIA NIM identifies up to 3 grammar/vocabulary weaknesses and adds
   them as gradable multiple-choice items to the same SM-2 review queue —

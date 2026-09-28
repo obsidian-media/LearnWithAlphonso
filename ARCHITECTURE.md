@@ -64,7 +64,7 @@ over "what the answer currently is," since the latter goes stale fast.
 
 | `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. |
 | `podcast_transcripts` | Podcast library Phase 2a. One row per episode (`episode_id` PRIMARY KEY, cascade), plain text with blank-line paragraph breaks. **An accessibility obligation, not a feature**: the players carry no captions, so without text on screen an episode is unavailable to deaf and hard-of-hearing learners. A separate table rather than a column on `podcast_episodes` because the episode row is read by every folder listing and every search, and a transcript is kilobytes nobody needs until they open one episode. Plain text only -- timed cues need forced alignment against the audio, which is the Deepgram path and is gated on the unrun chunk-join probe. Added `supabase/migrations/20260927230000_podcast_transcripts.sql`, versioned deliberately after **both** `20260926030000` and `20260926223031`: wall-clock "now" was 2026-09-25, which sorts below both, because the library migration was itself renumbered forward out of a version collision. **A transcript is not the TTS script** -- `--transcript` rejects markup, since episode 1's script carries ElevenLabs SSML that would otherwise render to the exact readers the feature exists for. |
-| `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. |
+| `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. **Block and report are two of the four things Guideline 1.2 actually requires** for an app with user-generated content -- filtering objectionable material *before* it posts, and published contact information, are the other two. A 2026-09-28 audit found the filter was the one genuinely missing piece: `profiles.display_name` and `teams.name` (the only user-authored text shown to other users) had length checks only, nowhere in the codebase. `20260930030000_ugc_content_filter.sql` closes it -- a `BEFORE INSERT OR UPDATE OF display_name` trigger on `profiles` (the one write path with no server function to validate in, since it's a direct PostgREST PATCH from iOS) plus an inline check inside `create_team` itself, both calling one shared `contains_blocked_term`/`normalize_for_moderation` pair so there is exactly one blocklist to review or extend. Deliberately documented as a real, working baseline rather than a claim of completeness -- report/block remain the backstop for anything it misses. |
 | `apple_auth_tokens` | Apple refresh tokens, stored **only** so account deletion can revoke the Sign in with Apple grant -- which Apple requires and checks. **RLS enabled with zero policies** plus `REVOKE ALL FROM anon, authenticated`: a refresh token a client can read is a credential it can exfiltrate, and this one authorises Apple identity operations for the whole app. Deliberately no own-row policy -- the app never reads it back, it only ever posts a fresh authorization code to `/api/apple-link`. We store the refresh token rather than the authorization code because the code is single-use, five-minute-lived, and the app's copy does not survive relaunch, so "sign in with Apple, quit, return tomorrow, delete account" would have had nothing to revoke with. Added `supabase/migrations/20260928030000_apple_auth_tokens.sql`. |
 
 **Podcast on iOS (Phase 1b).** `PodcastClient` in `LearnWithAlphonsoKit` is the
@@ -177,6 +177,19 @@ entitlements file is **not** what either build config signs with; both
 override `CODE_SIGN_ENTITLEMENTS`. Adding it only to the obvious place
 compiles fine and fails at runtime with no error.
 
+**The App Group entitlement (`group.com.obsidianmedia.learnwithalphonso`,
+app ↔ widget shared UserDefaults) hit exactly this trap for real**,
+found in a 2026-09-28 audit: `project.yml` declared it, and the
+widget's own entitlements file (auto-generated, no override) correctly
+had it -- but both hand-written app entitlements files never did, so
+the main app could read the App Group's own capability being enabled
+on the App ID (confirmed live) but was never actually authorized to
+*write* into the shared container in a signed build. Fixed the same
+way Sign in with Apple's own gap above was; proven with a real signed
+archive run afterward, not just a source-level fix, since a
+provisioning profile that predates a capability being enabled would
+fail codesigning outright.
+
 **Apple token revocation** (`src/lib/apple-revocation.ts`) closes what
 Apple requires on account deletion. It is server-side because the
 `client_secret` is an ES256 JWT signed with the team's `.p8`, which
@@ -185,7 +198,14 @@ dependency; `dsaEncoding: "ieee-p1363"` is load-bearing, since Node
 defaults to DER and Apple answers `invalid_client` without saying the
 encoding is why. **Deletion never fails on it** -- a user's right to
 delete their account cannot depend on Apple being reachable, so the
-outcome is reported as `appleRevoked` and deletion proceeds regardless.
+outcome is reported as `appleRevocationStatus`
+(`"revoked" | "not_applicable" | "failed"`) and deletion proceeds
+regardless. Was a bare boolean that collapsed "nothing to revoke" and
+"revocation genuinely failed" into the same `false` -- and neither the
+web nor the iOS client ever actually read the result, so a real failure
+had no trace anywhere (found in the same audit). Both server call sites
+now log the `"failed"` case, and the iOS `AccountClient` decodes and
+logs it too.
 
 **Native account deletion and export** live in Settings and call the
 _same_ `deleteMyAccount`/`exportMyData` the web uses, through thin routes
@@ -296,6 +316,26 @@ bucket serves with and sniffing alone does not control that. Transcripts go thro
 `normalizeTranscript` the CLI uses, which _throws_ on markup rather than
 returning null; null means empty, and a handler that conflated them would
 save an empty transcript and report success.
+
+**Creating a brand-new episode (Phase 5, 2026-09-28).** Until this, the
+admin UI could only rename/publish/delete an existing episode or replace
+its audio -- the *first* upload for a folder required `scripts/
+podcast-tool.ts add` from a terminal. `adminCreateEpisodeUploadUrl` +
+`adminCreateEpisode` add a UI path that reuses `podcast-authoring.ts`'s
+`validateEpisodeDraft`/`storagePathFor` (the same functions the CLI
+uses, not a second copy) so the two ways of creating an episode cannot
+disagree about validity or the storage key. The one real constraint
+this ran into: `podcast_episodes.duration_seconds` is `NOT NULL CHECK
+(> 0)`, so there is no "insert a draft row, fill in the file later"
+order the replace-audio flow above gets to use -- the object must be
+uploaded and verified **first**, and the row is only inserted once a
+real duration is known, matching the CLI's own order. `slugPathFor`
+(`podcast-tree.ts`) is the one new piece of pure logic this needed:
+folder id → its root-to-leaf slug path, the reverse of the existing
+`resolveFolderPath`. `verifyStagedAudio` (`admin.functions.ts`) is
+`adminVerifyUploadedAudio`'s sniff-and-duration check pulled out into
+its own function so both flows share one implementation instead of two
+that could drift.
 
 **Offline download (Phase 3).** Downloaded episodes live in
 **Application Support**, not Caches: the system may purge Caches under
@@ -799,9 +839,9 @@ models, `ContentStore` bundled-JSON loader, SRS/progress-math/hearts-economy
 ports, and network clients: `SupabaseAuthClient`, `ProgressSyncClient`
 (PostgREST + the `complete-lesson`/`start-lesson-session`/`grade-review`
 Edge Functions), `AIConversationClient` (this repo's own
-`/api/chat`/`/api/tts`/`/api/stt`), `TutorConversationClient` +
-`DeviceEnrollmentClient` (AlphonsoCompanion's Cloud Voice, Pro-only — see
-below)) and `LearnWithAlphonso` (the SwiftUI app target, scaffolded via
+`/api/chat`/`/api/tts`/`/api/stt`), `TutorConversationClient` (Hector,
+Pro-only — this repo's own `/api/hector-respond` since the 2026-09-27
+decouple, see below)) and `LearnWithAlphonso` (the SwiftUI app target, scaffolded via
 XcodeGen so the `.xcodeproj` is generated from `project.yml` rather than
 hand-clicked/committed).
 
@@ -820,32 +860,51 @@ certificates on the Apple account, despite each CI run starting from an
 empty keychain — no certificate-persistence (`.p12`/fastlane-match)
 infrastructure was needed.
 
-**Two separate AI-conversation modes, two separate backends:**
-
-- **Free** — `ConversationView.swift` / `AIConversationClient.swift`:
-  calls this repo's own already-deployed AI endpoints directly (same
-  backend, same Supabase account/session the rest of the app uses).
-- **Pro** ($9.99/month, RevenueCat-gated) — `HectorView.swift` /
-  `TutorConversationClient.swift`: AlphonsoCompanion's Cloud Voice
-  backend (`voice.obsidianmedia.online`), which requires its own
-  separate email-OTP sign-in and device enrollment
-  (`HectorSession.swift` / `DeviceEnrollmentClient.swift`) against a
-  **different Supabase project** (`ywavjlmjbxuslbxactsx`) — a second,
-  deliberate account system, not a bug. Speech-to-text for this mode
-  still goes through the app's own `/api/stt` (only the chat reply + its
-  TTS audio come from Cloud Voice). That Cloud Voice Supabase project
-  auto-paused (`INACTIVE`) once already during this project's
-  lifetime — if Hector stops working, check its status first.
+**Two AI-conversation modes, one backend (as of the 2026-09-27 Hector
+decouple).** `ConversationView.swift`/`AIConversationClient.swift`
+(free) and `HectorView.swift`/`TutorConversationClient.swift` (Pro)
+both call this repo's own already-deployed endpoints, same Supabase
+account/session the rest of the app uses -- `TutorConversationClient`
+posts to `AppConfig.hectorRespondEndpoint`
+(`api/hector-respond`), which runs the same LLM-reply + TTS-audio
+pipeline `/api/chat`/`/api/tts` already run. **This used to be two
+backends**: Hector ran on AlphonsoCompanion's separate "Cloud Voice"
+system (`voice.obsidianmedia.online`), a different Supabase project
+(`ywavjlmjbxuslbxactsx`) with its own email-OTP sign-in and device
+enrollment (`HectorSession.swift`/`DeviceEnrollmentClient.swift`,
+both now deleted). That project auto-paused once during this
+project's lifetime, which was part of the motivation for decoupling
+it -- Hector now stores no transcript and persists nothing beyond the
+main account, so deleting the account removes all Hector data by
+construction, with no separate revocation step needed. Speech-to-text
+for both modes goes through the app's own `/api/stt`, unchanged by the
+decouple.
 
 **RevenueCat**: `EntitlementStore.swift` wraps the SDK
 (`Purchases.configure` in `LearnWithAlphonsoApp.init`) — every
 Pro-gated view reads only `EntitlementStore.isPro`/`.packages`, never
-touches `Purchases` directly. Currently configured with a **Test Store**
-key; no real Offering/Package exists in the RevenueCat dashboard yet, so
-`PaywallView` shows a "not available yet" state rather than a working
-purchase button until a real App Store Connect subscription product is
-created and connected. See `AGENTS.md`'s RevenueCat note for the exact
-remaining steps.
+touches `Purchases` directly. **The real Offering/Package/Entitlement
+are fully configured and confirmed live** (re-verified via the App
+Store Connect and RevenueCat APIs directly, 2026-09-28) — the repo
+source still carries a Test Store key (`ios-release.yml` substitutes
+the real production key at archive time; see its own comment for why
+the key cannot live as an `INFOPLIST_KEY_*` build setting). The actual
+remaining blocker is that Apple requires a first auto-renewable
+subscription to be submitted and reviewed alongside a real app version
+before `Purchases.shared.offerings()` can succeed for anyone, including
+sandbox testing -- not a dashboard configuration gap. Until that
+submission happens, `PaywallView` correctly shows "Subscription
+options aren't available yet" rather than a broken purchase button;
+see `docs/BACKLOG.md`'s App Store submission entries for the current
+status. The release workflow now also (2026-09-28 audit): rejects a
+misconfigured `test_`-prefixed key before archiving *and* re-checks the
+actually-exported `.ipa`'s `Info.plist` after, asserts `xcodebuild
+-version` meets Apple's current Xcode 26+ floor (mandatory for
+submissions since 2026-04-28) rather than trusting whatever
+`macos-latest` happens to resolve to, and inspects the unzipped `.ipa`
+itself for the embedded widget, the privacy manifest, and the signed
+entitlements -- previously the workflow archived and exported but never
+looked at what actually came out.
 
 App Store Connect app record exists: "Learn With Alphonso", app id
 `6813969159`, bundle `com.obsidianmedia.learnwithalphonso`, Team ID
@@ -1229,11 +1288,14 @@ deploy`, both easy to forget (this bit a real session that added several
   app — found via a real failed `ios-release.yml` upload, fixed in
   `ios/LearnWithAlphonso/project.yml`. Worth knowing if a future Info.plist
   change reintroduces a narrower orientation list.
-- Cloud Voice's Supabase project (`ywavjlmjbxuslbxactsx`, Hector's
-  separate account system) auto-paused once already this project's
-  lifetime — Supabase free-tier inactivity pausing. If Hector sign-in
-  fails with a connection error, check that project's status
-  (`mcp__claude_ai_Supabase__get_project`) before assuming a code bug.
+- **Moot as of the 2026-09-27 Hector decouple, kept for history.** Cloud
+  Voice's Supabase project (`ywavjlmjbxuslbxactsx`, Hector's old
+  separate account system) auto-paused once during this project's
+  lifetime (Supabase free-tier inactivity pausing) — part of the
+  motivation for decoupling it. Hector now runs entirely on the main
+  backend/account, so this project and its pausing behavior no longer
+  affect Hector at all; do not chase this as a cause if Hector breaks
+  today.
 - **Offline-first (iOS) has two known, deliberately-unsolved edge cases**
   (see `docs/v2-kickoffs/01-offline-first.md` for the full design):
   concurrent-device review grading, and streak continuity across an
