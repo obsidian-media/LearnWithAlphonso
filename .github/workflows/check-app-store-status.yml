@@ -15,13 +15,14 @@ on:
   workflow_dispatch:
     inputs:
       job:
-        description: "check (read-only) or create-group (actually creates the real subscription group) or app-info (read-only, category/age rating)"
+        description: "check (read-only) or create-group (actually creates the real subscription group) or app-info (read-only, category/age rating) or capabilities (read-only, bundle id capabilities e.g. Sign in with Apple)"
         required: true
         type: choice
         options:
           - check
           - create-group
           - app-info
+          - capabilities
 
 jobs:
   check:

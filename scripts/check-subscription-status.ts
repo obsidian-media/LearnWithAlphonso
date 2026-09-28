@@ -115,7 +115,18 @@ async function main() {
     console.log(JSON.stringify(groups.json, null, 2));
   }
 
-  if (cmd === "app-info") {
+  if (cmd === "capabilities") {
+    // Submission-readiness audit (2026-09-28): the entitlements files'
+    // own comments say Sign in with Apple's Developer Portal capability
+    // enablement was "not yet confirmed done" -- this checks the real
+    // bundleIdCapabilities for the app's real bundle id, read-only.
+    const bundleId = appData.data.attributes.bundleId;
+    const bundles = await api(
+      `/bundleIds?filter[identifier]=${encodeURIComponent(bundleId)}&include=bundleIdCapabilities`,
+    );
+    console.log(`\nStatus: ${bundles.status}`);
+    console.log(JSON.stringify(bundles.json, null, 2));
+  } else if (cmd === "app-info") {
     // Shipaton Part 2 prep: re-verify category + age rating are still
     // correct via the API rather than trusting prior session notes.
     const appInfos = await api(
