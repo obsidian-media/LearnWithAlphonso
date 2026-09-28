@@ -198,7 +198,19 @@ final class AIConversationClientTests: XCTestCase {
 
     // MARK: - transcribe
 
-    func testTranscribeSendsRawAudioWithContentTypeAndReturnsTheText() async throws {
+    /// Found live 2026-09-28: this test used to assert the WRONG wire
+    /// format as if it were correct (a raw binary body, Content-Type set
+    /// to the mime type) -- exactly matching what the client used to
+    /// send, and exactly why a real, structural "every single call fails"
+    /// bug (api/stt.ts expects multipart/form-data with a field literally
+    /// named "file"; a raw-body POST isn't multipart, so the server found
+    /// nothing and returned "Empty or missing audio" unconditionally) went
+    /// undetected through three rounds of unrelated recording-side fixes.
+    /// The mock here never exercised the real server code, so nothing
+    /// ever caught the client and server disagreeing about wire format.
+    /// Rewritten to assert the multipart body actually matches what the
+    /// web client (`use-speech-capture.ts`) sends and `api/stt.ts` parses.
+    func testTranscribeSendsMultipartFormDataWithAFileFieldAndReturnsTheText() async throws {
         var captured: URLRequest?
         let client = makeClient { request in
             captured = request
@@ -213,8 +225,19 @@ final class AIConversationClientTests: XCTestCase {
         XCTAssertNil(result.confidence)
         let request = try XCTUnwrap(captured)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/stt"))
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "audio/m4a")
-        XCTAssertEqual(request.httpBody, audio)
+        let contentType = try XCTUnwrap(request.value(forHTTPHeaderField: "Content-Type"))
+        XCTAssertTrue(contentType.hasPrefix("multipart/form-data; boundary="))
+        let boundary = String(contentType.dropFirst("multipart/form-data; boundary=".count))
+        let body = try XCTUnwrap(request.httpBody)
+        let bodyString = String(decoding: body, as: UTF8.self)
+        XCTAssertTrue(bodyString.contains("--\(boundary)"))
+        XCTAssertTrue(bodyString.contains("Content-Disposition: form-data; name=\"file\""))
+        XCTAssertTrue(bodyString.contains("Content-Type: audio/m4a"))
+        // The raw audio bytes must appear in the body verbatim, not just
+        // the framing around them -- this is the actual regression check:
+        // a multipart envelope with the wrong/no payload would still pass
+        // every string assertion above.
+        XCTAssertTrue(body.range(of: audio) != nil)
     }
 
     func testTranscribeReturnsTheConfidenceWhenDeepgramReportsOne() async throws {

@@ -256,19 +256,47 @@ public final class AIConversationClient: Sendable {
         return data
     }
 
-    /// POST /api/stt -- `audio` is the raw recorded bytes (e.g. m4a/wav),
-    /// sent as the request body with its real mime type, matching
-    /// api/stt.ts's expectation (Deepgram detects the format from
-    /// Content-Type, no multipart wrapper). `confidence` (V3 package 3a)
-    /// is Deepgram's own utterance-level confidence (0-1), used as a
-    /// lightweight pronunciation-clarity heuristic -- nil if Deepgram
-    /// didn't report one.
+    /// POST /api/stt -- `audio` is the raw recorded bytes (e.g. m4a/wav).
+    /// `confidence` (V3 package 3a) is Deepgram's own utterance-level
+    /// confidence (0-1), used as a lightweight pronunciation-clarity
+    /// heuristic -- nil if Deepgram didn't report one.
+    ///
+    /// **THE actual cause of every "Empty or missing audio" report this
+    /// session** (found 2026-09-28, after three separate rounds of real
+    /// but ultimately unrelated recording-side fixes -- minimum duration,
+    /// explicit mic permission, RecordingState desync -- none of which
+    /// could ever have fixed this, which is exactly why the identical
+    /// error kept recurring across every one of them). This used to send
+    /// `audio` as a raw binary body with `Content-Type: <mimeType>`, on
+    /// the documented assumption that `api/stt.ts` read the raw body
+    /// directly. It doesn't, and evidently hasn't for a while: it calls
+    /// `request.formData()` and looks for a field literally named
+    /// `"file"` -- exactly what the WEB app's own caller
+    /// (`use-speech-capture.ts`) sends via `FormData`. A raw-body POST
+    /// isn't multipart at all, so `request.formData()` finds nothing,
+    /// `file` is `undefined`, and the server correctly (from its own
+    /// point of view) returns "Empty or missing audio" -- on literally
+    /// every call, unconditionally, regardless of what audio was
+    /// actually recorded. Now builds the same multipart/form-data body
+    /// the web client sends, field name `"file"`, matching exactly.
     public func transcribe(audio: Data, mimeType: String) async throws -> (text: String, confidence: Double?) {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/stt"))
         request.httpMethod = "POST"
-        request.setValue(mimeType, forHTTPHeaderField: "Content-Type")
+        let boundary = "LWA-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        request.httpBody = audio
+
+        let filename = "recording.\(Self.fileExtension(forMimeType: mimeType))"
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append(
+            "Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n"
+                .data(using: .utf8)!
+        )
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(audio)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        request.httpBody = body
 
         let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
@@ -277,6 +305,19 @@ public final class AIConversationClient: Sendable {
             throw AIConversationError.invalidPayload
         }
         return (text, object["confidence"] as? Double)
+    }
+
+    /// Every current caller passes "audio/m4a" -- this covers the couple
+    /// of other formats api/stt.ts's own Deepgram passthrough would
+    /// otherwise see too, rather than hardcoding just the one in use today.
+    private static func fileExtension(forMimeType mimeType: String) -> String {
+        switch mimeType {
+        case "audio/m4a", "audio/mp4", "audio/x-m4a": return "m4a"
+        case "audio/wav", "audio/x-wav", "audio/wave": return "wav"
+        case "audio/webm": return "webm"
+        case "audio/mpeg", "audio/mp3": return "mp3"
+        default: return "m4a"
+        }
     }
 
     private static func requireSuccess(data: Data, response: URLResponse) throws {
