@@ -304,10 +304,19 @@ jobs:
           # artifact): a two-line grep window is fragile against however
           # codesign happens to format the plist, unlike a real parser.
           echo "-- Production APNs environment (not sandbox/development) --"
-          echo "$ENTITLEMENTS" > /tmp/app-entitlements.plist
+          # codesign writes XML straight to a file here (:PATH), instead
+          # of piping through $(...) and echo like the attempt before
+          # this one -- that round trip (capture to a bash variable,
+          # re-echo to a file) is what actually broke PlistBuddy's parse
+          # last run (Print :aps-environment came back "key not found"
+          # even though the key was demonstrably present, per the grep
+          # checks above succeeding against the very same codesign call).
+          codesign -d --entitlements :/tmp/app-entitlements.plist "$APP" 2>/dev/null
           APS_ENV=$(/usr/libexec/PlistBuddy -c "Print :aps-environment" /tmp/app-entitlements.plist 2>/dev/null || echo "MISSING")
           if [ "$APS_ENV" != "production" ]; then
-            echo "::error::Signed app's aps-environment is '$APS_ENV', not 'production' -- push notifications would register against the wrong APNs environment in a real TestFlight/App Store build."
+            echo "::error::Signed app's aps-environment is '$APS_ENV', not 'production'."
+            echo "Raw entitlements file for debugging:"
+            cat /tmp/app-entitlements.plist || echo "(file not found or unreadable)"
             exit 1
           fi
 
