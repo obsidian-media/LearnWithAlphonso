@@ -17,5 +17,11 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<!-- App Group shared with LearnWithAlphonsoWidget. See the Release
+	     entitlements file's own comment for the full story. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.obsidianmedia.learnwithalphonso</string>
+	</array>
 </dict>
 </plist>

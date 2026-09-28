@@ -30,5 +30,22 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<!-- App Group shared with LearnWithAlphonsoWidget (WidgetSharing.swift,
+	     WidgetProgressPublisher.swift). project.yml's generated entitlements
+	     declare this too, but this hand-written file is what Release
+	     actually signs against (CODE_SIGN_ENTITLEMENTS), and it never had
+	     this key: a real gap found in a 2026-09-28 audit. The widget's own
+	     entitlements (auto-generated, no override) already had App Group
+	     access, so it could read the shared container, but the main app
+	     was never actually authorized to write into it in a signed build.
+	     The App ID's App Groups capability is confirmed enabled via a live
+	     API check the same day; if the Distribution provisioning profile
+	     predates that, codesigning will fail outright here rather than
+	     silently ignore it, which is the signal to regenerate it
+	     (manage-ios-certificates.ts / regenerate-ios-profile.yml). -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.obsidianmedia.learnwithalphonso</string>
+	</array>
 </dict>
 </plist>
