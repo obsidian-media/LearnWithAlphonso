@@ -79,6 +79,19 @@ struct PaywallView: View {
                 .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
 
+            // Apple requires a subscription screen to link to both
+            // directly, not just have them reachable from Settings
+            // elsewhere in the app (found in a 2026-09-28 audit: this
+            // screen had neither). Same domain PaywallView already trusts
+            // for everything else (AppConfig.apiBaseURL), not a hardcoded
+            // second copy of it.
+            HStack(spacing: AlphonsoSpacing.md) {
+                Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
+                Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
+            }
+            .font(AlphonsoFont.sans(11))
+            .tint(AlphonsoColor.inkSoft)
+
             if let errorMessage = entitlementStore.errorMessage {
                 Text(errorMessage)
                     .font(AlphonsoFont.sans(13))

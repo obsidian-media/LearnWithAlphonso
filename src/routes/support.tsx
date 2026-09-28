@@ -18,12 +18,7 @@ import { LegalPage, Section, Bullets } from "../components/LegalPage";
 // one page App Store Connect requires and the address a reviewer is
 // most likely to write to, so an alias nobody had created would be
 // worse here than anywhere else.
-//
-// Deletion still routes to privacy@, because that is the address the
-// privacy policy itself names for it; sending someone to a different
-// one than the policy states is how a promise quietly stops matching.
 const CONTACT = "support@alphonsoecosystem.app";
-const PRIVACY_CONTACT = "privacy@alphonsoecosystem.app";
 
 export const Route = createFileRoute("/support")({
   component: Support,
@@ -81,10 +76,7 @@ function Support() {
         <Bullets
           items={[
             "Export: Profile, then Settings, then Account, then Export My Data.",
-            "Deletion: the same screen, Delete My Account. It is permanent and removes your learning history.",
-            "Hector uses a separate account on a different system and is not currently linked for deletion. To delete a Hector account, write to " +
-              PRIVACY_CONTACT +
-              " and we will action it manually.",
+            "Deletion: the same screen, Delete My Account. It is permanent and removes your learning history, including Hector's -- Hector runs on the same account, not a separate one, so there is nothing extra to request.",
           ]}
         />
         <p>

@@ -136,12 +136,31 @@ describe("Support route", () => {
     const Support = SupportRoute.options.component!;
     const { container } = render(<Support />);
     const addresses = (container.textContent ?? "").match(/[\w.+-]+@[\w.-]+/g) ?? [];
-    // Both are real mailboxes. Deletion deliberately routes to privacy@,
-    // matching what the privacy policy itself names -- the page must not
-    // introduce a THIRD address beyond these two.
-    expect([...new Set(addresses)].sort()).toEqual([
-      "privacy@alphonsoecosystem.app",
-      "support@alphonsoecosystem.app",
-    ]);
+    // Was ["privacy@...", "support@..."] before the 2026-09-28 fix below:
+    // privacy@ was only here to route a manual Hector-deletion request,
+    // which no longer exists now that Hector deletes with the account.
+    expect([...new Set(addresses)].sort()).toEqual(["support@alphonsoecosystem.app"]);
+  });
+});
+
+describe("Support route — must agree with Privacy on Hector deletion (2026-09-28)", () => {
+  // A real, live contradiction found in a repo audit: privacy.tsx said
+  // Hector deletes with the account (correct, post-decouple); support.tsx
+  // still said Hector was "a separate account on a different system" and
+  // required a manual email to delete -- directly disagreeing about the
+  // same fact on two pages a reviewer can open side by side. Neither this
+  // test nor any other one guarded support.tsx's own claim before this.
+  it("does not claim Hector needs separate, manual deletion", () => {
+    const Support = SupportRoute.options.component!;
+    render(<Support />);
+    expect(screen.queryByText(/not currently linked for deletion/i)).toBeNull();
+    expect(screen.queryByText(/separate account on a different system/i)).toBeNull();
+    expect(screen.queryByText(/action it manually/i)).toBeNull();
+  });
+
+  it("states deletion covers Hector, matching privacy.tsx", () => {
+    const Support = SupportRoute.options.component!;
+    render(<Support />);
+    expect(screen.getByText(/removes your learning history, including Hector/i)).toBeInTheDocument();
   });
 });

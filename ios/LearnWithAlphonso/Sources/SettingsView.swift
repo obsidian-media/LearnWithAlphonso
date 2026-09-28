@@ -226,8 +226,16 @@ struct SettingsView: View {
                 }
                 .disabled(deleteConfirmationText != "DELETE")
             } message: {
+                // Apple bills and owns subscription cancellation
+                // (Guideline 3.1.2); deleting the Alphonso account does not
+                // touch that relationship at all. Added in a 2026-09-28
+                // audit -- without this, someone could delete their
+                // account thinking it stops the charge, then be billed
+                // again with no account left to explain why.
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
+
+                This does not cancel an active Alphonso Pro subscription. Apple bills that separately -- cancel it yourself in Settings > Subscriptions on your device.
                 """)
             }
         }
