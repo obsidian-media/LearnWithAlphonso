@@ -115,19 +115,14 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # Bumped past the last TestFlight upload (build 16 -- RCApiKey
-        # now reaches the app correctly, but the paywall's
-        # Purchases.shared.offerings() call itself now fails with
-        # "Couldn't load subscription options"). Build 17 temporarily
-        # surfaces the real underlying error on-screen (see
-        # EntitlementStore.loadOffering()'s TEMPORARY debug
-        # instrumentation) to diagnose that failure without a Mac
-        # available to read Xcode's device console. See
-        # docs/BACKLOG.md's §1.1 and
-        # D:\AgentDevWork\repos\Hackaton\Shipaton\02-launch-checklist\
-        # execution-record.md for the full RevenueCat/App Store Connect
-        # wiring this build depends on.
-        CURRENT_PROJECT_VERSION: "28"
+        # Bumped past the last TestFlight upload -- 28 was already
+        # uploaded (altool: "bundle version must be higher than the
+        # previously uploaded version: 28"), from an earlier archive run
+        # before this session's aps-environment fix landed. 29 is the
+        # first upload attempt on the fully-fixed signing pipeline. See
+        # docs/BACKLOG.md §0.0-e for the aps-environment root cause and
+        # CHANGELOG.md for the full fix history.
+        CURRENT_PROJECT_VERSION: "29"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -255,7 +250,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "28"
+        CURRENT_PROJECT_VERSION: "29"
         SKIP_INSTALL: true
       configs:
         Release:
