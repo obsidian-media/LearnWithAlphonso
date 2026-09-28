@@ -68,6 +68,16 @@
 	     "Generate Xcode project" step. -->
 	<key>RCApiKey</key>
 	<string>test_UzoFLqAlXAHPWSwBgKQuZcqFKrq</string>
+	<!-- TEMPORARY, added 2026-09-28 to chase the build-29 "scene-create"
+	     watchdog kill: makes the app's Documents directory (where
+	     LaunchBreadcrumbs.swift writes) visible in the Files app, since
+	     nothing ever renders long enough on-device to share the file any
+	     other way and there is no Mac available to pull it via Xcode.
+	     Remove alongside LaunchBreadcrumbs.swift once the hang is found. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<!-- Design system (all 3 themes, see DesignSystem/AlphonsoTheme.swift
 	     and AlphonsoFont.swift): each theme's display/sans font pair,
 	     bundled as upstream variable-font files under Sources/Fonts/

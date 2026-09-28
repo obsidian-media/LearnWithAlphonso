@@ -47,7 +47,8 @@ struct RootView: View {
         // same invariant as before, now automatically correct for Dark
         // Mode instead of fighting it. See AlphonsoTheme.swift's
         // AlphonsoThemeManager.palette doc comment for the actual switch.
-        Group {
+        LaunchBreadcrumbs.log("RootView.body evaluating, isRestoring=\(session.isRestoring)")
+        return Group {
             if session.isRestoring {
                 // Keeps this identical, briefly, to a cold launch that has
                 // no persisted session at all -- see Session.restoreSession's
