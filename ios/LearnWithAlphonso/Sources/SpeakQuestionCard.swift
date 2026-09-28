@@ -229,19 +229,36 @@ struct SpeakQuestionCard: View {
     private func stopRecordingAndGrade() {
         guard phase == .recording else { return }
         phase = .idle
-        guard let audio = recorder.stop() else {
-            // Nothing captured is not a wrong answer: `picked` is left alone so
-            // Check cannot submit silence. Typing opens up too, because a
-            // recorder that produced no file will usually keep doing so.
-            errorMessage = "Didn't catch that -- try again, or type the phrase."
-            micUnavailable = true
-            return
-        }
         guard let accessToken = session.accessToken else {
             errorMessage = "You've been signed out. Please sign in again."
             return
         }
-        Task { await transcribe(audio: audio, accessToken: accessToken) }
+        Task {
+            // Same bug class as ConversationView/HectorView/CampaignView's
+            // identical stop-and-send (swept for after finding it live,
+            // 2026-09-28): a too-quick tap or the recorder's own hardware
+            // warm-up can finalize before anything meaningful was
+            // captured. The `recorder.stop() == nil` guard this replaced
+            // only caught a genuinely missing file, not a tiny-but-real
+            // one -- which would have reached api/stt.ts, been rejected
+            // with "Empty or missing audio", and surfaced here as the
+            // *generic* "Couldn't check that just now" from the catch
+            // block below (this screen doesn't forward the server's own
+            // message), an even more confusing symptom than the raw error
+            // Practice/Hector showed for the exact same root cause.
+            if let remaining = recorder.remainingTimeToMinimumDuration() {
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            guard let audio = recorder.stop(), audio.count >= SpeakTurnRecorder.minimumAudioBytes else {
+                // Nothing captured is not a wrong answer: `picked` is left alone so
+                // Check cannot submit silence. Typing opens up too, because a
+                // recorder that produced no file will usually keep doing so.
+                errorMessage = "Didn't catch that -- try again, or type the phrase."
+                micUnavailable = true
+                return
+            }
+            await transcribe(audio: audio, accessToken: accessToken)
+        }
     }
 
     private func transcribe(audio: Data, accessToken: String) async {
@@ -278,8 +295,12 @@ struct SpeakQuestionCard: View {
 /// setup that each screen configures slightly differently.
 @Observable
 final class SpeakTurnRecorder {
+    static let minimumAudioBytes = 4_096
+    private static let minimumDuration: TimeInterval = 0.4
+
     private var recorder: AVAudioRecorder?
     private var fileURL: URL?
+    private var startedAt: Date?
 
     func start() throws {
         // Set before touching the session, so the flag is already true
@@ -311,12 +332,20 @@ final class SpeakTurnRecorder {
         newRecorder.record()
         recorder = newRecorder
         fileURL = url
+        startedAt = Date()
+    }
+
+    func remainingTimeToMinimumDuration() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
+        return remaining > 0 ? remaining : nil
     }
 
     func stop() -> Data? {
         RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
+        startedAt = nil
         // Hand the session back rather than leaving the app in a recording
         // category it no longer needs. .notifyOthersOnDeactivation lets
         // whatever was playing before resume.

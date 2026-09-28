@@ -223,8 +223,19 @@ private struct CampaignSessionView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
-        guard let audio = recorder.stop() else { return }
-        Task { await sendTurn(audio: audio) }
+        Task {
+            // Same fix as ConversationView/HectorView's identical
+            // stopRecordingAndSend (a sweep for the same bug class,
+            // 2026-09-28, after finding it live): guarantee a real
+            // minimum run before finalizing, then drop a still-too-small
+            // result silently instead of sending a request api/stt.ts's
+            // `file.size < 512` guard cannot accept.
+            if let remaining = recorder.remainingTimeToMinimumDuration() {
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            guard let audio = recorder.stop(), audio.count >= CampaignTurnRecorder.minimumAudioBytes else { return }
+            await sendTurn(audio: audio)
+        }
     }
 
     private func sendTurn(audio: Data) async {
@@ -288,8 +299,12 @@ private struct CampaignSessionView: View {
 /// file-private helpers per screen.
 @Observable
 private final class CampaignTurnRecorder {
+    static let minimumAudioBytes = 4_096
+    private static let minimumDuration: TimeInterval = 0.4
+
     private var recorder: AVAudioRecorder?
     private var fileURL: URL?
+    private var startedAt: Date?
 
     func start() throws {
         // Set before touching the session, so the flag is already true
@@ -312,12 +327,20 @@ private final class CampaignTurnRecorder {
         newRecorder.record()
         recorder = newRecorder
         fileURL = url
+        startedAt = Date()
+    }
+
+    func remainingTimeToMinimumDuration() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
+        return remaining > 0 ? remaining : nil
     }
 
     func stop() -> Data? {
         RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
+        startedAt = nil
         defer { fileURL = nil }
         guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
