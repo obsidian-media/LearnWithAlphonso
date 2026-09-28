@@ -115,22 +115,14 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # 31 fixed the launch hang. 32-34 were three real, correct
-        # recording-side fixes for "Empty or missing audio" (duration,
-        # mic permission, RecordingState/playback hardening) -- none of
-        # which could ever have fixed it, which is why the identical
-        # error kept recurring after each one. 35 is the actual cause:
-        # AIConversationClient.transcribe() sent a raw binary POST body,
-        # but api/stt.ts expects multipart/form-data with a field named
-        # "file" -- exactly what the web app's own caller already sent.
-        # A raw-body POST isn't multipart, so the server found nothing
-        # and rejected every single call, unconditionally. Also sends the
-        # real course to French/Spanish speaking questions for the first
-        # time (transcription accuracy, a separate bug found alongside
-        # it). See docs/BACKLOG.md §0.0-h and CHANGELOG.md for the full
-        # trail, including the self-correction of an earlier wrong
-        # "checked, found clean" claim about this exact code.
-        CURRENT_PROJECT_VERSION: "35"
+        # 35 fixed the actual "Empty or missing audio" cause (wire
+        # format) -- confirmed live, the hard error is gone. 36 adds a
+        # TEMPORARY on-screen diagnostic for the next symptom found
+        # immediately after: the mic button now just resets silently
+        # instead, matching sendTurn's own empty-transcript guard. See
+        # HectorView/ConversationView's own comments and
+        # docs/BACKLOG.md §0.0-h for the full trail.
+        CURRENT_PROJECT_VERSION: "36"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -258,7 +250,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "35"
+        CURRENT_PROJECT_VERSION: "36"
         SKIP_INSTALL: true
       configs:
         Release:
