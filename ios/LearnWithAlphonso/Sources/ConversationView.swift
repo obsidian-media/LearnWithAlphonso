@@ -199,8 +199,25 @@ private struct ConversationSessionView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
-        guard let audio = recorder.stop() else { return }
-        Task { await sendTurn(audio: audio) }
+        Task {
+            // A quick tap (or the very first recording of an app launch,
+            // before the audio hardware has finished warming up after
+            // AVAudioSession.setActive) can finalize before the encoder
+            // has written anything meaningful -- api/stt.ts's own
+            // `file.size < 512` guard rejects that with a raw "Empty or
+            // missing audio" server error, which a learner just sees as
+            // Practice being broken (found live 2026-09-28). Giving the
+            // recorder a real minimum run first, then treating a still-
+            // too-small result the same as an empty transcript (silently
+            // back to idle, an existing and already-correct posture just
+            // above) fixes both causes at once without ever bothering the
+            // server with a request that cannot succeed.
+            if let remaining = recorder.remainingTimeToMinimumDuration() {
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            guard let audio = recorder.stop(), audio.count >= TurnRecorder.minimumAudioBytes else { return }
+            await sendTurn(audio: audio)
+        }
     }
 
     private func sendTurn(audio: Data) async {
@@ -264,8 +281,19 @@ private struct ConversationSessionView: View {
 /// recorded bytes (nil if nothing was captured).
 @Observable
 private final class TurnRecorder {
+    /// Below this, `api/stt.ts`'s own floor (`file.size < 512`) would
+    /// reject it anyway -- set well above that so a genuinely-too-short
+    /// recording is caught locally, instantly, instead of round-tripping
+    /// to the server first for the same verdict.
+    static let minimumAudioBytes = 4_096
+    /// Below this held duration, the recording is likely to still be
+    /// mid-hardware-warm-up (or was just a quick tap, not a real hold) --
+    /// see `stopRecordingAndSend`'s own doc comment for the full story.
+    private static let minimumDuration: TimeInterval = 0.4
+
     private var recorder: AVAudioRecorder?
     private var fileURL: URL?
+    private var startedAt: Date?
 
     func start() throws {
         // Set before touching the session, so the flag is already true
@@ -288,12 +316,24 @@ private final class TurnRecorder {
         newRecorder.record()
         recorder = newRecorder
         fileURL = url
+        startedAt = Date()
+    }
+
+    /// How much longer the caller should wait before actually finalizing,
+    /// so the recorder always gets at least `minimumDuration` of real run
+    /// time. Nil if that minimum has already elapsed (the normal case for
+    /// an actual hold) or if no recording is in progress.
+    func remainingTimeToMinimumDuration() -> TimeInterval? {
+        guard let startedAt else { return nil }
+        let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
+        return remaining > 0 ? remaining : nil
     }
 
     func stop() -> Data? {
         RecordingState.shared.ended()
         recorder?.stop()
         recorder = nil
+        startedAt = nil
         defer { fileURL = nil }
         guard let fileURL, let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
