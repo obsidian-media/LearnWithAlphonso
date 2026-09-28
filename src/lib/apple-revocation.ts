@@ -123,19 +123,10 @@ export async function exchangeAuthorizationCode(
   return body.refresh_token ?? null;
 }
 
-/**
- * Revokes the grant. Returns whether Apple accepted it.
- *
- * **This must never throw into a deletion flow.** A user's right to delete
- * their account cannot depend on a third party being reachable, so the
- * caller proceeds either way and records the outcome -- an unrevoked grant
- * is a compliance problem to chase, not a reason to refuse someone their
- * data deletion.
- */
-export async function revokeAppleGrant(
+async function attemptRevoke(
   config: AppleConfig,
   refreshToken: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch,
 ): Promise<boolean> {
   try {
     const res = await fetchImpl(`${APPLE_AUTH_HOST}/auth/revoke`, {
@@ -153,4 +144,32 @@ export async function revokeAppleGrant(
   } catch {
     return false;
   }
+}
+
+/**
+ * Revokes the grant. Returns whether Apple accepted it.
+ *
+ * **This must never throw into a deletion flow.** A user's right to delete
+ * their account cannot depend on a third party being reachable, so the
+ * caller proceeds either way and records the outcome -- an unrevoked grant
+ * is a compliance problem to chase, not a reason to refuse someone their
+ * data deletion.
+ *
+ * Retries once after a short, fixed backoff before giving up -- a
+ * second-opinion audit (2026-09-28) correctly pointed out that logging a
+ * failure (account.functions.ts's revokeAppleGrantForUser) is
+ * observability, not remediation. One retry is deliberately small: this
+ * runs inline in a user-facing account-deletion request, so it isn't the
+ * place for a real backoff/job-queue system -- it only closes the
+ * "Apple's endpoint had a one-off blip" case, which is the common one.
+ * A genuine outage still ends up logged and needs a human, same as before.
+ */
+export async function revokeAppleGrant(
+  config: AppleConfig,
+  refreshToken: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  if (await attemptRevoke(config, refreshToken, fetchImpl)) return true;
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return attemptRevoke(config, refreshToken, fetchImpl);
 }

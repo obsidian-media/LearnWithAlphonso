@@ -10,11 +10,22 @@
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 export type TutorHistoryMessage = { role: string; content: string };
 
+/** Found in a second-opinion audit (2026-09-28): buildHectorMessages let
+ * a client-supplied `history` entry claim `role: "system"` and spliced
+ * it in AFTER Hector's own real system prompt below -- a prompt-injection
+ * surface, since many models weight a later/additional system message
+ * highly. Checked what actually needs it: TutorMemoryContext's own
+ * priming message (CEFR level, open weaknesses) already uses `role:
+ * "user"` (TutorMemoryContext.swift), not "system" -- so nothing
+ * legitimate is lost by refusing the role entirely. */
+const MAX_HISTORY_MESSAGES = 40;
+const MAX_MESSAGE_LENGTH = 4000;
+
 /**
  * Hector's persona. Deliberately short: the learner-specific context
  * (CEFR level, open weaknesses) arrives inside `history` as a priming
- * entry the CLIENT builds (TutorMemoryContext), so it must not be
- * duplicated or contradicted here.
+ * entry the CLIENT builds (TutorMemoryContext, role "user"), so it must
+ * not be duplicated or contradicted here.
  */
 export const HECTOR_SYSTEM_PROMPT =
   "You are Hector, a warm, patient AI language tutor inside the Learn with " +
@@ -26,26 +37,32 @@ export const HECTOR_SYSTEM_PROMPT =
 
 /**
  * The message list sent to the (OpenAI-compatible) NVIDIA endpoint:
- * system persona, then the prior turns the client passed, then the
- * current user utterance. Only `system`/`user`/`assistant` roles survive
- * — anything else is dropped rather than forwarded to the model, since a
- * bad role fails the upstream call for the whole turn.
+ * Hector's own system persona (the only system message; a client cannot
+ * add another one -- see the audit note above), then up to the last
+ * `MAX_HISTORY_MESSAGES` prior user/assistant turns the client passed
+ * (each capped at `MAX_MESSAGE_LENGTH`), then the current user
+ * utterance. Any message that isn't `user`/`assistant`, isn't a string,
+ * is empty, or is too long is dropped rather than forwarded -- a bad
+ * entry silently disappearing is better than it failing the upstream
+ * call for the whole turn.
  */
 export function buildHectorMessages(history: TutorHistoryMessage[], text: string): ChatMessage[] {
   const priorTurns: ChatMessage[] = (Array.isArray(history) ? history : [])
     .filter(
       (m): m is ChatMessage =>
         !!m &&
-        (m.role === "system" || m.role === "user" || m.role === "assistant") &&
+        (m.role === "user" || m.role === "assistant") &&
         typeof m.content === "string" &&
-        m.content.length > 0,
+        m.content.length > 0 &&
+        m.content.length <= MAX_MESSAGE_LENGTH,
     )
+    .slice(-MAX_HISTORY_MESSAGES)
     .map((m) => ({ role: m.role, content: m.content }));
 
   return [
     { role: "system", content: HECTOR_SYSTEM_PROMPT },
     ...priorTurns,
-    { role: "user", content: text },
+    { role: "user", content: text.slice(0, MAX_MESSAGE_LENGTH) },
   ];
 }
 

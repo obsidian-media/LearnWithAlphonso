@@ -40,7 +40,18 @@ export const Route = createFileRoute("/api/chat")({
         } catch {
           return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
-        const messages = Array.isArray(body.messages) ? body.messages : [];
+        // Found alongside the same bug in Hector's own message builder
+        // (2026-09-28 audit): a client-supplied entry here could claim
+        // role: "system" and land in the array the actual system message
+        // (below, from body.systemPrompt) gets prepended to -- a second,
+        // client-controlled system message the model would see, not just
+        // the one this route intends to send. body.systemPrompt itself
+        // stays fully client-controlled by design (each scenario's own
+        // persona), only this array's own role is restricted.
+        const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
+          (m): m is ChatMessage =>
+            !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+        );
         if (messages.length === 0)
           return Response.json({ error: "messages required" }, { status: 400 });
         const finalMessages: ChatMessage[] = body.systemPrompt

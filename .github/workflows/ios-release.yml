@@ -115,24 +115,31 @@ jobs:
           # this step grouped with the project-generation step logically.
           sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
 
-      - name: Verify RCApiKey isn't a leftover/mistaken test_ key
+      - name: Verify RCApiKey is a real production key
         working-directory: ios/LearnWithAlphonso
         run: |
-          # Found in a 2026-09-28 audit: the sed substitution above never
-          # checked its own result. Empty is fine and expected (Pro
-          # purchases just stay unavailable that build, per
-          # EntitlementStore.swift) -- what must never ship is a
-          # test_-prefixed key, which this project's own prior comment
-          # already knew crashes on launch in a real TestFlight/App Store
-          # build. This can only happen from a misconfigured
-          # REVENUECAT_API_KEY secret, since the placeholder itself is
-          # always fully replaced by the sed above, empty or not.
+          # Found in a 2026-09-28 audit, tightened in a second-opinion
+          # audit the same day: this used to also allow an EMPTY key
+          # through ("Pro purchases just stay unavailable that build").
+          # That was true and harmless as a general statement, but this
+          # workflow produces the actual release candidate -- an empty
+          # REVENUECAT_API_KEY secret here means Pro would stay
+          # unavailable in a shipped build with no loud signal anywhere,
+          # indistinguishable from Apple's own real first-subscription
+          # pre-approval "unavailable" state (see EntitlementStore.swift)
+          # until someone happens to notice after approval. A test_
+          # key is still refused separately, since that one crashes on
+          # launch rather than merely disabling Pro.
           KEY=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" Info.plist)
           if [[ "$KEY" == test_* ]]; then
             echo "::error::RCApiKey resolved to a test_ key ('$KEY') -- REVENUECAT_API_KEY is misconfigured. This would crash on launch in a real build. Refusing to archive."
             exit 1
           fi
-          echo "RCApiKey OK (empty, or a non-test_ key)."
+          if [ -z "$KEY" ]; then
+            echo "::error::RCApiKey is empty -- REVENUECAT_API_KEY secret is not set. This release candidate would ship with Pro purchases permanently disabled. Refusing to archive."
+            exit 1
+          fi
+          echo "RCApiKey OK (non-empty, non-test_ key)."
 
       - name: Write App Store Connect API key
         working-directory: ios/LearnWithAlphonso
@@ -257,19 +264,42 @@ jobs:
             exit 1
           fi
 
-          echo "-- Final RCApiKey isn't a test_ key, in the actual shipped Info.plist --"
+          echo "-- Final RCApiKey is a real, non-empty, non-test_ key, in the actual shipped Info.plist --"
           FINAL_KEY=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" "$APP/Info.plist")
           if [[ "$FINAL_KEY" == test_* ]]; then
             echo "::error::The shipped .ipa's Info.plist still has a test_ RCApiKey ('$FINAL_KEY')."
             exit 1
           fi
+          if [ -z "$FINAL_KEY" ]; then
+            echo "::error::The shipped .ipa's Info.plist has an empty RCApiKey -- Pro purchases would be permanently disabled."
+            exit 1
+          fi
 
-          echo "-- Signed entitlements include App Groups and Sign in with Apple --"
+          echo "-- Signed app entitlements include App Groups and Sign in with Apple --"
           ENTITLEMENTS=$(codesign -d --entitlements :- "$APP" 2>/dev/null)
           echo "$ENTITLEMENTS" | grep -q "com.apple.security.application-groups" \
             || { echo "::error::Signed app is missing the application-groups entitlement."; exit 1; }
           echo "$ENTITLEMENTS" | grep -q "com.apple.developer.applesignin" \
             || { echo "::error::Signed app is missing the applesignin entitlement."; exit 1; }
+
+          # Second-opinion audit (2026-09-28): the checks above only ever
+          # looked at the MAIN app's entitlements. The widget has its own
+          # separate signature and its own separate provisioning profile
+          # (IOS_WIDGET_PROVISIONING_PROFILE_*) -- static project.yml
+          # config being correct doesn't prove the actual signed .appex
+          # got the entitlement too.
+          echo "-- Widget's own signed entitlements include App Groups --"
+          WIDGET_ENTITLEMENTS=$(codesign -d --entitlements :- "$WIDGET" 2>/dev/null)
+          echo "$WIDGET_ENTITLEMENTS" | grep -q "com.apple.security.application-groups" \
+            || { echo "::error::Signed widget extension is missing the application-groups entitlement -- it would not be able to read the shared UserDefaults."; exit 1; }
+
+          # Debug's aps-environment is "development"; only Release's is
+          # "production" (see both .entitlements files' own comments).
+          # This confirms the RIGHT one actually made it into the signed
+          # binary, not just that the source file says the right thing.
+          echo "-- Production APNs environment (not sandbox/development) --"
+          echo "$ENTITLEMENTS" | grep -A1 "aps-environment" | grep -q "production" \
+            || { echo "::error::Signed app's aps-environment is not 'production' -- push notifications would register against the wrong APNs environment in a real TestFlight/App Store build."; exit 1; }
 
           echo "All post-archive checks passed."
 
