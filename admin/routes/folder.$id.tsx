@@ -1,15 +1,22 @@
 import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import {
   adminListEpisodes,
   adminUpdateEpisode,
   adminSetPublished,
   adminCreateAudioUploadUrl,
   adminVerifyUploadedAudio,
+  adminCreateEpisodeUploadUrl,
+  adminCreateEpisode,
   adminGetTranscript,
   adminSaveTranscript,
   type AdminEpisode,
 } from "@/lib/admin.functions";
+// Type-only: LEVELS' own module only imports a type from curriculum.ts,
+// so this pulls in zero curriculum content, unlike @/data/courses (see
+// admin.functions.ts's COURSE_IDS comment) -- the 3 course options
+// below are inlined instead, for the same reason.
+import { LEVELS } from "@/data/levels";
 
 /**
  * One folder's episodes.
@@ -33,6 +40,7 @@ export const Route = createFileRoute("/folder/$id")({
 
 function FolderEpisodes() {
   const { episodes } = Route.useLoaderData();
+  const { id: folderId } = Route.useParams();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -65,9 +73,7 @@ function FolderEpisodes() {
       <h1 className="font-display mt-2 text-2xl font-semibold">Episodes</h1>
       {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
       {episodes.length === 0 ? (
-        <p className="mt-6 text-ink-soft">
-          No episodes in this folder yet. Publish one with <code>scripts/podcast-tool.ts</code>.
-        </p>
+        <p className="mt-6 text-ink-soft">No episodes in this folder yet.</p>
       ) : null}
       <ul className="mt-6 space-y-4">
         {episodes.map((episode) => (
@@ -98,6 +104,7 @@ function FolderEpisodes() {
           </li>
         ))}
       </ul>
+      <NewEpisodeForm folderId={folderId} onDone={() => router.invalidate()} />
     </main>
   );
 }
@@ -169,6 +176,159 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
       </label>
       {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
     </div>
+  );
+}
+
+/**
+ * Creates a brand-new episode: metadata + its first audio file, in one
+ * form. Previously the only way to do this was `scripts/podcast-tool.ts
+ * add` from a terminal -- this reuses the exact same validation
+ * (validateEpisodeDraft) and storage path logic (storagePathFor) the
+ * CLI does, via adminCreateEpisodeUploadUrl/adminCreateEpisode, so the
+ * two ways of creating an episode cannot disagree about what's valid or
+ * where the audio ends up.
+ *
+ * Same two-step upload as ReplaceAudio above (signed URL, direct PUT,
+ * then a server call that verifies and finalizes) and for the same
+ * reason: a serverless function body is capped near 4.5 MB, well under
+ * an ordinary episode's size.
+ */
+function NewEpisodeForm({ folderId, onDone }: { folderId: string; onDone: () => void }) {
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [course, setCourse] = useState("");
+  const [levelId, setLevelId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  function reset() {
+    setTitle("");
+    setSlug("");
+    setDescription("");
+    setCourse("");
+    setLevelId("");
+    setFile(null);
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!file) {
+      setError("Choose an MP3 file first.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setStatus("Uploading…");
+    const shared = {
+      folderId,
+      slug,
+      title,
+      description: description.trim() || null,
+      course: course || null,
+      levelId: levelId || null,
+    };
+    try {
+      const { signedUrl } = await adminCreateEpisodeUploadUrl({
+        data: { ...shared, declaredBytes: file.size },
+      });
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "content-type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("The upload did not complete.");
+      setStatus("Checking…");
+      const { durationSeconds } = await adminCreateEpisode({ data: shared });
+      setStatus(
+        `Created — ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")}. Not published yet.`,
+      );
+      reset();
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create the episode.");
+      setStatus(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-8 space-y-3 border-t border-hairline pt-6">
+      <h2 className="font-semibold">New episode</h2>
+      {error ? <p className="text-sm text-ember">{error}</p> : null}
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title"
+        required
+        disabled={busy}
+        className="w-full rounded border border-hairline px-3 py-2"
+      />
+      <input
+        value={slug}
+        onChange={(e) => setSlug(e.target.value)}
+        placeholder="slug-in-kebab-case"
+        required
+        disabled={busy}
+        className="w-full rounded border border-hairline px-3 py-2"
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description (optional)"
+        disabled={busy}
+        rows={2}
+        className="w-full rounded border border-hairline px-3 py-2"
+      />
+      <div className="flex gap-3">
+        <select
+          value={course}
+          onChange={(e) => setCourse(e.target.value)}
+          disabled={busy}
+          className="rounded border border-hairline px-2 py-2"
+        >
+          <option value="">Course (optional)</option>
+          <option value="en">English</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+        </select>
+        <select
+          value={levelId}
+          onChange={(e) => setLevelId(e.target.value)}
+          disabled={busy}
+          className="rounded border border-hairline px-2 py-2"
+        >
+          <option value="">Level (optional)</option>
+          {LEVELS.map((level) => (
+            <option key={level.id} value={level.id}>
+              {level.id} — {level.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <label className="block text-sm text-ink-soft">
+        Audio file:{" "}
+        <input
+          type="file"
+          accept="audio/mpeg,audio/mp4"
+          required
+          disabled={busy}
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          className="text-sm"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded bg-moss px-3 py-2 text-surface disabled:opacity-60"
+      >
+        {busy ? "Creating…" : "Create episode"}
+      </button>
+      {status ? <p className="text-sm text-ink-soft">{status}</p> : null}
+    </form>
   );
 }
 

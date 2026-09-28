@@ -74,6 +74,30 @@ export function resolveFolderPath(
   return current;
 }
 
+/**
+ * The slug path from the root down to `folderId`, root-first -- the
+ * reverse walk of resolveFolderPath, and what storagePathFor's
+ * `folderSlugPath` needs to place a new episode's audio object. Returns
+ * null for an unknown id or a cyclic chain (should never happen --
+ * findCycle guards every write -- but a caller building a storage key
+ * deserves null, not an infinite loop).
+ */
+export function slugPathFor(folders: PodcastFolder[], folderId: string): string[] | null {
+  const byId = new Map(folders.map((folder) => [folder.id, folder]));
+  const slugs: string[] = [];
+  const seen = new Set<string>();
+  let currentId: string | null = folderId;
+  while (currentId !== null) {
+    if (seen.has(currentId)) return null;
+    seen.add(currentId);
+    const folder = byId.get(currentId);
+    if (!folder) return null;
+    slugs.push(folder.slug);
+    currentId = folder.parentId;
+  }
+  return slugs.reverse();
+}
+
 /** Returns the ids involved in the first cycle found, or null if acyclic. */
 export function findCycle(folders: PodcastFolder[]): string[] | null {
   const parentOf = new Map(folders.map((folder) => [folder.id, folder.parentId]));

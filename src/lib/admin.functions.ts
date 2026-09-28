@@ -3,7 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
-import { findCycle, isValidSlug, type PodcastFolder } from "./podcast-tree";
+import { findCycle, isValidSlug, slugPathFor, type PodcastFolder } from "./podcast-tree";
+import { validateEpisodeDraft, storagePathFor, type EpisodeDraft } from "./podcast-authoring";
 import {
   validateUpload,
   sniffAudioType,
@@ -13,6 +14,12 @@ import {
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 import { revokeAppleGrantForUser } from "./account.functions";
+
+// Matches podcast_folders/podcast_episodes.course's own CHECK constraint
+// (20260926030000_podcast_library.sql) verbatim. Not imported from
+// @/data/courses: that module drags in the full curriculum content
+// (1000+ lines per language) for three literal strings.
+const COURSE_IDS = ["en", "fr", "es"] as const;
 
 /**
  * Every admin server function lives in this one file so
@@ -37,6 +44,8 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminSetPublished",
   "adminCreateAudioUploadUrl",
   "adminVerifyUploadedAudio",
+  "adminCreateEpisodeUploadUrl",
+  "adminCreateEpisode",
   "adminGetTranscript",
   "adminSaveTranscript",
   "adminListReports",
@@ -377,6 +386,224 @@ async function audioPathForEpisode(
 }
 
 /**
+ * Builds and validates a new episode's draft, the same rule
+ * scripts/podcast-tool.ts's `add` command enforces (validateEpisodeDraft
+ * is shared with it, not reimplemented), and resolves the folder's full
+ * slug path so storagePathFor can place the audio object correctly.
+ */
+async function draftForNewEpisode(
+  client: SupabaseClient<Database>,
+  input: { folderId: string; slug: string; title: string; description: string | null; course: EpisodeDraft["course"]; levelId: string | null },
+): Promise<EpisodeDraft> {
+  const { data: folderRows, error: folderError } = await client
+    .from("podcast_folders")
+    .select("id,parent_id,slug,title,description,sort_order");
+  if (folderError) throw new Error(folderError.message);
+  const folders: PodcastFolder[] = (folderRows ?? []).map((row) => ({
+    id: row.id,
+    parentId: row.parent_id ?? null,
+    slug: row.slug,
+    title: row.title,
+    description: row.description ?? null,
+    sortOrder: row.sort_order,
+  }));
+  const folderSlugPath = slugPathFor(folders, input.folderId);
+  if (!folderSlugPath) throw new Error("That folder no longer exists. Reload the list.");
+
+  const { data: siblings, error: siblingError } = await client
+    .from("podcast_episodes")
+    .select("slug")
+    .eq("folder_id", input.folderId);
+  if (siblingError) throw new Error(siblingError.message);
+
+  const draft: EpisodeDraft = {
+    folderSlugPath,
+    slug: input.slug,
+    title: input.title,
+    description: input.description,
+    source: "upload",
+    course: input.course,
+    levelId: input.levelId,
+  };
+  const problems = validateEpisodeDraft(
+    draft,
+    (siblings ?? []).map((row) => row.slug),
+  );
+  // Same posture as the CLI: a named list of everything wrong at once,
+  // not one refusal per re-submit.
+  if (problems.length > 0) throw new Error(problems.join(" "));
+  return draft;
+}
+
+/**
+ * Downloads a staged object, refuses anything that is not real,
+ * readable audio, and reports what it found. Shared by the "replace an
+ * existing episode's audio" flow and the "first upload for a brand-new
+ * episode" flow below -- both need the exact same sniff-then-parse
+ * check, and a second copy of it is a second thing to get wrong.
+ *
+ * Always removes the staged object before returning or throwing: a
+ * caller either promotes the returned buffer itself right after (so the
+ * staging copy is redundant) or the upload was refused (so it must not
+ * linger).
+ */
+async function verifyStagedAudio(
+  client: SupabaseClient<Database>,
+  stagingPath: string,
+): Promise<{ buffer: Buffer; contentType: string; durationSeconds: number }> {
+  const reject = async (message: string): Promise<never> => {
+    await client.storage.from(BUCKET).remove([stagingPath]);
+    throw new Error(message);
+  };
+
+  const { data: blob, error: downloadError } = await client.storage
+    .from(BUCKET)
+    .download(stagingPath);
+  if (downloadError || !blob) throw new Error("The upload did not arrive. Try again.");
+
+  const buffer = Buffer.from(await blob.arrayBuffer());
+  const head = new Uint8Array(buffer.subarray(0, 16));
+  const problem = validateUpload(head, buffer.byteLength);
+  if (problem) return reject(problem);
+
+  // Non-null: validateUpload already refused anything sniffAudioType
+  // does not recognise.
+  const kind = sniffAudioType(head)!;
+
+  // music-metadata is imported lazily, matching podcast-tool.ts: a
+  // top-level import made commands that never read audio die at import
+  // time, and the same would apply to every admin request here.
+  let durationSeconds = 0;
+  try {
+    const { parseBuffer } = await import("music-metadata");
+    const metadata = await parseBuffer(buffer, { mimeType: contentTypeFor(kind) });
+    durationSeconds = Math.round(metadata.format.duration ?? 0);
+  } catch {
+    return reject("That file could not be read as audio. It may be truncated.");
+  }
+  if (durationSeconds <= 0) {
+    return reject("Could not read a duration from that file. It may be truncated.");
+  }
+
+  await client.storage.from(BUCKET).remove([stagingPath]);
+  return { buffer, contentType: contentTypeFor(kind), durationSeconds };
+}
+
+/**
+ * Signed upload URL for a BRAND-NEW episode's first audio -- the
+ * counterpart to adminCreateAudioUploadUrl below, which requires the
+ * episode (and therefore its audio_path) to already exist.
+ * podcast_episodes.audio_path and duration_seconds are both NOT NULL
+ * (duration_seconds also CHECK > 0), so there is no "create the row,
+ * then fill in the file" order available here the way replacing audio
+ * has -- the object must be uploaded and verified FIRST, and
+ * adminCreateEpisode below inserts the row only once that succeeds.
+ *
+ * The path is computed here from folderId + slug rather than trusted
+ * from the client, same reasoning as audioPathForEpisode: it is
+ * recomputed identically in adminCreateEpisode, so the two cannot
+ * disagree about where the bytes belong.
+ */
+export const adminCreateEpisodeUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        folderId: z.string().uuid(),
+        slug: slugSchema,
+        title: z.string().min(1).max(200),
+        description: z.string().max(4000).nullable().default(null),
+        course: z.enum(COURSE_IDS).nullable().default(null),
+        levelId: z.string().min(1).nullable().default(null),
+        declaredBytes: z.number().int().positive(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ signedUrl: string; token: string }> => {
+    if (data.declaredBytes > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        `That file is too large (${Math.round(data.declaredBytes / 1024 / 1024)} MB). The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`,
+      );
+    }
+    const client = context.supabaseAdmin;
+    const draft = await draftForNewEpisode(client, data);
+    const audioPath = storagePathFor(draft);
+    const { data: signed, error } = await client.storage
+      .from(BUCKET)
+      .createSignedUploadUrl(stagingPathFor(audioPath), { upsert: true });
+    if (error || !signed) throw new Error(error?.message ?? "Could not start the upload.");
+    return { signedUrl: signed.signedUrl, token: signed.token };
+  });
+
+/**
+ * Verifies the just-uploaded staging object and, only if it is real
+ * audio, promotes it onto the live path and inserts the episode row --
+ * unpublished, matching scripts/podcast-tool.ts's own new-episode
+ * default. Takes the same fields as adminCreateEpisodeUploadUrl (minus
+ * declaredBytes) so it can recompute the identical draft and path;
+ * nothing about where the audio lives is ever accepted from the client.
+ *
+ * If the insert fails after the object is already promoted (e.g. a
+ * second admin took the same slug in the gap between the two calls),
+ * the object is left in place rather than guessed-deleted -- same
+ * accepted risk podcast-tool.ts's own `add` command documents at its
+ * insert step, not a new one introduced here.
+ */
+export const adminCreateEpisode = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        folderId: z.string().uuid(),
+        slug: slugSchema,
+        title: z.string().min(1).max(200),
+        description: z.string().max(4000).nullable().default(null),
+        course: z.enum(COURSE_IDS).nullable().default(null),
+        levelId: z.string().min(1).nullable().default(null),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ id: string; durationSeconds: number }> => {
+    const client = context.supabaseAdmin;
+    const draft = await draftForNewEpisode(client, data);
+    const audioPath = storagePathFor(draft);
+    const { buffer, contentType, durationSeconds } = await verifyStagedAudio(
+      client,
+      stagingPathFor(audioPath),
+    );
+
+    const { error: promoteError } = await client.storage
+      .from(BUCKET)
+      .upload(audioPath, buffer, { contentType, upsert: true });
+    if (promoteError) throw new Error(promoteError.message);
+
+    const { data: row, error } = await client
+      .from("podcast_episodes")
+      .insert({
+        folder_id: data.folderId,
+        slug: data.slug,
+        title: data.title,
+        description: data.description,
+        audio_path: audioPath,
+        duration_seconds: durationSeconds,
+        course: data.course,
+        level_id: data.levelId,
+        source: "upload",
+        published: false,
+      })
+      .select("id")
+      .single();
+    if (error) {
+      throw new Error(
+        error.code === "23505"
+          ? `An episode with slug "${data.slug}" already exists in this folder. The audio uploaded to ${BUCKET}/${audioPath} anyway -- delete it manually or reuse it with a different slug.`
+          : `Upload succeeded but the database insert failed: ${error.message}. Orphaned object: ${BUCKET}/${audioPath}`,
+      );
+    }
+    return { id: row.id, durationSeconds };
+  });
+
+/**
  * A short-lived signed URL the browser uploads the audio to directly.
  *
  * Direct-to-storage, not a POST of the bytes through here: a serverless
@@ -435,61 +662,19 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
     const client = context.supabaseAdmin;
     const audioPath = await audioPathForEpisode(client, data.episodeId);
-    const staging = stagingPathFor(audioPath);
+    const { buffer, contentType, durationSeconds } = await verifyStagedAudio(
+      client,
+      stagingPathFor(audioPath),
+    );
 
-    /** Removes the staged object, then reports why it was refused. */
-    const reject = async (message: string): Promise<never> => {
-      await client.storage.from(BUCKET).remove([staging]);
-      throw new Error(message);
-    };
-
-    const { data: blob, error: downloadError } = await client.storage
-      .from(BUCKET)
-      .download(staging);
-    if (downloadError || !blob) throw new Error("The upload did not arrive. Try again.");
-
-    const buffer = Buffer.from(await blob.arrayBuffer());
-    const head = new Uint8Array(buffer.subarray(0, 16));
-    const problem = validateUpload(head, buffer.byteLength);
-    if (problem) return reject(problem);
-
-    // Non-null: validateUpload already refused anything sniffAudioType
-    // does not recognise.
-    const kind = sniffAudioType(head)!;
-
-    // music-metadata is imported lazily, matching podcast-tool.ts: a
-    // top-level import made commands that never read audio die at import
-    // time, and the same would apply to every admin request here.
-    //
-    // The parse is wrapped because it THROWS on input the sniffer
-    // accepts -- three "ID3" bytes followed by anything is enough. An
-    // unguarded throw used to escape the handler with the object still
-    // sitting in the bucket, which is the exact outcome byte-sniffing
-    // exists to prevent.
-    let durationSeconds = 0;
-    try {
-      const { parseBuffer } = await import("music-metadata");
-      // The sniffed kind, not a hardcoded audio/mpeg. Parsing an M4A as
-      // MPEG plausibly yields no duration, and under the old flow that
-      // deleted a file the picker had invited.
-      const metadata = await parseBuffer(buffer, { mimeType: contentTypeFor(kind) });
-      durationSeconds = Math.round(metadata.format.duration ?? 0);
-    } catch {
-      return reject("That file could not be read as audio. It may be truncated.");
-    }
-    if (durationSeconds <= 0) {
-      return reject("Could not read a duration from that file. It may be truncated.");
-    }
-
-    // Promote: copy onto the live path, then drop the staging object.
-    // Content type is set from the sniffed bytes rather than from
-    // whatever the browser PUT, because the stored type is what the
-    // bucket serves with -- sniffing alone does not control that.
+    // Promote: copy onto the live path. Content type is set from the
+    // sniffed bytes rather than from whatever the browser PUT, because
+    // the stored type is what the bucket serves with -- sniffing alone
+    // does not control that.
     const { error: promoteError } = await client.storage
       .from(BUCKET)
-      .upload(audioPath, buffer, { contentType: contentTypeFor(kind), upsert: true });
-    if (promoteError) return reject(promoteError.message);
-    await client.storage.from(BUCKET).remove([staging]);
+      .upload(audioPath, buffer, { contentType, upsert: true });
+    if (promoteError) throw new Error(promoteError.message);
 
     // Written only after the live object is the verified one. A row
     // claiming a duration the file does not have is exactly what the iOS

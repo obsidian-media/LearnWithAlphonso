@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFolderTree, findCycle, isValidSlug, resolveFolderPath } from "./podcast-tree";
+import { buildFolderTree, findCycle, isValidSlug, resolveFolderPath, slugPathFor } from "./podcast-tree";
 
 const f = (id: string, parentId: string | null, slug: string, sortOrder = 0) => ({
   id,
@@ -56,6 +56,27 @@ describe("findCycle", () => {
 
   it("detects a folder parented to itself", () => {
     expect(findCycle([f("a", "a", "en")])).toEqual(["a"]);
+  });
+});
+
+describe("slugPathFor", () => {
+  it("walks a nested folder back up to its root, in root-to-leaf order", () => {
+    const folders = [f("a", null, "en"), f("b", "a", "a1"), f("c", "b", "cafe")];
+    expect(slugPathFor(folders, "c")).toEqual(["en", "a1", "cafe"]);
+  });
+
+  it("returns a single-element path for a root folder", () => {
+    expect(slugPathFor([f("a", null, "en")], "a")).toEqual(["en"]);
+  });
+
+  it("returns null for an id that isn't in the list", () => {
+    expect(slugPathFor([f("a", null, "en")], "missing")).toBeNull();
+  });
+
+  it("returns null rather than looping forever if the chain is cyclic", () => {
+    // Should never happen (findCycle guards writes), but a reader of this
+    // path's storage-key output deserves a null, not a hang.
+    expect(slugPathFor([f("a", "b", "en"), f("b", "a", "a1")], "a")).toBeNull();
   });
 });
 
