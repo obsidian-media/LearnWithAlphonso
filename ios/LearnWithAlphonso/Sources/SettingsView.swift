@@ -243,10 +243,23 @@ struct SettingsView: View {
                 // audit -- without this, someone could delete their
                 // account thinking it stops the charge, then be billed
                 // again with no account left to explain why.
+                //
+                // The Apple revocation line (a second-opinion audit,
+                // 2026-09-28) covers the same class of gap for Sign in
+                // with Apple specifically: deletion already attempts
+                // server-side revocation (deleteAccount()'s own doc
+                // comment), but Apple's own guidance for when that can't
+                // be guaranteed is to point the user at manual revocation
+                // -- privacy.tsx's "Your rights" section has the full
+                // path (Settings > [name] > Sign-In & Security > Apps
+                // Using Apple ID, or appleid.apple.com); this is the
+                // pointer to it, kept short since this is a system alert.
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
 
                 This does not cancel an active Alphonso Pro subscription. Apple bills that separately -- cancel it yourself in Settings > Subscriptions on your device.
+
+                If you signed in with Apple, this also revokes that connection. See our Privacy Policy if you ever need to revoke it yourself.
                 """)
             }
         }

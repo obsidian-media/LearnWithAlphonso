@@ -170,6 +170,13 @@ function Privacy() {
           You also have the right to complain to your local data protection authority. In the UK
           that is the Information Commissioner's Office.
         </p>
+        <p>
+          If you signed in to the iOS app with Apple, deleting your account also revokes that
+          Sign in with Apple connection automatically. If that step ever fails on our end, you can
+          revoke it yourself at any time — on your device, under Settings → [your name] →
+          Sign-In &amp; Security → Apps Using Apple ID, or at{" "}
+          <a href="https://appleid.apple.com">appleid.apple.com</a>.
+        </p>
       </Section>
 
       <Section heading="If you are in California">

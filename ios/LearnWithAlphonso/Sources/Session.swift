@@ -36,9 +36,7 @@ final class Session {
         supabaseURL: AppConfig.supabaseURL,
         publishableKey: AppConfig.supabasePublishableKey
     )) {
-        LaunchBreadcrumbs.log("Session.init start")
         self.authClient = authClient
-        LaunchBreadcrumbs.log("Session.init done")
     }
 
     var accessToken: String? {
@@ -247,7 +245,21 @@ final class Session {
                 accessToken: { accessToken },
                 refreshAccessToken: { await self.freshAccessToken(forceRefresh: true) }
             )
-            try? await client.linkAppleAuthorization(code: code)
+            // Second-opinion audit (2026-09-28): this used to swallow a
+            // thrown error with zero trace anywhere -- silent even by
+            // this file's own "fail soft" standard, since /api/apple-link
+            // itself now logs server-side on every one of its own failure
+            // branches (found in the same audit), but a request that
+            // never REACHES the server (offline, DNS, timeout) leaves no
+            // server-side trace to find. Matches AccountClient's own
+            // print on a failed *revocation* at deletion time -- same
+            // "still don't block anything, but stop being invisible"
+            // posture, not a behavior change.
+            do {
+                try await client.linkAppleAuthorization(code: code)
+            } catch {
+                print("[Session] Failed to link this sign-in's Apple authorization code for later revocation: \(error)")
+            }
         }
     }
 

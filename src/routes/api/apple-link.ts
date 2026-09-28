@@ -39,9 +39,20 @@ export const Route = createFileRoute("/api/apple-link")({
         const { appleConfigFromEnv, exchangeAuthorizationCode } =
           await import("@/lib/apple-revocation");
         const config = appleConfigFromEnv();
-        // Not an error: the app ships before these secrets exist, and
-        // saying so plainly beats a 500 that looks like a bug.
-        if (!config) return Response.json({ linked: false, reason: "not-configured" });
+        // Not an error to the CALLER (the app ships before these secrets
+        // exist, and saying so plainly beats a 500 that looks like a bug)
+        // -- but it is worth a server-side trace: this endpoint is the
+        // ENTIRE mechanism account deletion later depends on to revoke a
+        // Sign in with Apple grant, so secrets missing/dropped in the
+        // deployed environment must not fail silently forever (found in
+        // a second-opinion audit, 2026-09-28 -- every failure branch here
+        // returned a soft response to the app, by design, but none of
+        // them left a trace anywhere a human could actually find later).
+        // Checkable from Vercel's dashboard -- no Mac or device needed.
+        if (!config) {
+          console.error("[apple-link] Apple secrets not configured in this environment");
+          return Response.json({ linked: false, reason: "not-configured" });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
@@ -51,8 +62,14 @@ export const Route = createFileRoute("/api/apple-link")({
 
         const refreshToken = await exchangeAuthorizationCode(config, authorizationCode);
         // Apple rejected the code -- commonly because it was already spent.
-        // Nothing to store, and nothing the user can do about it.
-        if (!refreshToken) return Response.json({ linked: false, reason: "exchange-failed" });
+        // Nothing to store, and nothing the user can do about it, but
+        // still worth a trace: a spike of these would mean something
+        // upstream (the iOS client, or Apple's own endpoint) changed
+        // shape, not that this is expected background noise.
+        if (!refreshToken) {
+          console.error(`[apple-link] Apple rejected the authorization code exchange for user ${userData.user.id}`);
+          return Response.json({ linked: false, reason: "exchange-failed" });
+        }
 
         // Upsert: signing in with Apple again issues a new grant, and the
         // newest token is the one revocation must use.
@@ -64,7 +81,10 @@ export const Route = createFileRoute("/api/apple-link")({
           },
           { onConflict: "user_id" },
         );
-        if (error) return Response.json({ linked: false, reason: "store-failed" });
+        if (error) {
+          console.error(`[apple-link] Failed to store the Apple refresh token for user ${userData.user.id}: ${error.message}`);
+          return Response.json({ linked: false, reason: "store-failed" });
+        }
 
         return Response.json({ linked: true });
       },
