@@ -36,13 +36,13 @@ final class ProgressSyncClientDisplayIdentityTests: XCTestCase {
     }
 
     func testUpdateProfileDisplayNamePatchesTheRow() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [String: String]())
         }
         try await client.updateProfileDisplayName("Grace", userID: userID)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "PATCH")
         XCTAssertTrue(request.url!.absoluteString.contains("id=eq.\(userID)"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
@@ -50,13 +50,13 @@ final class ProgressSyncClientDisplayIdentityTests: XCTestCase {
     }
 
     func testUpdateProfileAvatarSeedPatchesTheRow() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [String: String]())
         }
         try await client.updateProfileAvatarSeed("deadbeef", userID: userID)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "PATCH")
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(body["avatar_seed"] as? String, "deadbeef")

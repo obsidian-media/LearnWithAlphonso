@@ -23,15 +23,15 @@ final class SupabaseAuthClientTests: XCTestCase {
     // MARK: - requestEmailOTP
 
     func testRequestEmailOTPPostsToTheCorrectEndpointWithTheApiKeyHeader() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.response(for: request.url!, body: [:])
         }
 
         try await client.requestEmailOTP(email: "learner@example.com")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/otp")
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
@@ -58,9 +58,9 @@ final class SupabaseAuthClientTests: XCTestCase {
     // MARK: - verifyEmailOTP
 
     func testVerifyEmailOTPPostsTheCodeAndDecodesARealSession() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-1", "refresh_token": "rt-1", "expires_in": 3600,
                 "user": ["id": "user-1"],
@@ -69,7 +69,7 @@ final class SupabaseAuthClientTests: XCTestCase {
 
         let session = try await client.verifyEmailOTP(email: "learner@example.com", code: "123456")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/verify")
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
@@ -99,9 +99,9 @@ final class SupabaseAuthClientTests: XCTestCase {
     // MARK: - exchangeOAuthCode
 
     func testExchangeOAuthCodePostsTheAuthCodeAndVerifierAndDecodesASession() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-3", "refresh_token": "rt-3", "expires_in": 3600,
                 "user": ["id": "user-1"],
@@ -110,7 +110,7 @@ final class SupabaseAuthClientTests: XCTestCase {
 
         let session = try await client.exchangeOAuthCode("auth-code-1", codeVerifier: "verifier-1")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/token?grant_type=pkce")
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
@@ -140,9 +140,9 @@ final class SupabaseAuthClientTests: XCTestCase {
     // MARK: - signInWithIDToken
 
     func testSignInWithIDTokenPostsTheProviderTokenAndNonceAndDecodesASession() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-4", "refresh_token": "rt-4", "expires_in": 3600,
                 "user": ["id": "user-1"],
@@ -151,7 +151,7 @@ final class SupabaseAuthClientTests: XCTestCase {
 
         let session = try await client.signInWithIDToken(provider: "apple", idToken: "apple-id-token", nonce: "raw-nonce-1")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/token?grant_type=id_token")
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
@@ -181,9 +181,9 @@ final class SupabaseAuthClientTests: XCTestCase {
     // MARK: - refresh
 
     func testRefreshPostsTheRefreshTokenAndDecodesANewSession() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.response(for: request.url!, body: [
                 "access_token": "at-2", "refresh_token": "rt-2", "expires_in": 3600,
                 "user": ["id": "user-1"],
@@ -193,7 +193,7 @@ final class SupabaseAuthClientTests: XCTestCase {
         let oldSession = SupabaseSession(accessToken: "at-1", refreshToken: "rt-1", expiresAt: Date(), userID: "user-1")
         let newSession = try await client.refresh(oldSession)
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/token?grant_type=refresh_token")
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]

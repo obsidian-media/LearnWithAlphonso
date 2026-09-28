@@ -42,15 +42,15 @@ final class ProgressSyncClientChallengesTests: XCTestCase {
     }
 
     func testJoinOpenDuelQueueReturnsMatchedDuelID() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["matched": true, "duel_id": "d1"]])
         }
         let result = try await client.joinOpenDuelQueue(course: "en", matchByLevel: false)
         XCTAssertTrue(result.matched)
         XCTAssertEqual(result.duelID, "d1")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/join_open_duel_queue"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(body["_course"] as? String, "en")
@@ -58,13 +58,13 @@ final class ProgressSyncClientChallengesTests: XCTestCase {
     }
 
     func testLeaveOpenDuelQueuePostsToTheRpc() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [String: String]())
         }
         try await client.leaveOpenDuelQueue()
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/leave_duel_queue"))
     }
 }

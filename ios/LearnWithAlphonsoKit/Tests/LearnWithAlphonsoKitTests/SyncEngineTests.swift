@@ -38,7 +38,7 @@ final class SyncEngineTests: XCTestCase {
         let now = Date()
         let older = pendingCompletion(lessonID: "u1l1", queuedAt: now.addingTimeInterval(-60))
         let newer = pendingCompletion(lessonID: "u1l2", queuedAt: now)
-        var calledLessonIDs: [String] = []
+        let calledLessonIDs = TestCapture<[String]>([])
 
         let client = makeClient { request in
             if request.url!.absoluteString.hasSuffix("start-lesson-session") {
@@ -46,7 +46,7 @@ final class SyncEngineTests: XCTestCase {
             }
             let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
             let lessonId = body["lessonId"] as! String
-            calledLessonIDs.append(lessonId)
+            calledLessonIDs.value.append(lessonId)
             return self.jsonResponse(for: request.url!, body: [
                 "xpGain": 50, "newlyUnlocked": [] as [String], "heartsBonus": NSNull(),
                 "progress": self.completionProgressJSON(xp: lessonId == "u1l2" ? 150 : 100),
@@ -55,7 +55,7 @@ final class SyncEngineTests: XCTestCase {
 
         let result = await SyncEngine.sync(pendingLessonCompletions: [newer, older], pendingReviewGrades: [], client: client)
 
-        XCTAssertEqual(calledLessonIDs, ["u1l1", "u1l2"], "should drain oldest-queued first regardless of input order")
+        XCTAssertEqual(calledLessonIDs.value, ["u1l1", "u1l2"], "should drain oldest-queued first regardless of input order")
         XCTAssertEqual(result.syncedLessonCompletions, [older, newer])
         XCTAssertEqual(result.lastKnownProgress?.xp, 150, "should report the most recently synced completion's progress")
     }
@@ -89,17 +89,17 @@ final class SyncEngineTests: XCTestCase {
         let now = Date()
         let older = pendingGrade(itemKey: "en:l1:q1", queuedAt: now.addingTimeInterval(-60))
         let newer = pendingGrade(itemKey: "en:l1:q2", queuedAt: now)
-        var calledKeys: [String] = []
+        let calledKeys = TestCapture<[String]>([])
 
         let client = makeClient { request in
             let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
-            calledKeys.append(body["itemKey"] as! String)
+            calledKeys.value.append(body["itemKey"] as! String)
             return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-25"])
         }
 
         let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [newer, older], client: client)
 
-        XCTAssertEqual(calledKeys, ["en:l1:q1", "en:l1:q2"])
+        XCTAssertEqual(calledKeys.value, ["en:l1:q1", "en:l1:q2"])
         XCTAssertEqual(result.syncedReviewGrades, [older, newer])
     }
 
@@ -107,17 +107,17 @@ final class SyncEngineTests: XCTestCase {
         let now = Date()
         let first = pendingGrade(itemKey: "en:l1:q1", queuedAt: now.addingTimeInterval(-60))
         let second = pendingGrade(itemKey: "en:l1:q2", queuedAt: now)
-        var calledKeys: [String] = []
+        let calledKeys = TestCapture<[String]>([])
 
         let client = makeClient { request in
             let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
-            calledKeys.append(body["itemKey"] as! String)
+            calledKeys.value.append(body["itemKey"] as! String)
             return self.jsonResponse(for: request.url!, body: ["error": "not due yet"], status: 400)
         }
 
         let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [first, second], client: client)
 
-        XCTAssertEqual(calledKeys, ["en:l1:q1"], "must not attempt the second grade once the first failed")
+        XCTAssertEqual(calledKeys.value, ["en:l1:q1"], "must not attempt the second grade once the first failed")
         XCTAssertTrue(result.syncedReviewGrades.isEmpty)
     }
 

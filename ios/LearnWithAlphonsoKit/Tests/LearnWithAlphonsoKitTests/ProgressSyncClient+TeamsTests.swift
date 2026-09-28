@@ -52,44 +52,44 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
     }
 
     func testJoinTeamByCodePostsTheCodeAndReturnsTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t1"]])
         }
         let result = try await client.joinTeamByCode("ABC123")
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.teamID, "t1")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/join_team"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(body["_code"] as? String, "ABC123")
     }
 
     func testAutoJoinTeamPostsToTheRpc() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t2"]])
         }
         let result = try await client.autoJoinTeam()
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.teamID, "t2")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/auto_join_team"))
     }
 
     func testCreateTeamPostsNameAndVisibilityAndReturnsTheJoinCode() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t9", "join_code": "XYZ999"]])
         }
         let result = try await client.createTeam(name: "Night Owls", visibility: "private")
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.teamID, "t9")
         XCTAssertEqual(result.joinCode, "XYZ999")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/create_team"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(body["_name"] as? String, "Night Owls")
@@ -97,13 +97,13 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
     }
 
     func testCreateTeamDefaultsVisibilityToPublic() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "team_id": "t9", "join_code": "AAA111"]])
         }
         _ = try await client.createTeam(name: "Night Owls")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(body["_visibility"] as? String, "public")
     }

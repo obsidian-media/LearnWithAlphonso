@@ -17,21 +17,21 @@ final class AccountClientTests: XCTestCase {
     // MARK: - exportMyData
 
     func testExportMyDataPostsWithBearerTokenAndReturnsTheRawBody() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let payload = try! JSONSerialization.data(withJSONObject: [
             "exported_at": "2026-09-25T00:00:00.000Z",
             "user_id": "user-1",
             "review_items": [["item_key": "u1l1:q1"]],
         ])
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return (payload, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         let result = try await client.exportMyData()
 
         XCTAssertEqual(result, payload)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/account-export"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -54,16 +54,16 @@ final class AccountClientTests: XCTestCase {
     // MARK: - deleteMyAccount
 
     func testDeleteMyAccountPostsTheConfirmLiteralWithBearerToken() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["deleted": true])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         try await client.deleteMyAccount()
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/account-delete"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -89,16 +89,16 @@ final class AccountClientTests: XCTestCase {
     // MARK: - linkAppleAuthorization
 
     func testLinkAppleAuthorizationPostsTheCodeWithBearerToken() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["linked": true])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         try await client.linkAppleAuthorization(code: "c-123")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/apple-link"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -139,16 +139,16 @@ final class AccountClientTests: XCTestCase {
     // root cause this works around).
 
     func testLinkAppleAuthorizationRetriesOnceAfter401WithARefreshedToken() async throws {
-        var capturedAuthHeaders: [String?] = []
-        var callCount = 0
+        let capturedAuthHeaders = TestCapture<[String?]>([])
+        let callCount = TestCapture(0)
         let client = AccountClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { "fresh-token" },
             requester: { request in
-                callCount += 1
-                capturedAuthHeaders.append(request.value(forHTTPHeaderField: "Authorization"))
-                if callCount == 1 {
+                callCount.value += 1
+                capturedAuthHeaders.value.append(request.value(forHTTPHeaderField: "Authorization"))
+                if callCount.value == 1 {
                     return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
                 }
                 let body = try! JSONSerialization.data(withJSONObject: ["linked": true])
@@ -158,14 +158,14 @@ final class AccountClientTests: XCTestCase {
 
         try await client.linkAppleAuthorization(code: "c-123")
 
-        XCTAssertEqual(callCount, 2)
-        XCTAssertEqual(capturedAuthHeaders, ["Bearer stale-token", "Bearer fresh-token"])
+        XCTAssertEqual(callCount.value, 2)
+        XCTAssertEqual(capturedAuthHeaders.value, ["Bearer stale-token", "Bearer fresh-token"])
     }
 
     func testLinkAppleAuthorizationDoesNotRetryWhenNoRefreshHandlerIsProvided() async {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = makeClient { request in
-            callCount += 1
+            callCount.value += 1
             return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
         }
 
@@ -175,7 +175,7 @@ final class AccountClientTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AccountError, .server(status: 401, message: nil))
         }
-        XCTAssertEqual(callCount, 1)
+        XCTAssertEqual(callCount.value, 1)
     }
 
     func testExportMyDataDoesNotRetryOn401EvenWhenConstructedWithoutRefreshSupport() async {
@@ -184,9 +184,9 @@ final class AccountClientTests: XCTestCase {
         // default AccountClient has no refreshAccessToken, so this is
         // really just confirming those two methods' behavior is
         // unchanged by this file's other edits.
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = makeClient { request in
-            callCount += 1
+            callCount.value += 1
             return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
         }
 
@@ -196,6 +196,6 @@ final class AccountClientTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AccountError, .server(status: 401, message: nil))
         }
-        XCTAssertEqual(callCount, 1)
+        XCTAssertEqual(callCount.value, 1)
     }
 }

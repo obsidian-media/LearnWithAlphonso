@@ -35,16 +35,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // direct user_progress read+PATCH -- that table no longer grants
     // direct INSERT/UPDATE to `authenticated`.
     func testLoseHeartPostsToTheRpcAndReturnsTheResolvedHearts() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["hearts": 2, "hearts_refill_at": NSNull()]])
         }
 
         let result = try await client.loseHeart()
 
         XCTAssertEqual(result.hearts, 2)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/lose_heart"))
     }
@@ -63,16 +63,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // Now calls the set_cefr_level RPC (same migration as loseHeart above)
     // instead of a direct language_progress upsert.
     func testSetCefrLevelPostsToTheRpc() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let http = HTTPURLResponse(url: request.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!
             return (Data(), http)
         }
 
         try await client.setCefrLevel(course: "en", level: "B1")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/set_cefr_level"))
         let body = try XCTUnwrap(request.httpBody)
@@ -86,9 +86,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // Now calls the save_placement_result RPC (same migration as loseHeart
     // above) instead of a direct upsert.
     func testSavePlacementResultPostsLevelAndScoreToTheRpc() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             // PostgREST returns a scalar-returning RPC's result as a bare
             // JSON fragment (here, a quoted timestamptz string) -- this
             // client doesn't decode it, so the exact body doesn't matter.
@@ -98,7 +98,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         try await client.savePlacementResult(course: "en", level: "A2", score: 73)
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/save_placement_result"))
         let body = try XCTUnwrap(request.httpBody)
@@ -111,16 +111,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - startLessonSession
 
     func testStartLessonSessionPostsToTheEdgeFunctionAndReturnsTheToken() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: ["token": "payload.sig"])
         }
 
         let token = try await client.startLessonSession(lessonID: "u1l1", course: "en")
 
         XCTAssertEqual(token, "payload.sig")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/start-lesson-session"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -149,9 +149,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - completeLesson
 
     func testCompleteLessonPostsToTheEdgeFunctionAndDecodesTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 "xpGain": 100,
                 "newlyUnlocked": ["xp_100", "perfect_1"],
@@ -185,7 +185,7 @@ final class ProgressSyncClientTests: XCTestCase {
             hearts: 4, heartsRefillAt: nil, streakFreezes: 0, leagueTier: "bronze"
         ))
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/complete-lesson"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -218,9 +218,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchDueReviews
 
     func testFetchDueReviewsReadsDueRowsThenTheExactCount() async throws {
-        var requests: [URLRequest] = []
+        let requests = TestCapture<[URLRequest]>([])
         let client = makeClient { request in
-            requests.append(request)
+            requests.value.append(request)
             if request.httpMethod == "HEAD" {
                 let response = HTTPURLResponse(
                     url: request.url!, statusCode: 200, httpVersion: nil,
@@ -241,11 +241,11 @@ final class ProgressSyncClientTests: XCTestCase {
             ReviewItem(itemKey: "u1l1:q1", lessonId: "u1l1", level: "A1", ease: 2.3, intervalDays: 1, repetitions: 1, dueOn: "2026-09-19"),
         ])
         XCTAssertEqual(result.total, 7)
-        XCTAssertEqual(requests.count, 2)
-        XCTAssertEqual(requests[0].httpMethod, "GET")
-        XCTAssertTrue(requests[0].url!.absoluteString.contains("/rest/v1/review_items"))
-        XCTAssertTrue(requests[0].url!.query!.contains("due_on=lte."))
-        XCTAssertEqual(requests[1].httpMethod, "HEAD")
+        XCTAssertEqual(requests.value.count, 2)
+        XCTAssertEqual(requests.value[0].httpMethod, "GET")
+        XCTAssertTrue(requests.value[0].url!.absoluteString.contains("/rest/v1/review_items"))
+        XCTAssertTrue(requests.value[0].url!.query!.contains("due_on=lte."))
+        XCTAssertEqual(requests.value[1].httpMethod, "HEAD")
     }
 
     func testFetchDueReviewsDecodesWeaknessSourcedRows() async throws {
@@ -301,9 +301,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchUnlockedAchievements
 
     func testFetchUnlockedAchievementsGetsAndDecodesTheRows() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["achievement_id": "streak_3", "progress": 3],
                 ["achievement_id": "xp_100", "progress": 100],
@@ -316,7 +316,7 @@ final class ProgressSyncClientTests: XCTestCase {
             UnlockedAchievement(achievementID: "streak_3", progress: 3),
             UnlockedAchievement(achievementID: "xp_100", progress: 100),
         ])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/user_achievements"))
     }
@@ -334,16 +334,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - gradeReview
 
     func testGradeReviewPostsToTheEdgeFunctionAndReturnsTheOutcome() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-22"])
         }
 
         let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en")
 
         XCTAssertEqual(result, ReviewGradeOutcome(retired: false, dueOn: "2026-09-22"))
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/functions/v1/grade-review"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
@@ -370,16 +370,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - claimReviewClearBonus
 
     func testClaimReviewClearBonusPostsToTheRpcAndReturnsTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["granted": true, "hearts": 5]])
         }
 
         let result = try await client.claimReviewClearBonus(course: "en")
 
         XCTAssertEqual(result, ReviewClearBonus(granted: true, hearts: 5))
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/claim_review_clear_bonus"))
         let body = try XCTUnwrap(request.httpBody)
@@ -390,16 +390,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - buyStreakFreezeWithXp (V3 package 2)
 
     func testBuyStreakFreezeWithXpReturnsTheSuccessfulPurchaseResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "streak_freezes": 3, "xp": 375]])
         }
 
         let result = try await client.buyStreakFreezeWithXp(course: "en")
 
         XCTAssertEqual(result, .ok(streakFreezes: 3, xp: 375))
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/buy_streak_freeze_with_xp"))
     }
 
@@ -414,9 +414,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - duels (V3 package 2)
 
     func testCreateDuelPostsTheOpponentAndCourse() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "duel_id": "d1"]])
         }
 
@@ -424,7 +424,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.duelID, "d1")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/create_duel"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
@@ -433,16 +433,16 @@ final class ProgressSyncClientTests: XCTestCase {
     }
 
     func testRespondToDuelPostsTheAcceptFlag() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull()]])
         }
 
         let result = try await client.respondToDuel(duelID: "d1", accept: true)
 
         XCTAssertTrue(result.ok)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
         XCTAssertEqual(payload["_duel_id"] as? String, "d1")
@@ -470,9 +470,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - claimWeeklyQuest (V3 package 2)
 
     func testClaimWeeklyQuestPostsQuestIdCourseAndWeekStart() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull(), "xp": 130]])
         }
 
@@ -480,7 +480,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.xp, 130)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
         XCTAssertEqual(payload["_quest_id"] as? String, "weekly_xp_150")
@@ -490,9 +490,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchLeaderboard
 
     func testFetchLeaderboardPostsScopeAndPeriodAndDecodesTheRows() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["user_id": "u1", "display_name": "Ada", "country": "US", "avatar_seed": "ada", "xp": 300],
                 ["user_id": "u2", "display_name": "Grace", "country": NSNull(), "avatar_seed": "grace", "xp": 150],
@@ -505,7 +505,7 @@ final class ProgressSyncClientTests: XCTestCase {
             LeaderboardRow(userID: "u1", displayName: "Ada", country: "US", avatarSeed: "ada", xp: 300),
             LeaderboardRow(userID: "u2", displayName: "Grace", country: nil, avatarSeed: "grace", xp: 150),
         ])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_leaderboard"))
         let body = try XCTUnwrap(request.httpBody)
@@ -527,9 +527,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - acceptFriendInvite
 
     func testAcceptFriendInvitePostsTheInviterIdAndReturnsTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "friends now"]])
         }
 
@@ -537,7 +537,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.message, "friends now")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/accept_friend_invite"))
         let body = try XCTUnwrap(request.httpBody)
@@ -559,9 +559,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - removeFriend
 
     func testRemoveFriendPostsTheFriendIdAndReturnsTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "removed"]])
         }
 
@@ -569,7 +569,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.message, "removed")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/remove_friend"))
         let body = try XCTUnwrap(request.httpBody)
@@ -591,9 +591,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchFriendsProgress
 
     func testFetchFriendsProgressPostsToTheRpcAndDecodesTheRows() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["user_id": "u1", "display_name": "Ada", "avatar_seed": "ada", "streak": 12, "week_xp": 300],
             ])
@@ -602,7 +602,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let rows = try await client.fetchFriendsProgress()
 
         XCTAssertEqual(rows, [FriendProgress(userID: "u1", displayName: "Ada", avatarSeed: "ada", streak: 12, weekXP: 300)])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_friends_progress"))
     }
@@ -620,9 +620,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchFriendActivity
 
     func testFetchFriendActivityGetsAndDecodesEveryEventTypesPayload() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["id": "e1", "user_id": "u1", "event_type": "lesson_completed", "payload": ["lessonId": "u1l1", "xpGain": 50], "created_at": "2026-09-20T01:23:45.678901+00:00"],
                 ["id": "e2", "user_id": "u2", "event_type": "streak_milestone", "payload": ["streak": 7], "created_at": "2026-09-19T00:00:00+00:00"],
@@ -636,7 +636,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(events[0], FriendActivityEvent(id: "e1", userID: "u1", eventType: "lesson_completed", createdAt: events[0].createdAt, lessonID: "u1l1", xpGain: 50, streak: nil, newTier: nil))
         XCTAssertEqual(events[1].streak, 7)
         XCTAssertEqual(events[2].newTier, "silver")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/friend_activity_events"))
         XCTAssertTrue(request.url!.query!.contains("order=created_at.desc"))
@@ -645,15 +645,15 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - nudges
 
     func testSendNudgePostsOnlyTheRecipientId() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [] as [Int])
         }
 
         try await client.sendNudge(recipientID: "friend-1")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/nudges"))
         let body = try XCTUnwrap(request.httpBody)
@@ -663,9 +663,9 @@ final class ProgressSyncClientTests: XCTestCase {
     }
 
     func testFetchUnreadNudgesFiltersToUnreadOnly() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["id": "n1", "sender_id": "friend-1", "created_at": "2026-09-20T01:00:00+00:00"],
             ])
@@ -674,49 +674,49 @@ final class ProgressSyncClientTests: XCTestCase {
         let nudges = try await client.fetchUnreadNudges()
 
         XCTAssertEqual(nudges, [Nudge(id: "n1", senderID: "friend-1", createdAt: nudges[0].createdAt)])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.query!.contains("read_at=is.null"))
     }
 
     func testMarkNudgesReadPatchesTheGivenIds() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [] as [Int])
         }
 
         try await client.markNudgesRead(ids: ["n1", "n2"])
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "PATCH")
         XCTAssertTrue(request.url!.absoluteString.contains("id=in.(n1,n2)"))
     }
 
     func testMarkNudgesReadIsANoOpForAnEmptyList() async throws {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = makeClient { request in
-            callCount += 1
+            callCount.value += 1
             return self.jsonResponse(for: request.url!, body: [] as [Int])
         }
 
         try await client.markNudgesRead(ids: [])
 
-        XCTAssertEqual(callCount, 0)
+        XCTAssertEqual(callCount.value, 0)
     }
 
     // MARK: - fetchCefrLevel (V3 package 3a)
 
     func testFetchCefrLevelReturnsTheLevel() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["cefr_level": "B1"]])
         }
 
         let level = try await client.fetchCefrLevel(course: "en")
 
         XCTAssertEqual(level, "B1")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/language_progress"))
         XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
     }
@@ -732,16 +732,16 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchPlacementTakenAt (iOS placement exam)
 
     func testFetchPlacementTakenAtReturnsTheTimestamp() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["placement_taken_at": "2026-09-25T00:00:00Z"]])
         }
 
         let takenAt = try await client.fetchPlacementTakenAt(course: "en")
 
         XCTAssertEqual(takenAt, "2026-09-25T00:00:00Z")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/language_progress"))
         XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
     }
@@ -768,10 +768,10 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchProgress (progress-not-shown-after-update fix, 2026-09-24)
 
     func testFetchProgressComposesBothTables() async throws {
-        var paths: [String] = []
+        let paths = TestCapture<[String]>([])
         let client = makeClient { request in
             let url = request.url!
-            paths.append(url.path)
+            paths.value.append(url.path)
             if url.path.contains("language_progress") {
                 return self.jsonResponse(for: url, body: [["xp": 1234, "league_tier": "gold"]])
             }
@@ -805,14 +805,14 @@ final class ProgressSyncClientTests: XCTestCase {
         // parsed value lands on ...678.0 -- hence the 1ms accuracy rather
         // than an exact match.
         XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 1790213025678, accuracy: 1)
-        XCTAssertEqual(paths.count, 2)
+        XCTAssertEqual(paths.value.count, 2)
     }
 
     func testFetchProgressAsksForTheMostRecentlyUpdatedCourse() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            if request.url!.path.contains("language_progress"), captured == nil {
-                captured = request
+            if request.url!.path.contains("language_progress"), captured.value == nil {
+                captured.value = request
             }
             return self.jsonResponse(for: request.url!, body: [["xp": 1, "league_tier": "bronze"]])
         }
@@ -821,7 +821,7 @@ final class ProgressSyncClientTests: XCTestCase {
 
         // Must not hardcode a course: a French-only learner would otherwise
         // be shown their empty English numbers.
-        let query = try XCTUnwrap(captured?.url?.query)
+        let query = try XCTUnwrap(captured.value?.url?.query)
         XCTAssertFalse(query.contains("language=eq."))
         XCTAssertTrue(query.contains("order=updated_at.desc"))
         XCTAssertTrue(query.contains("limit=1"))
@@ -859,9 +859,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchWeaknessTrend (V3 package 3b)
 
     func testFetchWeaknessTrendAggregatesPerCategory() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["category": "past-tense", "event_type": "detected", "created_at": "2026-09-01T00:00:00Z"],
                 ["category": "past-tense", "event_type": "detected", "created_at": "2026-09-05T00:00:00Z"],
@@ -877,7 +877,7 @@ final class ProgressSyncClientTests: XCTestCase {
             WeaknessTrendEntry(category: "past-tense", detectedCount: 2, resolvedCount: 1, openCount: 1, lastEventAt: "2026-09-10T00:00:00Z"),
             WeaknessTrendEntry(category: "articles", detectedCount: 1, resolvedCount: 1, openCount: 0, lastEventAt: "2026-09-03T00:00:00Z"),
         ])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/weakness_events"))
     }
 
@@ -892,9 +892,9 @@ final class ProgressSyncClientTests: XCTestCase {
     // MARK: - fetchActivityXP
 
     func testFetchActivityXPSumsXpEarnedOverTheDateRange() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [
                 ["xp_earned": 40], ["xp_earned": 60],
             ])
@@ -903,7 +903,7 @@ final class ProgressSyncClientTests: XCTestCase {
         let total = try await client.fetchActivityXP(userID: "u1", from: "2026-09-08", to: "2026-09-15")
 
         XCTAssertEqual(total, 100)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.query!.contains("day=gte.2026-09-08"))
         XCTAssertTrue(request.url!.query!.contains("day=lt.2026-09-15"))
     }

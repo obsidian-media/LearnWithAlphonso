@@ -17,9 +17,9 @@ final class AIConversationClientTests: XCTestCase {
     // MARK: - chat
 
     func testChatPostsMessagesAndSystemPromptAndReturnsTheContent() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi there!"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -30,7 +30,7 @@ final class AIConversationClientTests: XCTestCase {
         )
 
         XCTAssertEqual(reply, "Hi there!")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/chat"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -43,9 +43,9 @@ final class AIConversationClientTests: XCTestCase {
     }
 
     func testChatIncludesCefrLevelWhenProvided() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi!"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -56,7 +56,7 @@ final class AIConversationClientTests: XCTestCase {
             cefrLevel: "A2"
         )
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
         XCTAssertEqual(payload["cefrLevel"] as? String, "A2")
@@ -82,9 +82,9 @@ final class AIConversationClientTests: XCTestCase {
     // MARK: - analyzeWeaknesses
 
     func testAnalyzeWeaknessesPostsTheTranscriptAndReturnsTheCount() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["weaknessesDetected": 2])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -95,7 +95,7 @@ final class AIConversationClientTests: XCTestCase {
         ])
 
         XCTAssertEqual(count, 2)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/analyze-weaknesses"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer user-access-token")
@@ -128,9 +128,9 @@ final class AIConversationClientTests: XCTestCase {
     // MARK: - generatePractice (V3 pkg 4b)
 
     func testGeneratePracticePostsTheLessonAndReturnsParsedQuestions() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: [
                 "questions": [
                     ["prompt": "He ___ to work.", "choices": ["drive", "drives", "drove", "driven"], "answerIndex": 1, "explanation": "why"],
@@ -144,7 +144,7 @@ final class AIConversationClientTests: XCTestCase {
         XCTAssertEqual(questions, [
             GeneratedPracticeQuestion(prompt: "He ___ to work.", choices: ["drive", "drives", "drove", "driven"], answerIndex: 1, explanation: "why"),
         ])
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/generate-practice"))
         let body = try XCTUnwrap(request.httpBody)
@@ -178,17 +178,17 @@ final class AIConversationClientTests: XCTestCase {
     // MARK: - synthesizeSpeech
 
     func testSynthesizeSpeechPostsTextAndReturnsTheAudioBytes() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let audioBytes = Data([0x49, 0x44, 0x33])
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return (audioBytes, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         let result = try await client.synthesizeSpeech(text: "Welcome!")
 
         XCTAssertEqual(result, audioBytes)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/tts"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
@@ -211,9 +211,9 @@ final class AIConversationClientTests: XCTestCase {
     /// Rewritten to assert the multipart body actually matches what the
     /// web client (`use-speech-capture.ts`) sends and `api/stt.ts` parses.
     func testTranscribeSendsMultipartFormDataWithAFileFieldAndReturnsTheText() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["text": "hello there"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -223,7 +223,7 @@ final class AIConversationClientTests: XCTestCase {
 
         XCTAssertEqual(result.text, "hello there")
         XCTAssertNil(result.confidence)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/stt"))
         let contentType = try XCTUnwrap(request.value(forHTTPHeaderField: "Content-Type"))
         XCTAssertTrue(contentType.hasPrefix("multipart/form-data; boundary="))
@@ -244,16 +244,16 @@ final class AIConversationClientTests: XCTestCase {
     /// api/stt.ts before this -- found 2026-09-28 alongside the
     /// wire-format fix above.
     func testTranscribeIncludesTheCourseFieldWhenProvided() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["text": "bonjour"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         _ = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a", course: "fr")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try XCTUnwrap(request.httpBody)
         let bodyString = String(decoding: body, as: UTF8.self)
         XCTAssertTrue(bodyString.contains("Content-Disposition: form-data; name=\"course\""))
@@ -261,16 +261,16 @@ final class AIConversationClientTests: XCTestCase {
     }
 
     func testTranscribeOmitsTheCourseFieldWhenNil() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["text": "hello"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
 
         _ = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let body = try XCTUnwrap(request.httpBody)
         let bodyString = String(decoding: body, as: UTF8.self)
         XCTAssertFalse(bodyString.contains("name=\"course\""))
@@ -309,16 +309,16 @@ final class AIConversationClientTests: XCTestCase {
     // launch and never refreshed again until this fix).
 
     func testChatRetriesOnceAfter401WithARefreshedToken() async throws {
-        var capturedAuthHeaders: [String?] = []
-        var callCount = 0
+        let capturedAuthHeaders = TestCapture<[String?]>([])
+        let callCount = TestCapture(0)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { "fresh-token" },
             requester: { request in
-                callCount += 1
-                capturedAuthHeaders.append(request.value(forHTTPHeaderField: "Authorization"))
-                if callCount == 1 {
+                callCount.value += 1
+                capturedAuthHeaders.value.append(request.value(forHTTPHeaderField: "Authorization"))
+                if callCount.value == 1 {
                     return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
                 }
                 let body = try! JSONSerialization.data(withJSONObject: ["content": "Hi there!"])
@@ -329,17 +329,17 @@ final class AIConversationClientTests: XCTestCase {
         let reply = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
 
         XCTAssertEqual(reply, "Hi there!")
-        XCTAssertEqual(callCount, 2)
-        XCTAssertEqual(capturedAuthHeaders, ["Bearer stale-token", "Bearer fresh-token"])
+        XCTAssertEqual(callCount.value, 2)
+        XCTAssertEqual(capturedAuthHeaders.value, ["Bearer stale-token", "Bearer fresh-token"])
     }
 
     func testChatDoesNotRetryWhenNoRefreshHandlerIsProvided() async {
-        var callCount = 0
+        let callCount = TestCapture(0)
         // makeClient's default has no refreshAccessToken -- unaffected callers
         // (export/delete, and every existing test above) must see identical
         // behavior to before this fix: exactly one attempt, the 401 surfaced.
         let client = makeClient { request in
-            callCount += 1
+            callCount.value += 1
             return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
         }
 
@@ -349,17 +349,17 @@ final class AIConversationClientTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
         }
-        XCTAssertEqual(callCount, 1)
+        XCTAssertEqual(callCount.value, 1)
     }
 
     func testChatSurfacesTheOriginal401WhenRefreshFails() async {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { nil },
             requester: { request in
-                callCount += 1
+                callCount.value += 1
                 return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
             }
         )
@@ -373,17 +373,17 @@ final class AIConversationClientTests: XCTestCase {
         // A refresh failure (e.g. the refresh token itself is dead) means
         // Session has already signed out -- retrying with the same stale
         // token again would just 401 a second time for no new information.
-        XCTAssertEqual(callCount, 1)
+        XCTAssertEqual(callCount.value, 1)
     }
 
     func testChatDoesNotRetryASecondTimeIfTheRefreshedTokenAlsoGets401() async {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { "still-somehow-bad-token" },
             requester: { request in
-                callCount += 1
+                callCount.value += 1
                 return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
             }
         )
@@ -394,16 +394,16 @@ final class AIConversationClientTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
         }
-        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(callCount.value, 2)
     }
 
     func testChatDoesNotInvokeRefreshOnSuccess() async throws {
-        var refreshCalled = false
+        let refreshCalled = TestCapture(false)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "user-access-token" },
             refreshAccessToken: {
-                refreshCalled = true
+                refreshCalled.value = true
                 return "fresh-token"
             },
             requester: { request in
@@ -414,18 +414,18 @@ final class AIConversationClientTests: XCTestCase {
 
         _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
 
-        XCTAssertFalse(refreshCalled)
+        XCTAssertFalse(refreshCalled.value)
     }
 
     func testTranscribeRetriesOnceAfter401WithARefreshedToken() async throws {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { "fresh-token" },
             requester: { request in
-                callCount += 1
-                if callCount == 1 {
+                callCount.value += 1
+                if callCount.value == 1 {
                     return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
                 }
                 let body = try! JSONSerialization.data(withJSONObject: ["text": "good morning", "confidence": 0.93])
@@ -436,18 +436,18 @@ final class AIConversationClientTests: XCTestCase {
         let result = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a")
 
         XCTAssertEqual(result.text, "good morning")
-        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(callCount.value, 2)
     }
 
     func testSynthesizeSpeechRetriesOnceAfter401WithARefreshedToken() async throws {
-        var callCount = 0
+        let callCount = TestCapture(0)
         let client = AIConversationClient(
             baseURL: baseURL,
             accessToken: { "stale-token" },
             refreshAccessToken: { "fresh-token" },
             requester: { request in
-                callCount += 1
-                if callCount == 1 {
+                callCount.value += 1
+                if callCount.value == 1 {
                     return (Data(), HTTPURLResponse(url: request.url!, statusCode: 401, httpVersion: nil, headerFields: nil)!)
                 }
                 return (Data([0xFF, 0xD8]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
@@ -457,16 +457,16 @@ final class AIConversationClientTests: XCTestCase {
         let audio = try await client.synthesizeSpeech(text: "hello")
 
         XCTAssertEqual(audio, Data([0xFF, 0xD8]))
-        XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(callCount.value, 2)
     }
 
     // MARK: - gradeTranslation (no prior coverage -- added alongside the
     // new placementId overload the iOS placement exam needs)
 
     func testGradeTranslationWithLessonIdPostsTheExpectedBody() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["correct": true, "reason": NSNull()])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -480,7 +480,7 @@ final class AIConversationClientTests: XCTestCase {
 
         XCTAssertTrue(verdict.correct)
         XCTAssertNil(verdict.reason)
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/api/grade-translation"))
         let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(payload["lessonId"] as? String, "u1l1")
@@ -489,9 +489,9 @@ final class AIConversationClientTests: XCTestCase {
     }
 
     func testGradeTranslationWithPlacementIdPostsTheExpectedBody() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             let body = try! JSONSerialization.data(withJSONObject: ["correct": false, "reason": "not quite"])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         }
@@ -503,7 +503,7 @@ final class AIConversationClientTests: XCTestCase {
 
         XCTAssertFalse(verdict.correct)
         XCTAssertEqual(verdict.reason, "not quite")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
         XCTAssertEqual(payload["placementId"] as? String, "p60")
         XCTAssertNil(payload["lessonId"])

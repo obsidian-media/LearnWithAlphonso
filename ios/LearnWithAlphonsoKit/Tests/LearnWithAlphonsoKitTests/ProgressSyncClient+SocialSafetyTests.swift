@@ -23,9 +23,9 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
     // MARK: - blockUser
 
     func testBlockUserPostsToTheRpcAndReturnsTheResult() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "blocked"]])
         }
 
@@ -33,7 +33,7 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.message, "blocked")
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/block_user"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
@@ -55,15 +55,15 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
     // MARK: - unblockUser
 
     func testUnblockUserSendsADeleteScopedToTheBlockedID() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [String: String]())
         }
 
         try await client.unblockUser("target-1")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "DELETE")
         XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/blocked_users"))
         XCTAssertTrue(request.url!.absoluteString.contains("blocked=eq.target-1"))
@@ -72,15 +72,15 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
     // MARK: - reportUser
 
     func testReportUserPostsTheReportedIDAndReason() async throws {
-        var captured: URLRequest?
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            captured = request
+            captured.value = request
             return self.jsonResponse(for: request.url!, body: [String: String]())
         }
 
         try await client.reportUser("target-1", reason: "harassment")
 
-        let request = try XCTUnwrap(captured)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/content_reports"))
         XCTAssertEqual(request.value(forHTTPHeaderField: "Prefer"), "return=minimal")
