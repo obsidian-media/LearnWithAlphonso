@@ -36,7 +36,9 @@ final class Session {
         supabaseURL: AppConfig.supabaseURL,
         publishableKey: AppConfig.supabasePublishableKey
     )) {
+        LaunchBreadcrumbs.log("Session.init start")
         self.authClient = authClient
+        LaunchBreadcrumbs.log("Session.init done")
     }
 
     var accessToken: String? {

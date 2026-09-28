@@ -115,20 +115,17 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
-        # 35 fixed the "Empty or missing audio" wire-format bug. 36's
-        # diagnostic narrowed the follow-on silent-reset symptom to a
-        # consistent ~0.5s Deepgram-reported duration. 37's
-        # AVAudioRecorderDelegate fix did NOT resolve it (confirmed live)
-        # -- the box walker in api/stt.ts then proved the uploaded file
-        # itself is genuinely short and internally consistent (moov/mdat
-        # agree), not corrupt. 38 adds real client-side timing
-        # (press-to-release vs. actual capture span, see
-        # AIConversationClient.transcribe's debugTiming param) to settle
-        # whether the gesture ends early or record() itself is slow to
-        # actually start -- also fixes a session-refresh gap in
-        # Hector/Speak and a silent-failure UX regression found alongside
-        # it. See docs/BACKLOG.md §0.0-j for the full trail.
-        CURRENT_PROJECT_VERSION: "38"
+        # 35-38: the "Empty or missing audio"/short-recording saga, see
+        # docs/BACKLOG.md §0.0-j for the full trail. 39: build 38 hung on
+        # launch on a real device -- FRONTBOARD watchdog SIGKILL,
+        # "scene-create", ~20s, the SAME signature as build 29's hang, but
+        # AlphonsoThemeManager.updateSystemColorScheme's equality guard
+        # (that fix) is confirmed still present and unchanged, so this is
+        # a different loop wearing the same watchdog shape. Re-added
+        # LaunchBreadcrumbs.swift (same proven mechanism as build 29-31)
+        # to localize it -- TEMPORARY, remove once found. See
+        # docs/BACKLOG.md §0.0-k.
+        CURRENT_PROJECT_VERSION: "39"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -256,7 +253,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "38"
+        CURRENT_PROJECT_VERSION: "39"
         SKIP_INSTALL: true
       configs:
         Release:
