@@ -287,6 +287,12 @@ struct SpeakQuestionCard: View {
     }
 }
 
+/// AVAudioRecorder.record() returns false rather than throwing on failure
+/// -- this makes that a catchable error instead of a silently-ignored Bool.
+private enum RecordingStartError: Error {
+    case recordCallFailed
+}
+
 /// Wraps AVAudioRecorder for one held press: start() records to a fresh temp
 /// file, stop() finalizes it and returns the bytes (nil if nothing was
 /// captured). Same approach as ConversationView's TurnRecorder -- kept as its
@@ -306,33 +312,42 @@ final class SpeakTurnRecorder {
         // Set before touching the session, so the flag is already true
         // when iOS delivers interruption-began to the podcast player --
         // that is how it tells an in-app mic takeover from a phone call.
-        // See RecordingState.
+        // See RecordingState. Wrapped in do/catch so ANY failure below
+        // still calls the matching ended() -- see ConversationView's
+        // identical TurnRecorder.start() for the full reasoning.
         RecordingState.shared.began()
-        let audioSession = AVAudioSession.sharedInstance()
-        // .defaultToSpeaker matters here in a way it does not on the
-        // conversation screen: AVAudioSession is process-wide, and plain
-        // .playAndRecord routes playback to the receiver. Without it, one
-        // speaking question left "Hear it first", a listening question's TTS
-        // and every other sound in the app playing quietly out of the earpiece
-        // for the rest of the session -- and a review queue interleaves
-        // speaking and listening items, so the learner meets that in one
-        // sitting.
-        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
-        try audioSession.setActive(true)
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            // .defaultToSpeaker matters here in a way it does not on the
+            // conversation screen: AVAudioSession is process-wide, and plain
+            // .playAndRecord routes playback to the receiver. Without it, one
+            // speaking question left "Hear it first", a listening question's TTS
+            // and every other sound in the app playing quietly out of the earpiece
+            // for the rest of the session -- and a review queue interleaves
+            // speaking and listening items, so the learner meets that in one
+            // sitting.
+            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+            try audioSession.setActive(true)
 
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString + ".m4a")
-        let settings: [String: Any] = [
-            AVFormatIDKey: kAudioFormatMPEG4AAC,
-            AVSampleRateKey: 44_100,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
-        ]
-        let newRecorder = try AVAudioRecorder(url: url, settings: settings)
-        newRecorder.record()
-        recorder = newRecorder
-        fileURL = url
-        startedAt = Date()
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString + ".m4a")
+            let settings: [String: Any] = [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: 44_100,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
+            ]
+            let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            guard newRecorder.record() else {
+                throw RecordingStartError.recordCallFailed
+            }
+            recorder = newRecorder
+            fileURL = url
+            startedAt = Date()
+        } catch {
+            RecordingState.shared.ended()
+            throw error
+        }
     }
 
     func remainingTimeToMinimumDuration() -> TimeInterval? {

@@ -290,7 +290,12 @@ private struct CampaignSessionView: View {
             phase = .speaking
             let audioReply = try await client.synthesizeSpeech(text: reply)
             player = try AVAudioPlayer(data: audioReply)
-            player?.play()
+            // Same discarded-Bool shape as AVAudioRecorder.record() (found
+            // in the same sweep, 2026-09-28) -- see ConversationView's
+            // identical fix for the full reasoning.
+            if player?.play() == false {
+                errorMessage = "Got a reply, but couldn't play it back."
+            }
             phase = .idle
         } catch {
             errorMessage = "Something went wrong. Try again."
@@ -316,6 +321,12 @@ private struct CampaignSessionView: View {
     }
 }
 
+/// AVAudioRecorder.record() returns false rather than throwing on failure
+/// -- this makes that a catchable error instead of a silently-ignored Bool.
+private enum RecordingStartError: Error {
+    case recordCallFailed
+}
+
 /// Same recording approach as ConversationView's TurnRecorder -- duplicated
 /// rather than shared, matching this codebase's existing pattern of small
 /// file-private helpers per screen.
@@ -332,24 +343,33 @@ private final class CampaignTurnRecorder {
         // Set before touching the session, so the flag is already true
         // when iOS delivers interruption-began to the podcast player --
         // that is how it tells an in-app mic takeover from a phone call.
-        // See RecordingState.
+        // See RecordingState. Wrapped in do/catch so ANY failure below
+        // still calls the matching ended() -- see ConversationView's
+        // identical TurnRecorder.start() for the full reasoning.
         RecordingState.shared.began()
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .default)
-        try session.setActive(true)
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .default)
+            try session.setActive(true)
 
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".m4a")
-        let settings: [String: Any] = [
-            AVFormatIDKey: kAudioFormatMPEG4AAC,
-            AVSampleRateKey: 44_100,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
-        ]
-        let newRecorder = try AVAudioRecorder(url: url, settings: settings)
-        newRecorder.record()
-        recorder = newRecorder
-        fileURL = url
-        startedAt = Date()
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".m4a")
+            let settings: [String: Any] = [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: 44_100,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
+            ]
+            let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            guard newRecorder.record() else {
+                throw RecordingStartError.recordCallFailed
+            }
+            recorder = newRecorder
+            fileURL = url
+            startedAt = Date()
+        } catch {
+            RecordingState.shared.ended()
+            throw error
+        }
     }
 
     func remainingTimeToMinimumDuration() -> TimeInterval? {

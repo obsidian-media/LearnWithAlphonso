@@ -286,7 +286,17 @@ private struct ConversationSessionView: View {
             phase = .speaking
             let audioReply = try await client.synthesizeSpeech(text: reply)
             player = try AVAudioPlayer(data: audioReply)
-            player?.play()
+            // Same discarded-Bool shape as AVAudioRecorder.record() (found
+            // in the same sweep, 2026-09-28): play() can return false --
+            // an audio session conflict, most plausibly, right after this
+            // exact screen was just recording -- without throwing. The
+            // turn itself already succeeded (the reply text is appended
+            // above), so this stays informational rather than resetting
+            // the turn as failed; silence with zero signal would have
+            // been strictly worse.
+            if player?.play() == false {
+                errorMessage = "Got a reply, but couldn't play it back."
+            }
             phase = .idle
         } catch {
             // Was unconditionally "Something went wrong. Try again." --
@@ -303,6 +313,12 @@ private struct ConversationSessionView: View {
             phase = .idle
         }
     }
+}
+
+/// AVAudioRecorder.record() returns false rather than throwing on failure
+/// -- this makes that a catchable error instead of a silently-ignored Bool.
+private enum RecordingStartError: Error {
+    case recordCallFailed
 }
 
 /// Wraps AVAudioRecorder for a single hold-to-talk turn: start() begins
@@ -329,23 +345,51 @@ private final class TurnRecorder {
         // when iOS delivers interruption-began to the podcast player --
         // that is how it tells an in-app mic takeover from a phone call.
         // See RecordingState.
+        //
+        // Wrapped in do/catch (found in the same sweep, 2026-09-28,
+        // looking for every way this could still fail silently): began()
+        // must be called before touching the session, but if setCategory,
+        // setActive, the AVAudioRecorder initializer, or record() itself
+        // then throws/fails, nothing previously called the matching
+        // ended() -- RecordingState.isRecording would stay stuck true
+        // forever. PodcastAudioPlayer.handleInterruption reads that flag
+        // to decide whether a REAL interruption (a phone call) should
+        // resume playback after -- stuck true means a later genuine call
+        // would never resume the podcast, for the rest of the app's
+        // process lifetime, from a failure that has nothing to do with
+        // phone calls at all.
         RecordingState.shared.began()
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .default)
-        try session.setActive(true)
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .default)
+            try session.setActive(true)
 
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".m4a")
-        let settings: [String: Any] = [
-            AVFormatIDKey: kAudioFormatMPEG4AAC,
-            AVSampleRateKey: 44_100,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
-        ]
-        let newRecorder = try AVAudioRecorder(url: url, settings: settings)
-        newRecorder.record()
-        recorder = newRecorder
-        fileURL = url
-        startedAt = Date()
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".m4a")
+            let settings: [String: Any] = [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: 44_100,
+                AVNumberOfChannelsKey: 1,
+                AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
+            ]
+            let newRecorder = try AVAudioRecorder(url: url, settings: settings)
+            // record() returns false rather than throwing when it can't
+            // actually start (a session conflict, an interruption landing
+            // at this exact instant) -- the same "reports success,
+            // produces nothing" shape as the missing-permission bug just
+            // fixed, just a different trigger. Caught here, immediately
+            // and attributably, instead of silently producing an empty
+            // file the server rejects 400ms+ later with no indication of
+            // why.
+            guard newRecorder.record() else {
+                throw RecordingStartError.recordCallFailed
+            }
+            recorder = newRecorder
+            fileURL = url
+            startedAt = Date()
+        } catch {
+            RecordingState.shared.ended()
+            throw error
+        }
     }
 
     /// How much longer the caller should wait before actually finalizing,
