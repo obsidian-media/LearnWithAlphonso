@@ -182,11 +182,6 @@ struct SettingsView: View {
                         .tracking(0.4)
                         .foregroundStyle(AlphonsoColor.ember)
                 } footer: {
-                    // "Everything we hold about you" would overclaim: export
-                    // and deletion both cover this Alphonso account only, not
-                    // a separate Hector account -- see the delete alert's
-                    // message below and privacy.tsx's "Hector (advanced
-                    // voice tutor)" section.
                     Text("Download the data in your Alphonso account, or permanently erase it.")
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)
@@ -231,17 +226,8 @@ struct SettingsView: View {
                 }
                 .disabled(deleteConfirmationText != "DELETE")
             } message: {
-                // Hector re-parenting Phase 2 (docs/superpowers/specs/
-                // 2026-09-26-hector-reparenting-design.md): "Link Hector
-                // Account" above is how someone who signed into Hector
-                // before Phase 0 shipped -- and hasn't reopened Hector
-                // since -- gets covered by this same deletion. Pointing
-                // at it here, right where it matters, rather than only
-                // in the Account section above.
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
-
-                This also removes a linked Hector account, if you have one. If you haven't linked one yet, use "Link Hector Account" above first, or write to privacy@alphonsoecosystem.app to have it deleted separately.
                 """)
             }
         }

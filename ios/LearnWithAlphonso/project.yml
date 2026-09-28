@@ -38,6 +38,8 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: Sources
+      - path: PrivacyInfo.xcprivacy
+        buildPhase: resources
     # App Group shared with LearnWithAlphonsoWidget below -- the read-only
     # app -> widget progress channel (WidgetSharing.swift, Kit;
     # WidgetProgressPublisher.swift here). XcodeGen generates the
@@ -196,7 +198,16 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
+      # excludes PrivacyInfo.xcprivacy below -- it's re-added as its own
+      # entry with an explicit buildPhase so it lands in "Copy Bundle
+      # Resources" rather than being auto-classified by the folder scan
+      # (this file's unfamiliar extension risks being picked up as
+      # "Compile Sources" otherwise, which would fail the build).
       - path: LearnWithAlphonsoWidget
+        excludes:
+          - PrivacyInfo.xcprivacy
+      - path: LearnWithAlphonsoWidget/PrivacyInfo.xcprivacy
+        buildPhase: resources
     entitlements:
       path: LearnWithAlphonsoWidget/LearnWithAlphonsoWidget.entitlements
       properties:

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<!-- UserDefaults: Session.swift/KeychainSessionStore.swift (own
+			     app state) and WidgetSharing.swift/WidgetProgressPublisher.swift
+			     (App Group group.com.obsidianmedia.learnwithalphonso, shared
+			     with LearnWithAlphonsoWidget). 1C8F.1 is the reason for
+			     App Group scoped access, a superset of the same app only
+			     case. Xcode's own build time manifest validation, in the
+			     archive step of ios-release.yml, is the authoritative check
+			     on this code, not this comment. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
