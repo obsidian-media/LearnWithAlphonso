@@ -169,9 +169,22 @@ async function main() {
   // check below fails, the useful question is not "is it missing" but
   // "what IS in here" -- a capability named differently, or an App ID that
   // genuinely lacks it, look identical from a single boolean.
-  const entKeys = [...plistXml.matchAll(/<key>([a-z0-9.-]+)<\/key>/gi)]
-    .map((m) => m[1] as string)
-    .filter((k) => k.includes("com.apple"));
+  //
+  // Scoped to the <Entitlements> dict specifically, not `.includes("com.apple")`
+  // over the whole plist: a real regen (2026-09-28) printed this list
+  // without `aps-environment`, which looked exactly like a missing Push
+  // Notifications capability -- it wasn't. That key doesn't have a
+  // "com.apple." prefix (unlike every other entitlement here), so the old
+  // filter silently dropped it from its own report while the profile had
+  // it all along. Confirmed by decoding the raw CMS payload directly
+  // (`openssl smime -verify -noverify`) rather than trusting this script's
+  // own summary a second time.
+  const entitlementsDict = plistXml.match(
+    /<key>Entitlements<\/key>\s*<dict>([\s\S]*?)<\/dict>/,
+  )?.[1];
+  const entKeys = [...(entitlementsDict ?? "").matchAll(/<key>([a-zA-Z0-9.-]+)<\/key>/g)].map(
+    (m) => m[1] as string,
+  );
   console.log("Entitlements present in the new profile:");
   for (const k of [...new Set(entKeys)].sort()) console.log("  " + k);
 

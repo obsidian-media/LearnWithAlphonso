@@ -16,8 +16,9 @@ enum AppleSignInPresenterError: Error {
 /// Supabase actually uses. `identityToken`/`rawNonce` are what
 /// SupabaseAuthClient.signInWithIDToken needs; `authorizationCode` is the
 /// short-lived (~5 minute) one-time code Apple's own `/auth/revoke`
-/// endpoint would need, server-side, to revoke this authorization later --
-/// see Session.appleAuthorizationCodeForRevocation.
+/// endpoint needs, server-side, to revoke this authorization later --
+/// forwarded immediately by Session.signInWithApple via
+/// AccountClient.linkAppleAuthorization, not held onto client-side.
 struct AppleSignInResult {
     let identityToken: String
     let rawNonce: String

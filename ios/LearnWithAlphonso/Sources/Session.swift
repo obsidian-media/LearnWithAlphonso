@@ -32,18 +32,6 @@ final class Session {
     private let googleSignInPresenter = GoogleSignInPresenter()
     private let appleSignInPresenter = AppleSignInPresenter()
 
-    /// Set right after a successful Apple sign-in; cleared on sign-out.
-    /// Apple's revoke endpoint (required on account deletion, per App
-    /// Store Guideline 5.1.1(v)) needs a client_secret signed with the
-    /// Sign in with Apple private key -- that must never ship in this app,
-    /// so revocation itself can only happen server-side. This just
-    /// captures the one-time authorization code (valid for a few minutes)
-    /// while it's still fresh, so an account-deletion flow started in the
-    /// same session can forward it to a server-side revoke step. It does
-    /// NOT survive relaunch, and no server-side revoke step exists yet --
-    /// see this PR's description for what's still needed.
-    private(set) var appleAuthorizationCodeForRevocation: String?
-
     init(authClient: SupabaseAuthClient = SupabaseAuthClient(
         supabaseURL: AppConfig.supabaseURL,
         publishableKey: AppConfig.supabasePublishableKey
@@ -204,7 +192,6 @@ final class Session {
                 idToken: result.identityToken,
                 nonce: result.rawNonce
             )
-            appleAuthorizationCodeForRevocation = result.authorizationCode
             establishSession(session)
             // Apple does not always return an authorization code. Nil means
             // there is simply nothing to link -- and nothing to revoke later
@@ -223,7 +210,6 @@ final class Session {
     func signOut() {
         state = .signedOut
         errorMessage = nil
-        appleAuthorizationCodeForRevocation = nil
         KeychainSessionStore.clear()
     }
 

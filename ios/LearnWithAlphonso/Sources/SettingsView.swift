@@ -329,10 +329,10 @@ struct SettingsView: View {
     }
 
     /// Mirrors profile.tsx's remove(): delete on the server, then sign out
-    /// locally so RootView drops back to AuthView. Calling session.signOut()
-    /// here (rather than duplicating its logic) means Session A's upcoming
-    /// Sign in with Apple token revocation, once added inside signOut(),
-    /// applies to account deletion automatically with no change needed here.
+    /// locally so RootView drops back to AuthView. The server-side DELETE
+    /// itself is what revokes the account's Sign in with Apple grant (see
+    /// AccountClient.deleteMyAccount / apple-revocation.ts) -- signOut()
+    /// here only clears local session state, nothing more is needed.
     private func deleteAccount() async {
         guard let accessToken = session.accessToken else { return }
         accountErrorMessage = nil
