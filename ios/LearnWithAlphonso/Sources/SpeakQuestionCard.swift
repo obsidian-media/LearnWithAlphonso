@@ -229,11 +229,18 @@ struct SpeakQuestionCard: View {
     private func stopRecordingAndGrade() {
         guard phase == .recording else { return }
         phase = .idle
-        guard let accessToken = session.accessToken else {
-            errorMessage = "You've been signed out. Please sign in again."
-            return
-        }
         Task {
+            // See ConversationView.swift's identical sendTurn for why this
+            // is freshAccessToken (not the raw, possibly-stale
+            // session.accessToken) plus a refreshAccessToken backstop on
+            // the client below: this screen was missed when that 401-retry
+            // fix first shipped, so a session more than ~an hour old
+            // 401'd here with no retry -- found live 2026-09-28, same bug
+            // as HectorView's.
+            guard let accessToken = await session.freshAccessToken() else {
+                errorMessage = "You've been signed out. Please sign in again."
+                return
+            }
             // Same bug class as ConversationView/HectorView/CampaignView's
             // identical stop-and-send (swept for after finding it live,
             // 2026-09-28): a too-quick tap or the recorder's own hardware
@@ -264,7 +271,10 @@ struct SpeakQuestionCard: View {
     private func transcribe(audio: Data, accessToken: String) async {
         phase = .transcribing
         let client = AIConversationClient(
-            baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { accessToken },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+        )
         do {
             // Found 2026-09-28, alongside the wire-format fix on
             // AIConversationClient.transcribe itself: this lesson's real

@@ -43,22 +43,32 @@ export const Route = createFileRoute("/api/stt")({
         // fix this -- confirmed on a real build-37 device, same signature
         // (~0.5s reported duration on a 60KB+ file) as before the fix.
         // That was the leading theory and it's now ruled out as the WHOLE
-        // story. Reading the file's own bytes here, once, before
-        // forwarding it -- an MPEG-4/M4A container's trailer (the `moov`
-        // atom, holding the real sample table and duration) is written
-        // LAST, once recording finishes, so if the file were still
-        // genuinely incomplete when uploaded, the tail bytes would show a
-        // truncated/missing moov rather than real box data. This settles
-        // whether the file itself is bad (a still-unsolved client-side
-        // race) or arrives intact and something after that -- Deepgram's
-        // own parsing of this specific encoder configuration -- is
-        // misreading it.
+        // story. A raw hex dump of the first request this fired on showed
+        // a 637-byte second top-level box immediately after `ftyp`, far
+        // too small to be `mdat` (the real audio, ~60KB) in a normal
+        // ftyp-then-mdat-then-moov (moov-last) layout -- consistent with
+        // `moov` itself having been written FIRST, fast-start style, with
+        // a sample table describing only a fraction of a second, while
+        // `mdat` afterward holds much more real audio the moov never
+        // accounts for. Walking the actual top-level box structure (type
+        // + size for each) instead of a raw hex dump to confirm this
+        // properly rather than eyeballing hex by hand.
         const audioBuffer = await file.arrayBuffer();
         const audioBytes = new Uint8Array(audioBuffer);
-        const toHex = (bytes: Uint8Array) =>
-          Array.from(bytes)
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join(" ");
+        const view = new DataView(audioBuffer);
+        function walkBoxes(bytes: Uint8Array): string {
+          const boxes: string[] = [];
+          let offset = 0;
+          while (offset + 8 <= bytes.length) {
+            const size = view.getUint32(offset, false);
+            const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
+            boxes.push(`${type}(${size})`);
+            if (size < 8) break; // 0/1 means "rest of file"/64-bit size -- stop rather than misparse
+            offset += size;
+          }
+          if (offset !== bytes.length) boxes.push(`[${bytes.length - offset} trailing bytes]`);
+          return boxes.join(" ");
+        }
         const resp = await fetch(
           `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true`,
           {
@@ -83,11 +93,9 @@ export const Route = createFileRoute("/api/stt")({
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
         if (!text) {
-          const head = toHex(audioBytes.slice(0, 32));
-          const tail = toHex(audioBytes.slice(-64));
           console.error(
             `[stt] Empty transcript. file.type="${file.type}" forwarded="${forwardedContentType}"` +
-              ` size=${file.size}\n[stt] head=${head}\n[stt] tail=${tail}` +
+              ` size=${file.size}\n[stt] boxes=${walkBoxes(audioBytes)}` +
               `\n[stt] metadata=${JSON.stringify(data.metadata)}`,
           );
         }

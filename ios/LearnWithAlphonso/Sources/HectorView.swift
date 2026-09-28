@@ -222,26 +222,52 @@ private struct HectorConversationView: View {
     }
 
     private func sendTurn(audio: Data) async {
-        guard let accessToken = session.accessToken else {
+        // See ConversationView.swift's identical sendTurn for why this is
+        // freshAccessToken (not the raw, possibly-stale session.accessToken)
+        // plus a refreshAccessToken backstop on the client below: this
+        // screen was missed when that 401-retry fix first shipped, so a
+        // session more than ~an hour old 401'd here with no retry, forcing
+        // a full manual sign-out/sign-in -- found live 2026-09-28.
+        guard let accessToken = await session.freshAccessToken() else {
             errorMessage = "You've been signed out. Please sign in again."
             return
         }
+        let sttClient = AIConversationClient(
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { accessToken },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+        )
         do {
             // Transcription still goes through our own account's /api/stt.
             phase = .transcribing
-            let sttClient = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
             let text = sttResult.text
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+                // Silent-reset-to-idle here (no message) was reported live
+                // 2026-09-28 as "hits a timeout" -- a run of these in a row
+                // (the underlying empty-transcript bug is still being
+                // chased server-side) with zero feedback reads as the app
+                // hanging, not as a recognized, retryable failure. Matches
+                // SpeakQuestionCard's existing message for the same case.
+                errorMessage = "Didn't catch that -- try again."
                 phase = .idle
                 return
             }
             turns.append(TutorConversationMessage(role: "user", content: text))
 
             phase = .thinking
+            // TutorConversationClient has no 401-retry of its own (unlike
+            // AIConversationClient above) -- re-checking freshness here
+            // rather than reusing the token captured before the STT round
+            // trip closes that gap without needing to add retry logic to
+            // a second client for what would still be a rare case.
+            guard let tutorAccessToken = await session.freshAccessToken() else {
+                errorMessage = "You've been signed out. Please sign in again."
+                return
+            }
             let tutorClient = TutorConversationClient(
                 endpoint: AppConfig.hectorRespondEndpoint,
-                accessToken: { accessToken },
+                accessToken: { tutorAccessToken },
                 deviceID: UIDevice.current.identifierForVendor?.uuidString ?? sessionID
             )
             let historyWithMemory = (memoryContext.map { [$0] } ?? []) + turns

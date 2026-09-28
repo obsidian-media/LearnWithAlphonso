@@ -278,6 +278,12 @@ private struct CampaignSessionView: View {
             phase = .transcribing
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
             guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
+                // See ConversationView/HectorView's identical guard for why
+                // this needs a message rather than a silent reset: a live
+                // report 2026-09-28 described a run of these as "hits a
+                // timeout" -- with zero feedback it reads as the app
+                // hanging, not as a recognized, retryable failure.
+                errorMessage = "Didn't catch that -- try again."
                 phase = .idle
                 return
             }
