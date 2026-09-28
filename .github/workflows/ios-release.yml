@@ -226,6 +226,37 @@ jobs:
             -archivePath build/LearnWithAlphonso.xcarchive \
             DEVELOPMENT_TEAM="$TEAM_ID"
 
+      - name: Diagnose -- does the ARCHIVE itself (pre-export) have aps-environment?
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          # Isolating whether `xcodebuild archive` or `-exportArchive` is
+          # the step that drops aps-environment: the post-export check has
+          # failed twice now even after rotating to a freshly-regenerated,
+          # independently-verified (openssl-decoded) provisioning profile
+          # that does carry the capability, and after confirming the
+          # Release .entitlements source file itself declares it. One of
+          # these two xcodebuild invocations is stripping it; this proves
+          # which one before guessing further. Not a hard gate (no exit 1)
+          # -- pure diagnostic, temporary until the real cause is found.
+          ARCHIVED_APP=$(find build/LearnWithAlphonso.xcarchive/Products/Applications -maxdepth 1 -name "*.app" | head -1)
+          echo "Archived app: $ARCHIVED_APP"
+          codesign -d --entitlements /tmp/archived-entitlements.plist --xml "$ARCHIVED_APP" 2>/dev/null
+          echo "-- Archived app's own entitlements (pre-export) --"
+          cat /tmp/archived-entitlements.plist || echo "(could not read)"
+          ARCHIVED_APS=$(/usr/libexec/PlistBuddy -c "Print :aps-environment" /tmp/archived-entitlements.plist 2>/dev/null || echo "MISSING")
+          echo "Archived app's aps-environment: $ARCHIVED_APS"
+          echo "-- Provisioning profile embedded in the archive --"
+          EMBEDDED_PROFILE="$ARCHIVED_APP/embedded.mobileprovision"
+          if [ -f "$EMBEDDED_PROFILE" ]; then
+            security cms -D -i "$EMBEDDED_PROFILE" > /tmp/embedded-profile.plist 2>/dev/null
+            /usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" /tmp/embedded-profile.plist 2>/dev/null \
+              && echo "Embedded profile HAS aps-environment" \
+              || echo "Embedded profile is MISSING aps-environment"
+            /usr/libexec/PlistBuddy -c "Print :UUID" /tmp/embedded-profile.plist 2>/dev/null || echo "(no UUID found)"
+          else
+            echo "No embedded.mobileprovision found in the archived app."
+          fi
+
       - name: Export signed .ipa
         working-directory: ios/LearnWithAlphonso
         run: |
