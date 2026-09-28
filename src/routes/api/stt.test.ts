@@ -156,12 +156,11 @@ describe("POST /api/stt", () => {
     // Real FormData round-tripping normalizes both an unset type and an
     // explicit `{ type: "" }` to "application/octet-stream" in this
     // runtime, so the empty-type case is exercised by stubbing
-    // request.formData() directly with a Blob-shaped object that
-    // reports "" without going through that normalization.
-    const file = Object.create(Blob.prototype, {
-      type: { value: "" },
-      size: { value: 600 },
-    });
+    // request.formData() directly instead. Needs a real Blob (not a
+    // prototype-only stand-in) -- the route reads the body via
+    // arrayBuffer(), which Node's Blob implementation refuses to run on
+    // anything lacking its real internal data slot.
+    const file = new Blob(["x".repeat(600)], { type: "" });
     const request = new Request("https://example.com/api/stt", { method: "POST" });
     request.formData = vi.fn().mockResolvedValue({ get: () => file });
     await handler({ request });
