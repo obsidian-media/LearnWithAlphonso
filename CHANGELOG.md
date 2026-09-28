@@ -10,6 +10,37 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**App Store submission-readiness fixes**, from a 2026-09-28 audit: added
+the `PrivacyInfo.xcprivacy` privacy manifest to both the app and widget
+targets (missing entirely; Apple's mandatory since May 2024 for the
+`NSUserDefaults` required-reason API this app uses) — verified green in
+CI before landing. Removed stale "Link Hector Account" text from the
+delete-account alert (dead since the Hector decouple, #189). Confirmed
+live, not just in code, that Sign in with Apple's App ID capability
+(`APPLE_ID_AUTH`) is actually enabled, and that all 4 Apple ID
+revocation secrets are set in Vercel production — both had been sitting
+as "not yet confirmed" for a while. Wrote (but have not yet run) a
+script to fix the age rating declaration, which is still live at 4+
+despite docs/BACKLOG.md sec 0.0y deciding weeks ago it should be
+higher — needs the account owner's go-ahead to actually apply, same as
+the actual App Store submission itself.
+
+**Three small fixes** (#191): `complete-lesson` and `start-lesson-session`
+were both missing `"es"` from their course schema, predating Spanish's
+launch — the latter is the more serious half, since it issues the token
+`complete-lesson` verifies, so a Spanish-course iOS lesson could never
+even start a completion attempt. The GDPR export's `user_progress`
+selection was widened past just `xp`: `cefr_level`, `league_tier` and
+all three `placement_*` columns are also duplicated on
+`language_progress` and frozen since the multi-course migration, so a
+downloaded "your data" file was showing disagreeing values with no way
+to tell which was real — now excludes all five. `podcast_playback` had
+an RLS policy already permitting a user to delete their own listening
+history, but the `GRANT` alongside it never listed `DELETE`; one-line
+fix. Found but left alone: `mergeGuestProgress` writes into the same
+frozen `user_progress.xp` column and has no course parameter at all —
+a real latent bug, but dead code with no caller anywhere in the app.
+
 **`complete-lesson` now re-grades every answer server-side** (closes
 docs/BACKLOG.md §0.1-d #6, found by the 2026-09-26 red-team pass).
 Previously the trust boundary only checked that a client-claimed
