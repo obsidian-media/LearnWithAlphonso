@@ -1404,6 +1404,7 @@ export type Database = {
           ok: boolean;
         }[];
       };
+      blocked_moderation_terms: { Args: never; Returns: string[] };
       buy_heart_with_xp: {
         Args: { _cost?: number; _course: string };
         Returns: {
@@ -1453,6 +1454,7 @@ export type Database = {
           per_minute_limit: number;
         }[];
       };
+      contains_blocked_term: { Args: { input: string }; Returns: boolean };
       create_duel: {
         Args: { _course?: string; _opponent_id: string };
         Returns: {
@@ -1582,6 +1584,7 @@ export type Database = {
           hearts_refill_at: string;
         }[];
       };
+      normalize_for_moderation: { Args: { input: string }; Returns: string };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
         Returns: undefined;
