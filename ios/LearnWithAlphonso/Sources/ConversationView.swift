@@ -271,6 +271,11 @@ private struct ConversationSessionView: View {
             phase = .transcribing
             let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a")
             guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
+                // TEMPORARY (2026-09-28) -- see HectorView's identical
+                // branch for the full story. Remove once the actual cause
+                // of an empty Deepgram transcript (post wire-format fix)
+                // is found.
+                errorMessage = "DEBUG: recorded \(audio.count) bytes, Deepgram returned an empty transcript."
                 phase = .idle
                 return
             }

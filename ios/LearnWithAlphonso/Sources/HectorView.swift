@@ -233,6 +233,18 @@ private struct HectorConversationView: View {
             let sttResult = try await sttClient.transcribe(audio: audio, mimeType: "audio/m4a")
             let text = sttResult.text
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+                // TEMPORARY (2026-09-28): the wire-format fix stopped the
+                // hard "Empty or missing audio" server error, but a live
+                // report immediately after showed the mic button just
+                // resetting with no error -- this empty-transcript branch,
+                // silent by design once the previous bug was believed
+                // fixed. Surfacing the recorded size and confirming this
+                // exact branch fired, on-screen (no Mac to read a console
+                // log), so the next real-device test says definitively
+                // whether the recording itself is reasonably sized (rules
+                // audio capture in/out) rather than guessing a third time.
+                // Remove once the actual cause is found.
+                errorMessage = "DEBUG: recorded \(audio.count) bytes, Deepgram returned an empty transcript."
                 phase = .idle
                 return
             }
