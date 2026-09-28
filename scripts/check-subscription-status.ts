@@ -123,6 +123,15 @@ async function main() {
     const sub = await api(`/subscriptions/${subscriptionId}`);
     console.log(`\nSubscription ${subscriptionId} status: ${sub.status}`);
     console.log(JSON.stringify(sub.json, null, 2));
+  } else if (cmd === "review-screenshot") {
+    // Follow-up to subscription-state coming back MISSING_METADATA: an
+    // earlier session's execution-record claimed this was uploaded via
+    // upload-review-screenshot.ts on 2026-09-23 -- reading the real
+    // relationship directly rather than trusting that record.
+    const subscriptionId = process.env.SUBSCRIPTION_ID ?? "6815009725";
+    const shot = await api(`/subscriptions/${subscriptionId}/appStoreReviewScreenshot`);
+    console.log(`\nReview screenshot status: ${shot.status}`);
+    console.log(JSON.stringify(shot.json, null, 2));
   } else if (cmd === "capabilities") {
     // Submission-readiness audit (2026-09-28): the entitlements files'
     // own comments say Sign in with Apple's Developer Portal capability
