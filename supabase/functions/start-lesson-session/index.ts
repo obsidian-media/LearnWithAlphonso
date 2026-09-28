@@ -18,7 +18,10 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { issueLessonSessionToken } from "./lesson-session.ts";
 
-const courseSchema = z.enum(["en", "fr"]);
+// Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
+// which verifies the token this issues and must agree on what a valid
+// course is.
+const courseSchema = z.enum(["en", "fr", "es"]);
 const lessonIdSchema = z
   .string()
   .min(1)

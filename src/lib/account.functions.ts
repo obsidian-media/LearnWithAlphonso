@@ -62,6 +62,18 @@ export const USER_DELETE_TABLES = [
   "language_progress",
 ] as const;
 
+// user_progress carries account-wide state (streak/hearts) plus five
+// columns frozen since the 2026-09-08 multi-course migration -- xp,
+// cefr_level, league_tier and both placement_* trios all moved to
+// language_progress (per course), and nothing writes the user_progress
+// copies anymore (mergeGuestProgress is the one exception, and it's dead
+// code with no caller anywhere in the app -- see docs/BACKLOG.md).
+// Exporting them via select("*") showed a GDPR download two disagreeing
+// values for the same concept (e.g. xp) with no way to tell which was
+// real -- §2.2's "related, smaller finding not fixed".
+const USER_PROGRESS_EXPORT_COLUMNS =
+  "user_id,streak,longest_streak,last_active_date,last_review_bonus_date,hearts,hearts_refill_at,streak_freezes,updated_at";
+
 /** Export every row this account owns (GDPR data portability). */
 export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -73,7 +85,10 @@ export const exportMyData = createServerFn({ method: "POST" })
     const [userIdRows, otherOwnedRows, { data: profile }] = await Promise.all([
       Promise.all(
         USER_ID_EXPORT_TABLES.map((table) =>
-          supabase.from(table).select("*").eq("user_id", userId),
+          supabase
+            .from(table)
+            .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*")
+            .eq("user_id", userId),
         ),
       ),
       Promise.all(
