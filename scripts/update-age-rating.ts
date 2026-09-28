@@ -125,15 +125,19 @@ async function main() {
     console.log(`Status: ${result.status}`);
     console.log(JSON.stringify(result.json, null, 2));
     if (result.ok) {
-      console.log("\n✅ SUCCESS -- re-run \"check\" to confirm the resulting appStoreAgeRating tier.");
+      console.log(
+        '\n✅ SUCCESS -- re-run "check" to confirm the resulting appStoreAgeRating tier.',
+      );
     } else {
-      console.log("\n❌ FAILED -- read the error body above (likely an invalid field name or enum value).");
+      console.log(
+        "\n❌ FAILED -- read the error body above (likely an invalid field name or enum value).",
+      );
       process.exit(1);
     }
     return;
   }
 
-  console.log('Usage: tsx scripts/update-age-rating.ts <check|apply>');
+  console.log("Usage: tsx scripts/update-age-rating.ts <check|apply>");
   process.exit(1);
 }
 
