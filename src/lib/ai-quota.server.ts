@@ -7,11 +7,15 @@ export type QuotaKind = "chat" | "stt" | "tts" | "translate";
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
  * enforced inside `consume_ai_quota` in the database (see migration
- * 20260910000000). Keep these in sync with that function.
+ * 20260910000000, raised for `stt` by 20260930050000_raise_stt_daily_limit.sql).
+ * Keep these in sync with that function.
  */
 export const DAILY_LIMITS: Record<QuotaKind, number> = {
   chat: 60,
-  stt: 60,
+  // Temporarily raised from 60 -- active debugging of the still-unsolved
+  // "Empty or missing audio" bug needs many real retries in a row. See
+  // the migration's own comment for the revert note.
+  stt: 300,
   tts: 80,
   // Its own budget rather than a share of `chat`'s: translation grading is
   // only reached by submissions the curated answer list already rejected, so
