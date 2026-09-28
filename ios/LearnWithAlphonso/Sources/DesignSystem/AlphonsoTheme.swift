@@ -360,7 +360,26 @@ public final class AlphonsoThemeManager {
     /// see `systemColorScheme`'s own doc comment for why this can't just
     /// read `@Environment(\.colorScheme)` itself (this is a plain
     /// `@Observable` class, not a `View`).
+    ///
+    /// **The guard below is load-bearing, not a style nit.** Found live
+    /// 2026-09-28 as the cause of a real-device launch hang (watchdog
+    /// SIGKILL, "scene-create", ~20s): without it, this unconditionally
+    /// reassigns `systemColorScheme` on every call, and `@Observable`'s
+    /// generated setter fires a change notification on ANY assignment --
+    /// unlike `@Published`, it does not skip a set-to-the-same-value (see
+    /// `setTheme` above, which already guards for exactly this reason).
+    /// `RootView.body` reads this same property (via `AlphonsoColor.surface`
+    /// and `.preferredColorScheme`), so every redundant reassignment
+    /// re-triggered a re-render, which re-fired
+    /// `.onChange(of: systemColorScheme, initial: true)`, which reassigned
+    /// again -- a tight synchronous loop with no fixed point, pinning the
+    /// main thread and starving `session.restoreSession()`'s task of any
+    /// chance to run, which is why `isRestoring` never flipped to `false`
+    /// either. Confirmed via on-device logging (LaunchBreadcrumbs.swift):
+    /// over 100,000 repeated "RootView.body evaluating" lines in the ~20s
+    /// before the kill.
     public func updateSystemColorScheme(_ scheme: ColorScheme) {
+        guard systemColorScheme != scheme else { return }
         systemColorScheme = scheme
     }
 }

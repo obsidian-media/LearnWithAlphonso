@@ -51,11 +51,8 @@ final class PodcastAudioPlayer {
     var makeClient: (@MainActor () -> PodcastClient?)?
 
     init() {
-        LaunchBreadcrumbs.log("PodcastAudioPlayer.init start")
         observeSessionNotifications()
-        LaunchBreadcrumbs.log("PodcastAudioPlayer.init: observeSessionNotifications done, configuring remote commands")
         configureRemoteCommands()
-        LaunchBreadcrumbs.log("PodcastAudioPlayer.init done")
     }
 
     // MARK: - Playback
