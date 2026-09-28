@@ -121,7 +121,9 @@ Learn With Alphonso is free to download. Alphonso Pro is an optional auto-renewa
 
 async function main() {
   console.log(`Finding the app's editable App Store version...`);
-  const versions = await api(`/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`);
+  const versions = await api(
+    `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
+  );
   const version = (versions.data as AscResource[])[0];
   if (!version) {
     throw new Error(
