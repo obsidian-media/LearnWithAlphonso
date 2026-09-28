@@ -10,6 +10,27 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Admin: a "New episode" upload form.** Until now, publishing a brand
+new podcast episode's first MP3 had no UI at all — only
+`scripts/podcast-tool.ts add` could do it. Added
+`adminCreateEpisodeUploadUrl`/`adminCreateEpisode`, reusing the CLI's
+own `validateEpisodeDraft`/`storagePathFor` so the two paths can't
+disagree about what's valid or where the audio lands, plus a new
+`slugPathFor` helper (folder id → root-to-leaf slug path). Because
+`podcast_episodes.duration_seconds` is `NOT NULL CHECK (> 0)`, the
+audio has to be uploaded and verified *before* the row can be
+inserted — there's no "create a draft row, fill in the file later"
+order available the way replacing an existing episode's audio has.
+
+**Practice and Hector both showed a misleading generic error.**
+`ConversationView`/`HectorView`'s catch blocks unconditionally said
+"Something went wrong. Try again." even when the server had sent back
+something specific and useful — most importantly
+`ai-quota.server.ts`'s real "Daily CHAT limit reached (60/day). Try
+again tomorrow." A learner who'd simply used up today's AI quota saw
+the exact same message as an actual crash. Both screens now surface
+the server's own message when it sent one.
+
 **App Store submission-readiness fixes**, from a 2026-09-28 audit: added
 the `PrivacyInfo.xcprivacy` privacy manifest to both the app and widget
 targets (missing entirely; Apple's mandatory since May 2024 for the
