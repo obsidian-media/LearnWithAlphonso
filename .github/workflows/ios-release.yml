@@ -297,9 +297,19 @@ jobs:
           # "production" (see both .entitlements files' own comments).
           # This confirms the RIGHT one actually made it into the signed
           # binary, not just that the source file says the right thing.
+          # PlistBuddy, not grep -A1 -- a first version of this check used
+          # grep -A1 "aps-environment" | grep -q production, which failed
+          # on a real signed archive even though the key/value were both
+          # actually correct (confirmed by hand from the run's own
+          # artifact): a two-line grep window is fragile against however
+          # codesign happens to format the plist, unlike a real parser.
           echo "-- Production APNs environment (not sandbox/development) --"
-          echo "$ENTITLEMENTS" | grep -A1 "aps-environment" | grep -q "production" \
-            || { echo "::error::Signed app's aps-environment is not 'production' -- push notifications would register against the wrong APNs environment in a real TestFlight/App Store build."; exit 1; }
+          echo "$ENTITLEMENTS" > /tmp/app-entitlements.plist
+          APS_ENV=$(/usr/libexec/PlistBuddy -c "Print :aps-environment" /tmp/app-entitlements.plist 2>/dev/null || echo "MISSING")
+          if [ "$APS_ENV" != "production" ]; then
+            echo "::error::Signed app's aps-environment is '$APS_ENV', not 'production' -- push notifications would register against the wrong APNs environment in a real TestFlight/App Store build."
+            exit 1
+          fi
 
           echo "All post-archive checks passed."
 
