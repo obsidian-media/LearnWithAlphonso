@@ -129,7 +129,12 @@ targets:
         # (a view changing its own appearance -- the recording-state fill
         # color -- while a gesture was attached to that same view), not a
         # recording/network/session bug. See docs/BACKLOG.md §0.0-h/§0.0-k.
-        CURRENT_PROJECT_VERSION: "41"
+        # 42: ships SRSEngine.swift's lapse-interval fix (see
+        # docs/BACKLOG.md §0.0-m item 3) -- a 2026-09-22 SM-2 scheduling
+        # fix on the web app was never ported to iOS's local copy, so a
+        # lapsed review on a well-established item got a harsher interval
+        # than intended for about a week. No UI/behavior change otherwise.
+        CURRENT_PROJECT_VERSION: "42"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -257,7 +262,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "41"
+        CURRENT_PROJECT_VERSION: "42"
         SKIP_INSTALL: true
       configs:
         Release:
