@@ -153,10 +153,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   try {
     parsed = completeLessonSchema.parse(await req.json());
   } catch (err) {
-    return jsonResponse(
-      { error: "Invalid request body", details: `${err}` },
-      400,
-    );
+    return jsonResponse({ error: "Invalid request body", details: `${err}` }, 400);
   }
   const { lessonId, total, answers, course, sessionToken } = parsed;
 
@@ -199,41 +196,35 @@ export async function handleRequest(req: Request): Promise<Response> {
   const today = todayStr();
 
   // Batch every read that doesn't depend on another read's result.
-  const [
-    { data: pRow },
-    { data: lpRow },
-    { data: existingComp },
-    { data: existingDay },
-  ] = await Promise.all([
-    admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
-    admin
-      .from("language_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("language", course)
-      .maybeSingle(),
-    admin
-      .from("lesson_completions")
-      .select("correct,xp_earned")
-      .eq("user_id", userId)
-      .eq("lesson_id", lessonId)
-      .eq("language", course)
-      .maybeSingle(),
-    admin
-      .from("activity_days")
-      .select("xp_earned")
-      .eq("user_id", userId)
-      .eq("day", today)
-      .maybeSingle(),
-  ]);
+  const [{ data: pRow }, { data: lpRow }, { data: existingComp }, { data: existingDay }] =
+    await Promise.all([
+      admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
+      admin
+        .from("language_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("language", course)
+        .maybeSingle(),
+      admin
+        .from("lesson_completions")
+        .select("correct,xp_earned")
+        .eq("user_id", userId)
+        .eq("lesson_id", lessonId)
+        .eq("language", course)
+        .maybeSingle(),
+      admin
+        .from("activity_days")
+        .select("xp_earned")
+        .eq("user_id", userId)
+        .eq("day", today)
+        .maybeSingle(),
+    ]);
 
   // Replay-farming fix, mirrors src/lib/sync.functions.ts's
   // completeLessonRemote: a repeat completion only pays the XP delta over
   // its previous best score.
   const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
-    existingComp
-      ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned }
-      : null,
+    existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
     correct,
     total,
   );
@@ -274,11 +265,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (streakHeartMilestoneReached(cur.streak, streak)) {
     heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
     heartsBonus = "streak";
-  } else if (
-    perfectLessonBonusEarned(correct, total) &&
-    xpGain > 0 &&
-    regen.hearts < MAX_HEARTS
-  ) {
+  } else if (perfectLessonBonusEarned(correct, total) && xpGain > 0 && regen.hearts < MAX_HEARTS) {
     heartsResult = gainHearts(regen.hearts, 1);
     heartsBonus = "perfect";
   }
@@ -293,7 +280,11 @@ export async function handleRequest(req: Request): Promise<Response> {
   // Only meaningful completions (xpGain > 0) are logged, not every replay
   // of an already-mastered lesson -- otherwise the feed would fill with
   // noise from a single learner re-doing content for review.
-  const activityEvents: { user_id: string; event_type: string; payload: Record<string, unknown> }[] = [];
+  const activityEvents: {
+    user_id: string;
+    event_type: string;
+    payload: Record<string, unknown>;
+  }[] = [];
   if (xpGain > 0) {
     activityEvents.push({
       user_id: userId,
@@ -316,7 +307,15 @@ export async function handleRequest(req: Request): Promise<Response> {
     });
   }
 
-  await Promise.all([
+  // 2026-09-30 audit (Codex #4): none of these results' own `{ error }`
+  // was ever checked -- a failed upsert silently proceeded as if the
+  // write succeeded, and this function still returned success. Doesn't
+  // fix the lack of atomicity across several separate REST calls (a real
+  // fix needs a single SECURITY DEFINER RPC with row locking, flagged as
+  // its own follow-up), but a partial failure now throws (500) rather
+  // than reporting success. Kept in sync by hand with the identical fix
+  // in src/lib/sync.functions.ts's completeLessonRemote.
+  const writeResults = await Promise.all([
     admin.from("user_progress").upsert({
       user_id: userId,
       streak,
@@ -356,26 +355,30 @@ export async function handleRequest(req: Request): Promise<Response> {
     // second session-token round trip to re-verify.
     ...(missedQuestionIds.length > 0
       ? [
-        admin.from("review_items").upsert(
-          missedQuestionIds.map((questionId) => ({
-            user_id: userId,
-            item_key: `${lessonId}:${questionId}`,
-            lesson_id: lessonId,
-            level: lesson.level,
-            language: course,
-            ease: 2.3,
-            interval_days: 0,
-            repetitions: 0,
-            due_on: today,
-          })),
-          { onConflict: "user_id,item_key,language" },
-        ),
-      ]
+          admin.from("review_items").upsert(
+            missedQuestionIds.map((questionId) => ({
+              user_id: userId,
+              item_key: `${lessonId}:${questionId}`,
+              lesson_id: lessonId,
+              level: lesson.level,
+              language: course,
+              ease: 2.3,
+              interval_days: 0,
+              repetitions: 0,
+              due_on: today,
+            })),
+            { onConflict: "user_id,item_key,language" },
+          ),
+        ]
       : []),
     ...(activityEvents.length > 0
       ? [admin.from("friend_activity_events").insert(activityEvents)]
       : []),
   ]);
+  const failedWrite = writeResults.find((r) => r.error);
+  if (failedWrite) {
+    throw new Error(`complete-lesson: gamification write failed -- ${failedWrite.error!.message}`);
+  }
 
   // Real (remote) push for leaderboard "you've been overtaken" -- V4
   // candidate #2 (docs/BACKLOG.md sec 2.1). This function is the one
@@ -411,7 +414,7 @@ export async function handleRequest(req: Request): Promise<Response> {
               "Leaderboard update",
               "Someone passed you on the leaderboard!",
               { type: "overtake" },
-            ).catch(() => undefined)
+            ).catch(() => undefined),
           ),
         );
       }
@@ -421,29 +424,18 @@ export async function handleRequest(req: Request): Promise<Response> {
     }
   }
 
-  const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] =
-    await Promise.all([
-      admin.from("lesson_completions").select("correct,total").eq(
-        "user_id",
-        userId,
-      ),
-      admin.from("achievements").select("id, category, threshold"),
-      admin.from("user_achievements").select("achievement_id,progress").eq(
-        "user_id",
-        userId,
-      ),
-    ]);
+  const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] = await Promise.all([
+    admin.from("lesson_completions").select("correct,total").eq("user_id", userId),
+    admin.from("achievements").select("id, category, threshold"),
+    admin.from("user_achievements").select("achievement_id,progress").eq("user_id", userId),
+  ]);
   const totalLessons = allComps?.length ?? 0;
-  const perfectLessons =
-    (allComps ?? []).filter((c) => c.correct === c.total).length;
+  const perfectLessons = (allComps ?? []).filter((c) => c.correct === c.total).length;
 
-  const prevMap = new Map(
-    (prevUnlocks ?? []).map((u) => [u.achievement_id, u.progress]),
-  );
+  const prevMap = new Map((prevUnlocks ?? []).map((u) => [u.achievement_id, u.progress]));
   const newlyUnlocked: string[] = [];
 
-  const prevPromoteCount = prevMap.get("league_promote_3") ??
-    prevMap.get("league_promote_1") ?? 0;
+  const prevPromoteCount = prevMap.get("league_promote_3") ?? prevMap.get("league_promote_1") ?? 0;
   const promoteCount = prevPromoteCount + (newIdx > oldIdx ? 1 : 0);
 
   const stats: Record<string, number> = {
@@ -455,8 +447,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     freeze: freezes,
   };
 
-  const rows: { user_id: string; achievement_id: string; progress: number }[] =
-    [];
+  const rows: { user_id: string; achievement_id: string; progress: number }[] = [];
   for (const a of achievements ?? []) {
     const val = stats[a.category] ?? 0;
     const wasUnlocked = prevMap.has(a.id);

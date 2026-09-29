@@ -405,7 +405,17 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // friend_activity_events is unaffected (not one of the hardened
     // tables) and stays on the RLS-scoped client.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await Promise.all([
+    // 2026-09-30 audit (Codex #4): none of these five results' own
+    // `{ error }` was ever checked -- a failed upsert (RLS gap, network
+    // blip, whatever) silently proceeded as if the write succeeded, and
+    // this function still returned success to the caller. This can't fix
+    // the lack of atomicity across five separate REST calls (a real fix
+    // needs a single SECURITY DEFINER RPC with row locking, same shape as
+    // _join_team_impl's -- flagged as its own follow-up, not attempted
+    // here), but silently swallowing a real failure is strictly worse
+    // than surfacing it, so a partial failure now throws rather than
+    // reporting success.
+    const writeResults = await Promise.all([
       supabaseAdmin.from("user_progress").upsert({
         user_id: userId,
         streak,
@@ -445,6 +455,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         ? [supabase.from("friend_activity_events").insert(activityEvents)]
         : []),
     ]);
+    const failedWrite = writeResults.find((r) => r.error);
+    if (failedWrite) {
+      throw new Error(
+        `completeLessonRemote: gamification write failed -- ${failedWrite.error!.message}`,
+      );
+    }
 
     // Both reads below depend on the writes above having landed (lesson
     // count/perfect count must include this attempt), but not on each
