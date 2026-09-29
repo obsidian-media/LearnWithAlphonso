@@ -170,6 +170,20 @@ targets:
         # destination, which fixes every phase (overview/vocab/quiz/
         # finish) at once. OverviewScreen additionally moved off a
         # Spacer()-pinned button onto a ScrollView, as defense in depth.
+        # Before shipping, a second cold-context audit (explicitly told
+        # to scrutinize the two patterns above) found and fixed 5 more
+        # real issues folded into this same build: iOS never spent a
+        # heart on a wrong answer, ever (recordAnswer() only queued
+        # reinforcement, never called loseHeart -- grepped the whole app
+        # target, zero call sites); getMyTeam()/getTeamMembers() parsed
+        # real timestamptz fields with plain ISO8601DateFormatter(),
+        # which fails on PostgREST's actual fractional-second precision
+        # (the exact bug parsePostgresTimestamp already exists to fix,
+        # just not visible across files since `private` is file-scoped
+        # in Swift) -- likely made teams invisible to real users; a
+        # stale doc comment; a reinforcement-question id collision risk
+        # across lessons; and an attemptSeed reset the code never
+        # actually performed despite its own comment claiming it did.
         CURRENT_PROJECT_VERSION: "45"
       configs:
         Release:
