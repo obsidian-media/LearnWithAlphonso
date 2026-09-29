@@ -1,9 +1,12 @@
 import Foundation
 
-/// A soft, client-side-only cooldown on nudging the same friend again --
-/// see supabase/migrations/20260920020000_nudges.sql's comment for why
-/// this is deliberately not a server-enforced rate limit for this V2
-/// slice.
+/// A soft, client-side cooldown on nudging the same friend again -- fast,
+/// no round trip needed to grey out the button. As of
+/// 20260930070000_nudge_push_rate_limit.sql the SAME 24h window is also
+/// enforced server-side, in the push trigger itself (found missing in a
+/// 2026-09-29 audit, once a nudge started firing a real push instead of
+/// just an in-app banner) -- this cache is the fast path, not the only
+/// backstop anymore.
 enum NudgeCooldownCache {
     private static let key = "nudgeCooldowns"
     private static let cooldown: TimeInterval = 24 * 60 * 60

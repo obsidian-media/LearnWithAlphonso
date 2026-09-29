@@ -32,6 +32,20 @@ const EASE_STEP_UP = 0.15;
 const RETIRE_AFTER_REPETITIONS = 4;
 const MAX_OVERDUE_GROWTH_BONUS = 1.5;
 const LAPSE_REPETITIONS_RETENTION = 0.5;
+// Keep in sync with src/lib/srs.ts's LAPSE_INTERVAL_RETENTION -- that
+// file's doc comment on the constant explains the 2026-09-22 SM-2 audit
+// finding this fixes: a lapse's new interval used to snap to a fixed step
+// (1 or 3 days) keyed off the halved-repetitions bucket, which can only
+// ever be 0 or 1 (RETIRE_AFTER_REPETITIONS caps live repetitions at 3), so
+// every lapse collapsed to the same two intervals regardless of whether
+// the item had earned a 6-day or a 60-day interval. Scaling directly off
+// the item's own prior interval instead makes the retention proportional
+// to what was actually earned. Found NOT ported here in a 2026-09-29
+// whole-codebase audit -- this Deno function is iOS's sole authoritative
+// grader (no session-token gate, only the due_on check below), so every
+// iOS lapse was silently getting the disowned, more punishing behavior
+// for a week after the web app fixed it.
+const LAPSE_INTERVAL_RETENTION = 0.5;
 
 export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
   const ease = input.correct
@@ -40,8 +54,7 @@ export function computeReviewGrade(input: ReviewGradeInput): ReviewGradeResult {
 
   if (!input.correct) {
     const repetitions = Math.floor(input.repetitions * LAPSE_REPETITIONS_RETENTION);
-    const intervalDays =
-      repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.round(input.intervalDays * ease) || 6;
+    const intervalDays = Math.max(1, Math.round(input.intervalDays * LAPSE_INTERVAL_RETENTION));
     return { retired: false, ease, intervalDays, repetitions, lapses: input.lapses + 1 };
   }
 

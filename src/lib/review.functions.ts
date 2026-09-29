@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
@@ -224,23 +225,36 @@ export const gradeReview = createServerFn({ method: "POST" })
       // would read "Still got it" while the scheduler lapsed the item.
       //
       // The AI verdict can only ever upgrade a local miss. A null (vendor
-      // down, no key, unparseable answer) leaves the local verdict standing:
-      // being offline is not evidence about the learner's English.
+      // down, no key, unparseable answer, or quota exhausted) leaves the
+      // local verdict standing: being offline is not evidence about the
+      // learner's English.
+      //
+      // Found in a whole-codebase audit (2026-09-29): this was the one AI
+      // cost path in the app with no quota/rate-limit enforcement at all --
+      // every other one (chat, tts, stt, analyze-weaknesses, hector-respond,
+      // and this same grader's own /api/grade-translation route) enforces
+      // it. A review item's own `due_on` gate limits how often ONE item can
+      // be re-graded, but not how many DIFFERENT due items a user churns
+      // through, so it was a real unbounded-NVIDIA-spend gap.
       if (!correct && ref.question.type === "translate" && data.answer.trim()) {
         const apiKey = process.env.NVIDIA_API_KEY;
         if (apiKey) {
-          const [{ gradeTranslationWithAi }, { resolveNvidiaChatModel }] = await Promise.all([
-            import("./translation-grader.server"),
-            import("./nvidia-chat-model.server"),
-          ]);
-          const verdict = await gradeTranslationWithAi({
-            prompt: ref.question.prompt,
-            acceptableAnswers: ref.question.acceptableAnswers,
-            submission: data.answer,
-            apiKey,
-            model: resolveNvidiaChatModel(),
-          });
-          if (verdict?.correct) correct = true;
+          const { consumeQuota } = await import("./ai-quota.server");
+          const quota = await consumeQuota(getRequest(), "translate");
+          if (quota.ok) {
+            const [{ gradeTranslationWithAi }, { resolveNvidiaChatModel }] = await Promise.all([
+              import("./translation-grader.server"),
+              import("./nvidia-chat-model.server"),
+            ]);
+            const verdict = await gradeTranslationWithAi({
+              prompt: ref.question.prompt,
+              acceptableAnswers: ref.question.acceptableAnswers,
+              submission: data.answer,
+              apiKey,
+              model: resolveNvidiaChatModel(),
+            });
+            if (verdict?.correct) correct = true;
+          }
         }
       }
     }

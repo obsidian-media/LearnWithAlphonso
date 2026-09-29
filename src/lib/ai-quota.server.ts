@@ -27,6 +27,10 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
 export type QuotaResult =
   { ok: true; used: number; limit: number } | { ok: false; status: number; message: string };
 
+export type AuthResult =
+  | { ok: true; supabase: ReturnType<typeof createClient<Database>> }
+  | { ok: false; status: number; message: string };
+
 function bearer(request: Request): string | null {
   const h = request.headers.get("Authorization") ?? request.headers.get("authorization");
   if (!h) return null;
@@ -35,11 +39,17 @@ function bearer(request: Request): string | null {
 }
 
 /**
- * Verifies the caller's Supabase session and atomically consumes one unit of
- * their daily quota for `kind`. Returns a failure result when unauthenticated
- * or over the cap.
+ * Verifies the caller's Supabase session with no quota consumed -- the auth
+ * half of consumeQuota, extracted so a route that must reject an
+ * unauthenticated caller before its own free/local-only paths (which spend
+ * no quota by design) can do so without also burning a quota unit on every
+ * request. See grade-translation.ts, found missing entirely in a
+ * 2026-09-29 codebase audit: it returned real verdicts to callers with no
+ * Authorization header at all whenever a submission matched the curated
+ * list or NVIDIA_API_KEY was unset, since those paths never reached
+ * consumeQuota.
  */
-export async function consumeQuota(request: Request, kind: QuotaKind): Promise<QuotaResult> {
+export async function verifyAuth(request: Request): Promise<AuthResult> {
   const token = bearer(request);
   if (!token) return { ok: false, status: 401, message: "Sign in to use AI features." };
 
@@ -59,6 +69,18 @@ export async function consumeQuota(request: Request, kind: QuotaKind): Promise<Q
   if (userErr || !userData.user) {
     return { ok: false, status: 401, message: "Session expired — sign in again." };
   }
+  return { ok: true, supabase };
+}
+
+/**
+ * Verifies the caller's Supabase session and atomically consumes one unit of
+ * their daily quota for `kind`. Returns a failure result when unauthenticated
+ * or over the cap.
+ */
+export async function consumeQuota(request: Request, kind: QuotaKind): Promise<QuotaResult> {
+  const auth = await verifyAuth(request);
+  if (!auth.ok) return auth;
+  const { supabase } = auth;
 
   // Per-minute burst limit, on top of the daily cap below — checked first
   // so a rejected burst doesn't also eat into the day's quota.

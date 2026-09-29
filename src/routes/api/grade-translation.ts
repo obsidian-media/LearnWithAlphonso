@@ -34,6 +34,22 @@ export const Route = createFileRoute("/api/grade-translation")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Found in a whole-codebase audit (2026-09-29): every early-return
+        // path below it (a curated-list match, or NVIDIA_API_KEY unset)
+        // used to return a real verdict with no auth check at all --
+        // consumeQuota, the only auth gate anywhere in this file, was
+        // called only much later, right before the AI grader itself. Low
+        // direct harm (nothing here mutates state or spends real quota
+        // pre-auth), but it broke the "every AI route requires auth"
+        // invariant every sibling route holds, and made this an
+        // unauthenticated oracle for "is this exactly one of the curated
+        // acceptable answers." verifyAuth is the auth half of
+        // consumeQuota with no quota consumed, so a free local-match
+        // request still costs nothing.
+        const { verifyAuth } = await import("@/lib/ai-quota.server");
+        const auth = await verifyAuth(request);
+        if (!auth.ok) return Response.json({ error: auth.message }, { status: auth.status });
+
         let body: {
           lessonId?: string;
           questionId?: string;

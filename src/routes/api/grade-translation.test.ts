@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+const verifyAuth = vi.fn();
+vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota, verifyAuth }));
 
 const { Route } = await import("./grade-translation");
 const handler = (
@@ -40,6 +41,8 @@ const originalFetch = global.fetch;
 beforeEach(() => {
   consumeQuota.mockReset();
   consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
+  verifyAuth.mockReset();
+  verifyAuth.mockResolvedValue({ ok: true, supabase: {} });
   process.env.NVIDIA_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
     new Response(
@@ -54,6 +57,40 @@ beforeEach(() => {
 afterEach(() => {
   global.fetch = originalFetch;
   delete process.env.NVIDIA_API_KEY;
+});
+
+describe("POST /api/grade-translation, auth", () => {
+  // 2026-09-29 audit finding: every path below did NOT reach consumeQuota
+  // (the curated-list match, and NVIDIA_API_KEY unset) used to return a
+  // real verdict with no auth check anywhere -- an unauthenticated
+  // "is this exactly one of the curated acceptable answers" oracle.
+  // verifyAuth must now gate ALL of them, not just the AI-call path.
+  it("rejects a curated-list match with no valid session", async () => {
+    verifyAuth.mockResolvedValue({
+      ok: false,
+      status: 401,
+      message: "Sign in to use AI features.",
+    });
+    const res = await post({ submission: "good morning" });
+    expect(res.status).toBe(401);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unconfigured-AI-grader fallback with no valid session", async () => {
+    verifyAuth.mockResolvedValue({
+      ok: false,
+      status: 401,
+      message: "Sign in to use AI features.",
+    });
+    delete process.env.NVIDIA_API_KEY;
+    const res = await post({ submission: "morning to you all" });
+    expect(res.status).toBe(401);
+  });
+
+  it("still asks the model when a real session is present", async () => {
+    const res = await post({ submission: "morning to you all" });
+    expect(await res.json()).toMatchObject({ correct: true, source: "ai" });
+  });
 });
 
 describe("POST /api/grade-translation", () => {

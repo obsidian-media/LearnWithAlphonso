@@ -23,6 +23,30 @@ Deno.test("computeReviewGrade drops all the way to a fresh restart when repetiti
   assertEquals(result.intervalDays, 1);
 });
 
+Deno.test("computeReviewGrade scales the post-lapse interval off the item's actual prior interval, not a fixed step keyed off repetitions", () => {
+  // Regression test for the real audit finding this file itself missed for
+  // a week (2026-09-22 fix in src/lib/srs.ts, not ported here until
+  // 2026-09-29): repetitions caps at 3 before RETIRE_AFTER_REPETITIONS
+  // kicks in, so floor(repetitions * 0.5) can only ever be 0 or 1 -- a
+  // fixed-step lookup on that value collapsed every lapse to the same
+  // 1-or-3-day interval regardless of how long the item's real interval
+  // had grown. A well-established 40-day item lapsing should land much
+  // further out than a brand-new item lapsing, even though both halve to
+  // the same repetitions bucket (1). This is the vector the header
+  // comment above claims this file guards -- it did not, until now.
+  const established = computeReviewGrade({
+    correct: false, ease: 2.6, intervalDays: 40, repetitions: 3, lapses: 0, elapsedDays: 40,
+  });
+  const fresh = computeReviewGrade({
+    correct: false, ease: 2.6, intervalDays: 3, repetitions: 2, lapses: 0, elapsedDays: 3,
+  });
+  assertEquals(established.repetitions, 1); // floor(3 * 0.5)
+  assertEquals(fresh.repetitions, 1); // floor(2 * 0.5) -- same bucket as `established`
+  assertEquals(established.intervalDays, 20); // half of 40, not the old fixed 3-day step
+  assertEquals(fresh.intervalDays, 2); // half of 3
+  assert(established.intervalDays > fresh.intervalDays);
+});
+
 Deno.test("computeReviewGrade floors ease at 1.3 so it never goes negative on repeated misses", () => {
   const result = computeReviewGrade({ correct: false, ease: 1.35, intervalDays: 0, repetitions: 0, lapses: 0, elapsedDays: 0 });
   assertEquals(result.ease, 1.3);

@@ -13,12 +13,13 @@
 // here -- gradeReview never required a session token on the web side
 // either (the due_on <= today check below is what prevents grading a
 // never-actually-reviewed item).
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { computeReviewOutcome } from "./srs.ts";
 // Moved to _shared/ so complete-lesson can reuse the identical grading
 // logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
+import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
 const courseSchema = z.enum(["en", "fr", "es"]);
 const itemKeySchema = z
@@ -48,7 +49,7 @@ function jsonResponse(body: unknown, status: number): Response {
 
 async function authenticate(
   req: Request,
-): Promise<{ userId: string } | Response> {
+): Promise<{ userId: string; userClient: SupabaseClient } | Response> {
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return jsonResponse({ error: "Unauthorized: missing bearer token" }, 401);
@@ -70,7 +71,7 @@ async function authenticate(
   if (error || !data?.claims?.sub) {
     return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
   }
-  return { userId: data.claims.sub as string };
+  return { userId: data.claims.sub as string, userClient: anonClient };
 }
 
 
@@ -81,7 +82,8 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   const auth = await authenticate(req);
   if (auth instanceof Response) return auth;
-  const { userId } = auth;
+  const { userId, userClient } = auth;
+  const checkQuota = makeTranslateQuotaCheck(userClient);
 
   let parsed: z.infer<typeof gradeReviewSchema>;
   try {
@@ -136,7 +138,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!question) {
       return jsonResponse({ error: "Unknown review item" }, 400);
     }
-    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course);
+    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, checkQuota);
   }
 
   // Same overdue-growth-bonus reasoning as review.functions.ts's gradeReview.

@@ -44,6 +44,7 @@ export async function deriveAnswerCorrectness(
   question: QuestionRow,
   answer: string,
   course: "en" | "fr" | "es" = "en",
+  checkQuota?: () => Promise<boolean>,
 ): Promise<boolean> {
   if (question.type === "mc") {
     return (question.choices ?? [])[question.answer_index ?? -1] === answer;
@@ -70,12 +71,19 @@ export async function deriveAnswerCorrectness(
   // by string comparison here would be shown as "Still got it" and lapsed in
   // the same breath.
   //
-  // Two operational facts, stated here rather than discovered in production:
-  // this function has no consumeQuota (that helper is web-side, backed by
-  // Supabase tables), and its structural rate limit is that an item must be
-  // DUE to be graded at all -- roughly one call per due item per day. And if
-  // NVIDIA_API_KEY is not configured for this function, translate grading
-  // quietly degrades to local-only: a correct outcome, just a stricter one.
+  // Correction (2026-09-29 codebase audit): this used to have no quota
+  // enforcement at all, on the reasoning that "an item must be DUE to be
+  // graded at all -- roughly one call per due item per day." That reasoning
+  // was wrong for exactly the case that matters: a WRONG translate answer
+  // sets due_on to TODAY (see grade-review/srs.ts's computeReviewOutcome),
+  // so the same item stays due immediately and can be resubmitted any
+  // number of times in a row, each one a real NVIDIA call. `checkQuota` (an
+  // injected async predicate, since this module has no Supabase client of
+  // its own) closes that gap -- both callers build it from consume_ai_quota
+  // /consume_ai_rate_limit RPCs against the same DB-backed counters
+  // src/lib/ai-quota.server.ts uses on the web side. Omitting it (tests, or
+  // a future caller with a structurally different limit) preserves the old
+  // unlimited behavior rather than breaking silently.
   if (question.type === "translate") {
     const acceptable = question.bank ?? [];
     if (matchesAcceptableAnswer(answer, acceptable)) return true;
@@ -84,6 +92,7 @@ export async function deriveAnswerCorrectness(
     if (!answer.trim()) return false;
     const apiKey = Deno.env.get("NVIDIA_API_KEY");
     if (!apiKey) return false;
+    if (checkQuota && !(await checkQuota())) return false;
     const verdict = await gradeTranslationWithAi({
       prompt: question.prompt ?? "",
       acceptableAnswers: acceptable,

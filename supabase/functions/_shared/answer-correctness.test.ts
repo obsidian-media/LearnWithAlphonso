@@ -88,6 +88,51 @@ Deno.test("unparseable model output is no opinion, not a wrong answer", async ()
   }
 });
 
+Deno.test("checkQuota returning false blocks the AI call entirely", async () => {
+  // 2026-09-29 audit finding: this branch used to have no quota
+  // enforcement at all. checkQuota is the fix -- confirm it actually
+  // gates the vendor call rather than just being ignored.
+  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  globalThis.fetch = (() => {
+    throw new Error("the model must not be called when quota is exhausted");
+  }) as typeof fetch;
+  try {
+    assertEquals(
+      await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", () =>
+        Promise.resolve(false),
+      ),
+      false,
+    );
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase", async () => {
+  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  stubVerdict('{"correct": true, "reason": "Same meaning."}');
+  try {
+    assertEquals(
+      await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", () =>
+        Promise.resolve(true),
+      ),
+      true,
+    );
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("omitting checkQuota preserves the old unlimited behavior", async () => {
+  Deno.env.set("NVIDIA_API_KEY", "test-key");
+  stubVerdict('{"correct": true, "reason": "Same meaning."}');
+  try {
+    assertEquals(await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you"), true);
+  } finally {
+    restore();
+  }
+});
+
 Deno.test("the other question types still grade synchronously and unchanged", async () => {
   const mc: QuestionRow = {
     type: "mc",

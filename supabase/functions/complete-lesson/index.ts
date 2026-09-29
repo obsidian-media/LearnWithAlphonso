@@ -38,6 +38,7 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // instead of trusting a client-claimed missedQuestionIds list. The same
 // function grade-review already used to re-derive review-item correctness.
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
+import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
 // Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
 // updated, unlike grade-review's identical schema. Silently rejected every
@@ -82,7 +83,7 @@ function jsonResponse(body: unknown, status: number): Response {
 
 async function authenticate(
   req: Request,
-): Promise<{ userId: string } | Response> {
+): Promise<{ userId: string; userClient: SupabaseClient } | Response> {
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return jsonResponse({ error: "Unauthorized: missing bearer token" }, 401);
@@ -104,7 +105,7 @@ async function authenticate(
   if (error || !data?.claims?.sub) {
     return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
   }
-  return { userId: data.claims.sub as string };
+  return { userId: data.claims.sub as string, userClient: anonClient };
 }
 
 /**
@@ -145,7 +146,8 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   const auth = await authenticate(req);
   if (auth instanceof Response) return auth;
-  const { userId } = auth;
+  const { userId, userClient } = auth;
+  const checkQuota = makeTranslateQuotaCheck(userClient);
 
   let parsed: z.infer<typeof completeLessonSchema>;
   try {
@@ -189,7 +191,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     // Safe: validateLessonAnswerCoverage already proved questionId is a
     // real id in this lesson.
     const question = questionById.get(questionId)!;
-    const isCorrect = await deriveAnswerCorrectness(question, answer, course);
+    const isCorrect = await deriveAnswerCorrectness(question, answer, course, checkQuota);
     if (!isCorrect) missedQuestionIds.push(questionId);
   }
   const correct = answers.length - missedQuestionIds.length;

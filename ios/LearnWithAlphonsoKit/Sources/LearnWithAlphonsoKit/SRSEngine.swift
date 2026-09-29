@@ -42,6 +42,18 @@ private let easeStepUp = 0.15
 private let retireAfterRepetitions = 4
 private let maxOverdueGrowthBonus = 1.5
 private let lapseRepetitionsRetention = 0.5
+/// Keep in sync with src/lib/srs.ts's LAPSE_INTERVAL_RETENTION -- that
+/// file's doc comment on the constant explains the 2026-09-22 SM-2 audit
+/// finding this fixes: a lapse's new interval used to snap to a fixed step
+/// (1 or 3 days) keyed off the halved-repetitions bucket, which can only
+/// ever be 0 or 1 (retireAfterRepetitions caps live repetitions at 3), so
+/// every lapse collapsed to the same two intervals regardless of whether
+/// the item had earned a 6-day or a 60-day interval. Scaling directly off
+/// the item's own prior interval instead makes the retention proportional
+/// to what was actually earned. Found NOT ported here in a 2026-09-29
+/// whole-codebase audit -- every iOS lapse was silently getting the
+/// disowned, more punishing behavior for a week after the web app fixed it.
+private let lapseIntervalRetention = 0.5
 
 /// Wrong answer: halve (rather than zero out) repetitions and record a
 /// lapse. Correct answer: grow the interval (1 day, then 3, then interval
@@ -54,15 +66,7 @@ public func computeReviewGrade(_ input: ReviewGradeInput) -> ReviewGradeResult {
 
     if !input.correct {
         let repetitions = Int(Double(input.repetitions) * lapseRepetitionsRetention)
-        let intervalDays: Int
-        if repetitions == 0 {
-            intervalDays = 1
-        } else if repetitions == 1 {
-            intervalDays = 3
-        } else {
-            let grown = Int((Double(input.intervalDays) * ease).rounded())
-            intervalDays = grown != 0 ? grown : 6
-        }
+        let intervalDays = max(1, Int((Double(input.intervalDays) * lapseIntervalRetention).rounded()))
         return ReviewGradeResult(retired: false, ease: ease, intervalDays: intervalDays, repetitions: repetitions, lapses: input.lapses + 1)
     }
 

@@ -9,14 +9,33 @@ final class SRSEngineTests: XCTestCase {
         XCTAssertFalse(result.retired)
         XCTAssertEqual(result.ease, 2.1, accuracy: 0.0001)
         XCTAssertEqual(result.repetitions, 1) // floor(2 * 0.5)
-        XCTAssertEqual(result.intervalDays, 3) // the repetitions==1 fixed step
+        XCTAssertEqual(result.intervalDays, 3) // half of the previous 6-day interval
         XCTAssertEqual(result.lapses, 2)
     }
 
     func testDropsAllTheWayToAFreshRestartWhenRepetitionsHalvesToZero() {
         let result = computeReviewGrade(ReviewGradeInput(correct: false, ease: 2.3, intervalDays: 1, repetitions: 1, lapses: 0, elapsedDays: 1))
-        XCTAssertEqual(result.repetitions, 0)
-        XCTAssertEqual(result.intervalDays, 1)
+        XCTAssertEqual(result.repetitions, 0) // floor(1 * 0.5)
+        XCTAssertEqual(result.intervalDays, 1) // half of 1 day, floored at the 1-day minimum
+    }
+
+    func testScalesThePostLapseIntervalOffTheItemsActualPriorIntervalNotAFixedStepKeyedOffRepetitions() {
+        // Regression test for the real audit finding this port missed for a
+        // week (2026-09-22 fix in src/lib/srs.ts, not ported here until
+        // 2026-09-29): repetitions caps at 3 before retireAfterRepetitions
+        // kicks in, so floor(repetitions * 0.5) can only ever be 0 or 1 -- a
+        // fixed-step lookup on that value collapsed every lapse to the same
+        // 1-or-3-day interval regardless of how long the item's real
+        // interval had grown. A well-established 40-day item lapsing should
+        // land much further out than a brand-new item lapsing, even though
+        // both halve to the same repetitions bucket (1).
+        let established = computeReviewGrade(ReviewGradeInput(correct: false, ease: 2.6, intervalDays: 40, repetitions: 3, lapses: 0, elapsedDays: 40))
+        let fresh = computeReviewGrade(ReviewGradeInput(correct: false, ease: 2.6, intervalDays: 3, repetitions: 2, lapses: 0, elapsedDays: 3))
+        XCTAssertEqual(established.repetitions, 1) // floor(3 * 0.5)
+        XCTAssertEqual(fresh.repetitions, 1) // floor(2 * 0.5) -- same bucket as `established`
+        XCTAssertEqual(established.intervalDays, 20) // half of 40, not the old fixed 3-day step
+        XCTAssertEqual(fresh.intervalDays, 2) // half of 3
+        XCTAssertGreaterThan(established.intervalDays, fresh.intervalDays)
     }
 
     func testFloorsEaseAt1Point3SoItNeverGoesNegativeOnRepeatedMisses() {
