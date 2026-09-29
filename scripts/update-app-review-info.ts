@@ -19,10 +19,24 @@
  * password to give, so demoAccountPassword explains that instead of
  * being left blank or fabricated.
  *
+ * 2026-09-30 audit fix: the demo account's real email and the account
+ * owner's real phone number were previously hardcoded directly in this
+ * file -- a real PII exposure once committed, since this repository is
+ * PUBLIC (grant-demo-entitlement.ts's own header comment already states
+ * exactly this reasoning for reading DEMO_ACCOUNT_EMAIL from a secret
+ * instead of a workflow input; this file just hadn't followed it). Now
+ * read from secrets/env like every other credential-shaped value in
+ * this repo. The two already-committed values from before this fix
+ * remain in this repo's git history regardless -- that's a separate,
+ * account-owner decision (rotate the phone number? scrub history?), not
+ * something this fix can undo by itself.
+ *
  * Uses the same App Store Connect API key already configured for
  * ios-release.yml -- no new credentials.
  *
  * Usage: bunx tsx scripts/update-app-review-info.ts
+ * (requires DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE
+ * in the environment, in addition to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
 
@@ -30,11 +44,17 @@ const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
 const KEY_P8_BASE64 = process.env.APP_STORE_CONNECT_KEY_P8_BASE64;
 const APP_ID = process.env.APP_ID ?? "6813969159";
+const DEMO_ACCOUNT_EMAIL = process.env.DEMO_ACCOUNT_EMAIL;
+const REVIEW_CONTACT_EMAIL = process.env.REVIEW_CONTACT_EMAIL;
+const REVIEW_CONTACT_PHONE = process.env.REVIEW_CONTACT_PHONE;
 
 const missing = [
   !KEY_ID && "APP_STORE_CONNECT_KEY_ID",
   !ISSUER_ID && "APP_STORE_CONNECT_ISSUER_ID",
   !KEY_P8_BASE64 && "APP_STORE_CONNECT_KEY_P8_BASE64",
+  !DEMO_ACCOUNT_EMAIL && "DEMO_ACCOUNT_EMAIL",
+  !REVIEW_CONTACT_EMAIL && "REVIEW_CONTACT_EMAIL",
+  !REVIEW_CONTACT_PHONE && "REVIEW_CONTACT_PHONE",
 ].filter(Boolean);
 if (missing.length > 0) {
   console.error(`Missing environment variable(s): ${missing.join(", ")}`);
@@ -81,15 +101,18 @@ async function api(path: string, method: "GET" | "PATCH" | "POST" = "GET", body?
 
 const COPYRIGHT = "2026 Shayan Salimi";
 
-const REVIEW_NOTES = `Learn with Alphonso is an English, French and Spanish learning app with
+const buildReviewNotes = (
+  demoAccountEmail: string,
+  reviewContactEmail: string,
+) => `Learn with Alphonso is an English, French and Spanish learning app with
 structured lessons, spaced repetition, AI speaking practice, an audio
 library and optional social features.
 
 DEMO ACCOUNT
-  Email:    semnaniroya87@gmail.com
+  Email:    ${demoAccountEmail}
   Sign-in:  email code (this app has no passwords). The code is emailed
             to that address -- if it does not arrive within a couple of
-            minutes, contact obsidianmedia.yt@gmail.com and it will be
+            minutes, contact ${reviewContactEmail} and it will be
             relayed within minutes.
 
 The account already has lesson progress, a streak and items in the
@@ -191,13 +214,13 @@ async function main() {
   const reviewAttributes = {
     contactFirstName: "Shayan",
     contactLastName: "Salimi",
-    contactEmail: "obsidianmedia.yt@gmail.com",
-    contactPhone: "+1 4372479230",
-    demoAccountName: "semnaniroya87@gmail.com",
+    contactEmail: REVIEW_CONTACT_EMAIL!,
+    contactPhone: REVIEW_CONTACT_PHONE!,
+    demoAccountName: DEMO_ACCOUNT_EMAIL!,
     demoAccountPassword:
       "No password -- this app is passwordless (email sign-in code). See notes for how the code is relayed.",
     demoAccountRequired: true,
-    notes: REVIEW_NOTES,
+    notes: buildReviewNotes(DEMO_ACCOUNT_EMAIL!, REVIEW_CONTACT_EMAIL!),
   };
 
   let updatedDetail: JsonApi;

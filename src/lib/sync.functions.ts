@@ -649,9 +649,12 @@ export const buyHeartWithXpRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
   .handler(async ({ data, context }): Promise<BuyHeartResult> => {
     const { supabase } = context;
+    // 2026-09-30 audit: _cost is no longer a real parameter this RPC
+    // accepts (removed entirely -- see the migration's own comment for
+    // why a caller-controlled cost was a real XP-mint exploit). XP_HEART_COST
+    // is kept purely to report back in this function's own return value.
     const { data: rpcData, error } = await supabase.rpc("buy_heart_with_xp", {
       _course: data.course,
-      _cost: XP_HEART_COST,
     });
     if (error) throw new Error("Could not process heart purchase");
     const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
@@ -682,9 +685,10 @@ export const buyStreakFreezeWithXpRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
   .handler(async ({ data, context }): Promise<BuyStreakFreezeResult> => {
     const { supabase } = context;
+    // 2026-09-30 audit: same fix as buyHeartWithXpRemote above -- _cost
+    // is no longer a real parameter this RPC accepts.
     const { data: rpcData, error } = await supabase.rpc("buy_streak_freeze_with_xp", {
       _course: data.course,
-      _cost: XP_STREAK_FREEZE_COST,
     });
     if (error) throw new Error("Could not process streak freeze purchase");
     const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
