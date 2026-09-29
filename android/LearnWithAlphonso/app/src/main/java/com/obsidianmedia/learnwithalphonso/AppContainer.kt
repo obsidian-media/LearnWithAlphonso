@@ -12,6 +12,10 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
+import com.obsidianmedia.learnwithalphonso.data.LeaderboardSnapshotCache
+import com.obsidianmedia.learnwithalphonso.data.LeagueTierCache
+import com.obsidianmedia.learnwithalphonso.data.NudgeCooldownCache
+import com.obsidianmedia.learnwithalphonso.data.WeeklyRecapCache
 import com.obsidianmedia.learnwithalphonso.data.RoomSyncQueueStore
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import com.obsidianmedia.learnwithalphonso.net.ConnectivityMonitor
@@ -25,7 +29,12 @@ class AppContainer(context: Context) {
     private val engine = OkHttp.create()
 
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
-    val themeManager = ThemeManager(app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE))
+    private val prefs = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
+    val themeManager = ThemeManager(prefs)
+    val snapshotCache = LeaderboardSnapshotCache(prefs)
+    val recapCache = WeeklyRecapCache(prefs)
+    val nudgeCache = NudgeCooldownCache(prefs)
+    val tierCache = LeagueTierCache(prefs)
     val connectivity = ConnectivityMonitor(app)
 
     val session = SessionManager(

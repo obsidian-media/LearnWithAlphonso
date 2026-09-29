@@ -1,6 +1,5 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,9 +49,6 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
-private const val TIER_PREFS = "alphonso.prefs"
-private const val TIER_KEY = "lastKnownLeagueTier"
-
 @Composable
 fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit) {
     val palette = AlphonsoColor.palette
@@ -61,15 +57,13 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Lesson not found", color = palette.ink) }
         return
     }
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences(TIER_PREFS, Context.MODE_PRIVATE)
     val vm: LessonViewModel = viewModel(key = "lesson-$lessonId") {
         LessonViewModel(
             lesson = found.second, course = course, content = container.content, client = container.progressClient,
             translation = container.translationGrading, syncStore = container.syncStore,
             isConnected = { container.connectivity.isConnected.value },
-            lastKnownTier = { prefs.getString(TIER_KEY, null) },
-            rememberTier = { prefs.edit().putString(TIER_KEY, it).apply() },
+            lastKnownTier = { container.tierCache.lastKnownTier },
+            rememberTier = { container.tierCache.lastKnownTier = it },
         )
     }
     val state by vm.state.collectAsState()

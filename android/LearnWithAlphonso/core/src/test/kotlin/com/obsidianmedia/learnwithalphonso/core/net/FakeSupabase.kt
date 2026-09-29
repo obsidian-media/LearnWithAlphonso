@@ -12,7 +12,17 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 
 /** One request the fake server saw, decoded for assertions. */
-data class SeenRequest(val method: String, val path: String, val query: Map<String, String>, val headers: Map<String, String>, val body: String)
+data class SeenRequest(
+    val method: String,
+    val path: String,
+    val query: Map<String, String>,
+    val headers: Map<String, String>,
+    val body: String,
+    val queryEntries: List<Pair<String, String>> = emptyList(),
+) {
+    /** Every value for a repeated query key, in order. */
+    fun queryAll(key: String): List<String> = queryEntries.filter { it.first == key }.map { it.second }
+}
 
 /** Test double for the whole Supabase surface: a scripted responder over Ktor's MockEngine. */
 class FakeSupabase(
@@ -39,6 +49,7 @@ class FakeSupabase(
         query = url.parameters.entries().associate { (k, v) -> k to v.first() },
         headers = headers.entries().associate { (k, v) -> k to v.first() },
         body = body.toByteArray().decodeToString(),
+        queryEntries = url.parameters.entries().flatMap { (k, vs) -> vs.map { k to it } },
     )
 
     companion object {

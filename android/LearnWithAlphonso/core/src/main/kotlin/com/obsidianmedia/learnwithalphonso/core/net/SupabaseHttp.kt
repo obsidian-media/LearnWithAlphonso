@@ -48,18 +48,20 @@ class SupabaseHttp(
         query: Map<String, String> = emptyMap(),
         body: JsonElement? = null,
         headers: Map<String, String> = emptyMap(),
-    ): HttpResponse = send(method, "rest/v1/$table", query, body, headers)
+        /** For PostgREST filters that repeat a key, such as two `day` bounds. */
+        queryList: List<Pair<String, String>> = emptyList(),
+    ): HttpResponse = send(method, "rest/v1/$table", query.toList() + queryList, body, headers)
 
     suspend fun rpc(name: String, body: JsonObject): HttpResponse =
-        send(HttpMethod.Post, "rest/v1/rpc/$name", emptyMap(), body, emptyMap())
+        send(HttpMethod.Post, "rest/v1/rpc/$name", emptyList(), body, emptyMap())
 
-    suspend fun function(name: String, body: JsonObject): HttpResponse =
-        send(HttpMethod.Post, "functions/v1/$name", emptyMap(), body, emptyMap())
+    suspend fun function(name: String, body: JsonObject? = null, method: HttpMethod = HttpMethod.Post): HttpResponse =
+        send(method, "functions/v1/$name", emptyList(), body, emptyMap())
 
     private suspend fun send(
         method: HttpMethod,
         path: String,
-        query: Map<String, String>,
+        query: List<Pair<String, String>>,
         body: JsonElement?,
         headers: Map<String, String>,
     ): HttpResponse {
@@ -72,7 +74,7 @@ class SupabaseHttp(
     private suspend fun sendOnce(
         method: HttpMethod,
         path: String,
-        query: Map<String, String>,
+        query: List<Pair<String, String>>,
         body: JsonElement?,
         headers: Map<String, String>,
         token: String?,

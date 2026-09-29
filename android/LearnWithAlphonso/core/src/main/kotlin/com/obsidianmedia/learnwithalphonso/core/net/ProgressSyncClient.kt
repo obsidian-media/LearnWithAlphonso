@@ -27,8 +27,8 @@ import java.time.format.DateTimeParseException
  * outcome; nothing here is trusted beyond display.
  */
 class ProgressSyncClient(
-    private val http: SupabaseHttp,
-    private val nowMillis: () -> Long = System::currentTimeMillis,
+    internal val http: SupabaseHttp,
+    internal val nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     suspend fun loseHeart(): HeartsResult {
         val rows = rowsOf(http.rpc("lose_heart", buildJsonObject {}))
@@ -217,23 +217,23 @@ class ProgressSyncClient(
 
     // ---- helpers ----
 
-    private suspend fun rowsOf(response: HttpResponse): List<JsonObject> {
+    internal suspend fun rowsOf(response: HttpResponse): List<JsonObject> {
         val text = http.requireSuccess(response)
         val element = runCatching { http.json.parseToJsonElement(text) }.getOrElse { throw ProgressSyncError.InvalidPayload() }
         if (element !is JsonArray) throw ProgressSyncError.InvalidPayload()
         return element.map { it as? JsonObject ?: throw ProgressSyncError.InvalidPayload() }
     }
 
-    private suspend fun objectOf(response: HttpResponse): JsonObject {
+    internal suspend fun objectOf(response: HttpResponse): JsonObject {
         val text = http.requireSuccess(response)
         return runCatching { http.json.parseToJsonElement(text).jsonObject }.getOrElse { throw ProgressSyncError.InvalidPayload() }
     }
 
-    private fun JsonObject.field(key: String): JsonElement? = this[key]?.takeUnless { it is JsonNull }
-    private fun JsonObject.string(key: String): String? = field(key)?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
-    private fun JsonObject.int(key: String): Int? = field(key)?.let { runCatching { it.jsonPrimitive.intOrNull }.getOrNull() }
-    private fun JsonObject.double(key: String): Double? = field(key)?.let { runCatching { it.jsonPrimitive.doubleOrNull }.getOrNull() }
-    private fun JsonObject.bool(key: String): Boolean? = field(key)?.let { runCatching { it.jsonPrimitive.booleanOrNull }.getOrNull() }
+    internal fun JsonObject.field(key: String): JsonElement? = this[key]?.takeUnless { it is JsonNull }
+    internal fun JsonObject.string(key: String): String? = field(key)?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+    internal fun JsonObject.int(key: String): Int? = field(key)?.let { runCatching { it.jsonPrimitive.intOrNull }.getOrNull() }
+    internal fun JsonObject.double(key: String): Double? = field(key)?.let { runCatching { it.jsonPrimitive.doubleOrNull }.getOrNull() }
+    internal fun JsonObject.bool(key: String): Boolean? = field(key)?.let { runCatching { it.jsonPrimitive.booleanOrNull }.getOrNull() }
 
     companion object {
         /** PostgREST timestamptz, with or without fractional seconds, to epoch milliseconds. */
