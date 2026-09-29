@@ -1,0 +1,29 @@
+name: Update App Review Info
+
+# Manual only. Writes Copyright (appStoreVersions) and the App Review
+# Information block (contact, demo account, notes -- appReviewDetail) to
+# the app's current draft App Store Connect version via PATCH/POST -- the
+# same effect as typing into the web UI and not pressing "Add for
+# Review". SAVE ONLY: never touches appVersionState, never calls the
+# submit-for-review endpoint.
+#
+# Uses the same APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64 secrets
+# already configured for ios-release.yml -- no new credentials.
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Write App Review Information (save only, no submission)
+        run: bunx tsx scripts/update-app-review-info.ts
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
