@@ -2,6 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// TODO(remove after the next `regenerate-supabase-types.yml` run):
+// src/integrations/supabase/types.ts is generated against the LIVE
+// (pre-migration) schema, so it cannot know about accept_friend_invite's
+// new `_code` arg or the brand-new get_friend_invite_preview /
+// get_or_create_my_friend_code RPCs yet -- see ci.yml's "Generated
+// Supabase types are up to date" step's own "KNOWN FALSE-POSITIVE MODE"
+// comment. This narrow escape hatch (same shape the regen workflow's own
+// header comment describes as the established pattern for this exact
+// situation) lets these three calls compile against the stale type until
+// 20260930140000_fix_friend_invite_forgeable_uuid.sql deploys and types.ts
+// is regenerated -- at which point these three call sites should go back
+// to plain `context.supabase.rpc(...)` and this helper can go if nothing
+// else needs it.
+function untyped(supabase: unknown): { rpc: (fn: string, args?: object) => Promise<unknown> } {
+  return supabase as { rpc: (fn: string, args?: object) => Promise<unknown> };
+}
+
 export type FriendEntry = {
   userId: string;
   displayName: string;
@@ -38,9 +55,9 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
-    const { data: rows } = await context.supabase.rpc("accept_friend_invite", {
+    const { data: rows } = (await untyped(context.supabase).rpc("accept_friend_invite", {
       _code: data.code,
-    });
+    })) as { data: { ok: boolean; message: string }[] | null };
     const row = rows?.[0];
     return row ?? { ok: false, message: "unknown error" };
   });
@@ -53,7 +70,9 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
 export const getMyFriendCode = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<string | null> => {
-    const { data: rows } = await context.supabase.rpc("get_or_create_my_friend_code");
+    const { data: rows } = (await untyped(context.supabase).rpc(
+      "get_or_create_my_friend_code",
+    )) as { data: { code: string }[] | null };
     return rows?.[0]?.code ?? null;
   });
 
@@ -85,9 +104,11 @@ export const getFriendInvitePreview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows } = await context.supabase.rpc("get_friend_invite_preview", {
+    const { data: rows } = (await untyped(context.supabase).rpc("get_friend_invite_preview", {
       _code: data.code,
-    });
+    })) as {
+      data: { ok: boolean; is_self: boolean; display_name: string; avatar_seed: string }[] | null;
+    };
     const row = rows?.[0];
     if (!row?.ok) return null;
     return {
