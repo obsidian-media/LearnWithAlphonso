@@ -1084,6 +1084,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      team_kicks: {
+        Row: {
+          kicked_at: string;
+          team_id: string;
+          user_id: string;
+        };
+        Insert: {
+          kicked_at?: string;
+          team_id: string;
+          user_id: string;
+        };
+        Update: {
+          kicked_at?: string;
+          team_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_kicks_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       team_members: {
         Row: {
           joined_at: string;
