@@ -186,6 +186,13 @@ struct LessonPlayerView: View {
         }
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
+        // 2026-09-30 audit (Codex/Fable): a translate question's written
+        // answer is sent to NVIDIA for grading (settledTranslationVerdict)
+        // with no disclosure at all -- every other AI vendor path in the
+        // app gates behind this. Applied at the lesson root, same as the
+        // four voice screens, since a lesson doesn't know until the
+        // learner reaches a translate question whether it will call AI.
+        .aiDisclosureGate()
     }
 
     private var quizBody: some View {
