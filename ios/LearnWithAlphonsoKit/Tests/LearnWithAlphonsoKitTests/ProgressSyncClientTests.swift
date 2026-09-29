@@ -524,6 +524,37 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(rows, [])
     }
 
+    // MARK: - getMyFriendCode
+
+    // 2026-09-30 audit finding (fresh-context pre-ship review): this
+    // method had zero test coverage since it was added alongside
+    // acceptFriendInvite's code-based rewrite -- only that sibling
+    // method's own tests were updated for the new parameter.
+    func testGetMyFriendCodePostsToTheRpcAndReturnsTheCode() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["code": "a1b2c3d4e5f6"]])
+        }
+
+        let code = try await client.getMyFriendCode()
+
+        XCTAssertEqual(code, "a1b2c3d4e5f6")
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_or_create_my_friend_code"))
+    }
+
+    func testGetMyFriendCodeReturnsNilWhenTheRpcReturnsNoRows() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+
+        let code = try await client.getMyFriendCode()
+
+        XCTAssertNil(code)
+    }
+
     // MARK: - acceptFriendInvite
 
     func testAcceptFriendInvitePostsTheCodeAndReturnsTheResult() async throws {
