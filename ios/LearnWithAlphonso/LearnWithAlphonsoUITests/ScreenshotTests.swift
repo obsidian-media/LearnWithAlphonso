@@ -97,10 +97,18 @@ final class ScreenshotTests: XCTestCase {
     }
 
     private func captureLessonPlayer() {
-        // "Saying Hello" is u1l1's real title (src/data/curriculum.ts) --
-        // seeded as a completed lesson, but still openable to view any
-        // question in it.
-        guard tapContaining(app.buttons, "Saying Hello", timeout: 10) else { return }
+        // 2026-09-29: was hardcoded to "Saying Hello" (u1l1, an A1
+        // lesson) -- broke once captureLearnTab started correctly waiting
+        // for the demo account's real saved level (B2) to load, since
+        // that lesson isn't in the visible list at that level at all.
+        // "firstLessonRow" is a stable identifier on whichever lesson
+        // actually renders first (LessonBrowserView.swift), independent
+        // of which CEFR band is showing.
+        guard app.buttons["firstLessonRow"].waitForExistence(timeout: 10) else {
+            XCTContext.runActivity(named: "Missing element: firstLessonRow") { _ in }
+            return
+        }
+        app.buttons["firstLessonRow"].tap()
         // Land on a multiple-choice question per the shot list; if the
         // player opens on a different question type, this still captures
         // the lesson player itself, which is most of the value of the shot.
@@ -121,8 +129,21 @@ final class ScreenshotTests: XCTestCase {
         // Opens the tab only -- see this file's header comment on why a
         // real exchange isn't attempted here.
         guard tapTab("Hector") else { return }
+        // 2026-09-29: this never dismissed the first-run AI-disclosure
+        // sheet ("How Alphonso uses your voice") before saving OR before
+        // returning -- the saved shot caught it mid-presentation
+        // animation (a real screenshot bug, visible in the actual PNG:
+        // a dimmed backdrop and a half-slid-up sheet), and worse, the
+        // sheet was still covering the tab bar afterward, silently
+        // failing every capture after this one (captureListenLibrary,
+        // captureProfileHub) since tapTab() could no longer reach it.
+        let gotIt = app.buttons["Got it"]
+        if gotIt.waitForExistence(timeout: 5) {
+            gotIt.tap()
+        }
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
         save("04-hector")
+        dismissSheet()
     }
 
     private func captureListenLibrary() {

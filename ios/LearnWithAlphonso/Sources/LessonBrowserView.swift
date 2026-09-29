@@ -184,6 +184,18 @@ struct LessonBrowserView: View {
                         // delay just makes the *first* screenful cascade
                         // in visibly instead of popping in together.
                         .springEntrance(delay: Double(index % 8) * 0.04)
+                        // 2026-09-29: the App Store screenshot UI test
+                        // hardcoded u1l1's title ("Saying Hello," an A1
+                        // lesson) to find a lesson row to open -- broke
+                        // silently once the test started correctly waiting
+                        // for the demo account's real saved level (B2) to
+                        // load, since that lesson isn't in the visible list
+                        // at all then. A stable, level-independent
+                        // identifier on whichever lesson actually renders
+                        // first is what the test should target instead.
+                        .accessibilityIdentifier(
+                            unit.id == unitsForSelectedLevel.first?.id && index == 0 ? "firstLessonRow" : ""
+                        )
                     }
                     Section {
                         lessonRows
