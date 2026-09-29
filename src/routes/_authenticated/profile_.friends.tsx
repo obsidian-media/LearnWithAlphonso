@@ -3,8 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
-import { getFriends, removeFriend, type FriendEntry } from "../../lib/friends.functions";
-import { getMyProfile } from "../../lib/leaderboard.functions";
+import {
+  getFriends,
+  getMyFriendCode,
+  removeFriend,
+  type FriendEntry,
+} from "../../lib/friends.functions";
 import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/profile_/friends")({
@@ -23,7 +27,10 @@ export const Route = createFileRoute("/_authenticated/profile_/friends")({
 function FriendsPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const queryClient = useQueryClient();
-  const { data: profile } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
+  const { data: friendCode } = useQuery({
+    queryKey: ["myFriendCode"],
+    queryFn: () => getMyFriendCode(),
+  });
   const { data: friends, isLoading } = useQuery({
     queryKey: ["friends"],
     queryFn: () => getFriends(),
@@ -45,7 +52,7 @@ function FriendsPage() {
     }
   }
 
-  const inviteLink = profile ? `${window.location.origin}/invite/${profile.id}` : null;
+  const inviteLink = friendCode ? `${window.location.origin}/invite/${friendCode}` : null;
 
   async function copyInvite() {
     if (!inviteLink) return;

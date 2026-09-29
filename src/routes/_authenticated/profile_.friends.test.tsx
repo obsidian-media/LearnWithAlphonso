@@ -22,10 +22,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
 const getFriends = vi.fn();
 const removeFriend = vi.fn();
-vi.mock("../../lib/friends.functions", () => ({ getFriends, removeFriend }));
-
-const getMyProfile = vi.fn();
-vi.mock("../../lib/leaderboard.functions", () => ({ getMyProfile }));
+const getMyFriendCode = vi.fn();
+vi.mock("../../lib/friends.functions", () => ({ getFriends, removeFriend, getMyFriendCode }));
 
 const { Route } = await import("./profile_.friends");
 const { useTheme } = await import("../../lib/theme");
@@ -43,7 +41,7 @@ function renderPage() {
 beforeEach(() => {
   getFriends.mockReset();
   removeFriend.mockReset();
-  getMyProfile.mockReset();
+  getMyFriendCode.mockReset();
   useTheme.setState({ theme: "meadow" });
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
@@ -54,14 +52,14 @@ beforeEach(() => {
 describe("Friends page", () => {
   it("shows a loading state before the friends list resolves", () => {
     getFriends.mockReturnValue(new Promise(() => {}));
-    getMyProfile.mockReturnValue(new Promise(() => {}));
+    getMyFriendCode.mockReturnValue(new Promise(() => {}));
     renderPage();
     expect(screen.getByText("Loading…")).toBeInTheDocument();
   });
 
   it("shows an empty state when there are no friends yet", async () => {
     getFriends.mockResolvedValue([]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
     expect(await screen.findByText(/No friends yet/)).toBeInTheDocument();
     expect(screen.getByText("Your friends")).toBeInTheDocument();
@@ -71,7 +69,7 @@ describe("Friends page", () => {
     getFriends.mockResolvedValue([
       { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
     ]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
 
     expect(await screen.findByText("1 friend")).toBeInTheDocument();
@@ -85,14 +83,14 @@ describe("Friends page", () => {
       { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
       { userId: "f2", displayName: "Bo", avatarSeed: "B", streak: 1, weekXp: 10 },
     ]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
     expect(await screen.findByText("2 friends")).toBeInTheDocument();
   });
 
   it("disables the invite button until the profile has loaded", async () => {
     getFriends.mockResolvedValue([]);
-    getMyProfile.mockReturnValue(new Promise(() => {}));
+    getMyFriendCode.mockReturnValue(new Promise(() => {}));
     renderPage();
     const button = await screen.findByRole("button", { name: "Copy invite link" });
     expect(button).toBeDisabled();
@@ -101,11 +99,11 @@ describe("Friends page", () => {
   it("copies the invite link and shows confirmation text that reverts after 2s", async () => {
     const writeText = navigator.clipboard.writeText as ReturnType<typeof vi.fn>;
     getFriends.mockResolvedValue([]);
-    getMyProfile.mockResolvedValue({ id: "me-123" });
+    getMyFriendCode.mockResolvedValue("me-123");
     renderPage();
 
     const button = await screen.findByRole("button", { name: "Copy invite link" });
-    // The button starts disabled until getMyProfile() resolves and
+    // The button starts disabled until getMyFriendCode() resolves and
     // inviteLink is derived from it -- wait for that before clicking.
     await waitFor(() => expect(button).toBeEnabled());
     fireEvent.click(button);
@@ -124,7 +122,7 @@ describe("Friends page", () => {
     getFriends.mockResolvedValue([
       { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
     ]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
 
     const removeButton = await screen.findByRole("button", { name: "Remove Ada" });
@@ -142,7 +140,7 @@ describe("Friends page", () => {
       { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
       { userId: "f2", displayName: "Bo", avatarSeed: "B", streak: 1, weekXp: 10 },
     ]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     removeFriend.mockResolvedValue({ ok: true, message: "removed" });
     renderPage();
 
@@ -158,7 +156,7 @@ describe("Friends page", () => {
   it("uses the studio-ink copy and arrow affordance for that theme", async () => {
     useTheme.setState({ theme: "studio-ink" });
     getFriends.mockResolvedValue([]);
-    getMyProfile.mockResolvedValue({ id: "me" });
+    getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
     expect(await screen.findByText("Copy invite link →")).toBeInTheDocument();
   });

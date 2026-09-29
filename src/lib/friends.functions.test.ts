@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
+import { asTestFns, createSupabaseMock } from "./__testutils__/supabase-mock";
 
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@tanstack/react-start", () => ({
@@ -26,8 +26,15 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-const { getFriends, acceptFriendInvite, getInviterProfile, createDuel, respondToDuel, getMyDuels } =
-  asTestFns(await import("./friends.functions"));
+const {
+  getFriends,
+  acceptFriendInvite,
+  getFriendInvitePreview,
+  getMyFriendCode,
+  createDuel,
+  respondToDuel,
+  getMyDuels,
+} = asTestFns(await import("./friends.functions"));
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const INVITER_ID = "11111111-1111-4111-8111-111111111111";
@@ -60,26 +67,28 @@ describe("getFriends", () => {
   });
 });
 
-describe("acceptFriendInvite", () => {
-  it("rejects inviting yourself before ever calling the RPC", async () => {
-    const supabase = createSupabaseMock();
-    const result = await acceptFriendInvite({
-      context: ctx(supabase),
-      data: { inviterId: USER_ID },
-    });
-    expect(result).toEqual({ ok: false, message: "cannot invite yourself" });
-    expect(supabase.rpc).not.toHaveBeenCalled();
-  });
+const INVITE_CODE = "aB3xY9==";
 
+describe("acceptFriendInvite", () => {
   it("returns the RPC's success row", async () => {
     const supabase = createSupabaseMock();
     supabase.rpc.mockResolvedValue({ data: [{ ok: true, message: "friends now" }] });
     const result = await acceptFriendInvite({
       context: ctx(supabase),
-      data: { inviterId: INVITER_ID },
+      data: { code: INVITE_CODE },
     });
     expect(result).toEqual({ ok: true, message: "friends now" });
-    expect(supabase.rpc).toHaveBeenCalledWith("accept_friend_invite", { _inviter_id: INVITER_ID });
+    expect(supabase.rpc).toHaveBeenCalledWith("accept_friend_invite", { _code: INVITE_CODE });
+  });
+
+  it("surfaces the RPC's own self/blocked rejections -- it, not this handler, resolves the code", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: false, message: "cannot invite yourself" }] });
+    const result = await acceptFriendInvite({
+      context: ctx(supabase),
+      data: { code: INVITE_CODE },
+    });
+    expect(result).toEqual({ ok: false, message: "cannot invite yourself" });
   });
 
   it("falls back to a generic failure when the RPC returns no rows", async () => {
@@ -87,39 +96,71 @@ describe("acceptFriendInvite", () => {
     supabase.rpc.mockResolvedValue({ data: [] });
     const result = await acceptFriendInvite({
       context: ctx(supabase),
-      data: { inviterId: INVITER_ID },
+      data: { code: INVITE_CODE },
     });
     expect(result).toEqual({ ok: false, message: "unknown error" });
   });
 
-  it("rejects a non-UUID inviterId at the validator", async () => {
+  it("rejects an empty code at the validator", async () => {
     const supabase = createSupabaseMock();
     await expect(
-      acceptFriendInvite({ context: ctx(supabase), data: { inviterId: "not-a-uuid" } }),
+      acceptFriendInvite({ context: ctx(supabase), data: { code: "" } }),
     ).rejects.toThrow();
   });
 });
 
-describe("getInviterProfile", () => {
+describe("getFriendInvitePreview", () => {
   it("returns the inviter's display name and avatar", async () => {
     const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(
-      chainable({ data: { display_name: "Ada", avatar_seed: "7" } }),
-    );
-    const result = await getInviterProfile({
-      context: ctx(supabase),
-      data: { inviterId: INVITER_ID },
+    supabase.rpc.mockResolvedValue({
+      data: [{ ok: true, is_self: false, display_name: "Ada", avatar_seed: "7" }],
     });
-    expect(result).toEqual({ displayName: "Ada", avatarSeed: "7" });
+    const result = await getFriendInvitePreview({
+      context: ctx(supabase),
+      data: { code: INVITE_CODE },
+    });
+    expect(result).toEqual({ isSelf: false, displayName: "Ada", avatarSeed: "7" });
+    expect(supabase.rpc).toHaveBeenCalledWith("get_friend_invite_preview", { _code: INVITE_CODE });
   });
 
-  it("returns null when the inviter profile doesn't exist", async () => {
+  it("flags the caller's own code as self", async () => {
     const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({ data: null }));
-    const result = await getInviterProfile({
-      context: ctx(supabase),
-      data: { inviterId: INVITER_ID },
+    supabase.rpc.mockResolvedValue({
+      data: [{ ok: true, is_self: true, display_name: null, avatar_seed: null }],
     });
+    const result = await getFriendInvitePreview({
+      context: ctx(supabase),
+      data: { code: INVITE_CODE },
+    });
+    expect(result).toEqual({ isSelf: true, displayName: null, avatarSeed: null });
+  });
+
+  it("returns null for an invalid code", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({
+      data: [{ ok: false, is_self: false, display_name: null, avatar_seed: null }],
+    });
+    const result = await getFriendInvitePreview({
+      context: ctx(supabase),
+      data: { code: "bogus" },
+    });
+    expect(result).toBeNull();
+  });
+});
+
+describe("getMyFriendCode", () => {
+  it("returns the RPC's code", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ code: INVITE_CODE }] });
+    const result = await getMyFriendCode({ context: ctx(supabase) });
+    expect(result).toBe(INVITE_CODE);
+    expect(supabase.rpc).toHaveBeenCalledWith("get_or_create_my_friend_code");
+  });
+
+  it("returns null when the RPC returns no rows", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [] });
+    const result = await getMyFriendCode({ context: ctx(supabase) });
     expect(result).toBeNull();
   });
 });

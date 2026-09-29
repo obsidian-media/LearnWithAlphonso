@@ -526,14 +526,14 @@ final class ProgressSyncClientTests: XCTestCase {
 
     // MARK: - acceptFriendInvite
 
-    func testAcceptFriendInvitePostsTheInviterIdAndReturnsTheResult() async throws {
+    func testAcceptFriendInvitePostsTheCodeAndReturnsTheResult() async throws {
         let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
             captured.value = request
             return self.jsonResponse(for: request.url!, body: [["ok": true, "message": "friends now"]])
         }
 
-        let result = try await client.acceptFriendInvite(inviterID: "u1")
+        let result = try await client.acceptFriendInvite(code: "aB3xY9")
 
         XCTAssertTrue(result.ok)
         XCTAssertEqual(result.message, "friends now")
@@ -542,7 +542,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/accept_friend_invite"))
         let body = try XCTUnwrap(request.httpBody)
         let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        XCTAssertEqual(payload["_inviter_id"] as? String, "u1")
+        XCTAssertEqual(payload["_code"] as? String, "aB3xY9")
     }
 
     func testAcceptFriendInviteSurfacesAServerRejectionAsAFalseOkNotAThrow() async throws {
@@ -550,7 +550,7 @@ final class ProgressSyncClientTests: XCTestCase {
             self.jsonResponse(for: request.url!, body: [["ok": false, "message": "cannot invite yourself"]])
         }
 
-        let result = try await client.acceptFriendInvite(inviterID: "u1")
+        let result = try await client.acceptFriendInvite(code: "aB3xY9")
 
         XCTAssertFalse(result.ok)
         XCTAssertEqual(result.message, "cannot invite yourself")

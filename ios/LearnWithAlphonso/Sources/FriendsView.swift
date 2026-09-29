@@ -30,14 +30,10 @@ struct FriendsView: View {
     @State private var friendPendingRemoval: FriendProgress?
     @State private var friendPendingBlock: FriendProgress?
     @State private var reportTarget: SocialTarget?
+    @State private var inviteLink: URL?
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var inviteLink: URL? {
-        guard let userID = session.userID else { return nil }
-        return AppConfig.apiBaseURL.appendingPathComponent("invite/\(userID)")
-    }
 
     var body: some View {
         NavigationStack {
@@ -204,6 +200,15 @@ struct FriendsView: View {
             errorMessage = "Check your connection and try again."
         }
         activityEvents = (try? await client.fetchFriendActivity()) ?? []
+        // 2026-09-30 audit (Codex/Fable): this used to build the invite
+        // link from session.userID directly -- see
+        // 20260930140000_fix_friend_invite_forgeable_uuid.sql for why a
+        // uuid-keyed invite let anyone force a friendship with zero
+        // consent. Now fetches the caller's own opaque invite code
+        // instead; a raw uuid in the URL no longer resolves to anything.
+        if let code = try? await client.getMyFriendCode() {
+            inviteLink = AppConfig.apiBaseURL.appendingPathComponent("invite/\(code)")
+        }
         isLoading = false
         await checkForNudges()
     }
