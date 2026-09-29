@@ -72,7 +72,6 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.okhttp)
-    implementation(libs.supabase.auth)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)

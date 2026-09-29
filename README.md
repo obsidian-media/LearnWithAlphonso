@@ -1,6 +1,6 @@
 # Learn with Alphonso
 
-A full-stack mobile-first English, French, and Spanish learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus a native iOS app sharing the same backend/account.
+A full-stack mobile-first English, French, and Spanish learning app with gamification, AI-powered conversation practice, and a spaced repetition review system — web app plus native iOS and Android apps sharing the same backend/account.
 
 > Decoupled from Lovable hosting/tooling (TASK-078) as far as this repo's
 > code is concerned: AI calls go straight to NVIDIA/Deepgram (not a Lovable
@@ -303,6 +303,16 @@ compile verification that exists):
 See `AGENTS.md`'s Key Files table for the full file-by-file breakdown,
 and `ARCHITECTURE.md`'s "Native iOS app" section for how it's wired to
 the backend(s).
+
+## Native Android app
+
+`android/LearnWithAlphonso/` is a Kotlin + Jetpack Compose app on the
+`android` branch, sharing the backend, content and account with web and
+iOS. Plan 1 (auth, Learn, lessons, review, placement, hearts/XP/streak,
+offline sync, themes, settings) is in; social, audio/AI, podcasts,
+notifications and the Play release follow in Plans 2 to 5. Build with the
+Gradle wrapper (`android/LearnWithAlphonso/TOOLING.md`); CI is
+`.github/workflows/android-ci.yml`. See `android/LearnWithAlphonso/README.md`.
 
 ## Project Structure
 

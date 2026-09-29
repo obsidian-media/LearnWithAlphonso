@@ -2,21 +2,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".AlphonsoApplication"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Alphonso"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:allowBackup="false">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Supabase redirects the Google PKCE flow back here; the redirect URI must be allow-listed in the Supabase dashboard. -->
+        <activity
+            android:name=".auth.OAuthCallbackActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.obsidianmedia.learnwithalphonso" android:host="login-callback" />
             </intent-filter>
         </activity>
     </application>

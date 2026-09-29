@@ -21,7 +21,7 @@
 
 - Everything Android-SDK-related is installed only under `D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds`. `ANDROID_HOME` points there; nothing is written to the user profile.
 - All code lives under `android/LearnWithAlphonso/` plus `scripts/export-android-content.ts` and `.github/workflows/android-ci.yml`. No other shared file is modified in this plan.
-- `minSdk = 26`, `targetSdk = 36`, `compileSdk = 36`. Package `com.obsidianmedia.learnwithalphonso`.
+- `minSdk = 26`, `targetSdk = 36`, `compileSdk = 37` with `compileSdkMinor = 2` (found in execution: current AndroidX artifacts refuse compileSdk 36). Package `com.obsidianmedia.learnwithalphonso`.
 - Supabase URL `https://qhcjpfbxfcltjbiuknyt.supabase.co`, publishable key `sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9`, API base `https://learn.alphonsoecosystem.app` (from `AppConfig.swift`). These are public client values.
 - No secret is committed. The repo is public.
 - Every `core` port carries the same test vectors as its TS test file; a vector may not be dropped.
@@ -260,7 +260,8 @@ plugins {
 }
 android {
     namespace = "com.obsidianmedia.learnwithalphonso"
-    compileSdk = 36
+    compileSdk = 37
+    compileSdkMinor = 2
     defaultConfig {
         applicationId = "com.obsidianmedia.learnwithalphonso"
         minSdk = 26

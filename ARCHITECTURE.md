@@ -1075,6 +1075,46 @@ conversation, and its V2 deferral of hearts/streak-freezes, were both
 superseded in practice — see this file's git history / session
 decisions rather than trusting that doc's roadmap section as current).
 
+## Native Android app (`android/LearnWithAlphonso/`)
+
+Kotlin + Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk
+37.2, against the same Supabase project, Edge Functions and `/api/*` routes
+the iOS app uses. Started 2026-09-29 on the long-lived `android` branch;
+design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
+under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
+
+- **Two Gradle modules.** `core` is pure JVM Kotlin: content models with
+  loud-failing JSON decoding (an unknown question `type` throws), ports of
+  the shared logic that carry the same test vectors as their TS files
+  (`SrsEngine`, `HeartsEconomy`, `ProgressMath`, `SpokenAnswer{,Fr,Es}`,
+  `TranslationAnswer`, `QuestionGrading`, `PlacementLogic`, `VocabDerivation`,
+  `LessonReinforcement`, `ReviewBadge`), Ktor clients over an injected engine
+  (`SupabaseHttp` with one-retry-on-401, `ProgressSyncClient`,
+  `SupabaseAuthClient` over the GoTrue endpoints, `ApiHttp` for
+  `/api/account-*` and `/api/grade-translation`), `SyncEngine` (completions
+  drain independently, review grades strictly in order) and the
+  `SessionManager` state machine. `app` renders and persists: four themes
+  with dark variants and the seven OFL fonts, `EncryptedSharedPreferences`
+  session store, Room offline queue (`RoomSyncQueueStore`), connectivity,
+  `SyncCoordinator` (sync on launch, resume and reconnect, then read the
+  server when nothing was pushed), navigation-compose with five tabs.
+- **Content** is the iOS bundle byte for byte, written by
+  `scripts/export-android-content.ts` into `app/src/main/assets/content/`;
+  core tests read that directory as a resource root, so it exists once in
+  git and `android-ci.yml` fails on drift.
+- **Google sign-in** is Supabase's own PKCE flow in a Chrome Custom Tab with
+  redirect `com.obsidianmedia.learnwithalphonso://login-callback` (must be
+  allow-listed in the Supabase dashboard). Email code and password flows
+  match the web.
+- **Pipeline** is separate from `ci.yml` by owner decision:
+  `.github/workflows/android-ci.yml` runs content drift, JVM tests and lint,
+  a debug APK, and Room/launch instrumentation tests on an API 34 emulator.
+  Nothing Android-related gates a web or iOS deploy.
+- **Not yet ported** (later plans): social and gamification screens, the
+  recorder and spoken answers, Practice, Campaigns, Hector, RevenueCat,
+  podcasts, notifications, FCM, widget, release signing. The tabs for those
+  are placeholders and speak questions use a typing fallback.
+
 ## AI integrations
 
 - **Chat:** NVIDIA NIM (`integrate.api.nvidia.com`, OpenAI-compatible),
