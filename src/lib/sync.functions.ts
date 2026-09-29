@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
@@ -247,13 +248,24 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // Promise.all -- a lesson has at most a handful of "translate"
     // questions capable of an AI call, and each one already re-uses the
     // exact same local-first check the player showed the learner live.
+    // 2026-09-30 audit: lesson-completion translate grading had no quota
+    // gate at all -- see grade-lesson-answer.server.ts's own doc comment.
+    // Built once, reused across however many translate questions this one
+    // lesson has (each call still independently decrements/checks quota).
+    const request = getRequest();
+    const checkQuota = async () => {
+      const { consumeQuota } = await import("./ai-quota.server");
+      const quota = await consumeQuota(request, "translate");
+      return quota.ok;
+    };
+
     const questionById = new Map(found.lesson.questions.map((q) => [q.id, q]));
     const missedQuestionIds: string[] = [];
     for (const { questionId, answer } of answers) {
       // Safe: validateLessonAnswerCoverage already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
-      const isCorrect = await gradeLessonAnswer(question, answer, course);
+      const isCorrect = await gradeLessonAnswer(question, answer, course, checkQuota);
       if (!isCorrect) missedQuestionIds.push(questionId);
     }
     const correct = answers.length - missedQuestionIds.length;
