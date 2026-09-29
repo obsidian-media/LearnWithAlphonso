@@ -35,8 +35,8 @@ on a phone.
 | 4 | Podcasts (library, transcripts, resume, downloads, Media3 service), local notifications, FCM, home-screen widget. |
 | 5 | Release: signing, `android-release.yml`, Play listing, device checklist. |
 
-Speak questions use a typing fallback until Plan 3; the Listen, Practice,
-Hector and Profile tabs are placeholders until their plans land.
+Speak questions use a typing fallback until Plan 3; the Listen, Practice and
+Hector tabs are placeholders until their plans land.
 
 ## Deviations from the spec worth knowing
 
