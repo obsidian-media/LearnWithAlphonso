@@ -38,11 +38,18 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
         XCTAssertNil(team)
     }
 
+    // 2026-09-30 whole-codebase audit: real PostgREST timestamptz
+    // responses carry fractional-second precision (this fixture matches
+    // that, not the clean "...:00Z" shape earlier fixtures used, which
+    // could never have caught this) -- getMyTeam parsed those with plain
+    // ISO8601DateFormatter() until this fix, which fails to parse
+    // fractional seconds and collapsed the whole function to nil for
+    // every real response, not just this fixture's.
     func testGetMyTeamDecodesAllFields() async throws {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: [[
                 "team_id": "t1", "name": "Swift Falcons", "join_code": "ABC123",
-                "joined_at": "2026-09-01T00:00:00Z", "switch_locked_until": "2026-09-08T00:00:00Z",
+                "joined_at": "2026-09-01T00:00:00.123456+00:00", "switch_locked_until": "2026-09-08T00:00:00.123456+00:00",
                 "this_week_xp": 420,
             ]])
         }
@@ -69,16 +76,20 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
 
     // MARK: - Team members / kick
 
+    // 2026-09-30 whole-codebase audit: same fractional-second-precision
+    // fixture reasoning as testGetMyTeamDecodesAllFields above --
+    // getTeamMembers silently dropped every row via compactMap before
+    // this fix, since a real response's joined_at could never parse.
     func testGetTeamMembersDecodesRows() async throws {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: [
                 [
                     "user_id": "u1", "display_name": "Ada", "avatar_seed": "seed-a",
-                    "joined_at": "2026-09-01T00:00:00Z", "is_owner": true,
+                    "joined_at": "2026-09-01T00:00:00.123456+00:00", "is_owner": true,
                 ],
                 [
                     "user_id": "u2", "display_name": "Grace", "avatar_seed": "seed-g",
-                    "joined_at": "2026-09-05T00:00:00Z", "is_owner": false,
+                    "joined_at": "2026-09-05T00:00:00.123456+00:00", "is_owner": false,
                 ],
             ])
         }

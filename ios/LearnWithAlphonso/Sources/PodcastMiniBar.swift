@@ -9,10 +9,26 @@ import LearnWithAlphonsoKit
 /// held above the view tree, so this bar coming and going never affects
 /// playback.
 ///
-/// It does **not** follow screens presented over the tabs (the lesson
-/// player, the review queue, the Profile hub's sheets). That is intended --
-/// a control bar floating over a lesson would be worse -- and it is on the
-/// device checklist rather than left to be discovered on a screen.
+/// **Correction (2026-09-30, from a real screenshot the account owner
+/// sent):** this comment previously claimed the bar does NOT follow
+/// screens pushed over a tab (the lesson player named explicitly). That
+/// was already false when found -- `.safeAreaInset`'s visual bar was
+/// showing over a pushed LessonPlayerView regardless, the screenshot
+/// proved it -- the INSET (the layout-reservation half) just wasn't
+/// extending to that pushed destination's own content, so its
+/// bottom-pinned primary button (Begin/Check/Continue) landed exactly
+/// underneath the already-visible bar. `.podcastMiniBar()` is now
+/// applied a second time, directly to LessonPlayerView, in
+/// LessonBrowserView.swift's `navigationDestination` closure -- this
+/// doesn't add a second bar (only one of {a tab's own root content, its
+/// pushed destination} is ever actually on screen inside a
+/// NavigationStack at once), it fixes the layout reservation for the
+/// one that's showing. The review queue and Profile hub's sheets are a
+/// different case -- sheets cover the tab bar and this mini-bar
+/// entirely, so they were never affected either way. Still **unverified
+/// on hardware** -- see this file's own note further down; re-run
+/// device check #12 before trusting this comment any further than the
+/// last one.
 struct PodcastMiniBar: View {
     let player: PodcastAudioPlayer
     let session: Session

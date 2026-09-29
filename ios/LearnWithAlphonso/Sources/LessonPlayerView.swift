@@ -144,6 +144,13 @@ struct LessonPlayerView: View {
         errorMessage = nil
         pendingReinforcement = nil
         activeReinforcement = nil
+        // 2026-09-30 whole-codebase audit: this function's own doc
+        // comment on attemptSeed's declaration already claimed this
+        // reset happens here -- it didn't. Low-severity (reinforcement
+        // question variety only, never a data-safety/double-award
+        // issue), but a real doc/code mismatch worth closing now that
+        // it's been pointed out rather than leaving the comment wrong.
+        attemptSeed = UUID().uuidString
     }
 
     var body: some View {
@@ -192,8 +199,23 @@ struct LessonPlayerView: View {
             // per question -- without it, SwiftUI would keep reusing the
             // same view identity across questions and a reorder question's
             // tapped-token state would leak into the next question.
+            //
+            // 2026-09-30 whole-codebase audit: question ids are only
+            // unique WITHIN a lesson (LessonReinforcement.swift's own doc
+            // comment), not globally -- every lesson independently
+            // numbers its own questions "q1", "q2"... A reinforcement
+            // question is pulled from a SIBLING lesson
+            // (siblingQuestions/levelQuestions), so its raw id can
+            // collide with the missed question's id it's replacing (both
+            // "q3", say), and questionID() alone wouldn't have changed
+            // identity for that transition -- the exact leak this .id()
+            // exists to prevent. isReinforcing strictly alternates
+            // main/reinforcement (recordAnswer's `guard !isReinforcing`
+            // means a reinforcement answer never queues another
+            // reinforcement), so folding it in disambiguates every real
+            // transition without needing content-wide unique ids.
             QuestionCard(question: currentQuestion, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: lesson.id, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
-                .id(questionID(currentQuestion))
+                .id("\(isReinforcing ? "reinforce" : "main")-\(questionID(currentQuestion))")
 
             Spacer()
 
@@ -284,6 +306,24 @@ struct LessonPlayerView: View {
         if correct {
             correctCount += 1
         } else {
+            // 2026-09-30 whole-codebase audit: a wrong answer never spent
+            // a heart on iOS at all -- confirmed by grepping the entire
+            // app target for `loseHeart`, finding zero call sites outside
+            // ProgressSyncClient's own definition and tests. Web calls
+            // both a local optimistic update and the loseHeart RPC on
+            // every wrong (non-reinforcement) answer
+            // (lesson.$id.tsx:206-207); complete-lesson only ever GRANTS
+            // hearts (regen/streak-milestone/perfect-lesson bonus), never
+            // deducts them, so nothing else was covering for this. Net
+            // effect: an iOS learner could answer every question wrong,
+            // in every lesson, forever, and never lose a heart -- the
+            // hearts gate and the XP-to-heart purchase built around it
+            // had no effect on iOS. Fire-and-forget, matching web's own
+            // `void loseHeartRemote()` -- a lost heart is not worth
+            // blocking the learner's flow over, and the next full sync
+            // (or restoreHeartsIfDue's regen check) will reconcile
+            // either way if this particular call fails.
+            spendHeartForWrongAnswer()
             // "Doing well" skews the reinforcement pool wider (see
             // pickReinforcementQuestion's doc comment) -- based on
             // accuracy over prior questions this attempt, not counting
@@ -297,6 +337,26 @@ struct LessonPlayerView: View {
                 seed: "\(attemptSeed)-reinforce-\(idx)"
             )
         }
+    }
+
+    /// Optimistically decrements the cached hearts count (so the tab-bar
+    /// status header reflects the loss immediately, same intent as web's
+    /// `loseHeartLocal()`) and fires the real `lose_heart` RPC in the
+    /// background. Best-effort both ways: a missing access token or a
+    /// failed request just means the next real sync corrects the count,
+    /// same posture as this file's other fire-and-forget calls.
+    private func spendHeartForWrongAnswer() {
+        if let cached = syncQueueStore.lastKnownProgress(), cached.hearts > 0 {
+            syncQueueStore.updateLastKnownProgress(LessonCompletionProgress(
+                xp: cached.xp, streak: cached.streak, longestStreak: cached.longestStreak,
+                lastActiveDate: cached.lastActiveDate, hearts: cached.hearts - 1,
+                heartsRefillAt: cached.heartsRefillAt, streakFreezes: cached.streakFreezes,
+                leagueTier: cached.leagueTier
+            ))
+        }
+        guard let accessToken = session.accessToken else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        Task { _ = try? await client.loseHeart() }
     }
 
     private func finish() async {

@@ -1141,7 +1141,20 @@ public final class ProgressSyncClient: Sendable {
     /// precision (e.g. "2026-09-20T01:23:45.678901+00:00"), which the
     /// default `ISO8601DateFormatter()` fails to parse -- try with
     /// fractional seconds first, fall back to without.
-    private static func parsePostgresTimestamp(_ string: String) -> Date? {
+    ///
+    /// Not `private` (2026-09-30 whole-codebase audit): `private` in
+    /// Swift is file-scoped, not type-scoped, so this was invisible to
+    /// ProgressSyncClient+Teams.swift -- which is exactly why that file
+    /// re-implemented the same parse with plain `ISO8601DateFormatter()`
+    /// instead of calling this, reintroducing the bug this helper exists
+    /// to fix. `joined_at`/`switch_locked_until` are real `timestamptz`
+    /// columns (supabase/migrations/20260922040000_teams.sql), so a real
+    /// response almost always carries fractional seconds and would fail
+    /// to parse there -- collapsing getMyTeam() to nil (TeamsView shows
+    /// "no team" for someone who has one) and silently dropping every
+    /// row from getTeamMembers() via compactMap (empty member list, the
+    /// owner/kick UI never renders).
+    static func parsePostgresTimestamp(_ string: String) -> Date? {
         let withFractionalSeconds = ISO8601DateFormatter()
         withFractionalSeconds.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let date = withFractionalSeconds.date(from: string) {

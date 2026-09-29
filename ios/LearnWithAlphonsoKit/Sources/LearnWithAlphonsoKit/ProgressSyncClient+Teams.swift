@@ -80,8 +80,8 @@ extension ProgressSyncClient {
               let joinedAtStr = row["joined_at"] as? String,
               let lockedStr = row["switch_locked_until"] as? String,
               let thisWeekXP = row["this_week_xp"] as? Int,
-              let joinedAt = ISO8601DateFormatter().date(from: joinedAtStr),
-              let lockedUntil = ISO8601DateFormatter().date(from: lockedStr) else {
+              let joinedAt = Self.parsePostgresTimestamp(joinedAtStr),
+              let lockedUntil = Self.parsePostgresTimestamp(lockedStr) else {
             return nil
         }
         let isOwner = row["is_owner"] as? Bool ?? false
@@ -109,7 +109,7 @@ extension ProgressSyncClient {
                   let displayName = row["display_name"] as? String,
                   let avatarSeed = row["avatar_seed"] as? String,
                   let joinedAtStr = row["joined_at"] as? String,
-                  let joinedAt = ISO8601DateFormatter().date(from: joinedAtStr) else { return nil }
+                  let joinedAt = Self.parsePostgresTimestamp(joinedAtStr) else { return nil }
             return TeamMember(
                 userID: userID, displayName: displayName, avatarSeed: avatarSeed,
                 joinedAt: joinedAt, isOwner: row["is_owner"] as? Bool ?? false
