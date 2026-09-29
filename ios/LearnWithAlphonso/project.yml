@@ -116,19 +116,20 @@ targets:
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
         # 35-38: the "Empty or missing audio"/short-recording saga, see
-        # docs/BACKLOG.md §0.0-j for the full trail. 39: build 38 hung on
-        # launch (FRONTBOARD watchdog SIGKILL, "scene-create", ~20s, same
-        # signature as build 29's hang) -- shipped LaunchBreadcrumbs.swift
-        # to localize it. 40: the real cause, found via that log --
-        # @Environment(\.colorScheme) read in RootView, combined with
-        # .preferredColorScheme applied to the same content, formed a
-        # feedback loop (confirmed: systemColorScheme alternated dark/
-        # light on literally every render from the first frame). Fixed by
-        # reading UIScreen.main.traitCollection directly instead -- never
-        # affected by this app's own override. LaunchBreadcrumbs.swift
-        # still present this build to confirm the fix; remove next once
-        # confirmed. See docs/BACKLOG.md §0.0-k.
-        CURRENT_PROJECT_VERSION: "40"
+        # docs/BACKLOG.md §0.0-h for the full trail. 39-40: build 38 hung
+        # on launch (FRONTBOARD watchdog SIGKILL, "scene-create", same
+        # signature as build 29's) -- root cause was RootView's
+        # @Environment(\.colorScheme) read forming a feedback loop with its
+        # own .preferredColorScheme; fixed in 40 by reading
+        # UIScreen.main.traitCollection directly instead. CONFIRMED fixed
+        # on a real device -- LaunchBreadcrumbs.swift (and the Info.plist
+        # keys it needed) removed again in 41. 41 also ships the real
+        # recording-quality fix: real debugTiming data proved the mic
+        # button's own press gesture was resetting itself almost instantly
+        # (a view changing its own appearance -- the recording-state fill
+        # color -- while a gesture was attached to that same view), not a
+        # recording/network/session bug. See docs/BACKLOG.md §0.0-h/§0.0-k.
+        CURRENT_PROJECT_VERSION: "41"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -256,7 +257,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "40"
+        CURRENT_PROJECT_VERSION: "41"
         SKIP_INSTALL: true
       configs:
         Release:
