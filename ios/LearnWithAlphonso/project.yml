@@ -184,7 +184,55 @@ targets:
         # stale doc comment; a reinforcement-question id collision risk
         # across lessons; and an attemptSeed reset the code never
         # actually performed despite its own comment claiming it did.
-        CURRENT_PROJECT_VERSION: "45"
+        #
+        # 46: four independent third-party audits (ChatGPT 5.6 Astra,
+        # Fable 5, Codex #3, Codex #4) after build 45, plus a fresh-
+        # context pre-ship re-audit of this same work -- 12 real
+        # findings total, all fixed. Highest severity first: (1)
+        # accept_friend_invite took any uuid with zero consent check,
+        # and uuids are already incidentally exposed via leaderboard/
+        # team/duel rows -- any authenticated user could force a
+        # friendship on anyone. Replaced with an opaque per-user invite
+        # code in its own table with no client-facing read policy at
+        # all, mirroring the existing team join_code pattern. (2) That
+        # invite code was itself generated as base64, which includes '/'
+        # and '+' -- spliced unencoded into a URL path segment, ~22% of
+        # invite links would have silently 404'd. Switched to hex. (3)
+        # The iOS hold-to-talk gesture (all four recording screens --
+        # Practice, Conversation, Hector, Campaign) had two races: a
+        # DragGesture's repeated onChanged during a hold could call
+        # startRecording() more than once before the async mic-
+        # permission callback resolved, and separately, all four screens
+        # share ONE recorder instance across every press, so a rapid
+        # double-press could let a stale delayed stop() finalize the
+        # WRONG press's recording (garbled or silently dropped turns --
+        # the exact symptom class this app fought for weeks). Both
+        # closed with per-press synchronous guard flags and a
+        # generation counter; a related teardown-during-permission-
+        # request gap fixed alongside it. (4) A kicked team member could
+        # rejoin instantly with the same unrotated join code --
+        # kick_team_member only deleted the row that also held the only
+        # switch-lock information. (5) /api/chat accepted an arbitrary
+        # client-controlled systemPrompt with no server check, letting a
+        # caller bypassing the app UI turn a quota-gated route into a
+        # general-purpose LLM proxy funded by this app's own NVIDIA key
+        # -- now whitelisted against the real scenario/campaign
+        # personas. (6) Web lesson-completion translate grading had no
+        # AI-quota gate at all, unlike every other AI-cost path in the
+        # app. (7) The AI-processing disclosure sheet only ever covered
+        # the four voice screens, never the written-translation grading
+        # paths that also send learner text to NVIDIA. (8) An XP-mint
+        # exploit and a UGC-filter false-positive-on-real-names
+        # regression (both already fixed same-day as build 45, folded
+        # in here since they hadn't shipped in an app build yet). (9)
+        # None of five batched gamification writes ever checked their
+        # own error result -- a failed upsert silently reported success;
+        # now throws instead (does not yet fix the underlying lack of
+        # write atomicity, a larger follow-up deliberately not attempted
+        # under deadline pressure). No real device was available to test
+        # the hold-to-talk fixes -- recommend a rapid-double-tap pass on
+        # all four recording screens.
+        CURRENT_PROJECT_VERSION: "46"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -312,7 +360,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "45"
+        CURRENT_PROJECT_VERSION: "46"
         SKIP_INSTALL: true
       configs:
         Release:
