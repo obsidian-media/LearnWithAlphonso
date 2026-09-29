@@ -1518,6 +1518,7 @@ export type Database = {
       get_my_team: {
         Args: never;
         Returns: {
+          is_owner: boolean;
           join_code: string;
           joined_at: string;
           name: string;
@@ -1532,6 +1533,16 @@ export type Database = {
           name: string;
           team_id: string;
           weekly_xp: number;
+        }[];
+      };
+      get_team_members: {
+        Args: never;
+        Returns: {
+          avatar_seed: string;
+          display_name: string;
+          is_owner: boolean;
+          joined_at: string;
+          user_id: string;
         }[];
       };
       get_weekly_challenges: {
@@ -1567,6 +1578,13 @@ export type Database = {
           ok: boolean;
           reason: string;
           team_id: string;
+        }[];
+      };
+      kick_team_member: {
+        Args: { _user_id: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
         }[];
       };
       leave_duel_queue: { Args: never; Returns: undefined };
