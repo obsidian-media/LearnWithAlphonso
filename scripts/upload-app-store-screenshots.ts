@@ -132,7 +132,7 @@ async function main() {
     const fileSize = statSync(filePath).size;
     console.log(`\n--- ${fileName} (${fileSize} bytes) ---`);
 
-    const reserved = await api(`/appScreenshotSets/${set!.id}/appScreenshots`, "POST", {
+    const reserved = await api(`/appScreenshots`, "POST", {
       data: {
         type: "appScreenshots",
         attributes: { fileName, fileSize },
