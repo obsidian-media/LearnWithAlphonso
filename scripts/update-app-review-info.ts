@@ -1,6 +1,6 @@
 /**
  * Writes App Store Connect's Copyright field (appStoreVersions.copyright)
- * and the App Review Information block (appReviewDetail: contact,
+ * and the App Review Information block (appStoreReviewDetail: contact,
  * demo account, notes) from the account-owner-approved values.
  *
  * SAVE ONLY -- both are draft-version PATCHes, the same as typing into the
@@ -185,7 +185,7 @@ async function main() {
   console.log(actualCopyright === COPYRIGHT ? "Copyright: OK" : `Copyright: MISMATCH (${actualCopyright})`);
 
   console.log(`\nFinding its App Review Information...`);
-  const existing = await api(`/appStoreVersions/${version.id}/appReviewDetail`);
+  const existing = await api(`/appStoreVersions/${version.id}/appStoreReviewDetail`);
   const reviewAttributes = {
     contactFirstName: "Shayan",
     contactLastName: "Salimi",
@@ -200,15 +200,15 @@ async function main() {
   let updatedDetail: JsonApi;
   if (existing.data) {
     const detailId = (existing.data as AscResource).id;
-    console.log(`Existing appReviewDetail ${detailId} -- updating via PATCH.`);
-    updatedDetail = await api(`/appReviewDetails/${detailId}`, "PATCH", {
-      data: { type: "appReviewDetails", id: detailId, attributes: reviewAttributes },
+    console.log(`Existing appStoreReviewDetail ${detailId} -- updating via PATCH.`);
+    updatedDetail = await api(`/appStoreReviewDetails/${detailId}`, "PATCH", {
+      data: { type: "appStoreReviewDetails", id: detailId, attributes: reviewAttributes },
     });
   } else {
-    console.log(`No appReviewDetail yet -- creating via POST.`);
-    updatedDetail = await api(`/appReviewDetails`, "POST", {
+    console.log(`No appStoreReviewDetail yet -- creating via POST.`);
+    updatedDetail = await api(`/appStoreReviewDetails`, "POST", {
       data: {
-        type: "appReviewDetails",
+        type: "appStoreReviewDetails",
         attributes: reviewAttributes,
         relationships: {
           appStoreVersion: { data: { type: "appStoreVersions", id: version.id } },
