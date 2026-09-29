@@ -50,6 +50,14 @@ private struct CampaignSessionView: View {
 
     @State private var recorder = CampaignTurnRecorder()
     @State private var isRecording = false
+    // 2026-09-30 audit (Fable, Codex #3) -- see ConversationView's
+    // identical isRequestingMic/wantsToStop for the full reasoning: closes
+    // the window where a DragGesture's repeated .onChanged during a hold
+    // (before the async permission callback resolves) could call
+    // startRecording() more than once, and the window where a tap shorter
+    // than that same hop leaves a recording with no way left to stop it.
+    @State private var isRequestingMic = false
+    @State private var wantsToStop = false
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
@@ -222,12 +230,19 @@ private struct CampaignSessionView: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in
-                                if !isRecording {
+                                if !isRecording && !isRequestingMic {
                                     pressBeganAt = Date()
+                                    isRequestingMic = true
                                     startRecording()
                                 }
                             }
-                            .onEnded { _ in stopRecordingAndSend() }
+                            .onEnded { _ in
+                                if isRequestingMic {
+                                    wantsToStop = true
+                                } else {
+                                    stopRecordingAndSend()
+                                }
+                            }
                     )
             }
         }
@@ -240,15 +255,22 @@ private struct CampaignSessionView: View {
         // prompt AVAudioRecorder.record() raises -- see ConversationView's
         // identical startRecording for the full story.
         requestMicrophonePermission { granted in
+            isRequestingMic = false
             guard granted else {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                wantsToStop = false
                 return
             }
             do {
                 try recorder.start()
                 isRecording = true
+                if wantsToStop {
+                    wantsToStop = false
+                    stopRecordingAndSend()
+                }
             } catch {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                wantsToStop = false
             }
         }
     }

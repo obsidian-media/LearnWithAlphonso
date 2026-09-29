@@ -58,6 +58,27 @@ private struct ConversationSessionView: View {
     @State private var turns: [ChatMessage] = []
     @State private var recorder = TurnRecorder()
     @State private var isRecording = false
+    // 2026-09-30 audit (Fable, Codex #3): startRecording() only flips
+    // isRecording to true inside requestMicrophonePermission's async
+    // callback, but .onChanged's guard (`if !isRecording`) is checked
+    // synchronously on every gesture update -- a DragGesture fires
+    // .onChanged repeatedly during a stationary hold (touch jitter), so a
+    // second .onChanged landing before that callback resolves saw
+    // isRecording still false and called startRecording() again,
+    // double-incrementing RecordingState with no matching second stop().
+    // isRequestingMic is the synchronous guard that closes that window --
+    // set the instant the first .onChanged is accepted, cleared once the
+    // permission callback resolves either way.
+    @State private var isRequestingMic = false
+    // Same audit: a tap shorter than the permission-check hop hits
+    // .onEnded while isRecording is still false (recording hasn't
+    // actually started yet), so stopRecordingAndSend()'s own `guard
+    // isRecording` no-ops -- and .onEnded never fires again for this
+    // press, so the recording that starts a moment later when the
+    // callback finally resolves can never be stopped. wantsToStop
+    // records that the finger already lifted, so the callback can stop
+    // it immediately instead of leaving the mic open indefinitely.
+    @State private var wantsToStop = false
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
@@ -202,12 +223,19 @@ private struct ConversationSessionView: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in
-                                if !isRecording {
+                                if !isRecording && !isRequestingMic {
                                     pressBeganAt = Date()
+                                    isRequestingMic = true
                                     startRecording()
                                 }
                             }
-                            .onEnded { _ in stopRecordingAndSend() }
+                            .onEnded { _ in
+                                if isRequestingMic {
+                                    wantsToStop = true
+                                } else {
+                                    stopRecordingAndSend()
+                                }
+                            }
                     )
                     .accessibilityLabel("Hold to talk")
                 }
@@ -249,15 +277,25 @@ private struct ConversationSessionView: View {
         // reason, applied here after the duration fix alone did not resolve
         // a live report of the same symptom on Hector.
         requestMicrophonePermission { granted in
+            isRequestingMic = false
             guard granted else {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                wantsToStop = false
                 return
             }
             do {
                 try recorder.start()
                 isRecording = true
+                // The finger already lifted while permission was still
+                // being requested -- stop immediately instead of leaving
+                // the mic recording with no way left to end it.
+                if wantsToStop {
+                    wantsToStop = false
+                    stopRecordingAndSend()
+                }
             } catch {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
+                wantsToStop = false
             }
         }
     }

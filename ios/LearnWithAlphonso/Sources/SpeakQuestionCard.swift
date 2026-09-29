@@ -29,6 +29,14 @@ struct SpeakQuestionCard: View {
 
     @State private var recorder = SpeakTurnRecorder()
     @State private var phase: Phase = .idle
+    // 2026-09-30 audit (Fable, Codex #3) -- see ConversationView's
+    // identical isRequestingMic/wantsToStop for the full reasoning: closes
+    // the window where a DragGesture's repeated .onChanged during a hold
+    // (before the async permission callback resolves) could call
+    // startRecording() more than once, and the window where a tap shorter
+    // than that same hop leaves a recording with no way left to stop it.
+    @State private var isRequestingMic = false
+    @State private var wantsToStop = false
     @State private var errorMessage: String?
     // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
     // debugTiming doc comment. The real touch-down moment, independent of
@@ -157,12 +165,19 @@ struct SpeakQuestionCard: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in
-                                if phase != .recording {
+                                if phase != .recording && !isRequestingMic {
                                     pressBeganAt = Date()
+                                    isRequestingMic = true
                                     startRecording()
                                 }
                             }
-                            .onEnded { _ in stopRecordingAndGrade() }
+                            .onEnded { _ in
+                                if isRequestingMic {
+                                    wantsToStop = true
+                                } else {
+                                    stopRecordingAndGrade()
+                                }
+                            }
                     )
                     .disabled(checked)
             }
@@ -225,20 +240,27 @@ struct SpeakQuestionCard: View {
         // produce an answer, with Check permanently disabled and no skip. That
         // is an unfinishable lesson: no XP, no streak, no unlock.
         requestMicrophonePermission { granted in
+            isRequestingMic = false
             guard granted else {
                 micUnavailable = true
                 phase = .idle
                 errorMessage =
                     "Microphone access is off. Turn it on in Settings > Privacy > Microphone, or type the phrase."
+                wantsToStop = false
                 return
             }
             do {
                 try recorder.start()
                 phase = .recording
+                if wantsToStop {
+                    wantsToStop = false
+                    stopRecordingAndGrade()
+                }
             } catch {
                 micUnavailable = true
                 phase = .idle
                 errorMessage = "Couldn't access the microphone -- type the phrase instead."
+                wantsToStop = false
             }
         }
     }
