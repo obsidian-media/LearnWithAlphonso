@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.ui.lesson
 import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
+import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.PROGRESS_JSON
 import com.obsidianmedia.learnwithalphonso.core.content.Course
@@ -10,9 +11,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.testContent
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -24,7 +23,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class LessonViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
@@ -60,7 +58,7 @@ class LessonViewModelTest {
     }
 
     @Test
-    fun `a reinforcement question never enters answers and every real question is answered once`() = runTest {
+    fun `a reinforcement question never enters answers and every real question is answered once`() = runBlocking {
         val server = okServer()
         val store = MemorySyncStore()
         val v = vm(server, store)
@@ -70,19 +68,19 @@ class LessonViewModelTest {
             assertEquals(false, s.isReinforcing)
             v.pick(if (i == 1) wrongAnswer(q) else correctAnswer(q))
             v.check()
-            advanceUntilIdle()
+            awaitTrue("checked") { v.state.value.checked }
             if (i == 1) {
                 assertNotNull("wrong answer queues a reinforcement", v.state.value.pendingReinforcement)
                 v.continueOrFinish()
                 assertTrue(v.state.value.isReinforcing)
                 v.pick("anything")
                 v.check()
-                advanceUntilIdle()
+                awaitTrue("reinforcement checked") { v.state.value.checked }
                 assertEquals("reinforcement not recorded", i + 1, v.state.value.answers.size)
             }
             v.continueOrFinish()
-            advanceUntilIdle()
         }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
         val finished = v.state.value.phase as LessonPhase.Finished
         assertEquals(50, finished.result.xpGain)
         val completeBody = Json.parseToJsonElement(server.seen.first { it.path.endsWith("complete-lesson") }.body).jsonObject
@@ -94,26 +92,26 @@ class LessonViewModelTest {
     }
 
     @Test
-    fun `a wrong answer spends a heart locally and on the server`() = runTest {
+    fun `a wrong answer spends a heart locally and on the server`() = runBlocking {
         val server = okServer()
         val store = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 4, null, 0, "bronze")) }
         val v = vm(server, store)
         v.begin(); v.startPractice()
         v.pick(wrongAnswer(lesson.questions[0]))
         v.check()
-        advanceUntilIdle()
+        awaitTrue("lose_heart call") { server.seen.count { it.path.endsWith("lose_heart") } == 1 }
         assertEquals(3, store.lastKnownProgress()!!.hearts)
-        assertEquals(1, server.seen.count { it.path.endsWith("lose_heart") })
     }
 
     @Test
-    fun `finishing offline queues the completion with the optimistic xp`() = runTest {
+    fun `finishing offline queues the completion with the optimistic xp`() = runBlocking {
         val store = MemorySyncStore()
         val v = vm(okServer(), store, connected = false)
         v.begin(); v.startPractice()
         lesson.questions.forEach { q ->
-            v.pick(correctAnswer(q)); v.check(); advanceUntilIdle(); v.continueOrFinish(); advanceUntilIdle()
+            v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish()
         }
+        awaitTrue("queued offline") { v.state.value.phase is LessonPhase.QueuedOffline }
         val queued = v.state.value.phase as LessonPhase.QueuedOffline
         assertEquals(lesson.questions.size * 10 + 20, queued.pending.optimisticXpEstimate)
         assertEquals(1, store.completions.size)
@@ -122,20 +120,20 @@ class LessonViewModelTest {
     }
 
     @Test
-    fun `a server failure on finish also queues offline`() = runTest {
+    fun `a server failure on finish also queues offline`() = runBlocking {
         val server = FakeServer { req ->
             if (req.path.endsWith("start-lesson-session")) json("""{"error":"boom"}""", HttpStatusCode.InternalServerError) else json("[]")
         }
         val store = MemorySyncStore()
         val v = vm(server, store)
         v.begin(); v.startPractice()
-        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); advanceUntilIdle(); v.continueOrFinish(); advanceUntilIdle() }
-        assertTrue(v.state.value.phase is LessonPhase.QueuedOffline)
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("queued offline") { v.state.value.phase is LessonPhase.QueuedOffline }
         assertEquals(1, store.completions.size)
     }
 
     @Test
-    fun `next lesson crosses unit boundaries within a level and is null at the end`() = runTest {
+    fun `next lesson crosses unit boundaries within a level and is null at the end`() = runBlocking {
         val v = vm(okServer())
         val unit = testContent.findLesson("u1l1", Course.ENGLISH)!!.first
         assertEquals(unit.lessons[1].id, v.nextLessonId)
@@ -148,7 +146,7 @@ class LessonViewModelTest {
     }
 
     @Test
-    fun `a league change on finish is reported as a promotion`() = runTest {
+    fun `a league change on finish is reported as a promotion`() = runBlocking {
         tier = "bronze"
         val server = FakeServer { req ->
             when {
@@ -159,7 +157,8 @@ class LessonViewModelTest {
         }
         val v = vm(server)
         v.begin(); v.startPractice()
-        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); advanceUntilIdle(); v.continueOrFinish(); advanceUntilIdle() }
+        lesson.questions.forEach { q -> v.pick(correctAnswer(q)); v.check(); awaitTrue("checked") { v.state.value.checked }; v.continueOrFinish() }
+        awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
         val finished = v.state.value.phase as LessonPhase.Finished
         assertTrue(finished.isLeaguePromotion)
         assertEquals("silver", tier)

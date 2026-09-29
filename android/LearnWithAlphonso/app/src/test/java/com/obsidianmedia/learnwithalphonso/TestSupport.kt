@@ -23,19 +23,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.io.File
+import java.util.Collections
 
-/** Routes viewModelScope onto a test dispatcher for JVM unit tests. */
+/**
+ * Routes viewModelScope onto an unconfined dispatcher: launched work runs
+ * inline until its first real suspension (a Ktor call on the mock engine's
+ * thread) and resumes there, so tests wait on concrete conditions with
+ * awaitTrue instead of virtual time.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
-class MainDispatcherRule(val dispatcher: TestDispatcher = StandardTestDispatcher()) : TestWatcher() {
-    override fun starting(description: Description) = Dispatchers.setMain(dispatcher)
+class MainDispatcherRule : TestWatcher() {
+    override fun starting(description: Description) = Dispatchers.setMain(Dispatchers.Unconfined)
     override fun finished(description: Description) = Dispatchers.resetMain()
+}
+
+/** Polls a condition for up to `timeoutMs` of real time. */
+fun awaitTrue(what: String = "condition", timeoutMs: Long = 5_000, predicate: () -> Boolean) {
+    val end = System.currentTimeMillis() + timeoutMs
+    while (!predicate()) {
+        if (System.currentTimeMillis() > end) throw AssertionError("Timed out waiting for $what")
+        Thread.sleep(5)
+    }
 }
 
 /** The real bundled content, read straight from the assets folder. */
@@ -45,7 +58,7 @@ data class SeenRequest(val method: String, val path: String, val query: Map<Stri
 
 /** A scripted Supabase and API server. */
 class FakeServer(private val respond: MockRequestHandleScope.(SeenRequest) -> HttpResponseData) {
-    val seen = ArrayList<SeenRequest>()
+    val seen: MutableList<SeenRequest> = Collections.synchronizedList(ArrayList())
     val engine = MockEngine { req ->
         val s = SeenRequest(req.method.value, req.url.encodedPath, req.url.parameters.entries().associate { (k, v) -> k to v.first() }, req.body.toByteArray().decodeToString())
         seen.add(s)
@@ -64,8 +77,8 @@ class FakeServer(private val respond: MockRequestHandleScope.(SeenRequest) -> Ht
 
 /** In-memory SyncQueueStore for view-model tests. */
 class MemorySyncStore : SyncQueueStore {
-    val completions = ArrayList<PendingLessonCompletion>()
-    val grades = ArrayList<PendingReviewGrade>()
+    val completions: MutableList<PendingLessonCompletion> = Collections.synchronizedList(ArrayList())
+    val grades: MutableList<PendingReviewGrade> = Collections.synchronizedList(ArrayList())
     private val due = MutableStateFlow<List<ReviewItem>>(emptyList())
     private val progressFlow = MutableStateFlow<LessonCompletionProgress?>(null)
     var syncedAt: Long? = null

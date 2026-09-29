@@ -21,7 +21,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
 /**
- * Calls to the web app's own `/api/*` routes on API_BASE_URL. They take the
+ * Calls to the web app's own API routes (api/account-export, api/grade-translation, ...) on API_BASE_URL. They take the
  * Supabase JWT as a Bearer token and retry once with a refreshed token on a
  * 401, the same as AccountClient.swift / AIConversationClient.swift.
  */

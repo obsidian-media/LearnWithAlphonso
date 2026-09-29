@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -116,7 +117,7 @@ class SessionManagerTest {
     fun `google sign-in exchanges the callback code with the remembered verifier`() = runTest {
         val bodies = ArrayList<String>()
         val engine = MockEngine { req ->
-            bodies.add(io.ktor.client.engine.mock.toByteArray(req.body).decodeToString())
+            bodies.add(req.body.toByteArray().decodeToString())
             respond("""{"access_token":"g-at","refresh_token":"g-rt","expires_in":3600,"user":{"id":"u9"}}""", HttpStatusCode.OK)
         }
         val m = SessionManager(SupabaseAuthClient("https://x.supabase.co", "pk", engine) { now }, MemoryStore()) { now }

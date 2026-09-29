@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.ui.review
 import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
+import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
@@ -11,9 +12,7 @@ import com.obsidianmedia.learnwithalphonso.testContent
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -21,7 +20,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ReviewViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
@@ -51,16 +49,15 @@ class ReviewViewModelTest {
         ReviewViewModel(testContent, s.progressClient, store, { connected }, Course.ENGLISH) { now }
 
     @Test
-    fun `online grade posts to grade-review, advances, and claims the bonus on the last item`() = runTest {
+    fun `online grade posts to grade-review, advances, and claims the bonus on the last item`() = runBlocking {
         val s = server(listOf(item(q1)), bonusGranted = true)
         val store = MemorySyncStore()
         val v = vm(s, store)
-        advanceUntilIdle()
+        awaitTrue("loaded") { !v.state.value.isLoading }
         assertEquals(1, v.state.value.queue.size)
         assertEquals(1, store.lastKnownDueReviews().size)
         v.pick(q1.choices[q1.answer]); v.check(); v.next()
-        advanceUntilIdle()
-        assertTrue(v.state.value.isDone)
+        awaitTrue("done with bonus") { v.state.value.isDone && !v.state.value.isSubmitting && v.state.value.clearedBonusMessage != null }
         assertTrue(s.paths().any { it.endsWith("grade-review") })
         assertTrue(s.paths().any { it.endsWith("claim_review_clear_bonus") })
         assertEquals("Review queue cleared: +1 heart!", v.state.value.clearedBonusMessage)
@@ -68,38 +65,34 @@ class ReviewViewModelTest {
     }
 
     @Test
-    fun `offline wrong answer queues the grade and keeps the item cached, right answer removes it`() = runTest {
+    fun `offline wrong answer queues the grade and keeps the item cached, right answer removes it`() = runBlocking {
         // Review Focus 2.
         val store = MemorySyncStore().apply { replaceLastKnownDueReviews(listOf(item(q1), item(q2))); syncedAt = 5L }
         val v = vm(server(emptyList()), store, connected = false)
-        advanceUntilIdle()
+        awaitTrue("loaded") { !v.state.value.isLoading }
         assertEquals(2, v.state.value.queue.size)
         assertEquals(5L, v.state.value.showingCachedSince)
         v.pick(q1.choices.first { it != q1.choices[q1.answer] }); v.check(); v.next()
-        advanceUntilIdle()
-        assertEquals(1, store.grades.size)
+        awaitTrue("first grade queued") { store.grades.size == 1 && v.state.value.idx == 1 }
         assertEquals(2, store.lastKnownDueReviews().size)
         v.pick(q2.answer); v.check(); v.next()
-        advanceUntilIdle()
-        assertEquals(2, store.grades.size)
+        awaitTrue("second grade queued") { store.grades.size == 2 && v.state.value.isDone }
         assertEquals(listOf("en:u1l1:${q1.id}"), store.lastKnownDueReviews().map { it.itemKey })
         assertTrue(v.state.value.isDone)
     }
 
     @Test
-    fun `a failed online grade falls back to the offline queue`() = runTest {
+    fun `a failed online grade falls back to the offline queue`() = runBlocking {
         val s = server(listOf(item(q1)), gradeOk = false)
         val store = MemorySyncStore()
         val v = vm(s, store)
-        advanceUntilIdle()
+        awaitTrue("loaded") { !v.state.value.isLoading }
         v.pick(q1.choices[q1.answer]); v.check(); v.next()
-        advanceUntilIdle()
-        assertEquals(1, store.grades.size)
-        assertTrue(v.state.value.isDone)
+        awaitTrue("fell back to queue") { store.grades.size == 1 && v.state.value.isDone }
     }
 
     @Test
-    fun `a weakness item with missing fields is unresolvable and skipped, not a crash`() = runTest {
+    fun `a weakness item with missing fields is unresolvable and skipped, not a crash`() = runBlocking {
         val broken = ReviewItem("weak:1", "u1l1", "A1", 2.5, 1, 0, "2025-09-16", source = "weakness", prompt = "p", choices = null, answerIndex = 0, explanation = "e")
         val s = FakeServer { req ->
             when {
@@ -109,16 +102,17 @@ class ReviewViewModelTest {
             }
         }
         val v = vm(s)
-        advanceUntilIdle()
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        assertEquals(1, v.state.value.queue.size)
         assertNull(v.questionFor(broken))
         v.skipUnresolvable()
         assertTrue(v.state.value.isDone)
     }
 
     @Test
-    fun `a weakness item with all fields becomes a multiple choice question`() = runTest {
+    fun `a weakness item with all fields becomes a multiple choice question`() = runBlocking {
         val v = vm(server(emptyList()))
-        advanceUntilIdle()
+        awaitTrue("loaded") { !v.state.value.isLoading }
         val full = ReviewItem("weak:2", "u1l1", "A1", 2.5, 1, 0, "2025-09-16", source = "weakness", prompt = "Pick", choices = listOf("a", "b"), answerIndex = 1, explanation = "why")
         val q = v.questionFor(full)
         assertNotNull(q)
