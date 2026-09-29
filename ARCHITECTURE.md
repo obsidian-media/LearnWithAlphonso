@@ -1110,10 +1110,20 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `.github/workflows/android-ci.yml` runs content drift, JVM tests and lint,
   a debug APK, and Room/launch instrumentation tests on an API 34 emulator.
   Nothing Android-related gates a web or iOS deploy.
-- **Not yet ported** (later plans): social and gamification screens, the
-  recorder and spoken answers, Practice, Campaigns, Hector, RevenueCat,
-  podcasts, notifications, FCM, widget, release signing. The tabs for those
-  are placeholders and speak questions use a typing fallback.
+- **Profile tab (Plan 2).** `ProfileHubScreen` opens League
+  (`LeaderboardScreen` with `wasOvertaken` against a cached snapshot, the
+  weekly recap over `activity_days` between two UTC Mondays, `TeamsScreen`,
+  `SeasonScreen`), Friends (`FriendsScreen` over `get_or_create_my_friend_code`
+  and `accept_friend_invite(_code)`, an App Link intent filter for
+  `/invite/{code}`, nudges with a SharedPreferences 24h cooldown, the activity
+  feed, `DuelsScreen`) and `AchievementsScreen` with the weakness trend. Every
+  user row carries `SocialSafetyMenu` (block, report). Settings edits display
+  name and avatar seed. The Learn tab shows weekly challenges with claims and
+  a streak-freeze purchase.
+- **Not yet ported** (later plans): the recorder and spoken answers,
+  Practice, Campaigns, Hector, the AI disclosure gate, RevenueCat, podcasts,
+  notifications, FCM, widget, release signing. The Listen, Practice and
+  Hector tabs are placeholders and speak questions use a typing fallback.
 
 ## AI integrations
 

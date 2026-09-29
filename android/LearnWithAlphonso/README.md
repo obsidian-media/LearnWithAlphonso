@@ -29,8 +29,8 @@ on a phone.
 
 | Plan | Scope |
 | --- | --- |
-| 1 (this) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
-| 2 | Leaderboard, friends, nudges, duels, teams, season, weekly challenges, achievements, weakness trend, block and report, profile identity. |
+| 1 (in) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
+| 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
 | 3 | Recorder and spoken answers, Practice scenarios, Campaigns, Hector, AI disclosure gate, RevenueCat paywall. |
 | 4 | Podcasts (library, transcripts, resume, downloads, Media3 service), local notifications, FCM, home-screen widget. |
 | 5 | Release: signing, `android-release.yml`, Play listing, device checklist. |
@@ -58,8 +58,18 @@ Set in the repository's GitHub secrets during Plan 5, never committed:
 The Supabase URL and publishable key in `app/build.gradle.kts` are public
 client values, the same ones `AppConfig.swift` ships.
 
-## One owner action before Google sign-in works on a device
+## Owner actions before device testing
 
-Add `com.obsidianmedia.learnwithalphonso://login-callback` to the Supabase
-project's allowed redirect URLs (Authentication, URL Configuration). Without
-it the Custom Tab completes at Google and Supabase refuses the redirect.
+- Add `com.obsidianmedia.learnwithalphonso://login-callback` to the Supabase
+  project's allowed redirect URLs (Authentication, URL Configuration). Without
+  it the Custom Tab completes at Google and Supabase refuses the redirect.
+- Publish `/.well-known/assetlinks.json` on `learn.alphonsoecosystem.app`
+  with the app's signing certificate fingerprint (known once Plan 5 creates
+  the upload key) so Android opens `/invite/{code}` links in the app. Until
+  then the Friends screen's "Friend code" field accepts a pasted code.
+
+## Known gap carried to Plan 3
+
+Written translation grading calls the AI grader without the AI disclosure
+sheet that iOS and web now show first. Plan 3 wires the disclosure gate to
+the lesson player and the review queue as well as to Hector and Practice.
