@@ -37,6 +37,17 @@ struct SpeakQuestionCard: View {
     // than that same hop leaves a recording with no way left to stop it.
     @State private var isRequestingMic = false
     @State private var wantsToStop = false
+    // 2026-09-30 audit (fresh-context pre-ship review) -- see
+    // ConversationView's identical recordingGeneration/isTornDown for the
+    // full reasoning: closes the shared-recorder rapid-double-press race
+    // (a stale delayed stop() operating on a NEWER press's live
+    // recording -- on this screen specifically, the dropped-turn side of
+    // that race sets micUnavailable = true below, a FALSE "mic
+    // unavailable" state caused purely by the race, not a real
+    // hardware/permission problem) and the in-flight-permission-request
+    // teardown gap.
+    @State private var recordingGeneration = 0
+    @State private var isTornDown = false
     @State private var errorMessage: String?
     // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
     // debugTiming doc comment. The real touch-down moment, independent of
@@ -90,6 +101,10 @@ struct SpeakQuestionCard: View {
         // never fired the drag gesture's .onEnded, leaking
         // RecordingState's counter. See SpeakTurnRecorder.cancelIfRecording().
         .onDisappear {
+            // See ConversationView's identical onDisappear/isTornDown for
+            // why this must be set before cancelIfRecording(), not instead
+            // of it -- that only covers an already-started recorder.
+            isTornDown = true
             recorder.cancelIfRecording()
         }
     }
@@ -168,6 +183,7 @@ struct SpeakQuestionCard: View {
                                 if phase != .recording && !isRequestingMic {
                                     pressBeganAt = Date()
                                     isRequestingMic = true
+                                    recordingGeneration += 1
                                     startRecording()
                                 }
                             }
@@ -241,6 +257,8 @@ struct SpeakQuestionCard: View {
         // is an unfinishable lesson: no XP, no streak, no unlock.
         requestMicrophonePermission { granted in
             isRequestingMic = false
+            // See ConversationView's identical guard/isTornDown comment.
+            guard !isTornDown else { return }
             guard granted else {
                 micUnavailable = true
                 phase = .idle
@@ -283,6 +301,8 @@ struct SpeakQuestionCard: View {
     private func stopRecordingAndGrade() {
         guard phase == .recording else { return }
         phase = .idle
+        // See ConversationView's identical recordingGeneration comment.
+        let myGeneration = recordingGeneration
         // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
         // debugTiming doc comment. Captured here, at the true touch-up
         // moment, not inside the Task below (which can start running
@@ -315,6 +335,13 @@ struct SpeakQuestionCard: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            // See ConversationView's identical guard's own comment: a
+            // newer press already claimed the shared recorder during the
+            // freshAccessToken()/sleep awaits above. On this screen this
+            // specifically prevents a spurious micUnavailable=true from
+            // being set purely by the race (see this @State's own doc
+            // comment) rather than a real hardware/permission problem.
+            guard myGeneration == recordingGeneration else { return }
             let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= SpeakTurnRecorder.minimumAudioBytes else {
                 // Nothing captured is not a wrong answer: `picked` is left alone so

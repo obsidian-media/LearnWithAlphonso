@@ -79,6 +79,28 @@ private struct ConversationSessionView: View {
     // records that the finger already lifted, so the callback can stop
     // it immediately instead of leaving the mic open indefinitely.
     @State private var wantsToStop = false
+    // 2026-09-30 audit (fresh-context pre-ship review): `recorder` is one
+    // shared @State instance reused across every press, not recreated
+    // per-press. stopRecordingAndSend's own minimum-duration sleep (up to
+    // ~0.4s) runs AFTER isRecording/isRequestingMic are already reset to
+    // false, so a second rapid press's .onChanged can pass its guard and
+    // call startRecording() -- which calls recorder.start() again on the
+    // SAME instance, overwriting the first press's in-flight
+    // AVAudioRecorder/fileURL/startedAt. When the first press's delayed
+    // Task finally wakes and calls recorder.stop(), it operates on the
+    // SECOND press's live recorder: stops it early, sends its truncated
+    // audio mislabeled as the first turn, and leaves the second press's
+    // own later .onEnded finding a cleared recorder (silently dropped,
+    // no error) -- exactly the "garbled turn / dropped turn" symptom
+    // class this app fought for weeks. recordingGeneration is bumped by
+    // every NEW press's .onChanged and captured by stopRecordingAndSend
+    // before its sleep; if a newer press has since bumped it again, this
+    // call is stale and silently returns instead of touching a recorder
+    // that now belongs to a different press.
+    @State private var recordingGeneration = 0
+    // 2026-09-30 audit: set in onDisappear, checked at the top of the
+    // mic-permission callback -- see that onDisappear's own comment.
+    @State private var isTornDown = false
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
@@ -142,6 +164,15 @@ private struct ConversationSessionView: View {
             }
         }
         .onDisappear {
+            // 2026-09-30 audit: cancelIfRecording() only cancels an
+            // ALREADY-STARTED recorder -- a no-op if the view is torn
+            // down while still awaiting the mic-permission callback
+            // (isRequestingMic == true, recorder.start() not yet
+            // called). That callback is held by the OS, not this view,
+            // so it still fires later and starts recording on a screen
+            // that no longer exists, with no gesture left to ever stop
+            // it. isTornDown is checked at the top of that callback.
+            isTornDown = true
             recorder.cancelIfRecording()
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
@@ -226,6 +257,7 @@ private struct ConversationSessionView: View {
                                 if !isRecording && !isRequestingMic {
                                     pressBeganAt = Date()
                                     isRequestingMic = true
+                                    recordingGeneration += 1
                                     startRecording()
                                 }
                             }
@@ -278,6 +310,11 @@ private struct ConversationSessionView: View {
         // a live report of the same symptom on Hector.
         requestMicrophonePermission { granted in
             isRequestingMic = false
+            // The view was torn down while this callback was in flight --
+            // see onDisappear's own comment. Do nothing at all: no error
+            // to show (nobody's looking), and definitely don't start the
+            // hardware recording session on a gone screen.
+            guard !isTornDown else { return }
             guard granted else {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
                 wantsToStop = false
@@ -316,6 +353,10 @@ private struct ConversationSessionView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
+        // Captured now, before the sleep below -- see recordingGeneration's
+        // own doc comment for why a rapid second press needs this screen
+        // (not the shared recorder) to notice "this call is stale".
+        let myGeneration = recordingGeneration
         // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
         // debugTiming doc comment. Captured here, at the true touch-up
         // moment, not inside the Task below (which can start running
@@ -337,6 +378,13 @@ private struct ConversationSessionView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            // A newer press already bumped recordingGeneration during the
+            // sleep above -- the shared `recorder` now belongs to THAT
+            // press, not this one. Stopping it here would cut the current
+            // legitimate recording short and send its audio mislabeled as
+            // this stale turn. Silently drop instead; the newer press's
+            // own .onEnded will stop and send its own recording correctly.
+            guard myGeneration == recordingGeneration else { return }
             let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= TurnRecorder.minimumAudioBytes else { return }
             let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +

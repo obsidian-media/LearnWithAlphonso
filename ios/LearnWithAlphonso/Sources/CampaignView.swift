@@ -58,6 +58,13 @@ private struct CampaignSessionView: View {
     // than that same hop leaves a recording with no way left to stop it.
     @State private var isRequestingMic = false
     @State private var wantsToStop = false
+    // 2026-09-30 audit (fresh-context pre-ship review) -- see
+    // ConversationView's identical recordingGeneration/isTornDown for the
+    // full reasoning: closes the shared-recorder rapid-double-press race
+    // (a stale delayed stop() operating on a NEWER press's live
+    // recording) and the in-flight-permission-request teardown gap.
+    @State private var recordingGeneration = 0
+    @State private var isTornDown = false
     @State private var phase: Phase = .idle
     @State private var errorMessage: String?
     @State private var player: AVAudioPlayer?
@@ -157,6 +164,10 @@ private struct CampaignSessionView: View {
             }
         }
         .onDisappear {
+            // See ConversationView's identical onDisappear/isTornDown for
+            // why this must be set before cancelIfRecording(), not instead
+            // of it -- that only covers an already-started recorder.
+            isTornDown = true
             recorder.cancelIfRecording()
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
@@ -233,6 +244,7 @@ private struct CampaignSessionView: View {
                                 if !isRecording && !isRequestingMic {
                                     pressBeganAt = Date()
                                     isRequestingMic = true
+                                    recordingGeneration += 1
                                     startRecording()
                                 }
                             }
@@ -256,6 +268,8 @@ private struct CampaignSessionView: View {
         // identical startRecording for the full story.
         requestMicrophonePermission { granted in
             isRequestingMic = false
+            // See ConversationView's identical guard/isTornDown comment.
+            guard !isTornDown else { return }
             guard granted else {
                 errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
                 wantsToStop = false
@@ -291,6 +305,8 @@ private struct CampaignSessionView: View {
     private func stopRecordingAndSend() {
         guard isRecording else { return }
         isRecording = false
+        // See ConversationView's identical recordingGeneration comment.
+        let myGeneration = recordingGeneration
         // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
         // debugTiming doc comment. Captured here, at the true touch-up
         // moment, not inside the Task below (which can start running
@@ -306,6 +322,10 @@ private struct CampaignSessionView: View {
             if let remaining = recorder.remainingTimeToMinimumDuration() {
                 try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
             }
+            // See ConversationView's identical guard's own comment: a
+            // newer press already claimed the shared recorder during the
+            // sleep above.
+            guard myGeneration == recordingGeneration else { return }
             let captureElapsed = recorder.elapsedSinceStart()
             guard let audio = await recorder.stop(), audio.count >= CampaignTurnRecorder.minimumAudioBytes else { return }
             let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
