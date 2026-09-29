@@ -1,0 +1,26 @@
+name: Check App Store Screenshots
+
+# Manual only, read-only. Reports the App Store listing screenshots
+# currently attached to the app's editable version, per localization and
+# device class. Distinct from the subscription's own review screenshot.
+#
+# Uses the same APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64 secrets
+# already configured for ios-release.yml -- no new credentials.
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Check App Store listing screenshots (read-only)
+        run: bunx tsx scripts/check-app-store-screenshots.ts
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
