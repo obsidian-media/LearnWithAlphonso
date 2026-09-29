@@ -46,6 +46,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
@@ -68,6 +69,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
     }
     val state by vm.state.collectAsState()
 
+    AiDisclosureGate(container.prefs) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -77,10 +79,11 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
             LessonPhase.Overview -> OverviewScreen(state.lesson, vm.vocab, state.total, onStart = vm::begin)
             LessonPhase.Vocab -> VocabScreen(state.lesson, vm.vocab, course, onStart = vm::startPractice)
             LessonPhase.Quiz -> QuizBody(vm, state, course, container)
-            is LessonPhase.Finished -> FinishScreen(phase, state.correctCount, state.total, container, onNext = if (vm.nextLessonId != null) vm::continueToNextLesson else null)
+            is LessonPhase.Finished -> FinishScreen(phase, state.correctCount, state.total, container, state.lesson.id, course, onNext = if (vm.nextLessonId != null) vm::continueToNextLesson else null)
             is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.pending.optimisticXpEstimate, state.correctCount, state.total)
             is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(phase.message, color = palette.ink, textAlign = TextAlign.Center) }
         }
+    }
     }
 }
 
@@ -93,7 +96,7 @@ private fun QuizBody(vm: LessonViewModel, state: LessonUiState, course: Course, 
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             key(state.isReinforcing, state.currentQuestion.id) {
                 QuestionCard(
-                    question = state.currentQuestion, course = course, vocabImages = container.content.vocabImages,
+                    container = container, question = state.currentQuestion, course = course, vocabImages = container.content.vocabImages,
                     checked = state.checked, isCorrect = if (state.checked) vm.isCurrentCorrect() else false,
                     picked = state.picked, onPick = vm::pick, translationVerdict = state.translationVerdict,
                 )
@@ -165,7 +168,7 @@ private fun VocabScreen(lesson: Lesson, items: List<VocabItem>, course: Course, 
 }
 
 @Composable
-private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, container: AppContainer, onNext: (() -> Unit)?) {
+private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, container: AppContainer, lessonId: String, course: Course, onNext: (() -> Unit)?) {
     val palette = AlphonsoColor.palette
     val result = phase.result
     val unlocked = result.newlyUnlocked.mapNotNull { id -> container.content.achievements.firstOrNull { it.id == id } }
@@ -193,6 +196,7 @@ private fun FinishScreen(phase: LessonPhase.Finished, correct: Int, total: Int, 
             }
         }
         if (onNext != null) AlphonsoPrimaryButton("Continue to next lesson", onClick = onNext)
+        GeneratedPracticeSection(container, lessonId, course)
         Spacer(Modifier.height(16.dp))
     }
 }

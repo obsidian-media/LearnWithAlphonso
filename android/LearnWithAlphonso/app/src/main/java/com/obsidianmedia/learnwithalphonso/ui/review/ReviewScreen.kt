@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiDisclosureGate
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -42,6 +43,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
     }
     val state by vm.state.collectAsState()
 
+    AiDisclosureGate(container.prefs) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
@@ -69,7 +71,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                         key(item.itemKey) {
                             QuestionCard(
-                                question = question, course = course, vocabImages = container.content.vocabImages,
+                                container = container, question = question, course = course, vocabImages = container.content.vocabImages,
                                 checked = state.checked, isCorrect = if (state.checked) vm.isCurrentCorrect() else false,
                                 picked = state.picked, onPick = vm::pick, translationVerdict = state.translationVerdict,
                             )
@@ -84,6 +86,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
                 }
             }
         }
+    }
     }
 }
 

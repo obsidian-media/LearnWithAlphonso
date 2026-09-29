@@ -31,12 +31,11 @@ on a phone.
 | --- | --- |
 | 1 (in) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
 | 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
-| 3 | Recorder and spoken answers, Practice scenarios, Campaigns, Hector, AI disclosure gate, RevenueCat paywall. |
+| 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, AI disclosure gate on every AI path, generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
 | 4 | Podcasts (library, transcripts, resume, downloads, Media3 service), local notifications, FCM, home-screen widget. |
 | 5 | Release: signing, `android-release.yml`, Play listing, device checklist. |
 
-Speak questions use a typing fallback until Plan 3; the Listen, Practice and
-Hector tabs are placeholders until their plans land.
+The Listen tab is a placeholder until Plan 4 lands.
 
 ## Deviations from the spec worth knowing
 
@@ -47,9 +46,12 @@ Hector tabs are placeholders until their plans land.
 - `compileSdk` is 37.2, not 36: current AndroidX artifacts refuse to compile
   against 36. `targetSdk` stays 36 as Play requires.
 
-## Secrets (none needed yet)
+## Secrets
 
-Set in the repository's GitHub secrets during Plan 5, never committed:
+`REVENUECAT_ANDROID_PUBLIC_KEY` is read from the environment at build time
+(empty means Pro is unavailable and the paywall says so; a release build
+refuses an empty or `test_` key). Set in the repository's GitHub secrets
+during Plan 5, never committed:
 `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`,
 `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`,
 `PLAY_SERVICE_ACCOUNT_JSON`, `REVENUECAT_ANDROID_PUBLIC_KEY`,
@@ -68,8 +70,9 @@ client values, the same ones `AppConfig.swift` ships.
   the upload key) so Android opens `/invite/{code}` links in the app. Until
   then the Friends screen's "Friend code" field accepts a pasted code.
 
-## Known gap carried to Plan 3
+## Owner actions before Pro works
 
-Written translation grading calls the AI grader without the AI disclosure
-sheet that iOS and web now show first. Plan 3 wires the disclosure gate to
-the lesson player and the review queue as well as to Hector and Practice.
+- Create the Android app in RevenueCat, attach the Play subscription product
+  to the `pro` entitlement in a current offering, and set
+  `REVENUECAT_ANDROID_PUBLIC_KEY`. Until then the Hector tab shows the paywall
+  with "Subscriptions aren't available in this build yet."

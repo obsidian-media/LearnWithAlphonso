@@ -2,7 +2,14 @@ package com.obsidianmedia.learnwithalphonso
 
 import android.content.Context
 import androidx.room.Room
+import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
+import com.obsidianmedia.learnwithalphonso.audio.MicPermission
+import com.obsidianmedia.learnwithalphonso.audio.TurnRecorder
 import com.obsidianmedia.learnwithalphonso.auth.EncryptedSessionStore
+import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
+import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
+import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
+import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
@@ -29,7 +36,7 @@ class AppContainer(context: Context) {
     private val engine = OkHttp.create()
 
     val content: ContentStore = ContentStore { name -> app.assets.open(name).bufferedReader().use { it.readText() } }
-    private val prefs = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
+    val prefs: android.content.SharedPreferences = app.getSharedPreferences("alphonso.prefs", Context.MODE_PRIVATE)
     val themeManager = ThemeManager(prefs)
     val snapshotCache = LeaderboardSnapshotCache(prefs)
     val recapCache = WeeklyRecapCache(prefs)
@@ -55,6 +62,18 @@ class AppContainer(context: Context) {
     private val apiHttp = ApiHttp(BuildConfig.API_BASE_URL, { session.freshAccessToken() }, engine) { session.freshAccessToken(force = true) }
     val accountClient = AccountClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)
+    val aiClient = AiConversationClient(apiHttp)
+    val tutorClient = TutorConversationClient(apiHttp, deviceId())
+    val micPermission = MicPermission(app)
+    fun newRecorder() = TurnRecorder(app)
+    fun newPlayback() = AudioPlayback(app)
+    val entitlements = EntitlementStore(RevenueCatBilling.createIfConfigured(app, BuildConfig.REVENUECAT_PUBLIC_KEY))
+
+    /** A stable per-install id for the tutor service's rate limiting; never a hardware identifier. */
+    private fun deviceId(): String {
+        val key = "installId"
+        return prefs.getString(key, null) ?: java.util.UUID.randomUUID().toString().also { prefs.edit().putString(key, it).apply() }
+    }
 
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db").build()
     val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao())

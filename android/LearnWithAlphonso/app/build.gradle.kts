@@ -39,6 +39,11 @@ android {
 
     buildTypes {
         release {
+            // Spec section 9: a release build must carry a real RevenueCat public key.
+            val rcKey = System.getenv("REVENUECAT_ANDROID_PUBLIC_KEY") ?: ""
+            if (gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) } && (rcKey.isBlank() || rcKey.startsWith("test_"))) {
+                throw GradleException("Release builds need REVENUECAT_ANDROID_PUBLIC_KEY set to a production (non test_) key.")
+            }
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -72,6 +77,7 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.okhttp)
+    implementation(libs.revenuecat.purchases)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)

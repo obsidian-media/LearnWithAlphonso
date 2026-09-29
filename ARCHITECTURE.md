@@ -1120,10 +1120,23 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   user row carries `SocialSafetyMenu` (block, report). Settings edits display
   name and avatar seed. The Learn tab shows weekly challenges with claims and
   a streak-freeze purchase.
-- **Not yet ported** (later plans): the recorder and spoken answers,
-  Practice, Campaigns, Hector, the AI disclosure gate, RevenueCat, podcasts,
-  notifications, FCM, widget, release signing. The Listen, Practice and
-  Hector tabs are placeholders and speak questions use a typing fallback.
+- **Audio, AI and Pro (Plan 3).** `ConversationTurnEngine` (core) is the
+  hold-to-talk state machine every recording screen shares: one press at a
+  time, a 400 ms minimum press, a 4096-byte minimum capture, transcription
+  through `/api/stt`, and `tearDown` on leave; `TurnRecorder` implements its
+  `RecorderPort` over `MediaRecorder` (AAC in MP4). `AiConversationClient`
+  and `TutorConversationClient` (core) cover chat, TTS, STT, weakness
+  analysis, generated practice (with a real timeout) and Hector.
+  `SpeakQuestionCard` grades the transcript with the same `SpokenAnswer`
+  ports, offline falls back to typing. `PracticeScreen` lists scenarios and
+  campaigns; `HectorViewModel` sends `TutorMemoryContext.buildPrimingMessage`
+  once at the head of the history. `AiDisclosureGate` wraps the lesson
+  player, review queue, Practice and Hector (key `aiDisclosureAcknowledged`).
+  Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
+  created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
+  and a null port makes the paywall say subscriptions are unavailable.
+- **Not yet ported** (later plans): podcasts, notifications, FCM, widget,
+  release signing. The Listen tab is a placeholder.
 
 ## AI integrations
 

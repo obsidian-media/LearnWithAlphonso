@@ -125,6 +125,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 RowButton("Privacy Policy") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }
                 RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
                 RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
+                RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
             }
             Section("Session") {
                 RowButton("Sign out", destructive = true) { container.session.signOut() }

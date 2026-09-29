@@ -25,6 +25,11 @@ object Routes {
     const val DUELS = "duels"
     const val ACHIEVEMENTS = "achievements"
 
+    const val SCENARIO = "practice/scenario/{id}"
+    fun scenario(id: String) = "practice/scenario/$id"
+    const val CAMPAIGN = "practice/campaign/{id}"
+    fun campaign(id: String) = "practice/campaign/$id"
+
     const val INVITE = "invite/{code}"
     fun invite(code: String) = "invite/$code"
 

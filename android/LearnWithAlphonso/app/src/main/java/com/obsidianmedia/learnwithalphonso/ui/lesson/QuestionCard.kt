@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Question
 import com.obsidianmedia.learnwithalphonso.core.content.VocabImageRef
@@ -43,6 +44,7 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
  */
 @Composable
 fun QuestionCard(
+    container: AppContainer,
     question: Question,
     course: Course,
     vocabImages: Map<String, VocabImageRef>,
@@ -102,15 +104,7 @@ fun QuestionCard(
                 }
                 if (checked) ExplanationBlock(isCorrect, question.explanation)
             }
-            is Question.Speak -> {
-                AlphonsoSectionHeader("Say it out loud")
-                Prompt(question.prompt)
-                Text(question.answer, style = MaterialTheme.typography.headlineSmall, color = palette.moss, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(12.dp))
-                PlayAudioButton { Speech.get(context).speak(question.answer, course) }
-                Text("Voice recording arrives in the next release. Type what you said:", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                AnswerField(picked ?: "", onPick, "Type the phrase", enabled = !checked)
-                if (checked) ExplanationBlock(isCorrect, question.explanation)
-            }
+            is Question.Speak -> SpeakQuestionCard(container, question, course, checked, isCorrect, picked, onPick)
         }
     }
 }

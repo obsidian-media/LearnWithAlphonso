@@ -54,12 +54,12 @@ fun awaitTrue(what: String = "condition", timeoutMs: Long = 5_000, predicate: ()
 /** The real bundled content, read straight from the assets folder. */
 val testContent: ContentStore by lazy { ContentStore { name -> File("src/main/assets/$name").readText() } }
 
-data class SeenRequest(val method: String, val path: String, val query: Map<String, String>, val body: String, val queryEntries: List<Pair<String, String>> = emptyList()) {
+data class SeenRequest(val method: String, val path: String, val query: Map<String, String>, val body: String, val queryEntries: List<Pair<String, String>> = emptyList(), val headers: Map<String, String> = emptyMap()) {
     fun queryAll(key: String): List<String> = queryEntries.filter { it.first == key }.map { it.second }
 }
 
 /** A scripted Supabase and API server. */
-class FakeServer(private val respond: MockRequestHandleScope.(SeenRequest) -> HttpResponseData) {
+class FakeServer(private val respond: suspend MockRequestHandleScope.(SeenRequest) -> HttpResponseData) {
     val seen: MutableList<SeenRequest> = Collections.synchronizedList(ArrayList())
     val engine = MockEngine { req ->
         val s = SeenRequest(
@@ -67,6 +67,7 @@ class FakeServer(private val respond: MockRequestHandleScope.(SeenRequest) -> Ht
             req.url.parameters.entries().associate { (k, v) -> k to v.first() },
             req.body.toByteArray().decodeToString(),
             req.url.parameters.entries().flatMap { (k, vs) -> vs.map { k to it } },
+            req.headers.entries().associate { (k, v) -> k to v.first() },
         )
         seen.add(s)
         respond(s)

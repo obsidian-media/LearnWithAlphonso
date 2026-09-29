@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        container.micPermission.register(this)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
         setContent {

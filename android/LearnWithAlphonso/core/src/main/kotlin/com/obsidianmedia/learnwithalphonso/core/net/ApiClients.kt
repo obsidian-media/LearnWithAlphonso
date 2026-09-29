@@ -3,6 +3,9 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -10,6 +13,8 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.TextContent
 import kotlinx.serialization.json.JsonObject
@@ -33,18 +38,56 @@ class ApiHttp(
 ) {
     private val client = HttpClient(engine) { expectSuccess = false }
 
-    suspend fun post(path: String, body: JsonObject?): HttpResponse {
-        val first = send(path, body, accessToken())
+    suspend fun post(path: String, body: JsonObject?, extraHeaders: Map<String, String> = emptyMap()): HttpResponse =
+        withRetry { token ->
+            send(path, token) {
+                extraHeaders.forEach { (k, v) -> header(k, v) }
+                if (body != null) setBody(TextContent(body.toString(), ContentType.Application.Json))
+            }
+        }
+
+    /** Multipart upload, for /api/stt. Each part is a form field or a file. */
+    suspend fun postMultipart(path: String, parts: List<MultipartPart>): HttpResponse =
+        withRetry { token ->
+            send(path, token) {
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            parts.forEach { part ->
+                                when (part) {
+                                    is MultipartPart.Field -> append(part.name, part.value)
+                                    is MultipartPart.File -> append(
+                                        part.name, part.bytes,
+                                        Headers.build {
+                                            append(HttpHeaders.ContentType, part.mimeType)
+                                            append(HttpHeaders.ContentDisposition, "filename=\"${part.filename}\"")
+                                        },
+                                    )
+                                }
+                            }
+                        },
+                    ),
+                )
+            }
+        }
+
+    private suspend fun withRetry(call: suspend (String?) -> HttpResponse): HttpResponse {
+        val first = call(accessToken())
         if (first.status != HttpStatusCode.Unauthorized || refresh == null) return first
         val fresh = refresh.invoke() ?: return first
-        return send(path, body, fresh)
+        return call(fresh)
     }
 
-    private suspend fun send(path: String, body: JsonObject?, token: String?): HttpResponse =
+    private suspend fun send(path: String, token: String?, configure: HttpRequestBuilder.() -> Unit): HttpResponse =
         client.post("${baseUrl.trimEnd('/')}/$path") {
             if (token != null) header("Authorization", "Bearer $token")
-            if (body != null) setBody(TextContent(body.toString(), ContentType.Application.Json))
+            configure()
         }
+}
+
+sealed interface MultipartPart {
+    data class Field(val name: String, val value: String) : MultipartPart
+    data class File(val name: String, val filename: String, val mimeType: String, val bytes: ByteArray) : MultipartPart
 }
 
 sealed class AccountError(message: String) : Exception(message) {

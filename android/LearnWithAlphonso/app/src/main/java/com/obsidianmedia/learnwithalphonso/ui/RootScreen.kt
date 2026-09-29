@@ -33,6 +33,10 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
 import com.obsidianmedia.learnwithalphonso.ui.auth.AuthScreen
 import com.obsidianmedia.learnwithalphonso.ui.friends.DuelsScreen
+import com.obsidianmedia.learnwithalphonso.ui.hector.HectorTab
+import com.obsidianmedia.learnwithalphonso.ui.practice.CampaignConversationScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.ScenarioConversationScreen
 import com.obsidianmedia.learnwithalphonso.ui.friends.FriendsScreen
 import com.obsidianmedia.learnwithalphonso.ui.friends.InviteAcceptScreen
 import com.obsidianmedia.learnwithalphonso.ui.league.LeaderboardScreen
@@ -96,6 +100,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     LaunchedEffect(userId) {
         container.syncCoordinator.triggerSync()
         runCatching { userId?.let { container.progressClient.fetchProfileTheme(it) } }.getOrNull()?.let(container.themeManager::hydrateFromServer)
+        userId?.let { container.entitlements.login(it) }
         val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
         if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
             nav.navigate(Routes.placement("en"))
@@ -143,8 +148,10 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 )
             }
             composable(Routes.LISTEN) { PlaceholderTab("Listen", "Podcasts arrive in the next release.") }
-            composable(Routes.PRACTICE) { PlaceholderTab("Practice", "Conversation practice arrives in the next release.") }
-            composable(Routes.HECTOR) { PlaceholderTab("Hector", "Your AI tutor arrives in the next release.") }
+            composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { nav.navigate(Routes.scenario(it)) }, onOpenCampaign = { nav.navigate(Routes.campaign(it)) }) }
+            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
+            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
+            composable(Routes.HECTOR) { HectorTab(container) }
             composable(Routes.PROFILE) {
                 ProfileHubScreen(
                     onOpenLeague = { nav.navigate(Routes.LEAGUE) },
