@@ -252,10 +252,15 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // gate at all -- see grade-lesson-answer.server.ts's own doc comment.
     // Built once, reused across however many translate questions this one
     // lesson has (each call still independently decrements/checks quota).
-    const request = getRequest();
+    // getRequest() is called lazily, inside the closure, not eagerly here
+    // -- same reason review.functions.ts's identical checkQuota does the
+    // same: it throws outside a TanStack Start request context (every
+    // other test in this suite calls completeLessonRemote directly), so
+    // it must only run when a translate question actually needs it, not
+    // on every lesson completion.
     const checkQuota = async () => {
       const { consumeQuota } = await import("./ai-quota.server");
-      const quota = await consumeQuota(request, "translate");
+      const quota = await consumeQuota(getRequest(), "translate");
       return quota.ok;
     };
 
