@@ -223,6 +223,17 @@ public final class AIConversationClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["lessonId": lessonID, "course": course])
+        // TestFlight feedback (2026-09-29): "unlimited buffering cycle
+        // without ever generating any more practice." A real production
+        // log for the one attempt found showed the request actually
+        // succeeded server-side with no error -- most likely a genuinely
+        // slow LLM call with zero on-screen indication of how long that
+        // can take, not a true infinite hang. This caps it as a real
+        // safety net regardless: URLRequest's un-set default
+        // (60s per-attempt, but URLSession's resource timeout is 7 days)
+        // could otherwise leave the spinner running far longer than any
+        // user would wait.
+        request.timeoutInterval = 45
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)

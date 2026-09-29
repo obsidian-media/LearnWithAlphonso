@@ -146,7 +146,18 @@ targets:
         # away while the mic button is physically pressed) never fired the
         # drag gesture's .onEnded, leaking the counter and permanently
         # suppressing the podcast player's post-interruption resume.
-        CURRENT_PROJECT_VERSION: "43"
+        # 44: real TestFlight feedback from build 43, fixed same-day: a
+        # "Hold to talk" label on Practice/Hector (they had zero on-screen
+        # indication this is a hold gesture, not a tap -- real debugTiming
+        # data showed presses consistently under 0.3s, exactly what a tap
+        # looks like); the Learn tab's lesson-completion dot now reflects
+        # real completion instead of `index == 0`, and auto-scrolls to
+        # where the learner left off; a share button for a team's join
+        # code; a real member list + owner-only kick for teams (there was
+        # none before); a "Next episode" button in the podcast mini-bar;
+        # and a client-side timeout + clearer loading text on "Generate
+        # more practice."
+        CURRENT_PROJECT_VERSION: "44"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -274,7 +285,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "43"
+        CURRENT_PROJECT_VERSION: "44"
         SKIP_INSTALL: true
       configs:
         Release:

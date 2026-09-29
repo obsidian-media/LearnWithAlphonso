@@ -204,7 +204,8 @@ private struct PodcastFolderListing: View {
                             Button {
                                 player.play(
                                     episode,
-                                    localURL: downloads.localURL(episodeID: episode.id)
+                                    localURL: downloads.localURL(episodeID: episode.id),
+                                    queue: episodes
                                 )
                                 downloads.markPlayed(episodeID: episode.id)
                             } label: {
@@ -309,7 +310,8 @@ private struct PodcastSearchResultsView: View {
                     Button {
                         player.play(
                             episode,
-                            localURL: downloads.localURL(episodeID: episode.id)
+                            localURL: downloads.localURL(episodeID: episode.id),
+                            queue: results
                         )
                         downloads.markPlayed(episodeID: episode.id)
                     } label: {
@@ -451,7 +453,8 @@ private struct OfflineEpisodeList: View {
                         Button {
                             player.play(
                             episode,
-                            localURL: downloads.localURL(episodeID: episode.id)
+                            localURL: downloads.localURL(episodeID: episode.id),
+                            queue: episodes
                         )
                         downloads.markPlayed(episodeID: episode.id)
                         } label: {

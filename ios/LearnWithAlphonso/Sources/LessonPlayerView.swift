@@ -852,7 +852,22 @@ private struct GeneratedPracticeSection: View {
                 .buttonStyle(.alphonsoSecondary)
                 .disabled(status == .loading)
 
-                if status == .empty {
+                // TestFlight feedback (2026-09-29): "unlimited buffering
+                // cycle." The one real production log for this found no
+                // server error at all -- the request just took a while
+                // (a real LLM call) with zero on-screen indication that
+                // was expected, which reads as broken. This text plus
+                // generatePractice's new 45s client-side timeout are the
+                // fix for that -- the timeout can't distinguish "still
+                // legitimately working" from "actually stuck," so if it
+                // turns out this was a real hang, the next report should
+                // include whether the button flipped to the error state
+                // on its own after roughly 45 seconds.
+                if status == .loading {
+                    Text("This can take up to 30 seconds.")
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                } else if status == .empty {
                     Text("Couldn't generate practice for this lesson right now.")
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)

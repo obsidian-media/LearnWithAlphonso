@@ -152,38 +152,53 @@ private struct HectorConversationView: View {
     }
 
     private var micButton: some View {
-        Group {
-            switch phase {
-            case .transcribing, .thinking, .speaking:
-                ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
-            case .idle:
-                // See ConversationView's identical mic button for why this
-                // is a stable outer container hosting the gesture, with a
-                // purely-visual color-changing Circle nested inside
-                // (found live 2026-09-29, via real press/capture timing
-                // data): a view mutating its OWN appearance in response to
-                // state a gesture attached to it just set can reset the
-                // in-flight gesture recognizer, firing a false release
-                // almost instantly regardless of real hold duration.
-                Color.clear
-                    .frame(width: 72, height: 72)
-                    .contentShape(Circle())
-                    .overlay(
-                        Circle()
-                            .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.ember)
-                            .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
-                            .allowsHitTesting(false)
-                    )
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { _ in
-                                if !isRecording {
-                                    pressBeganAt = Date()
-                                    startRecording()
+        VStack(spacing: 6) {
+            Group {
+                switch phase {
+                case .transcribing, .thinking, .speaking:
+                    ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
+                case .idle:
+                    // See ConversationView's identical mic button for why this
+                    // is a stable outer container hosting the gesture, with a
+                    // purely-visual color-changing Circle nested inside
+                    // (found live 2026-09-29, via real press/capture timing
+                    // data): a view mutating its OWN appearance in response to
+                    // state a gesture attached to it just set can reset the
+                    // in-flight gesture recognizer, firing a false release
+                    // almost instantly regardless of real hold duration.
+                    Color.clear
+                        .frame(width: 72, height: 72)
+                        .contentShape(Circle())
+                        .overlay(
+                            Circle()
+                                .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.ember)
+                                .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
+                                .allowsHitTesting(false)
+                        )
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { _ in
+                                    if !isRecording {
+                                        pressBeganAt = Date()
+                                        startRecording()
+                                    }
                                 }
-                            }
-                            .onEnded { _ in stopRecordingAndSend() }
-                    )
+                                .onEnded { _ in stopRecordingAndSend() }
+                        )
+                        .accessibilityLabel("Hold to talk to Hector")
+                }
+            }
+            // TestFlight feedback (2026-09-29): "the listening period is
+            // either too short or doesn't want to listen." Real production
+            // debugTiming data showed the actual touch-down-to-release span
+            // was consistently under 0.2s across ten separate attempts --
+            // this screen had ZERO on-screen text saying the button must be
+            // held, unlike SpeakQuestionCard's "Hold and say the phrase."
+            // Matches that screen's existing pattern.
+            if phase == .idle {
+                Text(isRecording ? "Listening -- release to send" : "Hold to talk")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
         }
         .frame(maxWidth: .infinity)

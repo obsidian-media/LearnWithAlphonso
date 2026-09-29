@@ -164,11 +164,12 @@ private struct ConversationSessionView: View {
     }
 
     private var micButton: some View {
-        Group {
-            switch phase {
-            case .transcribing, .thinking, .speaking:
-                ProgressView(label(for: phase)).tint(AlphonsoColor.moss)
-            case .idle:
+        VStack(spacing: 6) {
+            Group {
+                switch phase {
+                case .transcribing, .thinking, .speaking:
+                    ProgressView(label(for: phase)).tint(AlphonsoColor.moss)
+                case .idle:
                 // Found live 2026-09-29: the mic
                 // button used to be one Circle whose OWN .fill() changed
                 // with `isRecording`, with the gesture attached directly to
@@ -208,6 +209,19 @@ private struct ConversationSessionView: View {
                             }
                             .onEnded { _ in stopRecordingAndSend() }
                     )
+                    .accessibilityLabel("Hold to talk")
+                }
+            }
+            // TestFlight feedback (2026-09-29): same fix as HectorView's
+            // identical mic button -- this screen had zero on-screen text
+            // saying the button must be held, unlike SpeakQuestionCard's
+            // "Hold and say the phrase." Real debugTiming data showed
+            // presses consistently under 0.3s across every attempt, which
+            // is exactly what tapping (not holding) looks like.
+            if phase == .idle {
+                Text(isRecording ? "Listening -- release to send" : "Hold to talk")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
         }
         .frame(maxWidth: .infinity)

@@ -21,6 +21,19 @@ struct LessonBrowserView: View {
     /// mirrors web's `learn.tsx` `level` state exactly, so the two clients
     /// group lessons by level the same way and don't drift.
     @State private var selectedLevel: String = LessonBrowserView.levels[0].id
+    /// TestFlight feedback (2026-09-29): "there is a circle with color
+    /// beside each lesson but they need to change color as the user
+    /// successfully completes that lesson." Populated by `loadLevel()`;
+    /// empty (not yet loaded, or a fresh account) shows every row as
+    /// not-yet-completed, same as before this fix.
+    @State private var completedLessonIDs: Set<String> = []
+    /// The most recently completed lesson's id, used only to scroll to
+    /// "where you left off" on first appearance -- see
+    /// `continueLessonID`. Also TestFlight feedback (2026-09-29): "there
+    /// should be a sign that a user can know which unit was she studying
+    /// ... right now endless scrolling."
+    @State private var mostRecentlyCompletedLessonID: String?
+    @State private var hasScrolledToContinue = false
 
     /// Ordered CEFR bands -- mirrors web's `src/data/levels.ts` LEVELS
     /// exactly (same ids, same order, same names) so iOS and web group
@@ -61,8 +74,26 @@ struct LessonBrowserView: View {
         contentStore.bundle(for: course).units.filter { $0.level == selectedLevel }
     }
 
+    /// TestFlight feedback (2026-09-29): "there should be a sign that a
+    /// user can know which unit was she studying ... right now endless
+    /// scrolling." The lesson right after the most recently completed one,
+    /// in this band's own flattened order -- the natural "continue where
+    /// you left off" target. Nil (no scroll) when nothing's loaded yet,
+    /// the last-completed lesson isn't in this band (it was completed at
+    /// a different CEFR level than the one currently showing), or every
+    /// lesson in this band is already done.
+    private var continueLessonID: String? {
+        let flattened = unitsForSelectedLevel.flatMap(\.lessons)
+        guard let mostRecentlyCompletedLessonID,
+              let idx = flattened.firstIndex(where: { $0.id == mostRecentlyCompletedLessonID }) else {
+            return nil
+        }
+        return flattened[(idx + 1)...].first(where: { !completedLessonIDs.contains($0.id) })?.id
+    }
+
     var body: some View {
         NavigationStack {
+            ScrollViewReader { scrollProxy in
             List {
                 StatusHeaderView(progress: syncQueueStore.lastKnownProgress())
                     .listRowInsets(EdgeInsets())
@@ -121,7 +152,18 @@ struct LessonBrowserView: View {
                             AlphonsoRowCard(
                                 title: lesson.title,
                                 subtitle: lesson.subtitle,
-                                accent: index == 0 ? AlphonsoColor.ember : AlphonsoColor.moss
+                                // TestFlight feedback (2026-09-29): this
+                                // dot previously never reflected real
+                                // completion -- it was `index == 0`, i.e.
+                                // "is this the unit's first lesson,"
+                                // completely unconditionally. `.hairline`
+                                // is this design system's own documented
+                                // "locked/dimmed" accent (AlphonsoComponents
+                                // .swift); reused here for "done" as the
+                                // same "no longer the active target" idea.
+                                accent: completedLessonIDs.contains(lesson.id)
+                                    ? AlphonsoColor.hairline
+                                    : (index == 0 ? AlphonsoColor.ember : AlphonsoColor.moss)
                             )
                         }
                         // Lazy List rows already fire onAppear as they
@@ -185,6 +227,16 @@ struct LessonBrowserView: View {
                     syncQueueStore: syncQueueStore
                 )
             }
+            // Fires once completion data has loaded and resolved a real
+            // target -- guarded so switching CEFR bands by hand afterward
+            // doesn't keep yanking the list back to "continue" underneath
+            // the user.
+            .onChange(of: continueLessonID) { _, newValue in
+                guard !hasScrolledToContinue, let newValue else { return }
+                hasScrolledToContinue = true
+                withAnimation { scrollProxy.scrollTo(newValue, anchor: .center) }
+            }
+            }
         }
         .tint(AlphonsoColor.moss)
     }
@@ -201,6 +253,12 @@ struct LessonBrowserView: View {
         if let level = try? await client.fetchCefrLevel(course: course.code), !level.isEmpty {
             selectedLevel = level
         }
+        // Most-recent-first: element 0 is "the last lesson completed,"
+        // which is exactly what continueLessonID needs to find where to
+        // scroll to next.
+        let ids = (try? await client.fetchCompletedLessonIds(course: course.code)) ?? []
+        completedLessonIDs = Set(ids)
+        mostRecentlyCompletedLessonID = ids.first
     }
 
     /// Fire-and-forget persist, mirroring web's `pick()`: the local band

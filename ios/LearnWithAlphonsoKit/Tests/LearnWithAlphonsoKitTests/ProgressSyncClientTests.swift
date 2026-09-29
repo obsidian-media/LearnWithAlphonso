@@ -729,6 +729,34 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertNil(level)
     }
 
+    // MARK: - fetchCompletedLessonIds (2026-09-29 TestFlight feedback)
+
+    func testFetchCompletedLessonIdsReturnsIdsOrderedMostRecentFirst() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [
+                ["lesson_id": "u1l2"], ["lesson_id": "u1l1"],
+            ])
+        }
+
+        let ids = try await client.fetchCompletedLessonIds(course: "en")
+
+        XCTAssertEqual(ids, ["u1l2", "u1l1"])
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertTrue(request.url!.absoluteString.contains("/rest/v1/lesson_completions"))
+        XCTAssertTrue(request.url!.query!.contains("language=eq.en"))
+        XCTAssertTrue(request.url!.query!.contains("order=completed_at.desc"))
+    }
+
+    func testFetchCompletedLessonIdsReturnsEmptyWhenNoneCompletedYet() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [] as [[String: Any]])
+        }
+        let ids = try await client.fetchCompletedLessonIds(course: "en")
+        XCTAssertEqual(ids, [])
+    }
+
     // MARK: - fetchPlacementTakenAt (iOS placement exam)
 
     func testFetchPlacementTakenAtReturnsTheTimestamp() async throws {

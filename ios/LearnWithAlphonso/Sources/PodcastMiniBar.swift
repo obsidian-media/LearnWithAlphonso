@@ -16,6 +16,11 @@ import LearnWithAlphonsoKit
 struct PodcastMiniBar: View {
     let player: PodcastAudioPlayer
     let session: Session
+    /// TestFlight feedback (2026-09-29): needed only to resolve a
+    /// downloaded copy's local URL for the "Next" button -- see
+    /// PodcastAudioPlayer's own doc comment on why the player itself
+    /// stays ignorant of the download manager.
+    let downloads: PodcastDownloadManager
 
     @State private var showTranscript = false
     @State private var transcript: String?
@@ -45,6 +50,22 @@ struct PodcastMiniBar: View {
                         .background(Circle().fill(AlphonsoColor.moss))
                 }
                 .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
+
+                // TestFlight feedback (2026-09-29): "when a user finishes a
+                // listen, there is no way to continue to the next lesson."
+                // Hidden entirely (not disabled) when there's nothing next,
+                // matching this bar's own pattern of disappearing rather
+                // than showing an inert control.
+                if let next = player.nextEpisode {
+                    Button {
+                        player.play(next, localURL: downloads.localURL(episodeID: next.id), queue: player.queue)
+                        downloads.markPlayed(episodeID: next.id)
+                    } label: {
+                        Image(systemName: "forward.end.fill")
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                    }
+                    .accessibilityLabel("Next episode")
+                }
 
                 // The accessibility affordance, always present rather than
                 // hidden when an episode has no transcript: hiding it would
@@ -194,9 +215,9 @@ extension View {
     /// so this was not run locally, and no automated check can see layout.
     /// Re-run device check #12 before trusting this comment any further
     /// than the last one.
-    func podcastMiniBar(player: PodcastAudioPlayer, session: Session) -> some View {
+    func podcastMiniBar(player: PodcastAudioPlayer, session: Session, downloads: PodcastDownloadManager) -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) {
-            PodcastMiniBar(player: player, session: session)
+            PodcastMiniBar(player: player, session: session, downloads: downloads)
         }
     }
 }

@@ -49,6 +49,69 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
         let team = try await client.getMyTeam()
         XCTAssertEqual(team?.teamID, "t1")
         XCTAssertEqual(team?.thisWeekXP, 420)
+        // is_owner absent from the fixture -- must default to false, not throw.
+        XCTAssertEqual(team?.isOwner, false)
+    }
+
+    // TestFlight feedback (2026-09-29): "Does the team owner have any
+    // authority?" -- is_owner lets the client show owner-only controls.
+    func testGetMyTeamDecodesIsOwnerTrue() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [[
+                "team_id": "t1", "name": "Swift Falcons", "join_code": "ABC123",
+                "joined_at": "2026-09-01T00:00:00Z", "switch_locked_until": "2026-09-08T00:00:00Z",
+                "this_week_xp": 420, "is_owner": true,
+            ]])
+        }
+        let team = try await client.getMyTeam()
+        XCTAssertEqual(team?.isOwner, true)
+    }
+
+    // MARK: - Team members / kick
+
+    func testGetTeamMembersDecodesRows() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [
+                [
+                    "user_id": "u1", "display_name": "Ada", "avatar_seed": "seed-a",
+                    "joined_at": "2026-09-01T00:00:00Z", "is_owner": true,
+                ],
+                [
+                    "user_id": "u2", "display_name": "Grace", "avatar_seed": "seed-g",
+                    "joined_at": "2026-09-05T00:00:00Z", "is_owner": false,
+                ],
+            ])
+        }
+        let members = try await client.getTeamMembers()
+        XCTAssertEqual(members.count, 2)
+        XCTAssertEqual(members[0].displayName, "Ada")
+        XCTAssertEqual(members[0].isOwner, true)
+        XCTAssertEqual(members[1].displayName, "Grace")
+        XCTAssertEqual(members[1].isOwner, false)
+    }
+
+    func testKickTeamMemberPostsTheUserIdAndReturnsTheResult() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "reason": NSNull()]])
+        }
+        let result = try await client.kickTeamMember(userID: "u2")
+        XCTAssertTrue(result.ok)
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/kick_team_member"))
+        let body = try XCTUnwrap(request.httpBody)
+        let object = try JSONSerialization.jsonObject(with: body) as? [String: String]
+        XCTAssertEqual(object?["_user_id"], "u2")
+    }
+
+    func testKickTeamMemberSurfacesAFailureReason() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "reason": "not-team-owner"]])
+        }
+        let result = try await client.kickTeamMember(userID: "u2")
+        XCTAssertFalse(result.ok)
+        XCTAssertEqual(result.reason, "not-team-owner")
     }
 
     func testJoinTeamByCodePostsTheCodeAndReturnsTheResult() async throws {

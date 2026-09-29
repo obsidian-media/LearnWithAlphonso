@@ -25,6 +25,26 @@ final class PodcastAudioPlayer {
     private(set) var elapsedSeconds: Double = 0
     private(set) var failed = false
 
+    /// TestFlight feedback (2026-09-29): "when a user finishes a listen,
+    /// there is no way to continue to the next lesson -- there is no
+    /// NEXT BUTTON." The ordered list `play(_:localURL:queue:)` was most
+    /// recently called with -- whatever list the episode was tapped from
+    /// (a folder, search results, downloads). Deliberately just data, no
+    /// download-manager awareness here -- see this type's own doc comment
+    /// on why that stays a UI-layer concern; PodcastMiniBar resolves the
+    /// next episode's local URL and calls play() again itself.
+    private(set) var queue: [PodcastEpisode] = []
+
+    /// The episode right after the current one in `queue`, if any. Nil
+    /// hides the "Next" control entirely rather than showing a disabled
+    /// one -- consistent with how the rest of this bar behaves (e.g. the
+    /// whole bar disappears when there's no episode at all).
+    var nextEpisode: PodcastEpisode? {
+        guard let episode, let idx = queue.firstIndex(where: { $0.id == episode.id }),
+              queue.indices.contains(idx + 1) else { return nil }
+        return queue[idx + 1]
+    }
+
     /// Set once a save has been rejected for auth. Further saves are
     /// pointless until the app gets a fresh token, and pretending they
     /// landed is how resume silently stops working.
@@ -68,7 +88,12 @@ final class PodcastAudioPlayer {
     /// reports, which for a downloaded episode is the local file. That
     /// stays correct by construction: the position is applied to whichever
     /// asset is actually playing.
-    func play(_ episode: PodcastEpisode, localURL: URL? = nil) {
+    func play(_ episode: PodcastEpisode, localURL: URL? = nil, queue: [PodcastEpisode] = []) {
+        // Only overwrite when a real queue was actually passed -- callers
+        // that don't know about ordering (or a resume-from-notification
+        // path) keep whatever queue was already set instead of wiping it
+        // to a single-element list.
+        if !queue.isEmpty { self.queue = queue }
         if self.episode?.id != episode.id {
             teardownObserver()
             self.episode = episode

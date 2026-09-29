@@ -992,6 +992,29 @@ public final class ProgressSyncClient: Sendable {
         )
     }
 
+    /// TestFlight feedback (2026-09-29): "there is a circle with color
+    /// beside each lesson but they need to change color as the user
+    /// successfully completes that lesson" -- LessonBrowserView's row
+    /// accent had never been wired to real completion data at all
+    /// (`index == 0 ? ember : moss`, unconditionally). Ordered by
+    /// `completed_at` descending so the caller can also use the first
+    /// element as "the most recently completed lesson" for a
+    /// scroll-to-where-you-left-off affordance, without a second request.
+    public func fetchCompletedLessonIds(course: String) async throws -> [String] {
+        var request = restRequest(path: "lesson_completions", query: [
+            URLQueryItem(name: "select", value: "lesson_id"),
+            URLQueryItem(name: "language", value: "eq.\(course)"),
+            URLQueryItem(name: "order", value: "completed_at.desc"),
+        ])
+        request.httpMethod = "GET"
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.compactMap { $0["lesson_id"] as? String }
+    }
+
     public func fetchCefrLevel(course: String) async throws -> String? {
         var request = restRequest(path: "language_progress", query: [
             URLQueryItem(name: "select", value: "cefr_level"),

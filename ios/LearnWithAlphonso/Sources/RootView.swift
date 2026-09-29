@@ -77,7 +77,7 @@ struct RootView: View {
                     // check #12). See View.podcastMiniBar.
                     TabView {
                         LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
                         ListenView(
@@ -86,16 +86,16 @@ struct RootView: View {
                             player: podcastPlayer,
                             downloads: podcastDownloadManager
                         )
-                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Listen", systemImage: "headphones") }
                         ConversationView(contentStore: contentStore, session: session)
-                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
                         HectorView(session: session, entitlementStore: entitlementStore)
-                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Hector", systemImage: "sparkles") }
                         ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
-                            .podcastMiniBar(player: podcastPlayer, session: session)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                     }
                     // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
