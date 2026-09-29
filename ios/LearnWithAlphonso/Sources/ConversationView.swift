@@ -168,10 +168,35 @@ private struct ConversationSessionView: View {
             case .transcribing, .thinking, .speaking:
                 ProgressView(label(for: phase)).tint(AlphonsoColor.moss)
             case .idle:
-                Circle()
-                    .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.moss)
+                // Found live 2026-09-29: the mic
+                // button used to be one Circle whose OWN .fill() changed
+                // with `isRecording`, with the gesture attached directly to
+                // it -- a live report ("full sentence in, one word out",
+                // "many tries to record even one word") plus real
+                // press/capture timing data (debugTiming, added chasing
+                // the same symptom) proved recordings were being cut short
+                // almost immediately regardless of real hold duration:
+                // `press` (the actual touch-down-to-up span) was
+                // consistently under 0.3s, often as low as 0.05s, while
+                // `capture` sat right at the 0.4s safety floor -- meaning
+                // that floor was the ONLY reason any audio existed at all.
+                // Root cause: a view mutating its OWN appearance (the fill
+                // color) in response to state a gesture ATTACHED TO THAT
+                // SAME VIEW just set can reset/invalidate the in-flight
+                // gesture recognizer, firing a false release almost
+                // instantly -- a known SwiftUI fragility. Fixed by moving
+                // the gesture to a stable outer container whose own
+                // appearance never changes; the color-changing Circle is
+                // now purely visual, hit-testing disabled, nested inside.
+                Color.clear
                     .frame(width: 72, height: 72)
-                    .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
+                    .contentShape(Circle())
+                    .overlay(
+                        Circle()
+                            .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.moss)
+                            .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
+                            .allowsHitTesting(false)
+                    )
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in

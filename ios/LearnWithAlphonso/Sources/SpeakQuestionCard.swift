@@ -112,13 +112,27 @@ struct SpeakQuestionCard: View {
                 // Hold to talk, release to send -- the same gesture the
                 // conversation and campaign screens already use, so speaking
                 // works the same way everywhere in the app.
-                Circle()
-                    .fill(phase == .recording ? AlphonsoColor.ember : AlphonsoColor.moss)
+                //
+                // See ConversationView's identical mic button for why this
+                // is a stable outer container hosting the gesture, with a
+                // purely-visual color-changing Circle nested inside (found
+                // live 2026-09-29, via real press/capture timing data): a
+                // view mutating its OWN appearance in response to state a
+                // gesture attached to it just set can reset the in-flight
+                // gesture recognizer, firing a false release almost
+                // instantly regardless of real hold duration.
+                Color.clear
                     .frame(width: 72, height: 72)
+                    .contentShape(Circle())
                     .overlay(
-                        Image(systemName: "mic.fill")
-                            .foregroundStyle(AlphonsoColor.onPrimary)
-                            .font(.title2)
+                        Circle()
+                            .fill(phase == .recording ? AlphonsoColor.ember : AlphonsoColor.moss)
+                            .overlay(
+                                Image(systemName: "mic.fill")
+                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .font(.title2)
+                            )
+                            .allowsHitTesting(false)
                     )
                     .accessibilityLabel("Hold to say the phrase")
                     // VoiceOver normally intercepts touches on a control to

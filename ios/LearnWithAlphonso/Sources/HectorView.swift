@@ -156,10 +156,23 @@ private struct HectorConversationView: View {
             case .transcribing, .thinking, .speaking:
                 ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
             case .idle:
-                Circle()
-                    .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.ember)
+                // See ConversationView's identical mic button for why this
+                // is a stable outer container hosting the gesture, with a
+                // purely-visual color-changing Circle nested inside
+                // (found live 2026-09-29, via real press/capture timing
+                // data): a view mutating its OWN appearance in response to
+                // state a gesture attached to it just set can reset the
+                // in-flight gesture recognizer, firing a false release
+                // almost instantly regardless of real hold duration.
+                Color.clear
                     .frame(width: 72, height: 72)
-                    .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
+                    .contentShape(Circle())
+                    .overlay(
+                        Circle()
+                            .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.ember)
+                            .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
+                            .allowsHitTesting(false)
+                    )
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { _ in
