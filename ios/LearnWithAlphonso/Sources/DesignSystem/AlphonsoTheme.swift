@@ -294,12 +294,15 @@ public final class AlphonsoThemeManager {
 
     public private(set) var themeID: AlphonsoThemeID
 
-    /// The device's raw system appearance, pushed in by `RootView` (the one
-    /// place in the app with `@Environment(\.colorScheme)` access before
-    /// this app's own `.preferredColorScheme` override applies -- see
-    /// `RootView.body`'s `.onChange(of: systemColorScheme, initial: true)`).
-    /// Defaults to `.light` before that first push on a fresh launch, the
-    /// same "best guess until real data arrives" posture as every other
+    /// The device's raw system appearance, pushed in by `RootView` -- see
+    /// `RootView.updateRealSystemColorScheme()`, which reads
+    /// `UIScreen.main.traitCollection` directly rather than
+    /// `@Environment(\.colorScheme)` (found live 2026-09-28: that
+    /// environment read, combined with this app's own
+    /// `.preferredColorScheme` override, formed a feedback loop -- see
+    /// that method's doc comment for the full story). Defaults to `.light`
+    /// before that first push on a fresh launch, the same "best guess
+    /// until real data arrives" posture as every other
     /// best-effort default in this manager.
     public private(set) var systemColorScheme: ColorScheme = .light
 
@@ -355,11 +358,14 @@ public final class AlphonsoThemeManager {
         setTheme(id)
     }
 
-    /// Called by `RootView` whenever the device's raw system appearance
-    /// changes (including the very first render, via `initial: true`) --
-    /// see `systemColorScheme`'s own doc comment for why this can't just
-    /// read `@Environment(\.colorScheme)` itself (this is a plain
-    /// `@Observable` class, not a `View`).
+    /// Called by `RootView` whenever it wants to re-check the device's raw
+    /// system appearance -- on launch and on returning to the foreground,
+    /// via `RootView.updateRealSystemColorScheme()` (which reads
+    /// `UIScreen.main.traitCollection` directly, NOT
+    /// `@Environment(\.colorScheme)`; see that method's own doc comment
+    /// for why, found live 2026-09-28 as build 38's launch hang). This is
+    /// a plain `@Observable` class, not a `View`, so it can't read the
+    /// SwiftUI environment itself either way.
     ///
     /// **The guard below is load-bearing, not a style nit.** Found live
     /// 2026-09-28 as the cause of a real-device launch hang (watchdog

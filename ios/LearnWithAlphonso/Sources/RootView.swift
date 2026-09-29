@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import LearnWithAlphonsoKit
 
 struct RootView: View {
@@ -12,7 +13,6 @@ struct RootView: View {
     let podcastDownloadManager: PodcastDownloadManager
 
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.colorScheme) private var systemColorScheme
 
     /// The one podcast player, owned here rather than in any view that can
     /// come and go. Being a reference type above the view tree is what
@@ -136,6 +136,12 @@ struct RootView: View {
                     }
                     .onChange(of: scenePhase) { _, newPhase in
                         if newPhase == .active {
+                            // TEMPORARY (2026-09-28): re-checking the real
+                            // system appearance here too, not just on
+                            // launch -- see updateRealSystemColorScheme's
+                            // doc comment for why this replaced
+                            // @Environment(\.colorScheme) entirely.
+                            updateRealSystemColorScheme()
                             Task { await triggerSync() }
                         } else if newPhase == .background {
                             // Flush the listening position before the system can
@@ -152,17 +158,42 @@ struct RootView: View {
             }
         }
         .task { await session.restoreSession() }
-        // initial: true fires this once immediately (not just on the first
-        // actual *change*), so the manager has a real system value before
-        // the very first `.preferredColorScheme` below is ever read --
-        // without it, a fresh launch would render one frame against the
-        // `.light` fallback default even on a device already in Dark Mode.
-        .onChange(of: systemColorScheme, initial: true) { _, newValue in
-            LaunchBreadcrumbs.log("onChange(systemColorScheme) firing, newValue=\(newValue)")
-            AlphonsoThemeManager.shared.updateSystemColorScheme(newValue)
-            LaunchBreadcrumbs.log("onChange(systemColorScheme) done")
+        .onAppear {
+            // TEMPORARY (2026-09-28): see updateRealSystemColorScheme's
+            // doc comment. Runs once, immediately, so the manager has a
+            // real system value before the very first `.preferredColorScheme`
+            // below is ever read -- without it, a fresh launch would render
+            // one frame against the `.light` fallback default even on a
+            // device already in Dark Mode.
+            updateRealSystemColorScheme()
         }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
+    }
+
+    /// Build 38's launch hang (2026-09-28): `@Environment(\.colorScheme)`
+    /// read here, combined with `.preferredColorScheme` applied to this
+    /// same view's content, formed a feedback loop -- `.preferredColorScheme`
+    /// can write back into this window's own trait collection, which
+    /// `@Environment(\.colorScheme)` then re-reports as a "new" system
+    /// change on the very next render, forever (confirmed live via
+    /// LaunchBreadcrumbs.swift: `systemColorScheme` alternated dark/light
+    /// on literally every render, from the first frame, thousands of times
+    /// a second -- not the build-29 loop again, that guard is still intact
+    /// and unrelated). `UIScreen.main.traitCollection` is never affected by
+    /// this app's own `overrideUserInterfaceStyle`/`.preferredColorScheme`
+    /// (those apply to windows/view controllers, never to `UIScreen`
+    /// itself), so reading it imperatively at controlled points -- launch
+    /// and returning to foreground -- detects the real system appearance
+    /// with no reactive SwiftUI environment binding to feed back into.
+    /// Trade-off: a Dark Mode toggle via Control Center while this app is
+    /// already in the foreground won't be picked up live anymore, only on
+    /// next foreground -- a real, acceptable regression next to the app
+    /// not launching at all.
+    private func updateRealSystemColorScheme() {
+        let style = UIScreen.main.traitCollection.userInterfaceStyle
+        let scheme: ColorScheme = style == .dark ? .dark : .light
+        LaunchBreadcrumbs.log("updateRealSystemColorScheme, uiStyle=\(style.rawValue), resolved=\(scheme)")
+        AlphonsoThemeManager.shared.updateSystemColorScheme(scheme)
     }
 
     /// Drains the offline sync queue (docs/v2-kickoffs/01-offline-first.md)
