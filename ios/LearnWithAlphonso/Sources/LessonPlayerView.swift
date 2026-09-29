@@ -12,13 +12,35 @@ import LearnWithAlphonsoKit
 /// real answer key (§0.1-d #6; see complete-lesson/index.ts's
 /// deriveAnswerCorrectness), not merely re-checking question-id membership.
 struct LessonPlayerView: View {
-    let lesson: Lesson
+    // TestFlight feedback (2026-09-29): "there is no way to continue to
+    // the next lesson without going back to the main menu." `@State`
+    // rather than `let` so `continueToNextLesson()` can transform this
+    // same view instance into the next lesson in place, instead of
+    // needing a bindable NavigationPath threaded down from
+    // LessonBrowserView just to push a new stack entry per lesson (which
+    // would also make the stack grow unboundedly as a learner keeps
+    // going). See the custom `init` below -- adding one means Swift no
+    // longer synthesizes the memberwise one.
+    @State private var lesson: Lesson
     let course: Course
     let session: Session
     let notificationScheduler: NotificationScheduler
     let contentStore: ContentStore
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+
+    init(
+        lesson: Lesson, course: Course, session: Session, notificationScheduler: NotificationScheduler,
+        contentStore: ContentStore, networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore
+    ) {
+        _lesson = State(initialValue: lesson)
+        self.course = course
+        self.session = session
+        self.notificationScheduler = notificationScheduler
+        self.contentStore = contentStore
+        self.networkMonitor = networkMonitor
+        self.syncQueueStore = syncQueueStore
+    }
 
     private enum Phase { case overview, vocab, quiz }
 
@@ -48,10 +70,13 @@ struct LessonPlayerView: View {
     // affects correctCount/answers/hearts/XP.
     @State private var pendingReinforcement: Question?
     @State private var activeReinforcement: Question?
-    // Fresh per-mount seed for reinforcement-pick determinism across a
+    // Fresh per-attempt seed for reinforcement-pick determinism across a
     // single attempt without repeating the exact same pick on identical
-    // misses -- mirrors lesson.$id.tsx's attemptSeed.
-    private let attemptSeed = UUID().uuidString
+    // misses -- mirrors lesson.$id.tsx's attemptSeed. `@State` (not
+    // `let`) and regenerated in continueToNextLesson() so "fresh per
+    // attempt" still holds when this same view instance moves on to the
+    // next lesson rather than being freshly created.
+    @State private var attemptSeed = UUID().uuidString
 
     private var total: Int { lesson.questions.count }
     private var vocab: [VocabItem] { deriveVocab(lesson: lesson, images: contentStore.vocabImages) }
@@ -73,10 +98,62 @@ struct LessonPlayerView: View {
             .flatMap { $0.lessons.flatMap(\.questions) }
     }
 
+    /// TestFlight feedback (2026-09-29): the next lesson to continue to,
+    /// within the current unit first, then the first lesson of the next
+    /// unit at the same CEFR band -- crossing unit boundaries, not just
+    /// "next in this unit," so finishing a unit's last lesson still
+    /// offers a real "continue" rather than silently stopping there. Nil
+    /// (no button shown) at the very end of a CEFR band -- deliberately
+    /// not rolling over into the next band, which is a level-up decision
+    /// the learner should make explicitly via the band picker, not have
+    /// made for them by tapping "Continue" one too many times.
+    private var nextLessonID: String? {
+        guard let unit else { return nil }
+        if let idx = unit.lessons.firstIndex(where: { $0.id == lesson.id }),
+           unit.lessons.indices.contains(idx + 1) {
+            return unit.lessons[idx + 1].id
+        }
+        let sameLevelUnits = contentStore.bundle(for: course).units.filter { $0.level == unit.level }
+        guard let unitIdx = sameLevelUnits.firstIndex(where: { $0.id == unit.id }),
+              sameLevelUnits.indices.contains(unitIdx + 1) else { return nil }
+        return sameLevelUnits[unitIdx + 1].lessons.first?.id
+    }
+
+    /// Transforms this same view instance into playing `nextLessonID` --
+    /// resets every piece of per-lesson state back to a fresh start, same
+    /// as if the learner had navigated back and tapped the next lesson by
+    /// hand. A no-op if `nextLessonID` doesn't resolve to a real lesson
+    /// (contentStore is the bundled, always-consistent source of truth,
+    /// so this should never actually happen -- guarding anyway rather
+    /// than force-unwrapping into a crash).
+    private func continueToNextLesson() {
+        guard let nextLessonID, let found = contentStore.findLesson(id: nextLessonID, course: course) else { return }
+        lesson = found.lesson
+        phase = .overview
+        idx = 0
+        correctCount = 0
+        answers = []
+        picked = nil
+        translationVerdict = nil
+        isCheckingTranslation = false
+        checked = false
+        isSubmitting = false
+        result = nil
+        isLeaguePromotion = false
+        queuedOffline = nil
+        errorMessage = nil
+        pendingReinforcement = nil
+        activeReinforcement = nil
+    }
+
     var body: some View {
         Group {
             if let result {
-                FinishView(result: result, correct: correctCount, total: total, contentStore: contentStore, isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session)
+                FinishView(
+                    result: result, correct: correctCount, total: total, contentStore: contentStore,
+                    isLeaguePromotion: isLeaguePromotion, lessonID: lesson.id, course: course, session: session,
+                    onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil
+                )
             } else if let queuedOffline {
                 OfflineFinishView(pending: queuedOffline, correct: correctCount, total: total)
             } else if let errorMessage {
@@ -591,35 +668,50 @@ private struct OverviewScreen: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-            Text(lesson.subtitle.uppercased())
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
-            Text(lesson.title)
-                .font(AlphonsoFont.display(28, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
+        // TestFlight feedback (2026-09-29, with a screenshot): "the button
+        // to start a lesson will be buried underneath [the podcast mini-
+        // bar]." This screen is pushed via LessonBrowserView's
+        // NavigationStack, and the mini-bar's safeAreaInset is reserved
+        // by the tab ROOT (see PodcastMiniBar.swift's own "Applied to
+        // each tab's ROOT CONTENT" comment, which already flagged itself
+        // as unverified on hardware) -- it does not extend to a pushed
+        // destination's own layout, so a Spacer()-pinned-to-bottom button
+        // here had nothing stopping it from landing exactly where the
+        // mini-bar sits. Fixed by making the button part of the normal
+        // scrolling content instead of pinned to the absolute bottom --
+        // reachable by construction regardless of what other chrome is on
+        // screen, rather than depending on safe-area propagation across a
+        // navigation push boundary.
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                Text(lesson.subtitle.uppercased())
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
+                Text(lesson.title)
+                    .font(AlphonsoFont.display(28, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
 
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
-                overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
-                if !previewImages.isEmpty {
-                    HStack(spacing: 8) {
-                        ForEach(previewImages, id: \.url) { image in
-                            VocabImageView(image: image, thumbnailSize: 44)
+                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
+                    overviewStep(number: 1, label: "Vocabulary", detail: "\(wordCount) word\(wordCount == 1 ? "" : "s") with examples")
+                    if !previewImages.isEmpty {
+                        HStack(spacing: 8) {
+                            ForEach(previewImages, id: \.url) { image in
+                                VocabImageView(image: image, thumbnailSize: 44)
+                            }
                         }
+                        .padding(.leading, 40)
                     }
-                    .padding(.leading, 40)
+                    overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
+                    overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
                 }
-                overviewStep(number: 2, label: "Practice", detail: "\(questionCount) questions")
-                overviewStep(number: 3, label: "Review", detail: "Anything you miss comes back later")
+
+                Button("Begin lesson", action: onStart)
+                    .buttonStyle(.alphonsoPrimary)
+                    .padding(.top, AlphonsoSpacing.sm)
             }
-
-            Spacer()
-
-            Button("Begin lesson", action: onStart)
-                .buttonStyle(.alphonsoPrimary)
+            .padding()
         }
-        .padding()
         .background(AlphonsoColor.surface)
     }
 
@@ -757,6 +849,11 @@ private struct FinishView: View {
     let lessonID: String
     let course: Course
     let session: Session
+    /// TestFlight feedback (2026-09-29): "there is no way to continue to
+    /// the next lesson ... without going back to the main menu." Nil (no
+    /// button) at the end of a CEFR band -- see LessonPlayerView's
+    /// nextLessonID doc comment for why that's deliberate.
+    let onContinueToNextLesson: (() -> Void)?
 
     @State private var showPromotionOverlay = false
 
@@ -799,6 +896,12 @@ private struct FinishView: View {
                         }
                     }
                     .padding(.top, 8)
+                }
+
+                if let onContinueToNextLesson {
+                    Button("Continue to next lesson", action: onContinueToNextLesson)
+                        .buttonStyle(.alphonsoPrimary)
+                        .padding(.top, 4)
                 }
 
                 GeneratedPracticeSection(lessonID: lessonID, course: course, session: session)

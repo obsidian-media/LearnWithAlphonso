@@ -53,6 +53,21 @@ export function practicePrompt(
  * throws -- any upstream/parse failure just yields an empty array,
  * matching analyze-weaknesses' fail-quiet design (this is a nice-to-have
  * layered on top of the real lesson, not a trust boundary itself).
+ *
+ * TestFlight feedback (2026-09-29): "after 30 seconds ... error, something
+ * went wrong." Real Vercel logs for the actual attempts show the route
+ * returning 200 both times checked -- this function genuinely never
+ * threw, so the client's error came from somewhere upstream of the
+ * response ever arriving intact (most likely just this call taking long
+ * enough to collide with the client's own request timeout or a network
+ * hiccup, not a server bug). Two real, defensible improvements
+ * regardless of the exact cause: `max_tokens` was never bounded (an
+ * unbounded completion is unbounded latency risk for a JSON array that
+ * should never need more than a few hundred tokens), and the fetch
+ * itself had no timeout, so a truly stuck upstream call could run for
+ * the whole function's execution budget instead of failing fast.
+ * `durationMs` is logged on every outcome (not just failures) so a real
+ * recurrence gives an exact number instead of another guess.
  */
 export async function generatePracticeQuestions(params: {
   topic: string;
@@ -61,6 +76,7 @@ export async function generatePracticeQuestions(params: {
   nvidiaModel: string;
 }): Promise<GeneratedPracticeQuestion[]> {
   if (params.sampleQuestions.length === 0) return [];
+  const startedAt = Date.now();
   try {
     const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
       method: "POST",
@@ -71,13 +87,25 @@ export async function generatePracticeQuestions(params: {
       body: JSON.stringify({
         model: params.nvidiaModel,
         messages: [{ role: "user", content: practicePrompt(params.topic, params.sampleQuestions) }],
+        max_tokens: 800,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
-    if (!resp.ok) return [];
+    if (!resp.ok) {
+      console.error(
+        `[generate-practice] NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
+      );
+      return [];
+    }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     const content = data.choices?.[0]?.message?.content ?? "";
-    return parsePracticeQuestions(content);
-  } catch {
+    const questions = parsePracticeQuestions(content);
+    console.log(`[generate-practice] ${questions.length} questions in ${Date.now() - startedAt}ms`);
+    return questions;
+  } catch (err) {
+    console.error(
+      `[generate-practice] failed after ${Date.now() - startedAt}ms: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return [];
   }
 }

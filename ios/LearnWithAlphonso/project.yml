@@ -157,7 +157,20 @@ targets:
         # none before); a "Next episode" button in the podcast mini-bar;
         # and a client-side timeout + clearer loading text on "Generate
         # more practice."
-        CURRENT_PROJECT_VERSION: "44"
+        # 45: more real TestFlight feedback from build 44. (1) A real
+        # "Continue to next lesson" flow (LessonPlayerView now holds
+        # `lesson` as @State and transforms itself in place, rather than
+        # threading a bindable NavigationPath down from LessonBrowserView
+        # just to push one stack entry per lesson). (2) A screenshotted
+        # bug: a lesson's bottom-pinned primary button (Begin/Check/
+        # Continue) could land exactly where the podcast mini-bar sits --
+        # LessonPlayerView is pushed via NavigationStack, so the mini-bar
+        # safeAreaInset reserved by the tab ROOT (LessonBrowserView)
+        # doesn't extend to it; applied again directly to the pushed
+        # destination, which fixes every phase (overview/vocab/quiz/
+        # finish) at once. OverviewScreen additionally moved off a
+        # Spacer()-pinned button onto a ScrollView, as defense in depth.
+        CURRENT_PROJECT_VERSION: "45"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -285,7 +298,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "44"
+        CURRENT_PROJECT_VERSION: "45"
         SKIP_INSTALL: true
       configs:
         Release:

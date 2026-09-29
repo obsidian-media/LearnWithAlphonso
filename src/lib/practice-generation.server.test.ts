@@ -98,4 +98,25 @@ describe("generatePracticeQuestions", () => {
     const result = await generatePracticeQuestions(params());
     expect(result).toEqual([]);
   });
+
+  // TestFlight feedback (2026-09-29): "after 30 seconds, error, something
+  // went wrong." Real Vercel logs showed this route always returning 200
+  // -- these two guard the fix that shipped for it: a bounded max_tokens
+  // (unbounded completion length is unbounded latency risk) and a real
+  // fetch timeout so a stuck upstream call fails fast instead of running
+  // out the clock silently.
+  it("caps the completion length with max_tokens", async () => {
+    await generatePracticeQuestions(params());
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.max_tokens).toBe(800);
+  });
+
+  it("returns an empty array (not a throw) when the request times out", async () => {
+    global.fetch = vi
+      .fn()
+      .mockRejectedValue(new DOMException("The operation timed out.", "TimeoutError"));
+    const result = await generatePracticeQuestions(params());
+    expect(result).toEqual([]);
+  });
 });

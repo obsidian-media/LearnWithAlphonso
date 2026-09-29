@@ -11,6 +11,17 @@ struct LessonBrowserView: View {
     let notificationScheduler: NotificationScheduler
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    /// TestFlight feedback (2026-09-29, with a screenshot): a lesson's
+    /// "Begin lesson"/"Check"/"Continue" button could land exactly where
+    /// the podcast mini-bar sits. `.podcastMiniBar()` on this view's own
+    /// root (RootView.swift) only reserves space for THIS view's own
+    /// content -- a NavigationStack's pushed destination (LessonPlayerView)
+    /// replaces that content rather than being nested inside its safe-area
+    /// context, so it needs the exact same reservation applied again,
+    /// directly to itself. Threaded through here only to reach that one
+    /// pushed screen, not used by this view's own body otherwise.
+    let podcastPlayer: PodcastAudioPlayer
+    let podcastDownloadManager: PodcastDownloadManager
 
     @State private var course: Course = .english
     @State private var showingSettings = false
@@ -211,6 +222,7 @@ struct LessonBrowserView: View {
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
                     LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+                        .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                 } else {
                     Text("Lesson not found")
                 }
