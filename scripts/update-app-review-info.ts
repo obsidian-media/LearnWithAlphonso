@@ -182,7 +182,9 @@ async function main() {
     data: { type: "appStoreVersions", id: version.id, attributes: { copyright: COPYRIGHT } },
   });
   const actualCopyright = (updatedVersion.data as AscResource).attributes?.copyright;
-  console.log(actualCopyright === COPYRIGHT ? "Copyright: OK" : `Copyright: MISMATCH (${actualCopyright})`);
+  console.log(
+    actualCopyright === COPYRIGHT ? "Copyright: OK" : `Copyright: MISMATCH (${actualCopyright})`,
+  );
 
   console.log(`\nFinding its App Review Information...`);
   const existing = await api(`/appStoreVersions/${version.id}/appStoreReviewDetail`);
