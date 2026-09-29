@@ -1,8 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { SCENARIOS } from "@/data/scenarios";
+import { CAMPAIGNS } from "@/data/campaigns";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+/**
+ * 2026-09-30 audit (Codex #4): despite this route's own comment below
+ * ("systemPrompt stays fully client-controlled by design"), that design
+ * only ever held for the two legitimate callers (converse_.$scenarioId.tsx,
+ * campaign_.$campaignId.tsx), which always send one of a fixed,
+ * developer-authored set of personas -- never real user input. Nothing
+ * enforced that server-side, so a caller bypassing the app UI (any valid
+ * session, direct HTTP) could set systemPrompt to anything at all, turning
+ * this quota-gated (60/day) but otherwise unrestricted route into a
+ * general-purpose LLM proxy funded by this app's own NVIDIA key, wholly
+ * unrelated to language learning. Whitelisting against the exact set of
+ * real personas closes that off with zero behavior change for either real
+ * client -- both already send one of these values verbatim (iOS bundles
+ * the identical JSON export of the same source, see CurriculumModels.swift).
+ */
+const VALID_SYSTEM_PROMPTS = new Set<string>([
+  ...SCENARIOS.map((s) => s.systemPrompt),
+  ...CAMPAIGNS.flatMap((c) => c.scenes.map((scene) => `${c.premise}\n\n${scene.systemPrompt}`)),
+]);
 
 const CEFR_DIFFICULTY_HINTS: Record<string, string> = {
   A1: "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",
@@ -40,14 +62,18 @@ export const Route = createFileRoute("/api/chat")({
         } catch {
           return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
+        // See VALID_SYSTEM_PROMPTS's own comment: an omitted systemPrompt
+        // is fine (some callers send none), but a present one must be one
+        // of the real personas -- not arbitrary client text.
+        if (body.systemPrompt !== undefined && !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
+          return Response.json({ error: "Unknown systemPrompt" }, { status: 400 });
+        }
         // Found alongside the same bug in Hector's own message builder
         // (2026-09-28 audit): a client-supplied entry here could claim
         // role: "system" and land in the array the actual system message
         // (below, from body.systemPrompt) gets prepended to -- a second,
         // client-controlled system message the model would see, not just
-        // the one this route intends to send. body.systemPrompt itself
-        // stays fully client-controlled by design (each scenario's own
-        // persona), only this array's own role is restricted.
+        // the one this route intends to send.
         const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
           (m): m is ChatMessage =>
             !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",

@@ -3,10 +3,9 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
-import { acceptFriendInvite, getInviterProfile } from "../../lib/friends.functions";
-import { getMyProfile } from "../../lib/leaderboard.functions";
+import { acceptFriendInvite, getFriendInvitePreview } from "../../lib/friends.functions";
 
-export const Route = createFileRoute("/_authenticated/invite/$inviterId")({
+export const Route = createFileRoute("/_authenticated/invite/$code")({
   component: InvitePage,
   head: () => ({
     meta: [
@@ -18,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/invite/$inviterId")({
 });
 
 function InvitePage() {
-  const { inviterId } = useParams({ from: "/_authenticated/invite/$inviterId" });
+  const { code } = useParams({ from: "/_authenticated/invite/$code" });
   const navigate = useNavigate();
-  const loadInviter = useServerFn(getInviterProfile);
+  const loadPreview = useServerFn(getFriendInvitePreview);
   const accept = useServerFn(acceptFriendInvite);
   const [inviterName, setInviterName] = useState<string | null>(null);
   const [state, setState] = useState<
@@ -29,28 +28,26 @@ function InvitePage() {
 
   useEffect(() => {
     let alive = true;
-    void Promise.all([loadInviter({ data: { inviterId } }), getMyProfile()]).then(
-      ([inviter, me]) => {
-        if (!alive) return;
-        if (me?.id === inviterId) {
-          setState("self");
-          return;
-        }
-        if (!inviter) {
-          setState("not-found");
-          return;
-        }
-        setInviterName(inviter.displayName ?? "This learner");
-        setState("confirm");
-      },
-    );
+    void loadPreview({ data: { code } }).then((preview) => {
+      if (!alive) return;
+      if (!preview) {
+        setState("not-found");
+        return;
+      }
+      if (preview.isSelf) {
+        setState("self");
+        return;
+      }
+      setInviterName(preview.displayName ?? "This learner");
+      setState("confirm");
+    });
     return () => {
       alive = false;
     };
-  }, [inviterId, loadInviter]);
+  }, [code, loadPreview]);
 
   async function confirmAccept() {
-    const res = await accept({ data: { inviterId } }).catch(() => ({
+    const res = await accept({ data: { code } }).catch(() => ({
       ok: false,
       message: "network error",
     }));

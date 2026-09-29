@@ -582,20 +582,49 @@ public final class ProgressSyncClient: Sendable {
         }
     }
 
-    /// Calls the `accept_friend_invite` SECURITY DEFINER RPC -- self-invite
-    /// and unknown-inviter are handled server-side (`ok: false` + a
-    /// message), not client-side validation. Not currently wired into any
+    /// Calls the `get_or_create_my_friend_code` SECURITY DEFINER RPC --
+    /// the caller's own opaque, stable, shareable invite code (see
+    /// accept_friend_invite's own doc comment below for why this
+    /// replaced sharing the caller's raw uuid). Generated on first call,
+    /// same code returned on every call after.
+    public func getMyFriendCode() async throws -> String? {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_or_create_my_friend_code"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [String: String]())
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return rows.first?["code"] as? String
+    }
+
+    /// Calls the `accept_friend_invite` SECURITY DEFINER RPC -- self-invite,
+    /// invalid-code and blocked-user are handled server-side (`ok: false` +
+    /// a message), not client-side validation. Not currently wired into any
     /// UI in this slice (invite acceptance happens via the existing web
     /// route -- see FriendsView.swift's doc comment); provided so a future
-    /// in-app accept flow (Universal Links, or a manual id-entry fallback)
-    /// doesn't need to add this call from scratch.
-    public func acceptFriendInvite(inviterID: String) async throws -> (ok: Bool, message: String) {
+    /// in-app accept flow (Universal Links, or a manual code-entry
+    /// fallback) doesn't need to add this call from scratch.
+    ///
+    /// 2026-09-30 audit (Codex/Fable): this used to take the inviter's raw
+    /// uuid, which any authenticated user could supply for any other user
+    /// to force a mutual friendship with zero consent -- uuids are already
+    /// incidentally exposed via leaderboard/team/duel rows. Now takes the
+    /// inviter's opaque per-user invite code instead (see
+    /// 20260930140000_fix_friend_invite_forgeable_uuid.sql), which is only
+    /// ever learned by a user the inviter deliberately shared it with.
+    public func acceptFriendInvite(code: String) async throws -> (ok: Bool, message: String) {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/accept_friend_invite"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: ["_inviter_id": inviterID])
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_code": code])
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)

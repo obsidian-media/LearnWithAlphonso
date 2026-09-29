@@ -376,6 +376,49 @@ describe("completeLessonRemote", () => {
     }
   });
 
+  // 2026-09-30 audit (Codex #4): none of the five gamification writes'
+  // own `{ error }` was ever checked -- a failed upsert silently
+  // proceeded as if it had succeeded, and this function still reported
+  // success to the caller.
+  it("throws instead of silently reporting success when a gamification write fails", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 4,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({})); // friend_activity_events insert (xpGain > 0)
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({})) // user_progress upsert -- succeeds
+      .mockReturnValueOnce(chainable({})) // language_progress upsert -- succeeds
+      .mockReturnValueOnce(chainable({ error: { message: "connection reset" } })) // lesson_completions upsert -- fails
+      .mockReturnValueOnce(chainable({})); // activity_days upsert -- succeeds
+
+    await expect(
+      completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          answers: answers(),
+          course: "en",
+          sessionToken: validToken(),
+        },
+      }),
+    ).rejects.toThrow("connection reset");
+  });
+
   it("rejects a forged or expired session token", async () => {
     const supabase = createSupabaseMock();
     await expect(

@@ -273,6 +273,20 @@ describe("GDPR export table coverage", () => {
     // decouple (2026-09-27); its create migration stays in history, so
     // this export-coverage scan still sees it and the exclusion must stay.
     "hector_links",
+    // friend_invite_codes (supabase/migrations/20260930140000_fix_friend_invite_forgeable_uuid.sql):
+    // same admin_users/apple_auth_tokens mechanics -- RLS on with no
+    // client-facing policies at all (only the two SECURITY DEFINER
+    // functions in that migration touch it), so the caller-scoped export
+    // would return empty regardless. Deletion is already handled: user_id
+    // REFERENCES auth.users ON DELETE CASCADE.
+    "friend_invite_codes",
+    // team_kicks (supabase/migrations/20260930150000_fix_kicked_member_instant_rejoin.sql):
+    // same mechanics again -- RLS on with no client-facing policies at
+    // all (only _join_team_impl and kick_team_member, both SECURITY
+    // DEFINER, touch it), so the caller-scoped export would return empty
+    // regardless. Deletion is handled: user_id REFERENCES auth.users ON
+    // DELETE CASCADE.
+    "team_kicks",
   ]);
 
   it("exports every table that has a user_id column", () => {

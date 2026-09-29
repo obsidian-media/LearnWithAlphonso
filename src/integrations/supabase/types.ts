@@ -383,6 +383,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      friend_invite_codes: {
+        Row: {
+          code: string;
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       friendships: {
         Row: {
           created_at: string;
@@ -1066,6 +1084,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      team_kicks: {
+        Row: {
+          kicked_at: string;
+          team_id: string;
+          user_id: string;
+        };
+        Insert: {
+          kicked_at?: string;
+          team_id: string;
+          user_id: string;
+        };
+        Update: {
+          kicked_at?: string;
+          team_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_kicks_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       team_members: {
         Row: {
           joined_at: string;
@@ -1383,7 +1427,7 @@ export type Database = {
       };
       _random_team_name: { Args: never; Returns: string };
       accept_friend_invite: {
-        Args: { _inviter_id: string };
+        Args: { _code: string };
         Returns: {
           message: string;
           ok: boolean;
@@ -1406,7 +1450,7 @@ export type Database = {
       };
       blocked_moderation_terms: { Args: never; Returns: string[] };
       buy_heart_with_xp: {
-        Args: { _cost?: number; _course: string };
+        Args: { _course: string };
         Returns: {
           hearts: number;
           ok: boolean;
@@ -1415,7 +1459,7 @@ export type Database = {
         }[];
       };
       buy_streak_freeze_with_xp: {
-        Args: { _cost?: number; _course: string };
+        Args: { _course: string };
         Returns: {
           ok: boolean;
           reason: string;
@@ -1479,6 +1523,15 @@ export type Database = {
           xp: number;
         }[];
       };
+      get_friend_invite_preview: {
+        Args: { _code: string };
+        Returns: {
+          avatar_seed: string;
+          display_name: string;
+          is_self: boolean;
+          ok: boolean;
+        }[];
+      };
       get_friends_progress: {
         Args: never;
         Returns: {
@@ -1525,6 +1578,12 @@ export type Database = {
           switch_locked_until: string;
           team_id: string;
           this_week_xp: number;
+        }[];
+      };
+      get_or_create_my_friend_code: {
+        Args: never;
+        Returns: {
+          code: string;
         }[];
       };
       get_team_leaderboard: {

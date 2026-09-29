@@ -40,7 +40,7 @@ import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
-import { Route as AuthenticatedInviteInviterIdRouteImport } from './routes/_authenticated/invite.$inviterId'
+import { Route as AuthenticatedInviteCodeRouteImport } from './routes/_authenticated/invite.$code'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedListenSplatRouteImport } from './routes/_authenticated/listen.$'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
@@ -202,12 +202,11 @@ const AuthenticatedConverseScenarioIdRoute =
     path: '/converse/$scenarioId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedInviteInviterIdRoute =
-  AuthenticatedInviteInviterIdRouteImport.update({
-    id: '/invite/$inviterId',
-    path: '/invite/$inviterId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const AuthenticatedInviteCodeRoute = AuthenticatedInviteCodeRouteImport.update({
+  id: '/invite/$code',
+  path: '/invite/$code',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLessonIdRoute = AuthenticatedLessonIdRouteImport.update({
   id: '/lesson/$id',
   path: '/lesson/$id',
@@ -263,7 +262,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
-  '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
+  '/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
@@ -300,7 +299,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
-  '/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
+  '/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
@@ -339,7 +338,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
-  '/_authenticated/invite/$inviterId': typeof AuthenticatedInviteInviterIdRoute
+  '/_authenticated/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/_authenticated/listen/$': typeof AuthenticatedListenSplatRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
@@ -378,7 +377,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
-    | '/invite/$inviterId'
+    | '/invite/$code'
     | '/lesson/$id'
     | '/listen/$'
     | '/profile/friends'
@@ -415,7 +414,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
-    | '/invite/$inviterId'
+    | '/invite/$code'
     | '/lesson/$id'
     | '/listen/$'
     | '/profile/friends'
@@ -453,7 +452,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/_authenticated/campaign_/$campaignId'
     | '/_authenticated/converse_/$scenarioId'
-    | '/_authenticated/invite/$inviterId'
+    | '/_authenticated/invite/$code'
     | '/_authenticated/lesson/$id'
     | '/_authenticated/listen/$'
     | '/_authenticated/profile_/friends'
@@ -701,11 +700,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConverseScenarioIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/invite/$inviterId': {
-      id: '/_authenticated/invite/$inviterId'
-      path: '/invite/$inviterId'
-      fullPath: '/invite/$inviterId'
-      preLoaderRoute: typeof AuthenticatedInviteInviterIdRouteImport
+    '/_authenticated/invite/$code': {
+      id: '/_authenticated/invite/$code'
+      path: '/invite/$code'
+      fullPath: '/invite/$code'
+      preLoaderRoute: typeof AuthenticatedInviteCodeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lesson/$id': {
@@ -763,7 +762,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
   AuthenticatedCampaignCampaignIdRoute: typeof AuthenticatedCampaignCampaignIdRoute
   AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
-  AuthenticatedInviteInviterIdRoute: typeof AuthenticatedInviteInviterIdRoute
+  AuthenticatedInviteCodeRoute: typeof AuthenticatedInviteCodeRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
@@ -782,7 +781,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedCampaignCampaignIdRoute: AuthenticatedCampaignCampaignIdRoute,
   AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
-  AuthenticatedInviteInviterIdRoute: AuthenticatedInviteInviterIdRoute,
+  AuthenticatedInviteCodeRoute: AuthenticatedInviteCodeRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,

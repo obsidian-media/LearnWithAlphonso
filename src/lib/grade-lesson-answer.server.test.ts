@@ -85,4 +85,52 @@ describe("gradeLessonAnswer", () => {
 
     await expect(gradeLessonAnswer(translate, "Buen día", "en")).resolves.toBe(false);
   });
+
+  // 2026-09-30 audit (Codex/Fable): lesson-completion translate grading had
+  // no quota gate at all, unlike every other AI-cost path in the app.
+  describe("checkQuota", () => {
+    beforeEach(() => {
+      process.env.NVIDIA_API_KEY = "test-key";
+    });
+
+    it("blocks the AI call entirely when checkQuota returns false", async () => {
+      global.fetch = vi.fn() as typeof fetch;
+      const checkQuota = vi.fn().mockResolvedValue(false);
+
+      const result = await gradeLessonAnswer(translate, "Buen día", "en", checkQuota);
+
+      expect(result).toBe(false);
+      expect(checkQuota).toHaveBeenCalledOnce();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("still allows a real AI-accepted answer when checkQuota returns true", async () => {
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: JSON.stringify({ correct: true, reason: null }) } }],
+          }),
+          { status: 200 },
+        ),
+      ) as typeof fetch;
+      const checkQuota = vi.fn().mockResolvedValue(true);
+
+      await expect(gradeLessonAnswer(translate, "Buen día", "en", checkQuota)).resolves.toBe(true);
+      expect(global.fetch).toHaveBeenCalledOnce();
+    });
+
+    it("omitting checkQuota preserves the old unlimited behavior", async () => {
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: JSON.stringify({ correct: true, reason: null }) } }],
+          }),
+          { status: 200 },
+        ),
+      ) as typeof fetch;
+
+      await expect(gradeLessonAnswer(translate, "Buen día", "en")).resolves.toBe(true);
+      expect(global.fetch).toHaveBeenCalledOnce();
+    });
+  });
 });

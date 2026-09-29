@@ -25,23 +25,36 @@ export const getFriends = createServerFn({ method: "GET" })
   });
 
 /**
- * Accepts a friend invite. Opening the inviter's link and confirming *is*
- * the consent action — writes both friendship directions atomically via a
- * SECURITY DEFINER RPC, since a client can only otherwise insert rows
- * where it is user_id, not the other direction of the pair.
+ * Accepts a friend invite by its opaque per-user code (not the inviter's
+ * uuid — see 20260930140000_fix_friend_invite_forgeable_uuid.sql's own
+ * comment for why a uuid-keyed invite let any authenticated user force a
+ * friendship on any other user with zero consent). Writes both friendship
+ * directions atomically via a SECURITY DEFINER RPC, since a client can
+ * only otherwise insert rows where it is user_id, not the other direction
+ * of the pair. Self/blocked checks happen inside the RPC, which is the
+ * only thing that can resolve a code back to a user id.
  */
 export const acceptFriendInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ inviterId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
-    if (data.inviterId === context.userId) {
-      return { ok: false, message: "cannot invite yourself" };
-    }
     const { data: rows } = await context.supabase.rpc("accept_friend_invite", {
-      _inviter_id: data.inviterId,
+      _code: data.code,
     });
     const row = rows?.[0];
     return row ?? { ok: false, message: "unknown error" };
+  });
+
+/**
+ * The caller's own shareable invite code (generated on first call,
+ * stable after that) — what the "copy invite link" button on the
+ * friends page turns into `/invite/<code>`.
+ */
+export const getMyFriendCode = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<string | null> => {
+    const { data: rows } = await context.supabase.rpc("get_or_create_my_friend_code");
+    return rows?.[0]?.code ?? null;
   });
 
 /**
@@ -62,17 +75,26 @@ export const removeFriend = createServerFn({ method: "POST" })
     return row ?? { ok: false, message: "unknown error" };
   });
 
-/** Display name + avatar for the invite confirmation screen. */
-export const getInviterProfile = createServerFn({ method: "GET" })
+/**
+ * Display name + avatar for the invite confirmation screen, plus whether
+ * this is the caller's own code — resolved server-side via
+ * get_friend_invite_preview, the only thing that can look a code up
+ * (friend_invite_codes has no client-facing SELECT policy at all).
+ */
+export const getFriendInvitePreview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ inviterId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: profile } = await context.supabase
-      .from("profiles")
-      .select("display_name,avatar_seed")
-      .eq("id", data.inviterId)
-      .maybeSingle();
-    return profile ? { displayName: profile.display_name, avatarSeed: profile.avatar_seed } : null;
+    const { data: rows } = await context.supabase.rpc("get_friend_invite_preview", {
+      _code: data.code,
+    });
+    const row = rows?.[0];
+    if (!row?.ok) return null;
+    return {
+      isSelf: row.is_self,
+      displayName: row.display_name,
+      avatarSeed: row.avatar_seed,
+    };
   });
 
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");

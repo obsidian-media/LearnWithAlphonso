@@ -77,6 +77,11 @@ struct ReviewQueueView: View {
         }
         .tint(AlphonsoColor.moss)
         .task(id: course) { await loadQueue() }
+        // 2026-09-30 audit (Codex/Fable): a translate review item's written
+        // answer is sent server-side to NVIDIA for grading (grade-review,
+        // via gradeTranslationReviewItem) with no disclosure at all -- see
+        // AIDisclosureSheet.swift's own doc comment.
+        .aiDisclosureGate()
     }
 
     private var currentItem: ReviewItem { queue[idx] }
