@@ -13,6 +13,13 @@ public struct HeartsResult: Sendable, Equatable {
     public let hearts: Int
 }
 
+/// `heartsRefillAt` is epoch milliseconds, matching
+/// LessonCompletionProgress.heartsRefillAt's own convention.
+public struct HeartsRefillResult: Sendable, Equatable {
+    public let hearts: Int
+    public let heartsRefillAt: Double?
+}
+
 /// V3 package 3b -- one aggregated row from `weakness_events`
 /// (supabase/migrations/20260921000000_v3_weakness_trend_log.sql), mirrors
 /// weakness-trend.functions.ts's WeaknessTrendEntry.
@@ -298,6 +305,35 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         return HeartsResult(hearts: hearts)
+    }
+
+    /// Calls the `restore_hearts_if_due` SECURITY DEFINER RPC (supabase/
+    /// migrations/20260918141500_hearts_economy_rpcs.sql) -- the server-side
+    /// counterpart to HeartsEconomy.resolveHeartsRefill, this Kit's own pure
+    /// port of the same resolution logic that a 2026-09-29 whole-codebase
+    /// audit found was never wired into any iOS write path. Row-locked, so
+    /// safe to call speculatively -- a no-op if no refill is actually due
+    /// yet, the same contract sync.functions.ts's restoreHeartsRemote
+    /// documents for the web client, which calls this identical RPC.
+    public func restoreHeartsIfDue() async throws -> HeartsRefillResult {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/restore_hearts_if_due"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [String: String]())
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first,
+              let hearts = row["hearts"] as? Int else {
+            throw ProgressSyncError.invalidPayload
+        }
+        let refillAt = (row["hearts_refill_at"] as? String)
+            .flatMap(Self.parsePostgresTimestamp)
+            .map { $0.timeIntervalSince1970 * 1000 }
+        return HeartsRefillResult(hearts: hearts, heartsRefillAt: refillAt)
     }
 
     /// Calls the `set_cefr_level` SECURITY DEFINER RPC (same migration as
@@ -923,6 +959,24 @@ public final class ProgressSyncClient: Sendable {
             .flatMap(Self.parsePostgresTimestamp)
             .map { $0.timeIntervalSince1970 * 1000 }
 
+        var resolvedHearts = userRow["hearts"] as? Int ?? 5
+        var resolvedRefillAt = refillAt
+
+        // 2026-09-29 whole-codebase audit: a plain read of user_progress
+        // never re-resolves an elapsed refill timer -- only the write-path
+        // RPCs (lose_heart, buy_heart_with_xp, restore_hearts_if_due) do.
+        // A user who hits 0 hearts, waits out the 30-minute window without
+        // completing another lesson, then reopens the app saw "0 Hearts"
+        // indefinitely. Mirrors web's restoreHeartsRemote: only calls the
+        // RPC when a refill actually looks due, and best-effort -- a failed
+        // resolve here just means the stale (but not incorrect-in-a-new-way)
+        // values from the read above are shown, same as before this fix.
+        if let refillAtMillis = refillAt, refillAtMillis <= Date().timeIntervalSince1970 * 1000,
+           let restored = try? await restoreHeartsIfDue() {
+            resolvedHearts = restored.hearts
+            resolvedRefillAt = restored.heartsRefillAt
+        }
+
         return LessonCompletionProgress(
             xp: languageRow["xp"] as? Int ?? 0,
             streak: userRow["streak"] as? Int ?? 0,
@@ -931,8 +985,8 @@ public final class ProgressSyncClient: Sendable {
             // `hearts` defaults to 5 in the schema, so a missing row means
             // a full set rather than zero -- showing 0 hearts to someone
             // who has all of them would read as a bug.
-            hearts: userRow["hearts"] as? Int ?? 5,
-            heartsRefillAt: refillAt,
+            hearts: resolvedHearts,
+            heartsRefillAt: resolvedRefillAt,
             streakFreezes: userRow["streak_freezes"] as? Int ?? 0,
             leagueTier: languageRow["league_tier"] as? String ?? "bronze"
         )

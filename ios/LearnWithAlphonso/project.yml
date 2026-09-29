@@ -134,7 +134,19 @@ targets:
         # fix on the web app was never ported to iOS's local copy, so a
         # lapsed review on a well-established item got a harsher interval
         # than intended for about a week. No UI/behavior change otherwise.
-        CURRENT_PROJECT_VERSION: "42"
+        # 43: ships two more fixes from the 2026-09-29 fresh (cold-context)
+        # whole-codebase audit: (1) ProgressSyncClient.fetchProgress now
+        # calls the restore_hearts_if_due RPC when a read-back refill time
+        # has already elapsed -- HeartsEconomy.resolveHeartsRefill existed
+        # since 2026-09-18 but was never wired into any iOS path, so a user
+        # who ran out of hearts and waited out the 30-minute window saw "0
+        # Hearts" indefinitely until some other write RPC happened to run.
+        # (2) All four recording screens now balance RecordingState's
+        # counter in onDisappear -- a view torn down mid-hold (navigating
+        # away while the mic button is physically pressed) never fired the
+        # drag gesture's .onEnded, leaking the counter and permanently
+        # suppressing the podcast player's post-interruption resume.
+        CURRENT_PROJECT_VERSION: "43"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -262,7 +274,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "42"
+        CURRENT_PROJECT_VERSION: "43"
         SKIP_INSTALL: true
       configs:
         Release:

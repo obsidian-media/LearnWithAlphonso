@@ -76,6 +76,14 @@ struct SpeakQuestionCard: View {
             }
         }
         .aiDisclosureGate()
+        // 2026-09-29 whole-codebase audit: this screen had no onDisappear
+        // at all, unlike its three sibling recording screens -- a view torn
+        // down mid-hold (navigating back, a lesson finishing underneath it)
+        // never fired the drag gesture's .onEnded, leaking
+        // RecordingState's counter. See SpeakTurnRecorder.cancelIfRecording().
+        .onDisappear {
+            recorder.cancelIfRecording()
+        }
     }
 
     private var phraseCard: some View {
@@ -437,6 +445,23 @@ final class SpeakTurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    /// See ConversationView's identical TurnRecorder.cancelIfRecording()
+    /// for the full reasoning (2026-09-29 whole-codebase audit): a view
+    /// torn down mid-hold never fires the drag gesture's .onEnded, so
+    /// without this, RecordingState's counter leaks and every later real
+    /// phone-call interruption is wrongly treated as an in-app mic
+    /// takeover, permanently suppressing the podcast player's resume. This
+    /// screen previously had no onDisappear at all.
+    func cancelIfRecording() {
+        guard let recorder else { return }
+        recorder.stop()
+        self.recorder = nil
+        fileURL = nil
+        startedAt = nil
+        RecordingState.shared.ended()
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     // AVAudioRecorderDelegate fires on an arbitrary thread, not

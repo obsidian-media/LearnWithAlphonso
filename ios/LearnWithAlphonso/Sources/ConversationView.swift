@@ -121,6 +121,7 @@ private struct ConversationSessionView: View {
             }
         }
         .onDisappear {
+            recorder.cancelIfRecording()
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             let transcript = turns
@@ -492,6 +493,28 @@ private final class TurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    /// Best-effort cleanup for a view torn down mid-hold -- navigating
+    /// back, a tab switch, a sheet dismissal -- while the mic button is
+    /// still pressed (2026-09-29 whole-codebase audit). SwiftUI does not
+    /// guarantee a DragGesture's .onEnded fires when the view holding it
+    /// is torn down mid-gesture, so without this, began() is never
+    /// balanced by a matching ended() -- RecordingState.shared.isRecording
+    /// sticks true for the rest of the app's process lifetime, and every
+    /// later REAL interruption (a phone call) is then wrongly treated as
+    /// caused by an in-app mic screen, so PodcastAudioPlayer never resumes
+    /// after it again. Deliberately not the full async stop(): the view is
+    /// gone, there is nothing to submit and nothing worth awaiting. Safe
+    /// to call unconditionally (no-op when nothing is recording).
+    func cancelIfRecording() {
+        guard let recorder else { return }
+        recorder.stop()
+        self.recorder = nil
+        fileURL = nil
+        startedAt = nil
+        RecordingState.shared.ended()
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     // AVAudioRecorderDelegate fires on an arbitrary thread, not

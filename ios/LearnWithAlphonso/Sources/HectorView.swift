@@ -95,6 +95,7 @@ private struct HectorConversationView: View {
         .aiDisclosureGate()
         .task { await loadMemoryContext() }
         .onDisappear {
+            recorder.cancelIfRecording()
             guard turns.count >= 4, let accessToken = session.accessToken else { return }
             let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
             let transcript = turns.map { ChatMessage(role: $0.role, content: $0.content) }
@@ -434,6 +435,22 @@ private final class HectorTurnRecorder: NSObject, AVAudioRecorderDelegate {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
+    }
+
+    /// See ConversationView's identical TurnRecorder.cancelIfRecording()
+    /// for the full reasoning (2026-09-29 whole-codebase audit): a view
+    /// torn down mid-hold never fires the drag gesture's .onEnded, so
+    /// without this, RecordingState's counter leaks and every later real
+    /// phone-call interruption is wrongly treated as an in-app mic
+    /// takeover, permanently suppressing the podcast player's resume.
+    func cancelIfRecording() {
+        guard let recorder else { return }
+        recorder.stop()
+        self.recorder = nil
+        fileURL = nil
+        startedAt = nil
+        RecordingState.shared.ended()
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 
     // AVAudioRecorderDelegate fires on an arbitrary thread, not

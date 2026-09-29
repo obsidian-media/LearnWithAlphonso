@@ -780,7 +780,13 @@ final class ProgressSyncClientTests: XCTestCase {
                 "longest_streak": 9,
                 "last_active_date": "2026-09-24",
                 "hearts": 3,
-                "hearts_refill_at": "2026-09-24T01:23:45.678901+00:00",
+                // Deliberately far in the future (not "due" yet) -- this test
+                // is about composing both tables' fields correctly, not the
+                // restore-if-due resolution covered separately below. A
+                // refill time in the past here would trigger the new
+                // restoreHeartsIfDue call and break this test's "exactly 2
+                // requests" assertion.
+                "hearts_refill_at": "2099-09-24T01:23:45.678901+00:00",
                 "streak_freezes": 2,
             ]])
         }
@@ -800,12 +806,95 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(progress.streakFreezes, 2)
         XCTAssertEqual(progress.lastActiveDate, "2026-09-24")
         // PostgREST returns fractional-second timestamps; heartsRefillAt is
-        // epoch milliseconds. 2026-09-24T01:23:45.678901Z is 1790213025678.901
-        // ms; ISO8601DateFormatter truncates below the millisecond, so the
-        // parsed value lands on ...678.0 -- hence the 1ms accuracy rather
-        // than an exact match.
-        XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 1790213025678, accuracy: 1)
+        // epoch milliseconds. 2099-09-24T01:23:45.678901Z is
+        // 4093896225678.901 ms; ISO8601DateFormatter truncates below the
+        // millisecond, so the parsed value lands on ...678.0 -- hence the
+        // 1ms accuracy rather than an exact match.
+        XCTAssertEqual(try XCTUnwrap(progress.heartsRefillAt), 4093896225678, accuracy: 1)
         XCTAssertEqual(paths.value.count, 2)
+    }
+
+    // MARK: - fetchProgress resolves an elapsed refill (2026-09-29 audit)
+
+    // A plain read of user_progress never re-resolved an elapsed refill
+    // timer -- only the write-path RPCs did -- so a user who ran out of
+    // hearts, waited past the 30-minute window, then reopened the app saw
+    // "0 Hearts" indefinitely. fetchProgress must now call
+    // restore_hearts_if_due itself when the read-back refill time has
+    // already passed.
+    func testFetchProgressResolvesAnElapsedRefillViaTheRestoreRpc() async throws {
+        let paths = TestCapture<[String]>([])
+        let client = makeClient { request in
+            let url = request.url!
+            paths.value.append(url.path)
+            if url.path.contains("language_progress") {
+                return self.jsonResponse(for: url, body: [["xp": 10, "league_tier": "bronze"]])
+            }
+            if url.path.contains("rpc/restore_hearts_if_due") {
+                return self.jsonResponse(for: url, body: [["hearts": 5, "hearts_refill_at": NSNull()]])
+            }
+            // The plain user_progress read: 0 hearts, refill time already
+            // in the past relative to any real clock.
+            return self.jsonResponse(for: url, body: [[
+                "streak": 4,
+                "longest_streak": 4,
+                "last_active_date": "2020-01-01",
+                "hearts": 0,
+                "hearts_refill_at": "2020-01-01T00:00:00+00:00",
+                "streak_freezes": 0,
+            ]])
+        }
+
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
+
+        XCTAssertEqual(progress.hearts, 5)
+        XCTAssertNil(progress.heartsRefillAt)
+        XCTAssertTrue(paths.value.contains { $0.contains("rpc/restore_hearts_if_due") })
+    }
+
+    func testFetchProgressDoesNotCallRestoreWhenNoRefillIsDueYet() async throws {
+        let paths = TestCapture<[String]>([])
+        let client = makeClient { request in
+            let url = request.url!
+            paths.value.append(url.path)
+            if url.path.contains("language_progress") {
+                return self.jsonResponse(for: url, body: [["xp": 10, "league_tier": "bronze"]])
+            }
+            return self.jsonResponse(for: url, body: [[
+                "streak": 4,
+                "longest_streak": 4,
+                "last_active_date": "2026-09-24",
+                "hearts": 3,
+                "hearts_refill_at": NSNull(),
+                "streak_freezes": 0,
+            ]])
+        }
+
+        let fetched = try await client.fetchProgress()
+        let progress = try XCTUnwrap(fetched)
+
+        XCTAssertEqual(progress.hearts, 3)
+        XCTAssertFalse(paths.value.contains { $0.contains("rpc/restore_hearts_if_due") })
+        XCTAssertEqual(paths.value.count, 2)
+    }
+
+    // MARK: - restoreHeartsIfDue
+
+    func testRestoreHeartsIfDuePostsToTheRpcAndReturnsTheResolvedState() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["hearts": 5, "hearts_refill_at": NSNull()]])
+        }
+
+        let result = try await client.restoreHeartsIfDue()
+
+        XCTAssertEqual(result.hearts, 5)
+        XCTAssertNil(result.heartsRefillAt)
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/restore_hearts_if_due"))
     }
 
     func testFetchProgressAsksForTheMostRecentlyUpdatedCourse() async throws {
