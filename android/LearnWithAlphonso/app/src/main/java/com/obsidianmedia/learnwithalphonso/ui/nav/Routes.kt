@@ -18,6 +18,15 @@ object Routes {
     fun placement(course: String) = "placement/$course"
 
     const val SETTINGS = "settings"
+    const val LEAGUE = "league"
+    const val TEAMS = "teams"
+    const val SEASON = "season"
+    const val FRIENDS = "friends"
+    const val DUELS = "duels"
+    const val ACHIEVEMENTS = "achievements"
+
+    const val INVITE = "invite/{code}"
+    fun invite(code: String) = "invite/$code"
 
     val tabs = listOf(LEARN, LISTEN, PRACTICE, HECTOR, PROFILE)
 }

@@ -30,7 +30,15 @@ import androidx.navigation.compose.rememberNavController
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
 import com.obsidianmedia.learnwithalphonso.ui.auth.AuthScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.DuelsScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.FriendsScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.InviteAcceptScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.LeaderboardScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.SeasonScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.TeamsScreen
+import com.obsidianmedia.learnwithalphonso.ui.profile.ProfileHubScreen
 import com.obsidianmedia.learnwithalphonso.ui.learn.LearnScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonScreen
 import com.obsidianmedia.learnwithalphonso.ui.nav.Routes
@@ -52,7 +60,7 @@ private val tabs = listOf(
 
 /** Port of RootView.swift: restore the session, then auth or the five-tab app. */
 @Composable
-fun RootScreen(container: AppContainer) {
+fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}) {
     val session = container.session
     val isRestoring by session.isRestoring.collectAsState()
     val state by session.state.collectAsState()
@@ -64,14 +72,21 @@ fun RootScreen(container: AppContainer) {
         when {
             isRestoring -> Unit
             state !is AuthState.SignedIn -> AuthScreen(container)
-            else -> SignedInApp(container)
+            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed)
         }
     }
 }
 
 @Composable
-private fun SignedInApp(container: AppContainer) {
+private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit) {
     val nav = rememberNavController()
+
+    LaunchedEffect(pendingInviteCode) {
+        if (pendingInviteCode != null) {
+            nav.navigate(Routes.invite(pendingInviteCode))
+            onInviteConsumed()
+        }
+    }
     val palette = AlphonsoColor.palette
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
@@ -130,7 +145,21 @@ private fun SignedInApp(container: AppContainer) {
             composable(Routes.LISTEN) { PlaceholderTab("Listen", "Podcasts arrive in the next release.") }
             composable(Routes.PRACTICE) { PlaceholderTab("Practice", "Conversation practice arrives in the next release.") }
             composable(Routes.HECTOR) { PlaceholderTab("Hector", "Your AI tutor arrives in the next release.") }
-            composable(Routes.PROFILE) { PlaceholderTab("Profile", "Leaderboards, friends and achievements arrive in the next release.") }
+            composable(Routes.PROFILE) {
+                ProfileHubScreen(
+                    onOpenLeague = { nav.navigate(Routes.LEAGUE) },
+                    onOpenFriends = { nav.navigate(Routes.FRIENDS) },
+                    onOpenAchievements = { nav.navigate(Routes.ACHIEVEMENTS) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                )
+            }
+            composable(Routes.LEAGUE) { LeaderboardScreen(container, onBack = { nav.popBackStack() }, onOpenTeams = { nav.navigate(Routes.TEAMS) }, onOpenSeason = { nav.navigate(Routes.SEASON) }) }
+            composable(Routes.TEAMS) { TeamsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.SEASON) { SeasonScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.FRIENDS) { FriendsScreen(container, onBack = { nav.popBackStack() }, onOpenDuels = { nav.navigate(Routes.DUELS) }, onEnterCode = { code -> nav.navigate(Routes.invite(code)) }) }
+            composable(Routes.DUELS) { DuelsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.ACHIEVEMENTS) { AchievementsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.INVITE) { entry -> InviteAcceptScreen(container, entry.arguments?.getString("code") ?: "", onDone = { nav.popBackStack() }) }
             composable(Routes.LESSON) { entry ->
                 val course = Course.fromCode(entry.arguments?.getString("course") ?: "en")
                 val lessonId = entry.arguments?.getString("lessonId") ?: ""

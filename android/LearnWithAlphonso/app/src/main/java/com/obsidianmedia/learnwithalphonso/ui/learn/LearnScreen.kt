@@ -46,6 +46,8 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
+import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -92,8 +94,28 @@ fun LearnScreen(
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = palette.moss) }
         }
+        ToastBanner(state.notice, onClear = vm::clearNotice)
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { StatusHeader(progress) }
+            item { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            if (state.challenges.isNotEmpty()) {
+                item {
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AlphonsoSectionHeader("This week's challenges")
+                        state.challenges.forEach { c ->
+                            val done = c.progress >= c.threshold
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(c.title, style = MaterialTheme.typography.bodyLarge, color = if (c.completed) palette.inkSoft else palette.ink)
+                                AlphonsoProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, modifier = Modifier.weight(1f))
+                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) TextButton(onClick = { vm.claimChallenge(c) }) { Text("Claim", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = MaterialTheme.typography.labelMedium, color = palette.moss)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             item {
                 val subtitle = when (dueCount) { 0 -> "Nothing due right now"; 1 -> "1 item ready to review"; else -> "$dueCount items ready to review" }
                 AlphonsoRowCard("Review", subtitle, accent = if (dueCount > 0) palette.ember else palette.hairline, modifier = Modifier.clickable { onOpenReview(state.course) })
@@ -164,7 +186,7 @@ private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
 
 /** Port of StatusHeaderView.swift: streak, hearts, XP, league, and the mascot greeting. Nothing when no cache yet. */
 @Composable
-fun StatusHeader(progress: LessonCompletionProgress?) {
+fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> Unit)? = null) {
     if (progress == null) return
     val palette = AlphonsoColor.palette
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -182,6 +204,12 @@ fun StatusHeader(progress: LessonCompletionProgress?) {
             )
         }
         AlphonsoMascotBanner(if (progress.streak > 0) "Nice ${progress.streak}-day streak! Ready for today's lesson?" else "Ready for today's lesson?")
+        if (onBuyStreakFreeze != null) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft, modifier = Modifier.weight(1f))
+                TextButton(onClick = onBuyStreakFreeze) { Text("Buy freeze (50 XP)", color = palette.moss, fontWeight = FontWeight.SemiBold) }
+            }
+        }
     }
 }
 

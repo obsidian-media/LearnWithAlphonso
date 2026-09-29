@@ -23,6 +23,11 @@ class LearnViewModelTest {
             req.query["select"] == "cefr_level" -> json(if (level == null) "[]" else """[{"cefr_level":"$level"}]""")
             req.query["select"] == "lesson_id" -> json(completed.joinToString(",", "[", "]") { """{"lesson_id":"$it"}""" })
             req.query["select"] == "placement_taken_at" -> json(if (placementTaken) """[{"placement_taken_at":"2026-01-01T00:00:00+00:00"}]""" else """[{"placement_taken_at":null}]""")
+            req.path.endsWith("get_weekly_challenges") -> json("""[{"template_id":"t1","title":"Finish 5 lessons","description":"d","progress":5,"threshold":5,"completed":false}]""")
+            req.path.endsWith("claim_weekly_quest") -> json("""[{"ok":true,"xp":100}]""")
+            req.path.endsWith("buy_streak_freeze_with_xp") -> json("""[{"ok":false,"streak_freezes":1}]""")
+            req.path.contains("language_progress") -> json("""[{"xp":900,"league_tier":"silver"}]""")
+            req.path.contains("user_progress") -> json("""[{"streak":2,"longest_streak":2,"last_active_date":"2026-09-29","hearts":5,"hearts_refill_at":null,"streak_freezes":1}]""")
             else -> json("")
         }
     }
@@ -65,6 +70,28 @@ class LearnViewModelTest {
         store.replaceLastKnownDueReviews(List(120) { ReviewItem("k$it", "u1l1", "A1", 2.5, 1, 0, "2026-01-01") })
         awaitTrue("badge") { v.dueBadge.value == "99+" }
         assertEquals(120, v.dueCount.value)
+    }
+
+    @Test
+    fun `challenges load and a claim posts this week's monday then refreshes progress`() = runBlocking {
+        val s = server()
+        val store = MemorySyncStore()
+        val v = LearnViewModel(testContent, s.progressClient, store) { 1_790_726_400_000L } // Wed 2026-09-30
+        awaitTrue("loaded") { v.state.value.challenges.isNotEmpty() }
+        v.claimChallenge(v.state.value.challenges.single())
+        awaitTrue("claimed") { v.state.value.notice == "+100 XP claimed!" }
+        assertEquals("""{"_quest_id":"t1","_course":"en","_week_start":"2026-09-28"}""", s.seen.first { it.path.endsWith("claim_weekly_quest") }.body)
+        assertTrue(v.state.value.claimedChallengeIds.contains("t1"))
+        awaitTrue("progress refreshed") { store.progress.value?.xp == 900 }
+    }
+
+    @Test
+    fun `an insufficient-xp streak freeze purchase explains the cost`() = runBlocking {
+        val v = LearnViewModel(testContent, server().progressClient, MemorySyncStore())
+        awaitTrue("loaded") { v.state.value.placementTaken != null }
+        v.buyStreakFreeze()
+        awaitTrue("notice") { v.state.value.notice != null }
+        assertEquals("Not enough XP. A streak freeze costs 50 XP.", v.state.value.notice)
     }
 
     @Test

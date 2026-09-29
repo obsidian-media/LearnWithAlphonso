@@ -39,7 +39,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.ui.social.AvatarCircle
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
@@ -55,6 +58,8 @@ import kotlinx.coroutines.withContext
 fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
     val palette = AlphonsoColor.palette
     val theme by container.themeManager.theme.collectAsState()
+    val identityVm: IdentityViewModel = viewModel { IdentityViewModel(container.progressClient, container.session.userId) }
+    val identity by identityVm.state.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -78,6 +83,15 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
             Text("Settings", style = MaterialTheme.typography.titleMedium, color = palette.ink)
         }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Section("Profile", footer = "Your name and avatar color are visible to other learners on leaderboards, friends, and duels.") {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
+                    AvatarCircle(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, 40.dp)
+                    AlphonsoSecondaryButton("Shuffle", onClick = identityVm::shuffleAvatar, busy = identity.shuffling, fullWidth = false)
+                }
+                OutlinedTextField(value = identity.displayName, onValueChange = identityVm::editName, label = { Text("Display name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                RowButton("Save Name", enabled = !identity.saving && identity.displayName.isNotBlank()) { identityVm.saveName() }
+                identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+            }
             Section("Theme") {
                 AlphonsoThemeId.entries.forEach { id ->
                     val p = AlphonsoPalettes.light.getValue(id)
