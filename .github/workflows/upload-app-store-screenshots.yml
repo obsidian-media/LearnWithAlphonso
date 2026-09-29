@@ -1,0 +1,32 @@
+name: Upload App Store Screenshots
+
+# Manual only -- uploads the account-owner-approved App Store listing
+# screenshots (freshly captured by capture-app-store-screenshots.yml,
+# reviewed, committed to .github/scratch/app-store-screenshots/) to the
+# app's current draft version, en-US localization. Distinct from the
+# subscription's own review screenshot (upload-review-screenshot.yml).
+on:
+  workflow_dispatch:
+    inputs:
+      display_type:
+        description: "screenshotDisplayType (leave default unless Apple's API rejects it)"
+        required: true
+        type: string
+        default: "APP_IPHONE_67"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Upload screenshots
+        run: bunx tsx scripts/upload-app-store-screenshots.ts .github/scratch/app-store-screenshots
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+          SCREENSHOT_DISPLAY_TYPE: ${{ github.event.inputs.display_type }}
