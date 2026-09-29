@@ -192,6 +192,7 @@ async function main() {
     contactFirstName: "Shayan",
     contactLastName: "Salimi",
     contactEmail: "obsidianmedia.yt@gmail.com",
+    contactPhone: "+1 4372479230",
     demoAccountName: "semnaniroya87@gmail.com",
     demoAccountPassword:
       "No password -- this app is passwordless (email sign-in code). See notes for how the code is relayed.",
