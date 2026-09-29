@@ -102,7 +102,9 @@ app ("a rule decided in the app target is a rule no test can reach")
 carries over.
 
 Dependency injection is manual through one `AppContainer` built in
-`Application.onCreate`; no Hilt. Navigation is `navigation-compose`
+`Application.onCreate`; no Hilt, for the same reason iOS chose plain
+SwiftUI over a framework: fewer moving parts to validate without a
+local IDE, and nothing here needs scoped graphs. Navigation is `navigation-compose`
 with five bottom tabs matching iOS: Learn, Listen, Practice, Hector,
 Profile.
 
@@ -143,9 +145,10 @@ app.
 
 `scripts/export-android-content.ts` imports the same builders as
 `export-ios-content.ts` (`src/lib/ios-content-export.ts`) and writes the
-ten JSON files to `android/LearnWithAlphonso/app/src/main/assets/content/`
-and to `android/LearnWithAlphonso/core/src/test/resources/content/` (so
-`core` tests decode the real bundle). The iOS script is not modified.
+ten JSON files to `android/LearnWithAlphonso/app/src/main/assets/content/`.
+`core`'s test source set adds that directory as a test resource root, so
+`core` tests decode the real bundle without a second committed copy.
+The iOS script is not modified.
 `android-ci.yml` regenerates and fails on a diff, the same guard the
 iOS pipeline has. `core`'s content models decode the JSON with
 kotlinx.serialization and fail loudly on an unknown question type, for
@@ -176,9 +179,10 @@ circle, and it cancels the recorder if the composable leaves
 composition mid-press. The permission callback checks that the press
 is still down before starting, closing the race the iOS audit found.
 
-Playback: one Media3 `ExoPlayer` in a `MediaSessionService` for
-podcasts, `MediaPlayer` for short TTS replies, `TextToSpeech` for
-listening prompts and "hear it first".
+Playback: one Media3 `ExoPlayer` in a `MediaSessionService` declared
+with `foregroundServiceType="mediaPlayback"` (required on Android 14+),
+`MediaPlayer` for short TTS replies, `TextToSpeech` for listening
+prompts and "hear it first".
 
 ## 8. Push (the one shared backend change)
 
@@ -191,10 +195,13 @@ listening prompts and "hear it first".
 - `sendPushToUser` selects tokens by platform and fans out to both
   senders; a 404 or `UNREGISTERED` prunes the FCM row the way 400/410
   prunes APNs rows.
-- `android-ci.yml` does not deploy this. It is committed on the
-  `android` branch and deploys with the final merge through the
-  existing `deploy-supabase` job, which already redeploys `send-push`
-  and `complete-lesson`.
+- This change is additive and no-ops without its secrets, and push
+  cannot be device-verified until it is live, so it lands as its own
+  small PR to `main` early in the plan (the one exception to the
+  long-lived-branch rule), deployed by the existing `deploy-supabase`
+  job. The Android app requests `POST_NOTIFICATIONS` (Android 13+) at
+  the same first-lesson-completion moment iOS asks, and registers the
+  FCM token only after that grant.
 
 ## 9. Subscription
 
@@ -245,7 +252,10 @@ full description adapted from the App Store copy, data-safety answers
 derived from `PrivacyInfo.xcprivacy` and `privacy.tsx`, review notes
 adapted from `update-app-review-info.ts` with the demo-account wording
 corrected to what Play actually needs, screenshot shot list. Screenshots
-are captured by the emulator smoke test into an artifact.
+are captured by the emulator smoke test into an artifact. Play requires
+a public account-deletion URL in the listing: the web profile page
+(`https://learn.alphonsoecosystem.app/profile`) already offers deletion
+and is used as-is.
 
 ## 12. Risks and how they are handled
 
@@ -256,10 +266,14 @@ are captured by the emulator smoke test into an artifact.
   in the plan.
 - Library drift: pins live in `libs.versions.toml`; Dependabot is not
   enabled on this branch to keep the surface stable until merge.
-- Backend divergence: the `core` ports and the Deno ports both claim
-  to mirror `src/lib`; a Bun test in `scripts/` diffs the Kotlin test
-  vector files against the TS ones so a future TS fix that is not
-  ported fails the Android pipeline.
+- Backend divergence: the TS tests hold their vectors inline, so a
+  mechanical diff is not possible. Instead each ported module gets a
+  JSON vector file under `android/LearnWithAlphonso/core/src/test/vectors/`
+  generated once by a Bun script from the TS implementation; the Kotlin
+  test consumes it, and a Vitest test in `src/lib` re-runs the same
+  file against the TS implementation. A TS behaviour change that is not
+  re-exported fails the web suite, which is the loud channel this repo
+  trusts.
 - The shared-file rule: only section 8 touches files outside
   `android/`, `scripts/export-android-content.ts` and the two Android
   workflows. Anything else that seems to need a shared change is raised
