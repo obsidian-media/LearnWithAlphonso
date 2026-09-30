@@ -343,6 +343,21 @@ jobs:
           APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
           APNS_BUNDLE_ID: ${{ secrets.APNS_BUNDLE_ID }}
 
+      - name: Sync FCM secrets (Android push)
+        # Same shape as the APNs step above: skipped until both repo secrets
+        # exist, then synced on every deploy with no further workflow change.
+        # supabase/functions/_shared/fcm.ts is the runtime consumer.
+        run: |
+          if [ -z "$FCM_SERVICE_ACCOUNT_JSON" ] || [ -z "$FCM_PROJECT_ID" ]; then
+            echo "::warning::FCM_SERVICE_ACCOUNT_JSON/FCM_PROJECT_ID not both set -- skipping FCM secret sync (Android push send stays a no-op)."
+            exit 0
+          fi
+          supabase secrets set FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON" FCM_PROJECT_ID="$FCM_PROJECT_ID"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+          FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.10
