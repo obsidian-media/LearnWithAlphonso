@@ -54,6 +54,9 @@ class ScreenshotTest {
         // The level chips and the status header arrive from the network after the tab; give them a moment.
         Thread.sleep(3_000)
         shot("01-learn")
+        // A second Learn capture after the first sync has had time to fill the status header.
+        Thread.sleep(6_000)
+        shot("01b-learn-settled")
         tab("Listen"); waitForText("Listen", 15_000); shot("04-listen")
         tab("Practice"); waitForText("Practice", 15_000); shot("05-practice")
         tab("Hector"); waitForText("Hector", 15_000); shot("06-hector")

@@ -96,9 +96,11 @@ fun LearnScreen(
         }
         ToastBanner(state.notice, onClear = vm::clearNotice)
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            // Stable keys on every item: the header, challenges and placement card come and go as data loads,
+            // and unkeyed items shifting index is the one way a lazy list can show a row twice.
+            item(key = "header") { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
             if (state.challenges.isNotEmpty()) {
-                item {
+                item(key = "challenges") {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         AlphonsoSectionHeader("This week's challenges")
                         state.challenges.forEach { c ->
@@ -116,12 +118,12 @@ fun LearnScreen(
                     }
                 }
             }
-            item {
+            item(key = "review") {
                 val subtitle = when (dueCount) { 0 -> "Nothing due right now"; 1 -> "1 item ready to review"; else -> "$dueCount items ready to review" }
                 AlphonsoRowCard("Review", subtitle, accent = if (dueCount > 0) palette.ember else palette.hairline, modifier = Modifier.clickable { onOpenReview(state.course) })
             }
             if (state.placementTaken == false) {
-                item {
+                item(key = "placement") {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp)) {
                         Text("Find your level", style = MaterialTheme.typography.titleSmall, color = palette.ink)
                         Text("A five-minute placement test picks the right band for you. No hearts lost.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
@@ -129,7 +131,7 @@ fun LearnScreen(
                     }
                 }
             }
-            item { LevelBandPicker(state.selectedLevel, onSelect = vm::selectLevel) }
+            item(key = "levels") { LevelBandPicker(state.selectedLevel, onSelect = vm::selectLevel) }
             units.forEach { unit ->
                 item(key = "unit-${unit.id}") { AlphonsoSectionHeader("${unit.eyebrow} · ${unit.title}", Modifier.padding(top = 8.dp)) }
                 unit.lessons.forEachIndexed { index, lesson ->
