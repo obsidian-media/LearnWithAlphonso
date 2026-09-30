@@ -5,6 +5,10 @@ import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadDao
+import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRecord
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
@@ -54,10 +58,23 @@ interface SyncDao {
 }
 
 @Database(
-    entities = [PendingLessonCompletionRecord::class, PendingReviewGradeRecord::class, CachedDueReviewRecord::class, AppSyncStateRecord::class],
-    version = 1,
+    entities = [PendingLessonCompletionRecord::class, PendingReviewGradeRecord::class, CachedDueReviewRecord::class, AppSyncStateRecord::class, PodcastDownloadRecord::class],
+    version = 2,
     exportSchema = false,
 )
 abstract class AlphonsoDatabase : RoomDatabase() {
     abstract fun syncDao(): SyncDao
+    abstract fun podcastDownloadDao(): PodcastDownloadDao
+
+    companion object {
+        /** Plan 4: offline podcast downloads share the container rather than opening a second store. */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `podcast_downloads` (`episodeId` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `etag` TEXT, " +
+                        "`storedDurationSeconds` INTEGER NOT NULL, `lastPlayed` INTEGER, `downloadedAt` INTEGER NOT NULL, PRIMARY KEY(`episodeId`))",
+                )
+            }
+        }
+    }
 }

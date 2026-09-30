@@ -58,6 +58,10 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - run: chmod +x gradlew
+      - name: Firebase config (only when the owner has set the secret)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+        run: if [ -n "$GOOGLE_SERVICES_JSON" ]; then printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json; fi
       - run: ./gradlew :core:test :app:testDebugUnitTest :app:lintDebug
       - uses: actions/upload-artifact@v4
         if: always()
@@ -81,6 +85,10 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - run: chmod +x gradlew
+      - name: Firebase config (only when the owner has set the secret)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+        run: if [ -n "$GOOGLE_SERVICES_JSON" ]; then printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json; fi
       - run: ./gradlew :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:

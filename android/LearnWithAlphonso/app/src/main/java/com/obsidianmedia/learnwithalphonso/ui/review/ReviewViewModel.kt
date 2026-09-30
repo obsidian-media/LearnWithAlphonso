@@ -52,6 +52,8 @@ class ReviewViewModel(
     private val isConnected: () -> Boolean,
     private val course: Course,
     private val now: () -> Long = System::currentTimeMillis,
+    /** Plan 4: the due-review nudge reuses this fetch (no second round trip), as ReviewQueueView.swift does. */
+    private val onQueueFetched: (List<ReviewItem>) -> Unit = {},
 ) : ViewModel() {
     private val _state = MutableStateFlow(ReviewUiState())
     val state: StateFlow<ReviewUiState> = _state.asStateFlow()
@@ -127,6 +129,7 @@ class ReviewViewModel(
             val fetched = runCatching { client.fetchDueReviews(course.code) }.getOrNull()
             if (fetched != null) {
                 syncStore.replaceLastKnownDueReviews(fetched.due)
+                onQueueFetched(fetched.due)
                 _state.update { it.copy(isLoading = false, queue = fetched.due) }
                 return
             }

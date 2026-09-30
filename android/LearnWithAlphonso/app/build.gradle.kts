@@ -5,6 +5,13 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Firebase (push) is wired only when the owner's google-services.json is
+// present; CI writes it from the FIREBASE_GOOGLE_SERVICES_JSON secret. A build
+// without it still compiles and the app simply never registers a token.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.obsidianmedia.learnwithalphonso"
     // Android now ships minor SDK releases; current AndroidX artifacts require 37.2 to compile.
@@ -75,6 +82,13 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.firebase.messaging)
+    implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.revenuecat.purchases)

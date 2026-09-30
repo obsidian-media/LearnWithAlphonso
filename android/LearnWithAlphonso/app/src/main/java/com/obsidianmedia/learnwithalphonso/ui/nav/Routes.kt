@@ -30,6 +30,9 @@ object Routes {
     const val CAMPAIGN = "practice/campaign/{id}"
     fun campaign(id: String) = "practice/campaign/$id"
 
+    const val LISTEN_FOLDER = "listen/folder/{id}"
+    fun listenFolder(id: String) = "listen/folder/$id"
+
     const val INVITE = "invite/{code}"
     fun invite(code: String) = "invite/$code"
 

@@ -39,7 +39,7 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
     val palette = AlphonsoColor.palette
     val vm: ReviewViewModel = viewModel(key = "review-${course.code}") {
-        ReviewViewModel(container.content, container.progressClient, container.syncStore, { container.connectivity.isConnected.value }, course)
+        ReviewViewModel(container.content, container.progressClient, container.syncStore, { container.connectivity.isConnected.value }, course, onQueueFetched = container.reminders::onQueueLoaded)
     }
     val state by vm.state.collectAsState()
 

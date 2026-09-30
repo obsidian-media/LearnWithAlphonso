@@ -132,3 +132,8 @@ ios/LearnWithAlphonso/LearnWithAlphonsoWidget/*.entitlements
 # generator only runs under `vite dev`, so an ignored admin tree makes
 # `build:admin` fail in CI with "Could not resolve './routeTree.gen'".
 dist-admin/
+
+# Android: the owner's Firebase config and any signing material never enter this public repo.
+android/LearnWithAlphonso/app/google-services.json
+*.jks
+*.keystore

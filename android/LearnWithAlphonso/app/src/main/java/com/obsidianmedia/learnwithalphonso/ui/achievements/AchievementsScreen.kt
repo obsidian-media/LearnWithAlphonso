@@ -55,7 +55,7 @@ data class AchievementsUiState(
 )
 
 /** Port of AchievementsView.swift: the unlock fetch may fail while the catalog still shows. */
-class AchievementsViewModel(val content: ContentStore, private val client: ProgressSyncClient) : ViewModel() {
+class AchievementsViewModel(val content: ContentStore, private val client: ProgressSyncClient, private val onOpenWeaknesses: (List<String>) -> Unit = {}) : ViewModel() {
     private val _state = MutableStateFlow(AchievementsUiState())
     val state: StateFlow<AchievementsUiState> = _state.asStateFlow()
 
@@ -63,6 +63,7 @@ class AchievementsViewModel(val content: ContentStore, private val client: Progr
         viewModelScope.launch {
             val unlocked = runCatching { client.fetchUnlockedAchievements() }
             val trend = runCatching { client.fetchWeaknessTrend() }.getOrDefault(emptyList())
+            onOpenWeaknesses(trend.filter { it.openCount > 0 }.map { it.category })
             _state.value = AchievementsUiState(
                 isLoading = false,
                 unlockedById = unlocked.getOrDefault(emptyList()).associateBy { it.achievementId },
@@ -76,7 +77,7 @@ class AchievementsViewModel(val content: ContentStore, private val client: Progr
 @Composable
 fun AchievementsScreen(container: AppContainer, onBack: () -> Unit) {
     val palette = AlphonsoColor.palette
-    val vm: AchievementsViewModel = viewModel { AchievementsViewModel(container.content, container.progressClient) }
+    val vm: AchievementsViewModel = viewModel { AchievementsViewModel(container.content, container.progressClient, container.reminders::onWeaknessTrend) }
     val state by vm.state.collectAsState()
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         ScreenHeader("Achievements", onBack)

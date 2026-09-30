@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -45,6 +46,12 @@ import com.obsidianmedia.learnwithalphonso.ui.league.TeamsScreen
 import com.obsidianmedia.learnwithalphonso.ui.profile.ProfileHubScreen
 import com.obsidianmedia.learnwithalphonso.ui.learn.LearnScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
+import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
+import androidx.compose.foundation.layout.Column
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.ui.nav.Routes
 import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
 import com.obsidianmedia.learnwithalphonso.ui.review.ReviewScreen
@@ -101,6 +108,8 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         container.syncCoordinator.triggerSync()
         runCatching { userId?.let { container.progressClient.fetchProfileTheme(it) } }.getOrNull()?.let(container.themeManager::hydrateFromServer)
         userId?.let { container.entitlements.login(it) }
+        container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
+        container.pushRegistrar.registerIfAuthorized()
         val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
         if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
             nav.navigate(Routes.placement("en"))
@@ -110,6 +119,9 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
     Scaffold(
         containerColor = palette.surface,
         bottomBar = {
+            Column {
+            // Docked above the tab bar on every screen, as View.podcastMiniBar does per tab on iOS.
+            PodcastMiniBar(container)
             if (showBar) {
                 NavigationBar(containerColor = palette.parchment) {
                     tabs.forEach { tab ->
@@ -135,6 +147,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                     }
                 }
             }
+            }
         },
     ) { padding ->
         NavHost(nav, startDestination = Routes.LEARN, modifier = Modifier.padding(padding)) {
@@ -147,7 +160,16 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                 )
             }
-            composable(Routes.LISTEN) { PlaceholderTab("Listen", "Podcasts arrive in the next release.") }
+            composable(Routes.LISTEN) { entry ->
+                val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                ListenScreen(container, listenVm, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
+            }
+            composable(Routes.LISTEN_FOLDER) { entry ->
+                val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
+            }
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { nav.navigate(Routes.scenario(it)) }, onOpenCampaign = { nav.navigate(Routes.campaign(it)) }) }
             composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
             composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }

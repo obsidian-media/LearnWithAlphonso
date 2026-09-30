@@ -1135,8 +1135,38 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
   created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
   and a null port makes the paywall say subscriptions are unavailable.
-- **Not yet ported** (later plans): podcasts, notifications, FCM, widget,
-  release signing. The Listen tab is a placeholder.
+- **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
+  the ports of `podcast-tree.ts`, `podcast-search.ts`,
+  `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and
+  `PodcastCacheBudget` with the iOS Kit test vectors, plus
+  `PodcastSessionTracker` (the save-every-10-seconds and listened-seconds
+  rules iOS keeps untested in `PodcastAudioPlayer`). `PodcastClient`
+  mirrors `PodcastClient.swift` over `SupabaseHttp`; one deliberate
+  difference: a first save POSTs `user_id` because
+  `podcast_playback.user_id` has no default (the web upsert sends it, the
+  iOS client omits it). `app.podcast`: `PodcastDownloadManager` (OkHttp,
+  `filesDir/podcast-audio`, `.partial` staging, atomic rename, reconcile
+  on start, Room v2 `podcast_downloads` with a hand-written migration),
+  `PodcastPlaybackService` (one ExoPlayer in a `MediaSessionService`,
+  audio focus and becoming-noisy handled by the player) and
+  `PodcastPlayer` over a `PlayerPort` (the JVM-tested controller: queue,
+  next episode, optimistic-concurrency saves with `StaleWrite` re-read and
+  401 disabling saves, play events through the RPC, and a pause when
+  `RecordingState` turns on that is never auto-resumed). `ListenScreen`
+  and `PodcastMiniBar` (docked above the tab bar on every screen) port
+  `ListenView.swift` and `PodcastMiniBar.swift`. `core.logic.NotificationLogic`
+  ports `NotificationLogic.swift` and `nextWeeklyRecapDate` as
+  `ReminderPlans` (null means cancel); `app.notifications` schedules them
+  as unique WorkManager jobs per kind and asks `POST_NOTIFICATIONS` at the
+  first lesson completion only. `app.push.PushRegistrar` uploads the FCM
+  token only after that grant and while signed in (`device_tokens` with
+  `platform = 'android'`), skips a re-upload of the same token, and deletes
+  the row on sign-out; `AlphonsoMessagingService` posts the server's nudge
+  and overtake messages. `app.widget.StreakWidget` (Glance) reads the
+  `StreakWidgetSnapshot` JSON that `RoomSyncQueueStore.updateLastKnownProgress`
+  publishes, the same funnel `WidgetProgressPublisher.swift` uses.
+- **Not yet ported** (Plan 5): release signing, `android-release.yml`, the
+  Play listing.
 
 ## AI integrations
 

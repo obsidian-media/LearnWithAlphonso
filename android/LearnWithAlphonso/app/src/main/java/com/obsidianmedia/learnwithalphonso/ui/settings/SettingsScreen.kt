@@ -128,7 +128,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
             }
             Section("Session") {
-                RowButton("Sign out", destructive = true) { container.session.signOut() }
+                RowButton("Sign out", destructive = true) { container.pushRegistrar.onSignOut(); container.session.signOut() }
             }
         }
     }

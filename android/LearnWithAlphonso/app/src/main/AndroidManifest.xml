@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Requested on the first press of a hold-to-talk button, never at launch. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Plan 4: background podcast playback and reminders. POST_NOTIFICATIONS is asked at the first lesson completion. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".AlphonsoApplication"
@@ -31,6 +36,34 @@
                 <data android:scheme="https" android:host="learn.alphonsoecosystem.app" android:pathPrefix="/invite/" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".podcast.PodcastPlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <!-- Only reachable once google-services.json is part of the build; harmless otherwise. -->
+        <service
+            android:name=".push.AlphonsoMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".widget.StreakWidgetReceiver"
+            android:exported="true"
+            android:label="Streak">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/streak_widget_info" />
+        </receiver>
 
         <!-- Supabase redirects the Google PKCE flow back here; the redirect URI must be allow-listed in the Supabase dashboard. -->
         <activity

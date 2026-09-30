@@ -32,7 +32,12 @@ interface SyncQueueStore {
     suspend fun markSyncedNow()
 }
 
-class RoomSyncQueueStore(private val dao: SyncDao, private val now: () -> Long = System::currentTimeMillis) : SyncQueueStore {
+class RoomSyncQueueStore(
+    private val dao: SyncDao,
+    private val now: () -> Long = System::currentTimeMillis,
+    /** Plan 4: the widget publisher; every progress update funnels through here, as WidgetProgressPublisher does on iOS. */
+    private val onProgressUpdated: suspend (LessonCompletionProgress) -> Unit = {},
+) : SyncQueueStore {
     override suspend fun pendingLessonCompletions() = dao.pendingLessonCompletions().map { it.asPending() }
     override suspend fun appendLessonCompletion(pending: PendingLessonCompletion) = dao.insertLessonCompletion(PendingLessonCompletionRecord.from(pending))
     override suspend fun removeSyncedLessonCompletions(synced: List<PendingLessonCompletion>) {
@@ -60,6 +65,7 @@ class RoomSyncQueueStore(private val dao: SyncDao, private val now: () -> Long =
         dao.upsertSyncState(
             current.copy(lastSyncedAt = now(), progressJson = ContentJson.json.encodeToString(LessonCompletionProgress.serializer(), progress)),
         )
+        runCatching { onProgressUpdated(progress) }
     }
     override suspend fun lastSyncedAt() = dao.syncState()?.lastSyncedAt
     override suspend fun markSyncedNow() {

@@ -38,10 +38,10 @@ class PodcastSessionTracker(private val saveEverySeconds: Double = 10.0) {
         return total
     }
 
-    /** A new episode: forget the previous marks. */
-    fun reset() {
+    /** A new episode: forget the previous marks; [startSeconds] is the resume point, so the first tick does not save. */
+    fun reset(startSeconds: Double = 0.0) {
         lastTick = null
-        lastSaved = 0.0
+        lastSaved = startSeconds
         listened = 0.0
     }
 }

@@ -32,10 +32,10 @@ on a phone.
 | 1 (in) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
 | 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
 | 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, AI disclosure gate on every AI path, generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
-| 4 | Podcasts (library, transcripts, resume, downloads, Media3 service), local notifications, FCM, home-screen widget. |
+| 4 (in) | Listen tab: folder tree, search, resume with optimistic-concurrency saves, transcripts, offline downloads with a budget and a `.partial` staging file, one ExoPlayer in a `MediaSessionService` with lock-screen controls, next episode, mini bar on every screen. Local reminders (streak 20:00, due reviews +3 h, weekly recap Monday 09:00, weakness 10:00) over WorkManager. FCM token registration behind the notification permission. Glance streak widget. Backend: PR #192 (`device_tokens.platform` accepts `android`, `_shared/fcm.ts`). |
 | 5 | Release: signing, `android-release.yml`, Play listing, device checklist. |
 
-The Listen tab is a placeholder until Plan 4 lands.
+Every tab is real now; Plan 5 is the release itself.
 
 ## Deviations from the spec worth knowing
 
@@ -50,8 +50,11 @@ The Listen tab is a placeholder until Plan 4 lands.
 
 `REVENUECAT_ANDROID_PUBLIC_KEY` is read from the environment at build time
 (empty means Pro is unavailable and the paywall says so; a release build
-refuses an empty or `test_` key). Set in the repository's GitHub secrets
-during Plan 5, never committed:
+refuses an empty or `test_` key). `FIREBASE_GOOGLE_SERVICES_JSON` is written
+to `app/google-services.json` by CI when set (the file is git-ignored) and
+the Firebase plugin is applied only when that file exists, so a build
+without it compiles and simply never registers a push token. Set in the
+repository's GitHub secrets, never committed:
 `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`,
 `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD`,
 `PLAY_SERVICE_ACCOUNT_JSON`, `REVENUECAT_ANDROID_PUBLIC_KEY`,
@@ -69,6 +72,14 @@ client values, the same ones `AppConfig.swift` ships.
   with the app's signing certificate fingerprint (known once Plan 5 creates
   the upload key) so Android opens `/invite/{code}` links in the app. Until
   then the Friends screen's "Friend code" field accepts a pasted code.
+
+## Owner actions before push works
+
+- Create the Firebase project and Android app, store `google-services.json`
+  as the GitHub secret above, and set `FCM_SERVICE_ACCOUNT_JSON` and
+  `FCM_PROJECT_ID` as Supabase Edge Function secrets. Create the Vault
+  secret `push_trigger_service_key` (see `OWNER-SETUP.md`). Until then the
+  app never uploads a token and the server never sends to Android.
 
 ## Owner actions before Pro works
 

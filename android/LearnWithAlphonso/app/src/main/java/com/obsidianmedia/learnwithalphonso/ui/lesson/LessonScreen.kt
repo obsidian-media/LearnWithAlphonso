@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -68,6 +69,14 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         )
     }
     val state by vm.state.collectAsState()
+    val finished = state.phase as? LessonPhase.Finished
+    LaunchedEffect(finished?.result?.progress?.lastActiveDate, finished != null) {
+        if (finished != null) {
+            // The one priming moment for notification permission (LessonPlayerView.swift), then reschedule today's streak reminder.
+            container.notificationPermission.requestIfUndetermined()
+            container.reminders.onLessonFinished(finished.result.progress.lastActiveDate)
+        }
+    }
 
     AiDisclosureGate(container.prefs) {
     Column(Modifier.fillMaxSize().background(palette.surface)) {

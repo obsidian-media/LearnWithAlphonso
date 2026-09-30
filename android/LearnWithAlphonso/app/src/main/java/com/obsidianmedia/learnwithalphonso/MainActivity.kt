@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         container.micPermission.register(this)
+        container.notificationPermission.register(this)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
         setContent {
@@ -53,6 +54,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch { container.syncCoordinator.triggerSync() }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        container.podcastPlayer.onBackground()
     }
 
     private fun handleOAuthCallback(intent: Intent?) {
