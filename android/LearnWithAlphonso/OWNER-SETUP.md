@@ -23,7 +23,7 @@ owed.
 
 Status 2026-09-30: items 1 to 4 done; item 2 on a provisional Google account
 (project `learn-with-alphonso-421a2`, see `docs/BACKLOG.md` 0.0-z); items 8
-and 9 done by the agent (keystore and its passwords in `D:\Credentialslphonso-upload.jks`
+and 9 done by the agent (keystore and its passwords in `D:\Credentials\alphonso-upload.jks`
 and `alphonso-upload-keystore.txt` on the owner's machine, the four secrets
 set, `assetlinks.json` published from the fingerprint); item 5 in progress;
 items 6, 7, 10, 11 open.
