@@ -281,11 +281,18 @@ async function main() {
     contactPhone: REVIEW_CONTACT_PHONE!,
     demoAccountName: DEMO_ACCOUNT_EMAIL!,
     demoAccountPassword:
-      "No password (sign-in is a 6-digit code). Tap Send code, then open the sign-in code page linked in the notes.",
+      "No password: tap Send code, then get the code from the page in the notes.",
     demoAccountRequired: true,
     notes: buildReviewNotes(DEMO_ACCOUNT_EMAIL!, REVIEW_CONTACT_EMAIL!, REVIEW_DEMO_CODE_URL!),
   };
 
+  // App Store Connect caps the demo password field at 100 characters
+  // (a 409 TOO_LONG, found live) and review notes at 4000.
+  if (reviewAttributes.demoAccountPassword.length > 100) {
+    throw new Error(
+      `demoAccountPassword is ${reviewAttributes.demoAccountPassword.length} chars; the limit is 100.`,
+    );
+  }
   // App Store Connect caps review notes at 4000 characters.
   if (reviewAttributes.notes.length > 4000) {
     throw new Error(`Review notes are ${reviewAttributes.notes.length} chars; the limit is 4000.`);
