@@ -1,0 +1,31 @@
+name: Seed Demo Account
+
+# Creates (if missing) and seeds the App Review demo account into
+# review-ready state -- lesson progress, a streak, due reviews, a podcast
+# resume point -- without running the whole macOS screenshot pipeline,
+# which is the only other place this seeding step exists
+# (capture-app-store-screenshots.yml).
+#
+# The account is read from the DEMO_ACCOUNT_EMAIL secret, never an input:
+# this repository is public and workflow_dispatch inputs show in run logs
+# (same reasoning as grant-demo-entitlement.yml). Pro is granted
+# separately by grant-demo-entitlement.yml.
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Create and seed the demo account
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+          REVENUECAT_SECRET_API_KEY: ${{ secrets.REVENUECAT_SECRET_API_KEY }}
+        run: bun scripts/seed-demo-account.ts --email "$DEMO_ACCOUNT_EMAIL" --create

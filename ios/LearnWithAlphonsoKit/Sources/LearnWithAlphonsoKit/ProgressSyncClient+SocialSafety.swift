@@ -65,4 +65,31 @@ extension ProgressSyncClient {
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
     }
+
+    /// Reports an offensive team name, filed against the team's creator
+    /// with the team tagged in `reason` as `team_name:<teamID>:<reason>`
+    /// so a moderator can find the exact team. Added in the 2026-09-29
+    /// pre-submission audit: public team names were the one piece of
+    /// user-written content shown to strangers with no report path.
+    /// `teams` is readable by every signed-in user (`teams_select_all`),
+    /// so this needs no new RPC or migration.
+    ///
+    /// Returns false, filing nothing, when the team has no creator --
+    /// auto-created teams get a system-generated name, so there is no
+    /// person to report and nothing user-written to review.
+    public func reportTeamName(teamID: String, reason: String) async throws -> Bool {
+        let lookup = restRequest(path: "teams", query: [
+            URLQueryItem(name: "id", value: "eq.\(teamID)"),
+            URLQueryItem(name: "select", value: "created_by"),
+        ])
+        let (data, response) = try await requester(lookup)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        guard let creator = rows.first?["created_by"] as? String else { return false }
+        try await reportUser(creator, reason: "team_name:\(teamID):\(reason)")
+        return true
+    }
 }
+

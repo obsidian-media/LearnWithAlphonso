@@ -327,12 +327,19 @@ struct SettingsView: View {
     }
 
     private func exportData() async {
-        guard let accessToken = session.accessToken else { return }
         accountErrorMessage = nil
         isExportingData = true
         defer { isExportingData = false }
+        guard let accessToken = await session.freshAccessToken() else {
+            accountErrorMessage = "Couldn't export your data. Try again."
+            return
+        }
         do {
-            let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            let client = AccountClient(
+                baseURL: AppConfig.apiBaseURL,
+                accessToken: { accessToken },
+                refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+            )
             let data = try await client.exportMyData()
             exportDocument = AccountExportDocument(data: data)
             isPresentingExporter = true
@@ -346,13 +353,25 @@ struct SettingsView: View {
     /// itself is what revokes the account's Sign in with Apple grant (see
     /// AccountClient.deleteMyAccount / apple-revocation.ts) -- signOut()
     /// here only clears local session state, nothing more is needed.
+    ///
+    /// Uses a freshly-refreshed token plus a one-retry-on-401 backstop
+    /// (2026-09-29 pre-submission audit): with the plain stored token,
+    /// deletion failed for anyone who had been in the app for over an
+    /// hour -- exactly how an App Store reviewer reaches this screen.
     private func deleteAccount() async {
-        guard let accessToken = session.accessToken else { return }
         accountErrorMessage = nil
         isDeletingAccount = true
         defer { isDeletingAccount = false }
+        guard let accessToken = await session.freshAccessToken() else {
+            accountErrorMessage = "Couldn't delete your account. Check your connection and try again."
+            return
+        }
         do {
-            let client = AccountClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+            let client = AccountClient(
+                baseURL: AppConfig.apiBaseURL,
+                accessToken: { accessToken },
+                refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+            )
             try await client.deleteMyAccount()
             session.signOut()
         } catch {

@@ -874,6 +874,26 @@ certificates on the Apple account, despite each CI run starting from an
 empty keychain — no certificate-persistence (`.p12`/fastlane-match)
 infrastructure was needed.
 
+**Access-token lifecycle (build 48, 2026-09-29).** `Session` holds the
+Supabase session and is the only thing that refreshes it. About 47 call
+sites build an API client from the plain `session.accessToken`, so that
+token must stay valid on its own: `Session.refreshIfNeeded` runs on a
+timer five minutes before expiry and on every return to the foreground
+(`RootView`'s scenePhase handler -- the timer doesn't advance while
+suspended). Only a refresh token the auth server actually rejects
+(400/401/403) signs the learner out; being offline, rate-limited or
+hitting a 5xx keeps the session and retries every 30s. The voice screens
+and account export/delete additionally use `freshAccessToken()` plus a
+one-retry-on-401 backstop. Before build 48, deletion, export, reporting
+and sync all failed after about an hour in the app.
+
+**iPhone only (build 49).** `TARGETED_DEVICE_FAMILY: "1"` must be set on
+each *target* in `project.yml`, not just in the project-level
+`settings.base`: XcodeGen's iOS-application preset sets `"1,2"` at target
+level and silently wins. Every build through 48 shipped as iPhone+iPad
+because of this, and App Store Connect demanded iPad screenshots.
+`ios-release.yml` now fails any `.ipa` whose `UIDeviceFamily` isn't `[1]`.
+
 **Two AI-conversation modes, one backend (as of the 2026-09-27 Hector
 decouple).** `ConversationView.swift`/`AIConversationClient.swift`
 (free) and `HectorView.swift`/`TutorConversationClient.swift` (Pro)
@@ -1296,12 +1316,25 @@ deploy`, both easy to forget (this bit a real session that added several
   time. Its scan assumes no migration adds `user_id` via `ALTER TABLE`
   and none drops a table — both true when written, re-check if it ever
   starts under-reporting.
-- App Store upload validation (error 90474) rejects an archive whose
-  `UISupportedInterfaceOrientations` declares fewer than all four
-  orientations, even for an iPhone-only (`TARGETED_DEVICE_FAMILY=1`)
-  app — found via a real failed `ios-release.yml` upload, fixed in
-  `ios/LearnWithAlphonso/project.yml`. Worth knowing if a future Info.plist
-  change reintroduces a narrower orientation list.
+- App Store upload validation (error 90474) rejected an archive whose
+  `UISupportedInterfaceOrientations` declared fewer than all four
+  orientations. **Correction (2026-09-29):** that app was NOT actually
+  iPhone-only at the time -- the project-level `TARGETED_DEVICE_FAMILY=1`
+  was being overridden to `1,2` (see "iPhone only" under Native iOS app),
+  and 90474 is an iPad-multitasking rule. Build 49 is genuinely iPhone
+  only; the four-orientation base key is kept, with
+  `UISupportedInterfaceOrientations~iphone` = portrait doing the real work.
+- **App Review sign-in (`src/routes/api/review-demo-code.ts`).** The app
+  has only code-by-email sign-in, so App Review gets a page that shows a
+  fresh 6-digit code for one dedicated review account. Off (404) unless
+  `REVIEW_DEMO_CODE_KEY` (32+ chars) is set in Vercel; the key is compared
+  as SHA-256 digests in constant time; it can only ever mint a code for
+  `DEMO_ACCOUNT_EMAIL`. The URL (with key) lives only in the
+  `REVIEW_DEMO_CODE_URL` GitHub secret because this repo is public.
+  `scripts/update-app-review-info.ts` walks the reviewer's exact steps
+  (Send code -> page -> Verify -> session) and refuses to write review
+  notes unless they succeed. Switch the page off after approval by
+  removing the Vercel env var (docs/BACKLOG.md §0.0-x).
 - **Moot as of the 2026-09-27 Hector decouple, kept for history.** Cloud
   Voice's Supabase project (`ywavjlmjbxuslbxactsx`, Hector's old
   separate account system) auto-paused once during this project's

@@ -53,18 +53,27 @@ struct PaywallView: View {
                     .multilineTextAlignment(.center)
             } else {
                 ForEach(entitlementStore.packages, id: \.identifier) { package in
+                    let price = package.storeProduct.localizedPriceString
+                    let trial = freeTrialText(for: package)
                     VStack(spacing: 2) {
                         Button {
                             Task { await entitlementStore.purchase(package) }
                         } label: {
-                            Text("Subscribe -- \(package.storeProduct.localizedPriceString)")
+                            Text(trial.map { "Start \($0)" } ?? "Subscribe -- \(price)")
                         }
                         .buttonStyle(.alphonsoEmber)
 
-                        // Billing period, read from the same product as the
-                        // price above it -- never a second, independently
-                        // worded copy of what StoreKit already states.
-                        if let billingPeriod = billingPeriodText(for: package) {
+                        // Trial length, price and billing period, all read
+                        // from the same StoreKit product -- never a second,
+                        // independently worded copy of what StoreKit states.
+                        // With a trial, the price after it is spelled out
+                        // right under the button that starts it.
+                        if let trial {
+                            Text("\(trial), then \(price). \(billingPeriodText(for: package) ?? "")")
+                                .font(AlphonsoFont.sans(12))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                                .multilineTextAlignment(.center)
+                        } else if let billingPeriod = billingPeriodText(for: package) {
                             Text(billingPeriod)
                                 .font(AlphonsoFont.sans(12))
                                 .foregroundStyle(AlphonsoColor.inkSoft)
@@ -123,15 +132,30 @@ struct PaywallView: View {
     /// `billingPeriodDescription` -- nil for a non-subscription product
     /// (no period to state), never a guessed default.
     private func billingPeriodText(for package: Package) -> String? {
-        guard let period = package.storeProduct.subscriptionPeriod else { return nil }
-        let unit: BillingPeriodUnit
-        switch period.unit {
-        case .day: unit = .day
-        case .week: unit = .week
-        case .month: unit = .month
-        case .year: unit = .year
+        guard let period = package.storeProduct.subscriptionPeriod,
+              let unit = billingUnit(period.unit) else { return nil }
+        return billingPeriodDescription(unit: unit, value: period.value)
+    }
+
+    /// "2-week free trial" when this product has an introductory free
+    /// trial AND StoreKit says this user is still eligible for it; nil
+    /// otherwise, so the paywall never advertises a trial the purchase
+    /// won't actually give.
+    private func freeTrialText(for package: Package) -> String? {
+        guard entitlementStore.trialEligibleProductIDs.contains(package.storeProduct.productIdentifier),
+              let intro = package.storeProduct.introductoryDiscount,
+              intro.paymentMode == .freeTrial,
+              let unit = billingUnit(intro.subscriptionPeriod.unit) else { return nil }
+        return freeTrialDescription(unit: unit, value: intro.subscriptionPeriod.value)
+    }
+
+    private func billingUnit(_ unit: RevenueCat.SubscriptionPeriod.Unit) -> BillingPeriodUnit? {
+        switch unit {
+        case .day: return .day
+        case .week: return .week
+        case .month: return .month
+        case .year: return .year
         @unknown default: return nil
         }
-        return billingPeriodDescription(unit: unit, value: period.value)
     }
 }

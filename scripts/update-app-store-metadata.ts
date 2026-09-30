@@ -116,7 +116,10 @@ Alphonso Pro unlocks Hector, an AI voice tutor for guided conversation practice 
 PRIVACY
 Learn With Alphonso does not use advertising or tracking. You can manage your account, export your data, or delete your account in the app.
 
-Learn With Alphonso is free to download. Alphonso Pro is an optional auto-renewable subscription that unlocks Hector, the AI voice tutor.`,
+Learn With Alphonso is free to download. Alphonso Pro is an optional auto-renewable subscription that unlocks Hector, the AI voice tutor. New subscribers who are eligible start with a free trial. Payment is charged to your Apple Account at confirmation of purchase, after any free trial ends. The subscription renews automatically unless canceled at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
+
+Terms of Use: https://learn.alphonsoecosystem.app/terms
+Privacy Policy: https://learn.alphonsoecosystem.app/privacy`,
 };
 
 async function main() {

@@ -33,3 +33,17 @@ public func billingPeriodDescription(unit: BillingPeriodUnit, value: Int) -> Str
     }
     return "Billed every \(value) \(unitWord)"
 }
+
+/// "2-week free trial" -- the paywall's statement of an introductory
+/// free trial's length, read from the same StoreKit period data as the
+/// price, never hardcoded (the trial could differ by storefront).
+public func freeTrialDescription(unit: BillingPeriodUnit, value: Int) -> String {
+    let unitWord: String
+    switch unit {
+    case .day: unitWord = "day"
+    case .week: unitWord = "week"
+    case .month: unitWord = "month"
+    case .year: unitWord = "year"
+    }
+    return "\(value)-\(unitWord) free trial"
+}
