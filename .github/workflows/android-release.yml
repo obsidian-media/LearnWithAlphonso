@@ -1,0 +1,201 @@
+name: Android Release Bundle
+
+# The Android counterpart of ios-release.yml: a manually dispatched, signed
+# `bundleRelease`, checked as the artifact that would actually ship (not
+# just the source), then optionally uploaded to a Google Play track.
+#
+# Required repository secrets (see android/LearnWithAlphonso/OWNER-SETUP.md
+# for how each is obtained; none of them ever enter the repo):
+#   ANDROID_UPLOAD_KEYSTORE_BASE64   base64 of the upload .jks
+#   ANDROID_UPLOAD_KEYSTORE_PASSWORD
+#   ANDROID_UPLOAD_KEY_ALIAS         "upload"
+#   ANDROID_UPLOAD_KEY_PASSWORD
+#   REVENUECAT_ANDROID_PUBLIC_KEY    public Play Store SDK key (goog_...); the
+#                                    Gradle build refuses an empty or test_ key
+#                                    for any Release task
+# Optional:
+#   FIREBASE_GOOGLE_SERVICES_JSON    enables push; without it the bundle still
+#                                    builds and simply never registers a token
+#   PLAY_SERVICE_ACCOUNT_JSON        needed only when upload_to_play is true;
+#                                    the very first bundle must be uploaded by
+#                                    hand in Play Console (Google creates the
+#                                    app record from it), after which this
+#                                    workflow can upload every later one.
+#
+# versionCode is the run number, so every dispatch is newer than the last.
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_play:
+        description: "Upload the signed .aab to Google Play after building it"
+        type: boolean
+        default: false
+      track:
+        description: "Play track to upload to"
+        type: choice
+        default: internal
+        options: [internal, alpha, beta, production]
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false
+
+jobs:
+  bundle:
+    name: Signed release bundle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android/LearnWithAlphonso
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
+
+      - name: Refuse to run without the signing secrets
+        env:
+          KS: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          KSP: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          KA: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KP: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          RC: ${{ secrets.REVENUECAT_ANDROID_PUBLIC_KEY }}
+        run: |
+          missing=""
+          [ -z "$KS" ] && missing="$missing ANDROID_UPLOAD_KEYSTORE_BASE64"
+          [ -z "$KSP" ] && missing="$missing ANDROID_UPLOAD_KEYSTORE_PASSWORD"
+          [ -z "$KA" ] && missing="$missing ANDROID_UPLOAD_KEY_ALIAS"
+          [ -z "$KP" ] && missing="$missing ANDROID_UPLOAD_KEY_PASSWORD"
+          [ -z "$RC" ] && missing="$missing REVENUECAT_ANDROID_PUBLIC_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing. See android/LearnWithAlphonso/OWNER-SETUP.md."
+            exit 1
+          fi
+          case "$RC" in test_*) echo "::error::REVENUECAT_ANDROID_PUBLIC_KEY is a test_ key; a release needs the production key."; exit 1;; esac
+
+      - name: Decode the upload keystore
+        env:
+          KS: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          [ -s "$RUNNER_TEMP/upload.jks" ] || { echo "::error::Decoded keystore is empty."; exit 1; }
+
+      - name: Firebase config (only when the owner has set the secret)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+        run: if [ -n "$GOOGLE_SERVICES_JSON" ]; then printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json; echo "Push enabled in this bundle."; else echo "::warning::No FIREBASE_GOOGLE_SERVICES_JSON; this bundle never registers a push token."; fi
+
+      - name: Build the signed bundle
+        env:
+          ANDROID_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          REVENUECAT_ANDROID_PUBLIC_KEY: ${{ secrets.REVENUECAT_ANDROID_PUBLIC_KEY }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew :core:test :app:testReleaseUnitTest :app:bundleRelease
+
+      - name: Validate the bundle itself, not just the source
+        env:
+          BUNDLETOOL_VERSION: "1.18.1"
+          EXPECTED_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          AAB=app/build/outputs/bundle/release/app-release.aab
+          [ -f "$AAB" ] || { echo "::error::No .aab at $AAB"; exit 1; }
+          curl -sSL -o "$RUNNER_TEMP/bundletool.jar" "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar"
+          MANIFEST=$(java -jar "$RUNNER_TEMP/bundletool.jar" dump manifest --bundle "$AAB")
+          echo "$MANIFEST" | grep -q 'package="com.obsidianmedia.learnwithalphonso"' || { echo "::error::Wrong package name in the bundle manifest."; exit 1; }
+          echo "$MANIFEST" | grep -q "android:versionCode=\"$EXPECTED_VERSION_CODE\"" || { echo "::error::versionCode in the bundle is not $EXPECTED_VERSION_CODE."; exit 1; }
+          echo "$MANIFEST" | grep -q 'android:debuggable="true"' && { echo "::error::The release bundle is debuggable."; exit 1; }
+          echo "$MANIFEST" | grep -q 'foregroundServiceType="mediaPlayback"' || { echo "::error::The podcast service lost its mediaPlayback foreground type."; exit 1; }
+          echo "$MANIFEST" | grep -q 'android.permission.POST_NOTIFICATIONS' || { echo "::error::POST_NOTIFICATIONS is missing from the manifest."; exit 1; }
+          # Signed with the upload key: the bundle carries META-INF signature files only when signed.
+          unzip -l "$AAB" | grep -q "META-INF/.*\.RSA\|META-INF/.*\.EC" || { echo "::error::The bundle is not signed."; exit 1; }
+          echo "All post-build checks passed."
+
+      - name: Upload to Google Play
+        if: ${{ inputs.upload_to_play }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.obsidianmedia.learnwithalphonso
+          releaseFiles: android/LearnWithAlphonso/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.track }}
+          status: completed
+
+      - name: Remove the decoded keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks" app/google-services.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/LearnWithAlphonso/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
+
+  screenshots:
+    # The Play store screenshots (android/LearnWithAlphonso/play/screenshots.md),
+    # captured by ScreenshotTest on the emulator as the seeded demo account.
+    # The session is minted the same way capture-app-store-screenshots.yml
+    # mints the iOS one; the test skips itself when no session is passed.
+    name: Store screenshots (API 34 emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+      - run: bun install --frozen-lockfile
+      - name: Mint a real session for the seeded demo account
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+        run: bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x android/LearnWithAlphonso/gradlew
+      - name: Firebase config (only when the owner has set the secret)
+        working-directory: android/LearnWithAlphonso
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
+        run: if [ -n "$GOOGLE_SERVICES_JSON" ]; then printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json; fi
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          # 1080x2400 at 420 dpi: a plain phone portrait Play accepts as-is.
+          profile: pixel_6
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android/LearnWithAlphonso
+          script: |
+            ./gradlew connectedDebugAndroidTest \
+              -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest \
+              -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" \
+              -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" \
+              -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" \
+              -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"
+            mkdir -p "$GITHUB_WORKSPACE/screenshots"
+            adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-screenshots
+          path: screenshots/
