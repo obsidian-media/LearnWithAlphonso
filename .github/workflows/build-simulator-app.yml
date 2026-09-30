@@ -50,7 +50,10 @@ jobs:
           APP=build/dd/Build/Products/Release-iphonesimulator/LearnWithAlphonso.app
           test -d "$APP" || { echo "::error::No .app at $APP"; exit 1; }
           codesign --force --deep --sign - "$APP"
-          codesign --force --sign - --entitlements LearnWithAlphonso-Release.entitlements "$APP"
+          # The hand-written entitlements file has XML comments; Xcode strips
+          # them, raw codesign ("AMFIUnserializeXML: syntax error") can't.
+          plutil -convert xml1 -o "$RUNNER_TEMP/app.entitlements" LearnWithAlphonso-Release.entitlements
+          codesign --force --sign - --entitlements "$RUNNER_TEMP/app.entitlements" "$APP"
           codesign --verify --verbose "$APP"
           lipo -info "$APP/LearnWithAlphonso"
           /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist"
