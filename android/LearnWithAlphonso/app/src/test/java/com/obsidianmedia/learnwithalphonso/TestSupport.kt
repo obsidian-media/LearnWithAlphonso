@@ -28,7 +28,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.io.File
-import java.util.Collections
 
 /**
  * Routes viewModelScope onto an unconfined dispatcher: launched work runs
@@ -60,7 +59,8 @@ data class SeenRequest(val method: String, val path: String, val query: Map<Stri
 
 /** A scripted Supabase and API server. */
 class FakeServer(private val respond: suspend MockRequestHandleScope.(SeenRequest) -> HttpResponseData) {
-    val seen: MutableList<SeenRequest> = Collections.synchronizedList(ArrayList())
+    /** Copy-on-write: tests iterate this while the mock engine appends from its own thread (a synchronized list still throws on iteration). */
+    val seen: MutableList<SeenRequest> = java.util.concurrent.CopyOnWriteArrayList()
     val engine = MockEngine { req ->
         val s = SeenRequest(
             req.method.value, req.url.encodedPath,
