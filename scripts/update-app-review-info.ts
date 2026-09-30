@@ -196,8 +196,61 @@ WHAT THE APP DOES NOT DO
   no data shared with data brokers. Location, contacts and photos are
   never accessed.`;
 
+// Public client values, the same ones AppConfig.swift ships in the app.
+const SUPABASE_URL = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9";
+
+/**
+ * Walks the exact steps the review notes tell App Review to follow, and
+ * throws unless they end in a real signed-in session: (1) "Send code"
+ * (POST /auth/v1/otp, as the app does), (2) open the sign-in code page,
+ * (3) "Verify" that code (POST /auth/v1/verify, type "email", as the app
+ * does). Runs before anything is written, so notes pointing at a broken or
+ * not-yet-deployed page can never reach Apple. Prints nothing secret: no
+ * URL, key, code or token.
+ */
+async function verifyReviewerSignIn(email: string, codePageURL: string) {
+  const headers = { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" };
+
+  const sent = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email, create_user: false }),
+  });
+  if (!sent.ok) throw new Error(`Reviewer step 1 (Send code) failed: HTTP ${sent.status}`);
+
+  const page = await fetch(codePageURL, { redirect: "manual" });
+  const html = await page.text();
+  const code = html.match(/>(\d{6})</)?.[1];
+  if (page.status !== 200 || !code) {
+    throw new Error(
+      `Reviewer step 2 (sign-in code page) failed: HTTP ${page.status}, code found: ${Boolean(code)}. ` +
+        "Is REVIEW_DEMO_CODE_KEY set in Vercel production and has production been redeployed since?",
+    );
+  }
+
+  const verified = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email, token: code, type: "email" }),
+  });
+  const session = (await verified.json().catch(() => ({}))) as {
+    access_token?: string;
+    user?: { email?: string };
+  };
+  if (!verified.ok || !session.access_token) {
+    throw new Error(`Reviewer step 3 (Verify) failed: HTTP ${verified.status}`);
+  }
+  if (session.user?.email?.toLowerCase() !== email.toLowerCase()) {
+    throw new Error("Reviewer step 3 signed in as a different account than DEMO_ACCOUNT_EMAIL.");
+  }
+  console.log("Reviewer sign-in verified end to end: Send code -> code page -> Verify -> session.");
+}
+
 async function main() {
-  console.log(`Finding the app's editable App Store version...`);
+  await verifyReviewerSignIn(DEMO_ACCOUNT_EMAIL!, REVIEW_DEMO_CODE_URL!);
+
+  console.log(`\nFinding the app's editable App Store version...`);
   const versions = await api(
     `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
   );
