@@ -19,6 +19,8 @@ data class SeenRequest(
     val headers: Map<String, String>,
     val body: String,
     val queryEntries: List<Pair<String, String>> = emptyList(),
+    /** The query as it went on the wire, for encoding assertions. */
+    val encodedQuery: String = "",
 ) {
     /** Every value for a repeated query key, in order. */
     fun queryAll(key: String): List<String> = queryEntries.filter { it.first == key }.map { it.second }
@@ -50,6 +52,7 @@ class FakeSupabase(
         headers = headers.entries().associate { (k, v) -> k to v.first() },
         body = body.toByteArray().decodeToString(),
         queryEntries = url.parameters.entries().flatMap { (k, vs) -> vs.map { k to it } },
+        encodedQuery = url.encodedQuery,
     )
 
     companion object {
