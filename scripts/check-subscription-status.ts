@@ -262,6 +262,70 @@ async function main() {
         );
       }
     }
+  } else if (cmd === "attach-latest-build") {
+    // Pre-submission: "readiness" found the PREPARE_FOR_SUBMISSION
+    // version has no build attached at all (relationships.build.data was
+    // null) -- required before "Submit for Review" is even clickable.
+    // SAVE ONLY: a PATCH on the version's own build relationship, the
+    // same as picking a build from the dropdown in the web UI and not
+    // pressing submit. Picks the highest-numbered VALID, non-expired
+    // build rather than assuming the most recently uploaded one is
+    // still valid.
+    console.log("\nFinding the PREPARE_FOR_SUBMISSION version...");
+    const versions = await api(
+      `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
+    );
+    const versionsJson = versions.json as {
+      data?: { id: string; attributes?: { versionString?: string } }[];
+    };
+    const version = versionsJson.data?.[0];
+    if (!version) {
+      console.error("No PREPARE_FOR_SUBMISSION version found.");
+      process.exit(1);
+    }
+    console.log(`Version: ${version.attributes?.versionString} (${version.id})`);
+
+    console.log("\nFinding the latest VALID, non-expired build...");
+    const builds = await api(
+      `/builds?filter[app]=${APP_ID}&sort=-uploadedDate&limit=10&fields[builds]=version,processingState,uploadedDate,expired`,
+    );
+    const buildsJson = builds.json as {
+      data?: {
+        id: string;
+        attributes?: { version?: string; processingState?: string; expired?: boolean };
+      }[];
+    };
+    const candidate = buildsJson.data?.find(
+      (b) => b.attributes?.processingState === "VALID" && b.attributes?.expired === false,
+    );
+    if (!candidate) {
+      console.error("No VALID, non-expired build found among the 10 most recent uploads.");
+      console.error(JSON.stringify(buildsJson, null, 2));
+      process.exit(1);
+    }
+    console.log(`Build: ${candidate.attributes?.version} (${candidate.id})`);
+
+    console.log("\nAttaching (SAVE ONLY -- this is a draft PATCH, not a submission)...");
+    const patched = await api(`/appStoreVersions/${version.id}`, "PATCH", {
+      data: {
+        type: "appStoreVersions",
+        id: version.id,
+        relationships: { build: { data: { type: "builds", id: candidate.id } } },
+      },
+    });
+    console.log(`Status: ${patched.status}`);
+
+    console.log("\nReading back to confirm...");
+    const confirm = await api(`/appStoreVersions/${version.id}?include=build`);
+    const confirmJson = confirm.json as {
+      included?: { attributes?: { version?: string } }[];
+    };
+    const attached = confirmJson.included?.[0]?.attributes?.version;
+    console.log(
+      attached === candidate.attributes?.version
+        ? `Confirmed: build ${attached} is now attached. Nothing was submitted -- this is still a draft.`
+        : `MISMATCH -- expected build ${candidate.attributes?.version}, relationship now shows ${attached ?? "(none)"}.`,
+    );
   } else if (cmd === "create-group") {
     console.log('\nAttempting to create subscription group "Alphonso Pro"...');
     const result = await api("/subscriptionGroups", "POST", {
