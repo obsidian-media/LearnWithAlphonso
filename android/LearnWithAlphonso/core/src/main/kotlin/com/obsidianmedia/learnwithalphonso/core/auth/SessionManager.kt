@@ -59,8 +59,10 @@ class SessionManager(
 
     /**
      * A token valid right now, refreshing when within 60 seconds of expiry
-     * or when forced. Null means signed out, and a failed refresh signs out:
-     * a shell backed by a refresh token nothing accepts would 401 forever.
+     * or when forced. Null means signed out or unable to refresh right now.
+     * Only a refresh token the server rejects ends the session (Session.swift,
+     * 2026-09-29 audit); being offline or rate-limited used to sign the
+     * learner out too, which this port had copied before that fix.
      */
     suspend fun freshAccessToken(force: Boolean = false): String? = refreshLock.withLock {
         val current = (_state.value as? AuthState.SignedIn)?.session ?: return null
@@ -70,10 +72,13 @@ class SessionManager(
             establish(refreshed)
             refreshed.accessToken
         } catch (e: Exception) {
-            signOut()
+            if (isRejectedRefreshToken(e)) signOut()
             null
         }
     }
+
+    /** 400/401/403 from GoTrue's token endpoint mean the refresh token is invalid, revoked or used; anything else is transient. */
+    private fun isRejectedRefreshToken(e: Exception): Boolean = e is SupabaseAuthError.Server && e.status in setOf(400, 401, 403)
 
     /** Cold-launch restore: a stored session still valid is used, an expired one refreshed, a failed refresh cleared. */
     suspend fun restore() {
@@ -86,7 +91,10 @@ class SessionManager(
             try {
                 establish(auth.refresh(stored))
             } catch (e: Exception) {
-                store.clear()
+                // Offline or a server hiccup at launch: stay signed in on the stored
+                // session and let the next request's 401 retry refresh it. Clearing
+                // here signed a learner out just for opening the app in airplane mode.
+                if (isRejectedRefreshToken(e)) store.clear() else establish(stored)
             }
         } finally {
             _isRestoring.value = false

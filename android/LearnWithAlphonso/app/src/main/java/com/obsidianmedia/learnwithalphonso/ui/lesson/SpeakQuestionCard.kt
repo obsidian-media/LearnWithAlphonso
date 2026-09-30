@@ -90,7 +90,8 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
     }
     val state by vm.state.collectAsState()
     val phase by vm.engine.phase.collectAsState()
-    DisposableEffect(Unit) { onDispose { vm.engine.tearDown() } }
+    // Cancel, not tearDown: the view model outlives a rotation and the next press must still work.
+    DisposableEffect(Unit) { onDispose { vm.engine.cancel() } }
     val canCapture = isConnected && !state.micUnavailable
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

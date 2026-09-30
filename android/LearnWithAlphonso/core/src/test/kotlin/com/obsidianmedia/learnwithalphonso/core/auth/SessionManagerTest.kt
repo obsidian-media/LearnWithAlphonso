@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.io.IOException
 
 class SessionManagerTest {
     private val now = 1_758_000_000L
@@ -136,5 +137,29 @@ class SessionManagerTest {
         m.completeGoogleSignIn("cb://x?error=access_denied")
         assertEquals("Google sign-in didn't complete. Please try again.", m.errorMessage.value)
         assertEquals(AuthState.SignedOut, m.state.value)
+    }
+
+    /** An engine with no network at all: every request throws before reaching a server. */
+    private fun offlineAuth(): SupabaseAuthClient =
+        SupabaseAuthClient("https://x.supabase.co", "pk", MockEngine { throw IOException("no network") }) { now }
+
+    @Test
+    fun `restore offline with an expired session stays signed in on the stored session`() = runTest {
+        // Review 2026-09-30, mirroring Session.swift's 2026-09-29 audit fix: only a rejected refresh token ends the session.
+        val store = MemoryStore(expired())
+        val m = SessionManager(offlineAuth(), store) { now }
+        m.restore()
+        assertEquals(AuthState.SignedIn(expired()), m.state.value)
+        assertNotNull(store.session)
+    }
+
+    @Test
+    fun `a forced refresh that cannot reach the server returns null but keeps the session`() = runTest {
+        val store = MemoryStore(valid())
+        val m = SessionManager(offlineAuth(), store) { now }
+        m.restore()
+        assertNull(m.freshAccessToken(force = true))
+        assertTrue(m.state.value is AuthState.SignedIn)
+        assertNotNull(store.session)
     }
 }

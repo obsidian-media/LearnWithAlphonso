@@ -31,6 +31,8 @@ interface PlayerPort {
     fun release()
     var onTick: (Double) -> Unit
     var onEnded: () -> Unit
+    /** The player's own play state: the system pauses on focus loss and unplugged headphones without us asking. */
+    var onPlayingChanged: (Boolean) -> Unit
 }
 
 data class PodcastPlayerState(
@@ -74,6 +76,9 @@ class PodcastPlayer(
     init {
         port.onTick = ::tick
         port.onEnded = ::finish
+        // Review 2026-09-30: a system pause (audio focus lost, headphones unplugged) left the
+        // mini bar showing "playing" and the next tap had to pause a paused player first.
+        port.onPlayingChanged = { playing -> _state.update { if (it.episode == null) it else it.copy(isPlaying = playing) } }
         scope.launch {
             recording.collect { isRecording ->
                 // Our own mic screens pause the podcast and never resume it: resuming

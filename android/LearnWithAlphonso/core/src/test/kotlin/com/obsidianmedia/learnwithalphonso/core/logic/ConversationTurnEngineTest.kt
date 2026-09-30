@@ -142,4 +142,28 @@ class ConversationTurnEngineTest {
         assertEquals(TurnPhase.IDLE, engine.phase.value)
         assertTrue(events.single() is TurnEvent.Failed)
     }
+
+    @Test
+    fun `cancel drops the press in flight and the next press works, tearDown refuses every later press`() = runEngine { engine, recorder, events ->
+        // Review 2026-09-30: the composable's dispose (a rotation) must not kill the microphone for the surviving view model.
+        engine.pressBegan()
+        advanceTimeBy(100)
+        engine.cancel()
+        assertEquals(TurnPhase.IDLE, engine.phase.value)
+        assertEquals(1, recorder.cancelled)
+        advanceUntilIdle()
+        assertTrue(events.isEmpty(), "a cancelled press emits nothing")
+
+        engine.pressBegan()
+        assertEquals(TurnPhase.RECORDING, engine.phase.value)
+        advanceTimeBy(500)
+        engine.pressEnded()
+        advanceUntilIdle()
+        assertTrue(events.single() is TurnEvent.Transcribed)
+
+        engine.tearDown()
+        engine.pressBegan()
+        assertEquals(TurnPhase.IDLE, engine.phase.value)
+        assertEquals(2, recorder.started)
+    }
 }

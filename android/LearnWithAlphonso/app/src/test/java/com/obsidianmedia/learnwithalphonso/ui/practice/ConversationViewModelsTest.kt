@@ -78,16 +78,20 @@ class ConversationViewModelsTest {
     }
 
     @Test
-    fun `leaving analyses only once and only after four turns`() = runBlocking {
+    fun `clearing analyses only once and only after four turns, while a compose leave only cancels`() = runBlocking {
         val short = server()
         val v = scenarioVm(short)
-        v.onLeave()
+        v.onCleared()
         Thread.sleep(200)
         assertFalse(short.seen.any { it.path.endsWith("analyze-weaknesses") })
         val long = server()
         val v2 = scenarioVm(long)
         repeat(2) { v2.pressBegan(); v2.pressEnded(); awaitTrue("turn") { v2.state.value.phase == ConversationPhase.IDLE && v2.state.value.turns.size == 1 + 2 * (it + 1) } }
-        v2.onLeave(); v2.onLeave()
+        v2.onLeave() // a rotation: nothing analysed, the transcript survives
+        Thread.sleep(100)
+        assertEquals(0, long.seen.count { it.path.endsWith("analyze-weaknesses") })
+        assertEquals(5, v2.state.value.turns.size)
+        v2.onCleared(); v2.onCleared()
         awaitTrue("analysed") { long.seen.count { it.path.endsWith("analyze-weaknesses") } == 1 }
         Thread.sleep(200)
         assertEquals(1, long.seen.count { it.path.endsWith("analyze-weaknesses") })

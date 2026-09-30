@@ -93,16 +93,18 @@ abstract class BaseConversationViewModel(
 
     protected open fun onReply(reply: String) {}
 
-    /** Leaving: cancel any recording and, with a real conversation behind us, analyse it once, best effort. */
-    fun onLeave() {
+    /** The composable left (rotation, tab switch): cancel any recording; the view model and its transcript survive. */
+    fun onLeave() = engine.cancel()
+
+    /** The screen is really gone: tear down and, with a real conversation behind us, analyse it once, best effort. */
+    /** Public (wider than ViewModel's protected) so the test can drive the real clear path. */
+    public override fun onCleared() {
         engine.tearDown()
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript) } }
     }
-
-    override fun onCleared() = onLeave()
 
     companion object {
         fun clarityLabel(confidence: Double): String = when {

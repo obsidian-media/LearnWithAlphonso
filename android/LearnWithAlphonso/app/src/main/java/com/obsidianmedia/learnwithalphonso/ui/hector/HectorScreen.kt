@@ -139,15 +139,16 @@ class HectorViewModel(
         }
     }
 
-    fun onLeave() {
+    /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
+    fun onLeave() = engine.cancel()
+
+    public override fun onCleared() {
         engine.tearDown()
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript) } }
     }
-
-    override fun onCleared() = onLeave()
 }
 
 @Composable

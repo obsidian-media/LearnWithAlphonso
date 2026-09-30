@@ -98,12 +98,23 @@ class ConversationTurnEngine(
         }
     }
 
-    /** The screen is going away: cancel silently, and ignore anything still in flight. */
-    fun tearDown() {
-        tornDown = true
+    /**
+     * The composable left the screen (rotation, tab switch) but its view model
+     * survives: cancel silently, drop anything in flight, and stay usable for
+     * the next press. Review 2026-09-30: tearing down here left the microphone
+     * dead after a rotation, since the engine lives as long as the view model.
+     */
+    fun cancel() {
         generation += 1
+        wantsToStop = false
         recorder.cancelIfRecording()
         _phase.value = TurnPhase.IDLE
+    }
+
+    /** The view model is going away: cancel and refuse every later press. */
+    fun tearDown() {
+        tornDown = true
+        cancel()
     }
 
     private fun stopAndTranscribe() {

@@ -25,6 +25,7 @@ import org.junit.Test
 class FakePort : PlayerPort {
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
+    override var onPlayingChanged: (Boolean) -> Unit = {}
     val calls = ArrayList<String>()
     var position = 0L
     var duration: Long? = null
@@ -127,6 +128,21 @@ class PodcastPlayerTest {
         assertEquals(1, port.calls.count { it == "play" })
         p.toggle()
         assertTrue(p.state.value.isPlaying)
+    }
+
+    @Test
+    fun `a system pause is reflected so the next tap resumes instead of pausing again`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode())
+        assertTrue(p.state.value.isPlaying)
+        port.onPlayingChanged(false) // headphones unplugged: ExoPlayer paused itself
+        assertFalse(p.state.value.isPlaying)
+        p.toggle()
+        assertTrue(p.state.value.isPlaying)
+        assertEquals(2, port.calls.count { it == "play" })
+        assertEquals(0, port.calls.count { it == "pause" })
     }
 
     @Test

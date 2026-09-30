@@ -22,6 +22,7 @@ import java.util.concurrent.Executor
 class MediaControllerPort(private val context: Context, private val scope: CoroutineScope) : PlayerPort {
     override var onTick: (Double) -> Unit = {}
     override var onEnded: () -> Unit = {}
+    override var onPlayingChanged: (Boolean) -> Unit = {}
 
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
@@ -35,6 +36,7 @@ class MediaControllerPort(private val context: Context, private val scope: Corou
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) startTicker() else ticker?.cancel()
+            onPlayingChanged(isPlaying)
         }
     }
 
