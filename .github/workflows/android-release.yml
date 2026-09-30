@@ -215,7 +215,9 @@ jobs:
           # leaveApksInstalledAfterRun: Gradle otherwise uninstalls the app after the
           # run, which deletes its external files dir and the screenshots with it
           # (run 36683940433: "failed to stat remote object").
-          script: ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"; status=$?; mkdir -p "$GITHUB_WORKSPACE/screenshots"; adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."; exit $status
+          # hide_error_dialogs: the headless emulator's launcher ANRs under load and its
+          # "isn't responding" dialog sat on top of every capture in run 36684805571.
+          script: adb shell settings put global hide_error_dialogs 1; ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"; status=$?; mkdir -p "$GITHUB_WORKSPACE/screenshots"; adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."; exit $status
       - uses: actions/upload-artifact@v4
         if: always()
         with:
