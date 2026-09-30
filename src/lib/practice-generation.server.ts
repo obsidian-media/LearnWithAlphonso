@@ -68,6 +68,19 @@ export function practicePrompt(
  * the whole function's execution budget instead of failing fast.
  * `durationMs` is logged on every outcome (not just failures) so a real
  * recurrence gives an exact number instead of another guess.
+ *
+ * 2026-09-30, real production logs from live use confirmed a regression
+ * in the fix above: `[generate-practice] 0 questions in 4172ms` -- a
+ * fast, non-erroring call that still returned nothing. 800 tokens is
+ * tight for up to 5 questions once each one's prompt/4 choices/
+ * explanation and JSON punctuation are accounted for (the schema alone
+ * allows up to ~1500 tokens of content before overhead), so a real
+ * completion the model would otherwise have finished cleanly could get
+ * cut off mid-JSON and fail parsePracticeQuestions' parse -- silently,
+ * since a parse failure and a genuine "no good questions" model
+ * response both already return an empty array by design. Raised with
+ * real headroom; still far below what would meaningfully affect
+ * latency for a JSON array this small.
  */
 export async function generatePracticeQuestions(params: {
   topic: string;
@@ -87,7 +100,7 @@ export async function generatePracticeQuestions(params: {
       body: JSON.stringify({
         model: params.nvidiaModel,
         messages: [{ role: "user", content: practicePrompt(params.topic, params.sampleQuestions) }],
-        max_tokens: 800,
+        max_tokens: 2048,
       }),
       signal: AbortSignal.timeout(20_000),
     });

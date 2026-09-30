@@ -109,7 +109,7 @@ describe("generatePracticeQuestions", () => {
     await generatePracticeQuestions(params());
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const body = JSON.parse(init.body as string);
-    expect(body.max_tokens).toBe(800);
+    expect(body.max_tokens).toBe(2048);
   });
 
   it("returns an empty array (not a throw) when the request times out", async () => {
