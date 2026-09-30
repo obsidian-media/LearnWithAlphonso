@@ -21,6 +21,13 @@ owed.
 | 10 | Play service account with Release manager | Google Cloud + Play Console, Users and permissions | GitHub secret `PLAY_SERVICE_ACCOUNT_JSON` | Unattended uploads from `android-release.yml` |
 | 11 | Listing material: feature graphic 1024x500, 512 px icon, screenshots, content rating | Play Console | uploads | Production review |
 
+Status 2026-09-30: items 1 to 4 done; item 2 on a provisional Google account
+(project `learn-with-alphonso-421a2`, see `docs/BACKLOG.md` 0.0-z); items 8
+and 9 done by the agent (keystore and its passwords in `D:\Credentialslphonso-upload.jks`
+and `alphonso-upload-keystore.txt` on the owner's machine, the four secrets
+set, `assetlinks.json` published from the fingerprint); item 5 in progress;
+items 6, 7, 10, 11 open.
+
 Order that respects the dependencies: 1, then 5 (Google's identity
 verification and the 14-day closed-test rule are wall-clock waits), 8 and 9,
 then 2 and 3 and 4 together, then the app record and first manual upload,

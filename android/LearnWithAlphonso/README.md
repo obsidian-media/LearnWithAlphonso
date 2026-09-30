@@ -81,10 +81,10 @@ client values, the same ones `AppConfig.swift` ships.
 - Add `com.obsidianmedia.learnwithalphonso://login-callback` to the Supabase
   project's allowed redirect URLs (Authentication, URL Configuration). Without
   it the Custom Tab completes at Google and Supabase refuses the redirect.
-- Publish `/.well-known/assetlinks.json` on `learn.alphonsoecosystem.app`
-  with the app's signing certificate fingerprint (known once Plan 5 creates
-  the upload key) so Android opens `/invite/{code}` links in the app. Until
-  then the Friends screen's "Friend code" field accepts a pasted code.
+- `/.well-known/assetlinks.json` is published on `learn.alphonsoecosystem.app`
+  with the upload key's fingerprint (PR #198). Once Play App Signing re-signs
+  the app, add the Play signing certificate's fingerprint to that array too
+  (Play Console, Release, Setup, App integrity).
 
 ## Owner actions before push works
 
