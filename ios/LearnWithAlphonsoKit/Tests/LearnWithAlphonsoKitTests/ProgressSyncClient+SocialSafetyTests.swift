@@ -101,4 +101,45 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
             XCTAssertEqual(error as? ProgressSyncError, .server(status: 400, message: "invalid reason"))
         }
     }
+
+    // MARK: - reportTeamName (2026-09-29 pre-submission audit)
+
+    func testReportTeamNameFilesAReportAgainstTheTeamsCreatorTaggedWithTheTeam() async throws {
+        let captured = TestCapture<[URLRequest]>([])
+        let client = makeClient { request in
+            captured.value.append(request)
+            if request.httpMethod == "GET" {
+                return self.jsonResponse(for: request.url!, body: [["created_by": "creator-1"]])
+            }
+            return self.jsonResponse(for: request.url!, body: [], status: 201)
+        }
+
+        let filed = try await client.reportTeamName(teamID: "team-9", reason: "harassment")
+
+        XCTAssertTrue(filed)
+        let lookup = try XCTUnwrap(captured.value.first)
+        XCTAssertTrue(lookup.url!.absoluteString.contains("/rest/v1/teams"))
+        XCTAssertTrue(lookup.url!.query!.contains("id=eq.team-9"))
+        let insert = try XCTUnwrap(captured.value.last)
+        XCTAssertEqual(insert.httpMethod, "POST")
+        XCTAssertTrue(insert.url!.absoluteString.hasSuffix("/rest/v1/content_reports"))
+        let body = try JSONSerialization.jsonObject(with: XCTUnwrap(insert.httpBody)) as! [String: Any]
+        XCTAssertEqual(body["reported"] as? String, "creator-1")
+        XCTAssertEqual(body["reason"] as? String, "team_name:team-9:harassment")
+    }
+
+    func testReportTeamNameFilesNothingWhenTheTeamHasNoCreator() async throws {
+        // Auto-created teams get a system-generated name and no creator:
+        // there is no person to report and nothing user-written to review.
+        let captured = TestCapture<[URLRequest]>([])
+        let client = makeClient { request in
+            captured.value.append(request)
+            return self.jsonResponse(for: request.url!, body: [["created_by": NSNull()]])
+        }
+
+        let filed = try await client.reportTeamName(teamID: "team-9", reason: "spam")
+
+        XCTAssertFalse(filed)
+        XCTAssertEqual(captured.value.count, 1)
+    }
 }

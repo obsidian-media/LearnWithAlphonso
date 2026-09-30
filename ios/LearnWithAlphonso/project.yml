@@ -113,6 +113,12 @@ targets:
         # Multiple INFOPLIST_KEY_* values for an array-typed key are
         # space-separated (Xcode 13+ synthesized Info.plist convention).
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        # 48: iPhone itself is portrait-only (emitted as the
+        # UISupportedInterfaceOrientations~iphone variant, which iOS prefers
+        # over the base key on iPhone). Every screen is designed for
+        # portrait; the four-orientation base key above stays only to keep
+        # the upload validator happy. Pre-submission audit, 2026-09-29.
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
         MARKETING_VERSION: "1.0"
         # 35-38: the "Empty or missing audio"/short-recording saga, see
@@ -251,7 +257,22 @@ targets:
         # neither was ever wired into an iOS screen. The hold-to-talk
         # race fixes from build 46 are still unverified on a real
         # device.
-        CURRENT_PROJECT_VERSION: "47"
+        #
+        # 48: the 2026-09-29 pre-submission audit. (1) Access tokens now
+        # refresh proactively (Session.refreshIfNeeded, on a timer and on
+        # every foreground): ~47 call sites used a token that expired an
+        # hour into a session, so account deletion, export, reporting and
+        # sync all failed until relaunch -- deletion is what a reviewer
+        # tests last. Delete/export also retry once after a 401. Being
+        # offline or rate-limited no longer signs the learner out. (2)
+        # Report/Block on team member rows and "Report Team Name" on the
+        # public top-teams list -- the one social surface without them
+        # (Guideline 1.2). (3) The AI consent sheet names Deepgram and
+        # NVIDIA and offers "Not now" instead of a forced "Got it"
+        # (Guideline 5.1.2(i)). (4) The paywall states the free trial and
+        # the price after it, for StoreKit-eligible users only. (5) iPhone
+        # is portrait-only.
+        CURRENT_PROJECT_VERSION: "48"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -379,7 +400,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "47"
+        CURRENT_PROJECT_VERSION: "48"
         SKIP_INSTALL: true
       configs:
         Release:

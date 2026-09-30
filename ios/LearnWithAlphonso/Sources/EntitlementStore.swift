@@ -18,6 +18,11 @@ final class EntitlementStore {
     /// expected right now, not an error: the paywall shows a clear
     /// "not available yet" state instead of crashing or hiding silently.
     private(set) var packages: [Package] = []
+    /// Product ids whose introductory free trial StoreKit says THIS user
+    /// can still get. The paywall mentions a trial only for these, so it
+    /// never promises a trial to someone who already used it (2026-09-29
+    /// pre-submission audit: the trial wasn't mentioned anywhere before).
+    private(set) var trialEligibleProductIDs: Set<String> = []
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
@@ -83,6 +88,12 @@ final class EntitlementStore {
         do {
             let offerings = try await Purchases.shared.offerings()
             packages = offerings.current?.availablePackages ?? []
+            var eligible: Set<String> = []
+            for package in packages where package.storeProduct.introductoryDiscount?.paymentMode == .freeTrial {
+                let status = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: package.storeProduct)
+                if status == .eligible { eligible.insert(package.storeProduct.productIdentifier) }
+            }
+            trialEligibleProductIDs = eligible
         } catch {
             packages = []
             // The 2026-09-23 debug instrumentation that dumped the raw

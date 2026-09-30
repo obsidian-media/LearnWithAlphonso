@@ -141,7 +141,14 @@ struct RootView: View {
                             // why this replaced @Environment(\.colorScheme)
                             // entirely.
                             updateRealSystemColorScheme()
-                            Task { await triggerSync() }
+                            // Refresh first: the proactive refresh timer in
+                            // Session doesn't run while suspended, so after a
+                            // long background stint the stored token may have
+                            // expired, and every call below would 401.
+                            Task {
+                                await session.refreshIfNeeded()
+                                await triggerSync()
+                            }
                         } else if newPhase == .background {
                             // Flush the listening position before the system can
                             // suspend or kill the process. Audio itself keeps
