@@ -163,6 +163,105 @@ async function main() {
     );
     console.log(`\nStatus: ${appInfos.status}`);
     console.log(JSON.stringify(appInfos.json, null, 2));
+  } else if (cmd === "readiness") {
+    // Pre-submission sweep: everything a "Submit for Review" click would
+    // actually need, checked live rather than trusted from prior session
+    // notes -- the editable version's own state, whether a processed
+    // build is attached to it, the en-US listing localization, the
+    // appInfo localization (name/subtitle/privacy policy URL), and the
+    // App Review Information block. Read-only throughout.
+    console.log("\n--- appStoreVersions (PREPARE_FOR_SUBMISSION) ---");
+    const versions = await api(
+      `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION&include=build`,
+    );
+    console.log(`Status: ${versions.status}`);
+    console.log(JSON.stringify(versions.json, null, 2));
+    const versionsJson = versions.json as {
+      data?: { id: string; attributes?: { versionString?: string; appVersionState?: string } }[];
+      included?: { type: string; attributes?: { version?: string; processingState?: string } }[];
+    };
+    const version = versionsJson.data?.[0];
+    if (!version) {
+      console.log("\nNo PREPARE_FOR_SUBMISSION version found -- nothing else to check.");
+      return;
+    }
+    console.log(`\nEditable version: ${version.attributes?.versionString} (${version.id})`);
+    const attachedBuild = versionsJson.included?.find((r) => r.type === "builds");
+    console.log(
+      attachedBuild
+        ? `Attached build: ${attachedBuild.attributes?.version} (processingState: ${attachedBuild.attributes?.processingState})`
+        : "Attached build: NONE -- a build must be selected before this can be submitted.",
+    );
+
+    console.log("\n--- appStoreVersionLocalizations (en-US) ---");
+    const locs = await api(`/appStoreVersions/${version.id}/appStoreVersionLocalizations`);
+    const locsJson = locs.json as {
+      data?: { attributes?: Record<string, unknown> }[];
+    };
+    const loc = locsJson.data?.find((l) => l.attributes?.locale === "en-US");
+    if (!loc) {
+      console.log("No en-US appStoreVersionLocalization found.");
+    } else {
+      for (const field of [
+        "description",
+        "keywords",
+        "promotionalText",
+        "supportUrl",
+        "marketingUrl",
+        "whatsNew",
+      ]) {
+        const val = loc.attributes?.[field];
+        console.log(`  ${field}: ${val ? "SET" : "(empty)"}`);
+      }
+    }
+
+    console.log("\n--- appInfos + appInfoLocalizations (en-US) ---");
+    const appInfos = await api(`/apps/${APP_ID}/appInfos`);
+    const appInfosJson = appInfos.json as { data?: { id: string }[] };
+    const appInfo = appInfosJson.data?.[0];
+    if (appInfo) {
+      const appInfoLocs = await api(`/appInfos/${appInfo.id}/appInfoLocalizations`);
+      const appInfoLocsJson = appInfoLocs.json as {
+        data?: { attributes?: Record<string, unknown> }[];
+      };
+      const infoLoc = appInfoLocsJson.data?.find((l) => l.attributes?.locale === "en-US");
+      if (!infoLoc) {
+        console.log("No en-US appInfoLocalization found.");
+      } else {
+        for (const field of ["name", "subtitle", "privacyPolicyUrl", "privacyChoicesUrl"]) {
+          const val = infoLoc.attributes?.[field];
+          console.log(`  ${field}: ${val ? "SET" : "(empty)"}`);
+        }
+      }
+    } else {
+      console.log("No appInfo found.");
+    }
+
+    console.log("\n--- appStoreReviewDetail ---");
+    const reviewDetail = await api(`/appStoreVersions/${version.id}/appStoreReviewDetail`);
+    const reviewDetailJson = reviewDetail.json as {
+      data?: { attributes?: Record<string, unknown> };
+    };
+    if (!reviewDetailJson.data) {
+      console.log("No appStoreReviewDetail found.");
+    } else {
+      const attrs = reviewDetailJson.data.attributes ?? {};
+      for (const field of [
+        "contactFirstName",
+        "contactLastName",
+        "contactEmail",
+        "contactPhone",
+        "demoAccountName",
+        "demoAccountPassword",
+        "demoAccountRequired",
+        "notes",
+      ]) {
+        const val = attrs[field];
+        console.log(
+          `  ${field}: ${val !== null && val !== undefined && val !== "" ? "SET" : "(empty)"}`,
+        );
+      }
+    }
   } else if (cmd === "create-group") {
     console.log('\nAttempting to create subscription group "Alphonso Pro"...');
     const result = await api("/subscriptionGroups", "POST", {
