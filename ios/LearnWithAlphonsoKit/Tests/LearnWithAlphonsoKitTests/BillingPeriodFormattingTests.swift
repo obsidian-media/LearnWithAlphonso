@@ -21,4 +21,14 @@ final class BillingPeriodFormattingTests: XCTestCase {
     func testZeroValueFallsBackToPluralPhrasing() {
         XCTAssertEqual(billingPeriodDescription(unit: .month, value: 0), "Billed every 0 months")
     }
+
+    // Paywall trial disclosure (2026-09-29 pre-submission audit): the
+    // subscription has a free trial, and the paywall must say how long it
+    // lasts before the button that starts it.
+    func testFreeTrialLengthReadsAsACountedDuration() {
+        XCTAssertEqual(freeTrialDescription(unit: .week, value: 2), "2-week free trial")
+        XCTAssertEqual(freeTrialDescription(unit: .day, value: 14), "14-day free trial")
+        XCTAssertEqual(freeTrialDescription(unit: .month, value: 1), "1-month free trial")
+        XCTAssertEqual(freeTrialDescription(unit: .year, value: 1), "1-year free trial")
+    }
 }

@@ -9,7 +9,11 @@ import Foundation
 /// as WidgetSharing.swift, so the fresh-install/returning-user behavior is
 /// testable here without a Simulator.
 public enum AIDisclosureGate {
-    public static let acknowledgedDefaultsKey = "aiDisclosureAcknowledged"
+    /// "v2" since build 48: the sheet became an explicit Allow / Not now
+    /// choice naming the providers (Guideline 5.1.2(i)). The old
+    /// `aiDisclosureAcknowledged` flag recorded a forced "Got it", which is
+    /// not that consent, so everyone is asked again once.
+    public static let acknowledgedDefaultsKey = "aiDataSharingConsent.v2"
 
     public static func isAcknowledged(in defaults: UserDefaults = .standard) -> Bool {
         defaults.bool(forKey: acknowledgedDefaultsKey)

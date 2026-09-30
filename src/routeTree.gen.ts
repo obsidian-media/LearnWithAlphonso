@@ -36,6 +36,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
+import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-code'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
@@ -180,6 +181,11 @@ const ApiHectorRespondRoute = ApiHectorRespondRouteImport.update({
   path: '/api/hector-respond',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReviewDemoCodeRoute = ApiReviewDemoCodeRouteImport.update({
+  id: '/api/review-demo-code',
+  path: '/api/review-demo-code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -334,6 +342,7 @@ export interface FileRoutesById {
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
+  '/api/review-demo-code': typeof ApiReviewDemoCodeRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
     | '/campaign/$campaignId'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
+    | '/api/review-demo-code'
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/campaign_/$campaignId'
@@ -477,6 +489,7 @@ export interface RootRouteChildren {
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
+  ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
@@ -672,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHectorRespondRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/review-demo-code': {
+      id: '/api/review-demo-code'
+      path: '/api/review-demo-code'
+      fullPath: '/api/review-demo-code'
+      preLoaderRoute: typeof ApiReviewDemoCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stt': {
       id: '/api/stt'
       path: '/api/stt'
@@ -808,6 +828,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
+  ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }

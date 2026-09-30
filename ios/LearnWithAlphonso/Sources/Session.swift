@@ -29,6 +29,9 @@ final class Session {
     private(set) var isRestoring = true
 
     private let authClient: SupabaseAuthClient
+    /// Fires shortly before the current access token expires -- see
+    /// `scheduleProactiveRefresh`.
+    private var proactiveRefreshTask: Task<Void, Never>?
     private let googleSignInPresenter = GoogleSignInPresenter()
     private let appleSignInPresenter = AppleSignInPresenter()
 
@@ -48,10 +51,9 @@ final class Session {
     /// current one is expired or within 60 seconds of it (same buffer
     /// `restoreSession()` already uses), or unconditionally when
     /// `forceRefresh` is true. Nil means "no signed-in session" or "the
-    /// refresh itself failed" -- the latter signs out, same posture as
-    /// `restoreSession()`'s own failure path: a session backed by a
-    /// refresh token nothing will accept is worse than being asked to
-    /// sign in again.
+    /// refresh itself failed". Only a refresh token the server rejects
+    /// signs out -- a session backed by one is worse than being asked to
+    /// sign in again -- while a network failure leaves the session alone.
     ///
     /// **Why this exists.** Before this, a token was refreshed exactly
     /// once, at cold launch, and never again for the rest of a live
@@ -77,9 +79,21 @@ final class Session {
             establishSession(refreshed)
             return refreshed.accessToken
         } catch {
-            signOut()
+            // Only a refresh token the server actually rejects ends the
+            // session. Being offline or rate-limited used to sign the
+            // learner out too (2026-09-29 audit); now the caller just gets
+            // nil and shows its own error.
+            if Self.isRejectedRefreshToken(error) { signOut() }
             return nil
         }
+    }
+
+    /// 400/401/403 from GoTrue's token endpoint mean the refresh token is
+    /// invalid, revoked or already used. Anything else -- 429, 5xx, no
+    /// network -- is transient and must not end the session.
+    private static func isRejectedRefreshToken(_ error: Error) -> Bool {
+        guard case SupabaseAuthError.server(let status, _) = error else { return false }
+        return [400, 401, 403].contains(status)
     }
 
     /// The signed-in user's own id -- for anything that needs to reference
@@ -137,8 +151,15 @@ final class Session {
         do {
             let refreshed = try await authClient.refresh(stored)
             establishSession(refreshed)
-        } catch {
+        } catch where Self.isRejectedRefreshToken(error) {
             KeychainSessionStore.clear()
+        } catch {
+            // Offline or a server hiccup at launch: stay signed in on the
+            // stored session. establishSession schedules a refresh a few
+            // seconds out, and refreshIfNeeded keeps retrying every 30s
+            // until the network is back. Clearing here used to sign a
+            // learner out just for opening the app in airplane mode.
+            establishSession(stored)
         }
     }
 
@@ -208,9 +229,45 @@ final class Session {
     }
 
     func signOut() {
+        proactiveRefreshTask?.cancel()
+        proactiveRefreshTask = nil
         state = .signedOut
         errorMessage = nil
         KeychainSessionStore.clear()
+    }
+
+    /// Refreshes the session when its access token is expired or within
+    /// `leeway` of expiring; otherwise does nothing. Best-effort, unlike
+    /// `freshAccessToken`: a network failure (offline, timeout) keeps the
+    /// current session and retries shortly, and only an auth server that
+    /// actually rejects the refresh token signs out.
+    ///
+    /// **Why this exists (2026-09-29 pre-submission audit).** About 47
+    /// call sites build their API client from the plain `accessToken`
+    /// property, which was only ever refreshed at cold launch and by the
+    /// four voice screens. After ~1 hour in the foreground, every one of
+    /// them -- account deletion and export, reporting a user, sync --
+    /// failed until relaunch. Keeping the stored token fresh here fixes
+    /// all of them at once instead of converting each call site.
+    func refreshIfNeeded(leeway: TimeInterval = 300) async {
+        guard case .signedIn(let current) = state,
+              current.expiresAt <= Date().addingTimeInterval(leeway) else { return }
+        do {
+            let refreshed = try await authClient.refresh(current)
+            // A sign-out (or a different sign-in) while the request was in
+            // flight wins over this now-stale refresh.
+            guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
+            establishSession(refreshed)
+        } catch {
+            // Same rule as the success path: a failure that belongs to a
+            // session that has since been replaced must not touch the new one.
+            guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
+            if Self.isRejectedRefreshToken(error) {
+                signOut()
+            } else {
+                scheduleProactiveRefresh(after: 30)
+            }
+        }
     }
 
     /// The one place `state` transitions to `.signedIn` -- every path
@@ -220,6 +277,22 @@ final class Session {
     private func establishSession(_ session: SupabaseSession) {
         state = .signedIn(session)
         KeychainSessionStore.save(session)
+        // Five minutes before expiry. Task.sleep does not advance while
+        // the app is suspended, so RootView also calls refreshIfNeeded()
+        // on every return to the foreground.
+        scheduleProactiveRefresh(after: session.expiresAt.timeIntervalSinceNow - 300)
+    }
+
+    private func scheduleProactiveRefresh(after delay: TimeInterval) {
+        proactiveRefreshTask?.cancel()
+        let seconds = max(delay, 5)
+        proactiveRefreshTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            // Wider than the 300s the timer was scheduled for, so a wake-up
+            // a moment early still counts as due.
+            await self?.refreshIfNeeded(leeway: 360)
+        }
     }
 
     /// Fire-and-forget: posts the one-time Apple authorization code to

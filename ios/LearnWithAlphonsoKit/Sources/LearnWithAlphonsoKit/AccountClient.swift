@@ -52,9 +52,12 @@ public final class AccountClient: Sendable {
     /// `AIConversationClient.perform`'s doc comment for the full story:
     /// `Session` used to refresh its token only once, at cold launch, so
     /// any call made after the token's ~1-hour lifetime elapsed 401'd
-    /// with no visible reason. `linkAppleAuthorization` wires this up;
-    /// `exportMyData` and `deleteMyAccount` don't -- unaffected on
-    /// purpose, not an oversight.
+    /// with no visible reason. All three calls go through here; a client
+    /// built without `refreshAccessToken` still makes exactly one attempt.
+    /// Export and delete were left out at first and added in the
+    /// 2026-09-29 pre-submission audit: deletion is the screen an App
+    /// Store reviewer always tests, usually after the first token of the
+    /// session has expired.
     private func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
         let (data, response) = try await requester(request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 401,
@@ -78,7 +81,7 @@ public final class AccountClient: Sendable {
         request.httpMethod = "POST"
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
         return data
     }
@@ -94,7 +97,7 @@ public final class AccountClient: Sendable {
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["confirm": "DELETE"])
 
-        let (data, response) = try await requester(request)
+        let (data, response) = try await perform(request)
         try Self.requireSuccess(data: data, response: response)
 
         // The body's own appleRevocationStatus was computed server-side
