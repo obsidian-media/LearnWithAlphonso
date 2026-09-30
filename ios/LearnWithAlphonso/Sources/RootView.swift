@@ -230,6 +230,30 @@ struct RootView: View {
         } else {
             syncQueueStore.markSyncedNow()
         }
+        // 2026-09-30, reported live: the Review badge (here and on
+        // LessonBrowserView's row) showed 0 while the Review screen
+        // itself, opened right after, correctly showed 11 due items.
+        // replaceLastKnownDueReviews was previously only ever called from
+        // inside ReviewQueueView's own load -- so on any session where
+        // that screen hadn't been opened yet, the badge read a stale (or
+        // empty) cache regardless of how many reviews were actually due.
+        // Refreshed here too, same "best-effort, never blank a good
+        // cached value on failure" posture as fetchProgress above.
+        //
+        // English-only for now, matching ReviewQueueView's own default
+        // course -- iOS has no synced notion of the account's active
+        // course yet (that's a web-only concept, profiles.active_language),
+        // so a learner reviewing a non-English course won't see this
+        // badge reflect it correctly. Real limitation, not silently
+        // ignored; a full fix needs that sync built first.
+        // "en" inlined rather than Course.english.code -- that's a
+        // private extension scoped to ReviewQueueView.swift's own file
+        // (Swift's `private` is file-scoped), not visible here. Six
+        // other files each keep an identical private copy of this same
+        // Course -> code mapping; matching that established pattern.
+        if let dueReviews = try? await client.fetchDueReviews(course: "en") {
+            syncQueueStore.replaceLastKnownDueReviews(dueReviews.due)
+        }
     }
 
     /// Whether English placement has genuinely never been taken for this

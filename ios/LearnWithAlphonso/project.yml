@@ -232,7 +232,26 @@ targets:
         # under deadline pressure). No real device was available to test
         # the hold-to-talk fixes -- recommend a rapid-double-tap pass on
         # all four recording screens.
-        CURRENT_PROJECT_VERSION: "46"
+        #
+        # 47: the account owner's own first real hands-on QA pass on
+        # build 46, on a real device -- two real bugs found and fixed.
+        # "Generate more practice" was failing live (confirmed via real
+        # Vercel logs: a fast, non-erroring call still returned 0
+        # questions, and a retry hit a genuine 20s timeout); the
+        # max_tokens: 800 cap from build 45's own fix was likely
+        # truncating real completions mid-JSON, raised to 2048. The
+        # review due-count badge showed 0 while the Review screen itself
+        # showed 11 due items -- the shared cache was only ever
+        # populated by opening that screen once, now also refreshed
+        # during app sync/foreground. Also confirmed real but explicitly
+        # deferred to a feature build after submission (the account
+        # owner's own call): iOS never gates lesson play on 0 hearts
+        # anywhere, and "buy a heart/streak freeze with XP" has zero UI
+        # on iOS -- both already have a working web/server counterpart,
+        # neither was ever wired into an iOS screen. The hold-to-talk
+        # race fixes from build 46 are still unverified on a real
+        # device.
+        CURRENT_PROJECT_VERSION: "47"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -360,7 +379,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "46"
+        CURRENT_PROJECT_VERSION: "47"
         SKIP_INSTALL: true
       configs:
         Release:
