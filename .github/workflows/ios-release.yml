@@ -264,6 +264,20 @@ jobs:
             exit 1
           fi
 
+          echo "-- iPhone-only: UIDeviceFamily must be exactly [1] --"
+          # Found at the Add-for-Review step, 2026-09-29: builds up to 48
+          # shipped UIDeviceFamily [1, 2] (iPhone AND iPad) because
+          # XcodeGen's per-target platform preset overrode the
+          # project-level TARGETED_DEVICE_FAMILY "1". App Store Connect then
+          # demanded 13-inch iPad screenshots and App Review would test on
+          # iPad. Fail the release rather than ship that again.
+          FAMILY=$(plutil -extract UIDeviceFamily json -o - "$APP/Info.plist")
+          if [ "$FAMILY" != "[1]" ]; then
+            echo "::error::Shipped UIDeviceFamily is $FAMILY, expected [1] (iPhone only). Set TARGETED_DEVICE_FAMILY on the target in project.yml."
+            exit 1
+          fi
+          echo "UIDeviceFamily: $FAMILY"
+
           echo "-- Final RCApiKey is a real, non-empty, non-test_ key, in the actual shipped Info.plist --"
           FINAL_KEY=$(/usr/libexec/PlistBuddy -c "Print :RCApiKey" "$APP/Info.plist")
           if [[ "$FINAL_KEY" == test_* ]]; then

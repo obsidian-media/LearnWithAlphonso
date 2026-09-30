@@ -29,6 +29,7 @@
 // tokens (which register against the sandbox APNs environment).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { buildFcmAccessToken, readFcmConfig, sendFcmToTokens } from "./fcm.ts";
 
 function apnsConfigured(): boolean {
   return !!(
@@ -106,25 +107,56 @@ export async function sendPushToUser(
   body: string,
   data: Record<string, unknown> = {},
 ): Promise<SendPushResult> {
-  if (!apnsConfigured()) {
+  // Android (FCM, fcm.ts) joined 2026-09-30. Each sender no-ops on its own
+  // missing secrets; "not_configured" now means NEITHER is configured, so a
+  // project with only FCM set still sends to Android phones.
+  const fcm = readFcmConfig();
+  if (!apnsConfigured() && !fcm) {
     return { sent: 0, skipped: "not_configured" };
   }
 
   const { data: tokens } = await admin
     .from("device_tokens")
-    .select("id, token")
+    .select("id, token, platform")
     .eq("user_id", userId);
   if (!tokens || tokens.length === 0) {
     return { sent: 0, skipped: null };
   }
 
-  const jwt = await buildAuthToken();
-  const bundleId = Deno.env.get("APNS_BUNDLE_ID")!;
-  const host = Deno.env.get("APNS_HOST") ?? "https://api.push.apple.com";
+  type TokenRow = { id: string; token: string; platform: string | null };
+  const rows = tokens as TokenRow[];
+  const androidRows = rows.filter((r) => r.platform === "android");
+  const iosRows = rows.filter((r) => r.platform !== "android");
   const staleTokenIds: string[] = [];
   let sent = 0;
 
-  await Promise.all(tokens.map(async (row: { id: string; token: string }) => {
+  if (fcm && androidRows.length > 0) {
+    try {
+      const accessToken = await buildFcmAccessToken(fcm.account);
+      const result = await sendFcmToTokens(androidRows, title, body, data, {
+        projectId: fcm.projectId,
+        accessToken,
+      });
+      sent += result.sent;
+      staleTokenIds.push(...result.stale);
+    } catch {
+      // A failed token exchange is a configuration or Google outage, not
+      // evidence any device token is dead -- prune nothing, send nothing.
+    }
+  }
+
+  if (!apnsConfigured() || iosRows.length === 0) {
+    if (staleTokenIds.length > 0) {
+      await admin.from("device_tokens").delete().in("id", staleTokenIds);
+    }
+    return { sent, skipped: null };
+  }
+
+  const jwt = await buildAuthToken();
+  const bundleId = Deno.env.get("APNS_BUNDLE_ID")!;
+  const host = Deno.env.get("APNS_HOST") ?? "https://api.push.apple.com";
+
+  await Promise.all(iosRows.map(async (row: { id: string; token: string }) => {
     try {
       const res = await fetch(`${host}/3/device/${row.token}`, {
         method: "POST",

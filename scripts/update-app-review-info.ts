@@ -35,7 +35,8 @@
  * ios-release.yml -- no new credentials.
  *
  * Usage: bunx tsx scripts/update-app-review-info.ts
- * (requires DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE
+ * (requires DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE,
+ * REVIEW_DEMO_CODE_URL
  * in the environment, in addition to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
@@ -47,6 +48,10 @@ const APP_ID = process.env.APP_ID ?? "6813969159";
 const DEMO_ACCOUNT_EMAIL = process.env.DEMO_ACCOUNT_EMAIL;
 const REVIEW_CONTACT_EMAIL = process.env.REVIEW_CONTACT_EMAIL;
 const REVIEW_CONTACT_PHONE = process.env.REVIEW_CONTACT_PHONE;
+// The /api/review-demo-code page URL INCLUDING its secret ?key= -- read
+// from a secret, never written here, because this repository is public
+// and anyone holding the URL can sign in to the demo account.
+const REVIEW_DEMO_CODE_URL = process.env.REVIEW_DEMO_CODE_URL;
 
 const missing = [
   !KEY_ID && "APP_STORE_CONNECT_KEY_ID",
@@ -55,6 +60,7 @@ const missing = [
   !DEMO_ACCOUNT_EMAIL && "DEMO_ACCOUNT_EMAIL",
   !REVIEW_CONTACT_EMAIL && "REVIEW_CONTACT_EMAIL",
   !REVIEW_CONTACT_PHONE && "REVIEW_CONTACT_PHONE",
+  !REVIEW_DEMO_CODE_URL && "REVIEW_DEMO_CODE_URL",
 ].filter(Boolean);
 if (missing.length > 0) {
   console.error(`Missing environment variable(s): ${missing.join(", ")}`);
@@ -104,16 +110,20 @@ const COPYRIGHT = "2026 Shayan Salimi";
 const buildReviewNotes = (
   demoAccountEmail: string,
   reviewContactEmail: string,
+  demoCodeURL: string,
 ) => `Learn with Alphonso is an English, French and Spanish learning app with
 structured lessons, spaced repetition, AI speaking practice, an audio
 library and optional social features.
 
 DEMO ACCOUNT
-  Email:    ${demoAccountEmail}
-  Sign-in:  email code (this app has no passwords). The code is emailed
-            to that address -- if it does not arrive within a couple of
-            minutes, contact ${reviewContactEmail} and it will be
-            relayed within minutes.
+  Email:  ${demoAccountEmail}
+  This app has no passwords; it signs in with a 6-digit code. To sign in:
+    1. Enter the email above and tap "Send code".
+    2. Open this page for the current code (no login needed):
+       ${demoCodeURL}
+    3. Enter that code and tap "Verify".
+  Opening the page issues a new code, so please do step 1 before step 2.
+  If anything goes wrong, contact ${reviewContactEmail}.
 
 The account already has lesson progress, a streak and items in the
 review queue, so every feature below can be exercised immediately. It
@@ -128,9 +138,9 @@ HOW TO REACH EACH FEATURE
 
   AI speaking practice  (MICROPHONE REQUIRED, HOLD the mic button to talk)
     Practice tab -> choose a scenario -> hold the microphone button and
-    speak, then release to send. A disclosure sheet appears before the
-    first AI interaction explaining that audio is sent to our
-    speech-processing and AI providers; it must be accepted once.
+    speak, then release to send. Before the first AI interaction a sheet
+    asks permission to send audio and text to the named providers
+    (Deepgram, NVIDIA): "Allow" turns it on, "Not now" leaves it off.
 
   Hector, the AI tutor  (PAID, already unlocked on this account)
     Hector tab. Same hold-to-talk microphone control as Practice.
@@ -144,27 +154,27 @@ HOW TO REACH EACH FEATURE
     Profile -> Friends, League. Teams are reachable from the League
     screen; a team shows its own join code so another member can share it
     for a friend to enter under "Join a team." Duels can be started
-    against friends or via open matchmaking. Every user-facing surface has
-    a "..." menu offering Block and Report.
+    against friends or via open matchmaking. Every place another learner
+    appears (leaderboards, friends, duels, team members) has a "..." menu
+    with Block and Report, and public team names have "Report Team Name".
 
   Account deletion
     Profile -> Settings -> Account -> Delete My Account. Deletion is
     initiated and completed in the app; typing DELETE confirms it.
     Export My Data is in the same section.
 
-SUBSCRIPTION
+SUBSCRIPTION (to see and test the purchase)
 
   One auto-renewable subscription, "Alphonso Pro Monthly," unlocks
-  Hector. Price and billing period are rendered from StoreKit rather than
-  hard-coded, so they display in the reviewer's own storefront currency.
-  Restore Purchases is on the same screen.
+  Hector and is submitted together with this version. The demo account
+  already has Pro, so it does not show the paywall. To test the
+  purchase: Profile -> Settings -> Sign out, then "Continue with Apple"
+  to create a fresh account, and open the Hector tab.
 
-  Please note: this is our FIRST auto-renewable subscription, so per
-  Apple's own documentation it cannot load until it is reviewed alongside
-  this build. If the paywall shows "can't load options" before the
-  subscription is approved, that is the expected pre-approval state and
-  not a defect. Once approved it resolves without an app update. The demo
-  account's promotional entitlement lets Hector be reached regardless.
+  The paywall shows the free trial (for eligible accounts), then the
+  price and billing period read from StoreKit in your storefront's
+  currency, plus Restore Purchases, Manage Subscription, and links to
+  the Terms of Use and Privacy Policy.
 
 THIRD-PARTY PROCESSING
 
@@ -186,8 +196,61 @@ WHAT THE APP DOES NOT DO
   no data shared with data brokers. Location, contacts and photos are
   never accessed.`;
 
+// Public client values, the same ones AppConfig.swift ships in the app.
+const SUPABASE_URL = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9";
+
+/**
+ * Walks the exact steps the review notes tell App Review to follow, and
+ * throws unless they end in a real signed-in session: (1) "Send code"
+ * (POST /auth/v1/otp, as the app does), (2) open the sign-in code page,
+ * (3) "Verify" that code (POST /auth/v1/verify, type "email", as the app
+ * does). Runs before anything is written, so notes pointing at a broken or
+ * not-yet-deployed page can never reach Apple. Prints nothing secret: no
+ * URL, key, code or token.
+ */
+async function verifyReviewerSignIn(email: string, codePageURL: string) {
+  const headers = { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" };
+
+  const sent = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email, create_user: false }),
+  });
+  if (!sent.ok) throw new Error(`Reviewer step 1 (Send code) failed: HTTP ${sent.status}`);
+
+  const page = await fetch(codePageURL, { redirect: "manual" });
+  const html = await page.text();
+  const code = html.match(/>(\d{6})</)?.[1];
+  if (page.status !== 200 || !code) {
+    throw new Error(
+      `Reviewer step 2 (sign-in code page) failed: HTTP ${page.status}, code found: ${Boolean(code)}. ` +
+        "Is REVIEW_DEMO_CODE_KEY set in Vercel production and has production been redeployed since?",
+    );
+  }
+
+  const verified = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email, token: code, type: "email" }),
+  });
+  const session = (await verified.json().catch(() => ({}))) as {
+    access_token?: string;
+    user?: { email?: string };
+  };
+  if (!verified.ok || !session.access_token) {
+    throw new Error(`Reviewer step 3 (Verify) failed: HTTP ${verified.status}`);
+  }
+  if (session.user?.email?.toLowerCase() !== email.toLowerCase()) {
+    throw new Error("Reviewer step 3 signed in as a different account than DEMO_ACCOUNT_EMAIL.");
+  }
+  console.log("Reviewer sign-in verified end to end: Send code -> code page -> Verify -> session.");
+}
+
 async function main() {
-  console.log(`Finding the app's editable App Store version...`);
+  await verifyReviewerSignIn(DEMO_ACCOUNT_EMAIL!, REVIEW_DEMO_CODE_URL!);
+
+  console.log(`\nFinding the app's editable App Store version...`);
   const versions = await api(
     `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
   );
@@ -218,10 +281,23 @@ async function main() {
     contactPhone: REVIEW_CONTACT_PHONE!,
     demoAccountName: DEMO_ACCOUNT_EMAIL!,
     demoAccountPassword:
-      "No password -- this app is passwordless (email sign-in code). See notes for how the code is relayed.",
+      "No password: tap Send code, then get the code from the page in the notes.",
     demoAccountRequired: true,
-    notes: buildReviewNotes(DEMO_ACCOUNT_EMAIL!, REVIEW_CONTACT_EMAIL!),
+    notes: buildReviewNotes(DEMO_ACCOUNT_EMAIL!, REVIEW_CONTACT_EMAIL!, REVIEW_DEMO_CODE_URL!),
   };
+
+  // App Store Connect caps the demo password field at 100 characters
+  // (a 409 TOO_LONG, found live) and review notes at 4000.
+  if (reviewAttributes.demoAccountPassword.length > 100) {
+    throw new Error(
+      `demoAccountPassword is ${reviewAttributes.demoAccountPassword.length} chars; the limit is 100.`,
+    );
+  }
+  // App Store Connect caps review notes at 4000 characters.
+  if (reviewAttributes.notes.length > 4000) {
+    throw new Error(`Review notes are ${reviewAttributes.notes.length} chars; the limit is 4000.`);
+  }
+  console.log(`Review notes length: ${reviewAttributes.notes.length}/4000`);
 
   let updatedDetail: JsonApi;
   if (existing.data) {

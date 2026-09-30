@@ -30,3 +30,4 @@ jobs:
           DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
           REVIEW_CONTACT_EMAIL: ${{ secrets.REVIEW_CONTACT_EMAIL }}
           REVIEW_CONTACT_PHONE: ${{ secrets.REVIEW_CONTACT_PHONE }}
+          REVIEW_DEMO_CODE_URL: ${{ secrets.REVIEW_DEMO_CODE_URL }}

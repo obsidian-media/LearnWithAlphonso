@@ -178,12 +178,52 @@ final class AccountClientTests: XCTestCase {
         XCTAssertEqual(callCount.value, 1)
     }
 
-    func testExportMyDataDoesNotRetryOn401EvenWhenConstructedWithoutRefreshSupport() async {
-        // exportMyData/deleteMyAccount were deliberately left out of this
-        // fix (see AccountClient.perform's doc comment) -- makeClient's
-        // default AccountClient has no refreshAccessToken, so this is
-        // really just confirming those two methods' behavior is
-        // unchanged by this file's other edits.
+    // Pre-submission audit (2026-09-29): export and delete now get the
+    // same one-retry-after-401 as linkAppleAuthorization. Deletion is the
+    // one screen an App Store reviewer always exercises, usually last,
+    // after the session's first access token has long expired.
+    func testExportMyDataRetriesOnceAfter401WithARefreshedToken() async throws {
+        let capturedAuthHeaders = TestCapture<[String?]>([])
+        let client = AccountClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                capturedAuthHeaders.value.append(request.value(forHTTPHeaderField: "Authorization"))
+                let status = capturedAuthHeaders.value.count == 1 ? 401 : 200
+                return (Data("{}".utf8), HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        _ = try await client.exportMyData()
+
+        XCTAssertEqual(capturedAuthHeaders.value, ["Bearer stale-token", "Bearer fresh-token"])
+    }
+
+    func testDeleteMyAccountRetriesOnceAfter401WithARefreshedToken() async throws {
+        let captured = TestCapture<[(auth: String?, body: Data?)]>([])
+        let client = AccountClient(
+            baseURL: baseURL,
+            accessToken: { "stale-token" },
+            refreshAccessToken: { "fresh-token" },
+            requester: { request in
+                captured.value.append((request.value(forHTTPHeaderField: "Authorization"), request.httpBody))
+                let status = captured.value.count == 1 ? 401 : 200
+                return (Data("{\"deleted\":true}".utf8), HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
+            }
+        )
+
+        try await client.deleteMyAccount()
+
+        XCTAssertEqual(captured.value.map(\.auth), ["Bearer stale-token", "Bearer fresh-token"])
+        // The retry must still carry the DELETE confirmation -- the server
+        // rejects a deletion without it.
+        let retryBody = try XCTUnwrap(captured.value.last?.body)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: retryBody) as? [String: String])
+        XCTAssertEqual(json["confirm"], "DELETE")
+    }
+
+    func testExportMyDataDoesNotRetryOn401WhenNoRefreshHandlerIsProvided() async {
         let callCount = TestCapture(0)
         let client = makeClient { request in
             callCount.value += 1

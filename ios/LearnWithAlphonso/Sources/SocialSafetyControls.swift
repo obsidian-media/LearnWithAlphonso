@@ -20,6 +20,10 @@ import LearnWithAlphonsoKit
 struct SocialTarget: Identifiable, Equatable {
     let id: String
     let displayName: String
+    /// Set when reporting a team's NAME rather than a person -- `id` is then
+    /// the team id and `displayName` the team name. ReportSheet files it
+    /// through ProgressSyncClient.reportTeamName instead of reportUser.
+    var isTeamName = false
 }
 
 /// Sent as `content_reports.reason` verbatim -- short, stable snake_case
@@ -102,7 +106,7 @@ struct ReportSheet: View {
                     }
                 }
             } header: {
-                Text("Why are you reporting this person?")
+                Text(target.isTeamName ? "Why are you reporting this team name?" : "Why are you reporting this person?")
                     .font(AlphonsoFont.sans(12, weight: .semiBold))
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.ember)
@@ -159,8 +163,16 @@ struct ReportSheet: View {
         defer { isSubmitting = false }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
-            try await client.reportUser(target.id, reason: selectedReason.rawValue)
-            didSubmit = true
+            if target.isTeamName {
+                if try await client.reportTeamName(teamID: target.id, reason: selectedReason.rawValue) {
+                    didSubmit = true
+                } else {
+                    errorMessage = "This team's name was generated automatically by Alphonso, so there's no one to report."
+                }
+            } else {
+                try await client.reportUser(target.id, reason: selectedReason.rawValue)
+                didSubmit = true
+            }
         } catch {
             errorMessage = "Couldn't submit your report. Try again."
         }

@@ -188,6 +188,12 @@ jobs:
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
 
+      - name: Test the shared FCM sender (Android push)
+        # No network and no key material: the test generates its own RSA key
+        # and injects fetch. --allow-env only because fcm.ts reads Deno.env
+        # in the helpers the test does not call.
+        run: deno test --allow-env supabase/functions/_shared/fcm.test.ts
+
       # A new Edge Function directory needs its own deno.json import map, and
       # nothing caught a missing one until the real deploy -- found 2026-09-22
       # shipping get-season-status. `deno check` and `deno test` both pass
@@ -336,6 +342,21 @@ jobs:
           APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
           APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
           APNS_BUNDLE_ID: ${{ secrets.APNS_BUNDLE_ID }}
+
+      - name: Sync FCM secrets (Android push)
+        # Same shape as the APNs step above: skipped until both repo secrets
+        # exist, then synced on every deploy with no further workflow change.
+        # supabase/functions/_shared/fcm.ts is the runtime consumer.
+        run: |
+          if [ -z "$FCM_SERVICE_ACCOUNT_JSON" ] || [ -z "$FCM_PROJECT_ID" ]; then
+            echo "::warning::FCM_SERVICE_ACCOUNT_JSON/FCM_PROJECT_ID not both set -- skipping FCM secret sync (Android push send stays a no-op)."
+            exit 0
+          fi
+          supabase secrets set FCM_SERVICE_ACCOUNT_JSON="$FCM_SERVICE_ACCOUNT_JSON" FCM_PROJECT_ID="$FCM_PROJECT_ID"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+          FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
 
       - uses: oven-sh/setup-bun@v2
         with:
