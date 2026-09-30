@@ -1,8 +1,8 @@
 // Firebase Cloud Messaging HTTP v1 sender for Android device tokens -- the
 // Android counterpart of apns.ts, sharing its contract exactly: gracefully
 // no-ops when the FCM secrets aren't configured, best-effort per device,
-// and a dead token (404, or an error body naming UNREGISTERED) is reported
-// back so the caller prunes that device_tokens row.
+// and a dead token (FCM answering with the UNREGISTERED error code) is
+// reported back so the caller prunes that device_tokens row.
 //
 // Requires (Edge Function secrets -- `supabase secrets set ...`):
 //   FCM_SERVICE_ACCOUNT_JSON - the whole service-account JSON from the
@@ -27,6 +27,12 @@ export type FcmDeps = {
 };
 
 const defaultDeps: FcmDeps = { fetch: (...args) => fetch(...args), now: () => Date.now() };
+
+// Every Google call is bounded: sendPushToUser awaits FCM before APNs, so a
+// stalled exchange or send would otherwise hold up iOS delivery too (review
+// on PR #192). Rejection on timeout lands in the same catch paths as any
+// other failure: nothing sent, nothing pruned.
+const REQUEST_TIMEOUT_MS = 10_000;
 
 export function fcmConfigured(): boolean {
   return !!(Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") && Deno.env.get("FCM_PROJECT_ID"));
@@ -93,6 +99,7 @@ export async function buildFcmAccessToken(
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) throw new Error(`fcm: token exchange failed with ${res.status}`);
   const json = await res.json() as { access_token?: string };
@@ -111,7 +118,9 @@ export type FcmSendResult = {
 /**
  * Posts one message per token to the HTTP v1 endpoint. Best-effort per
  * device: a thrown fetch counts as neither sent nor stale (a network blip is
- * not evidence the token is dead), a 404 or an UNREGISTERED error body is.
+ * not evidence the token is dead). Only FCM's own UNREGISTERED error code
+ * marks a token dead: a bare 404 can be a routing or endpoint failure for a
+ * perfectly valid token (review on PR #192), so status alone never prunes.
  */
 export async function sendFcmToTokens(
   rows: FcmTokenRow[],
@@ -144,13 +153,14 @@ export async function sendFcmToTokens(
             android: { priority: "high" },
           },
         }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       if (res.ok) {
         sent++;
         return;
       }
       const text = await res.text().catch(() => "");
-      if (res.status === 404 || text.includes("UNREGISTERED")) stale.push(row.id);
+      if (text.includes("UNREGISTERED")) stale.push(row.id);
     } catch {
       // Best-effort -- never fail the caller over one device.
     }

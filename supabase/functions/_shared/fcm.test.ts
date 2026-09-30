@@ -27,9 +27,11 @@ Deno.test("buildFcmAccessToken signs an RS256 JWT with the messaging scope and e
   const { pem, publicKey } = await testPrivateKeyPem();
   let seenUrl = "";
   let seenBody = "";
+  let sawSignal = false;
   const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
     seenUrl = String(url);
     seenBody = String(init?.body);
+    sawSignal = init?.signal instanceof AbortSignal;
     return new Response(JSON.stringify({ access_token: "ya29.test", expires_in: 3599 }), { status: 200 });
   }) as typeof fetch;
 
@@ -38,6 +40,7 @@ Deno.test("buildFcmAccessToken signs an RS256 JWT with the messaging scope and e
     { fetch: fetchImpl, now: () => 1_758_000_000_000 },
   );
   assertEquals(token, "ya29.test");
+  assertEquals(sawSignal, true, "the token exchange must carry an abort deadline");
   assertEquals(seenUrl, "https://oauth2.example/token");
   const params = new URLSearchParams(seenBody);
   assertEquals(params.get("grant_type"), "urn:ietf:params:oauth:grant-type:jwt-bearer");
@@ -60,10 +63,16 @@ Deno.test("buildFcmAccessToken signs an RS256 JWT with the messaging scope and e
   assertEquals(verified, true, "the signature must verify with the account's public key");
 });
 
-Deno.test("sendFcmToTokens counts sends, marks 404 and UNREGISTERED as stale, ignores a thrown fetch", async () => {
+Deno.test("sendFcmToTokens counts sends, marks only UNREGISTERED as stale, ignores a bare 404 and a thrown fetch", async () => {
   const responses: Record<string, () => Response | never> = {
     "tok-ok": () => new Response("{}", { status: 200 }),
-    "tok-404": () => new Response(JSON.stringify({ error: { status: "NOT_FOUND" } }), { status: 404 }),
+    // A 404 without FCM's own error code is an endpoint or routing failure, not a dead token.
+    "tok-404": () => new Response("<html>Not Found</html>", { status: 404 }),
+    "tok-404-unreg": () =>
+      new Response(
+        JSON.stringify({ error: { status: "NOT_FOUND", details: [{ errorCode: "UNREGISTERED" }] } }),
+        { status: 404 },
+      ),
     "tok-unreg": () =>
       new Response(
         JSON.stringify({ error: { status: "INVALID_ARGUMENT", details: [{ errorCode: "UNREGISTERED" }] } }),
@@ -84,14 +93,15 @@ Deno.test("sendFcmToTokens counts sends, marks 404 and UNREGISTERED as stale, ig
     return responses[token]();
   }) as typeof fetch;
 
-  const rows = ["tok-ok", "tok-404", "tok-unreg", "tok-500", "tok-throw"].map((token) => ({ id: `id-${token}`, token }));
+  const rows = ["tok-ok", "tok-404", "tok-404-unreg", "tok-unreg", "tok-500", "tok-throw"].map((token) => ({ id: `id-${token}`, token }));
   const result = await sendFcmToTokens(rows, "Nudged", "A friend nudged you", { type: "nudge", n: 2 }, {
     projectId: "proj-1",
     accessToken: "ya29.test",
   }, { fetch: fetchImpl, now: () => 0 });
 
   assertEquals(result.sent, 1);
-  assertEquals(result.stale.sort(), ["id-tok-404", "id-tok-unreg"]);
+  assertEquals(result.stale.sort(), ["id-tok-404-unreg", "id-tok-unreg"]);
+
   const first = JSON.parse(bodies[0]).message;
   assertEquals(first.notification, { title: "Nudged", body: "A friend nudged you" });
   assertEquals(first.data, { type: "nudge", n: "2" }, "data values are strings on the wire");

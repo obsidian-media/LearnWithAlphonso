@@ -743,8 +743,9 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
   (`20260930170000_device_tokens_android.sql`) and rows with it go to
   Firebase Cloud Messaging through `_shared/fcm.ts` (RS256
   service-account JWT exchanged for an OAuth token, then the HTTP v1
-  `messages:send` endpoint; a 404 or `UNREGISTERED` prunes the row the
-  way 400/410 prunes an APNs row). FCM no-ops until
+  `messages:send` endpoint, both calls bounded by a 10 s deadline; only
+  FCM's `UNREGISTERED` error code prunes the row, the way 400/410 prunes
+  an APNs row, since a bare 404 can be a routing failure for a live token). FCM no-ops until
   `FCM_SERVICE_ACCOUNT_JSON` and `FCM_PROJECT_ID` are set as Edge
   Function secrets; `not_configured` now means neither sender is
   configured. `fcm.test.ts` runs in `ci.yml`'s `deno-tests` job.
