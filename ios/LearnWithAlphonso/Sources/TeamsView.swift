@@ -148,7 +148,10 @@ struct TeamsView: View {
                     ForEach(Array(leaderboard.enumerated()), id: \.element.teamID) { i, team in
                         HStack {
                             AlphonsoRowCard(title: "\(i + 1). \(team.name)", subtitle: "\(team.weeklyXP) XP this week")
-                            if team.teamID != myTeam?.teamID {
+                            // Hidden only on the team you own (you can't
+                            // report yourself); members can report their
+                            // own team's name.
+                            if !(team.teamID == myTeam?.teamID && myTeam?.isOwner == true) {
                                 Menu {
                                     Button {
                                         reportTarget = SocialTarget(id: team.teamID, displayName: team.name, isTeamName: true)

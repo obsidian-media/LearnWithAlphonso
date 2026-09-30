@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 /**
  * App Review sign-in helper: shows a fresh 6-digit sign-in code for the
@@ -26,10 +26,11 @@ import { timingSafeEqual } from "node:crypto";
  */
 const MIN_KEY_LENGTH = 32;
 
+// Compares SHA-256 digests so both sides are always 32 bytes: a plain
+// length check first would leak the key's length through timing.
 function keyMatches(expected: string, given: string): boolean {
-  const a = Buffer.from(expected);
-  const b = Buffer.from(given);
-  return a.length === b.length && timingSafeEqual(a, b);
+  const digest = (v: string) => createHash("sha256").update(v).digest();
+  return timingSafeEqual(digest(expected), digest(given));
 }
 
 function page(body: string, status: number): Response {

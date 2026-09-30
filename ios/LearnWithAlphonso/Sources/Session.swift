@@ -258,10 +258,15 @@ final class Session {
             // flight wins over this now-stale refresh.
             guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
             establishSession(refreshed)
-        } catch where Self.isRejectedRefreshToken(error) {
-            signOut()
         } catch {
-            scheduleProactiveRefresh(after: 30)
+            // Same rule as the success path: a failure that belongs to a
+            // session that has since been replaced must not touch the new one.
+            guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
+            if Self.isRejectedRefreshToken(error) {
+                signOut()
+            } else {
+                scheduleProactiveRefresh(after: 30)
+            }
         }
     }
 
