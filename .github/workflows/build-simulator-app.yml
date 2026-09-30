@@ -49,11 +49,13 @@ jobs:
         run: |
           APP=build/dd/Build/Products/Release-iphonesimulator/LearnWithAlphonso.app
           test -d "$APP" || { echo "::error::No .app at $APP"; exit 1; }
+          # Plain ad-hoc signature, NO entitlements: signing in restricted
+          # ones (aps-environment, applesignin) without a provisioning profile
+          # makes the simulator refuse to launch the app ("The request was
+          # denied by service delegate (SBMainWorkspace)"), found on Limrun.
+          # Side effects in the simulator only: Sign in with Apple and push
+          # are unavailable; email-code sign-in works.
           codesign --force --deep --sign - "$APP"
-          # The hand-written entitlements file has XML comments; Xcode strips
-          # them, raw codesign ("AMFIUnserializeXML: syntax error") can't.
-          plutil -convert xml1 -o "$RUNNER_TEMP/app.entitlements" LearnWithAlphonso-Release.entitlements
-          codesign --force --sign - --entitlements "$RUNNER_TEMP/app.entitlements" "$APP"
           codesign --verify --verbose "$APP"
           lipo -info "$APP/LearnWithAlphonso"
           /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist"
