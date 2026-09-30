@@ -188,6 +188,12 @@ jobs:
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
 
+      - name: Test the shared FCM sender (Android push)
+        # No network and no key material: the test generates its own RSA key
+        # and injects fetch. --allow-env only because fcm.ts reads Deno.env
+        # in the helpers the test does not call.
+        run: deno test --allow-env supabase/functions/_shared/fcm.test.ts
+
       # A new Edge Function directory needs its own deno.json import map, and
       # nothing caught a missing one until the real deploy -- found 2026-09-22
       # shipping get-season-status. `deno check` and `deno test` both pass

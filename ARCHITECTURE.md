@@ -738,7 +738,16 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
   this doc. No-ops gracefully when `APNS_KEY_P8`/`APNS_KEY_ID`/
   `APNS_TEAM_ID`/`APNS_BUNDLE_ID` aren't all set (see `ci.yml`'s "Sync
   APNs secrets" step) — same "do nothing until configured" precedent as
-  `REVENUECAT_API_KEY`.
+  `REVENUECAT_API_KEY`. Since 2026-09-30 `sendPushToUser` also fans out
+  to Android: `device_tokens.platform` accepts `'android'`
+  (`20260930170000_device_tokens_android.sql`) and rows with it go to
+  Firebase Cloud Messaging through `_shared/fcm.ts` (RS256
+  service-account JWT exchanged for an OAuth token, then the HTTP v1
+  `messages:send` endpoint; a 404 or `UNREGISTERED` prunes the row the
+  way 400/410 prunes an APNs row). FCM no-ops until
+  `FCM_SERVICE_ACCOUNT_JSON` and `FCM_PROJECT_ID` are set as Edge
+  Function secrets; `not_configured` now means neither sender is
+  configured. `fcm.test.ts` runs in `ci.yml`'s `deno-tests` job.
 - **`get-season-status`** — V4 #7 (deeper gamification): resolves the
   caller's previous week's season-ladder cohort lazily (a side effect
   of this call, same no-cron pattern as `get_my_duels`), ensures a
