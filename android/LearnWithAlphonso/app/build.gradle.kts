@@ -22,7 +22,9 @@ android {
         applicationId = "com.obsidianmedia.learnwithalphonso"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
+        // Plan 5: the release workflow passes the run number so every upload is monotonically newer;
+        // local and CI debug builds stay at 1.
+        versionCode = (System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 1)
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -44,8 +46,25 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Plan 5: the upload keystore is decoded by android-release.yml from the
+    // ANDROID_UPLOAD_KEYSTORE_BASE64 secret into a temp file; a build without
+    // it (every CI debug job, every local build) has no release signing config,
+    // so a release task fails loudly instead of producing an unsigned bundle.
+    val uploadKeystore = System.getenv("ANDROID_UPLOAD_KEYSTORE_PATH")?.let { file(it) }?.takeIf { it.exists() }
+    if (uploadKeystore != null) {
+        signingConfigs {
+            create("upload") {
+                storeFile = uploadKeystore
+                storePassword = System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (uploadKeystore != null) signingConfig = signingConfigs.getByName("upload")
             // Spec section 9: a release build must carry a real RevenueCat public key.
             val rcKey = System.getenv("REVENUECAT_ANDROID_PUBLIC_KEY") ?: ""
             if (gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) } && (rcKey.isBlank() || rcKey.startsWith("test_"))) {

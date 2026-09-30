@@ -33,9 +33,10 @@ on a phone.
 | 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
 | 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, AI disclosure gate on every AI path, generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
 | 4 (in) | Listen tab: folder tree, search, resume with optimistic-concurrency saves, transcripts, offline downloads with a budget and a `.partial` staging file, one ExoPlayer in a `MediaSessionService` with lock-screen controls, next episode, mini bar on every screen. Local reminders (streak 20:00, due reviews +3 h, weekly recap Monday 09:00, weakness 10:00) over WorkManager. FCM token registration behind the notification permission. Glance streak widget. Backend: PR #192 (`device_tokens.platform` accepts `android`, `_shared/fcm.ts`). |
-| 5 | Release: signing, `android-release.yml`, Play listing, device checklist. |
+| 5 (in) | `android-release.yml` (manual dispatch: signed `bundleRelease`, bundletool validation of the produced `.aab`, optional Play upload, store screenshots as the demo account), upload signing from secrets only, `play/` listing copy, data-safety answers and review notes, `DEVICE-CHECKLIST.md`. |
 
-Every tab is real now; Plan 5 is the release itself.
+Every tab is real. What remains is the owner's side of the release
+(`OWNER-SETUP.md`) and the device checklist below.
 
 ## Deviations from the spec worth knowing
 
@@ -62,6 +63,18 @@ repository's GitHub secrets, never committed:
 
 The Supabase URL and publishable key in `app/build.gradle.kts` are public
 client values, the same ones `AppConfig.swift` ships.
+
+## Before the first Play upload
+
+1. Run `DEVICE-CHECKLIST.md` on a real phone with the debug APK from the
+   latest green `android-ci.yml` run and keep the ticked copy with the
+   release PR. CI cannot prove audio, purchases, push or the widget.
+2. Set the keystore secrets and the RevenueCat key (`OWNER-SETUP.md`),
+   then dispatch `android-release.yml` with `upload_to_play` off. The
+   `app-release-aab` artifact is the bundle to upload by hand the first
+   time; Google creates the app record from it.
+3. From then on dispatch with `upload_to_play` on and the track you want.
+   `versionCode` is the run number, so every dispatch is newer.
 
 ## Owner actions before device testing
 

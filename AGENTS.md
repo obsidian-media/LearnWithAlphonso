@@ -78,6 +78,8 @@ table and `ARCHITECTURE.md`'s "Native iOS app" section.
 | `android/LearnWithAlphonso/`                                                                     | Native Android app (Kotlin + Compose), `android` branch. `core` (pure JVM: content models, logic ports with TS vectors, Ktor clients, sync engine, session state machine) and `app` (Compose UI, encrypted session, Room offline queue, navigation). See its `README.md` and `TOOLING.md`. |
 | `scripts/export-android-content.ts`                                                              | Writes the Android app's bundled content (byte-identical to the iOS bundle) into `android/LearnWithAlphonso/app/src/main/assets/content/`; `android-ci.yml` fails on drift. |
 | `.github/workflows/android-ci.yml`                                                               | The Android app's own pipeline: content drift, `:core:test` + `:app:testDebugUnitTest` + lint, debug APK, API 34 emulator instrumentation tests. Separate from `ci.yml` by owner decision. |
+| `.github/workflows/android-release.yml`                                                          | Manual (`workflow_dispatch`) signed `bundleRelease`, bundletool validation of the produced `.aab`, optional Google Play upload, and a store-screenshot job that runs `ScreenshotTest` as the seeded demo account. Secrets it needs are listed in its header and in `android/LearnWithAlphonso/OWNER-SETUP.md`. |
+| `android/LearnWithAlphonso/play/`, `DEVICE-CHECKLIST.md`, `OWNER-SETUP.md`                       | Play listing copy, data-safety answers, review notes and the screenshot shot list; the on-device checklist CI cannot replace; the owner's portal and secret checklist. |
 
 ## Content Structure
 

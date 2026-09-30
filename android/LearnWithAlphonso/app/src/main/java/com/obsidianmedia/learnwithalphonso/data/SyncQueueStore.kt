@@ -34,9 +34,10 @@ interface SyncQueueStore {
 
 class RoomSyncQueueStore(
     private val dao: SyncDao,
-    private val now: () -> Long = System::currentTimeMillis,
     /** Plan 4: the widget publisher; every progress update funnels through here, as WidgetProgressPublisher does on iOS. */
     private val onProgressUpdated: suspend (LessonCompletionProgress) -> Unit = {},
+    /** Last on purpose: a trailing lambda at call sites is the clock (SyncQueueStoreTest passes one). */
+    private val now: () -> Long = System::currentTimeMillis,
 ) : SyncQueueStore {
     override suspend fun pendingLessonCompletions() = dao.pendingLessonCompletions().map { it.asPending() }
     override suspend fun appendLessonCompletion(pending: PendingLessonCompletion) = dao.insertLessonCompletion(PendingLessonCompletionRecord.from(pending))

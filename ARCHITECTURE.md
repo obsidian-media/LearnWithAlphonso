@@ -1165,8 +1165,22 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   and overtake messages. `app.widget.StreakWidget` (Glance) reads the
   `StreakWidgetSnapshot` JSON that `RoomSyncQueueStore.updateLastKnownProgress`
   publishes, the same funnel `WidgetProgressPublisher.swift` uses.
-- **Not yet ported** (Plan 5): release signing, `android-release.yml`, the
-  Play listing.
+- **Release (Plan 5).** `.github/workflows/android-release.yml` is the
+  counterpart of `ios-release.yml`: refuses without the four keystore
+  secrets and a production RevenueCat key, decodes the upload keystore
+  to a temp file (deleted on every exit), builds `bundleRelease` with
+  `versionCode = run number`, dumps the produced `.aab`'s manifest with
+  bundletool and fails on the wrong package, versionCode, a debuggable
+  build, a missing `mediaPlayback` foreground type or a missing
+  signature, then optionally uploads to a Play track. The signing config
+  in `app/build.gradle.kts` exists only when `ANDROID_UPLOAD_KEYSTORE_PATH`
+  names a file. `ScreenshotTest` captures the Play shot list on the
+  emulator as the demo account minted by `scripts/mint-demo-session.ts`
+  and skips itself without a session. Listing copy, data-safety answers
+  (the App Store's eight categories on Play's taxonomy plus the FCM
+  token) and review notes live in `android/LearnWithAlphonso/play/`;
+  `DEVICE-CHECKLIST.md` gates the first upload on what CI cannot prove.
+  `assetlinks.json` for invite links waits on the upload key's SHA-256.
 
 ## AI integrations
 
