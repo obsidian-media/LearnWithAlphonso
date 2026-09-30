@@ -8,9 +8,9 @@ name: Build Simulator App
 # Release configuration so the app behaves like the shipped one (no DEBUG
 # hooks). Built with code signing off, then ad-hoc signed: Apple silicon
 # requires at least an ad-hoc signature even for simulator binaries. The
-# Info.plist keeps its RevenueCat Test Store key (never the production
-# one) -- right for a simulator, and the Pro gate that matters is enforced
-# server-side against the signed-in account anyway.
+# Info.plist gets the production RevenueCat public SDK key, like
+# ios-release.yml (a Release build with the Test Store key crashes on
+# launch by design); the Pro gate that matters is server-side anyway.
 on:
   workflow_dispatch:
   push:
@@ -28,7 +28,16 @@ jobs:
 
       - name: Generate Xcode project
         working-directory: ios/LearnWithAlphonso
-        run: xcodegen generate
+        env:
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+        run: |
+          # RevenueCat fatalErrors on launch when a Release build carries its
+          # Test Store key (confirmed on Limrun's simulator log), so use the
+          # production public SDK key, exactly as ios-release.yml does.
+          test -n "$REVENUECAT_API_KEY" || { echo "::error::REVENUECAT_API_KEY secret missing"; exit 1; }
+          sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
+          grep -q "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq" Info.plist && { echo "::error::test key still present"; exit 1; } || true
+          xcodegen generate
 
       - name: Build for iOS Simulator (Release)
         working-directory: ios/LearnWithAlphonso
