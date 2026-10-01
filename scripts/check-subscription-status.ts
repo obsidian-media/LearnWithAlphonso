@@ -164,29 +164,61 @@ async function main() {
     console.log(`\nStatus: ${appInfos.status}`);
     console.log(JSON.stringify(appInfos.json, null, 2));
   } else if (cmd === "readiness") {
-    // Pre-submission sweep: everything a "Submit for Review" click would
-    // actually need, checked live rather than trusted from prior session
-    // notes -- the editable version's own state, whether a processed
-    // build is attached to it, the en-US listing localization, the
-    // appInfo localization (name/subtitle/privacy policy URL), and the
-    // App Review Information block. Read-only throughout.
-    console.log("\n--- appStoreVersions (PREPARE_FOR_SUBMISSION) ---");
-    const versions = await api(
-      `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION&include=build`,
-    );
+    // Submission-readiness sweep: everything a "Submit for Review" click
+    // would actually need (or, once submitted, what Apple is actually
+    // reviewing), checked live rather than trusted from prior session
+    // notes -- the version's own state, whether a processed build is
+    // attached to it, the en-US listing localization, the appInfo
+    // localization (name/subtitle/privacy policy URL), and the App
+    // Review Information block. Read-only throughout.
+    //
+    // No appVersionState filter: once a version is submitted it moves out
+    // of PREPARE_FOR_SUBMISSION (e.g. to WAITING_FOR_REVIEW/IN_REVIEW), so
+    // filtering on that state would silently find nothing post-submission.
+    // Fetch all versions and prefer whichever one isn't in a terminal
+    // READY_FOR_SALE/REJECTED state from a prior release.
+    console.log("\n--- appStoreVersions (all) ---");
+    const versions = await api(`/apps/${APP_ID}/appStoreVersions?include=build&limit=50`);
     console.log(`Status: ${versions.status}`);
     console.log(JSON.stringify(versions.json, null, 2));
     const versionsJson = versions.json as {
-      data?: { id: string; attributes?: { versionString?: string; appVersionState?: string } }[];
-      included?: { type: string; attributes?: { version?: string; processingState?: string } }[];
+      data?: {
+        id: string;
+        attributes?: { versionString?: string; appVersionState?: string };
+        relationships?: { build?: { data?: { id: string } | null } };
+      }[];
+      included?: {
+        type: string;
+        id: string;
+        attributes?: { version?: string; processingState?: string };
+      }[];
     };
-    const version = versionsJson.data?.[0];
+    const relevantStates = new Set([
+      "PREPARE_FOR_SUBMISSION",
+      "WAITING_FOR_REVIEW",
+      "IN_REVIEW",
+      "PENDING_DEVELOPER_RELEASE",
+      "PENDING_APPLE_RELEASE",
+      "PROCESSING_FOR_APP_STORE",
+      "METADATA_REJECTED",
+      "REJECTED",
+      "DEVELOPER_REJECTED",
+      "INVALID_BINARY",
+    ]);
+    const version =
+      versionsJson.data?.find((v) => relevantStates.has(v.attributes?.appVersionState ?? "")) ??
+      versionsJson.data?.[0];
     if (!version) {
-      console.log("\nNo PREPARE_FOR_SUBMISSION version found -- nothing else to check.");
+      console.log("\nNo appStoreVersions found at all -- nothing else to check.");
       return;
     }
-    console.log(`\nEditable version: ${version.attributes?.versionString} (${version.id})`);
-    const attachedBuild = versionsJson.included?.find((r) => r.type === "builds");
+    console.log(
+      `\nSelected version: ${version.attributes?.versionString} (${version.id}), state: ${version.attributes?.appVersionState}`,
+    );
+    const attachedBuildId = version.relationships?.build?.data?.id;
+    const attachedBuild = attachedBuildId
+      ? versionsJson.included?.find((r) => r.type === "builds" && r.id === attachedBuildId)
+      : undefined;
     console.log(
       attachedBuild
         ? `Attached build: ${attachedBuild.attributes?.version} (processingState: ${attachedBuild.attributes?.processingState})`
