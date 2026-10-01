@@ -137,3 +137,6 @@ dist-admin/
 android/LearnWithAlphonso/app/google-services.json
 *.jks
 *.keystore
+
+# The gstack browser's working folder.
+.gstack/
