@@ -172,7 +172,17 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
-        run: bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
+        # Masked before they reach GITHUB_ENV: values appended there are not
+        # secrets to GitHub and would otherwise print in every later step's env
+        # dump (seen in run 36683940433, refresh token in the clear).
+        run: |
+          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" > "$RUNNER_TEMP/session.env"
+          while IFS='=' read -r key value; do
+            [ -n "$key" ] || continue
+            echo "::add-mask::$value"
+            echo "$key=$value" >> "$GITHUB_ENV"
+          done < "$RUNNER_TEMP/session.env"
+          rm -f "$RUNNER_TEMP/session.env"
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -202,9 +212,19 @@ jobs:
           # The action runs each script LINE as its own sh -c, so the whole command
           # is one line: the -P arguments must reach Gradle, and the screenshots
           # must be pulled even when the test fails (review on PR #198).
-          script: ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"; status=$?; mkdir -p "$GITHUB_WORKSPACE/screenshots"; adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."; exit $status
+          # leaveApksInstalledAfterRun: Gradle otherwise uninstalls the app after the
+          # run, which deletes its external files dir and the screenshots with it
+          # (run 36683940433: "failed to stat remote object").
+          # hide_error_dialogs: the headless emulator's launcher ANRs under load and its
+          # "isn't responding" dialog sat on top of every capture in run 36684805571.
+          script: adb shell settings put global hide_error_dialogs 1; ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true -Pandroid.testInstrumentationRunnerArguments.class=com.obsidianmedia.learnwithalphonso.ScreenshotTest -Pandroid.testInstrumentationRunnerArguments.uiTestAccessToken="$UI_TEST_ACCESS_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestRefreshToken="$UI_TEST_REFRESH_TOKEN" -Pandroid.testInstrumentationRunnerArguments.uiTestUserId="$UI_TEST_USER_ID" -Pandroid.testInstrumentationRunnerArguments.uiTestExpiresAt="$UI_TEST_EXPIRES_AT"; status=$?; mkdir -p "$GITHUB_WORKSPACE/screenshots"; adb pull /sdcard/Android/data/com.obsidianmedia.learnwithalphonso/files/screenshots "$GITHUB_WORKSPACE/screenshots" || echo "::warning::No screenshots were written."; exit $status
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: android-screenshots
           path: screenshots/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-screenshot-test-report
+          path: android/LearnWithAlphonso/app/build/reports/androidTests/
