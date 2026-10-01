@@ -1,0 +1,206 @@
+package com.obsidianmedia.learnwithalphonso.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
+import com.obsidianmedia.learnwithalphonso.ui.auth.AuthScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.DuelsScreen
+import com.obsidianmedia.learnwithalphonso.ui.hector.HectorTab
+import com.obsidianmedia.learnwithalphonso.ui.practice.CampaignConversationScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeScreen
+import com.obsidianmedia.learnwithalphonso.ui.practice.ScenarioConversationScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.FriendsScreen
+import com.obsidianmedia.learnwithalphonso.ui.friends.InviteAcceptScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.LeaderboardScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.SeasonScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.TeamsScreen
+import com.obsidianmedia.learnwithalphonso.ui.profile.ProfileHubScreen
+import com.obsidianmedia.learnwithalphonso.ui.learn.LearnScreen
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
+import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
+import androidx.compose.foundation.layout.Column
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.obsidianmedia.learnwithalphonso.ui.nav.Routes
+import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
+import com.obsidianmedia.learnwithalphonso.ui.review.ReviewScreen
+import com.obsidianmedia.learnwithalphonso.ui.settings.SettingsScreen
+import com.obsidianmedia.learnwithalphonso.ui.tabs.PlaceholderTab
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+
+private data class Tab(val route: String, val label: String, val icon: ImageVector)
+
+private val tabs = listOf(
+    Tab(Routes.LEARN, "Learn", Icons.Filled.MenuBook),
+    Tab(Routes.LISTEN, "Listen", Icons.Filled.Headphones),
+    Tab(Routes.PRACTICE, "Practice", Icons.Filled.Mic),
+    Tab(Routes.HECTOR, "Hector", Icons.Filled.AutoAwesome),
+    Tab(Routes.PROFILE, "Profile", Icons.Filled.Person),
+)
+
+/** Port of RootView.swift: restore the session, then auth or the five-tab app. */
+@Composable
+fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}) {
+    val session = container.session
+    val isRestoring by session.isRestoring.collectAsState()
+    val state by session.state.collectAsState()
+    val palette = AlphonsoColor.palette
+
+    LaunchedEffect(Unit) { session.restore() }
+
+    Box(Modifier.fillMaxSize().background(palette.surface)) {
+        when {
+            isRestoring -> Unit
+            state !is AuthState.SignedIn -> AuthScreen(container)
+            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed)
+        }
+    }
+}
+
+@Composable
+private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit) {
+    val nav = rememberNavController()
+
+    LaunchedEffect(pendingInviteCode) {
+        if (pendingInviteCode != null) {
+            nav.navigate(Routes.invite(pendingInviteCode))
+            onInviteConsumed()
+        }
+    }
+    val palette = AlphonsoColor.palette
+    val backStack by nav.currentBackStackEntryAsState()
+    val currentRoute = backStack?.destination?.route
+    val showBar = currentRoute in Routes.tabs
+    val userId = container.session.userId
+
+    LaunchedEffect(userId) {
+        container.syncCoordinator.triggerSync()
+        runCatching { userId?.let { container.progressClient.fetchProfileTheme(it) } }.getOrNull()?.let(container.themeManager::hydrateFromServer)
+        userId?.let { container.entitlements.login(it) }
+        container.reminders.onLaunch(container.syncStore.lastKnownProgress()?.lastActiveDate)
+        container.pushRegistrar.registerIfAuthorized()
+        val placed = runCatching { container.progressClient.fetchPlacementTakenAt("en") }.getOrNull()
+        if (placed == null && runCatching { container.progressClient.fetchCefrLevel("en") }.isSuccess) {
+            nav.navigate(Routes.placement("en"))
+        }
+    }
+
+    Scaffold(
+        containerColor = palette.surface,
+        bottomBar = {
+            Column {
+            // Docked above the tab bar on every screen, as View.podcastMiniBar does per tab on iOS.
+            PodcastMiniBar(container)
+            if (showBar) {
+                NavigationBar(containerColor = palette.parchment) {
+                    tabs.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentRoute == tab.route,
+                            onClick = {
+                                nav.navigate(tab.route) {
+                                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(tab.icon, contentDescription = null) },
+                            label = { Text(tab.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = palette.onPrimary,
+                                selectedTextColor = palette.moss,
+                                indicatorColor = palette.moss,
+                                unselectedIconColor = palette.inkSoft,
+                                unselectedTextColor = palette.inkSoft,
+                            ),
+                        )
+                    }
+                }
+            }
+            }
+        },
+    ) { padding ->
+        NavHost(nav, startDestination = Routes.LEARN, modifier = Modifier.padding(padding)) {
+            composable(Routes.LEARN) {
+                LearnScreen(
+                    container,
+                    onOpenLesson = { course, id -> nav.navigate(Routes.lesson(course.code, id)) },
+                    onOpenReview = { course -> nav.navigate(Routes.review(course.code)) },
+                    onOpenPlacement = { course -> nav.navigate(Routes.placement(course.code)) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                )
+            }
+            composable(Routes.LISTEN) { entry ->
+                val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                ListenScreen(container, listenVm, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
+            }
+            composable(Routes.LISTEN_FOLDER) { entry ->
+                val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }) }
+                ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
+            }
+            composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { nav.navigate(Routes.scenario(it)) }, onOpenCampaign = { nav.navigate(Routes.campaign(it)) }) }
+            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
+            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
+            composable(Routes.HECTOR) { HectorTab(container) }
+            composable(Routes.PROFILE) {
+                ProfileHubScreen(
+                    onOpenLeague = { nav.navigate(Routes.LEAGUE) },
+                    onOpenFriends = { nav.navigate(Routes.FRIENDS) },
+                    onOpenAchievements = { nav.navigate(Routes.ACHIEVEMENTS) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                )
+            }
+            composable(Routes.LEAGUE) { LeaderboardScreen(container, onBack = { nav.popBackStack() }, onOpenTeams = { nav.navigate(Routes.TEAMS) }, onOpenSeason = { nav.navigate(Routes.SEASON) }) }
+            composable(Routes.TEAMS) { TeamsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.SEASON) { SeasonScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.FRIENDS) { FriendsScreen(container, onBack = { nav.popBackStack() }, onOpenDuels = { nav.navigate(Routes.DUELS) }, onEnterCode = { code -> nav.navigate(Routes.invite(code)) }) }
+            composable(Routes.DUELS) { DuelsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.ACHIEVEMENTS) { AchievementsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.INVITE) { entry -> InviteAcceptScreen(container, entry.arguments?.getString("code") ?: "", onDone = { nav.popBackStack() }) }
+            composable(Routes.LESSON) { entry ->
+                val course = Course.fromCode(entry.arguments?.getString("course") ?: "en")
+                val lessonId = entry.arguments?.getString("lessonId") ?: ""
+                LessonScreen(container, course, lessonId, onExit = { nav.popBackStack() })
+            }
+            composable(Routes.REVIEW) { entry ->
+                ReviewScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onExit = { nav.popBackStack() })
+            }
+            composable(Routes.PLACEMENT) { entry ->
+                PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
+            }
+            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }) }
+        }
+    }
+}

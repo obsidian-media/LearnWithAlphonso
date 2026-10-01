@@ -1105,6 +1105,113 @@ conversation, and its V2 deferral of hearts/streak-freezes, were both
 superseded in practice — see this file's git history / session
 decisions rather than trusting that doc's roadmap section as current).
 
+## Native Android app (`android/LearnWithAlphonso/`)
+
+Kotlin + Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk
+37.2, against the same Supabase project, Edge Functions and `/api/*` routes
+the iOS app uses. Started 2026-09-29 on the long-lived `android` branch;
+design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
+under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
+
+- **Two Gradle modules.** `core` is pure JVM Kotlin: content models with
+  loud-failing JSON decoding (an unknown question `type` throws), ports of
+  the shared logic that carry the same test vectors as their TS files
+  (`SrsEngine`, `HeartsEconomy`, `ProgressMath`, `SpokenAnswer{,Fr,Es}`,
+  `TranslationAnswer`, `QuestionGrading`, `PlacementLogic`, `VocabDerivation`,
+  `LessonReinforcement`, `ReviewBadge`), Ktor clients over an injected engine
+  (`SupabaseHttp` with one-retry-on-401, `ProgressSyncClient`,
+  `SupabaseAuthClient` over the GoTrue endpoints, `ApiHttp` for
+  `/api/account-*` and `/api/grade-translation`), `SyncEngine` (completions
+  drain independently, review grades strictly in order) and the
+  `SessionManager` state machine. `app` renders and persists: four themes
+  with dark variants and the seven OFL fonts, `EncryptedSharedPreferences`
+  session store, Room offline queue (`RoomSyncQueueStore`), connectivity,
+  `SyncCoordinator` (sync on launch, resume and reconnect, then read the
+  server when nothing was pushed), navigation-compose with five tabs.
+- **Content** is the iOS bundle byte for byte, written by
+  `scripts/export-android-content.ts` into `app/src/main/assets/content/`;
+  core tests read that directory as a resource root, so it exists once in
+  git and `android-ci.yml` fails on drift.
+- **Google sign-in** is Supabase's own PKCE flow in a Chrome Custom Tab with
+  redirect `com.obsidianmedia.learnwithalphonso://login-callback` (must be
+  allow-listed in the Supabase dashboard). Email code and password flows
+  match the web.
+- **Pipeline** is separate from `ci.yml` by owner decision:
+  `.github/workflows/android-ci.yml` runs content drift, JVM tests and lint,
+  a debug APK, and Room/launch instrumentation tests on an API 34 emulator.
+  Nothing Android-related gates a web or iOS deploy.
+- **Profile tab (Plan 2).** `ProfileHubScreen` opens League
+  (`LeaderboardScreen` with `wasOvertaken` against a cached snapshot, the
+  weekly recap over `activity_days` between two UTC Mondays, `TeamsScreen`,
+  `SeasonScreen`), Friends (`FriendsScreen` over `get_or_create_my_friend_code`
+  and `accept_friend_invite(_code)`, an App Link intent filter for
+  `/invite/{code}`, nudges with a SharedPreferences 24h cooldown, the activity
+  feed, `DuelsScreen`) and `AchievementsScreen` with the weakness trend. Every
+  user row carries `SocialSafetyMenu` (block, report). Settings edits display
+  name and avatar seed. The Learn tab shows weekly challenges with claims and
+  a streak-freeze purchase.
+- **Audio, AI and Pro (Plan 3).** `ConversationTurnEngine` (core) is the
+  hold-to-talk state machine every recording screen shares: one press at a
+  time, a 400 ms minimum press, a 4096-byte minimum capture, transcription
+  through `/api/stt`, and `tearDown` on leave; `TurnRecorder` implements its
+  `RecorderPort` over `MediaRecorder` (AAC in MP4). `AiConversationClient`
+  and `TutorConversationClient` (core) cover chat, TTS, STT, weakness
+  analysis, generated practice (with a real timeout) and Hector.
+  `SpeakQuestionCard` grades the transcript with the same `SpokenAnswer`
+  ports, offline falls back to typing. `PracticeScreen` lists scenarios and
+  campaigns; `HectorViewModel` sends `TutorMemoryContext.buildPrimingMessage`
+  once at the head of the history. `AiDisclosureGate` wraps the lesson
+  player, review queue, Practice and Hector (key `aiDisclosureAcknowledged`).
+  Pro is `EntitlementStore` over a `BillingPort`; `RevenueCatBilling` is
+  created only when `REVENUECAT_ANDROID_PUBLIC_KEY` was set at build time,
+  and a null port makes the paywall say subscriptions are unavailable.
+- **Podcasts, notifications, push, widget (Plan 4).** `core.podcast` holds
+  the ports of `podcast-tree.ts`, `podcast-search.ts`,
+  `podcast-transcript.ts`, `clampPosition`, `PodcastCache` and
+  `PodcastCacheBudget` with the iOS Kit test vectors, plus
+  `PodcastSessionTracker` (the save-every-10-seconds and listened-seconds
+  rules iOS keeps untested in `PodcastAudioPlayer`). `PodcastClient`
+  mirrors `PodcastClient.swift` over `SupabaseHttp`; one deliberate
+  difference: a first save POSTs `user_id` because
+  `podcast_playback.user_id` has no default (the web upsert sends it, the
+  iOS client omits it). `app.podcast`: `PodcastDownloadManager` (OkHttp,
+  `filesDir/podcast-audio`, `.partial` staging, atomic rename, reconcile
+  on start, Room v2 `podcast_downloads` with a hand-written migration),
+  `PodcastPlaybackService` (one ExoPlayer in a `MediaSessionService`,
+  audio focus and becoming-noisy handled by the player) and
+  `PodcastPlayer` over a `PlayerPort` (the JVM-tested controller: queue,
+  next episode, optimistic-concurrency saves with `StaleWrite` re-read and
+  401 disabling saves, play events through the RPC, and a pause when
+  `RecordingState` turns on that is never auto-resumed). `ListenScreen`
+  and `PodcastMiniBar` (docked above the tab bar on every screen) port
+  `ListenView.swift` and `PodcastMiniBar.swift`. `core.logic.NotificationLogic`
+  ports `NotificationLogic.swift` and `nextWeeklyRecapDate` as
+  `ReminderPlans` (null means cancel); `app.notifications` schedules them
+  as unique WorkManager jobs per kind and asks `POST_NOTIFICATIONS` at the
+  first lesson completion only. `app.push.PushRegistrar` uploads the FCM
+  token only after that grant and while signed in (`device_tokens` with
+  `platform = 'android'`), skips a re-upload of the same token, and deletes
+  the row on sign-out; `AlphonsoMessagingService` posts the server's nudge
+  and overtake messages. `app.widget.StreakWidget` (Glance) reads the
+  `StreakWidgetSnapshot` JSON that `RoomSyncQueueStore.updateLastKnownProgress`
+  publishes, the same funnel `WidgetProgressPublisher.swift` uses.
+- **Release (Plan 5).** `.github/workflows/android-release.yml` is the
+  counterpart of `ios-release.yml`: refuses without the four keystore
+  secrets and a production RevenueCat key, decodes the upload keystore
+  to a temp file (deleted on every exit), builds `bundleRelease` with
+  `versionCode = run number`, dumps the produced `.aab`'s manifest with
+  bundletool and fails on the wrong package, versionCode, a debuggable
+  build, a missing `mediaPlayback` foreground type or a missing
+  signature, then optionally uploads to a Play track. The signing config
+  in `app/build.gradle.kts` exists only when `ANDROID_UPLOAD_KEYSTORE_PATH`
+  names a file. `ScreenshotTest` captures the Play shot list on the
+  emulator as the demo account minted by `scripts/mint-demo-session.ts`
+  and skips itself without a session. Listing copy, data-safety answers
+  (the App Store's eight categories on Play's taxonomy plus the FCM
+  token) and review notes live in `android/LearnWithAlphonso/play/`;
+  `DEVICE-CHECKLIST.md` gates the first upload on what CI cannot prove.
+  `assetlinks.json` for invite links waits on the upload key's SHA-256.
+
 ## AI integrations
 
 - **Chat:** NVIDIA NIM (`integrate.api.nvidia.com`, OpenAI-compatible),

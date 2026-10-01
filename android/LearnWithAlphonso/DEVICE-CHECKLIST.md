@@ -1,0 +1,61 @@
+# Device checklist before the first Play upload
+
+CI proves the app compiles, its logic is right, and it launches on an
+emulator. Four areas cannot be proven there (spec section 12): audio,
+purchases, push and the widget. The owner runs this list once on a real
+phone (Android 8 or newer, developer options on) with the debug APK from
+the `app-debug-apk` artifact of the latest green `android-ci.yml` run:
+
+```
+adb install -r app-debug.apk
+```
+
+Tick each line in a copy of this file and attach it to the release PR.
+
+## Sign-in and sync
+
+- [ ] Email code sign-in delivers a code and lands on the Learn tab.
+- [ ] Google sign-in opens a Custom Tab, returns to the app, and lands on the Learn tab (needs the Supabase redirect allow-list, owner item 1).
+- [ ] Airplane mode on, complete a lesson, airplane mode off: the completion syncs and XP appears within a few seconds of reconnecting.
+- [ ] Sign out, sign in again: the header shows the same streak and XP.
+
+## Audio (Plan 3)
+
+- [ ] First hold-to-talk press asks for the microphone; deny, and the speak question falls back to typing with the iOS copy.
+- [ ] Allow the microphone; a 2-second utterance transcribes and grades; a tap shorter than half a second says "Didn't catch that" and spends no heart.
+- [ ] Practice scenario: the reply plays aloud; leaving mid-recording cancels cleanly and a later podcast is not stuck paused.
+- [ ] Hector (Pro or demo account): the first reply plays and the transcript scrolls.
+
+## Podcasts (Plan 4)
+
+- [ ] An episode plays; lock the screen; playback continues and the lock screen shows play, pause and the title.
+- [ ] Unplug headphones (or disconnect Bluetooth): playback pauses.
+- [ ] Start a hold-to-talk recording while an episode plays: the episode pauses and does not resume by itself.
+- [ ] Download an episode, airplane mode on, kill and reopen the app: the Listen tab shows "Offline, showing your downloads" and the episode plays.
+- [ ] Delete a downloaded episode while it plays: playback stops first, no crash.
+- [ ] Close the app mid-episode, reopen: the episode row shows "Resume" and resumes near the same position.
+
+## Notifications and push (Plan 4)
+
+- [ ] Completing the first lesson asks for notification permission once; a later lesson never asks again.
+- [ ] With permission granted and no lesson done today, set the phone clock to 19:59 and wait: "Keep your streak alive" arrives at 20:00.
+- [ ] From a second account, nudge this account: a "You've been nudged!" notification arrives on the lock screen (needs owner items 2, 3 and 4).
+- [ ] Sign out: the `device_tokens` row for this device disappears (check in Supabase Table Editor).
+
+## Widget (Plan 4)
+
+- [ ] Long-press the home screen, Widgets, add Learn with Alphonso Streak: it shows the streak count and "Not studied yet" or "Studied today".
+- [ ] Complete a lesson: the widget updates within a few seconds without reopening the launcher.
+
+## Purchases (Plan 3, needs owner items 5 to 7)
+
+- [ ] Hector tab on a non-Pro account shows a real price from the Play product.
+- [ ] Subscribe with a license-tester account: the Play purchase sheet completes and the Hector conversation opens.
+- [ ] Restore Purchases on a fresh install of the same Google account unlocks Hector.
+- [ ] Manage Subscription opens the Play subscriptions page.
+
+## Links
+
+- [ ] Tap an invite link `https://learn.alphonsoecosystem.app/invite/<code>` from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9).
+- [ ] Settings, Export my data saves a file through the system picker.
+- [ ] Settings, Delete my account with the typed DELETE removes the account and returns to sign-in.
