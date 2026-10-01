@@ -1,0 +1,79 @@
+name: Build Simulator App
+
+# Builds LearnWithAlphonso.app for the iOS SIMULATOR and keeps it as a
+# downloadable artifact, for cloud simulators (Limrun) -- demo-video
+# recording and hands-on checks without a Mac. ci.yml's ios-app-build job
+# compiles the same thing but discards the output.
+#
+# Release configuration so the app behaves like the shipped one (no DEBUG
+# hooks). Built with code signing off, then ad-hoc signed: Apple silicon
+# requires at least an ad-hoc signature even for simulator binaries. The
+# Info.plist gets the production RevenueCat public SDK key, like
+# ios-release.yml (a Release build with the Test Store key crashes on
+# launch by design); the Pro gate that matters is server-side anyway.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "chore/simulator-app-artifact"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios/LearnWithAlphonso
+        env:
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+        run: |
+          # RevenueCat fatalErrors on launch when a Release build carries its
+          # Test Store key (confirmed on Limrun's simulator log), so use the
+          # production public SDK key, exactly as ios-release.yml does.
+          test -n "$REVENUECAT_API_KEY" || { echo "::error::REVENUECAT_API_KEY secret missing"; exit 1; }
+          sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
+          grep -q "test_UzoFLqAlXAHPWSwBgKQuZcqFKrq" Info.plist && { echo "::error::test key still present"; exit 1; } || true
+          xcodegen generate
+
+      - name: Build for iOS Simulator (Release)
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          xcodebuild build \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/dd \
+            -skipPackagePluginValidation \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Ad-hoc sign and zip
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          APP=build/dd/Build/Products/Release-iphonesimulator/LearnWithAlphonso.app
+          test -d "$APP" || { echo "::error::No .app at $APP"; exit 1; }
+          # Plain ad-hoc signature, NO entitlements: signing in restricted
+          # ones (aps-environment, applesignin) without a provisioning profile
+          # makes the simulator refuse to launch the app ("The request was
+          # denied by service delegate (SBMainWorkspace)"), found on Limrun.
+          # Side effects in the simulator only: Sign in with Apple and push
+          # are unavailable; email-code sign-in works.
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --verbose "$APP"
+          lipo -info "$APP/LearnWithAlphonso"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist"
+          mkdir -p build/out
+          ditto -c -k --keepParent "$APP" build/out/LearnWithAlphonso-simulator.zip
+          ls -la build/out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LearnWithAlphonso-simulator
+          path: ios/LearnWithAlphonso/build/out/LearnWithAlphonso-simulator.zip
+          retention-days: 14
