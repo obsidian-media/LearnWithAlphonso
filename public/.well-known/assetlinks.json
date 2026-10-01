@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.obsidianmedia.learnwithalphonso",
+      "sha256_cert_fingerprints": [
+        "0C:F5:FB:40:5D:E9:06:32:44:BD:18:C5:D1:74:B3:CA:5D:A9:0E:0F:95:67:2E:FF:64:EB:E6:07:26:37:D4:EF"
+      ]
+    }
+  }
+]
