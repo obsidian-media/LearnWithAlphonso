@@ -73,7 +73,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
-        run: bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
+        # Masked before they reach GITHUB_ENV (BACKLOG 0.0-aa): values appended
+        # there are not secrets to GitHub and would print in later steps' logs.
+        run: |
+          set -o pipefail
+          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" | bash scripts/export-masked-env.sh
 
       - name: Run smoke flow (unauthenticated)
         run: maestro --device "$SIMULATOR_UDID" test .maestro/01-smoke.yaml
