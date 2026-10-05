@@ -191,4 +191,70 @@ describe("POST /api/chat", () => {
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "Request failed" });
   });
+
+  describe("stage timing (BACKLOG 0.0-z #3: a 36 s Practice reply must be attributable)", () => {
+    const hi = { messages: [{ role: "user", content: "hi" }] };
+
+    it("reports the quota and llm stages in a Server-Timing header", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+          status: 200,
+        }),
+      );
+      const res = await handler({ request: req(hi) });
+      expect(res.status).toBe(200);
+      const names = (res.headers.get("Server-Timing") ?? "")
+        .split(",")
+        .map((p) => p.trim().split(";")[0]);
+      expect(names).toEqual(["quota", "llm", "total"]);
+    });
+
+    it("writes one [ai-timing] line for the chat route", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+          status: 200,
+        }),
+      );
+      const info = vi.spyOn(console, "info").mockImplementation(() => {});
+      try {
+        await handler({ request: req(hi) });
+        const lines = info.mock.calls
+          .map((c) => String(c[0]))
+          .filter((l) => l.startsWith("[ai-timing]"));
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatch(
+          /^\[ai-timing\] route=chat status=200 total=\d+ms quota=\d+ms llm=\d+ms$/,
+        );
+      } finally {
+        info.mockRestore();
+      }
+    });
+
+    it("times a turn that fails at the LLM and reports the failing status", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response("boom", { status: 502 }),
+      );
+      const info = vi.spyOn(console, "info").mockImplementation(() => {});
+      try {
+        const res = await handler({ request: req(hi) });
+        expect(res.headers.get("Server-Timing")).toContain("llm;dur=");
+        const line = info.mock.calls
+          .map((c) => String(c[0]))
+          .find((l) => l.startsWith("[ai-timing]"));
+        expect(line).toContain(`status=${res.status}`);
+      } finally {
+        info.mockRestore();
+      }
+    });
+
+    it("does not change the JSON body shape", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+          status: 200,
+        }),
+      );
+      const res = await handler({ request: req(hi) });
+      expect(await res.json()).toEqual({ content: "ok" });
+    });
+  });
 });
