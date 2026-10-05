@@ -97,6 +97,11 @@ public struct ReviewItem: Sendable, Equatable {
         self.answerIndex = answerIndex
         self.explanation = explanation
     }
+
+    /// True when the row carries its own answer key (prompt/choices/answer)
+    /// instead of pointing at a bundled lesson question: Hector weakness
+    /// items and saved words.
+    public var isSelfContained: Bool { source == "weakness" || source == "saved_word" }
 }
 
 public struct DueReviews: Sendable, Equatable {

@@ -56,14 +56,14 @@ public func isAnswerCorrect(_ question: Question, picked: String?, course: Cours
     }
 }
 
-/// Builds a `Question` directly from a weakness-sourced `ReviewItem`'s
-/// embedded content, bypassing the bundled-lesson lookup entirely --
-/// `nil` if `item` isn't a weakness item or is missing any required
-/// field (a malformed/inconsistent row fails safe rather than crashing
-/// the reviewer, matching ReviewQueueView's existing "skip on mismatch"
-/// behavior for lesson items).
+/// Builds a `Question` directly from a self-contained `ReviewItem`'s
+/// embedded content (a Hector weakness item or a saved word), bypassing the
+/// bundled-lesson lookup entirely -- `nil` if `item` isn't self-contained or
+/// is missing any required field (a malformed/inconsistent row fails safe
+/// rather than crashing the reviewer, matching ReviewQueueView's existing
+/// "skip on mismatch" behavior for lesson items).
 public func question(fromWeaknessItem item: ReviewItem) -> Question? {
-    guard item.source == "weakness",
+    guard item.isSelfContained,
           let prompt = item.prompt,
           let choices = item.choices,
           let answerIndex = item.answerIndex,

@@ -81,4 +81,33 @@ final class QuestionGradingTests: XCTestCase {
 
         XCTAssertNil(question(fromWeaknessItem: item))
     }
+
+    func testSavedWordItemBuildsAMultipleChoiceQuestionAndIsSelfContained() {
+        let item = ReviewItem(
+            itemKey: "savedword:0123456789abcdef", lessonId: "savedword", level: "A1",
+            ease: 2.5, intervalDays: 0, repetitions: 0, dueOn: "2026-10-06",
+            source: "saved_word", weaknessDisplay: nil,
+            prompt: "What does \"serendipity\" mean here?\nIt was pure serendipity.",
+            choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
+            answerIndex: 1, explanation: "\"serendipity\" means a happy accident."
+        )
+        XCTAssertTrue(item.isSelfContained)
+        guard case .multipleChoice(let mc) = question(fromWeaknessItem: item) else {
+            return XCTFail("Expected a multipleChoice question")
+        }
+        XCTAssertEqual(mc.answer, 1)
+        XCTAssertEqual(mc.id, "savedword:0123456789abcdef")
+    }
+
+    func testOnlyWeaknessAndSavedWordSourcesAreSelfContained() {
+        func item(_ source: String) -> ReviewItem {
+            ReviewItem(
+                itemKey: "k:v", lessonId: "l", level: "A1", ease: 2.5, intervalDays: 0,
+                repetitions: 0, dueOn: "2026-10-06", source: source)
+        }
+        XCTAssertTrue(item("weakness").isSelfContained)
+        XCTAssertTrue(item("saved_word").isSelfContained)
+        XCTAssertFalse(item("lesson").isSelfContained)
+        XCTAssertFalse(item("anything-else").isSelfContained)
+    }
 }
