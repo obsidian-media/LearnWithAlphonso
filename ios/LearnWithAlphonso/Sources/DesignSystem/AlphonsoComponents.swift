@@ -520,8 +520,13 @@ struct SpeechBubbleShape: InsettableShape {
 /// portrait renders.
 struct AlphonsoTipCard: View {
     let explanation: String
+    /// The course to file a tapped word under, or nil (the default) to keep the
+    /// explanation plain text. Opt-in on purpose: only a caller that knows the
+    /// text is wholly in the course's language (see `SavedWordPolicy`) passes it.
+    var saveCourse: String? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.saveWordHandler) private var saveWordHandler
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -530,9 +535,17 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                     .tracking(0.3)
                     .foregroundStyle(AlphonsoColor.ember)
-                Text(explanation)
+                if let saveCourse, let saveWordHandler {
+                    TappableText(
+                        text: explanation, color: AlphonsoColor.ink, course: saveCourse,
+                        onSave: saveWordHandler
+                    )
                     .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
+                } else {
+                    Text(explanation)
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.ink)
+                }
             }
             .padding(AlphonsoSpacing.sm + 4)
             .padding(.trailing, AlphonsoSpacing.sm)
@@ -606,22 +619,30 @@ struct ExplanationView: View {
     /// "not quite" styling over an answer the learner was just told was right.
     var correctOverride: Bool? = nil
 
+    @Environment(\.saveWordHandler) private var saveWordHandler
+
     private var isCorrect: Bool {
         correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
+    }
+
+    /// The course to file a tapped word under, or nil when this course's text is
+    /// not wholly in its own language (`SavedWordPolicy`) -- then the explanation
+    /// stays plain text rather than offering to save English words under French.
+    private var saveCourse: String? {
+        let code = course.translationCourseCode
+        return SavedWordPolicy.allowsSaving(inCourse: code) ? code : nil
     }
 
     var body: some View {
         Group {
             if isCorrect {
-                Text(explanation)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                correctCaption
                     // Same reasoning as AlphonsoTipCard's label below: a
                     // sighted learner reads "no Alphonso popup" as "you got
                     // it right," which VoiceOver has no equivalent of.
                     .accessibilityLabel("Correct. \(explanation)")
             } else {
-                AlphonsoTipCard(explanation: explanation)
+                AlphonsoTipCard(explanation: explanation, saveCourse: saveCourse)
             }
         }
         // Proactively announced, not just readable-if-you-swipe-to-it --
@@ -632,6 +653,23 @@ struct ExplanationView: View {
         // looking at the screen" needs to not require.
         .onAppear {
             UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
+        }
+    }
+
+    /// The plain caption shown for a right answer: its words are tappable when
+    /// saving is allowed for this course and the screen can open a save sheet.
+    @ViewBuilder
+    private var correctCaption: some View {
+        if let saveCourse, let saveWordHandler {
+            TappableText(
+                text: explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
+                onSave: saveWordHandler
+            )
+            .font(AlphonsoFont.sans(13))
+        } else {
+            Text(explanation)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
         }
     }
 }
