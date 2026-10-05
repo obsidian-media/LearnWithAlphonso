@@ -125,4 +125,71 @@ describe("POST /api/hector-respond", () => {
     expect(body.tts_provider).toBe("deepgram");
     expect(typeof body.audio_base64).toBe("string");
   });
+
+  describe("stage timing (BACKLOG 0.0-z #3: slow replies must be attributable)", () => {
+    function mockProviders() {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ choices: [{ message: { content: "Hello!" } }] }), {
+            status: 200,
+          }),
+        )
+        .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    }
+
+    it("reports every stage of a successful turn in a Server-Timing header", async () => {
+      mockProviders();
+      const res = await handler({ request: req() });
+      expect(res.status).toBe(200);
+      const header = res.headers.get("Server-Timing") ?? "";
+      const names = header.split(",").map((p) => p.trim().split(";")[0]);
+      expect(names).toEqual(["auth", "entitlement", "quota", "llm", "tts", "total"]);
+    });
+
+    it("writes one [ai-timing] log line with the route, status and stages", async () => {
+      mockProviders();
+      const info = vi.spyOn(console, "info").mockImplementation(() => {});
+      try {
+        await handler({ request: req() });
+        const lines = info.mock.calls
+          .map((c) => String(c[0]))
+          .filter((l) => l.startsWith("[ai-timing]"));
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toMatch(
+          /^\[ai-timing\] route=hector-respond status=200 total=\d+ms auth=\d+ms entitlement=\d+ms quota=\d+ms llm=\d+ms tts=\d+ms$/,
+        );
+      } finally {
+        info.mockRestore();
+      }
+    });
+
+    it("still times and logs a turn that fails at the LLM, with the failing status", async () => {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(new Response("upstream down", { status: 500 })) as never;
+      const info = vi.spyOn(console, "info").mockImplementation(() => {});
+      try {
+        const res = await handler({ request: req() });
+        expect(res.status).not.toBe(200);
+        expect(res.headers.get("Server-Timing")).toContain("llm;dur=");
+        const line = info.mock.calls
+          .map((c) => String(c[0]))
+          .find((l) => l.startsWith("[ai-timing]"));
+        expect(line).toContain(`status=${res.status}`);
+        expect(line).toContain("llm=");
+        expect(line).not.toContain("tts=");
+      } finally {
+        info.mockRestore();
+      }
+    });
+
+    it("does not add any timing fields to the JSON body the iOS client decodes", async () => {
+      mockProviders();
+      const res = await handler({ request: req() });
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(Object.keys(body)).not.toContain("auth");
+      expect(Object.keys(body)).not.toContain("server_timing");
+    });
+  });
 });
