@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import SwiftData
 import LearnWithAlphonsoKit
 
@@ -167,11 +168,27 @@ final class AppSyncStateRecord {
 /// RootView's sync trigger) goes through this rather than touching
 /// `ModelContext` directly.
 @MainActor
+@Observable
 final class SyncQueueStore {
-    private let modelContext: ModelContext
+    @ObservationIgnored private let modelContext: ModelContext
+
+    /// Bumped whenever the cached due-review list changes. SwiftUI cannot see
+    /// a SwiftData `fetch` made inside `body`, so a view that reads the count
+    /// through `lastKnownDueReviews()` never repaints when the cache changes:
+    /// the Learn tab badge stayed at 2, then 3, after the queue was cleared
+    /// (BACKLOG 0.0-z #5). Reading this through `dueReviewCount` is what makes
+    /// the badge track the cache.
+    private(set) var dueReviewRevision = 0
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+    }
+
+    /// Due reviews in the offline cache, observable: depends on
+    /// `dueReviewRevision`, so a view reading it re-renders on every change.
+    var dueReviewCount: Int {
+        _ = dueReviewRevision
+        return lastKnownDueReviews().count
     }
 
     // MARK: - Pending lesson completions
@@ -262,6 +279,7 @@ final class SyncQueueStore {
             modelContext.insert(CachedDueReviewRecord(item))
         }
         try? modelContext.save()
+        dueReviewRevision += 1
     }
 
     /// Removes one item from the cache after it's been graded offline and
@@ -273,6 +291,7 @@ final class SyncQueueStore {
         guard let record = try? modelContext.fetch(descriptor).first else { return }
         modelContext.delete(record)
         try? modelContext.save()
+        dueReviewRevision += 1
     }
 
     private func appSyncState() -> AppSyncStateRecord? {

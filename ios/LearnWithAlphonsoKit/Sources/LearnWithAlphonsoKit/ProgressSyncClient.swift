@@ -119,6 +119,15 @@ public struct ReviewGradeOutcome: Sendable, Equatable {
         self.dueOn = dueOn
         self.correct = correct
     }
+
+    /// Whether the item this outcome is for should still count as due on
+    /// `today` (a `YYYY-MM-DD` string). A retired item never does; otherwise
+    /// it does when the server scheduled it for today or earlier -- which is
+    /// what a wrong answer gets, so those correctly stay in the badge count.
+    /// ISO dates compare correctly as plain strings.
+    public func isStillDue(on today: String) -> Bool {
+        !retired && dueOn <= today
+    }
 }
 
 public struct ReviewClearBonus: Sendable, Equatable {
