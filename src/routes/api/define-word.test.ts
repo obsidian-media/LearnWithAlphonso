@@ -187,6 +187,27 @@ describe("POST /api/define-word", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  // The cheap checks exist so a failed check never spends quota or an AI call.
+  // When the check ITSELF errors (a database blip) the safe answer is a 500,
+  // not "treat it as not-saved / under the cap" and carry on to spend money.
+  it("returns 500 without spending quota or calling the model when the already-saved lookup errors", async () => {
+    const fetchSpy = modelFetch(new Response("{}"));
+    queue({ data: null, error: { message: "db down" } });
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(500);
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 without spending quota or calling the model when the cap count errors", async () => {
+    const fetchSpy = modelFetch(new Response("{}"));
+    queue(NO_ROW, { count: null, error: { message: "db down" } });
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(500);
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("relays a quota refusal and does not call the model", async () => {
     const fetchSpy = modelFetch(new Response("{}"));
     consumeQuota.mockResolvedValue({

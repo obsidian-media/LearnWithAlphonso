@@ -51,15 +51,16 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   // Once `regenerate-supabase-types.yml` has run on main they can be deleted.
   type StoredWord = { saved_word: string; saved_context: string; explanation: string };
   const loadExisting = async () => {
-    const { data } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("review_items")
       .select("saved_word,saved_context,explanation")
       .eq("user_id", userId)
       .eq("item_key", itemKey)
       .eq("language", input.course)
       .maybeSingle();
-    return data as unknown as StoredWord | null;
+    return { row: data as unknown as StoredWord | null, error };
   };
+  const dbError = () => Response.json({ error: "Could not save that word." }, { status: 500 });
   const alreadySaved = (row: StoredWord) =>
     Response.json({
       alreadySaved: true,
@@ -68,10 +69,17 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       explanation: row.explanation,
     });
 
+  // A failed CHEAP check must stop the request, not be read as "not saved" /
+  // "under the cap": that would carry on to spend a quota unit and an AI call
+  // because of a database blip.
   const existing = await timer.time("lookup", loadExisting);
-  if (existing) return alreadySaved(existing);
+  if (existing.error) {
+    console.error(`[define-word] lookup failed: ${existing.error.message}`);
+    return dbError();
+  }
+  if (existing.row) return alreadySaved(existing.row);
 
-  const { count } = await timer.time("count", async () =>
+  const { count, error: countError } = await timer.time("count", async () =>
     supabaseAdmin
       .from("review_items")
       .select("item_key", { count: "exact", head: true })
@@ -79,6 +87,10 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       .eq("source", "saved_word")
       .eq("language", input.course),
   );
+  if (countError) {
+    console.error(`[define-word] count failed: ${countError.message}`);
+    return dbError();
+  }
   if ((count ?? 0) >= SAVED_WORD_LIMIT) {
     return Response.json({ error: "saved-word-limit" }, { status: 409 });
   }
@@ -123,11 +135,11 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     // Two taps (or two devices) raced: the other insert won. That is a save,
     // not a failure.
     if (error.code === "23505") {
-      const winner = await loadExisting();
+      const { row: winner } = await loadExisting();
       if (winner) return alreadySaved(winner);
     }
     console.error(`[define-word] insert failed: ${error.message}`);
-    return Response.json({ error: "Could not save that word." }, { status: 500 });
+    return dbError();
   }
 
   return Response.json({
