@@ -902,7 +902,10 @@ decouple).** `ConversationView.swift`/`AIConversationClient.swift`
 both call this repo's own already-deployed endpoints, same Supabase
 account/session the rest of the app uses -- `TutorConversationClient`
 posts to `AppConfig.hectorRespondEndpoint`
-(`api/hector-respond`), which runs the same LLM-reply + TTS-audio
+(`api/hector-respond`; both it and `api/chat` log a per-stage
+`[ai-timing]` line and send a `Server-Timing` header via
+`src/lib/stage-timer.server.ts` -- search the Vercel runtime logs for
+`[ai-timing]` to see where a slow reply spent its time), which runs the same LLM-reply + TTS-audio
 pipeline `/api/chat`/`/api/tts` already run. **This used to be two
 backends**: Hector ran on AlphonsoCompanion's separate "Cloud Voice"
 system (`voice.obsidianmedia.online`), a different Supabase project
