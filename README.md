@@ -67,7 +67,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   Speaking is deliberately excluded: it would require microphone permission during
   onboarding, and a denial would leave the question unanswerable
 - **AI conversation**: voice-enabled chat with 6 scenarios
-- **Save any word** (iOS, Hector replies so far; web next): tap a word in Hector's reply to save it with its sentence. One AI call writes the meaning, shown at once, and the word returns later in the review queue as a multiple-choice card. Limited to 40 new words a day and 500 per course
+- **Save any word** (iOS: Hector, Practice and Campaign replies so far; lessons, transcripts and web next): tap a word in Hector's reply to save it with its sentence. One AI call writes the meaning, shown at once, and the word returns later in the review queue as a multiple-choice card. Limited to 40 new words a day and 500 per course
 - **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP), leagues (Bronze → Diamond), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both iOS-only so far (see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both iOS-only so far
@@ -276,8 +276,9 @@ compile verification that exists):
 - **Save any word**: tap a word in one of Hector's replies, save it with
   its sentence (`POST /api/define-word`, one NVIDIA call, own `define`
   quota), and it joins the same review queue as a self-contained
-  `saved_word` multiple-choice card, first due the next day. Hector
-  replies only so far (Practice, lessons, transcripts and web are next)
+  `saved_word` multiple-choice card, first due the next day. Hector,
+  Practice and Campaign replies so far (lessons, transcripts and web are
+  next)
 - **Leaderboards** (global/friends/country, weekly/all-time): overtake
   detection (in-app toast) and a weekly recap sheet
 - **Friends**: invite-link based, an activity feed, and nudge-a-friend

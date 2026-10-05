@@ -56,6 +56,8 @@ private struct ConversationSessionView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var turns: [ChatMessage] = []
+    /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
+    @State private var savingWord: SaveWordRequest?
     @State private var recorder = TurnRecorder()
     @State private var isRecording = false
     // 2026-09-30 audit (Fable, Codex #3): startRecording() only flips
@@ -147,6 +149,12 @@ private struct ConversationSessionView: View {
                     .padding(.horizontal)
             }
 
+            if turns.contains(where: { $0.role == "assistant" }) {
+                Text("Tap any word in a reply to save it.")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+
             micButton
                 .padding()
         }
@@ -154,6 +162,9 @@ private struct ConversationSessionView: View {
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
         .aiDisclosureGate()
+        .sheet(item: $savingWord) { request in
+            SaveWordSheet(request: request, session: session)
+        }
         .task {
             turns = [ChatMessage(role: "assistant", content: scenario.opener)]
             // Best-effort -- if this fails, chat() just gets nil and skips
@@ -181,13 +192,25 @@ private struct ConversationSessionView: View {
         }
     }
 
+    /// The partner's replies have tappable words (tap to save); the learner's own
+    /// turns are plain text.
+    @ViewBuilder
+    private func bubbleText(for turn: ChatMessage) -> some View {
+        if turn.role == "assistant" {
+            TappableText(text: turn.content, color: AlphonsoColor.ink, course: "en") {
+                savingWord = $0
+            }
+        } else {
+            Text(turn.content).foregroundStyle(.white)
+        }
+    }
+
     private func bubble(for turn: ChatMessage, confidence: Double?) -> some View {
         VStack(alignment: turn.role == "user" ? .trailing : .leading, spacing: 2) {
             HStack {
                 if turn.role == "assistant" { Spacer(minLength: 40) }
-                Text(turn.content)
+                bubbleText(for: turn)
                     .font(AlphonsoFont.sans(15))
-                    .foregroundStyle(turn.role == "user" ? .white : AlphonsoColor.ink)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(
