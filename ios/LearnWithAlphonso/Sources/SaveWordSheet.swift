@@ -31,17 +31,23 @@ struct SaveWordSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-            Text(request.word)
-                .font(AlphonsoFont.display(26, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
-            Text("\u{201C}\(request.sentence)\u{201D}")
-                .font(AlphonsoFont.sans(15))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+        VStack(spacing: AlphonsoSpacing.md) {
+            // Scrollable: the sentence can be 300 characters and the fonts scale
+            // with Dynamic Type, so at accessibility sizes the content can exceed
+            // even the .large detent. Done stays pinned below, always reachable.
+            ScrollView {
+                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                    Text(request.word)
+                        .font(AlphonsoFont.display(26, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("\u{201C}\(request.sentence)\u{201D}")
+                        .font(AlphonsoFont.sans(15))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
 
-            content
-
-            Spacer(minLength: 0)
+                    content
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             Button("Done") { dismiss() }
                 .font(AlphonsoFont.sans(14, weight: .medium))
@@ -93,6 +99,10 @@ struct SaveWordSheet: View {
     }
 
     private func save() async {
+        // Two quick taps would otherwise send two requests and charge the
+        // `define` quota twice (the server survives the race, but the second
+        // call is still billed); only one save may be in flight.
+        guard phase != .saving else { return }
         // The word and sentence go to NVIDIA, so the same consent every other
         // AI path needs applies. Declining just closes the disclosure.
         guard AIDisclosureGate.isAcknowledged() else {
