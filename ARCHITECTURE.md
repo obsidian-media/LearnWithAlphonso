@@ -217,7 +217,11 @@ a link out to a web profile is what gets rejected.
 -- through one shared `.aiDisclosureGate()` modifier backed by
 `AIDisclosureGate` in the Kit. One modifier rather than four copies,
 because four copies is how one gets missed and the missed one is the one
-that ships.
+that ships. (Exception, 2026-10-05: lessons are NOT wrapped in the gate --
+declining popped the learner out of every lesson. Consent is enforced where
+the data leaves the device instead: `TranslationGradingPolicy` for written
+translations, and `SpeakQuestionCard` types by default and offers voice as
+an opt-in via `.aiDisclosureSheet`. Screens that are wholly AI keep the gate.)
 
 **Podcast admin (Phase 4).** A second TanStack Start build from the same
 repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
