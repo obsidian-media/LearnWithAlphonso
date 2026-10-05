@@ -333,6 +333,54 @@ describe("gradeReview", () => {
     });
   });
 
+  it("grades a saved_word item from its stored choices, and does not log a weakness event", async () => {
+    const supabase = createSupabaseMock();
+    const deleteChain = chainable({});
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            ...rowBase,
+            repetitions: 3,
+            source: "saved_word",
+            choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
+            answer_index: 1,
+          },
+        }),
+      )
+      .mockReturnValueOnce(deleteChain);
+
+    const result = await gradeReview({
+      context: ctx(supabase),
+      data: { itemKey: "savedword:0123456789abcdef", answer: "a happy accident", course: "en" },
+    });
+
+    expect(result.retired).toBe(true);
+    expect(supabaseAdminFrom).not.toHaveBeenCalledWith("weakness_events");
+  });
+
+  it("marks a wrong saved_word answer incorrect (it lapses, it does not retire)", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            ...rowBase,
+            repetitions: 3,
+            source: "saved_word",
+            choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
+            answer_index: 1,
+          },
+        }),
+      )
+      .mockReturnValue(chainable({}));
+    const result = await gradeReview({
+      context: ctx(supabase),
+      data: { itemKey: "savedword:0123456789abcdef", answer: "a sad ending", course: "en" },
+    });
+    expect(result.retired).toBe(false);
+  });
+
   it("throws for an itemKey with no matching question in the course index", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));

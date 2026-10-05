@@ -16,6 +16,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { computeReviewOutcome } from "./srs.ts";
+import { gradeSelfContained, isSelfContainedSource } from "./self-contained.ts";
 // Moved to _shared/ so complete-lesson can reuse the identical grading
 // logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
@@ -121,9 +122,8 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
 
   let correct: boolean;
-  if (row.source === "weakness") {
-    const choices = row.choices as string[] | null;
-    correct = choices?.[row.answer_index as number] === answer;
+  if (isSelfContainedSource(row.source)) {
+    correct = gradeSelfContained(row, answer);
   } else {
     const { data: question } = await admin
       .from("questions")

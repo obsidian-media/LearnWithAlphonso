@@ -220,9 +220,14 @@ is the owner's call.
 
 ## 6. Testing
 
-- Migration: a test that parses the latest migration and asserts every
-  `QuotaKind` in `ai-quota.server.ts` appears in **both** quota functions. This
-  closes the silent-refusal class for good, not only for `define`.
+- Migration: the existing guard in `ai-quota.server.test.ts` already asserts
+  every `QuotaKind` appears in the quota functions (adding `define` to
+  `DAILY_LIMITS` is what makes it fail until the migration lands), but it checks
+  the whole migration FILE, so it cannot tell which function lists a kind.
+  `saved-word-migration.test.ts` pins the schema change, `define` 40/day and
+  10/minute separately, and every EXISTING limit exactly as it is live (the
+  latest `consume_ai_quota` has `stt` = 300; basing the new definition on the
+  older translate migration would silently revert it to 60).
 - Route: with `fetch` mocked, cover validation, already-saved short-circuit
   (no quota consumed), the 500 cap, quota refusal, a valid model response,
   each invalid model response (wrong count, duplicate, answer repeated,

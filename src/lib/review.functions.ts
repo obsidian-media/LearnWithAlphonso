@@ -211,7 +211,9 @@ export const gradeReview = createServerFn({ method: "POST" })
     }
 
     let correct: boolean;
-    if (row.source === "weakness") {
+    // 'weakness' and 'saved_word' rows are self-contained: the stored choices
+    // and answer_index ARE the answer key (there is no lesson question to look up).
+    if (row.source === "weakness" || row.source === "saved_word") {
       const choices = row.choices as string[] | null;
       correct = choices?.[row.answer_index as number] === data.answer;
     } else {
