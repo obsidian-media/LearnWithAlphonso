@@ -188,6 +188,9 @@ jobs:
       - name: Test grade-review's srs.ts port
         run: deno test supabase/functions/grade-review/srs.test.ts
 
+      - name: Test grade-review's self-contained (weakness / saved_word) grading
+        run: deno test supabase/functions/grade-review/self-contained.test.ts
+
       # spoken-answer{,-fr,-es}.ts, translation-answer.ts and
       # answer-correctness.ts moved to _shared/ (§0.1-d #6) so
       # complete-lesson can reuse the exact same grading logic grade-review

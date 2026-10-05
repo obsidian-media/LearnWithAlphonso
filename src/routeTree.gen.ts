@@ -33,6 +33,7 @@ import { Route as ApiAccountExportRouteImport } from './routes/api/account-expor
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
 import { Route as ApiGeneratePracticeRouteImport } from './routes/api/generate-practice'
 import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-translation'
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
@@ -166,6 +167,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDefineWordRoute = ApiDefineWordRouteImport.update({
+  id: '/api/define-word',
+  path: '/api/define-word',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGeneratePracticeRoute = ApiGeneratePracticeRouteImport.update({
   id: '/api/generate-practice',
   path: '/api/generate-practice',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/define-word': typeof ApiDefineWordRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/define-word': typeof ApiDefineWordRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -339,6 +347,7 @@ export interface FileRoutesById {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/define-word': typeof ApiDefineWordRoute
   '/api/generate-practice': typeof ApiGeneratePracticeRoute
   '/api/grade-translation': typeof ApiGradeTranslationRoute
   '/api/hector-respond': typeof ApiHectorRespondRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/apple-link'
     | '/api/chat'
+    | '/api/define-word'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/apple-link'
     | '/api/chat'
+    | '/api/define-word'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/apple-link'
     | '/api/chat'
+    | '/api/define-word'
     | '/api/generate-practice'
     | '/api/grade-translation'
     | '/api/hector-respond'
@@ -486,6 +498,7 @@ export interface RootRouteChildren {
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiAppleLinkRoute: typeof ApiAppleLinkRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiDefineWordRoute: typeof ApiDefineWordRoute
   ApiGeneratePracticeRoute: typeof ApiGeneratePracticeRoute
   ApiGradeTranslationRoute: typeof ApiGradeTranslationRoute
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
@@ -664,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/define-word': {
+      id: '/api/define-word'
+      path: '/api/define-word'
+      fullPath: '/api/define-word'
+      preLoaderRoute: typeof ApiDefineWordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/generate-practice': {
       id: '/api/generate-practice'
       path: '/api/generate-practice'
@@ -825,6 +845,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiAppleLinkRoute: ApiAppleLinkRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiDefineWordRoute: ApiDefineWordRoute,
   ApiGeneratePracticeRoute: ApiGeneratePracticeRoute,
   ApiGradeTranslationRoute: ApiGradeTranslationRoute,
   ApiHectorRespondRoute: ApiHectorRespondRoute,
