@@ -79,8 +79,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+        # Masked before they reach GITHUB_ENV: values appended there are not
+        # secrets to GitHub and would otherwise print in every later step's env
+        # dump of this public repo's log (BACKLOG 0.0-aa).
         run: |
-          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" >> "$GITHUB_ENV"
+          set -o pipefail
+          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" | bash scripts/export-masked-env.sh
 
       - name: Create and boot ${{ matrix.device }}
         run: |
