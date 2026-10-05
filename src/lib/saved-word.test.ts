@@ -37,9 +37,9 @@ describe("validateSavedWordInput", () => {
 
   it("rejects an empty or over-long sentence", () => {
     expect(validateSavedWordInput({ ...good, sentence: "" }).ok).toBe(false);
-    expect(
-      validateSavedWordInput({ ...good, sentence: `serendipity ${"a".repeat(300)}` }).ok,
-    ).toBe(false);
+    expect(validateSavedWordInput({ ...good, sentence: `serendipity ${"a".repeat(300)}` }).ok).toBe(
+      false,
+    );
   });
 
   it("accepts a sentence of exactly 300 characters", () => {

@@ -77,7 +77,9 @@ export async function defineWord(args: {
       signal: AbortSignal.timeout(20_000),
     });
     if (!resp.ok) {
-      console.error(`[define-word] NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`);
+      console.error(
+        `[define-word] NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
+      );
       return null;
     }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
