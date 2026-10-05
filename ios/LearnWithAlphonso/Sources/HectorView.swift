@@ -157,11 +157,8 @@ private struct HectorConversationView: View {
     @ViewBuilder
     private func bubbleText(for turn: TutorConversationMessage) -> some View {
         if turn.role == "assistant" {
-            TappableText(text: turn.content, color: AlphonsoColor.ink) { word in
-                savingWord = SaveWordRequest(
-                    word: word,
-                    sentence: WordSegmenter.sentence(containing: word, in: turn.content),
-                    course: "en")
+            TappableText(text: turn.content, color: AlphonsoColor.ink, course: "en") {
+                savingWord = $0
             }
         } else {
             Text(turn.content).foregroundStyle(AlphonsoColor.onAccent)

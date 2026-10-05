@@ -15,7 +15,8 @@ import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
  * quota or an AI call: validate, already-saved, cap, THEN quota, THEN the model.
  *
  * No Pro check: the Save affordance only exists on screens the learner can
- * already reach (Hector is Pro-only), and cost is bounded by the `define` quota.
+ * already reach (Hector is Pro-only; Practice and Campaign are free), and cost is
+ * bounded by the `define` quota.
  */
 async function handleDefine(request: Request, timer: StageTimer): Promise<Response> {
   const nvidiaKey = process.env.NVIDIA_API_KEY;
