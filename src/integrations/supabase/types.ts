@@ -932,6 +932,8 @@ export type Database = {
           level: string;
           prompt: string | null;
           repetitions: number;
+          saved_context: string | null;
+          saved_word: string | null;
           source: string;
           updated_at: string;
           user_id: string;
@@ -955,6 +957,8 @@ export type Database = {
           level?: string;
           prompt?: string | null;
           repetitions?: number;
+          saved_context?: string | null;
+          saved_word?: string | null;
           source?: string;
           updated_at?: string;
           user_id: string;
@@ -978,6 +982,8 @@ export type Database = {
           level?: string;
           prompt?: string | null;
           repetitions?: number;
+          saved_context?: string | null;
+          saved_word?: string | null;
           source?: string;
           updated_at?: string;
           user_id?: string;
