@@ -63,14 +63,17 @@ async function main() {
   const slug = args.slug as string | undefined;
   const confirm = args.confirm === true;
 
-  if (!file || !slug) fail("Usage: upload-reel-video.ts --file <path.mp4> --slug <slug> [--confirm]");
+  if (!file || !slug)
+    fail("Usage: upload-reel-video.ts --file <path.mp4> --slug <slug> [--confirm]");
   if (!existsSync(file)) fail(`File not found: ${file}`);
   if (!/^[a-z0-9-]+$/.test(slug)) fail("Slug must be lowercase letters, digits, and hyphens only.");
 
   const sizeBytes = statSync(file).size;
   const objectPath = `${PREFIX}/${slug}.mp4`;
 
-  console.log(`Would upload ${file} (${(sizeBytes / 1024 / 1024).toFixed(1)} MB) to ${BUCKET}/${objectPath}`);
+  console.log(
+    `Would upload ${file} (${(sizeBytes / 1024 / 1024).toFixed(1)} MB) to ${BUCKET}/${objectPath}`,
+  );
 
   if (!confirm) {
     console.log("Dry run -- pass --confirm to actually upload.");
