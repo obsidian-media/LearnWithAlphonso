@@ -45,6 +45,30 @@ jobs:
             exit 1
           fi
 
+      # The generated-Supabase-types freshness check used to be a step here. It
+      # is its own job (`types-fresh`, below) so that a red result cannot gate
+      # `deploy-supabase`, which needs this job. See that job's comment.
+
+  # Split out of lint-and-typecheck so its result does NOT gate deploy-supabase.
+  # deploy-supabase `needs` lint-and-typecheck, and this check fails on EVERY PR
+  # that adds a table (it regenerates against production, which only gets the
+  # migration from deploy-supabase itself, post-merge). Living inside
+  # lint-and-typecheck, it therefore blocked the very deploy that would have made
+  # it pass: merging #157 left `hector_links` absent from production until the
+  # migration was applied by hand (BACKLOG 0.0h / 0.0i). Deliberately NOT in
+  # deploy-supabase's `needs`; it stays a visible check on every PR, advisory.
+  types-fresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       # src/integrations/supabase/types.ts is generated from the LIVE schema,
       # not derived from anything in this repo, so nothing here could catch
       # drift the way the iOS content check above catches its own kind --
