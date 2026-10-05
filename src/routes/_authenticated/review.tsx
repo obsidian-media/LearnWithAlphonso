@@ -80,7 +80,11 @@ function ReviewPage() {
         if (!alive) return;
         const built: Card[] = [];
         for (const item of res.due) {
-          if (item.source === "weakness") {
+          // Self-contained rows ('weakness' from Hector, 'saved_word' from
+          // save-any-word) carry their own prompt, choices and answer: there is
+          // no bundled question to look up, and dropping them here would still
+          // leave them counted in the queue total.
+          if (item.source === "weakness" || item.source === "saved_word") {
             if (item.prompt && item.choices && item.answerIndex !== null) {
               built.push({
                 itemKey: item.itemKey,

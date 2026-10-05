@@ -71,6 +71,8 @@ private struct HectorConversationView: View {
     // prepended to every respond() call's history, but never appended to
     // `turns` itself so it never renders as a chat bubble.
     @State private var memoryContext: TutorConversationMessage?
+    /// The word the learner tapped in one of Hector's replies, if a save sheet is open.
+    @State private var savingWord: SaveWordRequest?
     private let sessionID = UUID().uuidString
 
     private enum Phase: Equatable {
@@ -104,10 +106,19 @@ private struct HectorConversationView: View {
                     .padding(.horizontal)
             }
 
+            if turns.contains(where: { $0.role == "assistant" }) {
+                Text("Tap any word in Hector's reply to save it.")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+
             micButton.padding()
         }
         .background(AlphonsoColor.surface)
         .aiDisclosureGate()
+        .sheet(item: $savingWord) { request in
+            SaveWordSheet(request: request, session: session)
+        }
         .task { await loadMemoryContext() }
         .onDisappear {
             // See ConversationView's identical onDisappear/isTornDown for
@@ -141,6 +152,22 @@ private struct HectorConversationView: View {
         )
     }
 
+    /// Hector's replies have tappable words (tap to save); the learner's own
+    /// turns are plain text.
+    @ViewBuilder
+    private func bubbleText(for turn: TutorConversationMessage) -> some View {
+        if turn.role == "assistant" {
+            TappableText(text: turn.content, color: AlphonsoColor.ink) { word in
+                savingWord = SaveWordRequest(
+                    word: word,
+                    sentence: WordSegmenter.sentence(containing: word, in: turn.content),
+                    course: "en")
+            }
+        } else {
+            Text(turn.content).foregroundStyle(AlphonsoColor.onAccent)
+        }
+    }
+
     private func bubble(for turn: TutorConversationMessage) -> some View {
         HStack(alignment: .bottom, spacing: 6) {
             if turn.role == "assistant" {
@@ -156,9 +183,8 @@ private struct HectorConversationView: View {
             } else {
                 Spacer(minLength: 40)
             }
-            Text(turn.content)
+            bubbleText(for: turn)
                 .font(AlphonsoFont.sans(15))
-                .foregroundStyle(turn.role == "user" ? AlphonsoColor.onAccent : AlphonsoColor.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(

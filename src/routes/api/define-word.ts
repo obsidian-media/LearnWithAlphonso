@@ -43,13 +43,13 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   const input = parsed.value;
   const itemKey = savedWordItemKey(input.course, input.word);
 
-  // NOTE on the two casts below (`as unknown as` on the select result, `as never`
-  // on the insert row): src/integrations/supabase/types.ts is generated from the
-  // LIVE schema, so it cannot know the saved_word / saved_context columns until
-  // this migration has been deployed AND the types regenerated (BACKLOG 0.0h).
-  // These narrow, local casts keep tsc honest about everything else meanwhile.
-  // Once `regenerate-supabase-types.yml` has run on main they can be deleted.
-  type StoredWord = { saved_word: string; saved_context: string; explanation: string };
+  // The generated columns are nullable, but the review_items CHECK requires all
+  // three for a saved_word row, so the fallbacks below are never reached in practice.
+  type StoredWord = {
+    saved_word: string | null;
+    saved_context: string | null;
+    explanation: string | null;
+  };
   const loadExisting = async () => {
     const { data, error } = await supabaseAdmin
       .from("review_items")
@@ -58,15 +58,15 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       .eq("item_key", itemKey)
       .eq("language", input.course)
       .maybeSingle();
-    return { row: data as unknown as StoredWord | null, error };
+    return { row: data as StoredWord | null, error };
   };
   const dbError = () => Response.json({ error: "Could not save that word." }, { status: 500 });
   const alreadySaved = (row: StoredWord) =>
     Response.json({
       alreadySaved: true,
-      word: row.saved_word,
-      sentence: row.saved_context,
-      explanation: row.explanation,
+      word: row.saved_word ?? "",
+      sentence: row.saved_context ?? "",
+      explanation: row.explanation ?? "",
     });
 
   // A failed CHEAP check must stop the request, not be read as "not saved" /
@@ -129,7 +129,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       choices: card.choices,
       answer_index: card.answerIndex,
       explanation: card.explanation,
-    } as never),
+    }),
   );
   if (error) {
     // Two taps (or two devices) raced: the other insert won. That is a save,

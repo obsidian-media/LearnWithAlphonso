@@ -223,6 +223,8 @@ the data leaves the device instead: `TranslationGradingPolicy` for written
 translations, and `SpeakQuestionCard` types by default and offers voice as
 an opt-in via `.aiDisclosureSheet`. Screens that are wholly AI keep the gate.)
 
+**Save-any-word (Hector replies, 2026-10-05).** In `HectorView`, each of Hector's replies is a `TappableText`: one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The sheet picks the sentence with `WordSegmenter.sentence(containing:in:)`, which must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one. `AIConversationClient.defineWord` calls the route, which makes one NVIDIA call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
+
 **Podcast admin (Phase 4).** A second TanStack Start build from the same
 repo. `vite.admin.config.ts` sets **`srcDirectory: "admin"`** — that is
 the key that moves the app, and `router.routesDirectory` alone does
