@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
+import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { SCENARIOS } from "@/data/scenarios";
 import { CAMPAIGNS } from "@/data/campaigns";
 
@@ -47,71 +48,83 @@ function withDifficultyHint(systemPrompt: string, cefrLevel?: string): string {
   return hint ? `${systemPrompt}\n\n${hint}` : systemPrompt;
 }
 
+async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
+  const key = process.env.NVIDIA_API_KEY;
+  if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
+  const quota = await timer.time("quota", async () => {
+    const { consumeQuota } = await import("@/lib/ai-quota.server");
+    return consumeQuota(request, "chat");
+  });
+  if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+  let body: { messages?: ChatMessage[]; systemPrompt?: string; cefrLevel?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  // See VALID_SYSTEM_PROMPTS's own comment: an omitted systemPrompt
+  // is fine (some callers send none), but a present one must be one
+  // of the real personas -- not arbitrary client text.
+  if (body.systemPrompt !== undefined && !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
+    return Response.json({ error: "Unknown systemPrompt" }, { status: 400 });
+  }
+  // Found alongside the same bug in Hector's own message builder
+  // (2026-09-28 audit): a client-supplied entry here could claim
+  // role: "system" and land in the array the actual system message
+  // (below, from body.systemPrompt) gets prepended to -- a second,
+  // client-controlled system message the model would see, not just
+  // the one this route intends to send.
+  const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
+    (m): m is ChatMessage =>
+      !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+  );
+  if (messages.length === 0) return Response.json({ error: "messages required" }, { status: 400 });
+  const finalMessages: ChatMessage[] = body.systemPrompt
+    ? [
+        { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
+        ...messages,
+      ]
+    : messages;
+
+  // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
+  // OpenAI-compatible, so only the URL/key/model name change from the
+  // Lovable Gateway. See nvidia-chat-model.server.ts for why the
+  // model id lives there instead of being hardcoded here.
+  const model = resolveNvidiaChatModel();
+  const llm = await timer.time("llm", async () => {
+    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: finalMessages,
+      }),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      return { ok: false as const, failure: upstreamErrorResponse("NVIDIA", resp.status, text) };
+    }
+    const data = (await resp.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    return { ok: true as const, content: data.choices?.[0]?.message?.content ?? "" };
+  });
+  if (!llm.ok) return llm.failure;
+  return Response.json({ content: llm.content });
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.NVIDIA_API_KEY;
-        if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "chat");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
-        let body: { messages?: ChatMessage[]; systemPrompt?: string; cefrLevel?: string };
-        try {
-          body = await request.json();
-        } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
-        }
-        // See VALID_SYSTEM_PROMPTS's own comment: an omitted systemPrompt
-        // is fine (some callers send none), but a present one must be one
-        // of the real personas -- not arbitrary client text.
-        if (body.systemPrompt !== undefined && !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
-          return Response.json({ error: "Unknown systemPrompt" }, { status: 400 });
-        }
-        // Found alongside the same bug in Hector's own message builder
-        // (2026-09-28 audit): a client-supplied entry here could claim
-        // role: "system" and land in the array the actual system message
-        // (below, from body.systemPrompt) gets prepended to -- a second,
-        // client-controlled system message the model would see, not just
-        // the one this route intends to send.
-        const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
-          (m): m is ChatMessage =>
-            !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
-        );
-        if (messages.length === 0)
-          return Response.json({ error: "messages required" }, { status: 400 });
-        const finalMessages: ChatMessage[] = body.systemPrompt
-          ? [
-              { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
-              ...messages,
-            ]
-          : messages;
-
-        // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
-        // OpenAI-compatible, so only the URL/key/model name change from the
-        // Lovable Gateway. See nvidia-chat-model.server.ts for why the
-        // model id lives there instead of being hardcoded here.
-        const model = resolveNvidiaChatModel();
-        const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${key}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages: finalMessages,
-          }),
-        });
-        if (!resp.ok) {
-          const text = await resp.text().catch(() => "");
-          return upstreamErrorResponse("NVIDIA", resp.status, text);
-        }
-        const data = (await resp.json()) as {
-          choices?: { message?: { content?: string } }[];
-        };
-        const content = data.choices?.[0]?.message?.content ?? "";
-        return Response.json({ content });
+        const timer = createStageTimer();
+        const res = await handleChat(request, timer);
+        timer.log("chat", res.status);
+        res.headers.set("Server-Timing", timer.serverTiming());
+        return res;
       },
     },
   },

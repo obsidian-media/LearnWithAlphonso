@@ -79,6 +79,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     });
     if (!llmResp.ok) {
       return {
+        ok: false as const,
         failure: await upstreamErrorResponse(
           "NVIDIA",
           llmResp.status,
@@ -89,9 +90,9 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     const llmData = (await llmResp.json()) as {
       choices?: { message?: { content?: string } }[];
     };
-    return { reply: (llmData.choices?.[0]?.message?.content ?? "").trim() };
+    return { ok: true as const, reply: (llmData.choices?.[0]?.message?.content ?? "").trim() };
   });
-  if ("failure" in llm) return llm.failure;
+  if (!llm.ok) return llm.failure;
   const reply = llm.reply;
   const llmMs = performance.now() - llmStart;
   if (!reply) {
@@ -112,6 +113,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     );
     if (!ttsResp.ok) {
       return {
+        ok: false as const,
         failure: await upstreamErrorResponse(
           "Deepgram TTS",
           ttsResp.status,
@@ -119,9 +121,12 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         ),
       };
     }
-    return { audioBase64: Buffer.from(await ttsResp.arrayBuffer()).toString("base64") };
+    return {
+      ok: true as const,
+      audioBase64: Buffer.from(await ttsResp.arrayBuffer()).toString("base64"),
+    };
   });
-  if ("failure" in tts) return tts.failure;
+  if (!tts.ok) return tts.failure;
   const audioBase64 = tts.audioBase64;
   const ttsMs = performance.now() - ttsStart;
 
