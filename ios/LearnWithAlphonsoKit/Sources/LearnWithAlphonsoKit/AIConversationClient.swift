@@ -210,6 +210,35 @@ public final class AIConversationClient: Sendable {
         return count
     }
 
+    /// POST /api/define-word -- saves a tapped word with its sentence and
+    /// returns its stored explanation. The server writes the review item; the
+    /// client never sends choices or an answer. HTTP failures throw a
+    /// `SavedWordError` so the caller can say something specific; a transport
+    /// failure (offline) propagates as the `URLError` it is.
+    public func defineWord(word: String, sentence: String, course: String) async throws -> SavedWordResult {
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/define-word"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "word": word, "sentence": sentence, "course": course,
+        ])
+
+        let (data, response) = try await perform(request)
+        guard let http = response as? HTTPURLResponse else { throw SavedWordError.unavailable }
+        guard (200...299).contains(http.statusCode) else {
+            throw SavedWordError.from(status: http.statusCode)
+        }
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let alreadySaved = object["alreadySaved"] as? Bool,
+              let savedWord = object["word"] as? String,
+              let savedSentence = object["sentence"] as? String,
+              let explanation = object["explanation"] as? String
+        else { throw SavedWordError.unavailable }
+        return SavedWordResult(
+            alreadySaved: alreadySaved, word: savedWord, sentence: savedSentence, explanation: explanation)
+    }
+
     /// POST /api/generate-practice -- V3 pkg 4b "generative sentence
     /// content." On-demand extra practice for a lesson the learner just
     /// finished; entirely ephemeral on the caller's side too (never

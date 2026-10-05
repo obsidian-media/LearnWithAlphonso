@@ -1,7 +1,10 @@
 # Save-any-word -- design
 
-**Date:** 2026-10-05. **Status:** design approved by the owner in chat; this
-spec awaits written review before an implementation plan is written.
+**Date:** 2026-10-05. **Status:** approved by the owner (design in chat, then
+the written spec). **Phase 1 is implemented:** backend merged as PR #211 (live
+and verified), iOS on Hector replies as PR #212. Phases 2-4 (Practice/Campaign,
+lessons and transcripts, web) are not started. See the plan for what was built
+and `docs/BACKLOG.md` section 0.0-ac #4 for the deferred follow-ups.
 **Path:** architectural (new item source, new endpoint, new migration, new UI
 on two platforms). **Order:** iOS first, then web.
 

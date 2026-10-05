@@ -99,6 +99,40 @@ describe("Review page", () => {
     expect(await screen.findByText(/1 correct · 0 to revisit/)).toBeInTheDocument();
   });
 
+  // A saved word is a self-contained item like a weakness one: the page has no
+  // bundled question for it, so it must build the card from the row itself. The
+  // page used to do that only for source "weakness" and silently DROPPED a
+  // saved_word row while still counting it in the queue total ("3 due" with 2
+  // cards) -- reviewer finding on the save-any-word backend.
+  it("renders and grades a saved-word item from the row itself", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [
+        {
+          itemKey: "savedword:0123456789abcdef",
+          source: "saved_word",
+          prompt: 'What does "serendipity" mean here?\nIt was pure serendipity.',
+          choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
+          answerIndex: 1,
+          explanation: '"serendipity" means a happy accident.',
+        },
+      ],
+      total: 1,
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText(/What does "serendipity" mean here\?/)).toBeInTheDocument();
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "a happy accident" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+
+    expect(await screen.findByText("Still got it.")).toBeInTheDocument();
+    expect(gradeReview).toHaveBeenCalledWith({
+      data: { itemKey: "savedword:0123456789abcdef", answer: "a happy accident", course: "en" },
+    });
+  });
+
   it("renders and grades a listening question rather than a blank card", async () => {
     // review.tsx is a SECOND renderer with its own render and grading sites.
     // A question type wired only into the lesson player renders as an empty

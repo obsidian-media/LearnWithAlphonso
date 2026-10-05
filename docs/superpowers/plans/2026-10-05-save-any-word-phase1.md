@@ -1,5 +1,7 @@
 # Save-any-word, Phase 1 Implementation Plan
 
+> **Status: EXECUTED (2026-10-05).** PR A (Tasks 1-5) merged as #211 and verified in production; PR B (Tasks 6-9) is #212. Deviations found while executing, all ruled and ledgered: the quota migration restates `stt` = 300 (the plan's SQL had 60, which would have reverted a live limit); the sentence picker and server validation both match the word as a WHOLE word; sentence length is measured in UTF-16 units; the save sheet refreshes its token. The text below is the plan as written, with the STT correction applied in place.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A learner taps a word in a Hector reply, saves it with its sentence, sees its AI-written meaning immediately, and gets it back later in the normal review queue as a multiple-choice card scheduled by SM-2.

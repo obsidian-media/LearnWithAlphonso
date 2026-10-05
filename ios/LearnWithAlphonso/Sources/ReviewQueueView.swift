@@ -93,7 +93,7 @@ struct ReviewQueueView: View {
     private var currentItem: ReviewItem { queue[idx] }
 
     private var currentQuestion: Question? {
-        if currentItem.source == "weakness" {
+        if currentItem.isSelfContained {
             return question(fromWeaknessItem: currentItem)
         }
         guard let found = contentStore.findLesson(id: currentItem.lessonId, course: course) else { return nil }
