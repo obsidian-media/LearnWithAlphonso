@@ -20,15 +20,25 @@ public enum WordSegmenter {
     /// category L (upper, lower, title, modifier, other). Swift's
     /// `Character.isLetter` is Unicode *Alphabetic*, a superset that also takes
     /// Roman-numeral and circled letters, so a run could be linked here and then
-    /// rejected by the server. A decomposed accent ("e" + U+0301) is one
-    /// Character whose first scalar is the letter, so it still counts.
+    /// rejected by the server.
+    ///
+    /// A Character can hold several scalars, so EVERY scalar must be a letter
+    /// AFTER NFC, the order the server uses: a decomposed accent ("e" + U+0301)
+    /// composes to one letter and still counts, but a mark that has no
+    /// precomposed form (an Arabic vowel sign, "a" + ogonek + acute, a variation
+    /// selector, a zero-width joiner) stays a separate non-letter scalar, and the
+    /// server then rejects the whole word. Checking only the first scalar linked
+    /// those words (found by a reviewer and by CodeRabbit independently).
     private static func isLetter(_ character: Character) -> Bool {
-        guard let first = character.unicodeScalars.first else { return false }
-        switch first.properties.generalCategory {
-        case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter:
-            return true
-        default:
-            return false
+        let scalars = String(character).precomposedStringWithCanonicalMapping.unicodeScalars
+        guard !scalars.isEmpty else { return false }
+        return scalars.allSatisfy { scalar in
+            switch scalar.properties.generalCategory {
+            case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter:
+                return true
+            default:
+                return false
+            }
         }
     }
 

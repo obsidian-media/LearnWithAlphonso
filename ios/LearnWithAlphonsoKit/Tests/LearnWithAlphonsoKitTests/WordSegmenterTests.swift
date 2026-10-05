@@ -194,6 +194,53 @@ final class WordSegmenterTests: XCTestCase {
         XCTAssertFalse(WordSegmenter.isSavable(String(repeating: "e\u{0301}", count: 41)))
     }
 
+    // MARK: a Character is a letter only if EVERY scalar of it is
+    //
+    // A Character can hold several scalars (a letter plus combining marks). The
+    // first scalar being a letter is not enough: after NFC, a mark that does not
+    // compose into a precomposed letter stays a separate non-letter scalar, and
+    // the server's `^\p{L}[\p{L}'-]*$` then rejects the whole word. Found by the
+    // phase 2 reviewer and by CodeRabbit independently.
+
+    func testALetterFollowedByANonComposingMarkIsNotAWord() {
+        let cases: [(String, String)] = [
+            ("a + ogonek + acute (no precomposed form)", "a\u{0328}\u{0301}"),
+            ("Arabic beh + fatha (vowel mark)", "\u{0628}\u{064E}"),
+            ("a + variation selector 16", "a\u{FE0F}"),
+            ("a + zero-width joiner", "a\u{200D}"),
+            ("Devanagari ka + vowel sign", "\u{0915}\u{093E}"),
+        ]
+        for (name, text) in cases {
+            XCTAssertTrue(
+                WordSegmenter.segments(in: text).allSatisfy { !$0.isWord },
+                "\(name) must not be linked: the server rejects it")
+        }
+    }
+
+    func testAComposingAccentThatNormalisesToOneLetterIsStillAWord() {
+        // e + acute composes to U+00E9 under NFC, which the server accepts.
+        XCTAssertEqual(WordSegmenter.segments(in: "e\u{0301}").map(\.isWord), [true])
+        XCTAssertEqual(WordSegmenter.segments(in: "caf\u{0065}\u{0301}").map(\.isWord), [true])
+    }
+
+    func testEveryLatinGreekAndCyrillicScalarAgreesWithTheServerPattern() throws {
+        // The corpus test below proves 10 strings; this proves the RULE across the
+        // scripts the courses actually use, scalar by scalar.
+        let server = try NSRegularExpression(pattern: "^\\p{L}[\\p{L}'\u{2019}-]*$")
+        let ranges: [ClosedRange<UInt32>] = [0x41...0x24F, 0x370...0x3FF, 0x400...0x4FF]
+        for range in ranges {
+            for value in range {
+                guard let scalar = Unicode.Scalar(value) else { continue }
+                let text = String(Character(scalar))
+                let linked = WordSegmenter.segments(in: text).contains { $0.isWord }
+                let normalised = text.precomposedStringWithCanonicalMapping
+                let accepted =
+                    server.firstMatch(in: normalised, range: NSRange(normalised.startIndex..., in: normalised)) != nil
+                XCTAssertEqual(linked, accepted, "U+\(String(value, radix: 16, uppercase: true)): linked=\(linked) server=\(accepted)")
+            }
+        }
+    }
+
     // MARK: "letter" means exactly what the server's \p{L} means
 
     func testEveryWordSegmentIsAcceptedByTheServersWordPattern() throws {
