@@ -213,7 +213,10 @@ typecheck, Vitest, Playwright, and the Swift package's tests are all
 wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 `main` (both Swift jobs run on a macOS runner; Vitest runs as a step
 inside the `lint-and-typecheck` job, not its own named check — easy to
-miss when reading `gh pr checks` output) — `ios-app-build` additionally
+miss when reading `gh pr checks` output; the Supabase generated-types
+freshness check is its own advisory `types-fresh` job that `deploy-supabase`
+does not wait on, so it can be red on a table-adding PR without blocking
+the deploy that fixes it) — `ios-app-build` additionally
 runs a real `xcodebuild` of the `LearnWithAlphonso` app target itself,
 the only compile verification that exists for it (no local Xcode/macOS
 in this development environment):
