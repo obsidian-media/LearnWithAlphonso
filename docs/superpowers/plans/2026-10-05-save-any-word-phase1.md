@@ -140,6 +140,8 @@ Expected: FAIL (ENOENT, file missing).
 
 - [ ] **Step 4: Write the migration**
 
+> **Correction found during execution:** `consume_ai_quota`'s `stt` limit is **300** (`20260930050000_raise_stt_daily_limit.sql`, confirmed live), not 60. Basing the new definition on the translate migration would silently revert it. The migration test also pins every existing limit.
+
 Create `supabase/migrations/20261005120000_saved_word_review_items.sql`:
 
 ```sql
@@ -189,7 +191,7 @@ DECLARE
 BEGIN
   daily_limit := CASE _kind
     WHEN 'chat' THEN 60
-    WHEN 'stt' THEN 60
+    WHEN 'stt' THEN 300
     WHEN 'tts' THEN 80
     WHEN 'translate' THEN 60
     WHEN 'define' THEN 40
@@ -1865,12 +1867,16 @@ final class SavedWordClientTests: XCTestCase {
     private let baseURL = URL(string: "https://english-buddy-app-33.vercel.app")!
 
     private func client(
-        status: Int = 200, json: Any? = nil, raw: Data? = nil,
+        status: Int = 200, json: [String: Any] = [:], raw: Data? = nil,
         capture: TestCapture<URLRequest?>? = nil
     ) -> AIConversationClient {
+        // `json` is typed [String: Any] (not Any?) on purpose: a mixed-type
+        // dictionary literal such as ["alreadySaved": false, "word": "w"]
+        // passed to an `Any?` parameter fails to compile ("heterogeneous
+        // collection literal could only be inferred to '[String: Any]'").
         AIConversationClient(baseURL: baseURL, accessToken: { "tok" }, requester: { request in
             capture?.value = request
-            let data = raw ?? (try! JSONSerialization.data(withJSONObject: json ?? [:]))
+            let data = raw ?? (try! JSONSerialization.data(withJSONObject: json))
             return (data, HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
         })
     }

@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 
-export type QuotaKind = "chat" | "stt" | "tts" | "translate";
+export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -22,6 +22,10 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // a learner writing unusual-but-valid English should not quietly eat the
   // conversation practice they also paid for.
   translate: 60,
+  // Saving a word makes one small NVIDIA call (see /api/define-word). Its own
+  // budget so saving words never eats the conversation turns a learner pays
+  // for, and so a runaway tap loop has a known cost ceiling.
+  define: 40,
 };
 
 export type QuotaResult =
