@@ -129,9 +129,120 @@ final class WordSegmenterTests: XCTestCase {
             WordSegmenter.sentence(containing: "target", in: "A \u{1F600} target here."),
             "A \u{1F600} target here.")
     }
+
+    // MARK: the sentence the learner actually TAPPED, not the first one
+
+    /// The character offset (in Characters, as `segments(in:)` counts them) of
+    /// the n-th whole-word segment equal to `word`.
+    private func offset(of word: String, occurrence: Int, in text: String) -> Int {
+        var seen = 0
+        var position = 0
+        for segment in WordSegmenter.segments(in: text) {
+            if segment.isWord && segment.text.lowercased() == word.lowercased() {
+                if seen == occurrence { return position }
+                seen += 1
+            }
+            position += segment.text.count
+        }
+        XCTFail("occurrence \(occurrence) of \(word) not found")
+        return 0
+    }
+
+    func testAWordInTwoSentencesSavesTheSentenceThatWasTapped() {
+        let text = "Cats purr softly. I really like cats."
+        let first = offset(of: "cats", occurrence: 0, in: text)
+        let second = offset(of: "cats", occurrence: 1, in: text)
+        XCTAssertEqual(WordSegmenter.sentence(containing: "cats", in: text, atOffset: first), "Cats purr softly.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "cats", in: text, atOffset: second), "I really like cats.")
+    }
+
+    func testAnOffsetThatMissesTheWordFallsBackToTheFirstSentenceWithIt() {
+        let text = "Cats purr softly. Dogs bark loudly."
+        XCTAssertEqual(WordSegmenter.sentence(containing: "dogs", in: text, atOffset: 0), "Dogs bark loudly.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "dogs", in: text, atOffset: 9_999), "Dogs bark loudly.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "dogs", in: text, atOffset: -3), "Dogs bark loudly.")
+    }
+
+    func testTheOffsetVersionStillRequiresAWholeWord() {
+        let text = "The end came. Then he left."
+        let offset = offset(of: "he", occurrence: 0, in: text)
+        XCTAssertEqual(WordSegmenter.sentence(containing: "he", in: text, atOffset: offset), "Then he left.")
+    }
+
+    func testTheOffsetVersionStillClampsToTheServerLimit() {
+        let text = String(repeating: emoji, count: 150) + " target " + String(repeating: emoji, count: 150)
+        let out = WordSegmenter.sentence(
+            containing: "target", in: text, atOffset: offset(of: "target", occurrence: 0, in: text))
+        XCTAssertLessThanOrEqual(out.utf16.count, 300)
+        XCTAssertTrue(out.contains("target"))
+    }
+
+    // MARK: only words the server will accept are tappable
+
+    func testWordsOverTheServersFortyUnitLimitAreNotSavable() {
+        XCTAssertTrue(WordSegmenter.isSavable("serendipity"))
+        XCTAssertTrue(WordSegmenter.isSavable(String(repeating: "a", count: 40)))
+        XCTAssertFalse(WordSegmenter.isSavable(String(repeating: "a", count: 41)))
+        XCTAssertFalse(WordSegmenter.isSavable(""))
+    }
+
+    func testTheLimitIsMeasuredAfterNormalisationLikeTheServer() {
+        // 40 decomposed e-acute is 80 scalars/UTF-16 units but 40 once composed
+        // (the server normalises to NFC before checking), so it is savable.
+        let decomposed = String(repeating: "e\u{0301}", count: 40)
+        XCTAssertTrue(WordSegmenter.isSavable(decomposed))
+        XCTAssertFalse(WordSegmenter.isSavable(String(repeating: "e\u{0301}", count: 41)))
+    }
+
+    // MARK: "letter" means exactly what the server's \p{L} means
+
+    func testEveryWordSegmentIsAcceptedByTheServersWordPattern() throws {
+        // Swift's Character.isLetter is Unicode Alphabetic, a SUPERSET of \p{L}
+        // (Roman-numeral and circled letters are Alphabetic but not letters), so a
+        // run could be linked here and then rejected by the server.
+        let server = try NSRegularExpression(pattern: "^\\p{L}[\\p{L}'\u{2019}-]*$")
+        let corpus = [
+            "Hello, world! It's a well-known fact.", "l'\u{00e9}t\u{00e9} est chaud", "don\u{2019}t stop",
+            "e\u{0301}te\u{0301} chaud", "\u{2160}\u{216B} chapters and \u{24B6}\u{24B7}\u{24B8} circles",
+            "room 42 has x2 and a1b2", "\u{4f60}\u{597d} world", "na\u{00ef}ve caf\u{00e9} r\u{00e9}sum\u{00e9}",
+            "rock - roll and a--b", "\u{0627}\u{0644}\u{0639}\u{0631}\u{0628}\u{064A}\u{0629} text",
+        ]
+        for text in corpus {
+            for segment in WordSegmenter.segments(in: text) where segment.isWord {
+                // The server NFC-normalises first.
+                let normalised = segment.text.precomposedStringWithCanonicalMapping
+                let range = NSRange(normalised.startIndex..., in: normalised)
+                XCTAssertNotNil(
+                    server.firstMatch(in: normalised, range: range),
+                    "\"\(segment.text)\" in \"\(text)\" is linked as a word but the server would reject it")
+            }
+        }
+    }
+
+    func testRomanNumeralAndCircledLettersAreNotWords() {
+        XCTAssertTrue(WordSegmenter.segments(in: "\u{2160}\u{216B}").allSatisfy { !$0.isWord })
+        XCTAssertTrue(WordSegmenter.segments(in: "\u{24B6}").allSatisfy { !$0.isWord })
+    }
 }
 
 final class WordLinkTests: XCTestCase {
+    func testCarriesTheTappedOffsetThroughTheLink() throws {
+        let url = try XCTUnwrap(WordLink.url(for: "cats", offset: 23))
+        XCTAssertEqual(WordLink.word(from: url), "cats")
+        XCTAssertEqual(WordLink.offset(from: url), 23)
+    }
+
+    func testALinkWithoutAnOffsetStillParsesAndHasNoOffset() throws {
+        let url = try XCTUnwrap(WordLink.url(for: "cats"))
+        XCTAssertEqual(WordLink.word(from: url), "cats")
+        XCTAssertNil(WordLink.offset(from: url))
+    }
+
+    func testAMalformedOffsetIsIgnoredNotACrash() {
+        XCTAssertNil(WordLink.offset(from: URL(string: "lwa-word://save?w=cats&o=notanumber")!))
+        XCTAssertNil(WordLink.offset(from: URL(string: "https://example.com/?o=5")!))
+    }
+
     func testRoundTripsWordsWithApostrophesHyphensAndAccents() throws {
         for word in ["don't", "don\u{2019}t", "well-known", "l'\u{00e9}t\u{00e9}", "serendipity"] {
             let url = try XCTUnwrap(WordLink.url(for: word))
