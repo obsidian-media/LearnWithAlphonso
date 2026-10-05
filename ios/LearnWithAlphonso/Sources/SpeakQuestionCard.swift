@@ -59,10 +59,19 @@ struct SpeakQuestionCard: View {
     /// fallback is shown for the rest of the question rather than leaving the
     /// learner stuck on a mic button that cannot work.
     @State private var micUnavailable = false
+    /// Voice sends audio to Deepgram, so it needs the learner's AI consent.
+    /// Without it the card shows the typing fallback (which sends nothing to
+    /// any AI provider) and offers voice as an opt-in -- it must NOT replace
+    /// the card or pop the lesson, or declining blocks every lesson that has
+    /// a speak question (BACKLOG 0.0-z #2).
+    @State private var hasAIConsent = AIDisclosureGate.isAcknowledged()
+    @State private var showDisclosure = false
 
     private enum Phase: Equatable { case idle, recording, transcribing }
 
-    private var canCapture: Bool { isConnected && !micUnavailable }
+    private var canCapture: Bool { isConnected && !micUnavailable && hasAIConsent }
+    /// Voice would work if the learner opted in -- worth offering the choice.
+    private var voiceNeedsConsent: Bool { isConnected && !micUnavailable && !hasAIConsent }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
@@ -79,6 +88,14 @@ struct SpeakQuestionCard: View {
             if canCapture {
                 captureControls
             } else {
+                if voiceNeedsConsent {
+                    Button {
+                        showDisclosure = true
+                    } label: {
+                        Label("Use your voice instead", systemImage: "mic")
+                    }
+                    .buttonStyle(.alphonsoSecondary)
+                }
                 typingFallback
             }
 
@@ -94,7 +111,13 @@ struct SpeakQuestionCard: View {
                     course: course)
             }
         }
-        .aiDisclosureGate()
+        // Consent is asked only if the learner chooses voice, and never by
+        // blocking the lesson (see hasAIConsent above).
+        .aiDisclosureSheet(isPresented: $showDisclosure) { hasAIConsent = true }
+        .onAppear {
+            // Allowed on another screen since this card was built.
+            if !hasAIConsent && AIDisclosureGate.isAcknowledged() { hasAIConsent = true }
+        }
         // 2026-09-29 whole-codebase audit: this screen had no onDisappear
         // at all, unlike its three sibling recording screens -- a view torn
         // down mid-hold (navigating back, a lesson finishing underneath it)

@@ -97,9 +97,16 @@ struct TranslateQuestionCard: View {
 /// uses, where TranslateAnswer.tsx renders and the players grade.
 ///
 /// The local match is the floor and is never overturned; the server is asked
-/// only about what it rejects, and only when there is a network and a token to
-/// ask with. Everything else leaves the local verdict standing, because being
-/// offline is not evidence about the learner's English.
+/// only about what it rejects, and only when there is a network, a token to
+/// ask with, and the learner has allowed AI processing
+/// (`TranslationGradingPolicy`). Everything else leaves the local verdict
+/// standing, because being offline -- or having declined to share answers --
+/// is not evidence about the learner's English.
+///
+/// Consent is enforced HERE, at the single point a written answer leaves the
+/// device, rather than by wrapping the whole lesson in `.aiDisclosureGate()`:
+/// the wrapper made "Not now" pop the learner out of every lesson, including
+/// ones with no AI question (BACKLOG 0.0-z #2).
 @MainActor
 func settledTranslationVerdict(
     question: Question.Translate,
@@ -113,7 +120,13 @@ func settledTranslationVerdict(
     if TranslationAnswer.matches(submission: submission, acceptable: question.acceptableAnswers) {
         return TranslationVerdict(correct: true, reason: nil)
     }
-    guard isConnected, let accessToken = session.accessToken else {
+    guard
+        TranslationGradingPolicy.mayAskServer(
+            isConnected: isConnected,
+            hasAccessToken: session.accessToken != nil,
+            hasAIConsent: AIDisclosureGate.isAcknowledged()),
+        let accessToken = session.accessToken
+    else {
         return TranslationVerdict(correct: false, reason: nil)
     }
     let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
