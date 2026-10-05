@@ -79,7 +79,7 @@ struct RootView: View {
                         LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
-                            .badge(ReviewBadge.text(dueCount: syncQueueStore.lastKnownDueReviews().count))
+                            .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))
                         ListenView(
                             session: session,
                             networkMonitor: networkMonitor,

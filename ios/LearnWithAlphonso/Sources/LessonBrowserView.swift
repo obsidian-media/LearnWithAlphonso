@@ -61,7 +61,7 @@ struct LessonBrowserView: View {
     /// as StatusHeaderView above. See ReviewBadge's doc comment for why a
     /// stale cache under-reports rather than over-reports.
     private var dueReviewCount: Int {
-        syncQueueStore.lastKnownDueReviews().count
+        syncQueueStore.dueReviewCount
     }
 
     private var reviewSubtitle: String {

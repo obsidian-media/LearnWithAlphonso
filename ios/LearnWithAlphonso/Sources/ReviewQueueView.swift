@@ -14,6 +14,9 @@ struct ReviewQueueView: View {
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
 
+    // The review sheet had no way out but swiping it down (BACKLOG 0.0-z #4).
+    @Environment(\.dismiss) private var dismiss
+
     @State private var course: Course = .english
     @State private var queue: [ReviewItem] = []
     @State private var total = 0
@@ -72,6 +75,9 @@ struct ReviewQueueView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     CoursePicker(course: $course)
                         .disabled(!queue.isEmpty && idx < queue.count)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -223,6 +229,7 @@ struct ReviewQueueView: View {
         do {
             let outcome = try await client.gradeReview(
                 itemKey: currentItem.itemKey, answer: submission, course: course.code)
+            dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
             guard let correct = outcome.correct else {
                 // Server predates the field: nothing was displayed wrongly, it
                 // just graded without telling us, so show the local verdict and
@@ -259,7 +266,9 @@ struct ReviewQueueView: View {
         if networkMonitor.isConnected, let accessToken = session.accessToken {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
-                _ = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.code)
+                let outcome = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.code)
+                // Before advance(): currentItem moves on with idx.
+                dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
                 if idx >= queue.count {
                     await claimBonusIfCleared(client: client)
@@ -271,6 +280,19 @@ struct ReviewQueueView: View {
         }
         queueGradeOffline(item: currentItem, question: question, answer: picked)
         advance()
+    }
+
+    /// Applies the server's own scheduling answer to the cached due list.
+    ///
+    /// Only the OFFLINE path used to touch the cache, and the cache is only
+    /// otherwise replaced when this screen opens (before any grading) or on a
+    /// full sync -- so an item graded online stayed counted and the Learn tab
+    /// badge kept showing it after the queue was cleared (BACKLOG 0.0-z #5).
+    /// A wrong answer stays due today, so `isStillDue` keeps it counted.
+    private func dropFromDueCacheIfNoLongerDue(_ outcome: ReviewGradeOutcome, itemKey: String) {
+        if !outcome.isStillDue(on: todayDateString()) {
+            syncQueueStore.removeCachedDueReview(itemKey: itemKey)
+        }
     }
 
     /// Optimistic local grading (Option A in the design doc): compute the
