@@ -436,8 +436,10 @@ heart loss / CEFR level / placement save until a new build ships.
 
 **Applying migrations:** `.github/workflows/ci.yml`'s `deploy-supabase` job
 now runs `supabase db push` (and redeploys all three Edge Functions)
-automatically on every push to `main`, gated on `lint-and-typecheck`/`e2e`
-passing first (see "Known rough edges" below for the incident history that
+automatically on every push to `main`, gated on `lint-and-typecheck`/`e2e`/
+`deno-tests` passing first. The generated-types freshness check
+(`types-fresh`) is deliberately NOT in that gate: it fails on any PR that adds
+a table until this very job applies the migration (see "Known rough edges" below for the incident history that
 motivated this, and the job's own comment for the required repo secrets).
 Before this existed, every file under `supabase/migrations/` needed a
 manual `supabase db push` or hand-applied SQL before the corresponding code
