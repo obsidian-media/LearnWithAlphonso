@@ -188,11 +188,13 @@ struct LessonPlayerView: View {
         .navigationBarTitleDisplayMode(.inline)
         // 2026-09-30 audit (Codex/Fable): a translate question's written
         // answer is sent to NVIDIA for grading (settledTranslationVerdict)
-        // with no disclosure at all -- every other AI vendor path in the
-        // app gates behind this. Applied at the lesson root, same as the
-        // four voice screens, since a lesson doesn't know until the
-        // learner reaches a translate question whether it will call AI.
-        .aiDisclosureGate()
+        // with no disclosure at all. That was first closed by wrapping the
+        // whole lesson in .aiDisclosureGate(), but "Not now" then popped the
+        // learner out of EVERY lesson, including ones with no AI question
+        // (BACKLOG 0.0-z #2). Consent is now enforced where the answer
+        // actually leaves the device -- settledTranslationVerdict, via
+        // TranslationGradingPolicy -- and a speak question still carries its
+        // own gate (SpeakQuestionCard), so no lesson is blocked wholesale.
     }
 
     private var quizBody: some View {

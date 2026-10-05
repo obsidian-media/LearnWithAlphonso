@@ -78,6 +78,26 @@ extension View {
     func aiDisclosureGate() -> some View {
         modifier(AIDisclosureGateModifier())
     }
+
+    /// Presents the same disclosure ON DEMAND, for a screen that has a
+    /// working non-AI path and offers AI as an opt-in (a speak question that
+    /// can be typed instead). Unlike `aiDisclosureGate()` it never replaces
+    /// the screen or dismisses it: "Not now" just closes the sheet and the
+    /// learner carries on without sharing anything (BACKLOG 0.0-z #2).
+    func aiDisclosureSheet(isPresented: Binding<Bool>, onAllow: @escaping () -> Void) -> some View {
+        sheet(isPresented: isPresented) {
+            AIDisclosureSheet(
+                onAllow: {
+                    AIDisclosureGate.acknowledge()
+                    onAllow()
+                    isPresented.wrappedValue = false
+                },
+                onDecline: { isPresented.wrappedValue = false }
+            )
+            // Same as the gate: a swipe is neither yes nor no.
+            .interactiveDismissDisabled()
+        }
+    }
 }
 
 private struct AIDisclosureSheet: View {
