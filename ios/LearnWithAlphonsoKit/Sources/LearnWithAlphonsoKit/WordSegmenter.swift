@@ -87,25 +87,52 @@ public enum WordSegmenter {
 
         let match = sentences.first { containsWholeWord(word, in: $0) } ?? text
         let trimmed = match.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.count <= maxSentence { return trimmed }
+        // The server's limit is JavaScript `.length`, i.e. UTF-16 code units,
+        // NOT Swift Characters: an emoji is 1 Character but 2 units (a family
+        // emoji, 8), so counting Characters would let an emoji-heavy sentence
+        // through that the server then rejects (CodeRabbit review on PR #212).
+        if trimmed.utf16.count <= maxSentence { return trimmed }
 
-        // Too long: keep a 300-character window around the first WHOLE-word
-        // occurrence (not the first substring hit, which may be inside another word).
+        // Too long: find the first WHOLE-word occurrence (not the first
+        // substring hit, which may be inside another word), then grow a window
+        // outward from it one Character at a time, left then right, while it
+        // stays within the UTF-16 budget. The word is in the window by
+        // construction. With no occurrence the window simply grows from the start.
+        let chars = Array(trimmed)
         let target = fold(word)
         var offset = 0
-        var wordStart: Int?
+        var wordRange: Range<Int>?
         for segment in segments(in: trimmed) {
+            let length = segment.text.count
             if segment.isWord && fold(segment.text) == target {
-                wordStart = offset
+                wordRange = offset..<(offset + length)
                 break
             }
-            offset += segment.text.count
+            offset += length
         }
-        guard let wordStart else { return String(trimmed.prefix(maxSentence)) }
-        let lo = max(0, min(wordStart - 120, trimmed.count - maxSentence))
-        let start = trimmed.index(trimmed.startIndex, offsetBy: lo)
-        let end = trimmed.index(start, offsetBy: maxSentence)
-        return String(trimmed[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+        var lo = wordRange?.lowerBound ?? 0
+        var hi = wordRange?.upperBound ?? 0
+        var used = chars[lo..<hi].reduce(0) { $0 + units($1) }
+        var grew = true
+        while grew {
+            grew = false
+            if lo > 0, used + units(chars[lo - 1]) <= maxSentence {
+                lo -= 1
+                used += units(chars[lo])
+                grew = true
+            }
+            if hi < chars.count, used + units(chars[hi]) <= maxSentence {
+                used += units(chars[hi])
+                hi += 1
+                grew = true
+            }
+        }
+        return String(chars[lo..<hi]).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// UTF-16 code units in one Character -- what JavaScript's `.length` counts.
+    private static func units(_ character: Character) -> Int {
+        String(character).utf16.count
     }
 }
 

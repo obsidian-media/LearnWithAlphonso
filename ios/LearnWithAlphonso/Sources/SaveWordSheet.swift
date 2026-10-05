@@ -109,12 +109,26 @@ struct SaveWordSheet: View {
             showDisclosure = true
             return
         }
-        guard let token = session.accessToken else {
+        guard session.accessToken != nil else {
             phase = .failed(.notSignedIn)
             return
         }
+        // `.saving` BEFORE the refresh await, so a second tap during it is blocked.
         phase = .saving
-        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { token })
+        // freshAccessToken + a refresh backstop, like every other AI screen (see
+        // HectorView.sendTurn): the raw stored token goes stale after about an
+        // hour, and Hector sessions are long-lived, so reading it directly
+        // would 401 into "Sign in again" with no retry (found live 2026-09-28).
+        // A nil here is a transient refresh failure, which is retryable.
+        guard let token = await session.freshAccessToken() else {
+            phase = .failed(.unavailable)
+            return
+        }
+        let client = AIConversationClient(
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { token },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
+        )
         do {
             phase = .saved(try await client.defineWord(
                 word: request.word, sentence: request.sentence, course: request.course))

@@ -88,6 +88,47 @@ final class WordSegmenterTests: XCTestCase {
         let text = "The end came. Then he left."
         XCTAssertEqual(WordSegmenter.sentence(containing: "he", in: text), "Then he left.")
     }
+
+    // MARK: server length limit is UTF-16 code units, not Characters
+    //
+    // The server checks `sentence.length > 300` in JavaScript, which counts
+    // UTF-16 code units. Swift's `String.count` counts grapheme clusters, so an
+    // emoji is 1 Character but 2 units (a family emoji, 8). A sentence that is
+    // "short" by Characters can still be rejected with a 400 (CodeRabbit review
+    // on PR #212).
+
+    private let emoji = "\u{1F600}"  // 1 Character, 2 UTF-16 units
+    private let family = "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}"  // 1 Character, 8 units
+
+    func testASentenceUnder300CharactersButOver300UTF16UnitsIsStillClamped() {
+        // 160 Characters + " target" = 167 Characters, but 160*2 + 7 = 327 UTF-16 units.
+        let text = String(repeating: emoji, count: 160) + " target"
+        XCTAssertLessThanOrEqual(text.count, 300)
+        XCTAssertGreaterThan(text.utf16.count, 300)
+        let out = WordSegmenter.sentence(containing: "target", in: text)
+        XCTAssertLessThanOrEqual(out.utf16.count, 300)
+        XCTAssertTrue(out.hasSuffix("target"))
+    }
+
+    func testAnEmojiHeavyLongSentenceIsClampedInUTF16UnitsAroundTheWord() {
+        let text = String(repeating: emoji, count: 150) + " target " + String(repeating: emoji, count: 150)
+        let out = WordSegmenter.sentence(containing: "target", in: text)
+        XCTAssertLessThanOrEqual(out.utf16.count, 300)
+        XCTAssertTrue(out.contains("target"))
+    }
+
+    func testMultiUnitGraphemesNeverPushASentenceOverTheLimit() {
+        let text = String(repeating: family, count: 60) + " target " + String(repeating: family, count: 60)
+        let out = WordSegmenter.sentence(containing: "target", in: text)
+        XCTAssertLessThanOrEqual(out.utf16.count, 300)
+        XCTAssertTrue(out.contains("target"))
+    }
+
+    func testAnAlreadyShortSentenceWithEmojiIsLeftAlone() {
+        XCTAssertEqual(
+            WordSegmenter.sentence(containing: "target", in: "A \u{1F600} target here."),
+            "A \u{1F600} target here.")
+    }
 }
 
 final class WordLinkTests: XCTestCase {
