@@ -43,9 +43,72 @@ describe("validateSavedWordInput", () => {
   });
 
   it("accepts a sentence of exactly 300 characters", () => {
-    const sentence = `serendipity${"a".repeat(289)}`;
+    // The word must stand alone as a token, so the padding follows a space.
+    const sentence = `serendipity ${"a".repeat(288)}`;
     expect(sentence.length).toBe(300);
     expect(validateSavedWordInput({ ...good, sentence }).ok).toBe(true);
+  });
+
+  // Found by CodeRabbit review: a substring check accepted word "he" for the
+  // sentence "the", storing a card that asks what "he" means in "the".
+  it("requires the word as a whole word, not a substring of another word", () => {
+    expect(validateSavedWordInput({ ...good, word: "he", sentence: "the" }).ok).toBe(false);
+    expect(validateSavedWordInput({ ...good, word: "he", sentence: "She went home." }).ok).toBe(
+      false,
+    );
+    expect(validateSavedWordInput({ ...good, word: "he", sentence: "Then he left." }).ok).toBe(
+      true,
+    );
+  });
+
+  it("finds the word next to punctuation, quotes and at the ends of the sentence", () => {
+    for (const sentence of [
+      "serendipity.",
+      '"serendipity!"',
+      "(serendipity)",
+      "pure, serendipity, again",
+    ]) {
+      expect(validateSavedWordInput({ ...good, sentence }).ok).toBe(true);
+    }
+  });
+
+  it("treats a typographic and a straight apostrophe as the same word", () => {
+    expect(validateSavedWordInput({ ...good, word: "don't", sentence: "I don’t know." }).ok).toBe(
+      true,
+    );
+    expect(validateSavedWordInput({ ...good, word: "don’t", sentence: "I don't know." }).ok).toBe(
+      true,
+    );
+  });
+
+  it("matches composed and decomposed accents as the same word", () => {
+    const composed = "été"; // été
+    const decomposed = "été";
+    expect(
+      validateSavedWordInput({
+        ...good,
+        course: "fr",
+        word: decomposed,
+        sentence: `un ${composed} chaud`,
+      }).ok,
+    ).toBe(true);
+    expect(
+      validateSavedWordInput({
+        ...good,
+        course: "fr",
+        word: composed,
+        sentence: `un ${decomposed} chaud`,
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("does not let a hyphen or apostrophe glue two words into one match", () => {
+    expect(
+      validateSavedWordInput({ ...good, word: "well", sentence: "a well-known fact" }).ok,
+    ).toBe(false);
+    expect(
+      validateSavedWordInput({ ...good, word: "well-known", sentence: "a well-known fact" }).ok,
+    ).toBe(true);
   });
 
   it("rejects an unknown course and non-object input", () => {

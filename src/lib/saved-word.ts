@@ -34,15 +34,24 @@ export function validateSavedWordInput(
   }
   if (!COURSES.has(course)) return { ok: false, error: "Unknown course" };
 
-  const w = word.trim();
+  // NFC first: \p{L} does not match a combining accent, so a decomposed
+  // "e" + U+0301 would fail the word pattern and split in the tokenizer below.
+  // The normalised forms are what is stored, matching the item key.
+  const w = word.trim().normalize("NFC");
   if (w.length < 1 || w.length > WORD_MAX || !WORD_PATTERN.test(w)) {
     return { ok: false, error: "That doesn't look like a single word" };
   }
-  const s = sentence.trim();
+  const s = sentence.trim().normalize("NFC");
   if (s.length < 1 || s.length > SENTENCE_MAX) {
     return { ok: false, error: "The sentence is missing or too long" };
   }
-  if (!s.toLowerCase().includes(w.toLowerCase())) {
+  // Whole-word match, not a substring: "he" must not be found in "the"
+  // (CodeRabbit review). Tokens follow the same rule as the client's word
+  // segmenter -- letters, with an apostrophe or hyphen only BETWEEN letters --
+  // and a typographic apostrophe equals a straight one, as in the item key.
+  const fold = (x: string) => x.toLowerCase().replace(/’/g, "'");
+  const tokens = s.match(/\p{L}(?:\p{L}|['’-](?=\p{L}))*/gu) ?? [];
+  if (!tokens.some((token) => fold(token) === fold(w))) {
     return { ok: false, error: "The sentence must contain the word" };
   }
   return { ok: true, value: { word: w, sentence: s, course: course as SavedWordCourse } };
