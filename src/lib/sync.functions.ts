@@ -402,8 +402,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // here is already server-computed above (trust boundary already
     // crossed), so supabaseAdmin is the correct client for the actual
     // persist, same as the complete-lesson Edge Function's own writes.
-    // friend_activity_events is unaffected (not one of the hardened
-    // tables) and stays on the RLS-scoped client.
+    // friend_activity_events has a SELECT policy only (readable by friends),
+    // so its insert must also go through supabaseAdmin, exactly like the
+    // complete-lesson Edge Function does. Through the user's RLS client it
+    // was denied, which made this function throw after the other writes had
+    // landed and left the lesson screen showing 0 XP (found 2026-10-06).
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // 2026-09-30 audit (Codex #4): none of these five results' own
     // `{ error }` was ever checked -- a failed upsert (RLS gap, network
@@ -452,7 +455,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
       }),
       ...(activityEvents.length > 0
-        ? [supabase.from("friend_activity_events").insert(activityEvents)]
+        ? [supabaseAdmin.from("friend_activity_events").insert(activityEvents)]
         : []),
     ]);
     const failedWrite = writeResults.find((r) => r.error);

@@ -241,7 +241,6 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } })) // language_progress
       .mockReturnValueOnce(chainable({ data: null })) // existing lesson_completions row
       .mockReturnValueOnce(chainable({ data: null })) // existing activity_days row
-      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] })) // lesson_completions re-read
       .mockReturnValueOnce(chainable({ data: [] })); // user_achievements re-read
     // user_progress/language_progress/lesson_completions/activity_days
@@ -251,6 +250,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({})) // language_progress upsert
       .mockReturnValueOnce(chainable({})) // lesson_completions upsert
       .mockReturnValueOnce(chainable({})) // activity_days upsert
+      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0), via admin
       .mockReturnValueOnce(chainable({})); // user_achievements upsert
 
     const result = await completeLessonRemote({
@@ -263,6 +263,12 @@ describe("completeLessonRemote", () => {
         sessionToken: validToken(),
       },
     });
+
+    // friend_activity_events has a SELECT policy only, so the insert must use the service-role client. Through
+    // the user's RLS client it is denied, completeLessonRemote throws after the other writes land, and the web
+    // lesson screen shows 0 XP (found 2026-10-06 in the 0.0-ae review).
+    expect(supabase.from.mock.calls.map((c) => c[0])).not.toContain("friend_activity_events");
+    expect(supabaseAdminFrom.mock.calls.map((c) => c[0])).toContain("friend_activity_events");
 
     expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8)
     expect(result.heartsBonus).toBe("perfect");
@@ -341,7 +347,6 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: null }))
       .mockReturnValueOnce(chainable({ data: null }))
-      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
       .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
       .mockReturnValueOnce(chainable({ data: [] }));
     supabaseAdminFrom
@@ -349,6 +354,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({})) // language_progress upsert
       .mockReturnValueOnce(chainable({})) // lesson_completions upsert
       .mockReturnValueOnce(chainable({})) // activity_days upsert
+      .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0), via admin
       .mockReturnValueOnce(chainable({})); // user_achievements upsert (first-ever perfect completion again)
 
     vi.useFakeTimers();
@@ -397,13 +403,13 @@ describe("completeLessonRemote", () => {
       )
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: null }))
-      .mockReturnValueOnce(chainable({ data: null }))
-      .mockReturnValueOnce(chainable({})); // friend_activity_events insert (xpGain > 0)
+      .mockReturnValueOnce(chainable({ data: null }));
     supabaseAdminFrom
       .mockReturnValueOnce(chainable({})) // user_progress upsert -- succeeds
       .mockReturnValueOnce(chainable({})) // language_progress upsert -- succeeds
       .mockReturnValueOnce(chainable({ error: { message: "connection reset" } })) // lesson_completions upsert -- fails
-      .mockReturnValueOnce(chainable({})); // activity_days upsert -- succeeds
+      .mockReturnValueOnce(chainable({})) // activity_days upsert -- succeeds
+      .mockReturnValueOnce(chainable({})); // friend_activity_events insert (xpGain > 0), via admin
 
     await expect(
       completeLessonRemote({
@@ -569,7 +575,6 @@ describe("completeLessonRemote", () => {
         .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } })) // language_progress
         .mockReturnValueOnce(chainable({ data: null })) // existing lesson_completions row
         .mockReturnValueOnce(chainable({ data: null })) // existing activity_days row
-        .mockReturnValueOnce(chainable({})) // friend_activity_events insert (xpGain > 0)
         .mockReturnValueOnce(chainable({ data: [{ correct: 7, total: 8 }] })) // lesson_completions re-read
         .mockReturnValueOnce(chainable({ data: [] })) // user_achievements re-read
         .mockReturnValueOnce(chainable({ data: null })); // weakness dedup check: no existing item
