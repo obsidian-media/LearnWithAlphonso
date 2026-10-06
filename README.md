@@ -280,7 +280,7 @@ compile verification that exists):
   Practice and Campaign replies, English-course lesson and review
   explanations, and podcast transcripts, on iOS and on the web (web: `SaveWordProvider` +
   `TappableText`, one confirmation dialog that tells the learner what is sent before sending it)
-- **Learning goal**: pick "finish B1 by <date>" on the Learn page; the server works out lessons a week, on track / ahead / behind, and a suggested date. One computation (`planGoal`) behind `/api/learning-goal`, rendered by web now and iOS/Android later
+- **Learning goal**: pick "finish B1 by <date>" on the Learn page; the server works out lessons a week, on track / ahead / behind, and a suggested date. One computation (`planGoal`) behind `/api/learning-goal`, rendered by web and iOS (Android next)
 - **Leaderboards** (global/friends/country, weekly/all-time): overtake
   detection (in-app toast) and a weekly recap sheet
 - **Friends**: invite-link based, an activity feed, and nudge-a-friend

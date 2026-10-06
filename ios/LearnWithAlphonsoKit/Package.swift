@@ -41,7 +41,8 @@ let package = Package(
         ),
         .testTarget(
             name: "LearnWithAlphonsoKitTests",
-            dependencies: ["LearnWithAlphonsoKit"]
+            dependencies: ["LearnWithAlphonsoKit"],
+            resources: [.copy("Fixtures")]
         ),
     ]
 )

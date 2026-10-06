@@ -20,13 +20,17 @@ import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goa
  */
 const DATE_SHAPE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
+// A fixed English table, not the browser locale: the iOS card prints the same text from its own
+// copy of this table (GoalCopy.formatDate), and CLDR spells September "Sept" in some locales.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(iso);
+  if (!match) return iso;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (month < 1 || month > 12 || date.getUTCDate() !== day) return iso;
+  return `${day} ${MONTHS[month - 1]} ${year}`;
 }
 
 /** `months` ahead, clamped to the end of a shorter month (31 Aug + 6 months = 28 Feb, not 3 Mar). */
@@ -135,12 +139,17 @@ export function GoalCard({ course }: { course: GoalCourse }) {
     if (saving || preview.kind !== "ok") return;
     setSaving(true);
     setSaveError(null);
+    // `loadId` changes whenever the course (and so the card) is reloaded; a save that finishes after
+    // that belongs to a course the learner has left and must not overwrite the new card.
+    const startedAt = loadId.current;
     try {
       const next = await saveGoal(course, level, date);
+      if (startedAt !== loadId.current) return;
       setState(next);
       setLoadError(null);
       setView("goal");
     } catch (error) {
+      if (startedAt !== loadId.current) return;
       setSaveError(messageFor(error));
     } finally {
       setSaving(false);
@@ -148,11 +157,14 @@ export function GoalCard({ course }: { course: GoalCourse }) {
   }
 
   async function remove() {
+    const startedAt = loadId.current;
     try {
       await removeGoal(course);
+      if (startedAt !== loadId.current) return;
       setState({ goal: null, plan: null });
       setView("empty");
     } catch (error) {
+      if (startedAt !== loadId.current) return;
       // A failed remove is an action error, not "offline": the goal is still there and editable.
       setActionError(messageFor(error));
     }
@@ -182,7 +194,11 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       {view === "error" && (
         <div>
           <p role="alert" className="text-sm font-medium text-rose-600">
-            {goalErrorMessage(loadError ?? "unavailable")}
+            {/* This view has no cached plan to show, so "showing your last saved plan" would be false
+                (iOS: GoalCopy.loadFailureMessage). */}
+            {loadError === "offline"
+              ? "You're offline. Connect to load your goal."
+              : goalErrorMessage(loadError ?? "unavailable")}
           </p>
           <button type="button" onClick={() => void load()} className={SECONDARY}>
             Try again
@@ -328,6 +344,7 @@ function PreviewLines({ plan }: { plan: GoalPlan }) {
       <p className="text-ink-soft">
         {plan.lessonsRemaining} lessons left to finish {plan.targetLevel}.
       </p>
+      <Suggestion plan={plan} />
       <Realism plan={plan} />
     </div>
   );
@@ -340,17 +357,29 @@ function Realism({ plan }: { plan: GoalPlan }) {
       {plan.realism === "unrealistic"
         ? "Unrealistic for most learners at this date."
         : "Ambitious: about two lessons a day or more."}
-      {plan.suggestedDate
-        ? ` At your recent pace, ${formatDate(plan.suggestedDate)} is realistic.`
-        : ""}
     </p>
   );
 }
 
+/** Whenever the server sent a suggested date (iOS: GoalCopy.suggestionLine). Shown once. */
+function Suggestion({ plan }: { plan: GoalPlan }) {
+  if (!plan.suggestedDate) return null;
+  return (
+    <p className="text-ink-soft">
+      At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
+    </p>
+  );
+}
+
+/**
+ * For an ACTION that failed (preview, save, remove). Offline gets its own wording: the load
+ * wording ("showing your last saved plan") describes a screen refresh, not an action that did not
+ * happen. iOS: GoalCopy.actionFailureMessage.
+ */
 function messageFor(error: unknown): string {
-  return error instanceof GoalError
-    ? goalErrorMessage(error.kind, error.detail)
-    : goalErrorMessage("unavailable");
+  if (!(error instanceof GoalError)) return goalErrorMessage("unavailable");
+  if (error.kind === "offline") return "You're offline. Try again when you're connected.";
+  return goalErrorMessage(error.kind, error.detail);
 }
 
 const STATUS_LINE: Record<GoalPlan["status"], string> = {
@@ -376,11 +405,7 @@ function GoalBody({ plan }: { plan: GoalPlan }) {
           the last 7 days.
         </p>
       )}
-      {(plan.status === "behind" || plan.status === "expired") && plan.suggestedDate && (
-        <p className="text-ink-soft">
-          At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
-        </p>
-      )}
+      <Suggestion plan={plan} />
       <Realism plan={plan} />
     </div>
   );
