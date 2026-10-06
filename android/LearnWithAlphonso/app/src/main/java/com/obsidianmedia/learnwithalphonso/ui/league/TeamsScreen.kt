@@ -98,7 +98,9 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit) {
                 val missionVm: TeamMissionViewModel = viewModel(key = "team-mission-teams") { TeamMissionViewModel(container.progressClient) }
                 val mission by missionVm.state.collectAsState()
                 LaunchedEffect(state.members.size) { missionVm.refresh() }
-                mission?.let { TeamMissionCard(it) }
+                // Only a mission that belongs to the team on screen: after leaving one team and joining another here, the
+                // view-model still holds the old team's mission until the new refresh returns.
+                mission?.takeIf { it.teamId == team.teamId }?.let { TeamMissionCard(it) }
                 SectionCard("Members") {
                     state.members.forEach { m ->
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
