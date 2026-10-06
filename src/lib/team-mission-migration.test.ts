@@ -51,6 +51,29 @@ describe("team missions migration", () => {
     expect(code()).toMatch(/IF NOT FOUND THEN\s+RETURN;/i);
   });
 
+  it("pays the course the member actually studied, never profiles.active_language (nothing writes it, so it is always en)", () => {
+    expect(code()).not.toMatch(/active_language/i);
+    const payout = code().match(/UPDATE public\.language_progress lp[\s\S]*?END;/i)?.[0] ?? "";
+    expect(payout).toMatch(
+      /lp\.language = \(\s*SELECT lc\.language\s+FROM public\.lesson_completions lc/i,
+    );
+    expect(payout).toMatch(/lc\.completed_at >= GREATEST\(_wk::timestamptz, tm\.joined_at\)/i);
+  });
+
+  it("reports a team below two members as needs_members before any other work (no snapshot, no payout, no false promise)", () => {
+    const reader = code().match(/FUNCTION public\.get_team_mission[\s\S]*?\$\$;/i)?.[0] ?? "";
+    expect(reader).toMatch(
+      /IF members < 2 THEN\s+RETURN QUERY SELECT[^;]*'needs_members'[^;]*;\s+RETURN;\s+END IF;/i,
+    );
+    expect(reader.indexOf("IF members < 2 THEN")).toBeLessThan(reader.indexOf("_resolve_team_mission"));
+  });
+
+  it("never pays a team that has dropped below two members", () => {
+    const resolver =
+      code().match(/FUNCTION public\._resolve_team_mission[\s\S]*?\$\$;/i)?.[0] ?? "";
+    expect(resolver).toMatch(/SELECT count\(\*\)[^;]*FROM public\.team_members[^;]*\) < 2/i);
+  });
+
   it("only the public read function is executable by clients; helpers are not", () => {
     for (const fn of [
       "_team_mission_count\\(uuid, date, uuid\\)",

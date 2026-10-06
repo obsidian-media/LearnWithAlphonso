@@ -29,8 +29,8 @@
     },
     {
       "name": "overshoot caps at 100 percent and shows the real total",
-      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 4, "total": 7, "my_count": 7, "member_count": 1, "status": "complete", "reward_xp": 50, "rewarded": true },
-      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 4, "total": 7, "myCount": 7, "memberCount": 1, "status": "complete", "rewardXp": 50, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+50 XP for everyone who joined in" }
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 4, "total": 7, "my_count": 7, "member_count": 2, "status": "complete", "reward_xp": 50, "rewarded": true },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 4, "total": 7, "myCount": 7, "memberCount": 2, "status": "complete", "rewardXp": 50, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+50 XP for everyone who joined in" }
     },
     {
       "name": "the reward amount comes from the server, not the client",

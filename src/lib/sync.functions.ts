@@ -739,69 +739,6 @@ export const buyStreakFreezeWithXpRemote = createServerFn({ method: "POST" })
     };
   });
 
-const mergeSchema = z.object({
-  xp: z.number().int().min(0).max(1_000_000).default(0),
-  streak: z.number().int().min(0).max(10_000).default(0),
-  longestStreak: z.number().int().min(0).max(10_000).default(0),
-  completedLessons: z
-    .array(
-      z
-        .string()
-        .max(100)
-        .regex(/^[a-z0-9]+$/),
-    )
-    .max(500)
-    .default([]),
-  answersByLesson: z
-    .record(z.string(), z.object({ correct: z.number().int(), total: z.number().int() }))
-    .default({}),
-  activityDates: z.array(z.string()).max(90).default([]),
-});
-
-export const mergeGuestProgress = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => mergeSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: p } = await supabase
-      .from("user_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-    // only merge if server has zero progress (first sign-in)
-    if (!p || (p.xp === 0 && p.streak === 0)) {
-      // Same admin-write rationale as completeLessonRemote above -- all
-      // three tables are hardened (supabase/migrations/
-      // 20260920050000_revoke_direct_gamification_writes.sql).
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin.from("user_progress").upsert({
-        user_id: userId,
-        xp: data.xp,
-        streak: data.streak,
-        longest_streak: data.longestStreak,
-        last_active_date: data.activityDates[data.activityDates.length - 1] ?? null,
-      });
-      const comps = data.completedLessons.map((lid) => ({
-        user_id: userId,
-        lesson_id: lid,
-        correct: data.answersByLesson[lid]?.correct ?? 0,
-        total: data.answersByLesson[lid]?.total ?? 1,
-        xp_earned: 0,
-      }));
-      if (comps.length)
-        await supabaseAdmin
-          .from("lesson_completions")
-          .upsert(comps, { onConflict: "user_id,lesson_id" });
-      const acts = data.activityDates.map((d) => ({
-        user_id: userId,
-        day: d,
-        xp_earned: 0,
-      }));
-      if (acts.length)
-        await supabaseAdmin.from("activity_days").upsert(acts, { onConflict: "user_id,day" });
-    }
-    return { merged: true };
-  });
 const LEVELS_ENUM = ["A1", "A2", "B1", "B2", "C1"] as const;
 
 /**

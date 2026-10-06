@@ -44,7 +44,6 @@ const {
   restoreHeartsRemote,
   buyHeartWithXpRemote,
   buyStreakFreezeWithXpRemote,
-  mergeGuestProgress,
   setCefrLevel,
   savePlacementResult,
 } = asTestFns(await import("./sync.functions"));
@@ -685,55 +684,6 @@ describe("buyStreakFreezeWithXpRemote", () => {
       data: { course: "en" },
     });
     expect(result).toEqual({ ok: false, reason: "insufficient-xp", streakFreezes: 2 });
-  });
-});
-
-describe("mergeGuestProgress", () => {
-  it("merges guest progress into a fresh account with zero progress", async () => {
-    const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({ data: { xp: 0, streak: 0 } })); // user_progress select (guard read)
-    // The three writes (user_progress/lesson_completions/activity_days
-    // upserts) all go via admin now.
-    supabaseAdminFrom
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}))
-      .mockReturnValueOnce(chainable({}));
-
-    const result = await mergeGuestProgress({
-      context: ctx(supabase),
-      data: {
-        xp: 200,
-        streak: 3,
-        longestStreak: 3,
-        completedLessons: ["u1l1"],
-        answersByLesson: { u1l1: { correct: 7, total: 8 } },
-        activityDates: ["2026-09-18", "2026-09-19"],
-      },
-    });
-
-    expect(result).toEqual({ merged: true });
-    expect(supabase.from).toHaveBeenCalledTimes(1);
-    expect(supabaseAdminFrom).toHaveBeenCalledTimes(3);
-  });
-
-  it("does not merge over an account that already has progress", async () => {
-    const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({ data: { xp: 500, streak: 10 } }));
-
-    const result = await mergeGuestProgress({
-      context: ctx(supabase),
-      data: {
-        xp: 200,
-        streak: 3,
-        longestStreak: 3,
-        completedLessons: [],
-        answersByLesson: {},
-        activityDates: [],
-      },
-    });
-
-    expect(result).toEqual({ merged: true });
-    expect(supabase.from).toHaveBeenCalledTimes(1); // only the guard read, no writes
   });
 });
 

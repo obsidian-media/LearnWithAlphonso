@@ -8,6 +8,8 @@
 -- course, once per team-week (atomic guard on team_missions.rewarded_at), resolved lazily on the next read (the previous
 -- week is resolved too, so a mission finished and never viewed is still paid). No cron, same pattern as get_my_team's
 -- weekly bonus. The "Team player" badge ships with the iOS/Android catalogs (Phase 2).
+-- Known, accepted: payout resolves against CURRENT members, so a contributor who leaves between the week's end and
+-- the first read can drop a finished mission below its target (leaving takes your contribution with you).
 --
 -- client-grants: none public.team_missions
 -- (read only through get_team_mission(); team_mission_rewards is readable by its owner for the data export.)
@@ -80,6 +82,10 @@ BEGIN
   IF public._team_mission_count(_team, _wk) < m.target THEN
     RETURN;
   END IF;
+  -- A team that has dropped below two members since the snapshot is no longer a team mission.
+  IF (SELECT count(*) FROM public.team_members tm WHERE tm.team_id = _team) < 2 THEN
+    RETURN;
+  END IF;
 
   UPDATE public.team_missions SET rewarded_at = now()
   WHERE team_id = _team AND week_start = _wk AND rewarded_at IS NULL;
@@ -94,12 +100,25 @@ BEGIN
     AND public._team_mission_count(_team, _wk, tm.user_id) >= 1
   ON CONFLICT DO NOTHING;
 
+  -- Paid on the course the member actually studied this week (their latest contributing lesson), not on
+  -- profiles.active_language: nothing ever writes that column, so it is 'en' for everyone and a French or Spanish
+  -- learner would be recorded as rewarded and receive nothing. A contributing member always has a language_progress
+  -- row for that course (completing a lesson upserts it).
   UPDATE public.language_progress lp
   SET xp = lp.xp + r.xp
   FROM public.team_mission_rewards r
-  JOIN public.profiles p ON p.id = r.user_id
   WHERE r.team_id = _team AND r.week_start = _wk
-    AND lp.user_id = r.user_id AND lp.language = p.active_language;
+    AND lp.user_id = r.user_id
+    AND lp.language = (
+      SELECT lc.language
+      FROM public.lesson_completions lc
+      JOIN public.team_members tm ON tm.user_id = lc.user_id AND tm.team_id = _team
+      WHERE lc.user_id = r.user_id
+        AND lc.completed_at >= GREATEST(_wk::timestamptz, tm.joined_at)
+        AND lc.completed_at < (_wk + 7)::timestamptz
+      ORDER BY lc.completed_at DESC
+      LIMIT 1
+    );
 END;
 $$;
 
@@ -138,6 +157,12 @@ BEGIN
 
   SELECT count(*)::int INTO members FROM public.team_members tm WHERE tm.team_id = my_team;
 
+  -- A team below two members has no mission this week: no snapshot, no payout, no promise of XP it cannot pay.
+  IF members < 2 THEN
+    RETURN QUERY SELECT my_team, wk, wk + 7, 0, 0, 0, members, 'needs_members'::text, 0, false;
+    RETURN;
+  END IF;
+
   -- A mission finished last week and never viewed is still paid.
   PERFORM public._resolve_team_mission(my_team, wk - 7);
 
@@ -147,11 +172,6 @@ BEGIN
     VALUES (my_team, wk, members * 4, members)
     ON CONFLICT DO NOTHING;
     SELECT * INTO m FROM public.team_missions tmi WHERE tmi.team_id = my_team AND tmi.week_start = wk;
-  END IF;
-
-  IF m.team_id IS NULL THEN
-    RETURN QUERY SELECT my_team, wk, wk + 7, 0, 0, 0, members, 'needs_members'::text, 0, false;
-    RETURN;
   END IF;
 
   PERFORM public._resolve_team_mission(my_team, wk);
