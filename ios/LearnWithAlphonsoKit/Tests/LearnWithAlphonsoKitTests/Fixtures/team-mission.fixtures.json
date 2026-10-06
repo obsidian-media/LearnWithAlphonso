@@ -1,0 +1,41 @@
+{
+  "now": "2026-10-07T12:00:00.000Z",
+  "cases": [
+    {
+      "name": "in progress, mid week",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 3, "my_count": 2, "member_count": 2, "status": "in_progress", "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 3, "myCount": 2, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 5, "percent": 37, "headline": "3 of 8 lessons done", "footer": "You added 2 · 5 days left" }
+    },
+    {
+      "name": "complete and paid",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 9, "my_count": 4, "member_count": 2, "status": "complete", "reward_xp": 50, "rewarded": true },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 9, "myCount": 4, "memberCount": 2, "status": "complete", "rewardXp": 50, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+50 XP for everyone who joined in" }
+    },
+    {
+      "name": "complete but I added nothing",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 8, "my_count": 0, "member_count": 2, "status": "complete", "reward_xp": 50, "rewarded": true },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 8, "myCount": 0, "memberCount": 2, "status": "complete", "rewardXp": 50, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+50 XP for everyone who joined in" }
+    },
+    {
+      "name": "needs a second member",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 0, "total": 0, "my_count": 0, "member_count": 1, "status": "needs_members", "reward_xp": 0, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 0, "total": 0, "myCount": 0, "memberCount": 1, "status": "needs_members", "rewardXp": 0, "rewarded": false, "daysLeft": 5, "percent": 0, "headline": "Invite a friend to start your team's weekly mission", "footer": "" }
+    },
+    {
+      "name": "last day",
+      "now": "2026-10-11T20:00:00.000Z",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 12, "total": 11, "my_count": 1, "member_count": 3, "status": "in_progress", "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 12, "total": 11, "myCount": 1, "memberCount": 3, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 1, "percent": 91, "headline": "11 of 12 lessons done", "footer": "You added 1 · Last day" }
+    },
+    {
+      "name": "overshoot caps at 100 percent and shows the real total",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 4, "total": 7, "my_count": 7, "member_count": 2, "status": "complete", "reward_xp": 50, "rewarded": true },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 4, "total": 7, "myCount": 7, "memberCount": 2, "status": "complete", "rewardXp": 50, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+50 XP for everyone who joined in" }
+    },
+    {
+      "name": "the reward amount comes from the server, not the client",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 8, "my_count": 3, "member_count": 2, "status": "complete", "reward_xp": 75, "rewarded": true },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 8, "myCount": 3, "memberCount": 2, "status": "complete", "rewardXp": 75, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+75 XP for everyone who joined in" }
+    }
+  ]
+}
