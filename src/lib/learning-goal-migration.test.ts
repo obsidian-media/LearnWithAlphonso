@@ -48,7 +48,9 @@ describe("learning_goals migration", () => {
       expect(s.indexOf("REVOKE ALL ON public.learning_goals FROM authenticated")).toBeLessThan(
         s.indexOf("GRANT SELECT ON public.learning_goals TO authenticated"),
       );
-      expect(s).not.toMatch(/GRANT[^;]*(INSERT|UPDATE|DELETE|TRUNCATE|ALL)[^;]*TO (authenticated|anon)/);
+      expect(s).not.toMatch(
+        /GRANT[^;]*(INSERT|UPDATE|DELETE|TRUNCATE|ALL)[^;]*TO (authenticated|anon)/,
+      );
     });
   });
 });
