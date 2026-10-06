@@ -10,6 +10,8 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**GDPR export was silently missing four tables; read privileges trimmed (2026-10-06, BACKLOG 0.0-ae).** `challenge_completions`, `duel_queue`, `season_cohort_members` and `season_placements` had no SELECT policy, so `exportMyData` (which reads as the user) returned nothing for them. `20261006140000_read_privileges_and_export_policies.sql` adds own-row SELECT policies, limits `anon` SELECT to the nine public content tables, and removes `authenticated` SELECT on four server-only tables. A test now fails if any export table lacks a SELECT policy.
+
 **Web lesson completion showed 0 XP when it earned XP (found and fixed 2026-10-06, BACKLOG 0.0-ae review).** `completeLessonRemote` inserted the friends-feed event through the user's RLS client; `friend_activity_events` has no INSERT policy, so the call threw after progress was saved and the lesson screen showed 0 XP. Now written with the service role, as the Edge Function does. New guard `src/lib/rls-client-writes.test.ts` checks every `supabase.from(...)` write in server code against the policies in the migrations.
 
 **Unbacked `authenticated` DML privileges removed (2026-10-06, BACKLOG 0.0-ae follow-up 1).** `20261006130000_trim_authenticated_unbacked_dml.sql` revokes INSERT/UPDATE/DELETE on 34 tables where no RLS policy backed the privilege (RLS already denied them; SELECT untouched). `deleteMyAccount` stops pre-deleting from `activity_days`, `user_progress`, `ai_usage`, `ai_rate_limits` (grant without a DELETE policy = silent no-op; CASCADE removes them). A test pins the per-table list and fails if a policy depends on a revoked privilege.

@@ -64,6 +64,29 @@ beforeEach(() => {
 });
 
 describe("exportMyData", () => {
+  it("fails loudly, naming the table, when a table read errors (never exports a silent empty)", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "challenge_completions"
+        ? chainable({
+            data: null,
+            error: { message: "permission denied for table challenge_completions" },
+          })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/challenge_completions/);
+  });
+
+  it("also fails when a table read through the sender/recipient columns errors", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "nudges"
+        ? chainable({ data: null, error: { message: "permission denied for table nudges" } })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/nudges/);
+  });
+
   it("bundles every user-scoped table plus the profile row into one export", async () => {
     const supabase = createSupabaseMock();
     // 9 USER_ID_TABLES selects (order doesn't affect the merged shape) + profiles.
@@ -348,6 +371,19 @@ describe("GDPR export table coverage", () => {
     const policies = replayPolicies();
     const missing = deleteTables.filter((table) => !policies.get(table)?.has("DELETE"));
     expect(missing).toEqual([]);
+  });
+
+  it("every table the export reads has a SELECT policy for the signed-in user", () => {
+    // exportMyData reads as the CALLER. With RLS on and no SELECT policy a read returns no rows and no error,
+    // so the GDPR export silently omitted challenge_completions, duel_queue, season_cohort_members and
+    // season_placements until 2026-10-06 (BACKLOG 0.0-ae follow-up).
+    const policies = replayPolicies();
+    const tables = [
+      ...exportTables,
+      ...accountModule.OTHER_OWNED_EXPORT_TABLES.map((o) => o.table),
+    ];
+    const unreadable = tables.filter((table) => !policies.get(table)?.has("SELECT"));
+    expect(unreadable).toEqual([]);
   });
 
   it("is exactly the tables with a DELETE policy (no dead pre-delete calls)", () => {
