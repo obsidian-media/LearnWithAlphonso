@@ -67,20 +67,26 @@ export function GoalCard({ course }: { course: GoalCourse }) {
   const sectionRef = useRef<HTMLElement>(null);
   const firstView = useRef(true);
   const previewId = useRef(0);
+  const loadId = useRef(0);
 
   const load = useCallback(async () => {
+    // A slow answer for a course the learner has since left must not overwrite the card.
+    const id = ++loadId.current;
     setView("loading");
     setLoadError(null);
     try {
       const next = await fetchGoal(course);
+      if (id !== loadId.current) return;
       setState(next);
       setView(next.goal ? "goal" : "empty");
     } catch (error) {
+      if (id !== loadId.current) return;
       const kind = error instanceof GoalError ? error.kind : "unavailable";
       setLoadError(kind);
       // The cached plan is only for being OFFLINE. A 401 or a server error must not show a
       // stale plan (which might even be left over from someone else's session).
       const cached = kind === "offline" ? await readCachedGoal(course) : null;
+      if (id !== loadId.current) return;
       if (cached) {
         setState(cached);
         setView("goal");

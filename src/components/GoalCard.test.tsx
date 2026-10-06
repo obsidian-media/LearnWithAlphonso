@@ -314,4 +314,35 @@ describe("review fixes", () => {
     await screen.findByText(/finish B1/i);
     expect(region()).toHaveFocus();
   });
+
+  it("ignores a slow answer for the previous course after switching courses", async () => {
+    let releaseEn: (v: unknown) => void = () => {};
+    client.fetchGoal
+      .mockImplementationOnce(() => new Promise((r) => (releaseEn = r)))
+      .mockResolvedValueOnce({ goal: null, plan: null });
+    const view = render(<GoalCard course="en" />);
+    view.rerender(<GoalCard course="fr" />);
+    expect(await screen.findByRole("button", { name: /set a learning goal/i })).toBeInTheDocument();
+    await act(async () => {
+      releaseEn(stored(plans.on_track));
+    });
+    expect(screen.queryByText(/finish B1/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /set a learning goal/i })).toBeInTheDocument();
+  });
+
+  it("disables Save the moment an input changes, until the new preview arrives", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValueOnce(plans.just_started);
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    await screen.findByText(/lessons a week/i);
+    expect(screen.getByRole("button", { name: /save goal/i })).toBeEnabled();
+    // The next preview never arrives: the old plan must not stay saveable for the new level.
+    client.previewGoal.mockImplementation(() => new Promise(() => {}));
+    await user.selectOptions(screen.getByLabelText(/finish level/i), "C1");
+    expect(screen.getByRole("button", { name: /save goal/i })).toBeDisabled();
+    expect(screen.queryByText(/lessons a week/i)).not.toBeInTheDocument();
+  });
 });
