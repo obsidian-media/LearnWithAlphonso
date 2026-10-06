@@ -65,14 +65,45 @@ describe("planGoal pace", () => {
     expect(planGoal(input({ completedAt: done(["A1-0"], 20) }))!.requiredPerWeek).toBe(15); // 29/2 = 14.5
     expect(planGoal(input({ completedAt: done(ids("A1", 2), 20) }))!.requiredPerWeek).toBe(14); // 28/2
   });
-  it("never divides by less than one day, so a date of today or earlier is a one-day week", () => {
+  it("a goal one day out needs the whole remainder in one day", () => {
     const base = { currentLevel: "B1", targetLevel: "B1" } as const;
-    expect(planGoal(input({ ...base, targetDate: "2026-10-06" }))!.requiredPerWeek).toBe(70);
-    expect(planGoal(input({ ...base, targetDate: "2026-09-01" }))!.requiredPerWeek).toBe(70);
+    expect(planGoal(input({ ...base, targetDate: "2026-10-07" }))!.requiredPerWeek).toBe(70);
+  });
+  it("an expired goal (date today or earlier) is status expired with no weekly number", () => {
+    const base = { currentLevel: "B1", targetLevel: "B1" } as const;
+    for (const targetDate of ["2026-10-06", "2026-09-01"]) {
+      const plan = planGoal(input({ ...base, targetDate }))!;
+      expect(plan.status, targetDate).toBe("expired");
+      expect(plan.requiredPerWeek).toBe(0);
+      expect(plan.realism).toBe("ok");
+      expect(plan.suggestedDate).toBeNull(); // no recent lessons, so nothing to extrapolate
+    }
+    const paced = planGoal(
+      input({ ...base, targetDate: "2026-09-01", completedAt: done(ids("B1", 2), 1) }),
+    )!;
+    expect(paced.status).toBe("expired");
+    expect(paced.suggestedDate).toBe("2026-11-03"); // 8 left at 2 a week = 28 days from today
+  });
+  it("a finished goal is done even when its date has passed", () => {
+    const base = { currentLevel: "B1", targetLevel: "B1" } as const;
+    const plan = planGoal(
+      input({ ...base, targetDate: "2026-09-01", completedAt: done(ids("B1", 10), 30) }),
+    )!;
+    expect(plan.status).toBe("done");
   });
   it("counts only lessons completed in the last 7 days", () => {
     const completedAt = { ...done(["A1-0"], 6.9), ...done(["A1-1"], 7.1) };
     expect(planGoal(input({ completedAt }))!.lessonsDoneLast7Days).toBe(1);
+  });
+  it("a completion exactly 7 days old still counts", () => {
+    const completedAt = done(["A1-0"], 7);
+    expect(planGoal(input({ completedAt }))!.lessonsDoneLast7Days).toBe(1);
+  });
+  it("ignores recent completions outside the goal's scope (they do not move the goal)", () => {
+    const completedAt = done(["A1-0", "C1-0"], 1);
+    const plan = planGoal(input({ currentLevel: "B1", targetLevel: "B1", completedAt }))!;
+    expect(plan.lessonsDoneLast7Days).toBe(0);
+    expect(plan.status).toBe("behind");
   });
 });
 
@@ -97,6 +128,16 @@ describe("planGoal status", () => {
     // 15 done: remaining 15, required 8, did 15 (>= 10) -> ahead
     const completedAt = { ...done(ids("A1", 10), 2), ...done(ids("A2", 5), 2) };
     expect(planGoal(input({ completedAt }))!.status).toBe("ahead");
+  });
+  it("ahead starts exactly at 1.25x the requirement", () => {
+    // 4 old + 10 recent: remaining 16, required 8, and 10 = 1.25 x 8 exactly.
+    const completedAt = {
+      ...done(ids("A1", 4), 20),
+      ...done([...ids("A1", 10).slice(4), ...ids("A2", 4)], 2),
+    };
+    const plan = planGoal(input({ completedAt }))!;
+    expect([plan.requiredPerWeek, plan.lessonsDoneLast7Days]).toEqual([8, 10]);
+    expect(plan.status).toBe("ahead");
   });
 });
 
@@ -152,7 +193,9 @@ describe("isRealDate and validateGoalInput", () => {
 });
 
 // The response shape is the cross-platform contract: iOS and Android decode these samples.
-// Regenerate with: UPDATE_FIXTURES=1 bun run test src/lib/learning-goal.test.ts
+// `plans` are bare plans; `envelopes` are the full route responses (goal + plan), including
+// "a goal whose plan is null" and "no goal". Regenerate with:
+//   UPDATE_FIXTURES=1 bun run test src/lib/learning-goal.test.ts   (then read the file)
 describe("shared fixtures", () => {
   const FILE = path.resolve(import.meta.dirname, "learning-goal.fixtures.json");
   const cases: Record<string, PlanInput> = {
@@ -162,23 +205,37 @@ describe("shared fixtures", () => {
     on_track: input({ completedAt: done(ids("A1", 10), 2) }),
     ahead: input({ completedAt: { ...done(ids("A1", 10), 2), ...done(ids("A2", 5), 2) } }),
     unrealistic: input({ lessonsByLevel: lessons(80), currentLevel: "A1", targetLevel: "A1" }),
+    expired: input({ targetDate: "2026-09-01", completedAt: done(ids("A1", 2), 1) }),
   };
-  const actual = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, planGoal(v)]));
+  const plans = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, planGoal(v)]));
+  const goal = {
+    course: "en",
+    targetLevel: "B1",
+    targetDate: "2026-10-20",
+    createdAt: "2026-09-06T12:00:00.000Z",
+  };
+  const envelopes = {
+    stored: { goal, plan: plans.on_track },
+    stored_plan_null: { goal, plan: null },
+    none: { goal: null, plan: null },
+    preview: { plan: plans.just_started },
+  };
+  const actual = { plans, envelopes };
   it("matches the checked-in samples", () => {
     if (process.env.UPDATE_FIXTURES) fs.writeFileSync(FILE, JSON.stringify(actual, null, 2) + "\n");
     expect(JSON.parse(fs.readFileSync(FILE, "utf8"))).toEqual(actual);
   });
   it("covers every status and both warning labels", () => {
-    const plans = Object.values(actual);
-    for (const status of ["done", "just_started", "behind", "on_track", "ahead"]) {
+    const all = Object.values(plans);
+    for (const status of ["done", "just_started", "behind", "on_track", "ahead", "expired"]) {
       expect(
-        plans.some((p) => p?.status === status),
+        all.some((p) => p?.status === status),
         status,
       ).toBe(true);
     }
     for (const realism of ["ambitious", "unrealistic"]) {
       expect(
-        plans.some((p) => p?.realism === realism),
+        all.some((p) => p?.realism === realism),
         realism,
       ).toBe(true);
     }

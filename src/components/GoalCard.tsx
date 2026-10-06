@@ -29,18 +29,28 @@ function formatDate(iso: string): string {
   });
 }
 
+/** `months` ahead, clamped to the end of a shorter month (31 Aug + 6 months = 28 Feb, not 3 Mar). */
 function monthsFromToday(months: number): string {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + months, now.getUTCDate()))
+  const lastDay = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + months + 1, 0),
+  ).getUTCDate();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + months, Math.min(now.getUTCDate(), lastDay)),
+  )
     .toISOString()
     .slice(0, 10);
+}
+
+function tomorrowUtc(): string {
+  return new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
 }
 
 type Preview =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "ok"; plan: GoalPlan }
-  | { kind: "error"; error: GoalErrorKind };
+  | { kind: "error"; message: string };
 
 type View = "loading" | "error" | "empty" | "goal" | "setup";
 
@@ -52,7 +62,10 @@ export function GoalCard({ course }: { course: GoalCourse }) {
   const [date, setDate] = useState("");
   const [preview, setPreview] = useState<Preview>({ kind: "idle" });
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<GoalErrorKind | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const firstView = useRef(true);
   const previewId = useRef(0);
 
   const load = useCallback(async () => {
@@ -64,8 +77,10 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       setView(next.goal ? "goal" : "empty");
     } catch (error) {
       const kind = error instanceof GoalError ? error.kind : "unavailable";
-      const cached = readCachedGoal(course);
       setLoadError(kind);
+      // The cached plan is only for being OFFLINE. A 401 or a server error must not show a
+      // stale plan (which might even be left over from someone else's session).
+      const cached = kind === "offline" ? await readCachedGoal(course) : null;
       if (cached) {
         setState(cached);
         setView("goal");
@@ -95,10 +110,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       },
       (error) => {
         if (id === previewId.current) {
-          setPreview({
-            kind: "error",
-            error: error instanceof GoalError ? error.kind : "unavailable",
-          });
+          setPreview({ kind: "error", message: messageFor(error) });
         }
       },
     );
@@ -109,6 +121,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
     setDate(state.goal?.targetDate ?? "");
     setPreview({ kind: "idle" });
     setSaveError(null);
+    setActionError(null);
     setView("setup");
   }
 
@@ -122,7 +135,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       setLoadError(null);
       setView("goal");
     } catch (error) {
-      setSaveError(error instanceof GoalError ? error.kind : "unavailable");
+      setSaveError(messageFor(error));
     } finally {
       setSaving(false);
     }
@@ -134,14 +147,27 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       setState({ goal: null, plan: null });
       setView("empty");
     } catch (error) {
-      setLoadError(error instanceof GoalError ? error.kind : "unavailable");
+      // A failed remove is an action error, not "offline": the goal is still there and editable.
+      setActionError(messageFor(error));
     }
   }
+
+  // Keep keyboard focus on the card when the panel the focused button lived in goes away
+  // (Save, Cancel, Remove): otherwise focus drops to the page body.
+  useEffect(() => {
+    if (firstView.current) {
+      firstView.current = false;
+      return;
+    }
+    if (view !== "loading") sectionRef.current?.focus();
+  }, [view]);
 
   const offline = loadError !== null && view === "goal";
 
   return (
     <section
+      ref={sectionRef}
+      tabIndex={-1}
       aria-label="Learning goal"
       className="rounded-2xl border border-hairline bg-surface p-4"
     >
@@ -191,6 +217,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
               Target date
               <input
                 type="date"
+                min={tomorrowUtc()}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="mt-1 block w-full rounded-xl border border-hairline bg-surface px-3 py-2"
@@ -215,13 +242,13 @@ export function GoalCard({ course }: { course: GoalCourse }) {
             {preview.kind === "ok" && <PreviewLines plan={preview.plan} />}
             {preview.kind === "error" && (
               <p role="alert" className="font-medium text-rose-600">
-                {goalErrorMessage(preview.error)}
+                {preview.message}
               </p>
             )}
           </div>
           {saveError && (
             <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
-              {goalErrorMessage(saveError)}
+              {saveError}
             </p>
           )}
           <p className="mt-2 text-xs text-ink-soft/80">An estimate of lessons, not of fluency.</p>
@@ -261,6 +288,11 @@ export function GoalCard({ course }: { course: GoalCourse }) {
             <p role="status" className="mt-2 text-xs text-ink-soft">
               {goalErrorMessage(loadError)}
               {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
+            </p>
+          )}
+          {actionError && (
+            <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
+              {actionError}
             </p>
           )}
           <p className="mt-2 text-xs text-ink-soft/80">An estimate of lessons, not of fluency.</p>
@@ -309,8 +341,15 @@ function Realism({ plan }: { plan: GoalPlan }) {
   );
 }
 
+function messageFor(error: unknown): string {
+  return error instanceof GoalError
+    ? goalErrorMessage(error.kind, error.detail)
+    : goalErrorMessage("unavailable");
+}
+
 const STATUS_LINE: Record<GoalPlan["status"], string> = {
   done: "Goal reached.",
+  expired: "The date has passed. Pick a new date to keep going.",
   just_started: "Just started. Check back next week.",
   ahead: "Ahead of plan.",
   on_track: "On track.",
@@ -325,13 +364,13 @@ function GoalBody({ plan }: { plan: GoalPlan }) {
         {done} of {plan.lessonsInScope} lessons done
       </p>
       <p className="mt-1 font-semibold">{STATUS_LINE[plan.status]}</p>
-      {plan.status !== "done" && (
+      {plan.status !== "done" && plan.status !== "expired" && (
         <p className="text-ink-soft">
           {plan.requiredPerWeek} lessons a week to finish on time; {plan.lessonsDoneLast7Days} in
           the last 7 days.
         </p>
       )}
-      {plan.status === "behind" && plan.suggestedDate && (
+      {(plan.status === "behind" || plan.status === "expired") && plan.suggestedDate && (
         <p className="text-ink-soft">
           At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
         </p>

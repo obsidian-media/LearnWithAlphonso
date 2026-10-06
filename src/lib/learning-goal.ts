@@ -14,7 +14,7 @@ export const MAX_GOAL_DAYS = 1095;
 const DAY_MS = 86_400_000;
 const AHEAD_FACTOR = 1.25;
 
-export type GoalStatus = "done" | "just_started" | "ahead" | "on_track" | "behind";
+export type GoalStatus = "done" | "expired" | "just_started" | "ahead" | "on_track" | "behind";
 export type GoalRealism = "ok" | "ambitious" | "unrealistic";
 export type GoalCourse = "en" | "fr" | "es";
 export type GoalInput = { course: GoalCourse; targetLevel: Level; targetDate: string };
@@ -65,16 +65,23 @@ export function planGoal(input: PlanInput): GoalPlan | null {
 
   const today = input.now.toISOString().slice(0, 10);
   const daysLeft = Math.max(0, dayNumber(input.targetDate) - dayNumber(today));
-  const weeksLeft = Math.max(daysLeft, 1) / 7;
-  const required = remaining === 0 ? 0 : Math.ceil(remaining / weeksLeft);
+  // A goal whose date is today or earlier cannot be "N lessons a week"; it is expired and
+  // the learner is invited to pick a new date (a weekly number there would be nonsense).
+  const expired = remaining > 0 && daysLeft === 0;
+  const required = remaining === 0 || expired ? 0 : Math.ceil(remaining / (daysLeft / 7));
 
+  // Progress toward THIS goal: first completions in the last 7 days of lessons that are in
+  // scope. A lesson below the learner's current level does not move the goal.
   const cutoff = input.now.getTime() - RECENT_DAYS * DAY_MS;
-  const recent = Object.values(input.completedAt).filter((at) => Date.parse(at) >= cutoff).length;
+  const recent = inScope.filter(
+    (id) => id in input.completedAt && Date.parse(input.completedAt[id]) >= cutoff,
+  ).length;
 
   const goalAgeMs =
     input.goalCreatedAt === null ? 0 : input.now.getTime() - Date.parse(input.goalCreatedAt);
   let status: GoalStatus;
   if (remaining === 0) status = "done";
+  else if (expired) status = "expired";
   else if (goalAgeMs < RECENT_DAYS * DAY_MS)
     status = "just_started"; // a preview has age 0
   else if (recent >= required * AHEAD_FACTOR) status = "ahead";
@@ -89,7 +96,7 @@ export function planGoal(input: PlanInput): GoalPlan | null {
         : "ok";
 
   const suggestedDate =
-    (status === "behind" || realism === "unrealistic") && recent > 0
+    (status === "behind" || status === "expired" || realism === "unrealistic") && recent > 0
       ? addDays(today, Math.ceil((remaining / recent) * 7))
       : null;
 

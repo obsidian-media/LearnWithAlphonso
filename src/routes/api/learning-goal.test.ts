@@ -43,6 +43,8 @@ const GOAL = (level: string, createdAt: string) => ({
   error: null,
 });
 const NO_GOAL = { data: null, error: null };
+/** How PostgREST really formats a timestamptz. */
+const PG_TS = "2026-09-01T00:00:00.123456+00:00";
 const DB_ERROR = { data: null, error: { message: "boom" } };
 
 const NOW = new Date("2026-10-06T12:00:00Z");
@@ -91,7 +93,7 @@ describe("GET stored goal", () => {
     const all = lessonsByLevel("en");
     const first = all.A1[0];
     queue(
-      GOAL("B1", "2026-09-01T00:00:00Z"),
+      GOAL("B1", PG_TS),
       LEVEL("A1"),
       DONE([{ lesson_id: first, completed_at: "2026-10-05T00:00:00Z" }]),
     );
@@ -102,14 +104,20 @@ describe("GET stored goal", () => {
       course: "en",
       targetLevel: "B1",
       targetDate: "2026-12-01",
-      createdAt: "2026-09-01T00:00:00Z",
+      // Normalised to ISO-8601 with milliseconds and Z: PostgREST sends microseconds and +00:00,
+      // which Swift's ISO8601 decoders reject.
+      createdAt: "2026-09-01T00:00:00.123Z",
     });
     expect(json.plan.lessonsInScope).toBe(all.A1.length + all.A2.length + all.B1.length);
     expect(json.plan.lessonsRemaining).toBe(json.plan.lessonsInScope - 1);
     expect(json.plan.lessonsDoneLast7Days).toBe(1);
-    // Every read is scoped to the token's user.
-    expect(chains[0].some((c) => c.method === "eq" && c.args[1] === "user-1")).toBe(true);
-    expect(chains[2].some((c) => c.method === "eq" && c.args[1] === "user-1")).toBe(true);
+    expect(json.plan.asOf).toBe(NOW.toISOString());
+    // Every read is scoped to the token's user AND the requested course.
+    for (let i = 0; i < 3; i++) {
+      const eqs = chains[i].filter((c) => c.method === "eq").map((c) => c.args);
+      expect(eqs, `read ${i}`).toContainEqual(["user_id", "user-1"]);
+      expect(eqs, `read ${i}`).toContainEqual(["language", "en"]);
+    }
   });
 
   it("returns the goal with a null plan when the learner's level has passed the target", async () => {
@@ -172,7 +180,8 @@ describe("GET preview", () => {
 });
 
 describe("PUT", () => {
-  const SAVED = { data: { created_at: "2026-10-06T12:00:00Z" }, error: null };
+  // A brand-new goal was created just now; PostgREST formats it with microseconds and +00:00.
+  const SAVED = { data: { created_at: "2026-10-06T12:00:00.123456+00:00" }, error: null };
 
   it("validates, upserts for the token's user, and returns the goal and plan", async () => {
     queue(LEVEL("A1"), DONE([]), SAVED);
@@ -181,7 +190,12 @@ describe("PUT", () => {
     });
     const json = await res.json();
     expect(res.status).toBe(200);
-    expect(json.goal).toMatchObject({ course: "en", targetLevel: "B1", targetDate: FUTURE });
+    expect(json.goal).toMatchObject({
+      course: "en",
+      targetLevel: "B1",
+      targetDate: FUTURE,
+      createdAt: "2026-10-06T12:00:00.123Z",
+    });
     expect(json.plan.status).toBe("just_started");
     const upsert = chains[2].find((c) => c.method === "upsert")!;
     expect(upsert.args[0]).toMatchObject({

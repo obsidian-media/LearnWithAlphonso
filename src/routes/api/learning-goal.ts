@@ -18,6 +18,8 @@ import { lessonsByLevel, loadLearnerState } from "@/lib/learning-goal.server";
  */
 type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
 
+/** PostgREST sends microseconds and +00:00; clients (Swift's ISO8601 decoders) need ms and Z. */
+const isoTime = (timestamp: string) => new Date(timestamp).toISOString();
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 const loadFailed = () => json({ error: "Could not load your goal." }, 500);
 
@@ -107,7 +109,7 @@ async function handle(request: Request, method: "GET" | "PUT" | "DELETE"): Promi
         data.created_at,
       );
       return json({
-        goal: { course, targetLevel, targetDate, createdAt: data.created_at },
+        goal: { course, targetLevel, targetDate, createdAt: isoTime(data.created_at) },
         plan,
       });
     }
@@ -155,7 +157,7 @@ async function handle(request: Request, method: "GET" | "PUT" | "DELETE"): Promi
         course,
         targetLevel,
         targetDate: stored.data.target_date,
-        createdAt: stored.data.created_at,
+        createdAt: isoTime(stored.data.created_at),
       },
       plan,
     });

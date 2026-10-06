@@ -22,18 +22,18 @@ vi.mock("../lib/learning-goal-client", async () => {
 import { GoalError } from "../lib/learning-goal-client";
 import { GoalCard } from "./GoalCard";
 
-const plans = fixtures as unknown as Record<string, GoalPlan>;
+const plans = fixtures.plans as unknown as Record<string, GoalPlan>;
 const goal = {
   course: "en" as const,
   targetLevel: "B1",
   targetDate: "2026-10-20",
-  createdAt: "2026-09-01T00:00:00Z",
+  createdAt: "2026-09-01T00:00:00.000Z",
 };
 const stored = (plan: GoalPlan | null) => ({ goal, plan });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  client.readCachedGoal.mockReturnValue(null);
+  client.readCachedGoal.mockResolvedValue(null);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-06T12:00:00Z"));
 });
@@ -166,6 +166,7 @@ describe("the goal card, by status", () => {
     ["ahead", /ahead of plan/i],
     ["on_track", /on track/i],
     ["behind_with_suggestion", /behind plan/i],
+    ["expired", /date has passed/i],
   ])("%s", async (key, text) => {
     await show(plans[key]);
     expect(region()).toHaveTextContent(text);
@@ -209,7 +210,7 @@ describe("the goal card, by status", () => {
 describe("offline and errors", () => {
   it("shows the cached plan, marked as such, with editing disabled, when offline", async () => {
     client.fetchGoal.mockRejectedValue(new GoalError("offline"));
-    client.readCachedGoal.mockReturnValue(stored(plans.on_track));
+    client.readCachedGoal.mockResolvedValue(stored(plans.on_track));
     renderCard();
     await screen.findByText(/finish B1/i);
     expect(region()).toHaveTextContent(/as of/i);
@@ -234,5 +235,83 @@ describe("offline and errors", () => {
     client.fetchGoal.mockRejectedValue(new GoalError("notSignedIn"));
     renderCard();
     expect(await screen.findByRole("alert")).toHaveTextContent(/sign in again/i);
+  });
+});
+
+describe("review fixes", () => {
+  it("an expired goal shows no weekly number, offers the suggested date and a way to change it", async () => {
+    client.fetchGoal.mockResolvedValue(stored(plans.expired));
+    renderCard();
+    await screen.findByText(/finish B1/i);
+    expect(region()).not.toHaveTextContent(/lessons a week/i);
+    expect(region()).toHaveTextContent(/12 Jan 2027/);
+    expect(screen.getByRole("button", { name: /change goal/i })).toBeEnabled();
+  });
+
+  it.each(["notSignedIn", "unavailable"] as const)(
+    "does NOT fall back to the cached plan for a %s failure (only for offline)",
+    async (kind) => {
+      client.fetchGoal.mockRejectedValue(new GoalError(kind));
+      client.readCachedGoal.mockResolvedValue(stored(plans.on_track));
+      renderCard();
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      expect(screen.queryByText(/finish B1/i)).not.toBeInTheDocument();
+    },
+  );
+
+  it("a failed remove shows an error but leaves the goal editable (not 'offline')", async () => {
+    client.fetchGoal.mockResolvedValue(stored(plans.on_track));
+    client.removeGoal.mockRejectedValue(new GoalError("unavailable"));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await screen.findByText(/finish B1/i);
+    await user.click(screen.getByRole("button", { name: /remove goal/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/couldn't load your goal/i);
+    expect(screen.getByText(/finish B1/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /remove goal/i })).toBeEnabled();
+    expect(region()).not.toHaveTextContent(/as of/i);
+  });
+
+  it("shows the server's reason when a preview is rejected", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockRejectedValue(new GoalError("invalid", "That level is below yours"));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "3 months" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("That level is below yours");
+  });
+
+  it("will not let the date picker choose today or earlier", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    expect(screen.getByLabelText(/target date/i)).toHaveAttribute("min", "2026-10-07");
+  });
+
+  it("clamps a month preset to the end of a shorter month (31 Aug + 6 months = 28 Feb)", async () => {
+    vi.setSystemTime(new Date("2026-08-31T12:00:00Z"));
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValue(plans.on_track);
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    expect(screen.getByLabelText(/target date/i)).toHaveValue("2027-02-28");
+  });
+
+  it("moves focus to the card after saving, so keyboard users are not dropped on the page", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValue(plans.just_started);
+    client.saveGoal.mockResolvedValue(stored(plans.just_started));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    await screen.findByText(/lessons a week/i);
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    await screen.findByText(/finish B1/i);
+    expect(region()).toHaveFocus();
   });
 });

@@ -3,8 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const userId = vi.hoisted(() => ({ current: "user-1" as string | null }));
 vi.mock("./auth-headers", () => ({
   authHeaders: vi.fn(async () => ({ Authorization: "Bearer tok" })),
+  currentUserId: vi.fn(async () => userId.current),
 }));
 
 import {
@@ -12,21 +14,23 @@ import {
   fetchGoal,
   goalErrorMessage,
   isPlan,
+  parseState,
   previewGoal,
   readCachedGoal,
   removeGoal,
   saveGoal,
 } from "./learning-goal-client";
 
-const fixtures = JSON.parse(
+const file = JSON.parse(
   fs.readFileSync(path.resolve(import.meta.dirname, "learning-goal.fixtures.json"), "utf8"),
-) as Record<string, unknown>;
+) as { plans: Record<string, unknown>; envelopes: Record<string, unknown> };
+const fixtures = file.plans;
 const plan = fixtures.on_track;
 const goal = {
   course: "en",
   targetLevel: "B1",
   targetDate: "2026-12-01",
-  createdAt: "2026-10-01T00:00:00Z",
+  createdAt: "2026-10-01T00:00:00.000Z",
 };
 
 function respond(status: number, body: unknown): typeof fetch {
@@ -37,7 +41,10 @@ function respond(status: number, body: unknown): typeof fetch {
 const lastCall = (f: typeof fetch) =>
   (f as unknown as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
 
-beforeEach(() => window.localStorage.clear());
+beforeEach(() => {
+  window.localStorage.clear();
+  userId.current = "user-1";
+});
 afterEach(() => vi.restoreAllMocks());
 
 describe("isPlan (the cross-platform contract)", () => {
@@ -53,6 +60,24 @@ describe("isPlan (the cross-platform contract)", () => {
   });
 });
 
+describe("parseState (the full response envelope)", () => {
+  it("decodes every checked-in envelope, including a goal whose plan is null", () => {
+    for (const [name, envelope] of Object.entries(file.envelopes)) {
+      expect(() => parseState(envelope as never), name).not.toThrow();
+    }
+    expect(parseState(file.envelopes.stored_plan_null as never)).toMatchObject({ plan: null });
+    expect(parseState(file.envelopes.none as never)).toEqual({ goal: null, plan: null });
+  });
+  it("rejects a goal createdAt that is not ISO-8601 with milliseconds and Z", () => {
+    const stored = file.envelopes.stored as { goal: object; plan: unknown };
+    const bad = {
+      ...stored,
+      goal: { ...stored.goal, createdAt: "2026-09-06T12:00:00.123456+00:00" },
+    };
+    expect(() => parseState(bad as never)).toThrow(GoalError);
+  });
+});
+
 describe("requests", () => {
   it("fetchGoal GETs the course with the bearer token and caches the result", async () => {
     const f = respond(200, { goal, plan });
@@ -61,12 +86,12 @@ describe("requests", () => {
     const [url, init] = lastCall(f);
     expect(url).toBe("/api/learning-goal?course=en");
     expect(init.headers).toMatchObject({ Authorization: "Bearer tok" });
-    expect(readCachedGoal("en")).toMatchObject({ goal, plan });
+    expect(await readCachedGoal("en")).toMatchObject({ goal, plan });
   });
   it("fetchGoal caches nothing for 'no goal' and clears an old cache", async () => {
     await fetchGoal("en", respond(200, { goal, plan }));
     await fetchGoal("en", respond(200, { goal: null, plan: null }));
-    expect(readCachedGoal("en")).toBeNull();
+    expect(await readCachedGoal("en")).toBeNull();
   });
   it("previewGoal GETs with the candidate in the query and no body", async () => {
     const f = respond(200, { plan });
@@ -86,14 +111,14 @@ describe("requests", () => {
       targetLevel: "B1",
       targetDate: "2026-12-01",
     });
-    expect(readCachedGoal("en")).toMatchObject({ goal });
+    expect(await readCachedGoal("en")).toMatchObject({ goal });
   });
   it("removeGoal DELETEs and clears the cache", async () => {
     await fetchGoal("en", respond(200, { goal, plan }));
     const f = respond(200, { ok: true });
     await removeGoal("en", f);
     expect(lastCall(f)[1].method).toBe("DELETE");
-    expect(readCachedGoal("en")).toBeNull();
+    expect(await readCachedGoal("en")).toBeNull();
   });
 });
 
@@ -104,6 +129,13 @@ describe("errors", () => {
     [500, "unavailable"],
   ])("maps HTTP %i to %s", async (status, kind) => {
     await expect(fetchGoal("en", respond(status, { error: "x" }))).rejects.toMatchObject({ kind });
+  });
+  it("carries the server's reason on a 400 so the learner is told what to fix", async () => {
+    const f = respond(400, { error: "That level is below yours" });
+    const error = await fetchGoal("en", f).catch((e) => e);
+    expect(error).toMatchObject({ kind: "invalid", detail: "That level is below yours" });
+    expect(goalErrorMessage("invalid", error.detail)).toBe("That level is below yours");
+    expect(goalErrorMessage("invalid")).toMatch(/can't be saved/i);
   });
   it("maps a network failure to offline", async () => {
     const failing = vi.fn(async () => {
@@ -122,7 +154,7 @@ describe("errors", () => {
   });
   it("gives every kind a distinct message", () => {
     const kinds = ["invalid", "notSignedIn", "unavailable", "offline"] as const;
-    const messages = kinds.map(goalErrorMessage);
+    const messages = kinds.map((k) => goalErrorMessage(k));
     expect(new Set(messages).size).toBe(kinds.length);
   });
 });
@@ -136,10 +168,24 @@ describe("cache", () => {
       throw new Error("blocked");
     });
     await expect(fetchGoal("en", respond(200, { goal, plan }))).resolves.toMatchObject({ goal });
-    expect(readCachedGoal("en")).toBeNull();
+    expect(await readCachedGoal("en")).toBeNull();
   });
-  it("ignores a corrupt cache entry", () => {
-    window.localStorage.setItem("lingua.learning-goal.v1.en", "{not json");
-    expect(readCachedGoal("en")).toBeNull();
+  it("ignores a corrupt cache entry", async () => {
+    window.localStorage.setItem("lingua.learning-goal.v1.user-1.en", "{not json");
+    expect(await readCachedGoal("en")).toBeNull();
+  });
+  it("never caches for a signed-out session", async () => {
+    userId.current = null;
+    await fetchGoal("en", respond(200, { goal, plan }));
+    expect(await readCachedGoal("en")).toBeNull();
+    expect(window.localStorage.length).toBe(0);
+  });
+  it("is per user: another account on the same browser never sees it", async () => {
+    await fetchGoal("en", respond(200, { goal, plan }));
+    expect(await readCachedGoal("en")).not.toBeNull();
+    userId.current = "user-2";
+    expect(await readCachedGoal("en")).toBeNull();
+    userId.current = null; // signed out
+    expect(await readCachedGoal("en")).toBeNull();
   });
 });

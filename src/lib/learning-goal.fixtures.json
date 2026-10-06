@@ -1,80 +1,146 @@
 {
-  "done": {
-    "currentLevel": "A1",
-    "targetLevel": "B1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 30,
-    "lessonsRemaining": 0,
-    "lessonsDoneLast7Days": 30,
-    "requiredPerWeek": 0,
-    "status": "done",
-    "realism": "ok",
-    "suggestedDate": null,
-    "asOf": "2026-10-06T12:00:00.000Z"
+  "plans": {
+    "done": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 0,
+      "lessonsDoneLast7Days": 30,
+      "requiredPerWeek": 0,
+      "status": "done",
+      "realism": "ok",
+      "suggestedDate": null,
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "just_started": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 30,
+      "lessonsDoneLast7Days": 0,
+      "requiredPerWeek": 15,
+      "status": "just_started",
+      "realism": "ambitious",
+      "suggestedDate": null,
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "behind_with_suggestion": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 25,
+      "lessonsDoneLast7Days": 5,
+      "requiredPerWeek": 13,
+      "status": "behind",
+      "realism": "ok",
+      "suggestedDate": "2026-11-10",
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "on_track": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 20,
+      "lessonsDoneLast7Days": 10,
+      "requiredPerWeek": 10,
+      "status": "on_track",
+      "realism": "ok",
+      "suggestedDate": null,
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "ahead": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 15,
+      "lessonsDoneLast7Days": 15,
+      "requiredPerWeek": 8,
+      "status": "ahead",
+      "realism": "ok",
+      "suggestedDate": null,
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "unrealistic": {
+      "currentLevel": "A1",
+      "targetLevel": "A1",
+      "targetDate": "2026-10-20",
+      "lessonsInScope": 80,
+      "lessonsRemaining": 80,
+      "lessonsDoneLast7Days": 0,
+      "requiredPerWeek": 40,
+      "status": "behind",
+      "realism": "unrealistic",
+      "suggestedDate": null,
+      "asOf": "2026-10-06T12:00:00.000Z"
+    },
+    "expired": {
+      "currentLevel": "A1",
+      "targetLevel": "B1",
+      "targetDate": "2026-09-01",
+      "lessonsInScope": 30,
+      "lessonsRemaining": 28,
+      "lessonsDoneLast7Days": 2,
+      "requiredPerWeek": 0,
+      "status": "expired",
+      "realism": "ok",
+      "suggestedDate": "2027-01-12",
+      "asOf": "2026-10-06T12:00:00.000Z"
+    }
   },
-  "just_started": {
-    "currentLevel": "A1",
-    "targetLevel": "B1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 30,
-    "lessonsRemaining": 30,
-    "lessonsDoneLast7Days": 0,
-    "requiredPerWeek": 15,
-    "status": "just_started",
-    "realism": "ambitious",
-    "suggestedDate": null,
-    "asOf": "2026-10-06T12:00:00.000Z"
-  },
-  "behind_with_suggestion": {
-    "currentLevel": "A1",
-    "targetLevel": "B1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 30,
-    "lessonsRemaining": 25,
-    "lessonsDoneLast7Days": 5,
-    "requiredPerWeek": 13,
-    "status": "behind",
-    "realism": "ok",
-    "suggestedDate": "2026-11-10",
-    "asOf": "2026-10-06T12:00:00.000Z"
-  },
-  "on_track": {
-    "currentLevel": "A1",
-    "targetLevel": "B1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 30,
-    "lessonsRemaining": 20,
-    "lessonsDoneLast7Days": 10,
-    "requiredPerWeek": 10,
-    "status": "on_track",
-    "realism": "ok",
-    "suggestedDate": null,
-    "asOf": "2026-10-06T12:00:00.000Z"
-  },
-  "ahead": {
-    "currentLevel": "A1",
-    "targetLevel": "B1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 30,
-    "lessonsRemaining": 15,
-    "lessonsDoneLast7Days": 15,
-    "requiredPerWeek": 8,
-    "status": "ahead",
-    "realism": "ok",
-    "suggestedDate": null,
-    "asOf": "2026-10-06T12:00:00.000Z"
-  },
-  "unrealistic": {
-    "currentLevel": "A1",
-    "targetLevel": "A1",
-    "targetDate": "2026-10-20",
-    "lessonsInScope": 80,
-    "lessonsRemaining": 80,
-    "lessonsDoneLast7Days": 0,
-    "requiredPerWeek": 40,
-    "status": "behind",
-    "realism": "unrealistic",
-    "suggestedDate": null,
-    "asOf": "2026-10-06T12:00:00.000Z"
+  "envelopes": {
+    "stored": {
+      "goal": {
+        "course": "en",
+        "targetLevel": "B1",
+        "targetDate": "2026-10-20",
+        "createdAt": "2026-09-06T12:00:00.000Z"
+      },
+      "plan": {
+        "currentLevel": "A1",
+        "targetLevel": "B1",
+        "targetDate": "2026-10-20",
+        "lessonsInScope": 30,
+        "lessonsRemaining": 20,
+        "lessonsDoneLast7Days": 10,
+        "requiredPerWeek": 10,
+        "status": "on_track",
+        "realism": "ok",
+        "suggestedDate": null,
+        "asOf": "2026-10-06T12:00:00.000Z"
+      }
+    },
+    "stored_plan_null": {
+      "goal": {
+        "course": "en",
+        "targetLevel": "B1",
+        "targetDate": "2026-10-20",
+        "createdAt": "2026-09-06T12:00:00.000Z"
+      },
+      "plan": null
+    },
+    "none": {
+      "goal": null,
+      "plan": null
+    },
+    "preview": {
+      "plan": {
+        "currentLevel": "A1",
+        "targetLevel": "B1",
+        "targetDate": "2026-10-20",
+        "lessonsInScope": 30,
+        "lessonsRemaining": 30,
+        "lessonsDoneLast7Days": 0,
+        "requiredPerWeek": 15,
+        "status": "just_started",
+        "realism": "ambitious",
+        "suggestedDate": null,
+        "asOf": "2026-10-06T12:00:00.000Z"
+      }
+    }
   }
 }
