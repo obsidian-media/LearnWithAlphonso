@@ -34,7 +34,7 @@ New table `learning_goals`:
 |---|---|
 | `user_id` uuid | FK `auth.users` ON DELETE CASCADE |
 | `language` text | `en` / `fr` / `es`, same convention as `language_progress` |
-| `target_level` text | `A2`..`C1`; CHECK in the allowed set |
+| `target_level` text | `A1`..`C1`; CHECK in the allowed set (a learner at A1 may want to finish A1) |
 | `target_date` date | |
 | `created_at`, `updated_at` | `created_at` is when the goal was first set (drives "just started") |
 
@@ -51,7 +51,7 @@ Must be added to `USER_ID_EXPORT_TABLES` and `USER_DELETE_TABLES` in `account.fu
 - `PUT` body `{ course, targetLevel, targetDate }` validates and upserts; returns `{ goal, plan }`.
 - `DELETE ?course=en` removes the goal.
 
-Validation (400, nothing written): course in `en|fr|es`; level in `A2..C1`; date a real `YYYY-MM-DD`, strictly after today (UTC), at most 3 years out; and `targetLevel` must not be below the learner's current level (a goal to reach a level they have already passed is meaningless). 401 without a valid token. Failed database reads are 500 and never read as "no goal".
+Validation (400, nothing written): course in `en|fr|es`; level in `A1..C1`; date a real `YYYY-MM-DD`, strictly after today (UTC), at most 3 years out; and `targetLevel` must not be below the learner's current level (a goal to reach a level they have already passed is meaningless). 401 without a valid token. Failed database reads are 500 and never read as "no goal".
 
 ### The plan (pure function `planGoal`)
 
@@ -63,18 +63,18 @@ Definitions (each one is a decision, recorded here so it can be challenged):
 2. **Lessons remaining** = lessons in units whose level is between the learner's *current* level and the target level inclusive, minus the ones they have completed. Counting from the current level, not from A1, means a learner who placed into B1 is not charged for A1. Real counts today: en A1 137, A2 119, B1 119, B2 117, C1 117; fr 115 per level; es 115-119 per level.
 3. **Weeks left** = days from today to the target date, divided by 7, never below 1/7.
 4. **Required per week** = remaining / weeks left, rounded **up** (a learner told "4.2 a week" should plan 5).
-5. **Done recently** = distinct lessons whose `completed_at` falls in the last 7 days (a rolling window, not a calendar week, so time zones and week-start never matter). `lesson_completions` is upserted on `(user_id, lesson_id)` without touching `completed_at`, so `completed_at` is the **first** completion and replays cannot inflate the pace (verified in `complete-lesson/index.ts` and `sync.functions.ts`).
-6. **Status**, first match wins: `done` (remaining is 0); `just_started` (goal is under 7 days old, so there is no history to judge); `ahead` (done recently at least 1.25 times required); `on_track` (done recently at least required); otherwise `behind`.
+5. **Done recently** = distinct lessons IN SCOPE (same levels as definition 2) whose `completed_at` falls in the last 7 days (fresh-reviewer finding 2026-10-06: counting lessons below the learner's level let redoing old lessons look like progress) (a rolling window, not a calendar week, so time zones and week-start never matter). `lesson_completions` is upserted on `(user_id, lesson_id)` without touching `completed_at`, so `completed_at` is the **first** completion and replays cannot inflate the pace (verified in `complete-lesson/index.ts` and `sync.functions.ts`).
+6. **Status**, first match wins: `done` (remaining is 0); `expired` (the target date is today or earlier and lessons remain: required per week is 0, a suggested date is offered from the recent pace, and the card asks for a new date; added after review because a weekly number for a date that has passed was nonsense); `just_started` (goal is under 7 days old, so there is no history to judge); `ahead` (done recently at least 1.25 times required); `on_track` (done recently at least required); otherwise `behind`.
 7. **Realism label**, independent of status: `ambitious` above 14 lessons a week (two a day), `unrealistic` above 35. These are product-tuning constants, named in one place. Example: A1 to B1 in five months is about 250 lessons, roughly 12 a week.
 8. **Suggested date** (only when `behind` or `unrealistic`, and the 7-day pace is above 0): today plus remaining divided by the recent weekly pace, rounded up to a day. If the recent pace is 0 there is no suggestion; the UI says so rather than inventing one.
 
-Output: `{ currentLevel, targetLevel, targetDate, lessonsRemaining, lessonsDoneLast7Days, requiredPerWeek, status, realism, suggestedDate | null, asOf }`.
+`goal.createdAt` is always ISO-8601 with milliseconds and `Z` (the route normalises PostgREST's microseconds and `+00:00`, which Swift's ISO-8601 decoders reject). The offline cache is per user and used only for network-offline failures, never for 401 or server errors. Output: `{ currentLevel, targetLevel, targetDate, lessonsRemaining, lessonsDoneLast7Days, requiredPerWeek, status, realism, suggestedDate | null, asOf }`.
 
 Copy rule: the UI calls this "an estimate of lessons, not of fluency", never a prediction that the learner will reach the level.
 
 ## Clients
 
-All three render `plan`; none compute it. Same states everywhere: no goal (a "Set a goal" prompt), setup (level, date with 3/6/12-month presets, live preview from the preview `GET`, then a confirm step showing the weekly number), and the goal card (progress as lessons done of lessons in scope, status line, required per week, "move the date" and "remove goal"). Offline: show the cached plan with "as of <time>", and disable edit.
+All three render `plan`; none compute it. Same states everywhere: no goal (a "Set a goal" prompt), setup (level, date with 3/6/12-month presets, live preview from the preview `GET`, shown as an inline panel in the card rather than a popup, then a Save step showing the weekly number), and the goal card (progress as lessons done of lessons in scope, status line, required per week, "move the date" and "remove goal"). Offline: show the cached plan with "as of <time>", and disable edit.
 
 - **Web:** a goal card on the Learn page and a setup dialog; a shared fetch module like `saved-word-client.ts`.
 - **iOS:** Kit client + models (decoding tests), SwiftUI card and setup; app-target code compiles in CI only. No build is cut by this work.
@@ -92,7 +92,7 @@ No new third party. The privacy policy gets one line (a learning goal: target le
 
 ## Errors and edge cases
 
-Goal date passes while the goal exists: status becomes `behind` with required per week computed against a floor of one week, plus a prompt to set a new date. Target level equals current: allowed (finish this level). Learner changes level (band picker) after setting a goal: remaining recomputes; a target now below the current level returns the goal with `plan: null` and a prompt to change it, never an error. Content added to the curriculum: remaining grows; status follows the pace, so nobody is suddenly "behind" because of a baseline. Multi-course: one goal per course. A learner with no completions and no `language_progress` row is treated as A1.
+Goal date passes while the goal exists: status becomes `expired` (see definition 6), never a weekly number. Target level equals current: allowed (finish this level). Learner changes level (band picker) after setting a goal: remaining recomputes; a target now below the current level returns the goal with `plan: null` and a prompt to change it, never an error. Content added to the curriculum: remaining grows; status follows the pace, so nobody is suddenly "behind" because of a baseline. Multi-course: one goal per course. A learner with no completions and no `language_progress` row is treated as A1.
 
 ## Testing
 

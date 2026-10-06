@@ -23,6 +23,7 @@ export const USER_ID_EXPORT_TABLES = [
   "friend_activity_events",
   "friendships",
   "language_progress",
+  "learning_goals",
   "lesson_completions",
   "podcast_play_events",
   "podcast_playback",
