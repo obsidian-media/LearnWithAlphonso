@@ -138,4 +138,12 @@ class TeamMissionTest {
         val error = runCatching { client(fake).getTeamMission(defaultNow) }.exceptionOrNull()
         assertTrue(error is ProgressSyncError.InvalidPayload)
     }
+
+    @Test
+    fun `uses the clients injected clock when no time is passed`() = runTest {
+        val fake = FakeSupabase { json(JsonArray(listOf(JsonObject(baseRow()))).toString()) }
+        val mission = ProgressSyncClient(fake.http) { Instant.parse("2026-10-11T00:00:00.000Z").toEpochMilli() }.getTeamMission()
+        // Exactly one day before week_end (2026-10-12), so this only holds if the injected clock was used.
+        assertEquals(1, mission!!.daysLeft)
+    }
 }

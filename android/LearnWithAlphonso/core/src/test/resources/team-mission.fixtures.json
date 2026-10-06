@@ -48,6 +48,16 @@
       "now": "2026-10-11T00:00:00.000Z",
       "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 3, "my_count": 1, "member_count": 2, "status": "in_progress", "reward_xp": 50, "rewarded": false },
       "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 3, "myCount": 1, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 1, "percent": 37, "headline": "3 of 8 lessons done", "footer": "You added 1 · Last day" }
+    },
+    {
+      "name": "in progress but already past the target never exceeds 100 percent",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 9, "my_count": 2, "member_count": 2, "status": "in_progress", "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 9, "myCount": 2, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 5, "percent": 100, "headline": "9 of 8 lessons done", "footer": "You added 2 · 5 days left" }
+    },
+    {
+      "name": "an absent status reads as in progress and a zero contribution is shown",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 3, "my_count": 0, "member_count": 2, "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 3, "myCount": 0, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 5, "percent": 37, "headline": "3 of 8 lessons done", "footer": "You added 0 · 5 days left" }
     }
   ]
 }

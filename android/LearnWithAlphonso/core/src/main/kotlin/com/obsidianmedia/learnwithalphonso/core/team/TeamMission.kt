@@ -49,7 +49,6 @@ private const val DAY_MILLIS = 86_400_000.0
  * Builds the view model from an already-decoded row, or null when [weekEnd] is not a real `yyyy-MM-dd` date (the
  * caller treats that as a broken server contract, not as "no team").
  */
-@Suppress("LongParameterList")
 fun buildTeamMission(
     teamId: String,
     weekStart: String,
