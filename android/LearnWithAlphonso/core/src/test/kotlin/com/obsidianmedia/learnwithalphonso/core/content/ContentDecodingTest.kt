@@ -23,7 +23,12 @@ class ContentDecodingTest {
         assertTrue(store.bundle(Course.FRENCH).units.isNotEmpty())
         assertTrue(store.bundle(Course.SPANISH).units.isNotEmpty())
         assertEquals(5, store.placementPool(Course.ENGLISH).map { it.level }.distinct().size)
-        assertTrue(store.achievements.size >= 24)
+        assertTrue(store.achievements.size >= 25)
+        // The server-granted team mission badge (category "team": no client stat, lessons can never unlock it).
+        val team = store.achievements.single { it.id == "team_player" }
+        assertEquals("Team player", team.title)
+        assertEquals("team", team.category)
+        assertEquals(1, team.threshold)
         assertTrue(store.vocabImages.containsKey("children"))
     }
 
