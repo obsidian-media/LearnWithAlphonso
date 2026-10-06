@@ -634,6 +634,17 @@ struct ExplanationView: View {
     }
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            explanationContent
+            // Words are styled as plain text, so tell the learner they are
+            // tappable -- but only the first few times (`SavedWordHint`).
+            if saveCourse != nil, saveWordHandler != nil {
+                SaveWordHintLine()
+            }
+        }
+    }
+
+    private var explanationContent: some View {
         Group {
             if isCorrect {
                 correctCaption
@@ -670,6 +681,31 @@ struct ExplanationView: View {
             Text(explanation)
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+    }
+}
+
+/// "Tap a word to save it." under a lesson explanation, shown only the first
+/// few times (`SavedWordHint`) -- a permanent line under every explanation would
+/// be noise across a ten-question lesson. The count lives in UserDefaults so it
+/// survives relaunches; whether to show is decided once when the line appears
+/// (`visible`), so it does not vanish while the learner is still reading it.
+private struct SaveWordHintLine: View {
+    @AppStorage("savedWordHintShownCount") private var timesShown = 0
+    @State private var visible = false
+
+    var body: some View {
+        Group {
+            if visible {
+                Text("Tap a word to save it.")
+                    .font(AlphonsoFont.sans(11))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+        }
+        .onAppear {
+            guard SavedWordHint.shouldShow(timesShown: timesShown) else { return }
+            visible = true
+            timesShown += 1
         }
     }
 }

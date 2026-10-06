@@ -196,6 +196,8 @@ private struct PodcastTranscriptSheet: View {
                                 ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
                                     // Episodes are English (the podcast models carry no
                                     // language field), so a tapped word is an English word.
+                                    // If episodes ever gain a language, derive the course
+                                    // from it and route it through `SavedWordPolicy`.
                                     TappableText(
                                         text: paragraph, color: AlphonsoColor.ink, course: "en"
                                     ) { savingWord = $0 }
