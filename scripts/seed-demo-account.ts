@@ -158,7 +158,6 @@ async function seedProgress(userId: string): Promise<void> {
       hearts_refill_at: null,
       streak_freezes: 0,
       league_tier: "sapphire",
-      cefr_level: "B2",
     }),
     supabaseAdmin.from("language_progress").upsert(
       {
@@ -182,6 +181,11 @@ async function seedProgress(userId: string): Promise<void> {
         // somehow never been placed is a state no real user reaches.
         placement_taken_at: new Date(Date.now() - streakDays * 86_400_000).toISOString(),
         placement_level: "B2",
+        // The level both apps actually read (fetchCEFRLevel on iOS and Android,
+        // sync.functions.ts on the web). It used to be written to
+        // user_progress.cefr_level, a column frozen since the multi-course
+        // migration, so the seeded account's Learn tab opened on A1.
+        cefr_level: "B2",
       },
       { onConflict: "user_id,language" },
     ),
