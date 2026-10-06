@@ -43,6 +43,8 @@ export function SaveWordProvider({
 }) {
   const [open, setOpen] = useState<Open | null>(null);
   const nextId = useRef(0);
+  const openRef = useRef<Open | null>(null);
+  openRef.current = open;
 
   const openSave = useCallback<OpenSave>((request, returnFocusTo = null) => {
     nextId.current += 1;
@@ -50,10 +52,8 @@ export function SaveWordProvider({
   }, []);
 
   const close = useCallback(() => {
-    setOpen((current) => {
-      current?.returnFocusTo?.focus();
-      return null;
-    });
+    openRef.current?.returnFocusTo?.focus();
+    setOpen(null);
   }, []);
 
   const value = useMemo(() => openSave, [openSave]);
@@ -98,9 +98,35 @@ function SaveWordDialog({
     mounted.current = true;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
+      // aria-modal hides the page from screen readers, so focus must not leave the dialog.
+      if (event.key === "Tab" && dialogRef.current) {
+        const items = Array.from(
+          dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled])"),
+        );
+        if (items.length === 0) {
+          event.preventDefault();
+          return;
+        }
+        const first = items[0];
+        const last = items[items.length - 1];
+        const active = document.activeElement;
+        if (!dialogRef.current.contains(active)) {
+          event.preventDefault();
+          first.focus();
+        } else if (event.shiftKey && active === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
+      document.body.style.overflow = previousOverflow;
       mounted.current = false;
       document.removeEventListener("keydown", onKey);
     };

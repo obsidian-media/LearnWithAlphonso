@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, memo } from "react";
 import type { SavedWordCourse } from "../lib/saved-word";
 import { allowsSaving } from "../lib/saved-word-client";
 import { isSavableWord, saveRequestFor, segmentText } from "../lib/word-segmenter";
@@ -13,7 +13,7 @@ import { useSaveWord } from "./SaveWord";
  * transcript) where hundreds of tab stops would bury the page's real controls;
  * they remain clickable and in the accessibility tree.
  */
-export function TappableText({
+export const TappableText = memo(function TappableText({
   text,
   course,
   focusable = true,
@@ -46,4 +46,4 @@ export function TappableText({
       )}
     </>
   );
-}
+});

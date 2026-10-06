@@ -44,7 +44,7 @@ function Privacy() {
         <Bullets
           items={[
             "Account details: your email address and a display name. If you sign in with Google or Apple, we receive the name and email address that provider gives us — with Google this is usually your real name, and with Apple it may be a private relay address. We also store an optional two-letter country code, a randomly generated avatar seed, and your chosen theme.",
-            "Learning data: lessons completed, quiz and placement answers, XP, streaks, hearts, achievements, league and season standing, team membership, duel results, your spaced-repetition review items, and any words you choose to save (the word, the sentence you tapped it in, and the meaning we generate for it).",
+            "Learning data: lessons completed, quiz and placement answers, XP, streaks, hearts, achievements, league and season standing, team membership, duel results, your spaced-repetition review items, and any words you choose to save (the word, the sentence you tapped it in, and the meaning and answer choices we generate for it).",
             "Conversation practice: the text of messages you exchange with the AI tutor, your written answers to translation questions, and audio you record while speaking. Audio is sent to our speech-to-text processor to produce a transcript and is not stored on our servers afterwards.",
             "Audio library use: which episodes you play, how far through you are, and which you download for offline listening.",
             "Purchases: whether you hold an active subscription, and its status and renewal dates. We never receive or store your card details — Apple handles payment.",

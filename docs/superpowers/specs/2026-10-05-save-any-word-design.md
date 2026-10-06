@@ -277,7 +277,7 @@ is the owner's call.
   that NVIDIA "grades written translation answers"; it does not say a saved word
   and its sentence are sent to NVIDIA to write the meaning and answer options.
   Deliberately NOT changed while the feature was in no build (the policy must
-  describe what is live). It must be updated **in phase 4, together with the web
+  describe what is live). It was updated **in phase 4 (PR #216), together with the web
   save UI**, because the web ships the moment it merges; and the App Store privacy
   answers and `PrivacyInfo.xcprivacy` re-checked when the first iOS build containing
   save-any-word is cut (BACKLOG 0.0x: App Privacy describes the current binary).

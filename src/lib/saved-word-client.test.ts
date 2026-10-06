@@ -96,6 +96,7 @@ describe("saveErrorFor", () => {
       "offline",
     ] as const) {
       expect(saveErrorFor(kind).length).toBeGreaterThan(10);
+      expect(saveErrorFor(kind)).not.toBe(saveErrorFor(kind === "offline" ? "invalid" : "offline"));
     }
     expect(saveErrorFor("limitReached")).toContain("500");
   });

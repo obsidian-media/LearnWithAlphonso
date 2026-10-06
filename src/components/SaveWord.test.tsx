@@ -169,6 +169,24 @@ describe("save dialog", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("keeps Tab inside the dialog and locks page scroll while it is open", async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    const save = screen.getByRole("button", { name: /^save word$/i });
+    const cancel = screen.getByRole("button", { name: /cancel/i });
+    expect(save).toHaveFocus();
+    await user.tab();
+    expect(cancel).toHaveFocus();
+    await user.tab();
+    expect(save).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(cancel).toHaveFocus();
+    expect(document.body.style.overflow).toBe("hidden");
+    await user.click(cancel);
+    expect(document.body.style.overflow).not.toBe("hidden");
+  });
+
   it("starts fresh for the next word instead of showing the previous result", async () => {
     const user = userEvent.setup();
     setup();
