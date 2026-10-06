@@ -32,6 +32,7 @@ export const TappableText = memo(function TappableText({
           <button
             key={segment.start}
             type="button"
+            data-save-word
             tabIndex={focusable ? undefined : -1}
             onClick={(event) =>
               open(saveRequestFor(text, segment, course as SavedWordCourse), event.currentTarget)
