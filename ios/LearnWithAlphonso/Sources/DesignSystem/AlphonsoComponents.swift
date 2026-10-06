@@ -704,7 +704,7 @@ struct ExplanationView: View {
 /// be noise across a ten-question lesson. The count lives in UserDefaults so it
 /// survives relaunches; whether to show is decided once when the line appears
 /// (`visible`), so it does not vanish while the learner is still reading it.
-private struct SaveWordHintLine: View {
+struct SaveWordHintLine: View {
     @AppStorage("savedWordHintShownCount") private var timesShown = 0
     @State private var visible = false
 
