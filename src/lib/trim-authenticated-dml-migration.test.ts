@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { replayPolicies } from "./__testutils__/policy-replay";
 
 const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations");
 const FILE = "20261006130000_trim_authenticated_unbacked_dml.sql";
@@ -77,28 +78,13 @@ describe("trim authenticated's unbacked DML privileges", () => {
   });
 
   it("never revokes a privilege that a policy created in the migrations depends on", () => {
-    const all = fs
-      .readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith(".sql") && f !== FILE)
-      .sort()
-      .map((f) => fs.readFileSync(path.join(MIGRATIONS, f), "utf8").replace(/--[^\n]*/g, ""))
-      .join("\n");
-    // The last statement about a policy wins; a dropped policy no longer backs a privilege.
-    const live = new Map<string, string>();
-    for (const m of all.matchAll(
-      /(create|drop)\s+policy\s+(?:if\s+exists\s+)?"?(\w+)"?\s+on\s+(?:public\.)?(\w+)(?:\s+for\s+(\w+))?/gi,
-    )) {
-      const key = `${m[3]}.${m[2]}`;
-      if (m[1].toLowerCase() === "drop") live.delete(key);
-      else live.set(key, (m[4] ?? "ALL").toUpperCase());
-    }
+    const policies = replayPolicies({ exceptFile: FILE });
     const problems: string[] = [];
-    for (const [key, cmd] of live) {
-      const table = key.split(".")[0];
-      const revoked = EXPECTED[table] ?? [];
-      const needs = cmd === "ALL" ? ["INSERT", "UPDATE", "DELETE"] : [cmd];
-      for (const privilege of needs)
-        if (revoked.includes(privilege)) problems.push(`${key} (${cmd}) needs ${privilege}`);
+    for (const [table, revoked] of Object.entries(EXPECTED)) {
+      for (const privilege of revoked) {
+        if (policies.get(table)?.has(privilege))
+          problems.push(`${table}: a policy backs ${privilege}`);
+      }
     }
     expect(problems).toEqual([]);
   });

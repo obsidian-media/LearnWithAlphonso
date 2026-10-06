@@ -4,7 +4,7 @@
 -- A table privilege with no matching policy does nothing: RLS denies the INSERT/UPDATE or matches zero rows for
 -- UPDATE/DELETE. These are leftovers of Supabase's "everything for everyone" default (see 20261006120000). The list
 -- below was audited on 2026-10-06 against pg_policies on the live database, against every web, Edge Function, iOS
--- and Android write path (all use a policy-backed operation or the service role), and against the public functions
+-- and Android write path (all use a policy-backed operation or the service role, after the one exception found, completeLessonRemote's friend_activity_events insert, was moved to the service role in the same PR), and against the public functions
 -- (no SECURITY INVOKER function writes). The only caller that relied on one of them as a silent no-op was
 -- deleteMyAccount's pre-delete loop, which no longer lists those tables (ON DELETE CASCADE removes the rows).
 --
