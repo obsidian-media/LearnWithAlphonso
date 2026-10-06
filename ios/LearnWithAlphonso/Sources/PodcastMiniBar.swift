@@ -114,7 +114,8 @@ struct PodcastMiniBar: View {
                 PodcastTranscriptSheet(
                     title: episode.title,
                     transcript: transcript,
-                    isLoading: isLoadingTranscript
+                    isLoading: isLoadingTranscript,
+                    session: session
                 )
             }
             // Fetched when the sheet opens, keyed on the episode so switching
@@ -161,8 +162,12 @@ private struct PodcastTranscriptSheet: View {
     let title: String
     let transcript: String?
     let isLoading: Bool
+    /// Needed only to open a save sheet when a word is tapped.
+    let session: Session
 
     @Environment(\.dismiss) private var dismiss
+    /// The word the learner tapped in the transcript, if a save sheet is open.
+    @State private var savingWord: SaveWordRequest?
 
     var body: some View {
         NavigationStack {
@@ -185,11 +190,19 @@ private struct PodcastTranscriptSheet: View {
                     } else {
                         ScrollView {
                             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
+                                Text("Tap any word to save it.")
+                                    .font(AlphonsoFont.sans(12))
+                                    .foregroundStyle(AlphonsoColor.inkSoft)
                                 ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
-                                    Text(paragraph)
-                                        .font(AlphonsoFont.sans(15))
-                                        .foregroundStyle(AlphonsoColor.ink)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    // Episodes are English (the podcast models carry no
+                                    // language field), so a tapped word is an English word.
+                                    // If episodes ever gain a language, derive the course
+                                    // from it and route it through `SavedWordPolicy`.
+                                    TappableText(
+                                        text: paragraph, color: AlphonsoColor.ink, course: "en"
+                                    ) { savingWord = $0 }
+                                    .font(AlphonsoFont.sans(15))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                             }
                             .padding(AlphonsoSpacing.md)
@@ -208,6 +221,9 @@ private struct PodcastTranscriptSheet: View {
             }
         }
         .tint(AlphonsoColor.moss)
+        .sheet(item: $savingWord) { request in
+            SaveWordSheet(request: request, session: session)
+        }
     }
 }
 

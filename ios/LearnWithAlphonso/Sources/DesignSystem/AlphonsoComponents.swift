@@ -520,8 +520,13 @@ struct SpeechBubbleShape: InsettableShape {
 /// portrait renders.
 struct AlphonsoTipCard: View {
     let explanation: String
+    /// The course to file a tapped word under, or nil (the default) to keep the
+    /// explanation plain text. Opt-in on purpose: only a caller that knows the
+    /// text is wholly in the course's language (see `SavedWordPolicy`) passes it.
+    var saveCourse: String? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.saveWordHandler) private var saveWordHandler
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -530,9 +535,17 @@ struct AlphonsoTipCard: View {
                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                     .tracking(0.3)
                     .foregroundStyle(AlphonsoColor.ember)
-                Text(explanation)
+                if let saveCourse, let saveWordHandler {
+                    TappableText(
+                        text: explanation, color: AlphonsoColor.ink, course: saveCourse,
+                        onSave: saveWordHandler
+                    )
                     .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
+                } else {
+                    Text(explanation)
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.ink)
+                }
             }
             .padding(AlphonsoSpacing.sm + 4)
             .padding(.trailing, AlphonsoSpacing.sm)
@@ -578,8 +591,22 @@ struct AlphonsoTipCard: View {
         // bubble style); nothing about that is available to VoiceOver
         // without saying it outright. Combine folds "Alphonso says" +
         // explanation into one stop instead of two.
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Incorrect. Alphonso says: \(explanation)")
+        //
+        // When the words are tappable (saving is offered) that fold would hide
+        // them: a combined element exposes no child links to VoiceOver, so a
+        // VoiceOver user could hear the explanation but never save a word from
+        // it (CodeRabbit, and the phase 3 reviewer). Then the card is a
+        // CONTAINER whose label is just "Incorrect." -- the children read
+        // themselves ("Alphonso says", then the explanation with its links), so
+        // nothing is spoken twice. Everywhere else the original single stop is
+        // unchanged.
+        .accessibilityElement(children: linksReachable ? .contain : .combine)
+        .accessibilityLabel(linksReachable ? "Incorrect." : "Incorrect. Alphonso says: \(explanation)")
+    }
+
+    /// Whether the explanation's words are tappable links (see `body`).
+    private var linksReachable: Bool {
+        saveCourse != nil && saveWordHandler != nil
     }
 }
 
@@ -606,22 +633,41 @@ struct ExplanationView: View {
     /// "not quite" styling over an answer the learner was just told was right.
     var correctOverride: Bool? = nil
 
+    @Environment(\.saveWordHandler) private var saveWordHandler
+
     private var isCorrect: Bool {
         correctOverride ?? isAnswerCorrect(question, picked: picked, course: course)
     }
 
+    /// The course to file a tapped word under, or nil when this course's text is
+    /// not wholly in its own language (`SavedWordPolicy`) -- then the explanation
+    /// stays plain text rather than offering to save English words under French.
+    private var saveCourse: String? {
+        let code = course.translationCourseCode
+        return SavedWordPolicy.allowsSaving(inCourse: code) ? code : nil
+    }
+
     var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            explanationContent
+            // Words are styled as plain text, so tell the learner they are
+            // tappable -- but only the first few times (`SavedWordHint`).
+            if saveCourse != nil, saveWordHandler != nil {
+                SaveWordHintLine()
+            }
+        }
+    }
+
+    private var explanationContent: some View {
         Group {
             if isCorrect {
-                Text(explanation)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                correctCaption
                     // Same reasoning as AlphonsoTipCard's label below: a
                     // sighted learner reads "no Alphonso popup" as "you got
                     // it right," which VoiceOver has no equivalent of.
                     .accessibilityLabel("Correct. \(explanation)")
             } else {
-                AlphonsoTipCard(explanation: explanation)
+                AlphonsoTipCard(explanation: explanation, saveCourse: saveCourse)
             }
         }
         // Proactively announced, not just readable-if-you-swipe-to-it --
@@ -632,6 +678,48 @@ struct ExplanationView: View {
         // looking at the screen" needs to not require.
         .onAppear {
             UIAccessibility.post(notification: .announcement, argument: isCorrect ? "Correct" : "Incorrect")
+        }
+    }
+
+    /// The plain caption shown for a right answer: its words are tappable when
+    /// saving is allowed for this course and the screen can open a save sheet.
+    @ViewBuilder
+    private var correctCaption: some View {
+        if let saveCourse, let saveWordHandler {
+            TappableText(
+                text: explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
+                onSave: saveWordHandler
+            )
+            .font(AlphonsoFont.sans(13))
+        } else {
+            Text(explanation)
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+    }
+}
+
+/// "Tap a word to save it." under a lesson explanation, shown only the first
+/// few times (`SavedWordHint`) -- a permanent line under every explanation would
+/// be noise across a ten-question lesson. The count lives in UserDefaults so it
+/// survives relaunches; whether to show is decided once when the line appears
+/// (`visible`), so it does not vanish while the learner is still reading it.
+private struct SaveWordHintLine: View {
+    @AppStorage("savedWordHintShownCount") private var timesShown = 0
+    @State private var visible = false
+
+    var body: some View {
+        Group {
+            if visible {
+                Text("Tap a word to save it.")
+                    .font(AlphonsoFont.sans(11))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+        }
+        .onAppear {
+            guard SavedWordHint.shouldShow(timesShown: timesShown) else { return }
+            visible = true
+            timesShown += 1
         }
     }
 }

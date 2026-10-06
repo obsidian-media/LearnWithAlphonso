@@ -18,6 +18,8 @@ struct ReviewQueueView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var course: Course = .english
+    /// The word the learner tapped in a review explanation, if a save sheet is open.
+    @State private var savingWord: SaveWordRequest?
     @State private var queue: [ReviewItem] = []
     @State private var total = 0
     @State private var idx = 0
@@ -88,6 +90,13 @@ struct ReviewQueueView: View {
         // via gradeTranslationReviewItem) with no disclosure at all -- see
         // AIDisclosureSheet.swift's own doc comment.
         .aiDisclosureGate()
+        // Tap-to-save in explanations, like the lesson player: the shared
+        // ExplanationView / AlphonsoTipCard read this from the environment and
+        // use it only for a course whose text is wholly in its own language.
+        .environment(\.saveWordHandler, { savingWord = $0 })
+        .sheet(item: $savingWord) { request in
+            SaveWordSheet(request: request, session: session)
+        }
     }
 
     private var currentItem: ReviewItem { queue[idx] }

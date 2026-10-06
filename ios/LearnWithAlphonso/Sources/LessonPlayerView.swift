@@ -45,6 +45,8 @@ struct LessonPlayerView: View {
     private enum Phase { case overview, vocab, quiz }
 
     @State private var phase: Phase = .overview
+    /// The word the learner tapped in a lesson explanation, if a save sheet is open.
+    @State private var savingWord: SaveWordRequest?
     @State private var idx = 0
     @State private var correctCount = 0
     // §0.1-d #6: every real (non-reinforcement) question's raw submission,
@@ -195,6 +197,16 @@ struct LessonPlayerView: View {
         // actually leaves the device -- settledTranslationVerdict, via
         // TranslationGradingPolicy -- and a speak question still carries its
         // own gate (SpeakQuestionCard), so no lesson is blocked wholesale.
+        //
+        // Tap-to-save in explanations: the shared ExplanationView and
+        // AlphonsoTipCard read this handler from the environment, so every
+        // question type gets it without threading a closure through each
+        // call site. They only use it for a course whose text is wholly in its
+        // own language (SavedWordPolicy), i.e. the English course today.
+        .environment(\.saveWordHandler, { savingWord = $0 })
+        .sheet(item: $savingWord) { request in
+            SaveWordSheet(request: request, session: session)
+        }
     }
 
     private var quizBody: some View {

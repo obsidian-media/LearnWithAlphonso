@@ -11,6 +11,26 @@ struct SaveWordRequest: Identifiable {
     let course: String
 }
 
+/// How a screen opens a save sheet, offered to the views below it through the
+/// environment. A lesson's explanation is rendered by shared views
+/// (`ExplanationView`, `AlphonsoTipCard`) that sit under many different question
+/// cards in two screens; threading a closure through every one of those call
+/// sites would touch ~10 of them, whereas the screen provides this once and the
+/// shared views read it. Nil (the default) means "this screen cannot save", and
+/// the text stays plain.
+typealias SaveWordHandler = (SaveWordRequest) -> Void
+
+private struct SaveWordHandlerKey: EnvironmentKey {
+    static let defaultValue: SaveWordHandler? = nil
+}
+
+extension EnvironmentValues {
+    var saveWordHandler: SaveWordHandler? {
+        get { self[SaveWordHandlerKey.self] }
+        set { self[SaveWordHandlerKey.self] = newValue }
+    }
+}
+
 /// Shows a tapped word and its sentence, saves it on demand, then shows the
 /// meaning so the learner learns it now, not only at review. Never blocks the
 /// screen underneath: every failure is a message in the sheet and "Done" always

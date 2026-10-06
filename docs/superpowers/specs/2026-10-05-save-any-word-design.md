@@ -3,7 +3,8 @@
 **Date:** 2026-10-05. **Status:** approved by the owner (design in chat, then
 the written spec). **Phases 1-2 are implemented:** backend merged as PR #211 (live
 and verified), iOS on Hector replies as PR #212, Practice and Campaign replies
-in the phase 2 PR. Phases 3-4 (lessons and transcripts, web) are not started. See the plan for what was built
+in the phase 2 PR, and **phase 3** (English-course lesson explanations and
+podcast transcripts) in its own PR. Phase 4 (web) is not started. See the plan for what was built
 and `docs/BACKLOG.md` section 0.0-ac #4 for the deferred follow-ups.
 **Path:** architectural (new item source, new endpoint, new migration, new UI
 on two platforms). **Order:** iOS first, then web.
@@ -205,6 +206,19 @@ App target:
    (the `podcast_transcripts` table does); if it does not, transcripts become
    their own item instead of widening this one.
 4. **Phase 4:** web, reusing the route and the row shape unchanged.
+
+**Phase 3 as built, and why it is narrower than written above (decision record,
+2026-10-05).** A saved word is filed under a course and explained by the model as
+a word OF THAT LANGUAGE, but lesson text mixes languages: in the French and
+Spanish courses an explanation is English with French or Spanish words quoted
+inside it, and a translate prompt is the other way round. Tapping "means" there
+would file an English word under French. So lessons offer tap-to-save only in the
+**English course**, only in the **explanation** (shown after answering, so it can
+never give an answer away), enforced by `SavedWordPolicy.allowsSaving(inCourse:)`
+in the Kit. Prompts, and the French and Spanish courses, wait until the app can
+tell course-language text from interface text. Transcripts: an iOS reader exists
+(`PodcastTranscriptSheet`); episodes are English (the podcast models carry no
+language field), so a tapped transcript word is filed under `en`.
 
 No iOS build is cut by any phase. Merging to main is allowed; shipping a build
 is the owner's call.
