@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
@@ -76,5 +77,62 @@ describe("PodcastTranscriptPanel saving words", () => {
     const hello = screen.getByRole("button", { name: "Hello" });
     expect(hello).toHaveAttribute("tabindex", "-1");
     expect(screen.getByText(/tap any word to save it/i)).toBeInTheDocument();
+  });
+});
+
+describe("PodcastTranscriptPanel keyboard access to words", () => {
+  const renderPanel = () =>
+    render(
+      <PodcastTranscriptPanel
+        title="Ordering Coffee"
+        transcript={"Hello there friend."}
+        isLoading={false}
+        onClose={() => {}}
+      />,
+    );
+
+  it("has one tabbable control that moves focus into the words", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: /browse words with the keyboard/i }));
+    expect(screen.getByRole("button", { name: "Hello" })).toHaveFocus();
+  });
+
+  it("moves between words with the arrow keys and stops at the ends", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: /browse words with the keyboard/i }));
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("button", { name: "there" })).toHaveFocus();
+    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}");
+    expect(screen.getByRole("button", { name: "friend" })).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("button", { name: "there" })).toHaveFocus();
+    await user.keyboard("{ArrowLeft}{ArrowLeft}{ArrowLeft}");
+    expect(screen.getByRole("button", { name: "Hello" })).toHaveFocus();
+  });
+
+  it("leaves the arrow keys alone on controls that are not words", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    const browse = screen.getByRole("button", { name: /browse words with the keyboard/i });
+    browse.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(browse).toHaveFocus();
+  });
+
+  it("opens the save dialog from the focused word with Enter", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: /browse words with the keyboard/i }));
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog", { name: /save this word/i })).toBeInTheDocument();
+  });
+
+  it("does not offer the control when there is no transcript", () => {
+    render(
+      <PodcastTranscriptPanel title="x" transcript={null} isLoading={false} onClose={() => {}} />,
+    );
+    expect(screen.queryByRole("button", { name: /browse words/i })).not.toBeInTheDocument();
   });
 });
