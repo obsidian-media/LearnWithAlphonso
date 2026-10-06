@@ -140,6 +140,8 @@ struct LessonBrowserView: View {
                 GoalCardView(session: session, course: course)
                     .id(course.translationCourseCode)
 
+                TeamMissionSection(session: session)
+
                 WeeklyChallengesSection(session: session)
 
                 // Fallback for anyone RootView's post-sign-in placement

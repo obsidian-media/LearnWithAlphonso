@@ -62,6 +62,8 @@ struct TeamsView: View {
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
+                TeamMissionSection(session: session, reloadKey: members.count)
+
                 // TestFlight feedback (2026-09-29): "does the team owner
                 // have any authority?" -- previously no, and there wasn't
                 // even a member list to see who's on the team at all.
