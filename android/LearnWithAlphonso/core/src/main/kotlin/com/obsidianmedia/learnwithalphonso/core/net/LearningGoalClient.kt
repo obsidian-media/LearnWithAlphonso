@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.goal.GoalApi
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalPlan
 import com.obsidianmedia.learnwithalphonso.core.goal.LearningGoalDecoding
 import com.obsidianmedia.learnwithalphonso.core.goal.LearningGoalError
@@ -25,24 +26,24 @@ import java.io.IOException
  * [IOException] is [LearningGoalError.Offline], and a coroutine cancellation is rethrown untouched (a screen that
  * went away is not an error and not "offline").
  */
-class LearningGoalClient(private val http: ApiHttp) {
-    suspend fun fetch(course: String): LearningGoalState =
+class LearningGoalClient(private val http: ApiHttp) : GoalApi {
+    override suspend fun fetch(course: String): LearningGoalState =
         LearningGoalDecoding.state(send { http.get(PATH, mapOf("course" to course)) })
 
     /** The plan for a candidate goal. Writes nothing on the server. */
-    suspend fun preview(course: String, targetLevel: String, targetDate: String): GoalPlan =
+    override suspend fun preview(course: String, targetLevel: String, targetDate: String): GoalPlan =
         LearningGoalDecoding.plan(
             send { http.get(PATH, linkedMapOf("course" to course, "targetLevel" to targetLevel, "targetDate" to targetDate)) },
         )
 
-    suspend fun save(course: String, targetLevel: String, targetDate: String): LearningGoalState =
+    override suspend fun save(course: String, targetLevel: String, targetDate: String): LearningGoalState =
         LearningGoalDecoding.state(
             send {
                 http.put(PATH, buildJsonObject { put("course", course); put("targetLevel", targetLevel); put("targetDate", targetDate) })
             },
         )
 
-    suspend fun remove(course: String) {
+    override suspend fun remove(course: String) {
         send { http.delete(PATH, mapOf("course" to course)) }
     }
 
