@@ -1,6 +1,6 @@
 # Learning goal and timeline planner: design
 
-**Status:** design approved in conversation 2026-10-05; this written spec awaits owner review.
+**Status:** design approved in conversation 2026-10-05; owner answered the open questions 2026-10-06 (see below); the plan is next.
 **Path:** architectural (new table, new route, three clients).
 **BACKLOG:** section 0.0-ac, item 8 ("Goal and timeline planner").
 **Platforms:** web first (decided), then iOS, then Android. Designed for all three from the start.
@@ -98,11 +98,11 @@ Goal date passes while the goal exists: status becomes `behind` with required pe
 
 Pure `planGoal` table tests (every status, both realism labels, rounding up, placement-skip, past date, zero pace, 0 remaining), each rule broken on purpose to confirm a test fails. Route tests for auth, validation, preview not writing, upsert, delete, and database errors. Migration test pinning the CHECK and RLS like the saved-word migration test. Export/delete guard test. Client tests per platform: rendering each status, offline cache, error messages. The fixtures file is the cross-platform pin.
 
-## Open questions for the owner
+## Owner decisions on the open questions (2026-10-06)
 
-1. "Finish B1" versus "start B1" (definition 1). Default: finish.
-2. The 14 and 35 lessons-per-week thresholds are guesses; adjust after real use.
-3. Should free and Pro learners both get the planner? Default: yes (no cost per use).
+1. "Finish B1" is the right meaning of the goal. Confirmed.
+2. Free and Pro learners both get the planner. Confirmed.
+3. The 14 and 35 lessons-per-week warning limits (the `ambitious` and `unrealistic` labels) stay as defaults; the owner asked what they are, and they are warning labels shown when the weekly number a goal needs is very high (about two lessons a day, then about five). They are named constants, easy to retune after real use.
 
 ## Rollout order
 
