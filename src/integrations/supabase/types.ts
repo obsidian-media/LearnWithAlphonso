@@ -1191,7 +1191,15 @@ export type Database = {
           week_start?: string;
           xp?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "team_mission_rewards_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       team_missions: {
         Row: {
@@ -1218,7 +1226,15 @@ export type Database = {
           team_id?: string;
           week_start?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "team_missions_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       team_weekly_rewards: {
         Row: {
