@@ -51,6 +51,13 @@ Removed `authenticated`'s INSERT/UPDATE/DELETE on 34 tables where **no RLS polic
 
 **The audit found a live bug.** `completeLessonRemote` inserted into `friend_activity_events` through the user's RLS client, but that table has a SELECT policy only, so every web lesson completion that earned XP threw after saving progress and the lesson screen showed 0 XP (since the 2026-09-29 error-surfacing change; the friends-feed event had been silently dropped since 2026-09-19). Fixed: the insert now uses the service-role client, like the `complete-lesson` Edge Function. `src/lib/rls-client-writes.test.ts` now fails if server code writes through `supabase.from(...)` to a table with no policy for that command; mocks had hidden this because they returned success.
 
+### Third step, 2026-10-06 (`20261006140000_read_privileges_and_export_policies.sql`)
+
+- **A GDPR export gap, fixed.** `exportMyData` reads as the signed-in user, and `challenge_completions`, `duel_queue`, `season_cohort_members` and `season_placements` had RLS on and no SELECT policy, so the export silently returned nothing for them (live: 2, 1, 2 and 0 rows). Each now has an own-row SELECT policy. `account.functions.test.ts` fails if any export table lacks a SELECT policy for the user.
+- `anon` keeps SELECT only on the nine public content tables (achievements, lessons, levels, placement_questions, questions, scenarios, units, vocab_images, weekly_quests); it lost it on the other 29 (every client read carries a user's JWT). A signed-out request to those now gets `42501 permission denied` instead of an empty list.
+- `authenticated` lost SELECT on `friend_invite_codes`, `season_cohorts`, `team_kicks`, `team_weekly_rewards` (no policy, no client read path; only SECURITY DEFINER functions and the service role use them).
+- Left alone: `content_reports` (write-only by policy; an insert's WITH CHECK may need the column privilege), `teams` (column-level SELECT).
+
 Functions were audited and left alone: only six functions in `public` are executable by `anon`, five are plain invoker helpers and one (`notify_nudge_push`) is a trigger function that cannot be called through the API.
 
 ## Snapshot before the change (the rollback reference)
@@ -73,6 +80,6 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 
 ## Follow-ups
 
-1. ~~Trim `authenticated`'s inert DML privileges~~ done in the second step above. Remaining there: inert SELECT on tables with no SELECT policy (challenge_completions, duel_queue, friend_invite_codes, season_*, team_kicks, team_weekly_rewards, content_reports), which needs a read-path check first.
-2. Decide whether `anon` SELECT should be limited to the tables with a public-readable policy (achievements, lessons, levels, placement_questions, questions, scenarios, units, vocab_images, weekly_quests); today `anon` can SELECT every table and RLS returns no rows.
+1. ~~Trim `authenticated`'s inert DML privileges~~ done (second step). ~~Inert SELECT~~ done (third step) except `content_reports`.
+2. ~~Limit `anon` SELECT to the public content tables~~ done (third step).
 3. If a table is ever created by `supabase_admin`, run `REVOKE ALL ... FROM anon, authenticated` on it by hand.

@@ -350,6 +350,19 @@ describe("GDPR export table coverage", () => {
     expect(missing).toEqual([]);
   });
 
+  it("every table the export reads has a SELECT policy for the signed-in user", () => {
+    // exportMyData reads as the CALLER. With RLS on and no SELECT policy a read returns no rows and no error,
+    // so the GDPR export silently omitted challenge_completions, duel_queue, season_cohort_members and
+    // season_placements until 2026-10-06 (BACKLOG 0.0-ae follow-up).
+    const policies = replayPolicies();
+    const tables = [
+      ...exportTables,
+      ...accountModule.OTHER_OWNED_EXPORT_TABLES.map((o) => o.table),
+    ];
+    const unreadable = tables.filter((table) => !policies.get(table)?.has("SELECT"));
+    expect(unreadable).toEqual([]);
+  });
+
   it("is exactly the tables with a DELETE policy (no dead pre-delete calls)", () => {
     expect([...deleteTables].sort()).toEqual(
       [
