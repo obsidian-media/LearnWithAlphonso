@@ -274,6 +274,9 @@ describe("completeLessonRemote", () => {
     expect(result.progress.hearts).toBe(5);
     // First-ever perfect completion crosses the xp_100 and perfect_1 thresholds.
     expect(result.newlyUnlocked).toEqual(expect.arrayContaining(["xp_100", "perfect_1"]));
+    // team_player is granted only by the team mission payout; the "team" category has no client stat, so a
+    // lesson completion (however perfect) must never unlock it.
+    expect(result.newlyUnlocked).not.toContain("team_player");
   });
 
   it("pays only the XP delta on a replay that doesn't beat the previous best", async () => {
