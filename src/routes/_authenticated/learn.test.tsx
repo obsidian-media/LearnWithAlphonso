@@ -77,6 +77,10 @@ vi.mock("../../lib/review.functions", () => ({ fetchDueReviews }));
 // exercising that card's own behavior (see WeeklyChallengesCard.test.tsx
 // for that).
 vi.mock("../../components/WeeklyChallengesCard", () => ({ WeeklyChallengesCard: () => null }));
+// The goal card has its own tests (GoalCard.test.tsx); here we only check the page mounts it for the current course.
+vi.mock("../../components/GoalCard", () => ({
+  GoalCard: ({ course }: { course: string }) => <div data-testid="goal-card">{course}</div>,
+}));
 
 const { Route } = await import("./learn");
 const { useProgress } = await import("../../lib/progress");
@@ -109,6 +113,11 @@ beforeEach(() => {
 });
 
 describe("Learn page", () => {
+  it("shows the learning goal card for the current course", async () => {
+    renderPage();
+    expect(await screen.findByTestId("goal-card")).toHaveTextContent("en");
+  });
+
   it("shows the placement banner before a placement test has been taken", async () => {
     renderPage();
     expect(await screen.findByText("Not sure where to start?")).toBeInTheDocument();
