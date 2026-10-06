@@ -64,6 +64,29 @@ beforeEach(() => {
 });
 
 describe("exportMyData", () => {
+  it("fails loudly, naming the table, when a table read errors (never exports a silent empty)", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "challenge_completions"
+        ? chainable({
+            data: null,
+            error: { message: "permission denied for table challenge_completions" },
+          })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/challenge_completions/);
+  });
+
+  it("also fails when a table read through the sender/recipient columns errors", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "nudges"
+        ? chainable({ data: null, error: { message: "permission denied for table nudges" } })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/nudges/);
+  });
+
   it("bundles every user-scoped table plus the profile row into one export", async () => {
     const supabase = createSupabaseMock();
     // 9 USER_ID_TABLES selects (order doesn't affect the merged shape) + profiles.

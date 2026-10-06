@@ -101,6 +101,19 @@ export const exportMyData = createServerFn({ method: "POST" })
       ),
       supabase.from("profiles").select("*").eq("id", userId),
     ]);
+    // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
+    // could look complete while omitting a table. Fail instead and name the tables.
+    const failed = [
+      ...USER_ID_EXPORT_TABLES.filter((_, i) => userIdRows[i].error),
+      ...OTHER_OWNED_EXPORT_TABLES.map(({ table }) => table).filter(
+        (_, i) => otherOwnedRows[i].error,
+      ),
+    ];
+    if (failed.length > 0) {
+      throw new Error(
+        `exportMyData: could not read ${failed.join(", ")}; the export would be incomplete`,
+      );
+    }
     const tables: Record<string, unknown[]> = {};
     USER_ID_EXPORT_TABLES.forEach((table, i) => {
       tables[table] = (userIdRows[i].data as unknown[]) ?? [];

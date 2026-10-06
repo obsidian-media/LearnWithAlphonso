@@ -64,4 +64,21 @@ describe("replayPoliciesFromSql", () => {
       USING (true);`;
     expect(cmds(sql, "t")).toEqual(["UPDATE"]);
   });
+
+  it("can replay for the anon role: only TO anon, TO public or no TO clause counts", () => {
+    const forAnon = (sql: string) => [...(replayPoliciesFromSql(sql, "anon").get("t") ?? [])];
+    expect(forAnon("CREATE POLICY a ON public.t FOR SELECT USING (true);")).toEqual(["SELECT"]);
+    expect(forAnon("CREATE POLICY a ON public.t FOR SELECT TO public USING (true);")).toEqual([
+      "SELECT",
+    ]);
+    expect(forAnon("CREATE POLICY a ON public.t FOR SELECT TO anon USING (true);")).toEqual([
+      "SELECT",
+    ]);
+    expect(
+      forAnon("CREATE POLICY a ON public.t FOR SELECT TO authenticated USING (true);"),
+    ).toEqual([]);
+    expect(forAnon("CREATE POLICY a ON public.t FOR SELECT TO service_role USING (true);")).toEqual(
+      [],
+    );
+  });
 });

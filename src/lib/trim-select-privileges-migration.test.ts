@@ -128,21 +128,10 @@ describe("read privileges and export policies migration", () => {
     expect(problems).toEqual([]);
   });
 
-  it("every table anon keeps has a public SELECT policy (it really is public content)", () => {
-    const all = fs
-      .readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith(".sql"))
-      .sort()
-      .map((f) => fs.readFileSync(path.join(MIGRATIONS, f), "utf8").replace(/--[^\n]*/g, ""))
-      .join("\n");
-    for (const table of ANON_KEEPS) {
-      expect(all, table).toMatch(
-        new RegExp(
-          String.raw`CREATE POLICY[^;]*ON (?:public\.)?${table}\s+FOR SELECT[^;]*(?:TO (?:public|anon)|USING)`,
-          "i",
-        ),
-      );
-    }
+  it("every table anon keeps has a SELECT policy that applies to anon (it really is public content)", () => {
+    const policies = replayPolicies({ role: "anon" });
+    const missing = ANON_KEEPS.filter((table) => !policies.get(table)?.has("SELECT"));
+    expect(missing).toEqual([]);
   });
 
   it("states how to undo it", () => {
