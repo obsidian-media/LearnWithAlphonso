@@ -1,6 +1,9 @@
 // Client-side mirror of the achievements catalog, used for iconography + labels
 // without hitting the DB.
-export type AchievementCategory = "streak" | "xp" | "perfect" | "lessons" | "league" | "freeze";
+// "team" is granted by the server only (the team mission payout): no client computes a "team" stat, so
+// stats[a.category] ?? 0 in completeLessonRemote can never unlock it.
+export type AchievementCategory =
+  "streak" | "xp" | "perfect" | "lessons" | "league" | "freeze" | "team";
 
 export type AchievementTier = "bronze" | "silver" | "gold" | "diamond";
 
@@ -232,6 +235,15 @@ export const ACHIEVEMENTS: Achievement[] = [
     tier: "diamond",
     category: "league",
     threshold: 5,
+  },
+  {
+    id: "team_player",
+    title: "Team player",
+    description: "Help your team finish a weekly mission",
+    icon: "star",
+    tier: "silver",
+    category: "team",
+    threshold: 1,
   },
 ];
 

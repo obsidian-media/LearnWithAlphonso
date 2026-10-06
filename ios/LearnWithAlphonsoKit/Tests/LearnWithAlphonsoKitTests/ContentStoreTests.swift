@@ -42,7 +42,12 @@ final class ContentStoreTests: XCTestCase {
 
     func testLoadsTheAchievementsCatalog() throws {
         let store = try ContentStore()
-        XCTAssertEqual(store.achievements.count, 24) // 18 original + 6 from V3 pkg 2's expanded catalog
+        XCTAssertEqual(store.achievements.count, 25) // 18 original + 6 from V3 pkg 2's expanded catalog + team_player
+        // The server-granted team mission badge: category "team" has no client stat, so lessons can never unlock it.
+        let team = try XCTUnwrap(store.achievements.first { $0.id == "team_player" })
+        XCTAssertEqual(team.title, "Team player")
+        XCTAssertEqual(team.category, "team")
+        XCTAssertEqual(team.threshold, 1)
         let first = try XCTUnwrap(store.achievements.first { $0.id == "streak_3" })
         XCTAssertEqual(first.title, "Warming up")
         XCTAssertEqual(first.tier, "bronze")

@@ -17,8 +17,23 @@ describe("ACHIEVEMENTS", () => {
     for (const a of ACHIEVEMENTS) {
       expect(a.threshold).toBeGreaterThan(0);
       expect(TIER_ORDER).toContain(a.tier);
-      expect(["streak", "xp", "perfect", "lessons", "league", "freeze"]).toContain(a.category);
+      expect(["streak", "xp", "perfect", "lessons", "league", "freeze", "team"]).toContain(
+        a.category,
+      );
     }
+  });
+});
+
+describe("team_player", () => {
+  it("is in the catalog as a server-granted badge (category team, threshold 1)", () => {
+    expect(ACHIEVEMENTS_BY_ID["team_player"]).toMatchObject({
+      title: "Team player",
+      description: "Help your team finish a weekly mission",
+      icon: "star",
+      tier: "silver",
+      category: "team",
+      threshold: 1,
+    });
   });
 });
 

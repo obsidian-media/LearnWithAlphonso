@@ -214,5 +214,14 @@
     "tier": "diamond",
     "category": "league",
     "threshold": 5
+  },
+  {
+    "id": "team_player",
+    "title": "Team player",
+    "description": "Help your team finish a weekly mission",
+    "icon": "star",
+    "tier": "silver",
+    "category": "team",
+    "threshold": 1
   }
 ]
