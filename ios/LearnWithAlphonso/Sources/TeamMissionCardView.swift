@@ -58,7 +58,11 @@ struct TeamMissionSection: View {
         guard let accessToken = await session.freshAccessToken() else { return }
         let client = ProgressSyncClient(
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        // A failed call shows nothing rather than a fabricated empty mission.
-        mission = try? await client.getTeamMission()
+        // A real failure shows nothing rather than a fabricated empty mission. A CANCELLED load (SwiftUI cancels
+        // the running task when `reloadKey` changes or the view goes away) must leave the card exactly as it was:
+        // `try?` would turn the cancellation into nil and hide a card that is already showing.
+        let result = try? await client.getTeamMission()
+        guard !Task.isCancelled else { return }
+        mission = result
     }
 }
