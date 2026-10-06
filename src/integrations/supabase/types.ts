@@ -1526,6 +1526,14 @@ export type Database = {
         }[];
       };
       _random_team_name: { Args: never; Returns: string };
+      _resolve_team_mission: {
+        Args: { _team: string; _wk: string };
+        Returns: undefined;
+      };
+      _team_mission_count: {
+        Args: { _team: string; _user?: string; _wk: string };
+        Returns: number;
+      };
       accept_friend_invite: {
         Args: { _code: string };
         Returns: {
