@@ -131,6 +131,8 @@ describe("Review page", () => {
     expect(gradeReview).toHaveBeenCalledWith({
       data: { itemKey: "savedword:0123456789abcdef", answer: "a happy accident", course: "en" },
     });
+    // The explanation's words can be saved too (the page provides the save dialog).
+    expect(screen.getByRole("button", { name: "accident" })).toBeInTheDocument();
   });
 
   it("renders and grades a listening question rather than a blank card", async () => {

@@ -9,7 +9,9 @@ import { allowsSaving, saveErrorFor, saveWord } from "./saved-word-client";
 const input = { word: "tea", sentence: "I want tea.", course: "en" as const };
 
 function respond(status: number, body: unknown): typeof fetch {
-  return vi.fn(async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
+  return vi.fn(
+    async () => new Response(JSON.stringify(body), { status }),
+  ) as unknown as typeof fetch;
 }
 
 describe("saveWord", () => {
@@ -76,7 +78,9 @@ describe("saveWord", () => {
   });
 
   it("treats a 200 with a non-JSON body as unavailable", async () => {
-    const bad = vi.fn(async () => new Response("<html>", { status: 200 })) as unknown as typeof fetch;
+    const bad = vi.fn(
+      async () => new Response("<html>", { status: 200 }),
+    ) as unknown as typeof fetch;
     await expect(saveWord(input, bad)).rejects.toMatchObject({ kind: "unavailable" });
   });
 });

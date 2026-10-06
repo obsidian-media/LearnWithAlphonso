@@ -113,9 +113,9 @@ export function saveRequestFor(
 ): SavedWordInput {
   const normalised = text.normalize("NFC");
   const sentences = splitSentences(normalised);
-  const containing =
-    sentences.find((s) => segment.start >= s.start && segment.start < s.start + s.text.length) ??
-    { text: normalised, start: 0 };
+  const containing = sentences.find(
+    (s) => segment.start >= s.start && segment.start < s.start + s.text.length,
+  ) ?? { text: normalised, start: 0 };
   const sentence = fit(containing.text, segment.start - containing.start, segment.text.length);
   return { word: segment.text, sentence, course };
 }

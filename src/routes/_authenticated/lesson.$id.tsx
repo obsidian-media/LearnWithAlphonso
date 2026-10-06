@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { MascotBanner } from "../../components/MascotBanner";
@@ -29,7 +30,7 @@ import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
-  component: LessonPage,
+  component: LessonPageWithSave,
   head: () => ({
     meta: [
       { title: "Lesson — Alphonso" },
@@ -42,6 +43,15 @@ export const Route = createFileRoute("/_authenticated/lesson/$id")({
     links: [{ rel: "preconnect", href: "https://images.pexels.com" }],
   }),
 });
+
+/** Tapping a word in this page's text opens the save dialog (phase 4 of save-any-word). */
+function LessonPageWithSave() {
+  return (
+    <SaveWordProvider>
+      <LessonPage />
+    </SaveWordProvider>
+  );
+}
 
 function LessonPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
@@ -539,6 +549,7 @@ function LessonPage() {
               correct={answered}
               headline={answered ? "Nice." : "Not quite."}
               explanation={q.explanation}
+              saveCourse={course}
             />
           )}
 

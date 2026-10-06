@@ -86,6 +86,13 @@ function SaveWordDialog({
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "confirm" });
   const mounted = useRef(true);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Move focus to the button that moves the flow on whenever the phase changes
+  // (Save, then Done or Try again), so a keyboard user never has to hunt for it.
+  useEffect(() => {
+    dialogRef.current?.querySelector<HTMLElement>("[data-initial-focus]")?.focus();
+  }, [phase.kind]);
 
   useEffect(() => {
     mounted.current = true;
@@ -112,16 +119,16 @@ function SaveWordDialog({
   }, [request, save]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 px-4 pb-6 sm:items-center"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-6 sm:items-center">
+      {/* The backdrop is a sibling, not an ancestor, so the dialog needs no stopPropagation;
+          Escape and the Cancel/Done buttons are the keyboard ways out. */}
+      <div role="presentation" className="absolute inset-0 bg-ink/40" onClick={onClose} />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="save-word-title"
-        className="w-full max-w-[420px] rounded-3xl border border-hairline bg-surface p-6"
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-[420px] rounded-3xl border border-hairline bg-surface p-6"
       >
         <h2 id="save-word-title" className="font-display text-lg font-semibold text-ink">
           {phase.kind === "saved"
@@ -141,7 +148,7 @@ function SaveWordDialog({
                 ? "It's already in your reviews."
                 : "It will come up in your reviews tomorrow."}
             </p>
-            <button type="button" autoFocus onClick={onClose} className={PRIMARY}>
+            <button type="button" data-initial-focus onClick={onClose} className={PRIMARY}>
               Done
             </button>
           </>
@@ -159,7 +166,7 @@ function SaveWordDialog({
             {phase.kind === "error" && !RETRYABLE.includes(phase.error) ? null : (
               <button
                 type="button"
-                autoFocus
+                data-initial-focus
                 disabled={phase.kind === "saving"}
                 onClick={run}
                 className={PRIMARY}
@@ -173,7 +180,9 @@ function SaveWordDialog({
             )}
             <button
               type="button"
-              autoFocus={phase.kind === "error" && !RETRYABLE.includes(phase.error)}
+              data-initial-focus={
+                phase.kind === "error" && !RETRYABLE.includes(phase.error) ? "" : undefined
+              }
               onClick={onClose}
               className="mt-2 w-full rounded-full px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink"
             >

@@ -14,12 +14,7 @@ export type SavedWordResult = {
 };
 
 export type SavedWordErrorKind =
-  | "invalid"
-  | "limitReached"
-  | "quotaExceeded"
-  | "notSignedIn"
-  | "unavailable"
-  | "offline";
+  "invalid" | "limitReached" | "quotaExceeded" | "notSignedIn" | "unavailable" | "offline";
 
 export class SavedWordError extends Error {
   constructor(readonly kind: SavedWordErrorKind) {

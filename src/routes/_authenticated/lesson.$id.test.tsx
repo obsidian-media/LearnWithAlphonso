@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Question } from "../../data/curriculum";
 
@@ -193,6 +193,21 @@ describe("Lesson page", () => {
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Not quite.")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalled();
+  });
+
+  it("lets the learner save a word from the explanation (the page provides the dialog)", async () => {
+    const user = userEvent.setup();
+    currentLessonId = "a1p24l1";
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+
+    await user.type(screen.getByLabelText("Type the phrase"), "good night");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const feedback = (await screen.findByText("Not quite.")).closest('[role="status"]')!;
+    const words = within(feedback as HTMLElement).queryAllByRole("button");
+    expect(words.length).toBeGreaterThan(0);
+    await user.click(words[0]);
+    expect(screen.getByRole("dialog", { name: /save this word/i })).toBeInTheDocument();
   });
 
   it("keeps a translation question answerable and gradeable with no network", async () => {

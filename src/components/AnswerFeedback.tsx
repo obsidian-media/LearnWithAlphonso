@@ -1,4 +1,7 @@
+import { allowsSaving } from "../lib/saved-word-client";
 import { useTheme } from "../lib/theme";
+import { SaveWordHint } from "./SaveWord";
+import { TappableText } from "./TappableText";
 
 /**
  * The correct/incorrect explanation shown after checking an answer.
@@ -9,12 +12,24 @@ export function AnswerFeedback({
   correct,
   headline,
   explanation,
+  saveCourse,
 }: {
   correct: boolean;
   headline: string;
   explanation: string;
+  /** When set and saving is allowed for it, the explanation's words open the save dialog. */
+  saveCourse?: string;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  const savable = saveCourse !== undefined && allowsSaving(saveCourse);
+  const explanationBody = (
+    <>
+      <p className="mt-0.5 text-ink-soft">
+        {savable ? <TappableText text={explanation} course={saveCourse} /> : explanation}
+      </p>
+      {savable && <SaveWordHint />}
+    </>
+  );
 
   if (isStudioInk) {
     return (
@@ -35,7 +50,7 @@ export function AnswerFeedback({
         )}
         <div>
           <p className="font-semibold text-ink">{headline}</p>
-          <p className="mt-0.5 text-ink-soft">{explanation}</p>
+          {explanationBody}
         </div>
       </div>
     );
@@ -61,7 +76,7 @@ export function AnswerFeedback({
       )}
       <div>
         <p className="font-semibold">{headline}</p>
-        <p className="mt-0.5 text-ink-soft">{explanation}</p>
+        {explanationBody}
       </div>
     </div>
   );

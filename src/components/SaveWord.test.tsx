@@ -41,7 +41,11 @@ describe("TappableText", () => {
   });
 
   it("does not link anything outside the English course", () => {
-    setup(vi.fn(async () => saved), "Je veux du thé.", "fr");
+    setup(
+      vi.fn(async () => saved),
+      "Je veux du thé.",
+      "fr",
+    );
     expect(screen.queryAllByRole("button")).toHaveLength(0);
     expect(screen.getByText("Je veux du thé.")).toBeInTheDocument();
   });

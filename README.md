@@ -278,7 +278,8 @@ compile verification that exists):
   quota), and it joins the same review queue as a self-contained
   `saved_word` multiple-choice card, first due the next day. Hector,
   Practice and Campaign replies, English-course lesson and review
-  explanations, and podcast transcripts (the web is next)
+  explanations, and podcast transcripts, on iOS and on the web (web: `SaveWordProvider` +
+  `TappableText`, one confirmation dialog that tells the learner what is sent before sending it)
 - **Leaderboards** (global/friends/country, weekly/all-time): overtake
   detection (in-app toast) and a weekly recap sheet
 - **Friends**: invite-link based, an activity feed, and nudge-a-friend

@@ -125,7 +125,24 @@ describe("Converse chat page", () => {
     renderPage();
     expect(screen.getByRole("heading", { name: scenario.title })).toBeInTheDocument();
     expect(screen.getByText(scenario.blurb)).toBeInTheDocument();
-    expect(screen.getByText(scenario.opener)).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(scenario.opener);
+  });
+
+  it("lets the learner tap the tutor's words to save them, but not their own", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    const firstWord = scenario.opener.match(/\p{L}+/u)![0];
+    await user.click(screen.getAllByRole("button", { name: firstWord })[0]);
+    expect(screen.getByRole("dialog", { name: /save this word/i })).toHaveTextContent(firstWord);
+  });
+
+  it("leaves the learner's own message as plain text", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    const mine = await screen.findByText("A latte please");
+    expect(mine.querySelector("button")).toBeNull();
   });
 
   it("sends a typed message and appends the assistant's reply", async () => {
@@ -140,7 +157,7 @@ describe("Converse chat page", () => {
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
     await user.click(screen.getByRole("button", { name: "Send" }));
 
-    expect(await screen.findByText("Sure, what size?")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Sure, what size?"));
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(([u]) =>
       String(u).includes("/api/chat"),
     )!;
@@ -162,7 +179,7 @@ describe("Converse chat page", () => {
     renderPage();
     const textarea = screen.getByPlaceholderText("Type or tap the mic");
     await user.type(textarea, "Hello{Enter}");
-    expect(await screen.findByText("Got it.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Got it."));
   });
 
   it("maps a 429 response to a daily-limit message", async () => {
@@ -234,7 +251,7 @@ describe("Converse chat page", () => {
     await user.click(screen.getByRole("button", { name: "Stop recording and send" }));
 
     expect(await screen.findByText("I'd like a latte")).toBeInTheDocument();
-    expect(await screen.findByText("One latte coming up.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("One latte coming up."));
     expect(fakeTrack.stop).toHaveBeenCalled();
   });
 
