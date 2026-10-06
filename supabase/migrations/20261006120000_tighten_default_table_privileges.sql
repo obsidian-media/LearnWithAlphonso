@@ -1,0 +1,42 @@
+-- BACKLOG 0.0-ae / docs/database-privileges.md: stop handing every table to the client roles by default.
+--
+-- Supabase gives `anon` (anyone holding the public key) and `authenticated` (any signed-in user) EVERY
+-- privilege on every new table in `public`, and the project relied on row-level security alone. A check after
+-- the learning_goals migration (see 20261006110000) found this on most existing tables: `anon` could
+-- INSERT/UPDATE/DELETE/TRUNCATE and `authenticated` could TRUNCATE (per-table snapshot in the doc). RLS is on for every one of them, which is
+-- what protects rows today, so nothing was exploitable through the API; but TRUNCATE is not subject to RLS, and a
+-- single future table created without RLS would have been fully writable by anyone with the public key.
+--
+-- This migration REMOVES privileges only (it grants nothing). Scope, and why each part is safe:
+--
+--  1. `anon`: every write privilege, plus TRUNCATE/TRIGGER/REFERENCES, on all tables. `anon` never legitimately
+--     writes: no policy lets it, so those privileges were already inert. It keeps SELECT, so the public content
+--     tables (lessons, units, questions, ...) and every pre-login read behave exactly as before.
+--  2. `authenticated`: TRUNCATE, TRIGGER and REFERENCES on all tables. No client code uses them and the API
+--     cannot issue them.
+--  3. Future tables: new tables created by `postgres` in `public` start with nothing for `anon`/`authenticated`.
+--     Every migration that creates a table must now GRANT what clients need (src/lib/migration-grants.ts is the CI
+--     guard for this, and it fails a migration that forgets).
+--
+-- Deliberately NOT done here, so nothing can change from a silent no-op into an error:
+--  - `authenticated`'s INSERT/UPDATE/DELETE/SELECT. Some are inert (no matching policy) but client code may still
+--    attempt them: deleteMyAccount, for one, issues DELETEs as the caller. Mapping every client path first is the
+--    follow-up recorded in BACKLOG 0.0-ae.
+--  - `service_role`, which the server routes and Edge Functions rely on.
+--  - column-level grants (teams keeps its column-level SELECT for authenticated).
+--  - tables created by `supabase_admin` (dashboard/extensions), whose default ACL this role cannot change.
+--
+-- VERSIONING: 20261006120000 sorts after the latest migration (20261006110000_learning_goals_revoke_default_grants).
+--
+-- ROLLBACK (returns the broad pre-change state, which is more than some tables had before; run it only to
+-- undo this migration, then re-narrow the tables below). Per-table snapshot of what each table held: docs/database-privileges.md.
+--   GRANT INSERT, UPDATE, DELETE, TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public TO anon;
+--   GRANT TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public TO authenticated;
+--   ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+-- Tables that had narrower grants before and must be re-narrowed afterwards: blocked_users, content_reports,
+-- device_tokens, friend_activity_events, nudges (no anon at all), admin_users, apple_auth_tokens (service_role
+-- only), learning_goals, podcast_episodes, podcast_folders, podcast_play_events (see their own REVOKE migrations).
+
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public FROM anon;
+REVOKE TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public FROM authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;

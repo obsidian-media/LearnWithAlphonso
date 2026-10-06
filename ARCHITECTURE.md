@@ -28,7 +28,9 @@ over "what the answer currently is," since the latter goes stale fast.
    (`src/integrations/supabase/auth-middleware.ts`), which verifies the
    caller's Supabase JWT and hands the handler a request-scoped Supabase
    client authenticated **as that user** — so normal queries run under RLS,
-   not admin privilege.
+   not admin privilege. Access is two layers: table privileges for the
+   `anon`/`authenticated` roles, then RLS. Privileges are minimal and new
+   tables start with none (`docs/database-privileges.md`).
 3. Handlers either query tables directly (RLS-scoped) or call a Postgres
    RPC for anything that needs to write across users (friend invites,
    leaderboard) or that needs a hardcoded server-side limit a client
