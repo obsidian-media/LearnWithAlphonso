@@ -43,7 +43,11 @@ WHERE table_schema = 'public' AND table_name = '<table>' GROUP BY grantee ORDER 
 
 Removed from existing tables: every write privilege (INSERT, UPDATE, DELETE) plus TRUNCATE, TRIGGER and REFERENCES from `anon`; TRUNCATE, TRIGGER and REFERENCES from `authenticated`. Nothing else was touched. This could not change app behaviour: `anon` has no write policy anywhere, and nothing uses the other three privileges (the API cannot issue TRUNCATE; foreign-key checks run as the table owner).
 
-**Deliberately not changed** (BACKLOG 0.0-ae follow-up): `authenticated`'s own INSERT/UPDATE/DELETE/SELECT. Some are inert (no matching policy) but client code may still attempt them. `deleteMyAccount` issues DELETEs as the caller on `USER_DELETE_TABLES`; where a privilege exists without a policy that DELETE is a silent no-op, and removing the privilege would turn it into an error. Mapping every client path (web, Edge Functions, iOS, Android) before trimming these is the next step. Also unchanged: `service_role`, column-level grants (`teams` keeps its column-level SELECT for `authenticated`), and tables created by `supabase_admin` (dashboard or extensions), whose default ACL the migration role cannot change: create tables through migrations.
+**Not changed in the first step** (done in the second step below): `authenticated`'s own INSERT/UPDATE/DELETE/SELECT. Some were inert (no matching policy) but client code may still attempt them. `deleteMyAccount` issues DELETEs as the caller on `USER_DELETE_TABLES`; where a privilege exists without a policy that DELETE is a silent no-op, and removing the privilege would turn it into an error. Mapping every client path (web, Edge Functions, iOS, Android) before trimming these is the next step. Also unchanged: `service_role`, column-level grants (`teams` keeps its column-level SELECT for `authenticated`), and tables created by `supabase_admin` (dashboard or extensions), whose default ACL the migration role cannot change: create tables through migrations.
+
+### Second step, 2026-10-06 (`20261006130000_trim_authenticated_unbacked_dml.sql`)
+
+Removed `authenticated`'s INSERT/UPDATE/DELETE on 34 tables where **no RLS policy backs the privilege** (RLS already denied it, so this changes only the error a client would see). Audited against live `pg_policies`, every web, Edge Function, iOS and Android write path, and the `public` functions (no SECURITY INVOKER function writes). Per-table list: the `EXPECTED` map in `src/lib/trim-authenticated-dml-migration.test.ts`, which also fails if a policy created in the migrations depends on a revoked privilege. SELECT was deliberately not touched. `deleteMyAccount` no longer pre-deletes from `activity_days`, `user_progress`, `ai_usage` and `ai_rate_limits` (they had a grant but no DELETE policy, so those deletes were silent no-ops; ON DELETE CASCADE removes the rows). Rule of thumb for new tables: grant exactly what a policy backs.
 
 Functions were audited and left alone: only six functions in `public` are executable by `anon`, five are plain invoker helpers and one (`notify_nudge_push`) is a trigger function that cannot be called through the API.
 
@@ -67,6 +71,6 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 
 ## Follow-ups
 
-1. Trim `authenticated`'s inert DML privileges after mapping every client path (see above).
+1. ~~Trim `authenticated`'s inert DML privileges~~ done in the second step above. Remaining there: inert SELECT on tables with no SELECT policy (challenge_completions, duel_queue, friend_invite_codes, season_*, team_kicks, team_weekly_rewards, content_reports), which needs a read-path check first.
 2. Decide whether `anon` SELECT should be limited to the tables with a public-readable policy (achievements, lessons, levels, placement_questions, questions, scenarios, units, vocab_images, weekly_quests); today `anon` can SELECT every table and RLS returns no rows.
 3. If a table is ever created by `supabase_admin`, run `REVOKE ALL ... FROM anon, authenticated` on it by hand.

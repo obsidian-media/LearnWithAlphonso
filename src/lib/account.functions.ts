@@ -46,20 +46,19 @@ export const OTHER_OWNED_EXPORT_TABLES = [
 ] as const;
 
 // deleteMyAccount issues its DELETEs *as the caller*, so this is deliberately
-// only the tables `authenticated` actually holds a DELETE grant on -- the
-// gamification tables revoked direct writes
-// (20260920050000_revoke_direct_gamification_writes.sql) and would just fail
-// silently. Everything else is cleaned up by ON DELETE CASCADE from
-// auth.users when deleteUser() runs below, so nothing is left behind.
+// only the tables where `authenticated` has a DELETE *policy*, not merely a
+// grant. With RLS on and no DELETE policy a delete matches zero rows and still
+// "succeeds", so listing a table without one is dead code that reads as
+// cleanup (activity_days, user_progress, ai_usage and ai_rate_limits were
+// listed that way until 2026-10-06; their DELETE grants were revoked in
+// 20261006130000, BACKLOG 0.0-ae). Everything else, including those four, is
+// cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
+// below, so nothing is left behind.
 export const USER_DELETE_TABLES = [
   "review_items",
   "lesson_completions",
-  "activity_days",
   "user_achievements",
   "friendships",
-  "ai_usage",
-  "ai_rate_limits",
-  "user_progress",
   "language_progress",
 ] as const;
 

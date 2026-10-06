@@ -339,4 +339,35 @@ describe("GDPR export table coverage", () => {
       expect(exportTables).toContain(table);
     }
   });
+
+  it("only lists tables that actually have a DELETE (or ALL) policy for authenticated", () => {
+    // A grant alone is not enough: with RLS on and no DELETE policy the request matches zero rows and
+    // "succeeds", so the entry would be dead code that looks like cleanup. Found 2026-10-06 on activity_days,
+    // user_progress, ai_usage and ai_rate_limits (BACKLOG 0.0-ae follow-up 1); CASCADE handles those.
+    const migrationsDir = path.resolve(import.meta.dirname, "../../supabase/migrations");
+    const sql = readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .map((f) => readFileSync(path.join(migrationsDir, f), "utf8"))
+      .join(String.fromCharCode(10));
+    const missing = deleteTables.filter(
+      (table) =>
+        !new RegExp(
+          String.raw`create\s+policy\s+"?\w+"?\s+on\s+(?:public\.)?${table}\s+for\s+(?:delete|all)\b`,
+          "i",
+        ).test(sql),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("is exactly the tables with a DELETE policy (no dead pre-delete calls)", () => {
+    expect([...deleteTables].sort()).toEqual(
+      [
+        "review_items",
+        "lesson_completions",
+        "user_achievements",
+        "friendships",
+        "language_progress",
+      ].sort(),
+    );
+  });
 });
