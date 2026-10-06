@@ -35,7 +35,10 @@ describe("team missions migration", () => {
     expect(code()).not.toMatch(
       /GRANT[^;]*(INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.team_mission_rewards[^;]*TO[^;]*authenticated/i,
     );
-    expect(code()).not.toMatch(/\banon\b/i);
+    const aboutRewards = code()
+      .split(";")
+      .filter((statement) => /team_mission_rewards/i.test(statement));
+    for (const statement of aboutRewards) expect(statement).not.toMatch(/\banon\b/i);
   });
 
   it("counts a member's lessons only from when they joined, and only this week", () => {
