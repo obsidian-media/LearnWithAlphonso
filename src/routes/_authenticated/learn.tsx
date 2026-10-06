@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { GoalCard } from "../../components/GoalCard";
+import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
 import { CheckIcon, LockIcon, StarIcon } from "../../components/icons";
 import { SegmentedControl } from "../../components/SegmentedControl";
@@ -237,6 +238,10 @@ function LearnPage() {
               {c.flag} {c.label}
             </button>
           ))}
+        </div>
+
+        <div className="mb-6">
+          <TeamMissionCard />
         </div>
 
         <div className="mb-6">

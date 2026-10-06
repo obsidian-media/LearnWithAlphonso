@@ -21,7 +21,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
 const getMyTeam = vi.fn();
 const leaveTeam = vi.fn();
-vi.mock("../../lib/teams.functions", () => ({ getMyTeam, leaveTeam }));
+const getTeamMission = vi.fn().mockResolvedValue(null);
+vi.mock("../../lib/teams.functions", () => ({ getMyTeam, leaveTeam, getTeamMission }));
 
 const { Route } = await import("./teams_.$teamId");
 
@@ -39,9 +40,41 @@ beforeEach(() => {
   navigateMock.mockReset();
   getMyTeam.mockReset();
   leaveTeam.mockReset();
+  getTeamMission.mockReset();
+  getTeamMission.mockResolvedValue(null);
 });
 
 describe("Team detail page", () => {
+  it("shows the team's weekly mission under the XP line", async () => {
+    getMyTeam.mockResolvedValue({
+      teamId: "t1",
+      name: "Swift Falcons",
+      joinCode: "ABC123",
+      joinedAt: "2026-01-01T00:00:00Z",
+      switchLockedUntil: "2020-01-01T00:00:00Z",
+      thisWeekXp: 420,
+    });
+    getTeamMission.mockResolvedValue({
+      teamId: "t1",
+      weekStart: "2026-10-05",
+      weekEnd: "2026-10-12",
+      target: 8,
+      total: 3,
+      myCount: 2,
+      memberCount: 2,
+      status: "in_progress",
+      rewardXp: 50,
+      rewarded: false,
+      daysLeft: 5,
+      percent: 37,
+      headline: "3 of 8 lessons done",
+      footer: "You added 2 · 5 days left",
+    });
+    renderPage();
+    expect(await screen.findByText("3 of 8 lessons done")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "37");
+  });
+
   it("shows the team name, join code, and this week's XP", async () => {
     getMyTeam.mockResolvedValue({
       teamId: "t1",
