@@ -34,6 +34,12 @@ public enum GoalCopy {
         return error.userMessage
     }
 
+    /// What to say when SAVING or REMOVING failed. Not the load wording: the plan on screen was not
+    /// refreshed, and nothing about the action took effect.
+    public static func actionFailureMessage(_ error: LearningGoalError) -> String {
+        error == .offline ? "You're offline. Try again when you're connected." : error.userMessage
+    }
+
     public static func headline(for goal: StoredGoal) -> String {
         "Finish \(goal.targetLevel) by \(formatDate(goal.targetDate))"
     }

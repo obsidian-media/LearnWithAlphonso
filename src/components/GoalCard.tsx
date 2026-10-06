@@ -139,12 +139,17 @@ export function GoalCard({ course }: { course: GoalCourse }) {
     if (saving || preview.kind !== "ok") return;
     setSaving(true);
     setSaveError(null);
+    // `loadId` changes whenever the course (and so the card) is reloaded; a save that finishes after
+    // that belongs to a course the learner has left and must not overwrite the new card.
+    const startedAt = loadId.current;
     try {
       const next = await saveGoal(course, level, date);
+      if (startedAt !== loadId.current) return;
       setState(next);
       setLoadError(null);
       setView("goal");
     } catch (error) {
+      if (startedAt !== loadId.current) return;
       setSaveError(messageFor(error));
     } finally {
       setSaving(false);
@@ -152,11 +157,14 @@ export function GoalCard({ course }: { course: GoalCourse }) {
   }
 
   async function remove() {
+    const startedAt = loadId.current;
     try {
       await removeGoal(course);
+      if (startedAt !== loadId.current) return;
       setState({ goal: null, plan: null });
       setView("empty");
     } catch (error) {
+      if (startedAt !== loadId.current) return;
       // A failed remove is an action error, not "offline": the goal is still there and editable.
       setActionError(messageFor(error));
     }
@@ -363,10 +371,15 @@ function Suggestion({ plan }: { plan: GoalPlan }) {
   );
 }
 
+/**
+ * For an ACTION that failed (preview, save, remove). Offline gets its own wording: the load
+ * wording ("showing your last saved plan") describes a screen refresh, not an action that did not
+ * happen. iOS: GoalCopy.actionFailureMessage.
+ */
 function messageFor(error: unknown): string {
-  return error instanceof GoalError
-    ? goalErrorMessage(error.kind, error.detail)
-    : goalErrorMessage("unavailable");
+  if (!(error instanceof GoalError)) return goalErrorMessage("unavailable");
+  if (error.kind === "offline") return "You're offline. Try again when you're connected.";
+  return goalErrorMessage(error.kind, error.detail);
 }
 
 const STATUS_LINE: Record<GoalPlan["status"], string> = {

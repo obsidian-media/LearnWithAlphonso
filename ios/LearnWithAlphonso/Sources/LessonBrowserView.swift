@@ -135,7 +135,10 @@ struct LessonBrowserView: View {
                 .buttonStyle(.plain)
                 .listRowBackground(Color.clear)
 
+                // One card identity per course: a save or remove still in flight for the course the
+                // learner just left must not land in the new course's card (its state is discarded).
                 GoalCardView(session: session, course: course)
+                    .id(course.translationCourseCode)
 
                 WeeklyChallengesSection(session: session)
 

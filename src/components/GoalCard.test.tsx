@@ -397,4 +397,74 @@ describe("review fixes", () => {
     );
     expect(screen.queryByText(/last saved plan/i)).not.toBeInTheDocument();
   });
+
+  it("a failed remove while offline says to try again, not that it is showing a saved plan", async () => {
+    client.fetchGoal.mockResolvedValue(stored(plans.on_track));
+    client.removeGoal.mockRejectedValue(new GoalError("offline"));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await screen.findByText(/finish B1/i);
+    await user.click(screen.getByRole("button", { name: /remove goal/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You're offline. Try again when you're connected.",
+    );
+    expect(screen.queryByText(/last saved plan/i)).not.toBeInTheDocument();
+  });
+
+  it("a failed save while offline says the same", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValue(plans.just_started);
+    client.saveGoal.mockRejectedValue(new GoalError("offline"));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    await screen.findByText(/lessons a week/i);
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You're offline. Try again when you're connected.",
+    );
+  });
+
+  it("drops a save that finishes after the learner switched course", async () => {
+    let releaseSave: (v: unknown) => void = () => {};
+    client.fetchGoal
+      .mockResolvedValueOnce({ goal: null, plan: null })
+      .mockResolvedValueOnce({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValue(plans.just_started);
+    client.saveGoal.mockImplementation(() => new Promise((r) => (releaseSave = r)));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    const view = render(<GoalCard course="en" />);
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    await screen.findByText(/lessons a week/i);
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    view.rerender(<GoalCard course="fr" />);
+    await screen.findByRole("button", { name: /set a learning goal/i });
+    await act(async () => {
+      releaseSave(stored(plans.on_track));
+    });
+    // The French card must not show the English goal that just finished saving.
+    expect(screen.queryByText(/finish B1/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /set a learning goal/i })).toBeInTheDocument();
+  });
+
+  it("drops a remove that finishes after the learner switched course", async () => {
+    let releaseRemove: (v?: unknown) => void = () => {};
+    client.fetchGoal
+      .mockResolvedValueOnce(stored(plans.on_track))
+      .mockResolvedValueOnce(stored(plans.ahead));
+    client.removeGoal.mockImplementation(() => new Promise((r) => (releaseRemove = r)));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    const view = render(<GoalCard course="en" />);
+    await user.click(await screen.findByRole("button", { name: /remove goal/i }));
+    view.rerender(<GoalCard course="fr" />);
+    await screen.findByText(/ahead of plan/i);
+    await act(async () => {
+      releaseRemove();
+    });
+    // The French goal must still be on screen: the English removal finished late.
+    expect(screen.getByText(/ahead of plan/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /set a learning goal/i })).not.toBeInTheDocument();
+  });
 });

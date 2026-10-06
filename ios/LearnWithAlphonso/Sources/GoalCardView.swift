@@ -194,7 +194,7 @@ struct GoalCardView: View {
         generation += 1
         let mine = generation
         guard let userID = session.userID, let token = await session.freshAccessToken() else {
-            actionError = LearningGoalError.notSignedIn.userMessage
+            actionError = GoalCopy.actionFailureMessage(.notSignedIn)
             return
         }
         do {
@@ -208,7 +208,7 @@ struct GoalCardView: View {
         } catch {
             guard mine == generation else { return }
             // A failed remove is an action error, not "offline": the goal is still there and editable.
-            actionError = ((error as? LearningGoalError) ?? .unavailable).userMessage
+            actionError = GoalCopy.actionFailureMessage((error as? LearningGoalError) ?? .unavailable)
         }
     }
 }
@@ -364,7 +364,7 @@ private struct GoalSetupSheet: View {
             onSaved(saved)
             dismiss()
         } catch {
-            saveError = ((error as? LearningGoalError) ?? .unavailable).userMessage
+            saveError = GoalCopy.actionFailureMessage((error as? LearningGoalError) ?? .unavailable)
         }
     }
 }

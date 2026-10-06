@@ -82,6 +82,16 @@ final class GoalCopyTests: XCTestCase {
         XCTAssertEqual(GoalCopy.loadFailureMessage(.notSignedIn, hadCachedPlan: true), LearningGoalError.notSignedIn.userMessage)
     }
 
+    func testAFailedActionNeverSaysItIsShowingAPlan() {
+        // Save and Remove failures appear next to a plan that IS on screen; "showing your last saved
+        // plan" describes a load, not an action that did not happen.
+        XCTAssertEqual(
+            GoalCopy.actionFailureMessage(.offline), "You're offline. Try again when you're connected.")
+        XCTAssertEqual(GoalCopy.actionFailureMessage(.unavailable), LearningGoalError.unavailable.userMessage)
+        XCTAssertEqual(GoalCopy.actionFailureMessage(.notSignedIn), LearningGoalError.notSignedIn.userMessage)
+        XCTAssertEqual(GoalCopy.actionFailureMessage(.invalid("That level is below yours")), "That level is below yours")
+    }
+
     func testTheEstimateNote() {
         XCTAssertEqual(GoalCopy.estimateNote, "An estimate of lessons, not of fluency.")
     }
