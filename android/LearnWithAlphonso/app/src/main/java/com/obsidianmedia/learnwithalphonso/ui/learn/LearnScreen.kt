@@ -99,6 +99,14 @@ fun LearnScreen(
             // Stable keys on every item: the header, challenges and placement card come and go as data loads,
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
             item(key = "header") { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            item(key = "goal") {
+                // One view-model per course: a request still running for a course the learner just left can only
+                // write into that course's own (hidden) model, never into the card now on screen.
+                val goalVm: GoalCardViewModel = viewModel(key = "goal-" + state.course.code) {
+                    GoalCardViewModel(state.course, container.goalClient, container.goalCache) { container.session.userId }
+                }
+                GoalCard(goalVm)
+            }
             if (state.challenges.isNotEmpty()) {
                 item(key = "challenges") {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
