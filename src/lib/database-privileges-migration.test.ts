@@ -62,6 +62,18 @@ describe("tighten default table privileges migration", () => {
     expect(code()).not.toMatch(/\bGRANT\b/i);
   });
 
+  it("is exactly these three statements and nothing else (no ALL, no PUBLIC, no DDL, no sequences or functions)", () => {
+    const statements = code()
+      .split(";")
+      .map((s) => s.replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    expect(statements).toEqual([
+      "REVOKE INSERT, UPDATE, DELETE, TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public FROM anon",
+      "REVOKE TRUNCATE, TRIGGER, REFERENCES ON ALL TABLES IN SCHEMA public FROM authenticated",
+      "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated",
+    ]);
+  });
+
   it("states how to undo it", () => {
     expect(sql()).toMatch(/ROLLBACK/i);
   });

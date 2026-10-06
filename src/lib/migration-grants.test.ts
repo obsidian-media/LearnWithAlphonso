@@ -91,14 +91,88 @@ describe("checkNewTableGrants (the checker itself)", () => {
   });
 });
 
-describe("migrations written after the privilege tightening", () => {
-  const files = fs
+describe("checkNewTableGrants: spellings seen in real migrations", () => {
+  const bad = (sql: string) => checkNewTableGrants(sql).map((v) => v.table);
+
+  it("does not count a GRANT inside a block comment", () => {
+    expect(
+      bad("CREATE TABLE public.a (id int); /* GRANT SELECT ON public.a TO authenticated; */"),
+    ).toEqual(["a"]);
+  });
+
+  it("a block comment in front of a real GRANT does not hide it", () => {
+    expect(
+      bad(
+        "CREATE TABLE public.a (id int); /* readable by users */ GRANT SELECT ON public.a TO authenticated;",
+      ),
+    ).toEqual([]);
+  });
+
+  it("sees quoted, schema-less and UNLOGGED table creation", () => {
+    expect(bad('CREATE TABLE "public"."a" (id int);')).toEqual(["a"]);
+    expect(bad('CREATE TABLE public."a" (id int);')).toEqual(["a"]);
+    expect(bad("CREATE TABLE a (id int);")).toEqual(["a"]);
+    expect(bad("CREATE UNLOGGED TABLE public.a (id int);")).toEqual(["a"]);
+  });
+
+  it("ignores tables in other schemas", () => {
+    expect(bad("CREATE TABLE private.a (id int);")).toEqual([]);
+  });
+
+  it("accepts a grant in every quoting and qualification", () => {
+    expect(
+      bad('CREATE TABLE "public"."a" (id int); GRANT SELECT ON "public"."a" TO authenticated;'),
+    ).toEqual([]);
+    expect(bad("CREATE TABLE a (id int); GRANT SELECT ON a TO authenticated;")).toEqual([]);
+  });
+
+  it("accepts one GRANT that names several tables", () => {
+    const sql = `CREATE TABLE public.a (id int); CREATE TABLE public.b (id int);
+      GRANT SELECT ON public.a, public.b TO authenticated;`;
+    expect(bad(sql)).toEqual([]);
+  });
+
+  it("accepts GRANT ... ON ALL TABLES IN SCHEMA public", () => {
+    expect(
+      bad(
+        "CREATE TABLE public.a (id int); GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;",
+      ),
+    ).toEqual([]);
+  });
+
+  it("a grant to PUBLIC is a client grant, so the marker cannot hide it", () => {
+    expect(bad("CREATE TABLE public.a (id int); GRANT SELECT ON public.a TO PUBLIC;")).toEqual([]);
+    const marked = `-- client-grants: none public.a
+      CREATE TABLE public.a (id int); GRANT SELECT ON public.a TO PUBLIC;`;
+    expect(bad(marked)).toEqual([]);
+  });
+
+  it("flags a policy TO anon or TO public when there is no grant", () => {
+    for (const to of ["anon", "public"]) {
+      const sql = `-- client-grants: none public.a
+        CREATE TABLE public.a (id int);
+        CREATE POLICY p ON public.a FOR SELECT TO ${to} USING (true);`;
+      expect(bad(sql), to).toEqual(["a"]);
+    }
+  });
+});
+
+/** Migration files strictly after `cutoff` (the version is the first 14 characters of the file name). */
+const migrationsAfter = (cutoff: string) =>
+  fs
     .readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith(".sql") && f.slice(0, 14) > CUTOFF)
+    .filter((f) => f.endsWith(".sql") && f.slice(0, 14) > cutoff)
     .sort();
 
+describe("migrations written after the privilege tightening", () => {
+  it("the file filter really lists migrations (an earlier cutoff finds many, the real one finds none yet)", () => {
+    expect(migrationsAfter("20260101000000").length).toBeGreaterThan(20);
+    expect(migrationsAfter(CUTOFF).some((f) => f.startsWith(CUTOFF))).toBe(false);
+    expect(fs.readdirSync(MIGRATIONS).some((f) => f.startsWith(CUTOFF))).toBe(true);
+  });
+
   it("every new table declares what clients may do with it", () => {
-    const problems = files.flatMap((f) =>
+    const problems = migrationsAfter(CUTOFF).flatMap((f) =>
       checkNewTableGrants(fs.readFileSync(path.join(MIGRATIONS, f), "utf8")).map(
         (v) => `${f}: ${v.problem}`,
       ),

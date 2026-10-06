@@ -23,7 +23,15 @@ A table only the server touches carries the marker instead: `-- client-grants: n
 
 `src/lib/migration-grants.ts` is the CI guard (`migration-grants.test.ts` runs it over every migration after the cutoff): it fails a new table with no grant and no marker, and a client-facing policy with no grant (the policy could never apply, and every client call would return "permission denied"). Keep privileges and policies in step: a privilege without a policy is inert today and dangerous the day someone adds a permissive policy.
 
-After deploying a table migration, check the real grants (a test of the SQL text cannot see Supabase defaults; this is how `learning_goals` was found over-granted):
+After deploying, also prove the default really is closed (one-off, nothing persists):
+
+```sql
+BEGIN; CREATE TABLE public._acl_probe (id int);
+SELECT grantee, privilege_type FROM information_schema.role_table_grants WHERE table_name = '_acl_probe';
+ROLLBACK;
+```
+
+Only `postgres`/`service_role` should appear. After deploying a table migration, check the real grants (a test of the SQL text cannot see Supabase defaults; this is how `learning_goals` was found over-granted):
 
 ```sql
 SELECT grantee, string_agg(privilege_type, ',' ORDER BY privilege_type) AS privs
@@ -41,12 +49,12 @@ Functions were audited and left alone: only six functions in `public` are execut
 
 ## Snapshot before the change (the rollback reference)
 
-Grants for `anon` / `authenticated`, grouped by identical pattern. All 38 listed tables have RLS enabled. "7" = DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE.
+Grants for `anon` / `authenticated`, grouped by identical pattern. Every table listed has RLS enabled. "7" = DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE.
 
 | Pattern | Tables |
 |---|---|
 | anon 7, authenticated 7 | achievements, ai_rate_limits, ai_usage, challenge_completions, challenge_templates, duel_queue, duels, friend_invite_codes, lessons, levels, placement_questions, podcast_playback, podcast_transcripts, profiles, questions, scenarios, season_cohort_members, season_cohorts, season_placements, team_kicks, team_members, team_weekly_rewards, units, user_weekly_quest_claims, vocab_images, weakness_events, weekly_quests |
-| anon 7, authenticated 7 minus INSERT, UPDATE (earlier hardening) | activity_days (also minus nothing else: DELETE, REFERENCES, SELECT, TRIGGER, TRUNCATE), language_progress, lesson_completions, review_items, user_achievements, user_progress |
+| anon 7, authenticated 7 minus INSERT, UPDATE (earlier hardening) | activity_days, language_progress, lesson_completions, review_items, user_achievements, user_progress |
 | anon 7, authenticated 7 minus INSERT | friendships |
 | anon 7, authenticated 7 minus SELECT (column-level SELECT instead) | teams |
 | anon and authenticated both REFERENCES, SELECT, TRIGGER, TRUNCATE | podcast_episodes, podcast_folders |
