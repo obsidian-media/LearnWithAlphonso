@@ -1,13 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
+import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
+import { TappableText } from "../../components/TappableText";
 import { getCampaign, type CampaignScene } from "../../data/campaigns";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
 
 export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
-  component: CampaignChatPage,
+  component: CampaignChatPageWithSave,
   loader: ({ params }) => {
     const campaign = getCampaign(params.campaignId);
     if (!campaign) throw notFound();
@@ -27,6 +29,15 @@ export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
     ],
   }),
 });
+
+/** Tapping a word in this page's text opens the save dialog (phase 4 of save-any-word). */
+function CampaignChatPageWithSave() {
+  return (
+    <SaveWordProvider>
+      <CampaignChatPage />
+    </SaveWordProvider>
+  );
+}
 
 /** Same heuristic as converse_.$scenarioId.tsx's clarityLabel. */
 function clarityLabel(confidence: number): { label: string; dotClassName: string } {
@@ -371,6 +382,9 @@ function CampaignChatPage() {
           </svg>
         </button>
       </header>
+      <div className="px-5">
+        <SaveWordHint always />
+      </div>
 
       <div
         ref={scrollRef}
@@ -384,7 +398,8 @@ function CampaignChatPage() {
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
                 <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                  {m.content}
+                  {/* Scenarios and campaigns are English-only. */}
+                  <TappableText text={m.content} course="en" />
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">

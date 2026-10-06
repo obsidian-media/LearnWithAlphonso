@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
+import { SaveWordProvider } from "../../components/SaveWord";
 import { MascotBanner } from "../../components/MascotBanner";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
@@ -24,7 +25,7 @@ import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 
 export const Route = createFileRoute("/_authenticated/review")({
-  component: ReviewPage,
+  component: ReviewPageWithSave,
   head: () => ({
     meta: [
       { title: "Review — Alphonso" },
@@ -42,6 +43,15 @@ export const Route = createFileRoute("/_authenticated/review")({
     ],
   }),
 });
+
+/** Tapping a word in this page's text opens the save dialog (phase 4 of save-any-word). */
+function ReviewPageWithSave() {
+  return (
+    <SaveWordProvider>
+      <ReviewPage />
+    </SaveWordProvider>
+  );
+}
 
 type Card = { itemKey: string; question: Question };
 
@@ -418,6 +428,7 @@ function ReviewPage() {
             correct={shownCorrect}
             headline={shownCorrect ? "Still got it." : "Back in the queue."}
             explanation={q.explanation}
+            saveCourse={course}
           />
         )}
 

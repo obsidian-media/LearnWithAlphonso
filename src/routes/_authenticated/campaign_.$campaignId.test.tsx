@@ -47,7 +47,7 @@ async function sendAndAwaitReply(
 ) {
   await user.type(screen.getByPlaceholderText("Type or tap the mic"), text);
   await user.click(screen.getByRole("button", { name: "Send" }));
-  expect(await screen.findByText(reply)).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent(reply));
 }
 
 beforeEach(() => {
@@ -92,7 +92,7 @@ describe("Campaign chat page", () => {
     expect(
       screen.getByText(`Scene 1 of ${campaign.scenes.length} — ${campaign.scenes[0].title}`),
     ).toBeInTheDocument();
-    expect(screen.getByText(campaign.scenes[0].opener)).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[0].opener);
   });
 
   it("sends the composed premise+scene systemPrompt and the full transcript so far", async () => {
@@ -129,9 +129,9 @@ describe("Campaign chat page", () => {
     expect(
       screen.getByText(`Scene 2 of ${campaign.scenes.length} — ${campaign.scenes[1].title}`),
     ).toBeInTheDocument();
-    expect(screen.getByText(campaign.scenes[1].opener)).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[1].opener);
     // Scene 1's transcript is still visible/sent -- continuity across scenes.
-    expect(screen.getByText(scene.opener)).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(scene.opener);
 
     await sendAndAwaitReply(user, "excuse me", `Reply ${scene.minTurns + 1}`);
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls
@@ -152,7 +152,7 @@ describe("Campaign chat page", () => {
     await user.click(screen.getByRole("button", { name: "Restart this scene" }));
 
     expect(screen.queryByText("hello there")).not.toBeInTheDocument();
-    expect(screen.getByText(campaign.scenes[0].opener)).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[0].opener);
   });
 
   it("shows a completion state after finishing the last scene", async () => {

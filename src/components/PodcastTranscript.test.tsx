@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { PodcastTranscriptPanel } from "./PodcastTranscript";
 
+// Words are tappable buttons, so a paragraph's text is split across elements and
+// getByText on the whole paragraph no longer matches; compare the <p>'s text.
+const paragraph = (text: string) =>
+  screen.getByText((_, el) => el?.tagName === "P" && el.textContent === text);
+
 describe("PodcastTranscriptPanel", () => {
   it("renders each paragraph separately", () => {
     render(
@@ -13,8 +18,8 @@ describe("PodcastTranscriptPanel", () => {
         onClose={() => {}}
       />,
     );
-    expect(screen.getByText("Hello there.")).toBeInTheDocument();
-    expect(screen.getByText("What can I get you?")).toBeInTheDocument();
+    expect(paragraph("Hello there.")).toBeInTheDocument();
+    expect(paragraph("What can I get you?")).toBeInTheDocument();
   });
 
   it("shows a loading state rather than a premature empty one", () => {
@@ -55,5 +60,21 @@ describe("PodcastTranscriptPanel", () => {
       />,
     );
     expect(screen.getByRole("dialog", { name: /Ordering Coffee/i })).toBeInTheDocument();
+  });
+});
+
+describe("PodcastTranscriptPanel saving words", () => {
+  it("makes words tappable but keeps them out of the tab order", () => {
+    render(
+      <PodcastTranscriptPanel
+        title="Ordering Coffee"
+        transcript={"Hello there."}
+        isLoading={false}
+        onClose={() => {}}
+      />,
+    );
+    const hello = screen.getByRole("button", { name: "Hello" });
+    expect(hello).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByText(/tap any word to save it/i)).toBeInTheDocument();
   });
 });

@@ -4,7 +4,7 @@
 the written spec). **Phases 1-2 are implemented:** backend merged as PR #211 (live
 and verified), iOS on Hector replies as PR #212, Practice and Campaign replies
 in the phase 2 PR, and **phase 3** (English-course lesson explanations and
-podcast transcripts) in its own PR. Phase 4 (web) is not started. See the plan for what was built
+podcast transcripts) in its own PR. **Phase 4 (web)** is built in its own PR (same route and row shape, no new backend; Hector has no web surface). See the plan for what was built
 and `docs/BACKLOG.md` section 0.0-ac #4 for the deferred follow-ups.
 **Path:** architectural (new item source, new endpoint, new migration, new UI
 on two platforms). **Order:** iOS first, then web.
@@ -277,7 +277,7 @@ is the owner's call.
   that NVIDIA "grades written translation answers"; it does not say a saved word
   and its sentence are sent to NVIDIA to write the meaning and answer options.
   Deliberately NOT changed while the feature was in no build (the policy must
-  describe what is live). It must be updated **in phase 4, together with the web
+  describe what is live). It was updated **in phase 4 (PR #216), together with the web
   save UI**, because the web ships the moment it merges; and the App Store privacy
   answers and `PrivacyInfo.xcprivacy` re-checked when the first iOS build containing
   save-any-word is cut (BACKLOG 0.0x: App Privacy describes the current binary).

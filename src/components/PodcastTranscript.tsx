@@ -1,4 +1,6 @@
 import { transcriptParagraphs } from "../lib/podcast-transcript";
+import { SaveWordHint, SaveWordProvider } from "./SaveWord";
+import { TappableText } from "./TappableText";
 
 /**
  * An episode's transcript, shown over the app while it plays.
@@ -10,17 +12,23 @@ import { transcriptParagraphs } from "../lib/podcast-transcript";
  *
  * Presentational and pure so its states can be tested without a server.
  */
-export function PodcastTranscriptPanel({
-  title,
-  transcript,
-  isLoading,
-  onClose,
-}: {
+type PanelProps = {
   title: string;
   transcript: string | null;
   isLoading: boolean;
   onClose: () => void;
-}) {
+};
+
+/** The panel plus its own save dialog: tapping a word in the transcript offers to save it. */
+export function PodcastTranscriptPanel(props: PanelProps) {
+  return (
+    <SaveWordProvider>
+      <TranscriptPanelBody {...props} />
+    </SaveWordProvider>
+  );
+}
+
+function TranscriptPanelBody({ title, transcript, isLoading, onClose }: PanelProps) {
   const paragraphs = transcript ? transcriptParagraphs(transcript) : [];
 
   return (
@@ -57,9 +65,12 @@ export function PodcastTranscriptPanel({
           <p className="text-sm text-ink-soft/70">No transcript for this episode yet.</p>
         ) : (
           <div className="space-y-3">
+            <SaveWordHint always />
             {paragraphs.map((paragraph, index) => (
               <p key={index} className="text-sm leading-relaxed text-ink">
-                {paragraph}
+                {/* Episodes are English (the podcast tables carry no language column).
+                    Words stay out of the tab order: a transcript is hundreds of them. */}
+                <TappableText text={paragraph} course="en" focusable={false} />
               </p>
             ))}
           </div>
