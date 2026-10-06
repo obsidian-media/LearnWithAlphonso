@@ -65,7 +65,9 @@ describe("team missions migration", () => {
     expect(reader).toMatch(
       /IF members < 2 THEN\s+RETURN QUERY SELECT[^;]*'needs_members'[^;]*;\s+RETURN;\s+END IF;/i,
     );
-    expect(reader.indexOf("IF members < 2 THEN")).toBeLessThan(reader.indexOf("_resolve_team_mission"));
+    expect(reader.indexOf("IF members < 2 THEN")).toBeLessThan(
+      reader.indexOf("_resolve_team_mission"),
+    );
   });
 
   it("never pays a team that has dropped below two members", () => {
