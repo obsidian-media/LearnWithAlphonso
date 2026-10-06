@@ -11,9 +11,11 @@ import com.obsidianmedia.learnwithalphonso.billing.EntitlementStore
 import com.obsidianmedia.learnwithalphonso.billing.RevenueCatBilling
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionManager
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
+import com.obsidianmedia.learnwithalphonso.core.goal.GoalCache
 import com.obsidianmedia.learnwithalphonso.core.net.AccountClient
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ApiHttp
+import com.obsidianmedia.learnwithalphonso.core.net.LearningGoalClient
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClient
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
@@ -21,6 +23,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
 import com.obsidianmedia.learnwithalphonso.data.AlphonsoDatabase
+import com.obsidianmedia.learnwithalphonso.data.GoalPrefsStore
 import com.obsidianmedia.learnwithalphonso.data.LeaderboardSnapshotCache
 import com.obsidianmedia.learnwithalphonso.data.LeagueTierCache
 import com.obsidianmedia.learnwithalphonso.data.NudgeCooldownCache
@@ -83,6 +86,9 @@ class AppContainer(context: Context) {
     val accountClient = AccountClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)
+    val goalClient = LearningGoalClient(apiHttp)
+    /** The last learning goal and plan per user and course, shown only when the network is down. */
+    val goalCache = GoalCache(GoalPrefsStore(prefs))
     val tutorClient = TutorConversationClient(apiHttp, deviceId())
     val micPermission = MicPermission(app)
     val notificationPermission = NotificationPermission(app, prefs)
