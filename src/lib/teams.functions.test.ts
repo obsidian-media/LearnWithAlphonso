@@ -30,6 +30,7 @@ const {
   getTeamLeaderboard,
   getMyTeam,
   createTeam,
+  getTeamMission,
 } = asTestFns(await import("./teams.functions"));
 
 function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
@@ -228,5 +229,38 @@ describe("getMyTeam", () => {
       switchLockedUntil: "2026-09-08T00:00:00Z",
       thisWeekXp: 0,
     });
+  });
+});
+
+describe("getTeamMission", () => {
+  it("maps the RPC row to the view model", async () => {
+    const supabase = rpcReturning([
+      {
+        team_id: "t1",
+        week_start: "2026-10-05",
+        week_end: "2026-10-12",
+        target: 8,
+        total: 3,
+        my_count: 2,
+        member_count: 2,
+        status: "in_progress",
+        reward_xp: 50,
+        rewarded: false,
+      },
+    ]);
+    const result = await getTeamMission({ context: ctx(supabase) });
+    expect(supabase.rpc).toHaveBeenCalledWith("get_team_mission");
+    expect(result?.headline).toBe("3 of 8 lessons done");
+    expect(result?.myCount).toBe(2);
+  });
+
+  it("returns null when the caller has no team", async () => {
+    expect(await getTeamMission({ context: ctx(rpcReturning([])) })).toBeNull();
+  });
+
+  it("throws on an RPC error instead of pretending there is no mission", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    await expect(getTeamMission({ context: ctx(supabase) })).rejects.toThrow(/boom/);
   });
 });

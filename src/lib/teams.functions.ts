@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { parseTeamMission, type TeamMission, type TeamMissionRow } from "./team-mission";
 
 export type TeamJoinResult = { ok: boolean; reason: string | null; teamId: string | null };
 export type TeamLeaderboardEntry = { teamId: string; name: string; weeklyXp: number };
@@ -105,6 +106,14 @@ export const getTeamLeaderboard = createServerFn({ method: "GET" })
       name: r.name,
       weeklyXp: r.weekly_xp ?? 0,
     }));
+  });
+
+export const getTeamMission = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<TeamMission | null> => {
+    const { data: rows, error } = await context.supabase.rpc("get_team_mission");
+    if (error) throw new Error(`getTeamMission: ${error.message}`);
+    return parseTeamMission((rows as TeamMissionRow[] | null)?.[0], Date.now());
   });
 
 export const getMyTeam = createServerFn({ method: "GET" })
