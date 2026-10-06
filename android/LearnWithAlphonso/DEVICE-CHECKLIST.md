@@ -54,6 +54,18 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Restore Purchases on a fresh install of the same Google account unlocks Hector.
 - [ ] Manage Subscription opens the Play subscriptions page.
 
+## Learning goal (planner part 3, nothing here has been run on a device)
+
+- [ ] Learn tab, no goal yet: the card says "Set a learning goal"; tapping it opens the dialog with 6 months pre-filled and a "N lessons a week" preview.
+- [ ] Pick a level and a date with the date picker (today and earlier are greyed out) and with the 3, 6 and 12-month buttons: the preview follows each change and Save stays disabled until it arrives.
+- [ ] Save: the card shows "Finish B1 by ...", progress, a status line, lessons a week and "An estimate of lessons, not of fluency."; the same goal shows on the web and iOS.
+- [ ] Change goal and Remove goal work; a failed save or remove shows an inline message and leaves the goal editable.
+- [ ] Airplane mode, reopen the app: the last plan shows with "You're offline ... As of <date>." and both buttons disabled; with no cached plan it says "Connect to load your goal".
+- [ ] Switch course (English, French, Spanish) while the card is loading or saving: the card always shows the course on screen, never the one you left.
+- [ ] TalkBack reads the headline, progress and status line in order; the status is words, not only colour.
+- [ ] Display size and font scale at 200%: the dialog scrolls and no text is clipped.
+- [ ] Sign out, sign in as someone else: the other account's goal never appears, even offline.
+
 ## Links
 
 - [ ] Tap an invite link `https://learn.alphonsoecosystem.app/invite/<code>` from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9).
