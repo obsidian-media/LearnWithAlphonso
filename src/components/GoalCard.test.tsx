@@ -387,4 +387,14 @@ describe("review fixes", () => {
     await screen.findByText(/lessons a week/i);
     expect(region().textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
   });
+
+  it("offline with nothing cached does not promise a saved plan", async () => {
+    client.fetchGoal.mockRejectedValue(new GoalError("offline"));
+    client.readCachedGoal.mockResolvedValue(null);
+    renderCard();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You're offline. Connect to load your goal.",
+    );
+    expect(screen.queryByText(/last saved plan/i)).not.toBeInTheDocument();
+  });
 });

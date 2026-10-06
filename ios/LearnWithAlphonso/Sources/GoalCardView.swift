@@ -18,6 +18,10 @@ struct GoalCardView: View {
     @State private var loadError: LearningGoalError?
     @State private var actionError: String?
     @State private var showingSetup = false
+    /// Bumped by every load and remove. A request that finishes after a newer one started (or after the
+    /// course changed) sees a different number and drops its result. `courseCode` cannot do this job: it
+    /// is derived from the same `course` the running closure captured, so comparing it was always true.
+    @State private var generation = 0
 
     private var courseCode: String { course.translationCourseCode }
 
@@ -52,11 +56,11 @@ struct GoalCardView: View {
     private var content: some View {
         switch phase {
         case .loading:
-            ProgressView("Loading your goal...")
+            ProgressView("Loading your goal\u{2026}")
                 .tint(AlphonsoColor.moss)
         case .failed:
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text((loadError ?? .unavailable).userMessage)
+                Text(GoalCopy.loadFailureMessage(loadError ?? .unavailable, hadCachedPlan: false))
                     .font(AlphonsoFont.sans(14, weight: .medium))
                     .foregroundStyle(AlphonsoColor.destructive)
                 Button("Try again") { Task { await load() } }
@@ -154,6 +158,8 @@ struct GoalCardView: View {
 
     private func load() async {
         let code = courseCode
+        generation += 1
+        let mine = generation
         phase = .loading
         loadError = nil
         actionError = nil
@@ -165,12 +171,12 @@ struct GoalCardView: View {
         do {
             let next = try await makeClient(token: token).fetch(course: code)
             // A slow answer for a course the learner has since left must not overwrite the card.
-            guard code == courseCode, !Task.isCancelled else { return }
+            guard mine == generation, !Task.isCancelled else { return }
             state = next
             GoalCache().write(next, userID: userID, course: code)
             phase = next.goal == nil ? .empty : .goal
         } catch {
-            guard code == courseCode, !Task.isCancelled else { return }
+            guard mine == generation, !Task.isCancelled else { return }
             let failure = (error as? LearningGoalError) ?? .unavailable
             loadError = failure
             // The cached plan is only for being OFFLINE; a 401 or a server error never shows it.
@@ -185,6 +191,8 @@ struct GoalCardView: View {
 
     private func remove() async {
         let code = courseCode
+        generation += 1
+        let mine = generation
         guard let userID = session.userID, let token = await session.freshAccessToken() else {
             actionError = LearningGoalError.notSignedIn.userMessage
             return
@@ -192,10 +200,13 @@ struct GoalCardView: View {
         do {
             try await makeClient(token: token).remove(course: code)
             GoalCache().clear(userID: userID, course: code)
+            // The delete happened either way; only touch the screen if it still shows this request's course.
+            guard mine == generation else { return }
             state = LearningGoalState(goal: nil, plan: nil)
             actionError = nil
             phase = .empty
         } catch {
+            guard mine == generation else { return }
             // A failed remove is an action error, not "offline": the goal is still there and editable.
             actionError = ((error as? LearningGoalError) ?? .unavailable).userMessage
         }
@@ -297,7 +308,7 @@ private struct GoalSetupSheet: View {
     private var previewContent: some View {
         switch preview {
         case .loading:
-            ProgressView("Working it out...").tint(AlphonsoColor.moss)
+            ProgressView("Working it out\u{2026}").tint(AlphonsoColor.moss)
         case .failed(let message):
             Text(message).foregroundStyle(AlphonsoColor.destructive)
         case .ok(let plan):

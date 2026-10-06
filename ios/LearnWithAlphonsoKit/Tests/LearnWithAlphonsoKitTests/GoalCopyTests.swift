@@ -75,6 +75,13 @@ final class GoalCopyTests: XCTestCase {
         XCTAssertEqual(GoalCopy.realismLine(for: plan(realism: .unrealistic, suggested: "2026-11-10")), "Unrealistic for most learners at this date.")
     }
 
+    func testOfflineWithNothingCachedDoesNotPromiseAPlan() {
+        XCTAssertEqual(GoalCopy.loadFailureMessage(.offline, hadCachedPlan: true), LearningGoalError.offline.userMessage)
+        XCTAssertEqual(GoalCopy.loadFailureMessage(.offline, hadCachedPlan: false), "You're offline. Connect to load your goal.")
+        XCTAssertEqual(GoalCopy.loadFailureMessage(.unavailable, hadCachedPlan: false), LearningGoalError.unavailable.userMessage)
+        XCTAssertEqual(GoalCopy.loadFailureMessage(.notSignedIn, hadCachedPlan: true), LearningGoalError.notSignedIn.userMessage)
+    }
+
     func testTheEstimateNote() {
         XCTAssertEqual(GoalCopy.estimateNote, "An estimate of lessons, not of fluency.")
     }
@@ -85,7 +92,8 @@ final class GoalCopyTests: XCTestCase {
         XCTAssertEqual(GoalCopy.monthsFromToday(3, now: utc(2026, 11, 30)), "2027-02-28")
         XCTAssertEqual(GoalCopy.monthsFromToday(12, now: utc(2027, 2, 28)), "2028-02-28")
         XCTAssertEqual(GoalCopy.monthsFromToday(12, now: utc(2027, 3, 31)), "2028-03-31")
-        XCTAssertEqual(GoalCopy.monthsFromToday(12, now: utc(2027, 2, 29 - 1)), "2028-02-28")
+        // Leap day: 29 Feb 2028 + 12 months has no 29 Feb in 2029.
+        XCTAssertEqual(GoalCopy.monthsFromToday(12, now: utc(2028, 2, 29)), "2029-02-28")
     }
 
     func testDayConversionsAreUTCAndRoundTrip() throws {

@@ -27,6 +27,13 @@ public enum GoalCopy {
         return "\(day) \(months[month - 1]) \(year)"
     }
 
+    /// What to say when the goal could not be loaded. "Showing your last saved plan" is only true when
+    /// there IS one: offline with nothing cached must not promise a plan (reviewer finding).
+    public static func loadFailureMessage(_ error: LearningGoalError, hadCachedPlan: Bool) -> String {
+        if error == .offline, !hadCachedPlan { return "You're offline. Connect to load your goal." }
+        return error.userMessage
+    }
+
     public static func headline(for goal: StoredGoal) -> String {
         "Finish \(goal.targetLevel) by \(formatDate(goal.targetDate))"
     }

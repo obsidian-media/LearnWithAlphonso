@@ -93,6 +93,6 @@ final class GoalCacheTests: XCTestCase {
 
     func testTheKeyIncludesTheUser() {
         XCTAssertNotEqual(GoalCache.key(userID: "a", course: "en"), GoalCache.key(userID: "b", course: "en"))
-        XCTAssertTrue(GoalCache.key(userID: "a", course: "en").contains("a"))
+        XCTAssertTrue(GoalCache.key(userID: "user-xyz", course: "en").contains("user-xyz"))
     }
 }

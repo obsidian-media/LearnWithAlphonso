@@ -186,7 +186,11 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       {view === "error" && (
         <div>
           <p role="alert" className="text-sm font-medium text-rose-600">
-            {goalErrorMessage(loadError ?? "unavailable")}
+            {/* This view has no cached plan to show, so "showing your last saved plan" would be false
+                (iOS: GoalCopy.loadFailureMessage). */}
+            {loadError === "offline"
+              ? "You're offline. Connect to load your goal."
+              : goalErrorMessage(loadError ?? "unavailable")}
           </p>
           <button type="button" onClick={() => void load()} className={SECONDARY}>
             Try again

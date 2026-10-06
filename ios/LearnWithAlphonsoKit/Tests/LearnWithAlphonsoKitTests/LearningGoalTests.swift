@@ -63,6 +63,22 @@ final class LearningGoalTests: XCTestCase {
             fromPreview: try data(["plan": try XCTUnwrap(plans["on_track"])])).suggestedDate)
     }
 
+    func testEveryFieldOfAPlanLandsInTheRightProperty() throws {
+        // Distinct values everywhere, so swapped or mis-keyed fields cannot cancel out.
+        let raw: [String: Any] = [
+            "currentLevel": "A2", "targetLevel": "C1", "targetDate": "2027-05-17", "lessonsInScope": 111,
+            "lessonsRemaining": 22, "lessonsDoneLast7Days": 3, "requiredPerWeek": 44, "status": "behind",
+            "realism": "ambitious", "suggestedDate": "2027-08-09", "asOf": "2026-10-06T12:34:56.789Z",
+        ]
+        let plan = try LearningGoalDecoding.plan(fromPreview: try data(["plan": raw]))
+        XCTAssertEqual(
+            plan,
+            GoalPlan(
+                currentLevel: "A2", targetLevel: "C1", targetDate: "2027-05-17", lessonsInScope: 111,
+                lessonsRemaining: 22, lessonsDoneLast7Days: 3, requiredPerWeek: 44, status: .behind,
+                realism: .ambitious, suggestedDate: "2027-08-09", asOf: "2026-10-06T12:34:56.789Z"))
+    }
+
     func testEveryEnvelopeDecodes() throws {
         let envelopes = try samples("envelopes")
         let stored = try LearningGoalDecoding.state(from: try data(try XCTUnwrap(envelopes["stored"])))
