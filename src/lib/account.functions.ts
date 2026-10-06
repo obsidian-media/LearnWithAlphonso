@@ -31,6 +31,7 @@ export const USER_ID_EXPORT_TABLES = [
   "season_cohort_members",
   "season_placements",
   "team_members",
+  "team_mission_rewards",
   "user_achievements",
   "user_progress",
   "user_weekly_quest_claims",
@@ -66,8 +67,9 @@ export const USER_DELETE_TABLES = [
 // columns frozen since the 2026-09-08 multi-course migration -- xp,
 // cefr_level, league_tier and both placement_* trios all moved to
 // language_progress (per course), and nothing writes the user_progress
-// copies anymore (mergeGuestProgress is the one exception, and it's dead
-// code with no caller anywhere in the app -- see docs/BACKLOG.md).
+// copies anymore (the dead mergeGuestProgress endpoint was the one exception;
+// it was removed 2026-10-06 because it let any signed-in user insert up to 500
+// fake lesson completions, which team missions would have turned into XP).
 // Exporting them via select("*") showed a GDPR download two disagreeing
 // values for the same concept (e.g. xp) with no way to tell which was
 // real -- §2.2's "related, smaller finding not fixed".

@@ -1169,6 +1169,57 @@ export type Database = {
           },
         ];
       };
+      team_mission_rewards: {
+        Row: {
+          granted_at: string;
+          team_id: string;
+          user_id: string;
+          week_start: string;
+          xp: number;
+        };
+        Insert: {
+          granted_at?: string;
+          team_id: string;
+          user_id: string;
+          week_start: string;
+          xp: number;
+        };
+        Update: {
+          granted_at?: string;
+          team_id?: string;
+          user_id?: string;
+          week_start?: string;
+          xp?: number;
+        };
+        Relationships: [];
+      };
+      team_missions: {
+        Row: {
+          created_at: string;
+          member_count: number;
+          rewarded_at: string | null;
+          target: number;
+          team_id: string;
+          week_start: string;
+        };
+        Insert: {
+          created_at?: string;
+          member_count: number;
+          rewarded_at?: string | null;
+          target: number;
+          team_id: string;
+          week_start: string;
+        };
+        Update: {
+          created_at?: string;
+          member_count?: number;
+          rewarded_at?: string | null;
+          target?: number;
+          team_id?: string;
+          week_start?: string;
+        };
+        Relationships: [];
+      };
       team_weekly_rewards: {
         Row: {
           resolved_at: string | null;
@@ -1635,6 +1686,21 @@ export type Database = {
           is_owner: boolean;
           joined_at: string;
           user_id: string;
+        }[];
+      };
+      get_team_mission: {
+        Args: never;
+        Returns: {
+          member_count: number;
+          my_count: number;
+          reward_xp: number;
+          rewarded: boolean;
+          status: string;
+          target: number;
+          team_id: string;
+          total: number;
+          week_end: string;
+          week_start: string;
         }[];
       };
       get_weekly_challenges: {

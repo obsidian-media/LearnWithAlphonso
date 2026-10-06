@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
+import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { getMyTeam, leaveTeam } from "../../lib/teams.functions";
 
 export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
@@ -53,6 +54,9 @@ function TeamDetailPage() {
         <p className="mt-2 tnum text-2xl font-semibold text-ink">
           {myTeam.thisWeekXp} XP this week
         </p>
+        <div className="mt-6">
+          <TeamMissionCard />
+        </div>
         <button
           type="button"
           onClick={handleLeave}

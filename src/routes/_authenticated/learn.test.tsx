@@ -78,6 +78,10 @@ vi.mock("../../lib/review.functions", () => ({ fetchDueReviews }));
 // for that).
 vi.mock("../../components/WeeklyChallengesCard", () => ({ WeeklyChallengesCard: () => null }));
 // The goal card has its own tests (GoalCard.test.tsx); here we only check the page mounts it for the current course.
+// The team mission card has its own tests (TeamMissionCard.test.tsx); here we only check the page mounts it.
+vi.mock("../../components/TeamMissionCard", () => ({
+  TeamMissionCard: () => <div data-testid="team-mission-card" />,
+}));
 vi.mock("../../components/GoalCard", () => ({
   GoalCard: ({ course }: { course: string }) => <div data-testid="goal-card">{course}</div>,
 }));
@@ -113,6 +117,11 @@ beforeEach(() => {
 });
 
 describe("Learn page", () => {
+  it("shows the team mission card", async () => {
+    renderPage();
+    expect(await screen.findByTestId("team-mission-card")).toBeInTheDocument();
+  });
+
   it("shows the learning goal card for the current course", async () => {
     renderPage();
     expect(await screen.findByTestId("goal-card")).toHaveTextContent("en");
