@@ -103,25 +103,45 @@ public enum WordSegmenter {
         return segments(in: text).contains { $0.isWord && fold($0.text) == target }
     }
 
+    /// Words after which a full stop does not end the sentence (lower-case, no dot).
+    private static let abbreviations: Set<String> = [
+        "mr", "mrs", "ms", "dr", "prof", "sr", "jr", "st", "vs", "etc", "eg", "ie", "no", "approx",
+    ]
+
+    /// Whether the character at `i` ends a sentence. A full stop only does when
+    /// whitespace (or the end) follows it and it does not close an abbreviation or
+    /// an initial: "3.14", "e.g." and "Mr. Smith" are not boundaries. Mirrors
+    /// `endsSentence` in src/lib/word-segmenter.ts.
+    private static func endsSentence(_ chars: [Character], at i: Int) -> Bool {
+        let terminators: Set<Character> = [".", "!", "?", "\n", "\u{2026}"]
+        let ch = chars[i]
+        guard ch == "." else { return terminators.contains(ch) }
+        if i + 1 < chars.count, !chars[i + 1].isWhitespace { return false }
+        var start = i
+        while start > 0, isLetter(chars[start - 1]) { start -= 1 }
+        let before = String(chars[start..<i])
+        if abbreviations.contains(before.lowercased()) { return false }
+        // The tail of a dotted abbreviation: "e.g.", "i.e.", "U.S.".
+        if before.count == 1, i >= 2, chars[i - 2] == "." { return false }
+        // A single capital initial ("J. Smith"), but not "I" or "A", which end sentences.
+        if before.count == 1, before != "I", before != "A", before == before.uppercased(), before != before.lowercased() {
+            return false
+        }
+        return true
+    }
+
     /// Splits `text` into sentences, each with the Character offset it starts at
     /// (the same unit `segments(in:)` counts in), so a tap can be matched to the
     /// sentence it landed in.
     private static func splitSentences(_ text: String) -> [(text: String, start: Int)] {
-        let terminators: Set<Character> = [".", "!", "?", "\n", "\u{2026}"]
+        let chars = Array(text)
         var sentences: [(text: String, start: Int)] = []
-        var current = ""
         var start = 0
-        var position = 0
-        for ch in text {
-            current.append(ch)
-            position += 1
-            if terminators.contains(ch) {
-                sentences.append((current, start))
-                current = ""
-                start = position
-            }
+        for i in chars.indices where endsSentence(chars, at: i) {
+            sentences.append((String(chars[start...i]), start))
+            start = i + 1
         }
-        if !current.isEmpty { sentences.append((current, start)) }
+        if start < chars.count { sentences.append((String(chars[start...]), start)) }
         return sentences
     }
 

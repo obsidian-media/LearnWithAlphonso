@@ -44,11 +44,54 @@ export function isSavableWord(word: string): boolean {
   return units >= 1 && units <= WORD_MAX;
 }
 
+// Words after which a full stop does not end the sentence. Lower-case, no dot.
+const ABBREVIATIONS = new Set([
+  "mr",
+  "mrs",
+  "ms",
+  "dr",
+  "prof",
+  "sr",
+  "jr",
+  "st",
+  "vs",
+  "etc",
+  "eg",
+  "ie",
+  "no",
+  "approx",
+]);
+
+/** The letters immediately before index `dot`, lower-cased ("Mr" before "Mr."). */
+function wordBefore(text: string, dot: number): string {
+  let i = dot;
+  while (i > 0 && /\p{L}/u.test(text[i - 1])) i -= 1;
+  return text.slice(i, dot);
+}
+
+function endsSentence(text: string, i: number): boolean {
+  const ch = text[i];
+  if (ch !== ".") return TERMINATORS.has(ch);
+  // A full stop only ends a sentence when whitespace (or the end) follows it:
+  // "3.14", "e.g" and "U.S.A" are not boundaries.
+  const next = text[i + 1];
+  if (next !== undefined && !/\s/.test(next)) return false;
+  const before = wordBefore(text, i);
+  if (ABBREVIATIONS.has(before.toLowerCase())) return false;
+  // The tail of a dotted abbreviation: "e.g.", "i.e.", "U.S.".
+  if (before.length === 1 && text[i - 2] === ".") return false;
+  // A single capital initial ("J. Smith"), but not "I", which ends sentences.
+  if (before.length === 1 && before !== "I" && before !== "A" && before === before.toUpperCase()) {
+    return false;
+  }
+  return true;
+}
+
 function splitSentences(text: string): { text: string; start: number }[] {
   const sentences: { text: string; start: number }[] = [];
   let start = 0;
   for (let i = 0; i < text.length; i += 1) {
-    if (TERMINATORS.has(text[i])) {
+    if (endsSentence(text, i)) {
       sentences.push({ text: text.slice(start, i + 1), start });
       start = i + 1;
     }
