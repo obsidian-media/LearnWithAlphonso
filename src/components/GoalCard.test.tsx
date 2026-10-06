@@ -345,4 +345,46 @@ describe("review fixes", () => {
     expect(screen.getByRole("button", { name: /save goal/i })).toBeDisabled();
     expect(screen.queryByText(/lessons a week/i)).not.toBeInTheDocument();
   });
+
+  it("formats dates with a fixed English month table (so web and iOS print the same text)", async () => {
+    client.fetchGoal.mockResolvedValue({
+      goal: { ...goal, targetDate: "2026-09-05" },
+      plan: plans.on_track,
+    });
+    renderCard();
+    expect(await screen.findByText(/finish B1 by 5 Sep 2026/i)).toBeInTheDocument();
+  });
+
+  it("shows the suggested date once, even when the plan is also unrealistic", async () => {
+    client.fetchGoal.mockResolvedValue(
+      stored({ ...plans.behind_with_suggestion, realism: "unrealistic" }),
+    );
+    renderCard();
+    await screen.findByText(/finish B1/i);
+    expect(region().textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
+    expect(region()).toHaveTextContent(/unrealistic/i);
+  });
+
+  it("leaves an impossible date as written instead of rolling it into the next month", async () => {
+    client.fetchGoal.mockResolvedValue({
+      goal: { ...goal, targetDate: "2026-02-30" },
+      plan: plans.on_track,
+    });
+    renderCard();
+    expect(await screen.findByText(/finish B1 by 2026-02-30/i)).toBeInTheDocument();
+  });
+
+  it("shows the suggested date once in the setup preview too", async () => {
+    client.fetchGoal.mockResolvedValue({ goal: null, plan: null });
+    client.previewGoal.mockResolvedValue({
+      ...plans.unrealistic,
+      suggestedDate: "2026-11-10",
+    });
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
+    await user.click(screen.getByRole("button", { name: "3 months" }));
+    await screen.findByText(/lessons a week/i);
+    expect(region().textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
+  });
 });

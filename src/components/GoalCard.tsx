@@ -20,13 +20,17 @@ import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goa
  */
 const DATE_SHAPE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
+// A fixed English table, not the browser locale: the iOS card prints the same text from its own
+// copy of this table (GoalCopy.formatDate), and CLDR spells September "Sept" in some locales.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(iso);
+  if (!match) return iso;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (month < 1 || month > 12 || date.getUTCDate() !== day) return iso;
+  return `${day} ${MONTHS[month - 1]} ${year}`;
 }
 
 /** `months` ahead, clamped to the end of a shorter month (31 Aug + 6 months = 28 Feb, not 3 Mar). */
@@ -328,6 +332,7 @@ function PreviewLines({ plan }: { plan: GoalPlan }) {
       <p className="text-ink-soft">
         {plan.lessonsRemaining} lessons left to finish {plan.targetLevel}.
       </p>
+      <Suggestion plan={plan} />
       <Realism plan={plan} />
     </div>
   );
@@ -340,9 +345,16 @@ function Realism({ plan }: { plan: GoalPlan }) {
       {plan.realism === "unrealistic"
         ? "Unrealistic for most learners at this date."
         : "Ambitious: about two lessons a day or more."}
-      {plan.suggestedDate
-        ? ` At your recent pace, ${formatDate(plan.suggestedDate)} is realistic.`
-        : ""}
+    </p>
+  );
+}
+
+/** Whenever the server sent a suggested date (iOS: GoalCopy.suggestionLine). Shown once. */
+function Suggestion({ plan }: { plan: GoalPlan }) {
+  if (!plan.suggestedDate) return null;
+  return (
+    <p className="text-ink-soft">
+      At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
     </p>
   );
 }
@@ -376,11 +388,7 @@ function GoalBody({ plan }: { plan: GoalPlan }) {
           the last 7 days.
         </p>
       )}
-      {(plan.status === "behind" || plan.status === "expired") && plan.suggestedDate && (
-        <p className="text-ink-soft">
-          At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
-        </p>
-      )}
+      <Suggestion plan={plan} />
       <Realism plan={plan} />
     </div>
   );
