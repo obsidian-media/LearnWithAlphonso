@@ -678,6 +678,8 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
     await user.click(screen.getByRole("button", { name: "a" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Nice.")).toBeInTheDocument();
+    // The generated explanation's words can be saved like any other explanation.
+    expect(screen.getByRole("button", { name: "why" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Finish practice" }));
     expect(await screen.findByText(/that's all the extra practice/)).toBeInTheDocument();

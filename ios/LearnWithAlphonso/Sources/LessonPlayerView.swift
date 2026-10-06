@@ -1011,6 +1011,14 @@ private struct GeneratedPracticeSection: View {
     let session: Session
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.saveWordHandler) private var saveWordHandler
+
+    /// The course to file a tapped word under, or nil when this course's text is not
+    /// wholly in its own language (`SavedWordPolicy`); same rule as ExplanationView.
+    private var saveCourse: String? {
+        let code = course.translationCourseCode
+        return SavedWordPolicy.allowsSaving(inCourse: code) ? code : nil
+    }
 
     private enum Status: Equatable { case idle, loading, ready, empty, error }
 
@@ -1107,9 +1115,20 @@ private struct GeneratedPracticeSection: View {
             }
             if checked {
                 if picked == q.choices[q.answerIndex] {
-                    Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    if let saveCourse, let saveWordHandler {
+                        TappableText(
+                            text: q.explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
+                            onSave: saveWordHandler
+                        )
+                        .font(AlphonsoFont.sans(13))
+                    } else {
+                        Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    }
                 } else {
-                    AlphonsoTipCard(explanation: q.explanation)
+                    AlphonsoTipCard(explanation: q.explanation, saveCourse: saveCourse)
+                }
+                if saveCourse != nil, saveWordHandler != nil {
+                    SaveWordHintLine()
                 }
             }
             Button(!checked ? "Check" : idx < questions.count - 1 ? "Next" : "Finish practice") {

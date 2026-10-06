@@ -1002,6 +1002,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
           correct={isCorrect}
           headline={isCorrect ? "Nice." : "Not quite."}
           explanation={q.explanation}
+          saveCourse={course}
         />
       )}
       <button
