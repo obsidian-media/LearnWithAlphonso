@@ -136,6 +136,8 @@ it's right" — but it buys exactly as little real confidence: a maintainer
 who sees this red enough times learns to distrust or route around the check,
 which is its own kind of guard-that-doesn't-work.
 
+> **Update 2026-10-05 (PR #204):** the deadlock part of this is fixed. The types freshness check is now its own `types-fresh` job that `deploy-supabase` does not `need`, so a table-adding PR can no longer block the deploy that would make it pass. The wrong-reference problem below (it still compares against production) is NOT fixed; the check is merely advisory now.
+
 **Why not fixed here**: a real fix needs generating types against a database
 that has *this PR's* migrations applied — a local/ephemeral Postgres in CI.
 This repo has no containerized Postgres anywhere in CI today (see

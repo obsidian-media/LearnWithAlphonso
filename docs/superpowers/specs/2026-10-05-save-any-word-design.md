@@ -270,6 +270,16 @@ is the owner's call.
 - **Inappropriate words.** The model might return unsuitable text for a
   sensitive word. Not filtered in this version; flag if it matters for the
   App Store age rating.
-- **Transcripts on iOS** may not exist yet (Phase 3 check above).
+- **Transcripts on iOS:** confirmed to exist (`PodcastTranscriptSheet`) and
+  covered in phase 3.
+- **Privacy policy.** `src/routes/privacy.tsx` already says review items are
+  stored, so saved words are covered as stored data, but its NVIDIA line says only
+  that NVIDIA "grades written translation answers"; it does not say a saved word
+  and its sentence are sent to NVIDIA to write the meaning and answer options.
+  Deliberately NOT changed while the feature was in no build (the policy must
+  describe what is live). It must be updated **in phase 4, together with the web
+  save UI**, because the web ships the moment it merges; and the App Store privacy
+  answers and `PrivacyInfo.xcprivacy` re-checked when the first iOS build containing
+  save-any-word is cut (BACKLOG 0.0x: App Privacy describes the current binary).
 - **Docs to update with the code:** CHANGELOG, ARCHITECTURE (review sources and
   the new route), AGENTS (the new route and the quota test), BACKLOG.
