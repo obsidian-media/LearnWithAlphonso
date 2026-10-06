@@ -1,0 +1,80 @@
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations");
+const FILE = "20261006150000_team_missions.sql";
+
+describe("team missions migration", () => {
+  const sql = () => fs.readFileSync(path.join(MIGRATIONS, FILE), "utf8");
+  const code = () => sql().replace(/--[^\n]*/g, "");
+
+  it("runs after the latest privilege migration", () => {
+    expect(FILE.slice(0, 14) > "20261006140000").toBe(true);
+  });
+
+  it("keeps the spec's constants: 4 lessons per member, minimum 2 members, +50 XP", () => {
+    expect(code()).toMatch(/members\s*\*\s*4\b/i);
+    expect(code()).toMatch(/members\s*>=\s*2\b/i);
+    expect(code()).toMatch(/\b50\b/);
+  });
+
+  it("team_missions is server-only: marker, no client grant, RLS on", () => {
+    expect(sql()).toMatch(/--\s*client-grants:\s*none\s+public\.team_missions\b/i);
+    expect(code()).toMatch(/ALTER TABLE public\.team_missions ENABLE ROW LEVEL SECURITY/i);
+    expect(code()).not.toMatch(
+      /GRANT[^;]*ON public\.team_missions[^;]*TO[^;]*\b(authenticated|anon)\b/i,
+    );
+  });
+
+  it("team_mission_rewards lets a member read only their own rows (export needs it) and nothing else", () => {
+    expect(code()).toMatch(
+      /CREATE POLICY team_mission_rewards_select_own ON public\.team_mission_rewards FOR SELECT TO authenticated USING \(\(SELECT auth\.uid\(\)\) = user_id\)/i,
+    );
+    expect(code()).toMatch(/GRANT SELECT ON public\.team_mission_rewards TO authenticated/i);
+    expect(code()).not.toMatch(
+      /GRANT[^;]*(INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.team_mission_rewards[^;]*TO[^;]*authenticated/i,
+    );
+    expect(code()).not.toMatch(/\banon\b/i);
+  });
+
+  it("counts a member's lessons only from when they joined, and only this week", () => {
+    expect(code()).toMatch(/GREATEST\(\s*_wk::timestamptz\s*,\s*tm\.joined_at\s*\)/i);
+    expect(code()).toMatch(/lc\.completed_at\s*<\s*\(_wk \+ 7\)::timestamptz/i);
+  });
+
+  it("pays at most once per team-week with an atomic guard", () => {
+    expect(code()).toMatch(/SET rewarded_at = now\(\)[\s\S]*?rewarded_at IS NULL/i);
+    expect(code()).toMatch(/IF NOT FOUND THEN\s+RETURN;/i);
+  });
+
+  it("only the public read function is executable by clients; helpers are not", () => {
+    for (const fn of [
+      "_team_mission_count\\(uuid, date, uuid\\)",
+      "_resolve_team_mission\\(uuid, date\\)",
+    ]) {
+      expect(code()).toMatch(
+        new RegExp(`REVOKE ALL ON FUNCTION public\\.${fn} FROM PUBLIC, anon, authenticated`, "i"),
+      );
+    }
+    expect(code()).toMatch(
+      /REVOKE ALL ON FUNCTION public\.get_team_mission\(\) FROM PUBLIC, anon/i,
+    );
+    expect(code()).toMatch(
+      /GRANT EXECUTE ON FUNCTION public\.get_team_mission\(\) TO authenticated/i,
+    );
+  });
+
+  it("every function is SECURITY DEFINER with a pinned search_path", () => {
+    const functions = code().match(/CREATE OR REPLACE FUNCTION[\s\S]*?\$\$;/gi) ?? [];
+    expect(functions).toHaveLength(3);
+    for (const fn of functions) {
+      expect(fn).toMatch(/SECURITY DEFINER/i);
+      expect(fn).toMatch(/SET search_path = public/i);
+    }
+  });
+
+  it("states how to undo it", () => {
+    expect(sql()).toMatch(/ROLLBACK/i);
+  });
+});
