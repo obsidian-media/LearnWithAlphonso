@@ -34,7 +34,7 @@ New table `learning_goals`:
 |---|---|
 | `user_id` uuid | FK `auth.users` ON DELETE CASCADE |
 | `language` text | `en` / `fr` / `es`, same convention as `language_progress` |
-| `target_level` text | `A2`..`C1`; CHECK in the allowed set |
+| `target_level` text | `A1`..`C1`; CHECK in the allowed set (a learner at A1 may want to finish A1) |
 | `target_date` date | |
 | `created_at`, `updated_at` | `created_at` is when the goal was first set (drives "just started") |
 
@@ -51,7 +51,7 @@ Must be added to `USER_ID_EXPORT_TABLES` and `USER_DELETE_TABLES` in `account.fu
 - `PUT` body `{ course, targetLevel, targetDate }` validates and upserts; returns `{ goal, plan }`.
 - `DELETE ?course=en` removes the goal.
 
-Validation (400, nothing written): course in `en|fr|es`; level in `A2..C1`; date a real `YYYY-MM-DD`, strictly after today (UTC), at most 3 years out; and `targetLevel` must not be below the learner's current level (a goal to reach a level they have already passed is meaningless). 401 without a valid token. Failed database reads are 500 and never read as "no goal".
+Validation (400, nothing written): course in `en|fr|es`; level in `A1..C1`; date a real `YYYY-MM-DD`, strictly after today (UTC), at most 3 years out; and `targetLevel` must not be below the learner's current level (a goal to reach a level they have already passed is meaningless). 401 without a valid token. Failed database reads are 500 and never read as "no goal".
 
 ### The plan (pure function `planGoal`)
 
@@ -74,7 +74,7 @@ Copy rule: the UI calls this "an estimate of lessons, not of fluency", never a p
 
 ## Clients
 
-All three render `plan`; none compute it. Same states everywhere: no goal (a "Set a goal" prompt), setup (level, date with 3/6/12-month presets, live preview from the preview `GET`, then a confirm step showing the weekly number), and the goal card (progress as lessons done of lessons in scope, status line, required per week, "move the date" and "remove goal"). Offline: show the cached plan with "as of <time>", and disable edit.
+All three render `plan`; none compute it. Same states everywhere: no goal (a "Set a goal" prompt), setup (level, date with 3/6/12-month presets, live preview from the preview `GET`, shown as an inline panel in the card rather than a popup, then a Save step showing the weekly number), and the goal card (progress as lessons done of lessons in scope, status line, required per week, "move the date" and "remove goal"). Offline: show the cached plan with "as of <time>", and disable edit.
 
 - **Web:** a goal card on the Learn page and a setup dialog; a shared fetch module like `saved-word-client.ts`.
 - **iOS:** Kit client + models (decoding tests), SwiftUI card and setup; app-target code compiles in CI only. No build is cut by this work.
