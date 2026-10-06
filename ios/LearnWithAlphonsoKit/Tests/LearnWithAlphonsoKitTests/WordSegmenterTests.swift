@@ -301,4 +301,27 @@ final class WordLinkTests: XCTestCase {
         XCTAssertNil(WordLink.word(from: URL(string: "https://example.com/?w=hello")!))
         XCTAssertNil(WordLink.word(from: URL(string: "lwa-word://save")!))
     }
+
+    // Sentence boundaries: a full stop is not a boundary after an abbreviation,
+    // inside a number, or after an initial (mirrors src/lib/word-segmenter.ts).
+    func testAFullStopAfterATitleDoesNotEndTheSentence() {
+        XCTAssertEqual(WordSegmenter.sentence(containing: "Smith", in: "Mr. Smith went home."), "Mr. Smith went home.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "Jones", in: "I met Dr. Jones today."), "I met Dr. Jones today.")
+    }
+
+    func testDottedAbbreviationsAndDecimalsDoNotEndTheSentence() {
+        XCTAssertEqual(
+            WordSegmenter.sentence(containing: "apples", in: "Bring fruit, e.g. apples, please."),
+            "Bring fruit, e.g. apples, please.")
+        XCTAssertEqual(
+            WordSegmenter.sentence(containing: "sugar", in: "Bring tea, milk, etc. and sugar."),
+            "Bring tea, milk, etc. and sugar.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "roughly", in: "Pi is 3.14 roughly."), "Pi is 3.14 roughly.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "Smith", in: "J. Smith left."), "J. Smith left.")
+    }
+
+    func testAnOrdinaryFullStopStillEndsTheSentenceIncludingAfterI() {
+        XCTAssertEqual(WordSegmenter.sentence(containing: "milk", in: "I like tea. She likes milk."), "She likes milk.")
+        XCTAssertEqual(WordSegmenter.sentence(containing: "Next", in: "So do I. Next one here."), "Next one here.")
+    }
 }

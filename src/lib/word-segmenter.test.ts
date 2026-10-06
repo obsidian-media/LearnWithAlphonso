@@ -148,3 +148,34 @@ describe("saveRequestFor", () => {
     }
   });
 });
+
+describe("saveRequestFor sentence boundaries", () => {
+  const sentenceOf = (text: string, word: string, nth = 0) => {
+    const seg = segmentText(text).filter((x) => x.isWord && x.text === word)[nth];
+    return saveRequestFor(text, seg, "en").sentence;
+  };
+
+  it("does not end a sentence at a title abbreviation", () => {
+    expect(sentenceOf("Mr. Smith went home.", "Smith")).toBe("Mr. Smith went home.");
+    expect(sentenceOf("I met Dr. Jones today.", "Jones")).toBe("I met Dr. Jones today.");
+  });
+
+  it("does not end a sentence inside e.g. / i.e. / etc.", () => {
+    expect(sentenceOf("Bring fruit, e.g. apples, please.", "apples")).toBe(
+      "Bring fruit, e.g. apples, please.",
+    );
+    expect(sentenceOf("Bring tea, milk, etc. and sugar.", "sugar")).toBe(
+      "Bring tea, milk, etc. and sugar.",
+    );
+  });
+
+  it("does not end a sentence inside a decimal number or an initial", () => {
+    expect(sentenceOf("Pi is 3.14 roughly.", "roughly")).toBe("Pi is 3.14 roughly.");
+    expect(sentenceOf("J. Smith left.", "Smith")).toBe("J. Smith left.");
+  });
+
+  it("still ends a sentence at an ordinary full stop, including after I", () => {
+    expect(sentenceOf("I like tea. She likes milk.", "milk")).toBe("She likes milk.");
+    expect(sentenceOf("So do I. Next one here.", "Next")).toBe("Next one here.");
+  });
+});
