@@ -88,6 +88,19 @@ final class GoalCopyTests: XCTestCase {
         XCTAssertEqual(GoalCopy.monthsFromToday(12, now: utc(2027, 2, 29 - 1)), "2028-02-28")
     }
 
+    func testDayConversionsAreUTCAndRoundTrip() throws {
+        XCTAssertEqual(GoalCopy.day(from: utc(2026, 10, 6)), "2026-10-06")
+        // 23:30 UTC is still the 6th, whatever the device time zone is.
+        let lateUTC = Date(timeIntervalSince1970: 1_791_243_000) // 2026-10-05T23:30:00Z
+        XCTAssertEqual(GoalCopy.day(from: lateUTC), "2026-10-05")
+        let date = try XCTUnwrap(GoalCopy.date(fromDay: "2027-02-28"))
+        XCTAssertEqual(GoalCopy.day(from: date), "2027-02-28")
+        // Noon UTC, so a date picker in any time zone (up to +-12h) shows the same calendar day.
+        XCTAssertEqual(date.timeIntervalSince1970.truncatingRemainder(dividingBy: 86_400), 43_200)
+        XCTAssertNil(GoalCopy.date(fromDay: "2027-02-30"))
+        XCTAssertNil(GoalCopy.date(fromDay: "soon"))
+    }
+
     func testTomorrowIsTheNextUTCDay() {
         XCTAssertEqual(GoalCopy.tomorrow(now: utc(2026, 10, 6)), "2026-10-07")
         XCTAssertEqual(GoalCopy.tomorrow(now: utc(2026, 12, 31)), "2027-01-01")

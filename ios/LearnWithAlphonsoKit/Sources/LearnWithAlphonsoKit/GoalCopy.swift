@@ -83,6 +83,22 @@ public enum GoalCopy {
         isoDay(utc.date(byAdding: .day, value: 1, to: now) ?? now)
     }
 
+    /// The UTC calendar day of `date` as "YYYY-MM-DD" (what the server expects for a target date).
+    public static func day(from date: Date) -> String {
+        isoDay(date)
+    }
+
+    /// Noon UTC on "YYYY-MM-DD", or nil when it is not a real date. Noon, not midnight, so a date
+    /// picker in any time zone shows the same calendar day.
+    public static func date(fromDay day: String) -> Date? {
+        let parts = day.split(separator: "-").map(String.init)
+        guard parts.count == 3, let y = Int(parts[0]), let m = Int(parts[1]), let d = Int(parts[2]),
+              let date = utc.date(from: DateComponents(year: y, month: m, day: d, hour: 12)),
+              utc.component(.day, from: date) == d, utc.component(.month, from: date) == m
+        else { return nil }
+        return date
+    }
+
     private static func isoDay(_ date: Date) -> String {
         let c = utc.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)

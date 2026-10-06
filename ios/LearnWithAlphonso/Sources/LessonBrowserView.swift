@@ -135,6 +135,8 @@ struct LessonBrowserView: View {
                 .buttonStyle(.plain)
                 .listRowBackground(Color.clear)
 
+                GoalCardView(session: session, course: course)
+
                 WeeklyChallengesSection(session: session)
 
                 // Fallback for anyone RootView's post-sign-in placement
