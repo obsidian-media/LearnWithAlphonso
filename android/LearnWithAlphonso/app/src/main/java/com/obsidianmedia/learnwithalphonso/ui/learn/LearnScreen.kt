@@ -105,6 +105,9 @@ fun LearnScreen(
                 val goalVm: GoalCardViewModel = viewModel(key = "goal-" + state.course.code) {
                     GoalCardViewModel(state.course, container.goalClient, container.goalCache) { container.session.userId }
                 }
+                // This view-model outlives the screen (kept with the Learn back-stack entry), so reload on every entry:
+                // after a lesson the numbers must be fresh. Quiet = no "Loading" flash over the card already showing.
+                LaunchedEffect(goalVm) { goalVm.reload(quiet = true) }
                 GoalCard(goalVm)
             }
             if (state.challenges.isNotEmpty()) {

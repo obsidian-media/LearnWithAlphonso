@@ -246,6 +246,49 @@ class GoalCardModelTest {
     }
 
     @Test
+    fun `a quiet reload keeps the card on screen while it fetches and then replaces it`() = runTest {
+        api.fetchHandler = { withGoal }
+        model.load("en")
+        val slow = CompletableDeferred<LearningGoalState>()
+        api.fetchHandler = { slow.await() }
+        val job = launch { model.load("en", quiet = true) }
+        runCurrent()
+        // The learner sees the previous plan, not a "Loading" flash, while the refresh is in flight.
+        assertEquals(GoalPhase.GOAL, model.state.value.phase)
+        assertEquals(withGoal.plan, model.state.value.plan)
+        val updated = withGoal.copy(plan = withGoal.plan!!.copy(lessonsRemaining = 3))
+        slow.complete(updated)
+        job.join()
+        assertEquals(3, model.state.value.plan!!.lessonsRemaining)
+    }
+
+    @Test
+    fun `a quiet reload that fails is shown honestly, not hidden`() = runTest {
+        api.fetchHandler = { withGoal }
+        model.load("en")
+        api.fetchHandler = { throw LearningGoalError.Unavailable }
+        model.load("en", quiet = true)
+        assertEquals(GoalPhase.FAILED, model.state.value.phase)
+        assertEquals(LearningGoalError.Unavailable, model.state.value.loadError)
+    }
+
+    @Test
+    fun `a quiet reload on a card that shows nothing yet behaves like a normal load`() = runTest {
+        api.fetchHandler = { withGoal }
+        model.load("en", quiet = true)
+        assertEquals(GoalPhase.GOAL, model.state.value.phase)
+    }
+
+    @Test
+    fun `save and remove for a signed-out user fail without calling the API`() = runTest {
+        user = null
+        assertEquals(SaveResult.Failed("Sign in again to use goals."), model.save("en", "B1", "2026-12-01"))
+        model.remove("en")
+        assertEquals("Sign in again to use goals.", model.state.value.actionError)
+        assertEquals(0, api.calls)
+    }
+
+    @Test
     fun `a cancelled load propagates and does not become an error state`() = runTest {
         api.fetchHandler = { throw CancellationException("screen left") }
         var thrown: Throwable? = null

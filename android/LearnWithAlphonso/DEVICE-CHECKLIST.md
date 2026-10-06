@@ -62,6 +62,9 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Change goal and Remove goal work; a failed save or remove shows an inline message and leaves the goal editable.
 - [ ] Airplane mode, reopen the app: the last plan shows with "You're offline ... As of <date>." and both buttons disabled; with no cached plan it says "Connect to load your goal".
 - [ ] Switch course (English, French, Spanish) while the card is loading or saving: the card always shows the course on screen, never the one you left.
+- [ ] Finish a lesson and go back to Learn: the goal card's numbers update without a "Loading" flash.
+- [ ] Tap Save goal and immediately open a lesson: coming back shows the NEW goal (the save finishes in the background).
+- [ ] TalkBack announces an error message (for example the server's "That level is below yours") when it appears.
 - [ ] TalkBack reads the headline, progress and status line in order; the status is words, not only colour.
 - [ ] Display size and font scale at 200%: the dialog scrolls and no text is clipped.
 - [ ] Sign out, sign in as someone else: the other account's goal never appears, even offline.

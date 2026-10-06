@@ -78,6 +78,15 @@ object GoalCopy {
     fun monthsFromToday(months: Int, now: Instant = Instant.now()): String =
         now.atZone(ZoneOffset.UTC).toLocalDate().plusMonths(months.toLong()).toString()
 
+    /**
+     * [day] itself, or tomorrow when it is today, in the past, or not a date: a goal's date must be after today, so a
+     * picker seeded from an expired goal must not start on a day the learner cannot choose.
+     */
+    fun atLeastTomorrow(day: String, now: Instant = Instant.now()): String {
+        val earliest = tomorrow(now)
+        return if (parseDay(day) != null && day >= earliest) day else earliest
+    }
+
     fun tomorrow(now: Instant = Instant.now()): String = now.atZone(ZoneOffset.UTC).toLocalDate().plusDays(1).toString()
 
     /** The UTC calendar day of [millis] as "YYYY-MM-DD" (what the server expects for a target date). */

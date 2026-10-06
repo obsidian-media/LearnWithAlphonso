@@ -3,6 +3,8 @@ package com.obsidianmedia.learnwithalphonso.ui.learn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +32,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCopy
@@ -68,6 +74,7 @@ fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
             GoalPhase.FAILED -> {
                 Text(
                     GoalCopy.loadFailureMessage(state.loadError ?: LearningGoalError.Unavailable, hadCachedPlan = false),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     style = MaterialTheme.typography.bodyMedium, color = palette.destructive,
                 )
                 AlphonsoSecondaryButton("Try again", onClick = vm::reload, fullWidth = false)
@@ -98,7 +105,7 @@ fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
                     val asOf = plan?.let { " As of ${GoalCopy.formatDate(it.asOf.take(10))}." }.orEmpty()
                     Text(LearningGoalError.Offline.userMessage + asOf, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
                 }
-                state.actionError?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.destructive) }
+                state.actionError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.destructive) }
                 Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AlphonsoSecondaryButton("Change goal", onClick = { showSetup = true }, enabled = !state.offline, fullWidth = false)
@@ -109,7 +116,8 @@ fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
     }
 
     if (showSetup) {
-        GoalSetupDialog(vm = vm, existing = state.goal, onDismiss = { showSetup = false })
+        // Keyed by the view-model: a dialog opened for one course must never keep its selection (or preview) for another.
+        key(vm) { GoalSetupDialog(vm = vm, existing = state.goal, onDismiss = { showSetup = false }) }
     }
 }
 
@@ -124,12 +132,12 @@ private sealed interface PreviewUi {
  * lessons a week it takes. Save is only possible once a preview for the CURRENT selection has arrived: the preview
  * runs in a LaunchedEffect keyed by the selection, so a newer selection cancels an older request.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDismiss: () -> Unit) {
     val palette = AlphonsoColor.palette
     var level by remember { mutableStateOf(existing?.targetLevel ?: "B1") }
-    var day by remember { mutableStateOf(existing?.targetDate ?: GoalCopy.monthsFromToday(6)) }
+    var day by remember { mutableStateOf(GoalCopy.atLeastTomorrow(existing?.targetDate ?: GoalCopy.monthsFromToday(6))) }
     var preview by remember { mutableStateOf<PreviewUi>(PreviewUi.Loading) }
     var saving by remember { mutableStateOf(false) }
     var saveError by remember { mutableStateOf<String?>(null) }
@@ -150,7 +158,8 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Finish level", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // FlowRow, not Row: at a large font scale the chips wrap instead of being clipped out of reach.
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     // The five CEFR band ids, shared with the Learn screen's band picker (LearnViewModel.LEVELS).
                     LEVELS.forEach { (l, _) ->
                         FilterChip(selected = level == l, onClick = { level = l }, label = { Text(l) })
@@ -158,14 +167,14 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
                 }
                 Text("Target date", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
                 AlphonsoSecondaryButton(GoalCopy.formatDate(day), onClick = { showPicker = true }, fullWidth = false)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(3, 6, 12).forEach { months ->
                         TextButton(onClick = { day = GoalCopy.monthsFromToday(months) }) { Text("$months months") }
                     }
                 }
                 when (val p = preview) {
                     PreviewUi.Loading -> Text("Working it out…", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
-                    is PreviewUi.Failed -> Text(p.message, style = MaterialTheme.typography.bodyMedium, color = palette.destructive)
+                    is PreviewUi.Failed -> Text(p.message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = palette.destructive)
                     is PreviewUi.Ok -> {
                         val lines = GoalCopy.previewLines(p.plan)
                         Text(lines.perWeek, style = MaterialTheme.typography.titleSmall, color = palette.ink)
@@ -174,7 +183,7 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
                         GoalCopy.realismLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.ember) }
                     }
                 }
-                saveError?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+                saveError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
                 Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
             }
         },

@@ -66,6 +66,12 @@ class LearningGoalTest {
     }
 
     @Test
+    fun `an integral number written with a decimal point decodes`() {
+        val twelve = JsonObject(plan("on_track") + ("requiredPerWeek" to kotlinx.serialization.json.JsonPrimitive(12.0)))
+        assertEquals(12, LearningGoalDecoding.plan(preview(twelve)).requiredPerWeek)
+    }
+
+    @Test
     fun `a null suggested date and a missing one are both null`() {
         assertNull(LearningGoalDecoding.plan(preview(plan("on_track"))).suggestedDate)
         val missing = JsonObject(plan("on_track").filterKeys { it != "suggestedDate" })

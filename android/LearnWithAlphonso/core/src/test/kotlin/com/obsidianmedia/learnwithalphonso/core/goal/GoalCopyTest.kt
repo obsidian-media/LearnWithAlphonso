@@ -117,6 +117,16 @@ class GoalCopyTest {
     }
 
     @Test
+    fun `a past or too-soon date is lifted to tomorrow so the picker never starts on an unselectable day`() {
+        val now = at(2026, 10, 6)
+        assertEquals("2026-10-07", GoalCopy.atLeastTomorrow("2026-09-01", now))
+        assertEquals("2026-10-07", GoalCopy.atLeastTomorrow("2026-10-06", now))
+        assertEquals("2026-10-07", GoalCopy.atLeastTomorrow("2026-10-07", now))
+        assertEquals("2026-12-01", GoalCopy.atLeastTomorrow("2026-12-01", now))
+        assertEquals("2026-10-07", GoalCopy.atLeastTomorrow("not a date", now))
+    }
+
+    @Test
     fun `tomorrow is the next UTC day`() {
         assertEquals("2026-10-07", GoalCopy.tomorrow(at(2026, 10, 6)))
         assertEquals("2027-01-01", GoalCopy.tomorrow(at(2026, 12, 31)))

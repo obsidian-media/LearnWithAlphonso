@@ -56,9 +56,14 @@ class GoalCardModel(
     val state: StateFlow<GoalCardState> = _state.asStateFlow()
     private var generation = 0
 
-    suspend fun load(course: String) {
+    /**
+     * [quiet] reloads while the card that is already showing stays on screen (no "Loading" flash): used when the
+     * learner comes back to the screen, so the numbers are fresh without flicker. If nothing is showing yet the
+     * card is already the default "loading" one, so it looks like a normal load. A quiet reload that fails is shown as a failure, never hidden.
+     */
+    suspend fun load(course: String, quiet: Boolean = false) {
         val mine = ++generation
-        _state.value = GoalCardState()
+        if (!quiet) _state.value = GoalCardState()
         val uid = userId()
         if (uid.isNullOrBlank()) {
             _state.value = GoalCardState(phase = GoalPhase.FAILED, loadError = LearningGoalError.NotSignedIn)
