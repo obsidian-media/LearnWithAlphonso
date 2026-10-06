@@ -7,7 +7,8 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.header
-import io.ktor.client.request.post
+import io.ktor.client.request.parameter
+import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -15,6 +16,7 @@ import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.TextContent
 import kotlinx.serialization.json.JsonObject
@@ -45,6 +47,16 @@ class ApiHttp(
                 if (body != null) setBody(TextContent(body.toString(), ContentType.Application.Json))
             }
         }
+
+    /** GET with a query string (the learning-goal route reads its inputs from the query). */
+    suspend fun get(path: String, query: Map<String, String> = emptyMap()): HttpResponse =
+        withRetry { token -> send(path, token, HttpMethod.Get, query) {} }
+
+    suspend fun put(path: String, body: JsonObject): HttpResponse =
+        withRetry { token -> send(path, token, HttpMethod.Put) { setBody(TextContent(body.toString(), ContentType.Application.Json)) } }
+
+    suspend fun delete(path: String, query: Map<String, String> = emptyMap()): HttpResponse =
+        withRetry { token -> send(path, token, HttpMethod.Delete, query) {} }
 
     /** Multipart upload, for /api/stt. Each part is a form field or a file. */
     suspend fun postMultipart(path: String, parts: List<MultipartPart>): HttpResponse =
@@ -78,8 +90,16 @@ class ApiHttp(
         return call(fresh)
     }
 
-    private suspend fun send(path: String, token: String?, configure: HttpRequestBuilder.() -> Unit): HttpResponse =
-        client.post("${baseUrl.trimEnd('/')}/$path") {
+    private suspend fun send(
+        path: String,
+        token: String?,
+        method: HttpMethod = HttpMethod.Post,
+        query: Map<String, String> = emptyMap(),
+        configure: HttpRequestBuilder.() -> Unit,
+    ): HttpResponse =
+        client.request("${baseUrl.trimEnd('/')}/$path") {
+            this.method = method
+            query.forEach { (k, v) -> parameter(k, v) }
             if (token != null) header("Authorization", "Bearer $token")
             configure()
         }
