@@ -81,7 +81,9 @@ function Privacy() {
         </p>
         <p>
           A team's weekly mission shows every member the team's total progress and your own count of
-          lessons; other members' individual counts are not shown on the mission.
+          lessons. The mission does not list other members' individual counts. On a two-member team,
+          while the mission is in progress, the total and your count reveal the other member's
+          count.
         </p>
         <p>
           You can change your display name on the website under Profile. Changing it from inside the

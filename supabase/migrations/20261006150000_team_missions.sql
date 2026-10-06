@@ -8,6 +8,8 @@
 -- course, once per team-week (atomic guard on team_missions.rewarded_at), resolved lazily on the next read (the previous
 -- week is resolved too, so a mission finished and never viewed is still paid). No cron, same pattern as get_my_team's
 -- weekly bonus. The "Team player" badge ships with the iOS/Android catalogs (Phase 2).
+-- Every function pins SET timezone = 'UTC' so the week (current_date) and the lesson bounds are UTC whatever the
+-- caller's session time zone.
 -- Known, accepted: payout resolves against CURRENT members, so a contributor who leaves between the week's end and
 -- the first read can drop a finished mission below its target (leaving takes your contribution with you).
 --
@@ -55,6 +57,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public
+SET timezone = 'UTC'
 AS $$
   SELECT count(*)::int
   FROM public.lesson_completions lc
@@ -71,6 +74,7 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
+SET timezone = 'UTC'
 AS $$
 DECLARE
   m public.team_missions%ROWTYPE;
@@ -138,6 +142,7 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
+SET timezone = 'UTC'
 AS $$
 DECLARE
   me uuid := auth.uid();

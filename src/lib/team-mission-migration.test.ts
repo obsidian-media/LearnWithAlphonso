@@ -102,6 +102,12 @@ describe("team missions migration", () => {
     }
   });
 
+  it("pins the session time zone to UTC in every function (the week and lesson bounds are UTC, current_date is not)", () => {
+    const functions = code().match(/CREATE OR REPLACE FUNCTION[\s\S]*?\$\$;/gi) ?? [];
+    expect(functions).toHaveLength(3);
+    for (const fn of functions) expect(fn).toMatch(/SET timezone = 'UTC'/i);
+  });
+
   it("states how to undo it", () => {
     expect(sql()).toMatch(/ROLLBACK/i);
   });
