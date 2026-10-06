@@ -30,10 +30,28 @@ describe("team player badge migration", () => {
     expect(grant).toMatch(/r\.team_id = _team AND r\.week_start = _wk/i);
     expect(grant).toMatch(/'team_player'/);
     expect(grant).toMatch(/ON CONFLICT[^;]*DO NOTHING/i);
-    // after the atomic rewarded_at guard, never before it
-    expect(resolver().indexOf("INSERT INTO public.user_achievements")).toBeGreaterThan(
-      resolver().indexOf("IF NOT FOUND THEN"),
+    // after the atomic rewarded_at guard AND after the reward rows it reads exist (granting earlier finds no rows)
+    const at = resolver().indexOf("INSERT INTO public.user_achievements");
+    expect(at).toBeGreaterThan(resolver().indexOf("IF NOT FOUND THEN"));
+    expect(at).toBeGreaterThan(resolver().indexOf("INSERT INTO public.team_mission_rewards"));
+    // only the paid members: it reads their reward rows and never joins the whole team
+    expect(grant).toMatch(/SELECT r\.user_id, 'team_player', 1/i);
+    expect(grant).not.toMatch(/team_members/i);
+    expect(grant).not.toMatch(/\bJOIN\b/i);
+  });
+
+  it("is the deployed resolver plus exactly the one grant (nothing else changed)", () => {
+    const original = fs
+      .readFileSync(path.join(MIGRATIONS, "20261006150000_team_missions.sql"), "utf8")
+      .replace(/--[^\n]*/g, "")
+      .match(/FUNCTION public\._resolve_team_mission[\s\S]*?\$\$;/i)?.[0];
+    const withoutGrant = resolver().replace(
+      /\s*INSERT INTO public\.user_achievements[\s\S]*?DO NOTHING;/i,
+      "",
     );
+    const squash = (s: string) => s.replace(/\s+/g, " ").trim();
+    expect(original).toBeDefined();
+    expect(squash(withoutGrant)).toBe(squash(original ?? ""));
   });
 
   it("keeps everything the previous version of the resolver guaranteed", () => {
