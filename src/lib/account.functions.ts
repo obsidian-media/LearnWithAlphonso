@@ -31,6 +31,7 @@ export const USER_ID_EXPORT_TABLES = [
   "season_cohort_members",
   "season_placements",
   "team_members",
+  "team_mission_rewards",
   "user_achievements",
   "user_progress",
   "user_weekly_quest_claims",
