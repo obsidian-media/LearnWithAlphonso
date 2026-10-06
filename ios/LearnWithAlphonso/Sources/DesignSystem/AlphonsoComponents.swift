@@ -591,8 +591,22 @@ struct AlphonsoTipCard: View {
         // bubble style); nothing about that is available to VoiceOver
         // without saying it outright. Combine folds "Alphonso says" +
         // explanation into one stop instead of two.
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Incorrect. Alphonso says: \(explanation)")
+        //
+        // When the words are tappable (saving is offered) that fold would hide
+        // them: a combined element exposes no child links to VoiceOver, so a
+        // VoiceOver user could hear the explanation but never save a word from
+        // it (CodeRabbit, and the phase 3 reviewer). Then the card is a
+        // CONTAINER whose label is just "Incorrect." -- the children read
+        // themselves ("Alphonso says", then the explanation with its links), so
+        // nothing is spoken twice. Everywhere else the original single stop is
+        // unchanged.
+        .accessibilityElement(children: linksReachable ? .contain : .combine)
+        .accessibilityLabel(linksReachable ? "Incorrect." : "Incorrect. Alphonso says: \(explanation)")
+    }
+
+    /// Whether the explanation's words are tappable links (see `body`).
+    private var linksReachable: Bool {
+        saveCourse != nil && saveWordHandler != nil
     }
 }
 
