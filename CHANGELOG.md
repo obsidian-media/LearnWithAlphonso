@@ -10,6 +10,8 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
+**Team mission on Android (2026-10-06, study together Phase 2c).** `:core`: `TeamMission`, `getTeamMission`, `TeamMissionModel` with 17 + 5 tests against the shared fixtures (mutation-checked); app: `TeamMissionViewModel`, `TeamMissionCard`, mounted on the Learn screen and the team screen. The Android copy of the fixtures is now pinned byte-for-byte too. Merged but in no release; not run on a device (see DEVICE-CHECKLIST.md).
+
 **Team mission on iOS (2026-10-06, study together Phase 2b).** `TeamMission` + `ProgressSyncClient.getTeamMission` in the Kit (13 tests incl. the shared fixture contract and client behaviour, mutation-checked), `TeamMissionSection` on the team screen and the Learn tab. Merged to main but in no build; the SwiftUI layer is compiled by CI only. Android follows.
 
 **Team player badge (2026-10-06, study together Phase 2).** Members who are paid for a finished team mission also unlock `team_player`, granted inside the same atomic payout by `_resolve_team_mission` (migration `20261006160000_team_player_badge.sql`). The new `team` achievement category has no client stat, so lesson completion can never unlock it (test-pinned). The catalog entry is mirrored in `src/data/achievements.ts` and the three bundled JSON copies (iOS app, iOS Kit, Android assets), regenerated with the export scripts; iOS/Android catalog tests updated. Verified live in a rolled-back transaction: badge and XP to exactly the contributors, none to a member who contributed nothing, no duplicate on a second read.

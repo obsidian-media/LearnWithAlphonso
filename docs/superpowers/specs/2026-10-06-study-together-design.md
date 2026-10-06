@@ -2,6 +2,21 @@
 
 Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.0-ac item 2). Decisions made with the owner: both features in one spec, built in the order below; target scales with team size; reward is XP plus a shared badge; members see the team total plus their own count; buddies pair with an existing friend or through opt-in matching; the buddy goal is a small weekly lesson count with a pair streak; **buddies talk through fixed preset messages only, never free text** (free text would add a new kind of user-generated content and change the App Store submission: App Privacy answers, age rating and moderation scrutiny).
 
+## Implementation status (kept current)
+
+| Phase | What | State |
+|---|---|---|
+| 1 | Team mission: database, `get_team_mission()`, web card, privacy line, export | MERGED and live (PRs #230, #231) |
+| 2a | Team player badge (database grant, catalog, three bundles) | MERGED and live (#232) |
+| 2b | Team mission on iOS | MERGED (#233), in no build |
+| 2c | Team mission on Android | PR in flight (`feat/team-mission-android`) |
+| 3 | Buddy pairing and weekly goal, server and web | NOT started |
+| 4 | Buddy on iOS and Android | NOT started |
+| 5 | Buddy preset messages, server and web | NOT started |
+| 6 | Buddy presets on iOS and Android | NOT started |
+
+Plans: `docs/superpowers/plans/2026-10-06-team-mission-web.md`, `2026-10-06-team-player-badge.md`. Phases 2b and 2c were executed directly from the web plan's fixtures and the patterns of the goal planner (no separate plan file). Findings that changed the design along the way: the payout course is the one the member studied, not `profiles.active_language` (BACKLOG 0.0-af); a team below two members is never paid; the dead `mergeGuestProgress` endpoint was removed because it could fake lesson completions.
+
 ## Goal
 
 Rivals are solo experiences; this app already has teams, friends, duels, nudges, block and report. Give learners a reason to study *with* someone: a weekly goal a team reaches together, and one study partner with a shared streak.
