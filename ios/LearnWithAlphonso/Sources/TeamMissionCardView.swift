@@ -10,6 +10,10 @@ import LearnWithAlphonsoKit
 /// ios-app-build but NOT run on a device by the change that added it.
 struct TeamMissionSection: View {
     let session: Session
+    /// Changes when the surrounding screen knows the mission may have changed without this section
+    /// leaving the screen (the team screen passes its member count: an owner kicking someone turns a
+    /// two-person mission into "invite a friend" on the server, and the card must follow).
+    var reloadKey: Int = 0
 
     @State private var mission: TeamMission?
 
@@ -43,13 +47,15 @@ struct TeamMissionSection: View {
                 .listRowBackground(AlphonsoColor.parchment)
             }
         }
-        // Group keeps a stable identity across the load, so this fires exactly once when the section first
-        // appears (see WeeklyChallengesSection for the same reasoning).
-        .task { await load() }
+        // Group keeps a stable identity across the load, so this fires once when the section first appears
+        // (see WeeklyChallengesSection for the same reasoning) and again whenever `reloadKey` changes.
+        .task(id: reloadKey) { await load() }
     }
 
     private func load() async {
-        guard let accessToken = session.accessToken else { return }
+        // The refreshed token, like the goal card: `session.accessToken` is the stored one even when it
+        // has expired, which would make this card quietly vanish an hour into a session.
+        guard let accessToken = await session.freshAccessToken() else { return }
         let client = ProgressSyncClient(
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         // A failed call shows nothing rather than a fabricated empty mission.

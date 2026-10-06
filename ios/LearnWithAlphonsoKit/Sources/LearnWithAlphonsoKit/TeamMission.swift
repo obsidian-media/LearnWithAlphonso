@@ -36,7 +36,8 @@ public struct TeamMission: Sendable, Equatable {
 
     private static let dayInSeconds: Double = 86_400
 
-    /// Decodes one `get_team_mission` row; nil when a field is missing or mistyped so the caller can tell
+    /// Decodes one `get_team_mission` row; nil when a required field is missing or mistyped (`status` alone is
+    /// tolerated: an unknown or absent value reads as in progress) so the caller can tell
     /// "the server broke its contract" from "this learner has no team" (an empty result).
     public init?(row: [String: Any], now: Date) {
         guard let teamID = row["team_id"] as? String,

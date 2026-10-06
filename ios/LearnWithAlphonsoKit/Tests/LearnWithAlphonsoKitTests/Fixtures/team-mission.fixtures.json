@@ -36,6 +36,18 @@
       "name": "the reward amount comes from the server, not the client",
       "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 8, "my_count": 3, "member_count": 2, "status": "complete", "reward_xp": 75, "rewarded": true },
       "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 8, "myCount": 3, "memberCount": 2, "status": "complete", "rewardXp": 75, "rewarded": true, "daysLeft": 5, "percent": 100, "headline": "Mission complete!", "footer": "+75 XP for everyone who joined in" }
+    },
+    {
+      "name": "week already over shows zero days left, not last day",
+      "now": "2026-10-13T00:00:00.000Z",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 3, "my_count": 1, "member_count": 2, "status": "in_progress", "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 3, "myCount": 1, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 0, "percent": 37, "headline": "3 of 8 lessons done", "footer": "You added 1 · 0 days left" }
+    },
+    {
+      "name": "exactly one day before the end is one day left (ceil, not floor plus one)",
+      "now": "2026-10-11T00:00:00.000Z",
+      "row": { "team_id": "t1", "week_start": "2026-10-05", "week_end": "2026-10-12", "target": 8, "total": 3, "my_count": 1, "member_count": 2, "status": "in_progress", "reward_xp": 50, "rewarded": false },
+      "expected": { "teamId": "t1", "weekStart": "2026-10-05", "weekEnd": "2026-10-12", "target": 8, "total": 3, "myCount": 1, "memberCount": 2, "status": "in_progress", "rewardXp": 50, "rewarded": false, "daysLeft": 1, "percent": 37, "headline": "3 of 8 lessons done", "footer": "You added 1 · Last day" }
     }
   ]
 }
