@@ -362,21 +362,6 @@ describe("GDPR export table coverage", () => {
     // regardless. Deletion is handled: user_id REFERENCES auth.users ON
     // DELETE CASCADE.
     "team_kicks",
-    // display_name_migration_backup (supabase/migrations/20261008130100_display_name_onboarding.sql):
-    // a 30-day rollback backup of a public display-name change (email-prefix
-    // names replaced by handles), dropped after 2026-11-08. RLS on, no client
-    // grants, service role only; user_id REFERENCES auth.users ON DELETE
-    // CASCADE, so deletion is handled.
-    "display_name_migration_backup",
-    // buddy_age_confirmations and buddy_pool_attempts
-    // (supabase/migrations/20261008130700_buddy_matching_hardening.sql): a
-    // server-side record of the 13+ confirmation and a one-day rate-limit
-    // log for joining the matching pool. Both have RLS on, no client grants
-    // and no policies (only the SECURITY DEFINER join_buddy_pool writes
-    // them), so a caller-scoped export would return empty. user_id
-    // REFERENCES auth.users ON DELETE CASCADE, so deletion is handled.
-    "buddy_age_confirmations",
-    "buddy_pool_attempts",
   ]);
 
   it("exports every table that has a user_id column", () => {

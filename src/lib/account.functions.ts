@@ -16,6 +16,9 @@ import type { Database } from "@/integrations/supabase/types";
 export const USER_ID_EXPORT_TABLES = [
   "activity_days",
   "buddy_pool",
+  "buddy_age_confirmations",
+  "buddy_pool_attempts",
+  "display_name_migration_backup",
   "ai_rate_limits",
   "ai_usage",
   "challenge_completions",

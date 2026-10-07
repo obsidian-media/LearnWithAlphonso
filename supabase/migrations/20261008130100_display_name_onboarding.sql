@@ -165,7 +165,6 @@ $$;
 REVOKE ALL ON FUNCTION public.admin_reset_display_name(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_reset_display_name(uuid) TO service_role;
 
--- client-grants: none public.display_name_migration_backup
 -- What the migration below changed, so it can be undone. Drop after 2026-11-08 (BACKLOG item, Task 19).
 CREATE TABLE public.display_name_migration_backup (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -176,6 +175,11 @@ CREATE TABLE public.display_name_migration_backup (
 ALTER TABLE public.display_name_migration_backup ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.display_name_migration_backup FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.display_name_migration_backup TO service_role;
+-- The learner's own row is part of their data export (it holds their former public name); writes are service-only.
+CREATE POLICY display_name_migration_backup_select_own ON public.display_name_migration_backup
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
+GRANT SELECT ON public.display_name_migration_backup TO authenticated;
 
 WITH targets AS (
   SELECT p.id, p.display_name AS old_name, public.generate_learner_handle() AS new_name

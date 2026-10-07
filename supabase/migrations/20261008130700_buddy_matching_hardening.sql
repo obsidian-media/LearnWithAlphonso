@@ -5,11 +5,10 @@
 --     Now at most 20 calls an hour ('too_many_tries', every call counted, refused ones too) and at most 3 new
 --     matches per rolling 7 days ('match_limit'); a waiting learner at their limit is not offered as a candidate.
 --   * the 13+ confirmation lived only in the buddy_pool row, which is deleted on pairing or leaving. Every confirmed
---     call is now recorded in buddy_age_confirmations (service-only).
+--     call is now recorded in buddy_age_confirmations (owner-readable for the data export; written only here).
 -- Rollback: re-run join_buddy_pool from 20261007120000_buddy_matching.sql;
 --   DROP TABLE public.buddy_pool_attempts, public.buddy_age_confirmations;
 
--- client-grants: none public.buddy_age_confirmations
 CREATE TABLE public.buddy_age_confirmations (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   first_confirmed_at timestamptz NOT NULL DEFAULT now(),
@@ -19,8 +18,12 @@ CREATE TABLE public.buddy_age_confirmations (
 ALTER TABLE public.buddy_age_confirmations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.buddy_age_confirmations FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.buddy_age_confirmations TO service_role;
+-- The learner's own row is part of their data export; writes happen only inside join_buddy_pool.
+CREATE POLICY buddy_age_confirmations_select_own ON public.buddy_age_confirmations
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
+GRANT SELECT ON public.buddy_age_confirmations TO authenticated;
 
--- client-grants: none public.buddy_pool_attempts
 CREATE TABLE public.buddy_pool_attempts (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   attempted_at timestamptz NOT NULL DEFAULT now()
@@ -29,6 +32,11 @@ CREATE INDEX buddy_pool_attempts_user_idx ON public.buddy_pool_attempts (user_id
 ALTER TABLE public.buddy_pool_attempts ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.buddy_pool_attempts FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.buddy_pool_attempts TO service_role;
+-- The learner's own rows are part of their data export; writes happen only inside join_buddy_pool.
+CREATE POLICY buddy_pool_attempts_select_own ON public.buddy_pool_attempts
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
+GRANT SELECT ON public.buddy_pool_attempts TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.join_buddy_pool(_course text, _age_confirmed boolean)
 RETURNS TABLE(status text)

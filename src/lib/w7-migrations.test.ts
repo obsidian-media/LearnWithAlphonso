@@ -156,9 +156,12 @@ describe("display-name onboarding", () => {
     expect(stmt).toMatch(/EXCEPTION WHEN check_violation OR raise_exception THEN/);
   });
 
-  it("the backup table is service-only and the grant guard accepts the file", () => {
-    expect(read(file)).toContain("-- client-grants: none public.display_name_migration_backup");
-    expect(checkNewTableGrants(read(file))).toEqual([]);
+  it("the backup table is readable by its owner only (it is in the data export) and the grant guard accepts the file", () => {
+    const sql = read(file);
+    expect(sql).toMatch(/CREATE POLICY display_name_migration_backup_select_own ON public\.display_name_migration_backup\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);/);
+    expect(sql).toContain("GRANT SELECT ON public.display_name_migration_backup TO authenticated;");
+    expect(sql).not.toMatch(/GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.display_name_migration_backup TO [^;]*\b(anon|authenticated)\b/);
+    expect(checkNewTableGrants(sql)).toEqual([]);
   });
 });
 
@@ -278,10 +281,13 @@ describe("buddy matching hardening", () => {
     expect(stmt).toContain("FROM public.blocked_users b");
     expect(stmt).toContain("FROM public.buddy_pairs past");
   });
-  it("the new tables are service-only", () => {
+  it("the new tables are readable by their owner only (both are in the data export), writable by nobody but the RPC", () => {
     const sql = read(file);
-    expect(sql).toContain("-- client-grants: none public.buddy_age_confirmations");
-    expect(sql).toContain("-- client-grants: none public.buddy_pool_attempts");
+    for (const t of ["buddy_age_confirmations", "buddy_pool_attempts"]) {
+      expect(sql, t).toMatch(new RegExp(String.raw`CREATE POLICY ${t}_select_own ON public\.${t}\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);`));
+      expect(sql, t).toContain(`GRANT SELECT ON public.${t} TO authenticated;`);
+      expect(sql, t).not.toMatch(new RegExp(String.raw`GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.${t} TO [^;]*\b(anon|authenticated)\b`));
+    }
     expect(checkNewTableGrants(sql)).toEqual([]);
   });
 });
