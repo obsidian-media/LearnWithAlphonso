@@ -10,7 +10,7 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 2a | Team player badge (database grant, catalog, three bundles) | MERGED and live (#232) |
 | 2b | Team mission on iOS | MERGED (#233), in no build |
 | 2c | Team mission on Android | MERGED (#234), in no release |
-| 3a | Buddy pairing between friends and weekly goal, server and web | IN REVIEW (branch `feat/buddy-pairing`, plan `2026-10-06-buddy-pairing-web.md`) |
+| 3a | Buddy pairing between friends and weekly goal, server and web | MERGED and live (#238), verified on the deployed functions; plan `2026-10-06-buddy-pairing-web.md` |
 | 3b | Opt-in matching with strangers (`buddy_pool`) | BLOCKED on the owner's age-rating decision (BACKLOG 0.0-ai) |
 | 4 | Buddy on iOS and Android | NOT started |
 | 5 | Buddy preset messages, server and web | NOT started |
