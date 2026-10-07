@@ -97,7 +97,9 @@ export const exportMyData = createServerFn({ method: "POST" })
     const [userIdRows, otherOwnedRows, { data: profile }, rlsScopedRows] = await Promise.all([
       Promise.all(
         USER_ID_EXPORT_TABLES.map((table) =>
-          supabase
+          // Untyped on purpose: the export only dumps rows, and a table added by a migration exists here one deploy
+          // before the generated types know it (types.ts is regenerated from the deployed schema).
+          (supabase as unknown as SupabaseClient)
             .from(table)
             .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*")
             .eq("user_id", userId),

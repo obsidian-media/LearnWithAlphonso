@@ -68,13 +68,17 @@ describe("moderation filter v2", () => {
   it("no client role may read the lists or run the matcher directly", () => {
     const sql = read(file);
     for (const sig of helpers) {
-      expect(sql).toContain(`REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon, authenticated;`);
+      expect(sql).toContain(
+        `REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon, authenticated;`,
+      );
     }
     // Every GRANT that names a helper, in any position of a multi-function list, may go only to service_role.
     const grants = sql
       .split(";")
       .map((stmt) => stmt.replace(/--[^\n]*/g, "").trim())
-      .filter((stmt) => /^GRANT\b/i.test(stmt) && helpers.some((sig) => stmt.includes(`public.${sig}`)));
+      .filter(
+        (stmt) => /^GRANT\b/i.test(stmt) && helpers.some((sig) => stmt.includes(`public.${sig}`)),
+      );
     expect(grants.length).toBeGreaterThan(0);
     for (const stmt of grants) {
       const to = stmt.slice(stmt.search(/\bTO\b/i));
@@ -86,20 +90,32 @@ describe("moderation filter v2", () => {
     const head = header(fn(file, "admin_rename_team"));
     expect(head).toMatch(/SECURITY DEFINER/);
     expect(head).toMatch(/SET search_path = public/);
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.admin_rename_team(uuid, text) FROM PUBLIC, anon, authenticated;");
-    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.admin_rename_team(uuid, text) TO service_role;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public.admin_rename_team(uuid, text) FROM PUBLIC, anon, authenticated;",
+    );
+    expect(read(file)).toContain(
+      "GRANT EXECUTE ON FUNCTION public.admin_rename_team(uuid, text) TO service_role;",
+    );
   });
 
   it("the trigger and the verdict run as definer, so revoking the helpers cannot break a client write", () => {
     expect(header(fn(file, "enforce_display_name_filter"))).toMatch(/SECURITY DEFINER/);
     expect(header(fn(file, "display_name_problem"))).toMatch(/SECURITY DEFINER/);
-    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.display_name_problem(text) TO authenticated, service_role;");
+    expect(read(file)).toContain(
+      "GRANT EXECUTE ON FUNCTION public.display_name_problem(text) TO authenticated, service_role;",
+    );
   });
 
   it("folds NFKC, strips invisible and bidi characters, and drops combining marks", () => {
     const clean = fn(file, "moderation_clean_text");
     expect(clean).toContain("normalize(coalesce(input, ''), NFKC)");
-    for (const range of ["\\u200B-\\u200F", "\\u202A-\\u202E", "\\u2066-\\u206F", "\\uFEFF", "\\u3164"]) {
+    for (const range of [
+      "\\u200B-\\u200F",
+      "\\u202A-\\u202E",
+      "\\u2066-\\u206F",
+      "\\uFEFF",
+      "\\u3164",
+    ]) {
       expect(clean, range).toContain(range);
     }
     expect(fn(file, "normalize_for_moderation")).toContain("'[\\u0300-\\u036f]'");
@@ -120,7 +136,9 @@ describe("moderation filter v2", () => {
   });
 
   it("the trigger raises 23514 with the blocked-content code clients map", () => {
-    expect(fn(file, "enforce_display_name_filter")).toContain("RAISE EXCEPTION 'blocked-content' USING ERRCODE = '23514';");
+    expect(fn(file, "enforce_display_name_filter")).toContain(
+      "RAISE EXCEPTION 'blocked-content' USING ERRCODE = '23514';",
+    );
   });
 });
 
@@ -128,16 +146,24 @@ describe("display-name onboarding", () => {
   const file = FILES.names;
 
   it("adds name_confirmed_at as a nullable column", () => {
-    expect(read(file)).toContain("ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name_confirmed_at timestamptz NULL;");
+    expect(read(file)).toContain(
+      "ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name_confirmed_at timestamptz NULL;",
+    );
   });
 
   it("confirm_display_name is a definer RPC only signed-in users may call", () => {
     const stmt = fn(file, "confirm_display_name");
-    expect(header(stmt)).toMatch(/RETURNS text\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = public/);
+    expect(header(stmt)).toMatch(
+      /RETURNS text\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = public/,
+    );
     expect(stmt).toContain("public.display_name_problem(_name)");
     expect(stmt).toContain("name_confirmed_at = now()");
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.confirm_display_name(text) FROM PUBLIC, anon;");
-    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.confirm_display_name(text) TO authenticated;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public.confirm_display_name(text) FROM PUBLIC, anon;",
+    );
+    expect(read(file)).toContain(
+      "GRANT EXECUTE ON FUNCTION public.confirm_display_name(text) TO authenticated;",
+    );
   });
 
   it("generate_learner_handle has no client EXECUTE and the documented shape", () => {
@@ -145,7 +171,9 @@ describe("display-name onboarding", () => {
     expect(stmt).toContain("'Learner-' || upper(substr(md5(");
     expect(stmt).toMatch(/FOR i IN 1\.\.50 LOOP/);
     expect(stmt).toContain("public.display_name_problem(candidate) IS NULL");
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;",
+    );
   });
 
   it("handle_new_user falls back to a handle and never raises a name error", () => {
@@ -158,9 +186,13 @@ describe("display-name onboarding", () => {
 
   it("the backup table is readable by its owner only (it is in the data export) and the grant guard accepts the file", () => {
     const sql = read(file);
-    expect(sql).toMatch(/CREATE POLICY display_name_migration_backup_select_own ON public\.display_name_migration_backup\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);/);
+    expect(sql).toMatch(
+      /CREATE POLICY display_name_migration_backup_select_own ON public\.display_name_migration_backup\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);/,
+    );
     expect(sql).toContain("GRANT SELECT ON public.display_name_migration_backup TO authenticated;");
-    expect(sql).not.toMatch(/GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.display_name_migration_backup TO [^;]*\b(anon|authenticated)\b/);
+    expect(sql).not.toMatch(
+      /GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.display_name_migration_backup TO [^;]*\b(anon|authenticated)\b/,
+    );
     expect(checkNewTableGrants(sql)).toEqual([]);
   });
 });
@@ -170,8 +202,12 @@ describe("team members block filter", () => {
     const stmt = fn(FILES.members, "get_team_members");
     expect(stmt).toContain("(bu.blocker = me AND bu.blocked = tm.user_id)");
     expect(stmt).toContain("(bu.blocker = tm.user_id AND bu.blocked = me)");
-    expect(read(FILES.members)).toContain("REVOKE ALL ON FUNCTION public.get_team_members() FROM PUBLIC, anon;");
-    expect(read(FILES.members)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated;");
+    expect(read(FILES.members)).toContain(
+      "REVOKE ALL ON FUNCTION public.get_team_members() FROM PUBLIC, anon;",
+    );
+    expect(read(FILES.members)).toContain(
+      "GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated;",
+    );
   });
 });
 
@@ -184,7 +220,9 @@ describe("content reports moderation ops", () => {
     expect(sql).toContain("CHECK (kind IN ('user', 'team_name', 'ai_response'))");
     expect(sql).toContain("CHECK ((kind = 'ai_response') = (reported IS NULL))");
     expect(sql).toContain("ALTER COLUMN reported DROP NOT NULL");
-    expect(sql).not.toMatch(/GRANT (SELECT|UPDATE|DELETE|ALL)[^;]*content_reports[^;]*TO (anon|authenticated)/);
+    expect(sql).not.toMatch(
+      /GRANT (SELECT|UPDATE|DELETE|ALL)[^;]*content_reports[^;]*TO (anon|authenticated)/,
+    );
   });
   it("the notify trigger is definer-only, throttled, secret-gated and can never fail an insert", () => {
     const stmt = fn(file, "notify_content_report");
@@ -193,7 +231,9 @@ describe("content reports moderation ops", () => {
     expect(stmt).toContain("'X-Report-Notify-Secret', secret");
     expect(stmt).toContain("interval '1 hour'");
     expect(stmt).toMatch(/EXCEPTION WHEN OTHERS THEN\s+RAISE WARNING/);
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.notify_content_report() FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public.notify_content_report() FROM PUBLIC, anon, authenticated;",
+    );
     expect(read(file)).toContain("AFTER INSERT ON public.content_reports");
   });
 });
@@ -202,14 +242,20 @@ describe("function grants hardening (L8)", () => {
   it("pins _random_team_name's search_path and revokes both functions from every client role", () => {
     const sql = read(FILES.grants);
     expect(sql).toContain("ALTER FUNCTION public._random_team_name() SET search_path = '';");
-    expect(sql).toContain("REVOKE ALL ON FUNCTION public._random_team_name() FROM PUBLIC, anon, authenticated;");
-    expect(sql).toContain("REVOKE ALL ON FUNCTION public.notify_nudge_push() FROM PUBLIC, anon, authenticated;");
+    expect(sql).toContain(
+      "REVOKE ALL ON FUNCTION public._random_team_name() FROM PUBLIC, anon, authenticated;",
+    );
+    expect(sql).toContain(
+      "REVOKE ALL ON FUNCTION public.notify_nudge_push() FROM PUBLIC, anon, authenticated;",
+    );
   });
   it("every W7 function revokes PUBLIC (a CREATE OR REPLACE never removes the default PUBLIC grant)", () => {
     for (const file of Object.values(FILES)) {
       const sql = read(file);
       for (const m of sql.matchAll(/CREATE OR REPLACE FUNCTION public\.([a-z_0-9]+)\(/g)) {
-        expect(sql, `${file}: ${m[1]}`).toMatch(new RegExp(`REVOKE ALL ON FUNCTION public\\.${m[1]}\\([^)]*\\) FROM PUBLIC`));
+        expect(sql, `${file}: ${m[1]}`).toMatch(
+          new RegExp(`REVOKE ALL ON FUNCTION public\\.${m[1]}\\([^)]*\\) FROM PUBLIC`),
+        );
       }
     }
   });
@@ -237,13 +283,16 @@ describe("team integrity", () => {
     expect(stmt).toContain("'team-disbanded'");
   });
   it("re-joining your own team is a no-op", () => {
-    expect(fn(file, "_join_team_impl")).toMatch(/m\.user_id = _me AND m\.team_id = _team_id[\s\S]*RETURN QUERY SELECT true, NULL::text, _team_id;/);
+    expect(fn(file, "_join_team_impl")).toMatch(
+      /m\.user_id = _me AND m\.team_id = _team_id[\s\S]*RETURN QUERY SELECT true, NULL::text, _team_id;/,
+    );
   });
   it("no weekly team bonus when nobody earned XP", () => {
-    expect(fn(file, "get_my_team")).toContain("HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0");
+    expect(fn(file, "get_my_team")).toContain(
+      "HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0",
+    );
   });
 });
-
 
 describe("weekly quest integrity", () => {
   const stmt = () => fn(FILES.quests, "claim_weekly_quest");
@@ -256,14 +305,17 @@ describe("weekly quest integrity", () => {
     const s = stmt();
     expect(s).toContain("_course NOT IN ('en', 'fr', 'es')");
     expect(s.indexOf("'no-course-progress'")).toBeGreaterThan(-1);
-    expect(s.indexOf("'no-course-progress'")).toBeLessThan(s.indexOf("INSERT INTO public.user_weekly_quest_claims"));
+    expect(s.indexOf("'no-course-progress'")).toBeLessThan(
+      s.indexOf("INSERT INTO public.user_weekly_quest_claims"),
+    );
   });
   it("records the paid course", () => {
-    expect(read(FILES.quests)).toContain("ADD COLUMN IF NOT EXISTS course text NULL CHECK (course IN ('en', 'fr', 'es'))");
+    expect(read(FILES.quests)).toContain(
+      "ADD COLUMN IF NOT EXISTS course text NULL CHECK (course IN ('en', 'fr', 'es'))",
+    );
     expect(stmt()).toContain("(user_id, quest_id, week_start, course)");
   });
 });
-
 
 describe("buddy matching hardening", () => {
   const file = FILES.matching;
@@ -284,14 +336,21 @@ describe("buddy matching hardening", () => {
   it("the new tables are readable by their owner only (both are in the data export), writable by nobody but the RPC", () => {
     const sql = read(file);
     for (const t of ["buddy_age_confirmations", "buddy_pool_attempts"]) {
-      expect(sql, t).toMatch(new RegExp(String.raw`CREATE POLICY ${t}_select_own ON public\.${t}\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);`));
+      expect(sql, t).toMatch(
+        new RegExp(
+          String.raw`CREATE POLICY ${t}_select_own ON public\.${t}\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = user_id\);`,
+        ),
+      );
       expect(sql, t).toContain(`GRANT SELECT ON public.${t} TO authenticated;`);
-      expect(sql, t).not.toMatch(new RegExp(String.raw`GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.${t} TO [^;]*\b(anon|authenticated)\b`));
+      expect(sql, t).not.toMatch(
+        new RegExp(
+          String.raw`GRANT (INSERT|UPDATE|DELETE|ALL)[^;]*ON public\.${t} TO [^;]*\b(anon|authenticated)\b`,
+        ),
+      );
     }
     expect(checkNewTableGrants(sql)).toEqual([]);
   });
 });
-
 
 describe("W7 addendum: migration window", () => {
   it("every W7 file sorts after W1's reserved slot (20261008120000) and before W3's consent migration", () => {
@@ -318,12 +377,13 @@ describe("profiles own-row read (A1, O3)", () => {
     const later = fs.readdirSync(DIR).filter((f) => f.endsWith(".sql") && f > FILES.profilesOwnRow);
     for (const f of later) {
       const text = read(f);
-      expect(text, f).not.toMatch(/ON\s+public\.profiles\s+FOR\s+(SELECT|ALL)[^;]*USING\s*\(\s*true\s*\)/i);
+      expect(text, f).not.toMatch(
+        /ON\s+public\.profiles\s+FOR\s+(SELECT|ALL)[^;]*USING\s*\(\s*true\s*\)/i,
+      );
       expect(text, f).not.toMatch(/"?profiles_read_all_auth"?/);
     }
   });
 });
-
 
 describe("kill switch mutes matched pairs (A3, O4)", () => {
   const file = FILES.matchingPaused;
@@ -340,14 +400,21 @@ describe("kill switch mutes matched pairs (A3, O4)", () => {
   it("get_my_buddy is dropped, recreated with matching_enabled last, and keeps its grants", () => {
     const sql = read(file);
     expect(sql).toContain("DROP FUNCTION public.get_my_buddy();");
-    expect(header(fn(file, "get_my_buddy"))).toMatch(/is_match boolean,\s*matching_enabled boolean\)/);
+    expect(header(fn(file, "get_my_buddy"))).toMatch(
+      /is_match boolean,\s*matching_enabled boolean\)/,
+    );
     expect(sql).toContain("REVOKE ALL ON FUNCTION public.get_my_buddy() FROM PUBLIC, anon;");
-    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.get_my_buddy() TO authenticated, service_role;");
-    expect(sql).toContain("REVOKE ALL ON FUNCTION public.send_buddy_message(text) FROM PUBLIC, anon;");
-    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.send_buddy_message(text) TO authenticated, service_role;");
+    expect(sql).toContain(
+      "GRANT EXECUTE ON FUNCTION public.get_my_buddy() TO authenticated, service_role;",
+    );
+    expect(sql).toContain(
+      "REVOKE ALL ON FUNCTION public.send_buddy_message(text) FROM PUBLIC, anon;",
+    );
+    expect(sql).toContain(
+      "GRANT EXECUTE ON FUNCTION public.send_buddy_message(text) TO authenticated, service_role;",
+    );
   });
 });
-
 
 describe("owner sees blocked members to kick them (A6, O5)", () => {
   const file = FILES.ownerSeesBlocked;
@@ -357,10 +424,11 @@ describe("owner sees blocked members to kick them (A6, O5)", () => {
     expect(stmt).toContain("(bu.blocker = tm.user_id AND bu.blocked = me)"); // they blocked me: hidden, always
     expect(stmt).toMatch(/i_own OR NOT EXISTS/);
     expect(read(file)).toContain("DROP FUNCTION public.get_team_members();");
-    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated, service_role;");
+    expect(read(file)).toContain(
+      "GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated, service_role;",
+    );
   });
 });
-
 
 describe("O6 reset of failing names (A8)", () => {
   const file = FILES.nameReset;
@@ -368,14 +436,20 @@ describe("O6 reset of failing names (A8)", () => {
     const stmt = fn(file, "generate_learner_handle");
     expect(stmt).toMatch(/FOR i IN 1\.\.50 LOOP/);
     expect(stmt).toContain("public.display_name_problem(candidate) IS NULL");
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;",
+    );
   });
   it("the reset refuses to run past the owner-approved counts and is service-only", () => {
     const stmt = fn(file, "_reset_failing_public_names");
     expect(stmt).toContain("o6-reset-not-approved");
-    expect(stmt.indexOf("o6-reset-not-approved")).toBeLessThan(stmt.indexOf("UPDATE public.profiles"));
+    expect(stmt.indexOf("o6-reset-not-approved")).toBeLessThan(
+      stmt.indexOf("UPDATE public.profiles"),
+    );
     expect(stmt).toContain("name_confirmed_at = NULL");
-    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public._reset_failing_public_names(integer, integer) FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain(
+      "REVOKE ALL ON FUNCTION public._reset_failing_public_names(integer, integer) FROM PUBLIC, anon, authenticated;",
+    );
     expect(read(file)).toMatch(/SELECT \* FROM public\._reset_failing_public_names\(\d+, \d+\);/);
   });
   it("the team backup table is service-only", () => {
@@ -383,4 +457,3 @@ describe("O6 reset of failing names (A8)", () => {
     expect(checkNewTableGrants(read(file))).toEqual([]);
   });
 });
-

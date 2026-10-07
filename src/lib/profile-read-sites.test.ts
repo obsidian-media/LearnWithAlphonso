@@ -6,7 +6,14 @@ import { describe, expect, it } from "vitest";
 // ANOTHER learner's row would silently return nothing and blank a screen. Every direct table access is listed here
 // with its count; changing a count means: confirm the new site reads only the caller's own row (or uses the service
 // role), then update this map in the same PR. Cross-user reads go through the SECURITY DEFINER RPCs instead.
-const ROOTS = ["src", "admin", "supabase/functions", "ios/LearnWithAlphonsoKit/Sources", "ios/LearnWithAlphonso/Sources", "android/LearnWithAlphonso"];
+const ROOTS = [
+  "src",
+  "admin",
+  "supabase/functions",
+  "ios/LearnWithAlphonsoKit/Sources",
+  "ios/LearnWithAlphonso/Sources",
+  "android/LearnWithAlphonso",
+];
 const PATTERNS: RegExp[] = [
   /\.from\(\s*["']profiles["']\s*\)/g, // supabase-js (web, admin, edge)
   /restRequest\(\s*path:\s*"profiles"/g, // iOS Kit PostgREST
@@ -18,7 +25,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/admin.functions.ts": 1, // admin reports (service role)
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 3, // own GET + 2 PATCH
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).
-    "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Profile.swift": 3,
+  "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Profile.swift": 3,
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/SocialClient.kt": 3,
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProgressSyncClient.kt": 2,
   // W3 adds: "src/lib/ai-consent.server.ts": 1 (own id), "supabase/functions/_shared/ai-consent.ts": 1 (service role).
@@ -30,7 +37,11 @@ function walk(dir: string, out: string[] = []): string[] {
     if (e.name === "node_modules" || e.name === "build" || e.name.startsWith(".")) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p, out);
-    else if (/\.(ts|tsx|swift|kt)$/.test(e.name) && !/\.test\.tsx?$|Tests?\.(swift|kt)$|\/test\//.test(p.replace(/\\/g, "/"))) out.push(p);
+    else if (
+      /\.(ts|tsx|swift|kt)$/.test(e.name) &&
+      !/\.test\.tsx?$|Tests?\.(swift|kt)$|\/test\//.test(p.replace(/\\/g, "/"))
+    )
+      out.push(p);
   }
   return out;
 }
@@ -46,6 +57,6 @@ describe("direct reads of public.profiles (O3)", () => {
       }
     }
     expect(found).toEqual(EXPECTED_SITES);
-  });
+    // Walks web, admin, edge, iOS and Android sources: allow for a slow disk or a loaded CI runner.
+  }, 30_000);
 });
-

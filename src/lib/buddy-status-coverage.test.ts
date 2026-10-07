@@ -8,9 +8,14 @@ const DIR = path.join(process.cwd(), "supabase", "migrations");
 /** The status strings the LATEST definition of every buddy function can return. */
 export function buddyStatusesFromMigrations(): Map<string, Set<string>> {
   const latest = new Map<string, string>();
-  for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort()) {
+  for (const file of fs
+    .readdirSync(DIR)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()) {
     const sql = fs.readFileSync(path.join(DIR, file), "utf8");
-    for (const m of sql.matchAll(/CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]*buddy[a-z_0-9]*)\s*\(([\s\S]*?)\$\$([\s\S]*?)\$\$/gi)) {
+    for (const m of sql.matchAll(
+      /CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]*buddy[a-z_0-9]*)\s*\(([\s\S]*?)\$\$([\s\S]*?)\$\$/gi,
+    )) {
       latest.set(m[1], m[2] + m[3]);
     }
   }
@@ -33,8 +38,9 @@ describe("buddy statuses", () => {
     expect(statuses.has("join_buddy_pool")).toBe(true);
     expect(statuses.has("send_buddy_message")).toBe(true);
     const messages = fixtures.messages as Record<string, string>;
-    const missing = [...statuses].flatMap(([fn, codes]) => [...codes].filter((c) => !(c in messages)).map((c) => `${fn}: ${c}`));
+    const missing = [...statuses].flatMap(([fn, codes]) =>
+      [...codes].filter((c) => !(c in messages)).map((c) => `${fn}: ${c}`),
+    );
     expect(missing).toEqual([]);
   });
 });
-
