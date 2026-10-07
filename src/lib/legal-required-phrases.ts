@@ -115,7 +115,9 @@ function decodeEntities(s: string): string {
     if (entity.startsWith("#")) {
       const isHex = entity[1]?.toLowerCase() === "x";
       const codePoint = isHex ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10);
-      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+      return Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff
+        ? String.fromCodePoint(codePoint)
+        : match;
     }
     return NAMED_ENTITIES[entity.toLowerCase()] ?? match;
   });

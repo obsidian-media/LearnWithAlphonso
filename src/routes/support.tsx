@@ -70,6 +70,7 @@ function Support() {
             "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before.",
             "Manage or cancel it in the Settings app on your iPhone: tap your name, then Subscriptions. Cancel at least 24 hours before the end of the current period to avoid the next charge. We cannot cancel it for you, because Apple handles billing.",
             "Refunds are handled by Apple at reportaproblem.apple.com.",
+            "If you subscribed through Google Play on Android, manage or cancel it in Google Play under Payments & subscriptions. Refunds follow Google Play’s policies.",
             "Already subscribed on another device? Use Restore Purchases on the subscription screen.",
           ]}
         />

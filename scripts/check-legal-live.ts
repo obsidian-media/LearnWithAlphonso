@@ -31,12 +31,23 @@ function fail(message: string): void {
 }
 
 for (const path of Object.keys(LEGAL_REQUIRED_PHRASES) as LegalPath[]) {
-  const res = await fetch(BASE + path, { redirect: "manual", headers: { accept: "text/html" } });
+  let res: Response;
+  let bytes: Uint8Array;
+  try {
+    res = await fetch(BASE + path, {
+      redirect: "manual",
+      headers: { accept: "text/html" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    bytes = new Uint8Array(await res.arrayBuffer());
+  } catch (error) {
+    fail(`${path}: request failed (${error instanceof Error ? error.message : String(error)})`);
+    continue;
+  }
   if (res.status !== 200) {
     fail(`${path}: HTTP ${res.status} (expected 200, no redirect)`);
     continue;
   }
-  const bytes = new Uint8Array(await res.arrayBuffer());
   if (bytes.includes(0)) fail(`${path}: raw NUL byte in HTML (binary to curl/grep)`);
   const text = htmlToText(new TextDecoder().decode(bytes));
   for (const phrase of LEGAL_REQUIRED_PHRASES[path]) {

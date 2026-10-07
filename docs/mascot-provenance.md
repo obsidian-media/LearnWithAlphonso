@@ -80,6 +80,9 @@ All come from the originals above.
 ## App Store Connect
 
 Content Rights answer: the app contains no third-party content it lacks the
-rights to use. This holds only once question 5 is confirmed ("no existing
-character") and questions 1 and 3 confirm commercial use is permitted. If any
-answer is no, resolve it before submission.
+rights to use. This holds only once every open question above is closed:
+question 5 confirmed ("no existing character"); questions 1 and 3 confirm
+commercial use is permitted; question 4 records the inputs to the in-app
+portrait; question 6 records the app icon's source; and question 7 records
+which images ship and their source. If any answer is no or unknown, resolve it
+before submission.

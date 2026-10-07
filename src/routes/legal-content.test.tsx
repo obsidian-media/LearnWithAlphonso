@@ -51,6 +51,10 @@ describe("htmlToText", () => {
       `Apple's & Google's "terms"`,
     );
   });
+
+  it("leaves an out-of-range numeric entity as written instead of throwing", () => {
+    expect(htmlToText("<p>a &#99999999; b &#x110000; c</p>")).toBe("a &#99999999; b &#x110000; c");
+  });
 });
 
 describe.each(PATHS)("legal page %s", (path) => {
