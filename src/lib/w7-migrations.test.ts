@@ -16,6 +16,7 @@ const FILES = {
   profilesOwnRow: "20261008130800_profiles_own_row_read.sql",
   matchingPaused: "20261008130900_buddy_matching_paused.sql",
   ownerSeesBlocked: "20261008131000_team_members_owner_sees_blocked.sql",
+  nameReset: "20261008131100_reset_failing_public_names.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -351,6 +352,29 @@ describe("owner sees blocked members to kick them (A6, O5)", () => {
     expect(stmt).toMatch(/i_own OR NOT EXISTS/);
     expect(read(file)).toContain("DROP FUNCTION public.get_team_members();");
     expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated, service_role;");
+  });
+});
+
+
+describe("O6 reset of failing names (A8)", () => {
+  const file = FILES.nameReset;
+  it("handles loop until they pass the filter", () => {
+    const stmt = fn(file, "generate_learner_handle");
+    expect(stmt).toMatch(/FOR i IN 1\.\.50 LOOP/);
+    expect(stmt).toContain("public.display_name_problem(candidate) IS NULL");
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;");
+  });
+  it("the reset refuses to run past the owner-approved counts and is service-only", () => {
+    const stmt = fn(file, "_reset_failing_public_names");
+    expect(stmt).toContain("o6-reset-not-approved");
+    expect(stmt.indexOf("o6-reset-not-approved")).toBeLessThan(stmt.indexOf("UPDATE public.profiles"));
+    expect(stmt).toContain("name_confirmed_at = NULL");
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public._reset_failing_public_names(integer, integer) FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toMatch(/SELECT \* FROM public\._reset_failing_public_names\(\d+, \d+\);/);
+  });
+  it("the team backup table is service-only", () => {
+    expect(read(file)).toContain("-- client-grants: none public.team_name_migration_backup");
+    expect(checkNewTableGrants(read(file))).toEqual([]);
   });
 });
 
