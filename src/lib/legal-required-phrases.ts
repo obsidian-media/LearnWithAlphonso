@@ -4,12 +4,12 @@
  * say. Three guards read it:
  *   - src/routes/legal-content.test.tsx  (component, server-rendered markup)
  *   - e2e/legal-ssr.spec.ts              (raw HTML from a plain GET, no JS)
- *   - scripts/check-legal-live.ts        (production, after deploy; W11 C5)
+ *   - scripts/check-legal-live.ts        (production; run after deploy and before each App Store submission)
  *
  * Phrases are matched against htmlToText() output: body text only, with
  * <head>, <script> and <style> removed. That is deliberate. The page
  * <title> and TanStack's dehydration payload must never be able to satisfy
- * a "the page says X" check (App Store remediation W9, Review Focus 1).
+ * a "the page says X" check.
  *
  * Pick phrases that sit inside ONE text node (no <strong>/<a> inside them),
  * because tags become spaces.
