@@ -12,6 +12,7 @@ const FILES = {
   grants: "20261008130400_function_grants_hardening.sql",
   teams: "20261008130500_team_integrity.sql",
   quests: "20261008130600_weekly_quest_integrity.sql",
+  matching: "20261008130700_buddy_matching_hardening.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -253,6 +254,31 @@ describe("weekly quest integrity", () => {
   it("records the paid course", () => {
     expect(read(FILES.quests)).toContain("ADD COLUMN IF NOT EXISTS course text NULL CHECK (course IN ('en', 'fr', 'es'))");
     expect(stmt()).toContain("(user_id, quest_id, week_start, course)");
+  });
+});
+
+
+describe("buddy matching hardening", () => {
+  const file = FILES.matching;
+  it("stores the 13+ confirmation durably and rate-limits joins and matches", () => {
+    const stmt = fn(file, "join_buddy_pool");
+    expect(stmt).toContain("INSERT INTO public.buddy_age_confirmations");
+    expect(stmt).toContain("'too_many_tries'");
+    expect(stmt).toContain("'match_limit'");
+    expect(stmt).toContain("interval '7 days'");
+    expect(stmt.indexOf("'too_many_tries'")).toBeLessThan(stmt.indexOf("'age_required'"));
+  });
+  it("keeps the kill switch, block and past-pair checks it had", () => {
+    const stmt = fn(file, "join_buddy_pool");
+    expect(stmt).toContain("'matching_off'");
+    expect(stmt).toContain("FROM public.blocked_users b");
+    expect(stmt).toContain("FROM public.buddy_pairs past");
+  });
+  it("the new tables are service-only", () => {
+    const sql = read(file);
+    expect(sql).toContain("-- client-grants: none public.buddy_age_confirmations");
+    expect(sql).toContain("-- client-grants: none public.buddy_pool_attempts");
+    expect(checkNewTableGrants(sql)).toEqual([]);
   });
 });
 

@@ -31,7 +31,9 @@ export type BuddyStatus =
   | "not_waiting"
   | "matching_off"
   | "not_studying"
-  | "age_required";
+  | "age_required"
+  | "too_many_tries"
+  | "match_limit";
 
 /** One week of the pair's streak. The week the pair was formed can only help (a Sunday pairing cannot reach the goal). */
 export function resolveBuddyWeek(
@@ -72,6 +74,8 @@ const MESSAGES: Record<BuddyStatus | "unknown", string> = {
   matching_off: "Finding a study buddy isn't available right now.",
   not_studying: "Start that course first, then look for a study buddy.",
   age_required: "Please confirm you're 13 or older to be matched with another learner.",
+  too_many_tries: "You've tried a lot just now. Try again in an hour.",
+  match_limit: "You've been matched with a few learners this week. Try again in a few days.",
   unknown: "Something went wrong. Try again.",
 };
 
