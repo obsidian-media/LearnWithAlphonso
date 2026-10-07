@@ -24,4 +24,11 @@ describe("privacy page: study buddies", () => {
     expect(page).toMatch(/send each other short fixed messages from a list/);
     expect(page).toMatch(/There is no free text/);
   });
+
+  it("says matching is opt-in, by course and level, and shows only name and weekly progress", () => {
+    expect(page).toMatch(
+      /you can choose to be matched with another learner of the same course at a similar level/,
+    );
+    expect(page).toMatch(/only your display name, avatar and weekly progress/);
+  });
 });

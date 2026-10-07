@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import fixtures from "./buddy.fixtures.json";
 import {
   BUDDY_COPY,
+  buddyCourseName,
+  buddyFindButton,
+  buddyWaitingLine,
   BUDDY_MESSAGES_PER_HOUR,
   BUDDY_PRESETS,
   buddyMessageLine,
@@ -72,4 +75,20 @@ describe("preset messages (shared with iOS and Android)", () => {
     it(`${l.presetId} -> ${l.expected}`, () =>
       expect(buddyMessageLine(l.isMine, l.buddyName, l.presetId)).toBe(l.expected));
   }
+});
+
+describe("matching wording (shared with iOS and Android)", () => {
+  const c = fixtures.copy;
+  it("intro, stop and matched label", () => {
+    expect(BUDDY_COPY.poolIntro).toBe(c.poolIntro);
+    expect(BUDDY_COPY.stopLooking).toBe(c.stopLooking);
+    expect(BUDDY_COPY.matchedLabel).toBe(c.matchedLabel);
+    expect(BUDDY_COPY.ageConfirm).toBe(c.ageConfirm);
+  });
+  it("course names, find button and waiting line", () => {
+    for (const [code, name] of Object.entries(c.courseNames))
+      expect(buddyCourseName(code)).toBe(name);
+    expect(buddyFindButton(c.findButton.course)).toBe(c.findButton.expected);
+    expect(buddyWaitingLine(c.waitingLine.course)).toBe(c.waitingLine.expected);
+  });
 });

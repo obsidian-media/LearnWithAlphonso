@@ -286,6 +286,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      buddy_pool: {
+        Row: {
+          age_confirmed_at: string;
+          cefr_level: string;
+          course: string;
+          joined_at: string;
+          user_id: string;
+        };
+        Insert: {
+          age_confirmed_at: string;
+          cefr_level: string;
+          course: string;
+          joined_at?: string;
+          user_id: string;
+        };
+        Update: {
+          age_confirmed_at?: string;
+          cefr_level?: string;
+          course?: string;
+          joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       buddy_requests: {
         Row: {
           created_at: string;
@@ -310,6 +334,21 @@ export type Database = {
           responded_at?: string | null;
           status?: string;
           to_user?: string;
+        };
+        Relationships: [];
+      };
+      buddy_settings: {
+        Row: {
+          id: boolean;
+          matching_enabled: boolean;
+        };
+        Insert: {
+          id?: boolean;
+          matching_enabled?: boolean;
+        };
+        Update: {
+          id?: boolean;
+          matching_enabled?: boolean;
         };
         Relationships: [];
       };
@@ -1816,6 +1855,15 @@ export type Database = {
           sent_at: string;
         }[];
       };
+      get_buddy_pool: {
+        Args: never;
+        Returns: {
+          course: string;
+          courses: string[];
+          matching_enabled: boolean;
+          waiting: boolean;
+        }[];
+      };
       get_buddy_requests: {
         Args: never;
         Returns: {
@@ -1872,6 +1920,7 @@ export type Database = {
           buddy_name: string;
           goal: number;
           grace_available: boolean;
+          is_match: boolean;
           last_outcome: string;
           my_count: number;
           pair_id: string;
@@ -1959,6 +2008,12 @@ export type Database = {
           type: string;
         }[];
       };
+      join_buddy_pool: {
+        Args: { _age_confirmed: boolean; _course: string };
+        Returns: {
+          status: string;
+        }[];
+      };
       join_open_duel_queue: {
         Args: { _course: string; _match_by_level?: boolean };
         Returns: {
@@ -1987,6 +2042,12 @@ export type Database = {
         Returns: {
           ok: boolean;
           reason: string;
+        }[];
+      };
+      leave_buddy_pool: {
+        Args: never;
+        Returns: {
+          status: string;
         }[];
       };
       leave_duel_queue: { Args: never; Returns: undefined };

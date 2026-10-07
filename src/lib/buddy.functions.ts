@@ -20,6 +20,8 @@ export type MyBuddy = {
   streakWeeks: number;
   graceAvailable: boolean;
   lastOutcome: string | null;
+  /** Paired through opt-in matching (not a friend): the card offers block and report. */
+  isMatch: boolean;
 } | null;
 
 export type BuddyRequest = {
@@ -57,6 +59,7 @@ export const getMyBuddy = createServerFn({ method: "GET" })
       streakWeeks: r.streak_weeks,
       graceAvailable: r.grace_available,
       lastOutcome: r.last_outcome ?? null,
+      isMatch: r.is_match === true,
     };
   });
 
@@ -154,4 +157,52 @@ export const getBuddyMessages = createServerFn({ method: "GET" })
       presetId: r.preset_id,
       sentAt: r.sent_at,
     }));
+  });
+
+export type BuddyPool = {
+  matchingEnabled: boolean;
+  waiting: boolean;
+  /** The course the caller is waiting in, when waiting. */
+  course: string | null;
+  /** The courses the caller studies: the ones they can look for a buddy in. */
+  courses: string[];
+};
+
+const COURSES = ["en", "fr", "es"] as const;
+
+/** Opt in to be matched with another learner of this course at a similar level (Phase 3b). */
+export const joinBuddyPool = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ course: z.enum(COURSES), ageConfirmed: z.boolean() }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<BuddyActionResult> => {
+    const { data: rows, error } = await context.supabase.rpc("join_buddy_pool", {
+      _course: data.course,
+      _age_confirmed: data.ageConfirmed,
+    });
+    if (error) throw new Error(`joinBuddyPool: ${error.message}`);
+    return statusOf(rows);
+  });
+
+export const leaveBuddyPool = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<BuddyActionResult> => {
+    const { data: rows, error } = await context.supabase.rpc("leave_buddy_pool");
+    if (error) throw new Error(`leaveBuddyPool: ${error.message}`);
+    return statusOf(rows);
+  });
+
+export const getBuddyPool = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<BuddyPool> => {
+    const { data: rows, error } = await context.supabase.rpc("get_buddy_pool");
+    if (error) throw new Error(`getBuddyPool: ${error.message}`);
+    const r = rows?.[0];
+    return {
+      matchingEnabled: r?.matching_enabled === true,
+      waiting: r?.waiting === true,
+      course: r?.course ?? null,
+      courses: r?.courses ?? [],
+    };
   });

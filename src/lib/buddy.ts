@@ -25,7 +25,13 @@ export type BuddyStatus =
   | "unauthenticated"
   | "sent"
   | "rate_limited"
-  | "bad_preset";
+  | "bad_preset"
+  | "waiting"
+  | "left"
+  | "not_waiting"
+  | "matching_off"
+  | "not_studying"
+  | "age_required";
 
 /** One week of the pair's streak. The week the pair was formed can only help (a Sunday pairing cannot reach the goal). */
 export function resolveBuddyWeek(
@@ -60,6 +66,12 @@ const MESSAGES: Record<BuddyStatus | "unknown", string> = {
   sent: "Sent.",
   rate_limited: "You've sent a lot of messages. Try again in a while.",
   bad_preset: "Something went wrong. Try again.",
+  waiting: "You're on the list. We'll pair you with a learner at your level.",
+  left: "You've stopped looking for a study buddy.",
+  not_waiting: "You weren't looking for a study buddy.",
+  matching_off: "Finding a study buddy isn't available right now.",
+  not_studying: "Start that course first, then look for a study buddy.",
+  age_required: "Please confirm you're 13 or older to be matched with another learner.",
   unknown: "Something went wrong. Try again.",
 };
 
@@ -81,7 +93,27 @@ export const BUDDY_COPY = {
   intro:
     "Pick a friend to study with. Each week you both aim for 3 lessons and keep a streak together.",
   loadFailed: "Couldn't load your study buddy.",
+  poolIntro:
+    "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.",
+  stopLooking: "Stop looking",
+  matchedLabel: "Matched learner",
+  ageConfirm: "I'm 13 or older",
 } as const;
+
+const COURSE_NAMES: Record<string, string> = { en: "English", fr: "French", es: "Spanish" };
+
+/** "French" for "fr"; an unknown code is shown as-is. */
+export function buddyCourseName(course: string): string {
+  return COURSE_NAMES[course] ?? course;
+}
+
+export function buddyFindButton(course: string): string {
+  return `Find me a study buddy (${buddyCourseName(course)})`;
+}
+
+export function buddyWaitingLine(course: string): string {
+  return `Looking for a study buddy learning ${buddyCourseName(course)} at your level.`;
+}
 
 export function buddyStreakLine(weeks: number): string {
   return `Streak: ${weeks} week${weeks === 1 ? "" : "s"}`;

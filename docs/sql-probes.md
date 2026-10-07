@@ -62,4 +62,6 @@ in `pg_stat_activity`, and the deployed function text is unchanged.
 | `claim_weekly_quest` | deployed: 42702; fixed: pays the reward once (+40), second claim answers `already-claimed`, one claim row |
 | `get_team_mission`, `_resolve_team_mission` | single payout, late joiner, French-only team paid on `fr`, team shrinking to one member, previous week resolved, UTC boundary under a UTC+14 session |
 
+Study together (2026-10-06/07), same harness: buddy pairing (`20261006180000`: request/ask-back/late accept/unfriend/block/resolver weeks/end), preset messages (`20261007100000`: allowed ids only, 20 per hour then `rate_limited` (loop in a DO block: a LATERAL call with constant arguments runs once), unfriend stops sending, RLS outsider sees nothing) and matching (`20261007120000`: not studying, waiting, block and past buddy skipped, CEFR two steps apart not matched, oldest first, pool cleared on pairing, matched pair can message, switch off then leave still works, block ends a matched pair and they are never re-matched, own pool row only). Scripts were split under ~20 KB: a ~29 KB execute_sql request fails with "Invalid or expired requestState" before reaching the database.
+
 The static guard for the most common mistake is `src/lib/plpgsql-output-column-clash.test.ts`.

@@ -120,6 +120,12 @@
     "sent": "Sent.",
     "rate_limited": "You've sent a lot of messages. Try again in a while.",
     "bad_preset": "Something went wrong. Try again.",
+    "waiting": "You're on the list. We'll pair you with a learner at your level.",
+    "left": "You've stopped looking for a study buddy.",
+    "not_waiting": "You weren't looking for a study buddy.",
+    "matching_off": "Finding a study buddy isn't available right now.",
+    "not_studying": "Start that course first, then look for a study buddy.",
+    "age_required": "Please confirm you're 13 or older to be matched with another learner.",
     "unknown": "Something went wrong. Try again."
   },
   "weekLines": [
@@ -174,7 +180,24 @@
     "endConfirm": {
       "name": "Bo",
       "expected": "End being study buddies with Bo? Your streak ends."
-    }
+    },
+    "poolIntro": "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.",
+    "courseNames": {
+      "en": "English",
+      "fr": "French",
+      "es": "Spanish"
+    },
+    "findButton": {
+      "course": "fr",
+      "expected": "Find me a study buddy (French)"
+    },
+    "waitingLine": {
+      "course": "es",
+      "expected": "Looking for a study buddy learning Spanish at your level."
+    },
+    "stopLooking": "Stop looking",
+    "matchedLabel": "Matched learner",
+    "ageConfirm": "I'm 13 or older"
   },
   "presets": [
     {

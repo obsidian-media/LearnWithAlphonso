@@ -5,6 +5,8 @@ import {
   BUDDY_PRESETS,
   buddyMessageLine,
   buddyEndConfirm,
+  buddyFindButton,
+  buddyWaitingLine,
   buddyGraceLine,
   buddyIncomingLine,
   buddyOutgoingLine,
@@ -15,7 +17,10 @@ import {
 import {
   cancelBuddyRequest,
   endBuddy,
+  joinBuddyPool,
+  leaveBuddyPool,
   getBuddyMessages,
+  getBuddyPool,
   getBuddyRequests,
   getMyBuddy,
   requestBuddy,
@@ -24,6 +29,7 @@ import {
   type BuddyActionResult,
   type MyBuddy,
 } from "../lib/buddy.functions";
+import { SocialSafetyMenu } from "./SocialSafetyMenu";
 
 // A failed lookup is shown as a failure with a retry, never as "no buddy" (retry: false so that state appears at once,
 // the same lesson as the Teams screens in PR #237).
@@ -44,7 +50,9 @@ function useBuddyQueries() {
     refetchInterval: 60_000,
     enabled: !!buddy.data,
   });
-  return { buddy, requests, messages };
+  // Opt-in matching (Phase 3b): whether it is switched on, whether the learner is waiting, and their courses.
+  const pool = useQuery({ queryKey: ["buddyPool"], queryFn: () => getBuddyPool(), retry: false });
+  return { buddy, requests, messages, pool };
 }
 
 type BuddyQueries = ReturnType<typeof useBuddyQueries>;
@@ -54,7 +62,7 @@ type BuddyQueries = ReturnType<typeof useBuddyQueries>;
 // The messages query is part of the stamp only for a sent message: pairing turns that query on, and its first load must
 // not hide "You're study buddies now.".
 function stampOf(q: BuddyQueries, withMessages: boolean) {
-  const parts = [q.buddy, q.requests, ...(withMessages ? [q.messages] : [])];
+  const parts = [q.buddy, q.requests, q.pool, ...(withMessages ? [q.messages] : [])];
   return parts.flatMap((s) => [s.dataUpdatedAt, s.errorUpdatedAt]).join(":");
 }
 
@@ -79,16 +87,18 @@ function useBuddyAction(queries: BuddyQueries) {
       queryClient.invalidateQueries({ queryKey: ["myBuddy"] }),
       queryClient.invalidateQueries({ queryKey: ["buddyRequests"] }),
       queryClient.invalidateQueries({ queryKey: ["buddyMessages"] }),
+      queryClient.invalidateQueries({ queryKey: ["buddyPool"] }),
     ]);
     // Stamp with the state AFTER the refresh this action caused; busy stays on until then, so a second click
     // cannot act on a request that is already gone.
     const state = (key: string) => queryClient.getQueryState([key]);
     const b = state("myBuddy");
     const r = state("buddyRequests");
+    const pl = state("buddyPool");
     const pairId = queryClient.getQueryData<MyBuddy>(["myBuddy"])?.pairId ?? null;
     const m = queryClient.getQueryState(["buddyMessages", pairId]);
     // A query with no cache entry yet (messages before the first pairing) reads 0, matching what the hook reports.
-    const parts = [b, r, ...(withMessages ? [m] : [])];
+    const parts = [b, r, pl, ...(withMessages ? [m] : [])];
     setAnswer({
       text,
       stamp: parts.flatMap((s) => [s?.dataUpdatedAt ?? 0, s?.errorUpdatedAt ?? 0]).join(":"),
@@ -107,9 +117,11 @@ const linkButton = "text-xs font-semibold underline underline-offset-4 disabled:
 /** The Friends page's study buddy card: the current buddy's week, or pending requests and how to ask. */
 export function BuddyCard() {
   const queries = useBuddyQueries();
-  const { buddy, requests, messages } = queries;
+  const { buddy, requests, messages, pool } = queries;
   const { message, busy, run } = useBuddyAction(queries);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
+  // Matching needs a declared-age confirmation (owner decision 2026-10-07: minimum age 13); the server refuses without it.
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   if (buddy.isLoading || requests.isLoading) {
     return (
@@ -119,7 +131,12 @@ export function BuddyCard() {
     );
   }
   // A messages failure only counts while paired (after the pair ends that query is off and must not pin the error).
-  if (buddy.isError || requests.isError || (messages.isError && !!buddy.data)) {
+  if (
+    buddy.isError ||
+    requests.isError ||
+    (messages.isError && !!buddy.data) ||
+    (pool.isError && !buddy.data)
+  ) {
     return (
       <div className={card}>
         <p className="text-sm text-ink-soft">{BUDDY_COPY.loadFailed}</p>
@@ -129,6 +146,7 @@ export function BuddyCard() {
             void buddy.refetch();
             void requests.refetch();
             if (buddy.data) void messages.refetch();
+            else void pool.refetch();
           }}
           className="mt-3 rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
         >
@@ -152,7 +170,23 @@ export function BuddyCard() {
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft/80">
           Study buddy
         </p>
-        <p className="mt-1 font-display text-base font-semibold text-ink">{mine.buddyName}</p>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="font-display text-base font-semibold text-ink">{mine.buddyName}</p>
+          {mine.isMatch && (
+            <>
+              <span className="text-[11px] text-ink-soft">{BUDDY_COPY.matchedLabel}</span>
+              {/* A matched buddy is not a friend: block and report live right here (guideline 1.2). Blocking ends
+                  the pair on the server (trigger), so refresh after it. */}
+              <span className="ml-auto">
+                <SocialSafetyMenu
+                  userId={mine.buddyId}
+                  displayName={mine.buddyName}
+                  onBlocked={() => void buddy.refetch()}
+                />
+              </span>
+            </>
+          )}
+        </div>
         <p className="mt-2 text-sm text-ink">
           {buddyWeekLine(mine.myCount, mine.buddyCount, mine.goal)}
         </p>
@@ -273,6 +307,56 @@ export function BuddyCard() {
           </div>
         ),
       )}
+      {/* A waiting learner can always stop looking, even while matching is switched off (consent is theirs);
+          only the Find buttons depend on the switch. */}
+      {pool.data &&
+        (pool.data.waiting && pool.data.course ? (
+          <div className="mt-3 flex items-center gap-4">
+            <p className="text-sm text-ink">{buddyWaitingLine(pool.data.course)}</p>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => run(() => leaveBuddyPool())}
+              className={`${linkButton} text-ink-soft`}
+            >
+              {BUDDY_COPY.stopLooking}
+            </button>
+          </div>
+        ) : (
+          pool.data.matchingEnabled &&
+          pool.data.courses.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-ink-soft/80">{BUDDY_COPY.poolIntro}</p>
+              <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
+                <input
+                  type="checkbox"
+                  checked={ageConfirmed}
+                  onChange={(e) => setAgeConfirmed(e.target.checked)}
+                />
+                {BUDDY_COPY.ageConfirm}
+              </label>
+              <div className="mt-1.5 flex flex-wrap gap-3">
+                {pool.data.courses.map((course) => (
+                  <button
+                    key={course}
+                    type="button"
+                    disabled={busy || !ageConfirmed}
+                    onClick={() =>
+                      run(() =>
+                        joinBuddyPool({
+                          data: { course: course as "en" | "fr" | "es", ageConfirmed },
+                        }),
+                      )
+                    }
+                    className={`${linkButton} text-moss`}
+                  >
+                    {buddyFindButton(course)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        ))}
       {status}
     </div>
   );
