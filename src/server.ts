@@ -58,6 +58,8 @@ const ESCAPED_NUL = new TextEncoder().encode("\\u0000");
 export function escapeHtmlNulBytes(response: Response): Response {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/html") || !response.body) return response;
+  // Compressed bytes are not HTML text, and a 0x00 in them is not a NUL character.
+  if (response.headers.has("content-encoding")) return response;
 
   const transform = new TransformStream<Uint8Array, Uint8Array>({
     transform(chunk, controller) {
