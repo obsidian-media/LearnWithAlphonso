@@ -8,6 +8,7 @@ const FILES = {
   filter: "20261008130000_moderation_filter_v2.sql",
   names: "20261008130100_display_name_onboarding.sql",
   members: "20261008130200_team_members_block_filter.sql",
+  reports: "20261008130300_content_reports_moderation_ops.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -160,5 +161,28 @@ describe("team members block filter", () => {
     expect(stmt).toContain("(bu.blocker = tm.user_id AND bu.blocked = me)");
     expect(read(FILES.members)).toContain("REVOKE ALL ON FUNCTION public.get_team_members() FROM PUBLIC, anon;");
     expect(read(FILES.members)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated;");
+  });
+});
+
+describe("content reports moderation ops", () => {
+  const file = FILES.reports;
+  it("adds kind and context with checks, and lets only AI reports omit the reported user", () => {
+    const sql = read(file);
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'user'");
+    expect(sql).toContain("ADD COLUMN IF NOT EXISTS context jsonb NULL");
+    expect(sql).toContain("CHECK (kind IN ('user', 'team_name', 'ai_response'))");
+    expect(sql).toContain("CHECK ((kind = 'ai_response') = (reported IS NULL))");
+    expect(sql).toContain("ALTER COLUMN reported DROP NOT NULL");
+    expect(sql).not.toMatch(/GRANT (SELECT|UPDATE|DELETE|ALL)[^;]*content_reports[^;]*TO (anon|authenticated)/);
+  });
+  it("the notify trigger is definer-only, throttled, secret-gated and can never fail an insert", () => {
+    const stmt = fn(file, "notify_content_report");
+    expect(header(stmt)).toMatch(/SECURITY DEFINER\s+SET search_path = public/);
+    expect(stmt).toContain("WHERE name = 'report_notify_secret'");
+    expect(stmt).toContain("'X-Report-Notify-Secret', secret");
+    expect(stmt).toContain("interval '1 hour'");
+    expect(stmt).toMatch(/EXCEPTION WHEN OTHERS THEN\s+RAISE WARNING/);
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.notify_content_report() FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain("AFTER INSERT ON public.content_reports");
   });
 });
