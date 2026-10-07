@@ -14,6 +14,7 @@ const FILES = {
   quests: "20261008130600_weekly_quest_integrity.sql",
   matching: "20261008130700_buddy_matching_hardening.sql",
   profilesOwnRow: "20261008130800_profiles_own_row_read.sql",
+  matchingPaused: "20261008130900_buddy_matching_paused.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -312,6 +313,30 @@ describe("profiles own-row read (A1, O3)", () => {
       expect(text, f).not.toMatch(/ON\s+public\.profiles\s+FOR\s+(SELECT|ALL)[^;]*USING\s*\(\s*true\s*\)/i);
       expect(text, f).not.toMatch(/"?profiles_read_all_auth"?/);
     }
+  });
+});
+
+
+describe("kill switch mutes matched pairs (A3, O4)", () => {
+  const file = FILES.matchingPaused;
+  it("send_buddy_message refuses a match pair while the switch is off, after the pair check and before the rate limit", () => {
+    const stmt = fn(file, "send_buddy_message");
+    expect(stmt).toContain("'matching_paused'");
+    expect(stmt).toMatch(/bp\.source = 'match'/);
+    expect(stmt).toContain("FROM public.buddy_settings bs WHERE bs.id");
+    const i = (s: string) => stmt.indexOf(s);
+    expect(i("PERFORM public._lock_buddy_users(me, other);")).toBeLessThan(i("'matching_paused'"));
+    expect(i("'matching_paused'")).toBeLessThan(i("'rate_limited'"));
+    expect(i("'bad_preset'")).toBeLessThan(i("'matching_paused'"));
+  });
+  it("get_my_buddy is dropped, recreated with matching_enabled last, and keeps its grants", () => {
+    const sql = read(file);
+    expect(sql).toContain("DROP FUNCTION public.get_my_buddy();");
+    expect(header(fn(file, "get_my_buddy"))).toMatch(/is_match boolean,\s*matching_enabled boolean\)/);
+    expect(sql).toContain("REVOKE ALL ON FUNCTION public.get_my_buddy() FROM PUBLIC, anon;");
+    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.get_my_buddy() TO authenticated, service_role;");
+    expect(sql).toContain("REVOKE ALL ON FUNCTION public.send_buddy_message(text) FROM PUBLIC, anon;");
+    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.send_buddy_message(text) TO authenticated, service_role;");
   });
 });
 

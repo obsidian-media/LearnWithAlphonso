@@ -56,6 +56,7 @@ public enum BuddyCopy {
         "age_required": "Please confirm you're 13 or older to be matched with another learner.",
         "too_many_tries": "You've tried a lot just now. Try again in an hour.",
         "match_limit": "You've been matched with a few learners this week. Try again in a few days.",
+        "matching_paused": "Messages with matched learners are paused right now. Your progress is kept.",
         "unknown": "Something went wrong. Try again.",
     ]
 
