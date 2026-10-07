@@ -86,6 +86,12 @@ function Privacy() {
           count.
         </p>
         <p>
+          If you pair with a friend as study buddies, each of you can see the other's weekly lesson
+          counts and your shared streak while you are paired, and those weekly counts are kept as
+          your pair's history after it ends. Only friends who both agree can pair, and either of you
+          can end it at any time.
+        </p>
+        <p>
           You can change your display name on the website under Profile. Changing it from inside the
           iOS app is not available yet; until it is, you can change it on the website or write to{" "}
           {CONTACT} and we will change it for you. Everything else — your email address, your

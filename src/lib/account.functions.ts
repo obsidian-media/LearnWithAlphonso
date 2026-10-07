@@ -44,6 +44,8 @@ export const USER_ID_EXPORT_TABLES = [
 export const OTHER_OWNED_EXPORT_TABLES = [
   { table: "nudges", columns: ["sender_id", "recipient_id"] },
   { table: "duels", columns: ["challenger_id", "opponent_id"] },
+  { table: "buddy_pairs", columns: ["user_a", "user_b"] },
+  { table: "buddy_requests", columns: ["from_user", "to_user"] },
 ] as const;
 
 // deleteMyAccount issues its DELETEs *as the caller*, so this is deliberately
@@ -84,7 +86,7 @@ export const exportMyData = createServerFn({ method: "POST" })
     // Independent selects -- batched instead of a sequential loop, so a GDPR
     // export stays one round trip's worth of latency rather than one per
     // table as this list grows.
-    const [userIdRows, otherOwnedRows, { data: profile }] = await Promise.all([
+    const [userIdRows, otherOwnedRows, { data: profile }, buddyWeeks] = await Promise.all([
       Promise.all(
         USER_ID_EXPORT_TABLES.map((table) =>
           supabase
@@ -102,6 +104,8 @@ export const exportMyData = createServerFn({ method: "POST" })
         ),
       ),
       supabase.from("profiles").select("*").eq("id", userId),
+      // buddy_weeks has no user column; its SELECT policy already limits it to the caller's own pairs.
+      supabase.from("buddy_weeks").select("*"),
     ]);
     // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
     // could look complete while omitting a table. Fail instead and name the tables.
@@ -110,6 +114,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       ...OTHER_OWNED_EXPORT_TABLES.map(({ table }) => table).filter(
         (_, i) => otherOwnedRows[i].error,
       ),
+      ...(buddyWeeks.error ? ["buddy_weeks"] : []),
     ];
     if (failed.length > 0) {
       throw new Error(
@@ -124,6 +129,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       tables[table] = (otherOwnedRows[i].data as unknown[]) ?? [];
     });
     tables.profiles = profile ?? [];
+    tables.buddy_weeks = (buddyWeeks.data as unknown[]) ?? [];
     return {
       exported_at: new Date().toISOString(),
       user_id: userId,

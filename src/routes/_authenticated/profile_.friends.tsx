@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
+import { AskBuddyButton, BuddyCard } from "../../components/BuddyCard";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import {
   getFriends,
@@ -116,6 +117,10 @@ function FriendsPage() {
           </span>
         </div>
 
+        <div className="mt-6">
+          <BuddyCard />
+        </div>
+
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">
           {friends && friends.length > 0
             ? `${friends.length} friend${friends.length === 1 ? "" : "s"}`
@@ -160,6 +165,7 @@ function FriendsPage() {
                     {f.displayName}
                   </p>
                   <p className="text-xs text-ink-soft/80">🔥 {f.streak}-day streak</p>
+                  <AskBuddyButton friendId={f.userId} />
                 </div>
                 {confirmingId === f.userId ? (
                   <div className="flex shrink-0 items-center gap-2">

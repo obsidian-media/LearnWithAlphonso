@@ -39,6 +39,8 @@ FROM information_schema.role_table_grants
 WHERE table_schema = 'public' AND table_name = '<table>' GROUP BY grantee ORDER BY grantee;
 ```
 
+Tables created under the rule so far: `team_missions` (server-only), `team_mission_rewards` (owner SELECT), `buddy_pairs`, `buddy_requests`, `buddy_weeks` (SELECT of the caller's own rows), `buddy_members` (server-only, `-- client-grants: none`).
+
 ## What changed on 2026-10-06 (and what did not)
 
 Removed from existing tables: every write privilege (INSERT, UPDATE, DELETE) plus TRUNCATE, TRIGGER and REFERENCES from `anon`; TRUNCATE, TRIGGER and REFERENCES from `authenticated`. Nothing else was touched. This could not change app behaviour: `anon` has no write policy anywhere, and nothing uses the other three privileges (the API cannot issue TRUNCATE; foreign-key checks run as the table owner).
