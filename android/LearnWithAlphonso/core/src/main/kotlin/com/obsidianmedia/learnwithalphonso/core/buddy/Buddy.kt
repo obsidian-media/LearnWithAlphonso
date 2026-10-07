@@ -47,6 +47,7 @@ object BuddyCopy {
         "not_waiting" to "You weren't looking for a study buddy.",
         "matching_off" to "Finding a study buddy isn't available right now.",
         "not_studying" to "Start that course first, then look for a study buddy.",
+        "age_required" to "Please confirm you're 13 or older to be matched with another learner.",
         "unknown" to "Something went wrong. Try again.",
     )
 

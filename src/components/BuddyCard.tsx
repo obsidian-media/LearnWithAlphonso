@@ -120,6 +120,8 @@ export function BuddyCard() {
   const { buddy, requests, messages, pool } = queries;
   const { message, busy, run } = useBuddyAction(queries);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
+  // Matching needs a declared-age confirmation (owner decision 2026-10-07: minimum age 13); the server refuses without it.
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   if (buddy.isLoading || requests.isLoading) {
     return (
@@ -325,14 +327,26 @@ export function BuddyCard() {
           pool.data.courses.length > 0 && (
             <div className="mt-3">
               <p className="text-xs text-ink-soft/80">{BUDDY_COPY.poolIntro}</p>
+              <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
+                <input
+                  type="checkbox"
+                  checked={ageConfirmed}
+                  onChange={(e) => setAgeConfirmed(e.target.checked)}
+                />
+                {BUDDY_COPY.ageConfirm}
+              </label>
               <div className="mt-1.5 flex flex-wrap gap-3">
                 {pool.data.courses.map((course) => (
                   <button
                     key={course}
                     type="button"
-                    disabled={busy}
+                    disabled={busy || !ageConfirmed}
                     onClick={() =>
-                      run(() => joinBuddyPool({ data: { course: course as "en" | "fr" | "es" } }))
+                      run(() =>
+                        joinBuddyPool({
+                          data: { course: course as "en" | "fr" | "es", ageConfirmed },
+                        }),
+                      )
                     }
                     className={`${linkButton} text-moss`}
                   >

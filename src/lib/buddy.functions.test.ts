@@ -274,15 +274,18 @@ describe("buddy matching", () => {
   it("joins the pool for a course and returns the server's status", async () => {
     const supabase = rpcReturning([{ status: "waiting" }]);
     await expect(
-      joinBuddyPool({ context: ctx(supabase), data: { course: "fr" } }),
+      joinBuddyPool({ context: ctx(supabase), data: { course: "fr", ageConfirmed: true } }),
     ).resolves.toEqual({ status: "waiting" });
-    expect(supabase.rpc).toHaveBeenCalledWith("join_buddy_pool", { _course: "fr" });
+    expect(supabase.rpc).toHaveBeenCalledWith("join_buddy_pool", {
+      _course: "fr",
+      _age_confirmed: true,
+    });
   });
 
   it("refuses a course the app does not offer before calling the server", async () => {
     const supabase = rpcReturning([]);
     await expect(
-      joinBuddyPool({ context: ctx(supabase), data: { course: "de" } }),
+      joinBuddyPool({ context: ctx(supabase), data: { course: "de", ageConfirmed: true } }),
     ).rejects.toThrow();
     expect(supabase.rpc).not.toHaveBeenCalled();
   });
@@ -310,7 +313,7 @@ describe("buddy matching", () => {
       "getBuddyPool: boom",
     );
     await expect(
-      joinBuddyPool({ context: ctx(rpcFailing()), data: { course: "en" } }),
+      joinBuddyPool({ context: ctx(rpcFailing()), data: { course: "en", ageConfirmed: true } }),
     ).rejects.toThrow("joinBuddyPool: boom");
   });
 });

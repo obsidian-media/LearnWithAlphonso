@@ -6,6 +6,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-06-study-together-design.md` Part 2 ("Opt-in matching"). **Owner decision 2026-10-07 (BACKLOG 0.0-ai):** minimum age 13 (App Store 13+), build 3b complete.
 
+**Added in review (CodeRabbit):** a declared-age confirmation at join ("I'm 13 or older"): without it the server answers `age_required`; the app collects no birthdate, and Apple's guidelines name "verified or declared age" as the age-restriction mechanism.
+
 **Why the guardrails (research 2026-10-07):** App Store guideline 1.2 (Feb 2026) says apps used *primarily* for "Chatroulette-style experiences, random or anonymous chat" do not belong on the App Store; Apple has not defined the terms. So: opt-in with an explanation; matched only by course and CEFR level within one step; never re-matched with a past buddy; preset messages only (no free text, Phase 5); only display name and progress visible; block and report on the buddy card; a server-side switch turns matching off for everyone without a release.
 
 ## Global Constraints

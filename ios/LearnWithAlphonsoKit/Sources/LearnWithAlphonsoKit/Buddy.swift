@@ -53,6 +53,7 @@ public enum BuddyCopy {
         "not_waiting": "You weren't looking for a study buddy.",
         "matching_off": "Finding a study buddy isn't available right now.",
         "not_studying": "Start that course first, then look for a study buddy.",
+        "age_required": "Please confirm you're 13 or older to be matched with another learner.",
         "unknown": "Something went wrong. Try again.",
     ]
 

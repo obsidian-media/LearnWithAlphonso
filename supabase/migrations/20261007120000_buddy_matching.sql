@@ -7,7 +7,7 @@
 --
 -- client-grants: none public.buddy_settings
 --
--- ROLLBACK: DROP FUNCTION public.join_buddy_pool(text), public.leave_buddy_pool(), public.get_buddy_pool(),
+-- ROLLBACK: DROP FUNCTION public.join_buddy_pool(text, boolean), public.leave_buddy_pool(), public.get_buddy_pool(),
 -- public._cefr_rank(text); DROP TABLE public.buddy_pool, public.buddy_settings; re-apply _create_buddy_pair and
 -- get_my_buddy from 20261006180000_buddy_pairing.sql (DROP get_my_buddy first: its return type changes here).
 
@@ -23,7 +23,10 @@ CREATE TABLE public.buddy_pool (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   course text NOT NULL CHECK (course IN ('en', 'fr', 'es')),
   cefr_level text NOT NULL,
-  joined_at timestamptz NOT NULL DEFAULT now()
+  joined_at timestamptz NOT NULL DEFAULT now(),
+  -- When the learner confirmed they are 13 or older (owner decision 2026-10-07: minimum age 13). The app collects no
+  -- birthdate, so matching requires this declared-age confirmation; nobody unconfirmed can wait or be matched.
+  age_confirmed_at timestamptz NOT NULL
 );
 CREATE INDEX buddy_pool_course_idx ON public.buddy_pool (course, joined_at);
 ALTER TABLE public.buddy_pool ENABLE ROW LEVEL SECURITY;
@@ -78,7 +81,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.join_buddy_pool(_course text)
+CREATE OR REPLACE FUNCTION public.join_buddy_pool(_course text, _age_confirmed boolean)
 RETURNS TABLE(status text)
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -92,6 +95,9 @@ DECLARE
   result text;
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
+  IF NOT coalesce(_age_confirmed, false) THEN
+    RETURN QUERY SELECT 'age_required'::text; RETURN;
+  END IF;
   IF NOT coalesce((SELECT bs.matching_enabled FROM public.buddy_settings bs WHERE bs.id), false) THEN
     RETURN QUERY SELECT 'matching_off'::text; RETURN;
   END IF;
@@ -132,10 +138,11 @@ BEGIN
 
   -- Nobody suitable yet (or the candidate paired elsewhere a moment ago): wait. Re-joining the same course keeps the
   -- place in the queue; switching course starts a new wait.
-  INSERT INTO public.buddy_pool AS bpl (user_id, course, cefr_level) VALUES (me, _course, mine)
+  INSERT INTO public.buddy_pool AS bpl (user_id, course, cefr_level, age_confirmed_at) VALUES (me, _course, mine, now())
     ON CONFLICT (user_id) DO UPDATE
       SET course = excluded.course,
           cefr_level = excluded.cefr_level,
+          age_confirmed_at = excluded.age_confirmed_at,
           joined_at = CASE WHEN bpl.course = excluded.course THEN bpl.joined_at ELSE now() END;
   RETURN QUERY SELECT 'waiting'::text;
 END;
@@ -225,8 +232,8 @@ $$;
 
 REVOKE ALL ON FUNCTION public._cefr_rank(text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public._create_buddy_pair(uuid, uuid, text) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.join_buddy_pool(text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.join_buddy_pool(text) TO authenticated;
+REVOKE ALL ON FUNCTION public.join_buddy_pool(text, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.join_buddy_pool(text, boolean) TO authenticated;
 REVOKE ALL ON FUNCTION public.leave_buddy_pool() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.leave_buddy_pool() TO authenticated;
 REVOKE ALL ON FUNCTION public.get_buddy_pool() FROM PUBLIC, anon;

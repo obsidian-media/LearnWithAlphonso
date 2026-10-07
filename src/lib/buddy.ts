@@ -30,7 +30,8 @@ export type BuddyStatus =
   | "left"
   | "not_waiting"
   | "matching_off"
-  | "not_studying";
+  | "not_studying"
+  | "age_required";
 
 /** One week of the pair's streak. The week the pair was formed can only help (a Sunday pairing cannot reach the goal). */
 export function resolveBuddyWeek(
@@ -70,6 +71,7 @@ const MESSAGES: Record<BuddyStatus | "unknown", string> = {
   not_waiting: "You weren't looking for a study buddy.",
   matching_off: "Finding a study buddy isn't available right now.",
   not_studying: "Start that course first, then look for a study buddy.",
+  age_required: "Please confirm you're 13 or older to be matched with another learner.",
   unknown: "Something went wrong. Try again.",
 };
 
@@ -95,6 +97,7 @@ export const BUDDY_COPY = {
     "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.",
   stopLooking: "Stop looking",
   matchedLabel: "Matched learner",
+  ageConfirm: "I'm 13 or older",
 } as const;
 
 const COURSE_NAMES: Record<string, string> = { en: "English", fr: "French", es: "Spanish" };

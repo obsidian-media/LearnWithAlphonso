@@ -83,6 +83,7 @@ describe("matching wording (shared with iOS and Android)", () => {
     expect(BUDDY_COPY.poolIntro).toBe(c.poolIntro);
     expect(BUDDY_COPY.stopLooking).toBe(c.stopLooking);
     expect(BUDDY_COPY.matchedLabel).toBe(c.matchedLabel);
+    expect(BUDDY_COPY.ageConfirm).toBe(c.ageConfirm);
   });
   it("course names, find button and waiting line", () => {
     for (const [code, name] of Object.entries(c.courseNames))

@@ -288,18 +288,21 @@ export type Database = {
       };
       buddy_pool: {
         Row: {
+          age_confirmed_at: string;
           cefr_level: string;
           course: string;
           joined_at: string;
           user_id: string;
         };
         Insert: {
+          age_confirmed_at: string;
           cefr_level: string;
           course: string;
           joined_at?: string;
           user_id: string;
         };
         Update: {
+          age_confirmed_at?: string;
           cefr_level?: string;
           course?: string;
           joined_at?: string;
@@ -2006,7 +2009,7 @@ export type Database = {
         }[];
       };
       join_buddy_pool: {
-        Args: { _course: string };
+        Args: { _age_confirmed: boolean; _course: string };
         Returns: {
           status: string;
         }[];

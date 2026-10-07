@@ -173,10 +173,13 @@ const COURSES = ["en", "fr", "es"] as const;
 /** Opt in to be matched with another learner of this course at a similar level (Phase 3b). */
 export const joinBuddyPool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ course: z.enum(COURSES) }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ course: z.enum(COURSES), ageConfirmed: z.boolean() }).parse(d),
+  )
   .handler(async ({ data, context }): Promise<BuddyActionResult> => {
     const { data: rows, error } = await context.supabase.rpc("join_buddy_pool", {
       _course: data.course,
+      _age_confirmed: data.ageConfirmed,
     });
     if (error) throw new Error(`joinBuddyPool: ${error.message}`);
     return statusOf(rows);

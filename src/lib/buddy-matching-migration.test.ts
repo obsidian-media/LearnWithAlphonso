@@ -64,7 +64,7 @@ describe("buddy matching migration", () => {
 
   it("every public function is SECURITY DEFINER, pins search_path and UTC, and only authenticated may call it", () => {
     for (const sig of [
-      "join_buddy_pool(text)",
+      "join_buddy_pool(text, boolean)",
       "leave_buddy_pool()",
       "get_buddy_pool()",
       "get_my_buddy()",
@@ -95,6 +95,27 @@ describe("buddy matching migration", () => {
   it("leaving takes the pool lock, so a match cannot land just after Stop looking", () => {
     expect(fnBody("leave_buddy_pool")).toContain(
       "pg_advisory_xact_lock(hashtextextended('buddy:pool', 0))",
+    );
+  });
+
+  it("matches only learners who confirmed they are 13 or older (owner decision: minimum age 13)", () => {
+    const body = fnBody("join_buddy_pool");
+    expect(sql()).toContain(
+      "CREATE OR REPLACE FUNCTION public.join_buddy_pool(_course text, _age_confirmed boolean)",
+    );
+    expect(body).toMatch(
+      /IF NOT coalesce\(_age_confirmed, false\) THEN\s+RETURN QUERY SELECT 'age_required'::text; RETURN;/,
+    );
+    // The check runs before the pool lock and any matching: no unconfirmed learner can be matched or wait.
+    expect(body.indexOf("'age_required'")).toBeLessThan(
+      body.indexOf("pg_advisory_xact_lock(hashtextextended('buddy:pool', 0))"),
+    );
+    expect(sql()).toMatch(/age_confirmed_at timestamptz NOT NULL/);
+    expect(sql()).toContain(
+      "REVOKE ALL ON FUNCTION public.join_buddy_pool(text, boolean) FROM PUBLIC, anon;",
+    );
+    expect(sql()).toContain(
+      "GRANT EXECUTE ON FUNCTION public.join_buddy_pool(text, boolean) TO authenticated;",
     );
   });
 });
