@@ -11,12 +11,12 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 2b | Team mission on iOS | MERGED (#233), in no build |
 | 2c | Team mission on Android | MERGED (#234), in no release |
 | 3a | Buddy pairing between friends and weekly goal, server and web | MERGED and live (#238), verified on the deployed functions; plan `2026-10-06-buddy-pairing-web.md` |
-| 3b | Opt-in matching with strangers (`buddy_pool`) | Owner decided 13+ (2026-10-07); server + web PR #244, native on branch `feat/buddy-matching-native` (in no build/release) |
+| 3b | Opt-in matching with strangers (`buddy_pool`) | MERGED: server + web live (#244, 13+ declared-age confirmation, kill switch `buddy_settings.matching_enabled`), iOS + Android (#245, in no build/release) |
 | 4 | Buddy on iOS and Android | MERGED (#240 iOS, #241 Android), in no build/release |
 | 5 | Buddy preset messages, server and web | MERGED and live (#242), verified on the deployed functions |
 | 6 | Buddy presets on iOS and Android | MERGED (#243), in no build/release |
 
-**Part 1 (team mission) is complete on web, iOS and Android; what remains is Parts 2-3 (phases 3-6, the language buddy).** Native device checks are owner-run (`android/LearnWithAlphonso/DEVICE-CHECKLIST.md`, and the iOS checks listed in BACKLOG).
+**Study together is COMPLETE (2026-10-07): every phase is merged; the server and web are live, and iOS and Android ship with the next builds the owner cuts.** Owner decision 2026-10-07: minimum age 13 (App Store 13+), matching requires a declared-age confirmation. Native device checks are owner-run (`android/LearnWithAlphonso/DEVICE-CHECKLIST.md`, and the iOS checks listed in BACKLOG).
 
 Plans: `docs/superpowers/plans/2026-10-06-team-mission-web.md`, `2026-10-06-team-player-badge.md`. Phases 2b and 2c were executed directly from the web plan's fixtures and the patterns of the goal planner (no separate plan file). Findings that changed the design along the way: the payout course is the one the member studied, not `profiles.active_language` (BACKLOG 0.0-af); a team below two members is never paid; the dead `mergeGuestProgress` endpoint was removed because it could fake lesson completions. Running the SQL while verifying the older payouts also showed that **joining or creating a team never worked in production** (an ambiguous `team_id` in `_join_team_impl` and `get_my_team`, fixed in `20261006170000`), so nobody could be on a team, which also made the team screen and the mission card on it unreachable, and `get_team_mission` returns nothing without a team membership: the whole mission feature was effectively dormant until that migration.
 
