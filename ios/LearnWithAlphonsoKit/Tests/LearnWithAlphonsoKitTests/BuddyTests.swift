@@ -106,6 +106,15 @@ final class BuddyTests: XCTestCase {
         XCTAssertNil(MyBuddy(row: mistyped))
     }
 
+    func testMyBuddyRejectsAMissingOrNonStringLastOutcome() {
+        var missing = buddyRow()
+        missing.removeValue(forKey: "last_outcome")
+        XCTAssertNil(MyBuddy(row: missing), "the key is part of the contract")
+        var mistyped = buddyRow()
+        mistyped["last_outcome"] = 3
+        XCTAssertNil(MyBuddy(row: mistyped))
+    }
+
     func testBuddyRequestDecodesBothDirectionsAndRejectsAnUnknownOne() {
         let row: [String: Any] = [
             "request_id": "r1", "direction": "incoming", "other_id": "u2", "other_name": "Bo",

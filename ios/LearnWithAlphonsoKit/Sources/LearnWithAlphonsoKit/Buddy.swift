@@ -101,7 +101,10 @@ public struct MyBuddy: Equatable, Sendable {
             let buddyCount = row["buddy_count"] as? Int,
             let goal = row["goal"] as? Int,
             let streakWeeks = row["streak_weeks"] as? Int,
-            let graceAvailable = row["grace_available"] as? Bool
+            let graceAvailable = row["grace_available"] as? Bool,
+            // Required key: a string, or JSON null before the pair's first judged week. Anything else is a broken row.
+            let rawOutcome = row["last_outcome"],
+            rawOutcome is NSNull || rawOutcome is String
         else { return nil }
         self.pairID = pairID
         self.buddyID = buddyID
@@ -114,7 +117,7 @@ public struct MyBuddy: Equatable, Sendable {
         self.goal = goal
         self.streakWeeks = streakWeeks
         self.graceAvailable = graceAvailable
-        self.lastOutcome = row["last_outcome"] as? String
+        self.lastOutcome = rawOutcome as? String
     }
 }
 
