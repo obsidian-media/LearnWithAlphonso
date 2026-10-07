@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   BUDDY_COPY,
+  BUDDY_PRESETS,
+  buddyMessageLine,
   buddyEndConfirm,
   buddyGraceLine,
   buddyIncomingLine,
@@ -13,10 +15,12 @@ import {
 import {
   cancelBuddyRequest,
   endBuddy,
+  getBuddyMessages,
   getBuddyRequests,
   getMyBuddy,
   requestBuddy,
   respondBuddyRequest,
+  sendBuddyMessage,
   type BuddyActionResult,
 } from "../lib/buddy.functions";
 
@@ -29,7 +33,15 @@ function useBuddyQueries() {
     queryFn: () => getBuddyRequests(),
     retry: false,
   });
-  return { buddy, requests };
+  // Polled while the Friends page is open (no realtime socket, spec Part 3); only asked for while paired.
+  const messages = useQuery({
+    queryKey: ["buddyMessages"],
+    queryFn: () => getBuddyMessages(),
+    retry: false,
+    refetchInterval: 60_000,
+    enabled: !!buddy.data,
+  });
+  return { buddy, requests, messages };
 }
 
 type BuddyQueries = ReturnType<typeof useBuddyQueries>;
@@ -42,6 +54,8 @@ function stampOf(q: BuddyQueries) {
     q.buddy.errorUpdatedAt,
     q.requests.dataUpdatedAt,
     q.requests.errorUpdatedAt,
+    q.messages.dataUpdatedAt,
+    q.messages.errorUpdatedAt,
   ].join(":");
 }
 
@@ -61,15 +75,18 @@ function useBuddyAction(queries: BuddyQueries) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["myBuddy"] }),
       queryClient.invalidateQueries({ queryKey: ["buddyRequests"] }),
+      queryClient.invalidateQueries({ queryKey: ["buddyMessages"] }),
     ]);
     // Stamp with the state AFTER the refresh this action caused; busy stays on until then, so a second click
     // cannot act on a request that is already gone.
     const state = (key: string) => queryClient.getQueryState([key]);
     const b = state("myBuddy");
     const r = state("buddyRequests");
+    const m = state("buddyMessages");
+    // A query with no cache entry yet (messages before the first pairing) reads 0, matching what the hook reports.
     setAnswer({
       text,
-      stamp: [b?.dataUpdatedAt, b?.errorUpdatedAt, r?.dataUpdatedAt, r?.errorUpdatedAt].join(":"),
+      stamp: [b, r, m].flatMap((s) => [s?.dataUpdatedAt ?? 0, s?.errorUpdatedAt ?? 0]).join(":"),
     });
     setBusy(false);
   }
@@ -83,7 +100,7 @@ const linkButton = "text-xs font-semibold underline underline-offset-4 disabled:
 /** The Friends page's study buddy card: the current buddy's week, or pending requests and how to ask. */
 export function BuddyCard() {
   const queries = useBuddyQueries();
-  const { buddy, requests } = queries;
+  const { buddy, requests, messages } = queries;
   const { message, busy, run } = useBuddyAction(queries);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
 
@@ -94,7 +111,7 @@ export function BuddyCard() {
       </div>
     );
   }
-  if (buddy.isError || requests.isError) {
+  if (buddy.isError || requests.isError || messages.isError) {
     return (
       <div className={card}>
         <p className="text-sm text-ink-soft">{BUDDY_COPY.loadFailed}</p>
@@ -132,6 +149,38 @@ export function BuddyCard() {
         </p>
         <p className="mt-1 text-xs text-ink-soft">{buddyStreakLine(mine.streakWeeks)}</p>
         <p className="text-xs text-ink-soft">{buddyGraceLine(mine.graceAvailable)}</p>
+        <div role="group" aria-label={`Send ${mine.buddyName} a message`} className="mt-3">
+          <p className="text-xs font-semibold text-ink-soft/80">Send {mine.buddyName} a message</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {BUDDY_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                disabled={busy}
+                onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }))}
+                className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
+              >
+                {p.text}
+              </button>
+            ))}
+          </div>
+        </div>
+        {(messages.data ?? []).length > 0 && (
+          <ul className="mt-3 space-y-0.5" aria-label="Recent messages">
+            {(messages.data ?? [])
+              .slice(-10)
+              .map((msg) => ({
+                msg,
+                line: buddyMessageLine(msg.isMine, mine.buddyName, msg.presetId),
+              }))
+              .filter((x): x is { msg: (typeof x)["msg"]; line: string } => x.line !== null)
+              .map(({ msg, line }) => (
+                <li key={msg.messageId} className="text-xs text-ink">
+                  {line}
+                </li>
+              ))}
+          </ul>
+        )}
         {confirmingEnd ? (
           <div className="mt-3">
             <p className="text-xs text-ink">{buddyEndConfirm(mine.buddyName)}</p>

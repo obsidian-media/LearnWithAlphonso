@@ -10,6 +10,8 @@ const requestBuddy = vi.fn();
 const respondBuddyRequest = vi.fn();
 const cancelBuddyRequest = vi.fn();
 const endBuddy = vi.fn();
+const sendBuddyMessage = vi.fn();
+const getBuddyMessages = vi.fn();
 vi.mock("../lib/buddy.functions", () => ({
   getMyBuddy,
   getBuddyRequests,
@@ -17,6 +19,8 @@ vi.mock("../lib/buddy.functions", () => ({
   respondBuddyRequest,
   cancelBuddyRequest,
   endBuddy,
+  sendBuddyMessage,
+  getBuddyMessages,
 }));
 
 const { BuddyCard, AskBuddyButton } = await import("./BuddyCard");
@@ -51,9 +55,12 @@ beforeEach(() => {
     respondBuddyRequest,
     cancelBuddyRequest,
     endBuddy,
+    sendBuddyMessage,
+    getBuddyMessages,
   ]) {
     f.mockReset();
   }
+  getBuddyMessages.mockResolvedValue([]);
 });
 
 describe("BuddyCard", () => {
@@ -315,5 +322,87 @@ describe("AskBuddyButton after an answer", () => {
     expect(
       screen.queryByText("Request sent. They'll see it on their Friends page."),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("BuddyCard messages", () => {
+  const presets = [
+    "Let's study together!",
+    "Nice work!",
+    "Keep going, you've got this!",
+    "Need a hand?",
+    "On my way to a lesson!",
+    "Good morning!",
+    "Good night!",
+    "Proud of you!",
+  ];
+
+  it("offers exactly the 8 presets, in order, and no way to type a message", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Send Bo a message")).toBeInTheDocument();
+    const group = screen.getByRole("group", { name: "Send Bo a message" });
+    const labels = Array.from(group.querySelectorAll("button")).map((b) => b.textContent);
+    expect(labels).toEqual(presets);
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+  });
+
+  it("sends the preset's id and shows the server's answer", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    sendBuddyMessage.mockResolvedValue({ status: "rate_limited" });
+    renderWithClient(<BuddyCard />);
+    fireEvent.click(await screen.findByRole("button", { name: "Nice work!" }));
+    await waitFor(() =>
+      expect(sendBuddyMessage).toHaveBeenCalledWith({ data: { presetId: "nice_work" } }),
+    );
+    expect(
+      await screen.findByText("You've sent a lot of messages. Try again in a while."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the recent messages from both sides, skipping a preset this client does not know", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyMessages.mockResolvedValue([
+      {
+        messageId: "m1",
+        senderId: "u1",
+        isMine: true,
+        presetId: "nice_work",
+        sentAt: "2026-10-07T00:00:00Z",
+      },
+      {
+        messageId: "m2",
+        senderId: "u2",
+        isMine: false,
+        presetId: "good_night",
+        sentAt: "2026-10-07T00:01:00Z",
+      },
+      {
+        messageId: "m3",
+        senderId: "u2",
+        isMine: false,
+        presetId: "from_the_future",
+        sentAt: "2026-10-07T00:02:00Z",
+      },
+    ]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("You: Nice work!")).toBeInTheDocument();
+    expect(screen.getByText("Bo: Good night!")).toBeInTheDocument();
+    expect(screen.queryByText(/from_the_future/)).not.toBeInTheDocument();
+    // The unknown preset leaves no empty row behind: exactly the two known messages are listed.
+    expect(
+      screen.getByRole("list", { name: "Recent messages" }).querySelectorAll("li"),
+    ).toHaveLength(2);
+  });
+
+  it("says it could not load, never an empty history, when the messages read fails", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyMessages.mockRejectedValue(new Error("boom"));
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Couldn't load your study buddy.")).toBeInTheDocument();
   });
 });

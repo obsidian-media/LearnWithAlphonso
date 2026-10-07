@@ -19,4 +19,9 @@ describe("privacy page: study buddies", () => {
       /Only friends who both agree can pair, and either of you can end it at any time/,
     );
   });
+
+  it("says buddies can only send fixed messages from a list, with no free text, kept as history", () => {
+    expect(page).toMatch(/send each other short fixed messages from a list/);
+    expect(page).toMatch(/There is no free text/);
+  });
 });

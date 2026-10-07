@@ -39,7 +39,7 @@ FROM information_schema.role_table_grants
 WHERE table_schema = 'public' AND table_name = '<table>' GROUP BY grantee ORDER BY grantee;
 ```
 
-Tables created under the rule so far: `team_missions` (server-only), `team_mission_rewards` (owner SELECT), `buddy_pairs`, `buddy_requests`, `buddy_weeks` (SELECT of the caller's own rows), `buddy_members` (server-only, `-- client-grants: none`).
+Tables created under the rule so far: `team_missions` (server-only), `team_mission_rewards` (owner SELECT), `buddy_pairs`, `buddy_requests`, `buddy_weeks` (SELECT of the caller's own rows), `buddy_members` (server-only, `-- client-grants: none`), `buddy_messages` (SELECT of the caller's own pairs).
 
 ## What changed on 2026-10-06 (and what did not)
 
