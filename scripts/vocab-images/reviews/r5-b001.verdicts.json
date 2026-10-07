@@ -1,0 +1,9 @@
+{"batch":"r5-b001","pass":"first","reviewer":"agent:review-r5-b001","reviewedAt":"2026-10-07",
+"verdicts":{
+"bagages":{"verdict":"approve","alt":"Two gray hard-shell suitcases standing on a snowy paved area beside two people in red and black clothing.","peopleVisible":true},
+"cena":{"verdict":"approve","alt":"A restaurant table set with salad plates, bread, water glasses and cutlery during a meal.","peopleVisible":true},
+"dress":{"verdict":"reject","reasons":["nudity-or-suggestive"],"note":"revealing cut-out dress in a posed fashion shot"},
+"ketchup":{"verdict":"approve","alt":"Red ketchup squeezed into a hash symbol on a white plate on a wooden table.","peopleVisible":false},
+"shirt":{"verdict":"reject","reasons":["off-term"],"note":"couple and dog at a cafe table, shirt not the clear subject"},
+"write":{"verdict":"approve","alt":"A wooden fountain pen on a blank sheet of paper beside an ink bottle, envelopes and a pink rose.","peopleVisible":false}
+}}

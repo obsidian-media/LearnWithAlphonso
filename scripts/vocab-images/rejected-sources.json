@@ -1,1 +1,1299 @@
-{}
+{
+  "pexels:1006060": {
+    "key": "coins",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:10482146": {
+    "key": "agua",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "off-term"
+    ]
+  },
+  "pexels:10899667": {
+    "key": "bank",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:11358072": {
+    "key": "cashier",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:11564927": {
+    "key": "calefactor",
+    "reasons": [
+      "off-term",
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:11868946": {
+    "key": "bell",
+    "reasons": [
+      "politics-protest-religion"
+    ]
+  },
+  "pexels:12098660": {
+    "key": "escultura",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:12327992": {
+    "key": "dancing",
+    "reasons": [
+      "politics-protest-religion"
+    ]
+  },
+  "pexels:12717154": {
+    "key": "bagages",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:12975963": {
+    "key": "camisa",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:13179883": {
+    "key": "basketball",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:13434565": {
+    "key": "estadio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:13753910": {
+    "key": "postman",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:144608": {
+    "key": "dog",
+    "reasons": [
+      "violence-weapons-disaster-injury",
+      "off-term"
+    ]
+  },
+  "pexels:14797864": {
+    "key": "farmacia",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15093007": {
+    "key": "diploma",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15170758": {
+    "key": "market",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15785325": {
+    "key": "cab",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15807279": {
+    "key": "boxes",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:15835089": {
+    "key": "bell",
+    "reasons": [
+      "politics-protest-religion",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:16510209": {
+    "key": "glass",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:16760546": {
+    "key": "bank",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:16932916": {
+    "key": "chatting",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:17160683": {
+    "key": "estadio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:17295937": {
+    "key": "door",
+    "reasons": [
+      "politics-protest-religion"
+    ]
+  },
+  "pexels:17410515": {
+    "key": "builder",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:17994718": {
+    "key": "bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:18374799": {
+    "key": "rue",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:18656839": {
+    "key": "panadería",
+    "reasons": [
+      "politics-protest-religion",
+      "off-term"
+    ]
+  },
+  "pexels:1878359": {
+    "key": "bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:19242075": {
+    "key": "calle",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:19285083": {
+    "key": "camel",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:19487945": {
+    "key": "firefighter",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:21588830": {
+    "key": "cycling",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:21838999": {
+    "key": "firefighter",
+    "reasons": [
+      "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:22763683": {
+    "key": "computadora",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:26651105": {
+    "key": "cafetera",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:27116276": {
+    "key": "elephant",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:27429847": {
+    "key": "durazno",
+    "reasons": [
+      "nudity-or-suggestive",
+      "off-term"
+    ]
+  },
+  "pexels:27596262": {
+    "key": "ferry",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:276746": {
+    "key": "living room",
+    "reasons": [
+      "politics-protest-religion",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:28758240": {
+    "key": "shorts",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:29659894": {
+    "key": "escuela",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:29731398": {
+    "key": "metro",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:30417375": {
+    "key": "skiing",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:31044029": {
+    "key": "bell",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:31497506": {
+    "key": "hair",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:31748456": {
+    "key": "ceiling",
+    "reasons": [
+      "politics-protest-religion",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:32081456": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:326512": {
+    "key": "pantalla",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:32831497": {
+    "key": "coco",
+    "reasons": [
+      "off-term",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:3294472": {
+    "key": "shopping",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:33307521": {
+    "key": "cash machine",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:33376731": {
+    "key": "post office",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:33626369": {
+    "key": "librería",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:33968153": {
+    "key": "gare",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:34009126": {
+    "key": "mercado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:34406294": {
+    "key": "recycling",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:34511355": {
+    "key": "actress",
+    "reasons": [
+      "nudity-or-suggestive",
+      "off-term"
+    ]
+  },
+  "pexels:34688570": {
+    "key": "basketball",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:34817109": {
+    "key": "abogado",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:35076286": {
+    "key": "bank",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:35429950": {
+    "key": "comisaría",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:36019668": {
+    "key": "dancing",
+    "reasons": [
+      "nudity-or-suggestive",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:36595111": {
+    "key": "palacio de justicia",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:36729735": {
+    "key": "cashier",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "off-term"
+    ]
+  },
+  "pexels:36753973": {
+    "key": "shopkeeper",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "politics-protest-religion"
+    ]
+  },
+  "pexels:36905101": {
+    "key": "cuchara",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "off-term"
+    ]
+  },
+  "pexels:36965694": {
+    "key": "cab",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:37012315": {
+    "key": "diploma",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:37050940": {
+    "key": "comisaría",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:37080042": {
+    "key": "basketball",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:37211263": {
+    "key": "calle",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:37589299": {
+    "key": "plane",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:3790639": {
+    "key": "coins",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:37972696": {
+    "key": "ceiling",
+    "reasons": [
+      "politics-protest-religion"
+    ]
+  },
+  "pexels:37983582": {
+    "key": "board games",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:38169158": {
+    "key": "gare",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:38575782": {
+    "key": "abuelo",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:3873139": {
+    "key": "farmacia",
+    "reasons": [
+      "off-term",
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:39037790": {
+    "key": "driving",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:39842677": {
+    "key": "dress",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:3985077": {
+    "key": "freezer",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:39880930": {
+    "key": "dress",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:47261": {
+    "key": "phone",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4729488": {
+    "key": "boots",
+    "reasons": [
+      "nudity-or-suggestive",
+      "off-term"
+    ]
+  },
+  "pexels:4774659": {
+    "key": "bus",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4971916": {
+    "key": "checkout",
+    "reasons": [
+      "off-term",
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:51159": {
+    "key": "write",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:53311": {
+    "key": "cash machine",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:545054": {
+    "key": "coins",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:5582669": {
+    "key": "dress",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:5807683": {
+    "key": "cycling",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:5834939": {
+    "key": "cab",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:6193775": {
+    "key": "boots",
+    "reasons": [
+      "off-term",
+      "nudity-or-suggestive"
+    ]
+  },
+  "pexels:6333743": {
+    "key": "cajón",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pexels:7019805": {
+    "key": "battery",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:7154420": {
+    "key": "centre-ville",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:7221389": {
+    "key": "cena",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pexels:7434645": {
+    "key": "actress",
+    "reasons": [
+      "nudity-or-suggestive",
+      "off-term"
+    ]
+  },
+  "pexels:7714736": {
+    "key": "police officer",
+    "reasons": [
+      "violence-weapons-disaster-injury"
+    ]
+  },
+  "pexels:7760552": {
+    "key": "camisa",
+    "reasons": [
+      "nudity-or-suggestive",
+      "off-term"
+    ]
+  },
+  "pexels:7773745": {
+    "key": "video games",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:7859953": {
+    "key": "plumber",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:7887636": {
+    "key": "video games",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:806626": {
+    "key": "camiseta",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8112112": {
+    "key": "abogado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8305726": {
+    "key": "ketchup",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8555256": {
+    "key": "cash machine",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8903705": {
+    "key": "glass",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "off-term"
+    ]
+  },
+  "pexels:907865": {
+    "key": "drink",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:9139274": {
+    "key": "ferry",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:10321863": {
+    "key": "market",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1085072": {
+    "key": "teatro",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1143485": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1146281": {
+    "key": "yoga",
+    "reasons": [
+      "politics-protest-religion"
+    ]
+  },
+  "pixabay:1149343": {
+    "key": "trousers",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:1204029": {
+    "key": "librería",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1232944": {
+    "key": "tienda",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1308309": {
+    "key": "scarf",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:1497298": {
+    "key": "police officer",
+    "reasons": [
+      "violence-weapons-disaster-injury",
+      "off-term"
+    ]
+  },
+  "pixabay:1530531": {
+    "key": "comisaría",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:15593": {
+    "key": "teacher",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:1574278": {
+    "key": "taxi",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:168125": {
+    "key": "rond-point",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1776648": {
+    "key": "lavavajillas",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1840619": {
+    "key": "shoes",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1846137": {
+    "key": "waiter",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1850184": {
+    "key": "dancing",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:1853305": {
+    "key": "pantalla",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1867051": {
+    "key": "trainers",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1867459": {
+    "key": "panadería",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1867992": {
+    "key": "estadio",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1868256": {
+    "key": "train",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1869656": {
+    "key": "menu",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:1873854": {
+    "key": "programmer",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2014619": {
+    "key": "market",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2153865": {
+    "key": "guesthouse",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
+  "pixabay:2203329": {
+    "key": "tram",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2204966": {
+    "key": "waiter",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2246889": {
+    "key": "skiing",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2343558": {
+    "key": "jogging",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:237200": {
+    "key": "parque",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2376728": {
+    "key": "waiter",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2500492": {
+    "key": "sunglasses",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2547329": {
+    "key": "plumber",
+    "reasons": [
+      "off-term",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pixabay:2573216": {
+    "key": "yoga",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:2581913": {
+    "key": "shopping",
+    "reasons": [
+      "nudity-or-suggestive",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2616344": {
+    "key": "stir",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2656435": {
+    "key": "palacio de justicia",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:2666433": {
+    "key": "jacket",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress",
+      "off-term"
+    ]
+  },
+  "pixabay:2673363": {
+    "key": "police officer",
+    "reasons": [
+      "violence-weapons-disaster-injury",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2704011": {
+    "key": "passport",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:2868705": {
+    "key": "sofá",
+    "reasons": [
+      "off-term",
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:2961959": {
+    "key": "woman",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:2979818": {
+    "key": "trousers",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:3040029": {
+    "key": "shopping",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:3060093": {
+    "key": "salt",
+    "reasons": [
+      "off-term",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pixabay:3215049": {
+    "key": "farmacia",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:3597219": {
+    "key": "secadora",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:403074": {
+    "key": "plancha",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:410311": {
+    "key": "phone",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4163403": {
+    "key": "pen",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4337521": {
+    "key": "computadora",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:433876": {
+    "key": "worksheet",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:4454338": {
+    "key": "plane",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4495488": {
+    "key": "firefighter",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "violence-weapons-disaster-injury"
+    ]
+  },
+  "pixabay:4540976": {
+    "key": "post office",
+    "reasons": [
+      "politics-protest-religion",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4683231": {
+    "key": "freezer",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:4916661": {
+    "key": "postman",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:5017870": {
+    "key": "watching",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:507295": {
+    "key": "supermercado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:574016": {
+    "key": "pegamento",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:584850": {
+    "key": "trainers",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:586185": {
+    "key": "hair",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:598346": {
+    "key": "le sucre",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:601239": {
+    "key": "soap",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:6367607": {
+    "key": "palacio de justicia",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:6402074": {
+    "key": "rue",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:650534": {
+    "key": "médico",
+    "reasons": [
+      "violence-weapons-disaster-injury",
+      "off-term"
+    ]
+  },
+  "pixabay:6603120": {
+    "key": "video games",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:6617487": {
+    "key": "shopkeeper",
+    "reasons": [
+      "politics-protest-religion",
+      "off-term"
+    ]
+  },
+  "pixabay:6723380": {
+    "key": "shopkeeper",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:6910973": {
+    "key": "tram",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7094635": {
+    "key": "mercado",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pixabay:7120726": {
+    "key": "refrigerador",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7167120": {
+    "key": "postman",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:720526": {
+    "key": "worksheet",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:7270529": {
+    "key": "teclado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7308942": {
+    "key": "stir",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  },
+  "pixabay:7320903": {
+    "key": "woman",
+    "reasons": [
+      "nudity-or-suggestive"
+    ]
+  },
+  "pixabay:7618814": {
+    "key": "ferry",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7744938": {
+    "key": "librería",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:79612": {
+    "key": "teacher",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:8268841": {
+    "key": "tram",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:8508636": {
+    "key": "plane",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:8607152": {
+    "key": "pilot",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:886462": {
+    "key": "teclado",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:89197": {
+    "key": "rue",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pixabay:8937865": {
+    "key": "taxi driver",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:9114238": {
+    "key": "women",
+    "reasons": [
+      "off-term",
+      "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pixabay:912097": {
+    "key": "watching",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:923188": {
+    "key": "oficina de correos",
+    "reasons": [
+      "off-term",
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:988348": {
+    "key": "taxi driver",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
+    ]
+  }
+}

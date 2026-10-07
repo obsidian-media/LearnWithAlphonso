@@ -1,0 +1,212 @@
+{
+ "batch": "r1-2nd-b003",
+ "pass": "second",
+ "reviewer": "agent:review2-r1-2nd-b003",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "hairdresser": {
+   "verdict": "approve",
+   "alt": "A hairdresser in a yellow top curls a client's hair with a hot iron in front of a mirror.",
+   "peopleVisible": true
+  },
+  "hands": {
+   "verdict": "approve",
+   "alt": "A baby's small hand rests in an adult's hand.",
+   "peopleVisible": true
+  },
+  "jacket": {
+   "verdict": "approve",
+   "alt": "A person seen from behind wearing a beige puffer jacket with a hood and a backpack.",
+   "peopleVisible": true
+  },
+  "jogging": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "tight crop of bare thighs in short shorts; framing is bodily, not clearly jogging"
+  },
+  "ketchup": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "main subject is a hot dog; ketchup is only a topping"
+  },
+  "keys": {
+   "verdict": "approve",
+   "alt": "A hand holds a black car key fob in front of a purple car.",
+   "peopleVisible": true
+  },
+  "knitting": {
+   "verdict": "approve",
+   "alt": "Elderly hands knit cream wool with small needles.",
+   "peopleVisible": true
+  },
+  "l'eau": {
+   "verdict": "approve",
+   "alt": "Clear blue water splashing and sending up droplets.",
+   "peopleVisible": false
+  },
+  "l'écharpe": {
+   "verdict": "approve",
+   "alt": "A thick orange knitted scarf worn over a brown top.",
+   "peopleVisible": true
+  },
+  "l'étudiant": {
+   "verdict": "approve",
+   "alt": "A boy reads an open book in warm low light.",
+   "peopleVisible": true
+  },
+  "la robe": {
+   "verdict": "approve",
+   "alt": "A young girl in a pink striped dress and pink hat stands in a sunny meadow, seen from behind.",
+   "peopleVisible": true
+  },
+  "le t-shirt": {
+   "verdict": "approve",
+   "alt": "Folded black, white, green and grey t-shirts laid out on a blue blanket.",
+   "peopleVisible": true
+  },
+  "licuadora": {
+   "verdict": "approve",
+   "alt": "A woman holding a toddler makes a smoothie in a blender in a kitchen.",
+   "peopleVisible": true
+  },
+  "limón": {
+   "verdict": "approve",
+   "alt": "A glass cup of lemon tea with lemon slices, whole lemons and ginger on a plate in the snow.",
+   "peopleVisible": false
+  },
+  "lobo": {
+   "verdict": "approve",
+   "alt": "A grey wolf lies on a mossy log in a forest and looks at the camera.",
+   "peopleVisible": false
+  },
+  "map": {
+   "verdict": "approve",
+   "alt": "A girl with braids lies on the ground and looks at an open paper map.",
+   "peopleVisible": true
+  },
+  "mat": {
+   "verdict": "approve",
+   "alt": "A doormat with the word welcome on a tiled floor with a person standing in boots.",
+   "peopleVisible": true
+  },
+  "maíz": {
+   "verdict": "approve",
+   "alt": "Several yellow ears of corn in a large metal pot.",
+   "peopleVisible": false
+  },
+  "mechanic": {
+   "verdict": "approve",
+   "alt": "A mechanic lies under an old car in a garage, with only the legs showing, in black and white.",
+   "peopleVisible": true
+  },
+  "menu": {
+   "verdict": "approve",
+   "alt": "Two people hold paper restaurant menus over a marble table with two coffees.",
+   "peopleVisible": true
+  },
+  "mercado": {
+   "verdict": "approve",
+   "alt": "People walk between vegetable stalls at an outdoor market under trees.",
+   "peopleVisible": true
+  },
+  "mochila": {
+   "verdict": "approve",
+   "alt": "A hiker seen from behind wearing a yellow jacket and a black backpack between rock walls.",
+   "peopleVisible": true
+  },
+  "mouth": {
+   "verdict": "approve",
+   "alt": "A boy cups his hands around his open mouth to shout.",
+   "peopleVisible": true
+  },
+  "médico": {
+   "verdict": "approve",
+   "alt": "A smiling doctor in a white coat and scrubs holds out a stethoscope.",
+   "peopleVisible": true
+  },
+  "notebook": {
+   "verdict": "approve",
+   "alt": "A fountain pen lies on an open spiral notebook on a wooden table.",
+   "peopleVisible": false
+  },
+  "nurse": {
+   "verdict": "approve",
+   "alt": "A smiling nurse in blue scrubs, cap and safety glasses with a stethoscope around the neck.",
+   "peopleVisible": true
+  },
+  "oficina de correos": {
+   "verdict": "approve",
+   "alt": "Rows of wooden post office boxes along a wall with customers waiting at the counters.",
+   "peopleVisible": true
+  },
+  "painter": {
+   "verdict": "approve",
+   "alt": "A house painter on a scaffold paints a yellow wall with a long pole roller.",
+   "peopleVisible": true
+  },
+  "pantalla": {
+   "verdict": "approve",
+   "alt": "A person with a hair bun sits at a desk looking at a computer screen, in black and white.",
+   "peopleVisible": true
+  },
+  "pantalones": {
+   "verdict": "approve",
+   "alt": "Pink trousers with turned-up hems and white sneakers on a plain white background.",
+   "peopleVisible": true
+  },
+  "passeport": {
+   "verdict": "approve",
+   "alt": "Two dark red passports with a wooden stamp on top.",
+   "peopleVisible": false
+  },
+  "pegamento": {
+   "verdict": "approve",
+   "alt": "A person holds a glue stick over a table with green paper craft pieces.",
+   "peopleVisible": true
+  },
+  "pen": {
+   "verdict": "approve",
+   "alt": "A hand holds a pen to sign papers on a wooden desk.",
+   "peopleVisible": true
+  },
+  "pencil case": {
+   "verdict": "approve",
+   "alt": "A denim pencil case lies beside a child's drawing, a ruler and notebooks on a table.",
+   "peopleVisible": true
+  },
+  "perro": {
+   "verdict": "approve",
+   "alt": "A brown puppy rests its paws on the edge of a wooden crate.",
+   "peopleVisible": false
+  },
+  "pez": {
+   "verdict": "approve",
+   "alt": "A white betta fish with long flowing fins swims in an aquarium.",
+   "peopleVisible": false
+  },
+  "pilot": {
+   "verdict": "approve",
+   "alt": "Two airline pilots wearing headsets sit in an aircraft cockpit.",
+   "peopleVisible": true
+  },
+  "rabbit": {
+   "verdict": "approve",
+   "alt": "A small light brown rabbit sits in a person's hand.",
+   "peopleVisible": true
+  },
+  "rana": {
+   "verdict": "approve",
+   "alt": "A green red-eyed tree frog with blue legs sits on a large leaf.",
+   "peopleVisible": false
+  },
+  "reading": {
+   "verdict": "approve",
+   "alt": "A woman reads a book while sitting on a rock in a sunny meadow.",
+   "peopleVisible": true
+  }
+ }
+}

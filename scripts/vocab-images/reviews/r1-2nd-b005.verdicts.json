@@ -1,0 +1,27 @@
+{
+ "batch": "r1-2nd-b005",
+ "pass": "second",
+ "reviewer": "agent:review2-r1-2nd-b005",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "women": {
+   "verdict": "approve",
+   "alt": "Two women in sun hats sit side by side and look out over the sea, seen from behind.",
+   "peopleVisible": true
+  },
+  "write": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "blank notebook and pen, nobody writing a letter"
+  },
+  "yoga": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "bare back and shoulders in close crop of a yoga pose"
+  }
+ }
+}

@@ -1,0 +1,21 @@
+{"batch":"r4-b001","pass":"first","reviewer":"agent:review-r4-b001","reviewedAt":"2026-10-07",
+"verdicts":{
+"bagages":{"verdict":"reject","reasons":["brand-logo-or-foreign-text","off-term"],"note":"airport board with foreign text and a watch brand sign, luggage not the subject"},
+"brush":{"verdict":"approve","alt":"A woman in a green t-shirt brushes her teeth in a bathroom, with her reflection in the mirror.","peopleVisible":true},
+"ceiling":{"verdict":"approve","alt":"Looking up at a glass ceiling with metal beams and blue sky above a white wall.","peopleVisible":false},
+"cena":{"verdict":"reject","reasons":["alcohol-tobacco-drugs-gambling"],"note":"wine glasses with white wine on the dinner table"},
+"chatting":{"verdict":"approve","alt":"A smiling woman with curly hair in a green plaid shirt chats with another person outdoors.","peopleVisible":true},
+"dress":{"verdict":"reject","reasons":["nudity-or-suggestive"],"note":"revealing cut-out dress in a posed fashion shot"},
+"estanque":{"verdict":"approve","alt":"A calm pond reflecting green trees along its wooded bank.","peopleVisible":false},
+"finger":{"verdict":"approve","alt":"A relaxed human hand with fingers pointing down against a dark background.","peopleVisible":true},
+"jogging":{"verdict":"approve","alt":"A man and a woman in sportswear jog side by side along a quiet street.","peopleVisible":true},
+"ketchup":{"verdict":"reject","reasons":["brand-logo-or-foreign-text"],"note":"brand label on the ketchup bottle"},
+"shirt":{"verdict":"reject","reasons":["off-term"],"note":"group of people in an office, shirt not the clear subject"},
+"skiing":{"verdict":"reject","reasons":["brand-logo-or-foreign-text"],"note":"brand names printed on the skis"},
+"snacks":{"verdict":"approve","alt":"Overhead view of a bowl of potato chips and a plate of chocolate chip cookies on a wooden table.","peopleVisible":false},
+"soap":{"verdict":"approve","alt":"Hands lather a bar of soap under running water at a bathroom sink.","peopleVisible":true},
+"valle":{"verdict":"approve","alt":"A green valley with a small river between steep hazy mountains.","peopleVisible":false},
+"video games":{"verdict":"approve","alt":"A game controller lit in pink and purple light on a reflective surface.","peopleVisible":false},
+"walk":{"verdict":"approve","alt":"Two people walk along a winding paved path through grassy hills and trees under a blue sky.","peopleVisible":true},
+"write":{"verdict":"reject","reasons":["brand-logo-or-foreign-text"],"note":"handwriting in a non-English language, partly readable"}
+}}

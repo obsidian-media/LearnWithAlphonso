@@ -1,0 +1,232 @@
+{
+ "batch": "r1-b005",
+ "pass": "first",
+ "reviewer": "agent:review-r1-b005",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "escuela": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "adults in white dresses posing in a classroom with balloons, a celebration rather than school"
+  },
+  "escultura": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "marble sculpture of a partly nude woman"
+  },
+  "esponja": {
+   "verdict": "approve",
+   "alt": "Two orange cleaning sponges lying on a white marble surface.",
+   "peopleVisible": false
+  },
+  "estadio": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "visible sponsor advertising boards in the stadium"
+  },
+  "estanque": {
+   "verdict": "approve",
+   "alt": "A small pond with still water surrounded by dry grass and bare shrubs.",
+   "peopleVisible": false
+  },
+  "estante": {
+   "verdict": "approve",
+   "alt": "A hand reaching for a cup on a metal shelf inside a kitchen cabinet with stacked bowls.",
+   "peopleVisible": true
+  },
+  "estudiante": {
+   "verdict": "approve",
+   "alt": "A boy in a blue jacket writing on a paper at a school desk in a classroom.",
+   "peopleVisible": true
+  },
+  "estufa": {
+   "verdict": "approve",
+   "alt": "A freestanding kitchen stove with an oven in a bare room, shown in black and white.",
+   "peopleVisible": false
+  },
+  "eyebrow": {
+   "verdict": "approve",
+   "alt": "Close-up of an eyebrow decorated with tiny pink and blue flowers above an eye.",
+   "peopleVisible": true
+  },
+  "eyes": {
+   "verdict": "approve",
+   "alt": "Close-up of a human eye with an eyebrow, lit from the side.",
+   "peopleVisible": true
+  },
+  "falda": {
+   "verdict": "approve",
+   "alt": "A person standing on grass in a long tan skirt holding a small yellow flower.",
+   "peopleVisible": true
+  },
+  "familia": {
+   "verdict": "approve",
+   "alt": "A family of two women and two boys posing together outdoors beside a tree.",
+   "peopleVisible": true
+  },
+  "farmacia": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "readable pharmacy brand name on coat"
+  },
+  "farmer": {
+   "verdict": "approve",
+   "alt": "A bearded man in a straw hat and blue shirt sitting on a red tractor.",
+   "peopleVisible": true
+  },
+  "farming": {
+   "verdict": "approve",
+   "alt": "Aerial view of rows of crops growing in several farm fields.",
+   "peopleVisible": true
+  },
+  "feather": {
+   "verdict": "approve",
+   "alt": "Close-up of many soft white feathers in black and white.",
+   "peopleVisible": false
+  },
+  "feet": {
+   "verdict": "approve",
+   "alt": "Bare feet and lower legs jumping in a puddle with water splashing around them.",
+   "peopleVisible": true
+  },
+  "fenêtre": {
+   "verdict": "approve",
+   "alt": "A window with white curtains and blinds, with small objects and plants on the sill.",
+   "peopleVisible": false
+  },
+  "ferry": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "ferry company name readable on hull"
+  },
+  "finger": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "extreme macro of wrinkled skin, fingers not clearly recognizable"
+  },
+  "fingers": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "extreme macro of wrinkled skin, fingers not clearly recognizable"
+  },
+  "firefighter": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "Spanish text BOMBEROS on truck in an English course"
+  },
+  "fish": {
+   "verdict": "approve",
+   "alt": "Many fish swimming close together near the surface of dark green water.",
+   "peopleVisible": false
+  },
+  "fishing": {
+   "verdict": "approve",
+   "alt": "Two colorful fishing lures with hooks lying on a white surface.",
+   "peopleVisible": false
+  },
+  "flor": {
+   "verdict": "approve",
+   "alt": "A cluster of small white and pink flowers on a branch with a blurred background.",
+   "peopleVisible": false
+  },
+  "food": {
+   "verdict": "approve",
+   "alt": "Hands holding small plates of fried appetizers with dipping sauces.",
+   "peopleVisible": true
+  },
+  "fox": {
+   "verdict": "approve",
+   "alt": "A red fox curled up resting in tall green grass.",
+   "peopleVisible": false
+  },
+  "freezer": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "sandwiches in transparent drawers, reads as a fridge not a freezer"
+  },
+  "fregadero": {
+   "verdict": "approve",
+   "alt": "A kitchen counter with a metal sink, tap, cups on a tray and soap bottles.",
+   "peopleVisible": false
+  },
+  "fresa": {
+   "verdict": "approve",
+   "alt": "Several fresh red strawberries, some cut in half, in a white bowl.",
+   "peopleVisible": false
+  },
+  "fruit": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "small berries on a thorny branch, not clearly everyday fruit"
+  },
+  "fruta": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "small berries on a thorny branch, not clearly everyday fruit"
+  },
+  "fry": {
+   "verdict": "approve",
+   "alt": "Spring rolls frying in hot oil in a large pan with a wire strainer.",
+   "peopleVisible": false
+  },
+  "garage": {
+   "verdict": "approve",
+   "alt": "Three small garages with white doors in a row beside a street.",
+   "peopleVisible": false
+  },
+  "garaje": {
+   "verdict": "approve",
+   "alt": "Three small garages with white doors in a row beside a street.",
+   "peopleVisible": false
+  },
+  "garden": {
+   "verdict": "approve",
+   "alt": "A park garden with red and white flowers, a bench, two buckets and a hoe on the lawn.",
+   "peopleVisible": false
+  },
+  "gardening": {
+   "verdict": "approve",
+   "alt": "Two older people holding green watering cans in a garden.",
+   "peopleVisible": true
+  },
+  "gare": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "vending machine brand and ad signage visible"
+  },
+  "gasolinera": {
+   "verdict": "approve",
+   "alt": "An empty gas station with fuel pumps under a covered canopy with red and white columns.",
+   "peopleVisible": false
+  },
+  "gato": {
+   "verdict": "approve",
+   "alt": "A gray tabby cat lying on a windowsill looking at the camera.",
+   "peopleVisible": false
+  }
+ }
+}

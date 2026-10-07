@@ -1,0 +1,218 @@
+{
+ "batch": "r1-2nd-b001",
+ "pass": "second",
+ "reviewer": "agent:review2-r1-2nd-b001",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "abrigo": {
+   "verdict": "approve",
+   "alt": "Two people walking on a cobblestone street wearing long winter coats, one with a blue scarf.",
+   "peopleVisible": true
+  },
+  "abuela": {
+   "verdict": "approve",
+   "alt": "An elderly woman with glasses smiles at a baby sitting in a wooden high chair.",
+   "peopleVisible": true
+  },
+  "abuelo": {
+   "verdict": "approve",
+   "alt": "An older man with glasses reads a book on a sofa beside a young child.",
+   "peopleVisible": true
+  },
+  "alfombra": {
+   "verdict": "approve",
+   "alt": "Two people unroll a new rug over a round woven jute rug on a living room floor.",
+   "peopleVisible": true
+  },
+  "almuerzo": {
+   "verdict": "approve",
+   "alt": "A hand holds a forkful of food above a bowl of salad on a table.",
+   "peopleVisible": true
+  },
+  "architect": {
+   "verdict": "approve",
+   "alt": "Three colleagues lean over a white architectural model of a building and review plans.",
+   "peopleVisible": true
+  },
+  "armario": {
+   "verdict": "approve",
+   "alt": "A bedroom with a bed, a tall light wood wardrobe and a window with curtains.",
+   "peopleVisible": false
+  },
+  "artista": {
+   "verdict": "approve",
+   "alt": "A young woman holds a fan of paintbrushes in an art studio.",
+   "peopleVisible": true
+  },
+  "artists": {
+   "verdict": "approve",
+   "alt": "A woman with a paint palette and a man work together in an art studio.",
+   "peopleVisible": true
+  },
+  "aspiradora": {
+   "verdict": "approve",
+   "alt": "A red and grey vacuum cleaner with a hose and floor nozzle on a pink carpet.",
+   "peopleVisible": false
+  },
+  "babies": {
+   "verdict": "approve",
+   "alt": "A smiling baby crawls on the floor near soft string lights.",
+   "peopleVisible": true
+  },
+  "bagages": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "airport scene; luggage not clear main subject"
+  },
+  "balcón": {
+   "verdict": "approve",
+   "alt": "A small balcony with an ornate dark iron railing in front of two white doors.",
+   "peopleVisible": false
+  },
+  "basement": {
+   "verdict": "approve",
+   "alt": "An empty finished basement room with carpet, panelled walls and white doors.",
+   "peopleVisible": false
+  },
+  "bebé": {
+   "verdict": "approve",
+   "alt": "A smiling baby crawls on the floor near soft string lights.",
+   "peopleVisible": true
+  },
+  "biblioteca": {
+   "verdict": "approve",
+   "alt": "People sit at a table in a library lined with wooden shelves full of books.",
+   "peopleVisible": true
+  },
+  "blouse": {
+   "verdict": "approve",
+   "alt": "A woman sits on a chair wearing a black satin blouse and white trousers.",
+   "peopleVisible": true
+  },
+  "board games": {
+   "verdict": "approve",
+   "alt": "Hands place coloured tiles on game boards on a wooden table during a board game.",
+   "peopleVisible": true
+  },
+  "bombero": {
+   "verdict": "approve",
+   "alt": "A firefighter in protective gear and helmet holds a hose nozzle next to a fire truck.",
+   "peopleVisible": true
+  },
+  "books": {
+   "verdict": "approve",
+   "alt": "Two hands hold up a stack of hardcover books against a plain wall.",
+   "peopleVisible": true
+  },
+  "boots": {
+   "verdict": "approve",
+   "alt": "A pair of lace-up leather boots standing on gravel, in black and white.",
+   "peopleVisible": true
+  },
+  "bottle": {
+   "verdict": "approve",
+   "alt": "Three clear plastic water bottles with green caps in close-up.",
+   "peopleVisible": false
+  },
+  "brush": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "toothbrush barely visible; child at sink, concept not clear"
+  },
+  "bufanda": {
+   "verdict": "approve",
+   "alt": "A thick orange knitted scarf worn over a brown top.",
+   "peopleVisible": true
+  },
+  "builder": {
+   "verdict": "approve",
+   "alt": "Two workers in yellow helmets carry wooden boards at an outdoor building site.",
+   "peopleVisible": true
+  },
+  "building": {
+   "verdict": "approve",
+   "alt": "A tall tan multi-storey building under a cloudy sky.",
+   "peopleVisible": false
+  },
+  "butter": {
+   "verdict": "approve",
+   "alt": "Sticks of butter on a wooden plate with a knife cutting off a piece.",
+   "peopleVisible": true
+  },
+  "calculator": {
+   "verdict": "approve",
+   "alt": "A hand rests on a black calculator on a desk with technical drawings.",
+   "peopleVisible": true
+  },
+  "camarero": {
+   "verdict": "approve",
+   "alt": "A waiter in a white shirt and tie carries a tray with juice and fruit in a restaurant.",
+   "peopleVisible": true
+  },
+  "camiseta": {
+   "verdict": "approve",
+   "alt": "Folded black, white, green and grey t-shirts laid out on a blue blanket.",
+   "peopleVisible": true
+  },
+  "carry": {
+   "verdict": "approve",
+   "alt": "A smiling woman carries a large cardboard box in a bright room.",
+   "peopleVisible": true
+  },
+  "ceiling": {
+   "verdict": "reject",
+   "reasons": [
+    "politics-protest-religion"
+   ],
+   "note": "gothic cathedral vaulting, religious setting"
+  },
+  "cena": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "same salad image as lunch; does not clearly show dinner"
+  },
+  "cereza": {
+   "verdict": "approve",
+   "alt": "Red cherries hanging among green leaves on a cherry tree.",
+   "peopleVisible": false
+  },
+  "chaqueta": {
+   "verdict": "approve",
+   "alt": "A person seen from behind wearing a beige puffer jacket with a hood and a backpack.",
+   "peopleVisible": true
+  },
+  "chatting": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "bare shoulders and camisole top on one subject"
+  },
+  "cheese": {
+   "verdict": "approve",
+   "alt": "Hands reach for sliced cheese and a round soft cheese on wooden boards.",
+   "peopleVisible": true
+  },
+  "chef": {
+   "verdict": "approve",
+   "alt": "Chefs in white jackets and aprons cook with pots on a stove in a restaurant kitchen.",
+   "peopleVisible": true
+  },
+  "children": {
+   "verdict": "approve",
+   "alt": "Three children run and cheer on an outdoor playground field.",
+   "peopleVisible": true
+  },
+  "chop": {
+   "verdict": "approve",
+   "alt": "Hands slice a red onion with a knife on a wooden cutting board.",
+   "peopleVisible": true
+  }
+ }
+}
