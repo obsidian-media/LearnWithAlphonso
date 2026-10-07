@@ -22,7 +22,10 @@ export type BuddyStatus =
   | "already_requested"
   | "not_found"
   | "not_paired"
-  | "unauthenticated";
+  | "unauthenticated"
+  | "sent"
+  | "rate_limited"
+  | "bad_preset";
 
 /** One week of the pair's streak. The week the pair was formed can only help (a Sunday pairing cannot reach the goal). */
 export function resolveBuddyWeek(
@@ -54,6 +57,9 @@ const MESSAGES: Record<BuddyStatus | "unknown", string> = {
   not_found: "That request is no longer open.",
   not_paired: "You don't have a study buddy.",
   unauthenticated: "Sign in to find a study buddy.",
+  sent: "Sent.",
+  rate_limited: "You've sent a lot of messages. Try again in a while.",
+  bad_preset: "Something went wrong. Try again.",
   unknown: "Something went wrong. Try again.",
 };
 
@@ -95,4 +101,37 @@ export function buddyOutgoingLine(name: string): string {
 
 export function buddyEndConfirm(name: string): string {
   return `End being study buddies with ${name}? Your streak ends.`;
+}
+
+/** Most preset messages one buddy may send per hour. Must equal the limit in 20261007100000_buddy_messages.sql. */
+export const BUDDY_MESSAGES_PER_HOUR = 20;
+
+/**
+ * The only things buddies can say to each other: fixed encouragements, never free text (owner decision 2026-10-06:
+ * free text would change the App Store submission). The server stores and checks only the id.
+ */
+export const BUDDY_PRESETS: readonly { id: string; text: string }[] = [
+  { id: "lets_study", text: "Let's study together!" },
+  { id: "nice_work", text: "Nice work!" },
+  { id: "keep_going", text: "Keep going, you've got this!" },
+  { id: "need_a_hand", text: "Need a hand?" },
+  { id: "on_my_way", text: "On my way to a lesson!" },
+  { id: "good_morning", text: "Good morning!" },
+  { id: "good_night", text: "Good night!" },
+  { id: "proud_of_you", text: "Proud of you!" },
+];
+
+/** The preset's text, or null for an id this client does not know (the card skips that message). */
+export function buddyPresetText(id: string): string | null {
+  return BUDDY_PRESETS.find((p) => p.id === id)?.text ?? null;
+}
+
+/** "You: Nice work!" / "Bo: Nice work!", or null for an unknown preset. */
+export function buddyMessageLine(
+  isMine: boolean,
+  buddyName: string,
+  presetId: string,
+): string | null {
+  const text = buddyPresetText(presetId);
+  return text === null ? null : `${isMine ? "You" : buddyName}: ${text}`;
 }

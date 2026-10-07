@@ -117,6 +117,9 @@
     "not_found": "That request is no longer open.",
     "not_paired": "You don't have a study buddy.",
     "unauthenticated": "Sign in to find a study buddy.",
+    "sent": "Sent.",
+    "rate_limited": "You've sent a lot of messages. Try again in a while.",
+    "bad_preset": "Something went wrong. Try again.",
     "unknown": "Something went wrong. Try again."
   },
   "weekLines": [
@@ -172,5 +175,60 @@
       "name": "Bo",
       "expected": "End being study buddies with Bo? Your streak ends."
     }
-  }
+  },
+  "presets": [
+    {
+      "id": "lets_study",
+      "text": "Let's study together!"
+    },
+    {
+      "id": "nice_work",
+      "text": "Nice work!"
+    },
+    {
+      "id": "keep_going",
+      "text": "Keep going, you've got this!"
+    },
+    {
+      "id": "need_a_hand",
+      "text": "Need a hand?"
+    },
+    {
+      "id": "on_my_way",
+      "text": "On my way to a lesson!"
+    },
+    {
+      "id": "good_morning",
+      "text": "Good morning!"
+    },
+    {
+      "id": "good_night",
+      "text": "Good night!"
+    },
+    {
+      "id": "proud_of_you",
+      "text": "Proud of you!"
+    }
+  ],
+  "messagesPerHour": 20,
+  "messageLines": [
+    {
+      "isMine": true,
+      "buddyName": "Bo",
+      "presetId": "nice_work",
+      "expected": "You: Nice work!"
+    },
+    {
+      "isMine": false,
+      "buddyName": "Bo",
+      "presetId": "good_night",
+      "expected": "Bo: Good night!"
+    },
+    {
+      "isMine": false,
+      "buddyName": "Bo",
+      "presetId": "not_a_preset",
+      "expected": null
+    }
+  ]
 }

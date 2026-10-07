@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import fixtures from "./buddy.fixtures.json";
 import {
   BUDDY_COPY,
+  BUDDY_MESSAGES_PER_HOUR,
+  BUDDY_PRESETS,
+  buddyMessageLine,
+  buddyPresetText,
   BUDDY_GOAL,
   buddyEndConfirm,
   buddyGraceLine,
@@ -55,4 +59,17 @@ describe("card wording (shared with iOS and Android)", () => {
     expect(buddyOutgoingLine(c.outgoing.name)).toBe(c.outgoing.expected);
     expect(buddyEndConfirm(c.endConfirm.name)).toBe(c.endConfirm.expected);
   });
+});
+
+describe("preset messages (shared with iOS and Android)", () => {
+  it("are exactly the fixture presets, in order", () => {
+    expect(BUDDY_PRESETS).toEqual(fixtures.presets);
+    for (const p of fixtures.presets) expect(buddyPresetText(p.id)).toBe(p.text);
+    expect(buddyPresetText("hi there")).toBeNull();
+    expect(BUDDY_MESSAGES_PER_HOUR).toBe(fixtures.messagesPerHour);
+  });
+  for (const l of fixtures.messageLines) {
+    it(`${l.presetId} -> ${l.expected}`, () =>
+      expect(buddyMessageLine(l.isMine, l.buddyName, l.presetId)).toBe(l.expected));
+  }
 });
