@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -70,6 +71,34 @@ class TeamsViewModelTest {
         awaitTrue("reloaded") { s.seen.count { it.path.endsWith("get_my_team") } >= 2 }
         assertEquals("""{"_name":"Night Owls","_visibility":"private"}""", s.seen.first { it.path.endsWith("create_team") }.body)
         assertNull(v.state.value.error)
+    }
+
+    @Test
+    fun `a failed team lookup is a load failure, not no team, and a retry recovers`() = runBlocking {
+        var failing = true
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        assertNull(v.state.value.myTeam)
+        assertTrue("the screen must not offer create/join during an outage", v.state.value.teamLoadFailed)
+
+        failing = false
+        v.loadAll()
+        awaitTrue("recovered") { v.state.value.myTeam != null }
+        assertFalse(v.state.value.teamLoadFailed)
+    }
+
+    @Test
+    fun `no team is not a load failure`() = runBlocking {
+        val v = TeamsViewModel(server(hasTeam = false).progressClient) { now }
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        assertFalse(v.state.value.teamLoadFailed)
     }
 
     private fun assertFalse(msg: String, v: Boolean) = assertFalse(v)

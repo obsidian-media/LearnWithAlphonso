@@ -28,6 +28,8 @@ data class TeamsUiState(
     val members: List<TeamMember> = emptyList(),
     val leaderboard: List<TeamLeaderboardRow> = emptyList(),
     val error: String? = null,
+    /** The team lookup itself failed: that is not "no team", and the screen must not offer create/join. */
+    val teamLoadFailed: Boolean = false,
     val nowMillis: Long = 0,
 ) {
     val canLeave: Boolean get() = myTeam != null && myTeam.switchLockedUntilMillis <= nowMillis
@@ -43,10 +45,12 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val nowMill
     fun loadAll() {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val team = runCatching { client.getMyTeam() }.getOrNull()
+            val teamResult = runCatching { client.getMyTeam() }
+            // A failed refresh keeps the team already on screen; only a first load with no team to show is a failure.
+            val team = if (teamResult.isFailure) _state.value.myTeam else teamResult.getOrNull()
             val members = if (team != null) runCatching { client.getTeamMembers() }.getOrDefault(emptyList()) else emptyList()
             val board = runCatching { client.getTeamLeaderboard() }.getOrDefault(emptyList())
-            _state.update { it.copy(isLoading = false, myTeam = team, members = members, leaderboard = board, nowMillis = nowMillis()) }
+            _state.update { it.copy(isLoading = false, myTeam = team, members = members, leaderboard = board, teamLoadFailed = teamResult.isFailure && team == null, nowMillis = nowMillis()) }
         }
     }
 

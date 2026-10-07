@@ -24,7 +24,12 @@ export const Route = createFileRoute("/_authenticated/teams")({
 function TeamsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: myTeam, isLoading: loadingMyTeam } = useQuery({
+  const {
+    data: myTeam,
+    isLoading: loadingMyTeam,
+    isError: myTeamFailed,
+    refetch: retryMyTeam,
+  } = useQuery({
     queryKey: ["myTeam"],
     queryFn: () => getMyTeam(),
   });
@@ -42,6 +47,22 @@ function TeamsPage() {
     navigate({ to: "/teams/$teamId", params: { teamId: myTeam.teamId } });
     return null;
   }
+
+  if (myTeamFailed)
+    return (
+      <MobileFrame>
+        <div className="px-6 pt-6">
+          <p className="text-sm text-ink-soft">Couldn't load your team.</p>
+          <button
+            type="button"
+            onClick={() => retryMyTeam()}
+            className="mt-3 rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink"
+          >
+            Try again
+          </button>
+        </div>
+      </MobileFrame>
+    );
 
   async function handleJoinByCode() {
     setBusy(true);

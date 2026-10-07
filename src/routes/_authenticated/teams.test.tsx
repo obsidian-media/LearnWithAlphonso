@@ -57,6 +57,20 @@ beforeEach(() => {
 });
 
 describe("Teams page", () => {
+  it("says it could not load the team, with a retry, instead of offering to create or join one", async () => {
+    getMyTeam.mockRejectedValueOnce(new Error("boom"));
+    getTeamLeaderboard.mockResolvedValue([]);
+    renderPage();
+
+    expect(await screen.findByText("Couldn't load your team.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create team" })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Join code")).not.toBeInTheDocument();
+
+    getMyTeam.mockResolvedValue(null);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByPlaceholderText("Join code")).toBeInTheDocument();
+  });
+
   it("shows the join form and leaderboard when the user has no team", async () => {
     getMyTeam.mockResolvedValue(null);
     getTeamLeaderboard.mockResolvedValue([{ teamId: "t1", name: "Swift Falcons", weeklyXp: 420 }]);

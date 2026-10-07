@@ -207,6 +207,12 @@ describe("getMyTeam", () => {
     await expect(getMyTeam({ context: ctx(supabase) })).resolves.toBeNull();
   });
 
+  it("throws when the request fails, so a broken lookup is never mistaken for 'no team'", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    await expect(getMyTeam({ context: ctx(supabase) })).rejects.toThrow("getMyTeam: boom");
+  });
+
   it("maps the row, defaulting this week's XP to zero", async () => {
     const supabase = rpcReturning([
       {
