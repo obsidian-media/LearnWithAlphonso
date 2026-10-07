@@ -7,6 +7,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.cancelBuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.net.endBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.getBuddyRequests
 import com.obsidianmedia.learnwithalphonso.core.net.getBuddyMessages
+import com.obsidianmedia.learnwithalphonso.core.net.getBuddyPool
+import com.obsidianmedia.learnwithalphonso.core.net.joinBuddyPool
+import com.obsidianmedia.learnwithalphonso.core.net.leaveBuddyPool
 import com.obsidianmedia.learnwithalphonso.core.net.getMyBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.requestBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.respondBuddyRequest
@@ -207,6 +210,49 @@ class BuddyTest {
         assertEquals(false, messages.single().isMine)
         assertThrows(Exception::class.java) {
             kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[]", HttpStatusCode.InternalServerError) }).getBuddyMessages() }
+        }
+    }
+
+    @Test
+    fun `matching wording matches the web`() {
+        val copy = root["copy"]!!.jsonObject
+        assertEquals(copy["poolIntro"]!!.jsonPrimitive.content, BuddyCopy.POOL_INTRO)
+        assertEquals(copy["stopLooking"]!!.jsonPrimitive.content, BuddyCopy.STOP_LOOKING)
+        assertEquals(copy["matchedLabel"]!!.jsonPrimitive.content, BuddyCopy.MATCHED_LABEL)
+        assertEquals(copy["ageConfirm"]!!.jsonPrimitive.content, BuddyCopy.AGE_CONFIRM)
+        for ((code, name) in copy["courseNames"]!!.jsonObject) assertEquals(name.jsonPrimitive.content, BuddyCopy.courseName(code))
+        val find = copy["findButton"]!!.jsonObject
+        assertEquals(find["expected"]!!.jsonPrimitive.content, BuddyCopy.findButton(find["course"]!!.jsonPrimitive.content))
+        val waiting = copy["waitingLine"]!!.jsonObject
+        assertEquals(waiting["expected"]!!.jsonPrimitive.content, BuddyCopy.waitingLine(waiting["course"]!!.jsonPrimitive.content))
+    }
+
+    @Test
+    fun `isMatch is read, and missing means a friend pair`() = runTest {
+        val matched = buddyRow.replace("\"last_outcome\":null", "\"last_outcome\":null,\"is_match\":true")
+        assertEquals(true, client(FakeSupabase { json("[$matched]") }).getMyBuddy()!!.isMatch)
+        assertEquals(false, client(FakeSupabase { json("[$buddyRow]") }).getMyBuddy()!!.isMatch)
+    }
+
+    @Test
+    fun `matching calls post the course, read the pool and throw on a server error`() = runTest {
+        val fake = FakeSupabase { req ->
+            when {
+                req.path.endsWith("join_buddy_pool") -> json("""[{"status":"waiting"}]""")
+                req.path.endsWith("leave_buddy_pool") -> json("""[{"status":"left"}]""")
+                req.path.endsWith("get_buddy_pool") -> json("""[{"matching_enabled":true,"waiting":true,"course":"fr","courses":["en","fr"]}]""")
+                else -> json("[]")
+            }
+        }
+        assertEquals("waiting", client(fake).joinBuddyPool("fr", ageConfirmed = true))
+        assertEquals("""{"_course":"fr","_age_confirmed":true}""", fake.seen[0].body)
+        assertEquals("left", client(fake).leaveBuddyPool())
+        val pool = client(fake).getBuddyPool()
+        assertEquals(true, pool.matchingEnabled)
+        assertEquals("fr", pool.course)
+        assertEquals(listOf("en", "fr"), pool.courses)
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[]", HttpStatusCode.InternalServerError) }).getBuddyPool() }
         }
     }
 }

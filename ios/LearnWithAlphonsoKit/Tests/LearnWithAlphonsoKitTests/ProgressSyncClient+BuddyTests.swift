@@ -160,4 +160,37 @@ final class ProgressSyncClientBuddyTests: XCTestCase {
             XCTFail("a failed read must throw")
         } catch {}
     }
+
+    func testMatchingCalls() async throws {
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/rest/v1/rpc/join_buddy_pool":
+                XCTAssertEqual(self.body(request)["_course"] as? String, "fr")
+                XCTAssertEqual(self.body(request)["_age_confirmed"] as? Bool, true)
+                return self.jsonResponse(for: request.url!, body: [["status": "waiting"]])
+            case "/rest/v1/rpc/leave_buddy_pool":
+                return self.jsonResponse(for: request.url!, body: [["status": "left"]])
+            case "/rest/v1/rpc/get_buddy_pool":
+                return self.jsonResponse(for: request.url!, body: [["matching_enabled": true, "waiting": false, "course": NSNull(), "courses": ["fr"]]])
+            default:
+                XCTFail("unexpected \(request.url?.path ?? "")")
+                return self.jsonResponse(for: request.url!, body: [] as [Any])
+            }
+        }
+        let joined = try await client.joinBuddyPool(course: "fr", ageConfirmed: true)
+        let left = try await client.leaveBuddyPool()
+        let pool = try await client.getBuddyPool()
+        XCTAssertEqual(joined, "waiting")
+        XCTAssertEqual(left, "left")
+        XCTAssertEqual(pool.courses, ["fr"])
+    }
+
+    func testGetBuddyPoolThrowsOnAServerError() async {
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [Any], status: 500) }
+        do {
+            _ = try await client.getBuddyPool()
+            XCTFail("a failed read must throw, never look like 'matching is off'")
+        } catch {}
+    }
 }
+

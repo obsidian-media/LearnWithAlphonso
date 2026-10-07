@@ -102,6 +102,37 @@ final class BuddyTests: XCTestCase {
         XCTAssertNil(BuddyMessage(row: bad))
     }
 
+    func testMatchingWordingMatchesTheWeb() throws {
+        let copy = try XCTUnwrap(fixtures()["copy"] as? [String: Any])
+        XCTAssertEqual(BuddyCopy.poolIntro, copy["poolIntro"] as? String)
+        XCTAssertEqual(BuddyCopy.stopLooking, copy["stopLooking"] as? String)
+        XCTAssertEqual(BuddyCopy.matchedLabel, copy["matchedLabel"] as? String)
+        XCTAssertEqual(BuddyCopy.ageConfirm, copy["ageConfirm"] as? String)
+        for (code, name) in try XCTUnwrap(copy["courseNames"] as? [String: String]) {
+            XCTAssertEqual(BuddyCopy.courseName(code), name)
+        }
+        let find = try XCTUnwrap(copy["findButton"] as? [String: String])
+        XCTAssertEqual(BuddyCopy.findButton(try XCTUnwrap(find["course"])), find["expected"])
+        let waiting = try XCTUnwrap(copy["waitingLine"] as? [String: String])
+        XCTAssertEqual(BuddyCopy.waitingLine(try XCTUnwrap(waiting["course"])), waiting["expected"])
+    }
+
+    func testMyBuddyReadsIsMatchAndPoolDecodes() throws {
+        var row = buddyRow()
+        row["is_match"] = true
+        XCTAssertEqual(MyBuddy(row: row)?.isMatch, true)
+        row.removeValue(forKey: "is_match")
+        XCTAssertEqual(MyBuddy(row: row)?.isMatch, false, "a server without matching sends no is_match: a friend pair")
+        let pool = try XCTUnwrap(BuddyPool(row: ["matching_enabled": true, "waiting": true, "course": "fr", "courses": ["en", "fr"]]))
+        XCTAssertTrue(pool.matchingEnabled)
+        XCTAssertTrue(pool.waiting)
+        XCTAssertEqual(pool.course, "fr")
+        XCTAssertEqual(pool.courses, ["en", "fr"])
+        let idle = try XCTUnwrap(BuddyPool(row: ["matching_enabled": false, "waiting": false, "course": NSNull(), "courses": [] as [String]]))
+        XCTAssertNil(idle.course)
+        XCTAssertNil(BuddyPool(row: ["matching_enabled": "yes", "waiting": false, "courses": [] as [String]]))
+    }
+
     // MARK: - Decoding the RPC rows
 
     private func buddyRow() -> [String: Any] {

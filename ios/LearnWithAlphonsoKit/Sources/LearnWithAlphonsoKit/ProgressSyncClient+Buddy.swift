@@ -51,6 +51,25 @@ extension ProgressSyncClient {
         }
     }
 
+    /// Opt in to be matched with another learner of this course at a similar level (Phase 3b).
+    /// `ageConfirmed` is the learner's "I'm 13 or older" (owner decision: minimum age 13); the server answers
+    /// "age_required" without it.
+    public func joinBuddyPool(course: String, ageConfirmed: Bool) async throws -> String {
+        try await buddyStatus("join_buddy_pool", ["_course": course, "_age_confirmed": ageConfirmed])
+    }
+
+    public func leaveBuddyPool() async throws -> String {
+        try await buddyStatus("leave_buddy_pool", [:])
+    }
+
+    /// Whether matching is on, whether the caller is waiting, and their courses. Throws on failure.
+    public func getBuddyPool() async throws -> BuddyPool {
+        guard let row = try await buddyRPC("get_buddy_pool", [:]).first, let pool = BuddyPool(row: row) else {
+            throw ProgressSyncError.invalidPayload
+        }
+        return pool
+    }
+
     private func buddyStatus(_ function: String, _ body: [String: Any]) async throws -> String {
         let rows = try await buddyRPC(function, body)
         return rows.first?["status"] as? String ?? "unknown"

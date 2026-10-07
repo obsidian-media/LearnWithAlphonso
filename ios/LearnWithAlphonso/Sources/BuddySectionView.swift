@@ -17,6 +17,11 @@ struct BuddySection: View {
     @State private var buddy: MyBuddy?
     @State private var requests: [BuddyRequest] = []
     @State private var messages: [BuddyMessage] = []
+    @State private var pool: BuddyPool?
+    @State private var blockTarget: SocialTarget?
+    /// Declared-age confirmation for matching (owner decision: minimum age 13); the server refuses without it.
+    @State private var ageConfirmed = false
+    @State private var reportTarget: SocialTarget?
     @State private var isLoading = true
     /// The spinner shows only before the first result; later reloads keep the section on screen.
     @State private var hasLoaded = false
@@ -72,14 +77,44 @@ struct BuddySection: View {
             }
             Button("Keep", role: .cancel) {}
         }
+        .confirmationDialog(
+            "Block \(blockTarget?.displayName ?? "this user")?",
+            isPresented: Binding(get: { blockTarget != nil }, set: { if !$0 { blockTarget = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button("Block", role: .destructive) {
+                if let target = blockTarget { Task { await block(target) } }
+                blockTarget = nil
+            }
+            Button("Cancel", role: .cancel) { blockTarget = nil }
+        } message: {
+            Text(SocialSafetyCopy.blockConfirmationMessage(blockTarget?.displayName ?? "This person"))
+        }
+        .sheet(item: $reportTarget) { target in
+            ReportSheet(target: target, session: session)
+        }
     }
 
     @ViewBuilder
     private func buddyRows(_ buddy: MyBuddy) -> some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            Text(buddy.buddyName)
-                .font(AlphonsoFont.display(17, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+            HStack {
+                Text(buddy.buddyName)
+                    .font(AlphonsoFont.display(17, weight: .semiBold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                if buddy.isMatch {
+                    Text(BuddyCopy.matchedLabel)
+                        .font(AlphonsoFont.sans(11))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    Spacer()
+                    // A matched buddy is not a friend: block and report live right here (guideline 1.2).
+                    SocialSafetyMenu(
+                        onBlock: { blockTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
+                        onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) }
+                    )
+                    .buttonStyle(.borderless)
+                }
+            }
             Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.ink)
@@ -152,6 +187,7 @@ struct BuddySection: View {
                 }
             }
         }
+        matchingRows
         if !askable.isEmpty {
             Menu("Ask a friend to be your study buddy") {
                 ForEach(askable, id: \.userID) { friend in
@@ -162,6 +198,38 @@ struct BuddySection: View {
             }
             .tint(AlphonsoColor.moss)
             .disabled(busy)
+        }
+    }
+
+    /// Opt-in matching (Phase 3b). A waiting learner can always stop looking, even while matching is switched off;
+    /// only the find buttons depend on the switch.
+    @ViewBuilder
+    private var matchingRows: some View {
+        if let pool, pool.waiting, let course = pool.course {
+            HStack {
+                Text(BuddyCopy.waitingLine(course))
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Spacer()
+                Button(BuddyCopy.stopLooking) { Task { await run { try await $0.leaveBuddyPool() } } }
+                    .tint(AlphonsoColor.inkSoft)
+                    .buttonStyle(.borderless)
+                    .disabled(busy)
+            }
+        } else if let pool, pool.matchingEnabled, !pool.courses.isEmpty {
+            Text(BuddyCopy.poolIntro)
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+            Toggle(BuddyCopy.ageConfirm, isOn: $ageConfirmed)
+                .font(AlphonsoFont.sans(13))
+                .tint(AlphonsoColor.moss)
+            ForEach(pool.courses, id: \.self) { course in
+                Button(BuddyCopy.findButton(course)) {
+                    Task { await run { try await $0.joinBuddyPool(course: course, ageConfirmed: ageConfirmed) } }
+                }
+                .tint(AlphonsoColor.moss)
+                .disabled(busy || !ageConfirmed)
+            }
         }
     }
 
@@ -207,7 +275,10 @@ struct BuddySection: View {
             let newRequests = try await client.getBuddyRequests()
             // Messages only while paired; their failure is a load failure, never an empty history.
             let newMessages = newBuddy == nil ? [] : try await client.getBuddyMessages()
+            // Matching state only while unpaired; its failure is a load failure, never "matching is off".
+            let newPool = newBuddy == nil ? try await client.getBuddyPool() : nil
             guard generation == loadGeneration else { return false }
+            pool = newPool
             buddy = newBuddy
             requests = newRequests
             messages = newMessages
@@ -224,6 +295,18 @@ struct BuddySection: View {
             isLoading = false
             return false
         }
+    }
+
+    /// Blocking a matched buddy ends the pair on the server (trigger); reload to show it.
+    private func block(_ target: SocialTarget) async {
+        busy = true
+        defer { busy = false }
+        var blocked = false
+        if let client = await makeClient(), let result = try? await client.blockUser(target.id) {
+            blocked = result.ok
+        }
+        await load()
+        if !blocked { message = BuddyCopy.statusMessage("unknown") }
     }
 
     /// Runs a buddy action, shows the server's answer in fixed wording, then reloads (busy until the reload lands, so

@@ -11,7 +11,7 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 2b | Team mission on iOS | MERGED (#233), in no build |
 | 2c | Team mission on Android | MERGED (#234), in no release |
 | 3a | Buddy pairing between friends and weekly goal, server and web | MERGED and live (#238), verified on the deployed functions; plan `2026-10-06-buddy-pairing-web.md` |
-| 3b | Opt-in matching with strangers (`buddy_pool`) | Owner decided 13+ (2026-10-07); server + web IN REVIEW (branch `feat/buddy-matching`), native next |
+| 3b | Opt-in matching with strangers (`buddy_pool`) | Owner decided 13+ (2026-10-07); server + web PR #244, native on branch `feat/buddy-matching-native` (in no build/release) |
 | 4 | Buddy on iOS and Android | MERGED (#240 iOS, #241 Android), in no build/release |
 | 5 | Buddy preset messages, server and web | MERGED and live (#242), verified on the deployed functions |
 | 6 | Buddy presets on iOS and Android | MERGED (#243), in no build/release |
