@@ -5,7 +5,7 @@ import { checkNewTableGrants } from "../migration-grants";
 import { VOCAB_IMAGE_BUCKET, VOCAB_IMAGE_MAX_BYTES, VOCAB_IMAGE_MIME } from "./url-policy";
 
 const MIGRATIONS = path.resolve(import.meta.dirname, "../../../supabase/migrations");
-const FILE = "20261008120000_vocab_images_bucket.sql";
+const FILE = "20261008140000_vocab_images_bucket.sql";
 const sql = () => fs.readFileSync(path.join(MIGRATIONS, FILE), "utf8");
 const code = (s: string) => s.replace(/--[^\n]*/g, "");
 
