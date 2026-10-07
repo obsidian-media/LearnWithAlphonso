@@ -42,6 +42,11 @@ object BuddyCopy {
         "sent" to "Sent.",
         "rate_limited" to "You've sent a lot of messages. Try again in a while.",
         "bad_preset" to "Something went wrong. Try again.",
+        "waiting" to "You're on the list. We'll pair you with a learner at your level.",
+        "left" to "You've stopped looking for a study buddy.",
+        "not_waiting" to "You weren't looking for a study buddy.",
+        "matching_off" to "Finding a study buddy isn't available right now.",
+        "not_studying" to "Start that course first, then look for a study buddy.",
         "unknown" to "Something went wrong. Try again.",
     )
 

@@ -48,6 +48,11 @@ public enum BuddyCopy {
         "sent": "Sent.",
         "rate_limited": "You've sent a lot of messages. Try again in a while.",
         "bad_preset": "Something went wrong. Try again.",
+        "waiting": "You're on the list. We'll pair you with a learner at your level.",
+        "left": "You've stopped looking for a study buddy.",
+        "not_waiting": "You weren't looking for a study buddy.",
+        "matching_off": "Finding a study buddy isn't available right now.",
+        "not_studying": "Start that course first, then look for a study buddy.",
         "unknown": "Something went wrong. Try again.",
     ]
 
