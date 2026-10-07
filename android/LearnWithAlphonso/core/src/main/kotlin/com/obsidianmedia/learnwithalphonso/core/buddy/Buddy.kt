@@ -1,0 +1,85 @@
+package com.obsidianmedia.learnwithalphonso.core.buddy
+
+/**
+ * Study buddies (study together, Phase 3a on the server; docs/superpowers/specs/2026-10-06-study-together-design.md).
+ * The server is the source of truth for the week rules (`_resolve_buddy_pair`); [BuddyRules] mirrors them so the
+ * clients stay honest, and [BuddyCopy] owns the wording, word-for-word src/lib/buddy.ts and the iOS Kit's
+ * `BuddyCopy` (all pinned by the shared buddy.fixtures.json).
+ */
+object BuddyRules {
+    /** Distinct lessons each buddy needs in a week. Equals `goal` in 20261006180000_buddy_pairing.sql. */
+    const val GOAL = 3
+
+    data class WeekResult(val outcome: String, val streakWeeks: Int, val graceAvailable: Boolean)
+
+    /** One week of the pair's streak. The week the pair was formed can only help. */
+    fun resolveWeek(streakWeeks: Int, graceAvailable: Boolean, a: Int, b: Int, isFirstWeek: Boolean): WeekResult = when {
+        a >= GOAL && b >= GOAL -> WeekResult("hit", streakWeeks + 1, true)
+        isFirstWeek -> WeekResult("first_week", streakWeeks, graceAvailable)
+        graceAvailable -> WeekResult("grace", streakWeeks, false)
+        else -> WeekResult("miss", 0, false)
+    }
+}
+
+object BuddyCopy {
+    const val INTRO = "Pick a friend to study with. Each week you both aim for 3 lessons and keep a streak together."
+    const val LOAD_FAILED = "Couldn't load your study buddy."
+
+    private val messages = mapOf(
+        "requested" to "Request sent. They'll see it on their Friends page.",
+        "paired" to "You're study buddies now.",
+        "declined" to "Request declined.",
+        "cancelled" to "Request cancelled.",
+        "ended" to "You're no longer study buddies.",
+        "not_friends" to "You can only ask a friend to be your study buddy.",
+        "blocked" to "You can't be study buddies with this person.",
+        "already_paired" to "You already have a study buddy.",
+        "friend_paired" to "Your friend already has a study buddy.",
+        "already_requested" to "You've already asked them.",
+        "not_found" to "That request is no longer open.",
+        "not_paired" to "You don't have a study buddy.",
+        "unauthenticated" to "Sign in to find a study buddy.",
+        "unknown" to "Something went wrong. Try again.",
+    )
+
+    /** Fixed wording for a server status; a status this client does not know gets the generic message. */
+    fun statusMessage(status: String): String = messages[status] ?: messages.getValue("unknown")
+
+    /** "You 2/3 · Buddy 3/3 this week"; counts above the goal show as the goal. */
+    fun weekLine(myCount: Int, buddyCount: Int, goal: Int): String =
+        "You ${minOf(myCount, goal)}/$goal · Buddy ${minOf(buddyCount, goal)}/$goal this week"
+
+    fun streakLine(weeks: Int): String = "Streak: $weeks week${if (weeks == 1) "" else "s"}"
+    fun graceLine(available: Boolean): String = if (available) "1 grace week left" else "No grace week left"
+    fun incomingLine(name: String): String = "$name wants to be your study buddy."
+    fun outgoingLine(name: String): String = "Waiting for $name."
+    fun endConfirm(name: String): String = "End being study buddies with $name? Your streak ends."
+}
+
+/** One `get_my_buddy` row: the caller's active buddy and this week's counts. */
+data class MyBuddy(
+    val pairId: String,
+    val buddyId: String,
+    val buddyName: String,
+    val buddyAvatarSeed: String,
+    val pairedAt: String,
+    val weekStart: String,
+    val myCount: Int,
+    val buddyCount: Int,
+    val goal: Int,
+    val streakWeeks: Int,
+    val graceAvailable: Boolean,
+    val lastOutcome: String?,
+)
+
+/** One pending request from `get_buddy_requests`. */
+data class BuddyRequest(
+    val requestId: String,
+    val direction: Direction,
+    val otherId: String,
+    val otherName: String,
+    val otherAvatarSeed: String,
+    val requestedAt: String,
+) {
+    enum class Direction { INCOMING, OUTGOING }
+}

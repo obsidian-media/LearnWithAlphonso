@@ -1,0 +1,159 @@
+package com.obsidianmedia.learnwithalphonso.core.buddy
+
+import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase
+import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase.Companion.json
+import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
+import com.obsidianmedia.learnwithalphonso.core.net.cancelBuddyRequest
+import com.obsidianmedia.learnwithalphonso.core.net.endBuddy
+import com.obsidianmedia.learnwithalphonso.core.net.getBuddyRequests
+import com.obsidianmedia.learnwithalphonso.core.net.getMyBuddy
+import com.obsidianmedia.learnwithalphonso.core.net.requestBuddy
+import com.obsidianmedia.learnwithalphonso.core.net.respondBuddyRequest
+import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+
+/**
+ * Reads the SAME fixtures the web and iOS tests pin (core/src/test/resources/buddy.fixtures.json is a byte-for-byte
+ * copy, guarded by src/lib/buddy-native-fixtures.test.ts): the week rules, the server statuses' wording and the card
+ * wording must be word-for-word src/lib/buddy.ts.
+ */
+class BuddyTest {
+    private val root: JsonObject =
+        Json.parseToJsonElement(javaClass.getResource("/buddy.fixtures.json")!!.readText()).jsonObject
+
+    private fun client(fake: FakeSupabase) = ProgressSyncClient(fake.http) { 0L }
+
+    @Test
+    fun `week rules match every fixture case`() {
+        val cases = root["resolve"]!!.jsonArray
+        assertTrue(cases.size >= 6)
+        for (case in cases) {
+            val c = case.jsonObject
+            val name = c["name"]!!.jsonPrimitive.content
+            val state = c["state"]!!.jsonObject
+            val counts = c["counts"]!!.jsonObject
+            val expected = c["expected"]!!.jsonObject
+            val result = BuddyRules.resolveWeek(
+                streakWeeks = state["streakWeeks"]!!.jsonPrimitive.int,
+                graceAvailable = state["graceAvailable"]!!.jsonPrimitive.boolean,
+                a = counts["a"]!!.jsonPrimitive.int,
+                b = counts["b"]!!.jsonPrimitive.int,
+                isFirstWeek = c["isFirstWeek"]!!.jsonPrimitive.boolean,
+            )
+            assertEquals(expected["outcome"]!!.jsonPrimitive.content, result.outcome, name)
+            assertEquals(expected["streakWeeks"]!!.jsonPrimitive.int, result.streakWeeks, name)
+            assertEquals(expected["graceAvailable"]!!.jsonPrimitive.boolean, result.graceAvailable, name)
+        }
+        assertEquals(3, BuddyRules.GOAL)
+    }
+
+    @Test
+    fun `every server status has the web wording and an unknown one falls back`() {
+        val messages = root["messages"]!!.jsonObject
+        assertTrue(messages.size >= 14)
+        for ((status, text) in messages) assertEquals(text.jsonPrimitive.content, BuddyCopy.statusMessage(status), status)
+        assertEquals(messages["unknown"]!!.jsonPrimitive.content, BuddyCopy.statusMessage("something_new"))
+    }
+
+    @Test
+    fun `week lines and card wording match the web`() {
+        for (line in root["weekLines"]!!.jsonArray) {
+            val l = line.jsonObject
+            assertEquals(
+                l["expected"]!!.jsonPrimitive.content,
+                BuddyCopy.weekLine(l["my"]!!.jsonPrimitive.int, l["buddy"]!!.jsonPrimitive.int, l["goal"]!!.jsonPrimitive.int),
+            )
+        }
+        val copy = root["copy"]!!.jsonObject
+        assertEquals(copy["intro"]!!.jsonPrimitive.content, BuddyCopy.INTRO)
+        assertEquals(copy["loadFailed"]!!.jsonPrimitive.content, BuddyCopy.LOAD_FAILED)
+        for (s in copy["streakLines"]!!.jsonArray) {
+            assertEquals(s.jsonObject["expected"]!!.jsonPrimitive.content, BuddyCopy.streakLine(s.jsonObject["weeks"]!!.jsonPrimitive.int))
+        }
+        for (g in copy["graceLines"]!!.jsonArray) {
+            assertEquals(g.jsonObject["expected"]!!.jsonPrimitive.content, BuddyCopy.graceLine(g.jsonObject["available"]!!.jsonPrimitive.boolean))
+        }
+        fun pair(key: String) = copy[key]!!.jsonObject.let { it["name"]!!.jsonPrimitive.content to it["expected"]!!.jsonPrimitive.content }
+        pair("incoming").let { (name, expected) -> assertEquals(expected, BuddyCopy.incomingLine(name)) }
+        pair("outgoing").let { (name, expected) -> assertEquals(expected, BuddyCopy.outgoingLine(name)) }
+        pair("endConfirm").let { (name, expected) -> assertEquals(expected, BuddyCopy.endConfirm(name)) }
+    }
+
+    private val buddyRow =
+        """{"pair_id":"p1","buddy_id":"u2","buddy_name":"Bo","buddy_avatar_seed":"cd","paired_at":"2026-10-01T00:00:00+00:00",
+           "week_start":"2026-10-05","my_count":2,"buddy_count":3,"goal":3,"streak_weeks":4,"grace_available":false,"last_outcome":null}"""
+
+    @Test
+    fun `getMyBuddy is null without a buddy and decodes a row`() = runTest {
+        val none = FakeSupabase { json("[]") }
+        assertNull(client(none).getMyBuddy())
+        assertEquals("/rest/v1/rpc/get_my_buddy", none.seen.single().path)
+
+        val buddy = client(FakeSupabase { json("[$buddyRow]") }).getMyBuddy()!!
+        assertEquals("Bo", buddy.buddyName)
+        assertEquals(2, buddy.myCount)
+        assertEquals(3, buddy.buddyCount)
+        assertEquals(4, buddy.streakWeeks)
+        assertEquals(false, buddy.graceAvailable)
+        assertNull(buddy.lastOutcome)
+    }
+
+    @Test
+    fun `getMyBuddy throws on a server error or a malformed row instead of looking like no buddy`() = runTest {
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) }).getMyBuddy() }
+        }
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("""[{"pair_id":"p1"}]""") }).getMyBuddy() }
+        }
+        // "eight" (not "8": kotlinx reads a numeric string as a number) is a genuinely mistyped count.
+        val mistyped = buddyRow.replace("\"my_count\":2", "\"my_count\":\"eight\"")
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[$mistyped]") }).getMyBuddy() }
+        }
+    }
+
+    @Test
+    fun `getBuddyRequests decodes both directions and rejects an unknown one`() = runTest {
+        val row = """{"request_id":"r1","direction":"incoming","other_id":"u2","other_name":"Bo","other_avatar_seed":"cd","requested_at":"2026-10-06T00:00:00+00:00"}"""
+        val requests = client(FakeSupabase { json("[$row, ${row.replace("r1", "r2").replace("incoming", "outgoing")}]") }).getBuddyRequests()
+        assertEquals(listOf("r1", "r2"), requests.map { it.requestId })
+        assertEquals(listOf(BuddyRequest.Direction.INCOMING, BuddyRequest.Direction.OUTGOING), requests.map { it.direction })
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[${row.replace("incoming", "sideways")}]") }).getBuddyRequests() }
+        }
+    }
+
+    @Test
+    fun `mutations post their arguments and return the server status, or unknown without a row`() = runTest {
+        val fake = FakeSupabase { req ->
+            when {
+                req.path.endsWith("request_buddy") -> json("""[{"status":"friend_paired"}]""")
+                req.path.endsWith("respond_buddy_request") -> json("""[{"status":"declined"}]""")
+                req.path.endsWith("cancel_buddy_request") -> json("""[{"status":"cancelled"}]""")
+                else -> json("[]")
+            }
+        }
+        val c = client(fake)
+        assertEquals("friend_paired", c.requestBuddy("u2"))
+        assertEquals("declined", c.respondBuddyRequest("r1", accept = false))
+        assertEquals("cancelled", c.cancelBuddyRequest("r2"))
+        assertEquals("unknown", c.endBuddy())
+        assertEquals("""{"_friend":"u2"}""", fake.seen[0].body)
+        assertEquals("""{"_request":"r1","_accept":false}""", fake.seen[1].body)
+        assertEquals("""{"_request":"r2"}""", fake.seen[2].body)
+        assertEquals("/rest/v1/rpc/end_buddy", fake.seen[3].path)
+    }
+}

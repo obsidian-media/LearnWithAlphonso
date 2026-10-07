@@ -86,3 +86,15 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Tap an invite link `https://learn.alphonsoecosystem.app/invite/<code>` from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9).
 - [ ] Settings, Export my data saves a file through the system picker.
 - [ ] Settings, Delete my account with the typed DELETE removes the account and returns to sign-in.
+
+## Study buddy (Friends screen)
+
+Two test accounts that are friends (A and B).
+
+- [ ] A opens Friends: a "Study buddy" card shows the intro and lists B under "Ask a friend to be your study buddy".
+- [ ] A taps B: "Request sent. They'll see it on their Friends page." appears and B disappears from the ask list; "Waiting for B." shows with Cancel request.
+- [ ] B opens Friends: "A wants to be your study buddy." with Accept / Decline. Accept: "You're study buddies now." and the card shows A, "You 0/3 · Buddy 0/3 this week", "Streak: 0 weeks", "1 grace week left".
+- [ ] After A finishes a lesson, B's card (reopen Friends) shows "Buddy 1/3".
+- [ ] End study buddy asks "End being study buddies with A? Your streak ends."; Keep does nothing, Yes, end shows "You're no longer study buddies."
+- [ ] Airplane mode, reopen Friends: "Couldn't load your study buddy." with Try again (never the ask list); turn the network back on, Try again recovers.
+
