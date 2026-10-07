@@ -64,4 +64,25 @@ in `pg_stat_activity`, and the deployed function text is unchanged.
 
 Study together (2026-10-06/07), same harness: buddy pairing (`20261006180000`: request/ask-back/late accept/unfriend/block/resolver weeks/end), preset messages (`20261007100000`: allowed ids only, 20 per hour then `rate_limited` (loop in a DO block: a LATERAL call with constant arguments runs once), unfriend stops sending, RLS outsider sees nothing) and matching (`20261007120000`: not studying, waiting, block and past buddy skipped, CEFR two steps apart not matched, oldest first, pool cleared on pairing, matched pair can message, switch off then leave still works, block ends a matched pair and they are never re-matched, own pool row only). Scripts were split under ~20 KB: a ~29 KB execute_sql request fails with "Invalid or expired requestState" before reaching the database.
 
+## W7 (2026-10-08): moderation, names, teams, quests, matching, profile privacy
+
+Same harness, each migration installed inside `BEGIN ... ROLLBACK` with the deployed behaviour checked first ("old"):
+
+| Migration | What the script showed |
+|---|---|
+| Filter v2 (`20261008130000`) | old filter let compounds, leetspeak, full-width and mathematical letters through; v2: 31 blocked, 6 invalid, 39 allowed incl. José, 李雷, Dick Van Dyke, Jenny Coon; `admin_rename_team` service-only |
+| Names (`20261008130100`) | old: a 45-character `full_name` aborted sign-up (23514); new: 8 metadata shapes all get a profile, `confirm_display_name`, trigger stamp, email-prefix names migrated to handles, admin reset; 500 handles all pass the filter |
+| `get_team_members` (`20261008130200`) | old: a blocked teammate was listed; new: hidden in both directions |
+| Reports (`20261008130300`) | AI report needs no reported user; kind/context checks; notify queued with the secret header; throttled at 10/hour; no secret, no request, insert still succeeds |
+| Grants (`20261008130400`) | anon lost the term list, `_random_team_name`, `notify_nudge_push`; rename, `create_team`, `auto_join_team`, nudge still work as authenticated |
+| Teams (`20261008130500`) | old: owner leave orphaned the team; new: hand-on, close, account deletion, own-team rejoin no-op, Crockford codes, no zero-XP weekly winner |
+| Quests (`20261008130600`) | old: a second claim with another date paid again; new: `invalid-week`, `invalid-course`, `no-course-progress`, one claim per week |
+| Matching (`20261008130700`) | old: 25 joins accepted; new: kill switch, 13+ record, presets only, block ends pair, no re-match, 20/hour, 3 matches/7 days |
+| Profiles own-row (`20261008130800`) | old: another learner read country/theme; new: 0 rows of another profile, own row intact, own update ok, cross-row update a no-op; leaderboard/friends/team/buddy/request/invite RPCs still name the other learner; policies exactly own-row; no view |
+| Kill switch mute (`20261008130900`) | old: matched pair sent while off; new: `matching_paused` both sides, friend pair sends, progress kept, switch back on restores, `get_my_buddy` exposes `matching_enabled`, ACL restored |
+| Owner kick list (`20261008131000`) | old: owner could not see the member they blocked; new: shown with `blocked = true` and kickable; a member who blocked the owner stays hidden; non-owners unchanged |
+| Name reset (`20261008131100`) | refused above the approved count; resets failing names to unconfirmed handles and failing team names, with backups; 500 handles all pass |
+
+`net.http_request_queue` and Vault: the MCP role cannot write `vault.secrets`, so the "no secret" branch is probed before a throwaway secret is created, not by deleting one.
+
 The static guard for the most common mistake is `src/lib/plpgsql-output-column-clash.test.ts`.
