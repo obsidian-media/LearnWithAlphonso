@@ -24,46 +24,57 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalPage title="Cookie Policy" updated="5 September 2026">
+    <LegalPage title="Cookie Policy" updated="7 October 2026">
       <Section heading="What this covers">
         <p>
-          Alphonso stores small amounts of data on your device using cookies and browser storage.
-          This page explains what each item does and how to change your choice.
+          The Learn with Alphonso website stores a few small items in your browser, in cookies or in
+          browser storage. This page lists each one, what it is for, and how to change your choice.
+          The iOS and Android apps do not use cookies.
         </p>
       </Section>
 
       <Section heading="Strictly necessary">
         <Bullets
           items={[
-            "Sign-in session: keeps you logged in and syncs your progress to your account. Without it the app cannot work.",
-            "Security: protects sign-in requests against abuse.",
-            "Your cookie choice itself, so we do not ask again on every visit.",
+            "Sign-in session: kept in your browser’s local storage so you stay signed in and your progress syncs to your account. Without it the website cannot work.",
+            "Sign-in security: a short-lived value used while you sign in with Google, to protect the sign-in from tampering.",
+            "Your cookie choice, so we do not ask again on every visit.",
           ]}
         />
-        <p>These do not require consent and cannot be switched off.</p>
+      </Section>
+
+      <Section heading="Preferences">
+        <Bullets
+          items={[
+            "Your theme, so the website looks the way you chose before it finishes loading.",
+            "Small reminders, such as how many times we have shown you the save-a-word hint, and a copy of your learning goal so it appears quickly.",
+          ]}
+        />
+        <p>These make the website work the way you set it up and do not require consent.</p>
       </Section>
 
       <Section heading="Optional">
-        <Bullets
-          items={[
-            "Product analytics: anonymous counts of which screens and lessons are used, so we can improve the course. Only set if you choose Accept all.",
-          ]}
-        />
-        <p>We do not use advertising or cross-site tracking cookies.</p>
+        <p>
+          On learn.alphonsoecosystem.app we do not set any optional cookies or storage today: no
+          analytics, no advertising and no cross-site tracking. If we ever add optional analytics
+          here, we will list it here first and only use it if you choose Accept all in the banner.
+          Our marketing website, discover.alphonsoecosystem.app, uses Vercel Web Analytics, which
+          does not use cookies and counts page views and events only in aggregate.
+        </p>
       </Section>
 
       <Section heading="Changing your mind">
         <p>
-          Choose Essential only in the banner to refuse optional storage. To change your choice
-          later, clear this site's data in your browser settings and the banner will appear again on
-          your next visit. Blocking strictly necessary storage will sign you out.
+          To change your choice later, clear this site's data in your browser settings, and the
+          banner will appear again on your next visit. Clearing or blocking strictly necessary
+          storage signs you out.
         </p>
       </Section>
 
       <Section heading="More information">
         <p>
-          How we handle the data behind these cookies is described in our Privacy Policy. Questions?
-          Write to privacy@alphonsoecosystem.app.
+          How we handle your data is described in our <a href="/privacy">Privacy Policy</a>.
+          Questions? Write to support@alphonsoecosystem.app.
         </p>
       </Section>
     </LegalPage>
