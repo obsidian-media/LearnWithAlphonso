@@ -45,7 +45,7 @@ class BuddyViewModelTest {
         val s = FakeServer { req ->
             when {
                 req.path.endsWith("get_my_buddy") ->
-                    if (failing) json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) else json("[]")
+                    if (failing) json("[]", HttpStatusCode.InternalServerError) else json("[]")
                 else -> json("[]")
             }
         }
@@ -82,7 +82,7 @@ class BuddyViewModelTest {
     fun `a failed action says so instead of a server answer`() = runBlocking {
         val s = FakeServer { req ->
             when {
-                req.path.endsWith("end_buddy") -> json("""{"message":"x"}""", HttpStatusCode.InternalServerError)
+                req.path.endsWith("end_buddy") -> json("[]", HttpStatusCode.InternalServerError)
                 req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
                 else -> json("[]")
             }
@@ -92,6 +92,25 @@ class BuddyViewModelTest {
         v.end()
         awaitTrue("answered") { v.state.value.message != null && !v.state.value.busy }
         assertEquals("Something went wrong. Try again.", v.state.value.message)
+    }
+
+    @Test
+    fun `an answer never outlives the state it described, and the section stays up during a reload`() = runBlocking {
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("request_buddy") -> json("""[{"status":"requested"}]""")
+                else -> json("[]")
+            }
+        }
+        val v = BuddyViewModel(s.progressClient)
+        awaitTrue("loaded") { v.state.value.hasLoaded }
+        v.ask("u2")
+        awaitTrue("answered") { v.state.value.message != null && !v.state.value.busy }
+        assertTrue("first result kept the section on screen", v.state.value.hasLoaded)
+
+        v.load()
+        awaitTrue("reloaded") { s.seen.count { it.path.endsWith("get_my_buddy") } >= 3 && !v.state.value.isLoading }
+        assertNull("a later reload clears the old answer", v.state.value.message)
     }
 
     @Test

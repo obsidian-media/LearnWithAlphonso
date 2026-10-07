@@ -112,8 +112,9 @@ class BuddyTest {
 
     @Test
     fun `getMyBuddy throws on a server error or a malformed row instead of looking like no buddy`() = runTest {
+        // A well-formed empty array with a 500: only the status can make the first case throw.
         assertThrows(Exception::class.java) {
-            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) }).getMyBuddy() }
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[]", HttpStatusCode.InternalServerError) }).getMyBuddy() }
         }
         assertThrows(Exception::class.java) {
             kotlinx.coroutines.runBlocking { client(FakeSupabase { json("""[{"pair_id":"p1"}]""") }).getMyBuddy() }

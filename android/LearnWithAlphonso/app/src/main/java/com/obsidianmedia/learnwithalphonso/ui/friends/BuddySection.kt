@@ -44,6 +44,8 @@ import kotlinx.coroutines.launch
 
 data class BuddyUiState(
     val isLoading: Boolean = true,
+    /** The first result arrived; later reloads keep the section on screen instead of a spinner. */
+    val hasLoaded: Boolean = false,
     /** The lookup itself failed: that is not "no buddy", and the section must not offer to ask a friend. */
     val loadFailed: Boolean = false,
     val buddy: MyBuddy? = null,
@@ -73,19 +75,24 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
 
     fun load() { viewModelScope.launch { reload() } }
 
-    private suspend fun reload() {
+    /** True when this reload's result was applied (it was still the newest one). */
+    private suspend fun reload(): Boolean {
         val generation = ++loadGeneration
         _state.update { it.copy(isLoading = true) }
-        try {
+        return try {
             val buddy = client.getMyBuddy()
             val requests = client.getBuddyRequests()
-            if (generation != loadGeneration) return
-            _state.update { it.copy(isLoading = false, loadFailed = false, buddy = buddy, requests = requests) }
+            if (generation != loadGeneration) return false
+            // An answer describes the state before this reload; it must not outlive it (web: the stamp in BuddyCard).
+            _state.update {
+                it.copy(isLoading = false, hasLoaded = true, loadFailed = false, buddy = buddy, requests = requests, message = null)
+            }
+            true
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            if (generation != loadGeneration) return
-            _state.update { it.copy(isLoading = false, loadFailed = true) }
+            if (generation == loadGeneration) _state.update { it.copy(isLoading = false, loadFailed = true) }
+            false
         }
     }
 
@@ -104,8 +111,9 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
             } catch (e: Exception) {
                 BuddyCopy.statusMessage("unknown")
             }
-            reload()
-            _state.update { it.copy(busy = false, message = text) }
+            // The answer is shown only with the state its own reload produced; a superseded reload drops it.
+            val applied = reload()
+            _state.update { it.copy(busy = false, message = if (applied) text else it.message) }
         }
     }
 }
@@ -119,7 +127,7 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>) {
     SectionCard("Study buddy") {
         val buddy = state.buddy
         when {
-            state.isLoading && buddy == null && !state.loadFailed ->
+            !state.hasLoaded && !state.loadFailed ->
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
             state.loadFailed -> {
                 Text(BuddyCopy.LOAD_FAILED, color = palette.ink)
