@@ -126,4 +126,43 @@ class BuddyViewModelTest {
         val askable = v.state.value.askable(listOf(friend("u2", "Bo"), friend("u3", "Cy")))
         assertEquals(listOf("u2"), askable.map { it.userId })
     }
+
+    @Test
+    fun `while paired the messages load with the buddy, and a messages failure is a load failure`() = runBlocking {
+        var failMessages = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
+                req.path.endsWith("get_buddy_messages") ->
+                    if (failMessages) json("[]", HttpStatusCode.InternalServerError)
+                    else json("""[{"message_id":"m1","sender_id":"u2","is_mine":false,"preset_id":"good_night","sent_at":"2026-10-07T00:00:00+00:00"}]""")
+                else -> json("[]")
+            }
+        }
+        val v = BuddyViewModel(s.progressClient)
+        awaitTrue("loaded") { v.state.value.hasLoaded }
+        assertEquals(listOf("good_night"), v.state.value.messages.map { it.presetId })
+
+        failMessages = true
+        v.load()
+        awaitTrue("failed") { v.state.value.loadFailed }
+    }
+
+    @Test
+    fun `sending a preset posts its id and shows the answer`() = runBlocking {
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
+                req.path.endsWith("send_buddy_message") -> json("""[{"status":"sent"}]""")
+                else -> json("[]")
+            }
+        }
+        val v = BuddyViewModel(s.progressClient)
+        awaitTrue("loaded") { v.state.value.hasLoaded }
+        v.send("proud_of_you")
+        awaitTrue("answered") { v.state.value.message != null && !v.state.value.busy }
+        assertEquals("Sent.", v.state.value.message)
+        assertEquals("""{"_preset":"proud_of_you"}""", s.seen.first { it.path.endsWith("send_buddy_message") }.body)
+    }
 }
+

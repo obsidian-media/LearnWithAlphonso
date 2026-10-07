@@ -13,8 +13,8 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 3a | Buddy pairing between friends and weekly goal, server and web | MERGED and live (#238), verified on the deployed functions; plan `2026-10-06-buddy-pairing-web.md` |
 | 3b | Opt-in matching with strangers (`buddy_pool`) | BLOCKED on the owner's age-rating decision (BACKLOG 0.0-ai) |
 | 4 | Buddy on iOS and Android | MERGED (#240 iOS, #241 Android), in no build/release |
-| 5 | Buddy preset messages, server and web | IN REVIEW (branch `feat/buddy-messages`, plan `2026-10-07-buddy-messages-web.md`) |
-| 6 | Buddy presets on iOS and Android | NOT started |
+| 5 | Buddy preset messages, server and web | MERGED and live (#242), verified on the deployed functions |
+| 6 | Buddy presets on iOS and Android | IN REVIEW (branch `feat/buddy-messages-native`), in no build/release |
 
 **Part 1 (team mission) is complete on web, iOS and Android; what remains is Parts 2-3 (phases 3-6, the language buddy).** Native device checks are owner-run (`android/LearnWithAlphonso/DEVICE-CHECKLIST.md`, and the iOS checks listed in BACKLOG).
 

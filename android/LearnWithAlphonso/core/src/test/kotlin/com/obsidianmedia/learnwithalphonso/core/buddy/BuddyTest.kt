@@ -6,9 +6,11 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.cancelBuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.net.endBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.getBuddyRequests
+import com.obsidianmedia.learnwithalphonso.core.net.getBuddyMessages
 import com.obsidianmedia.learnwithalphonso.core.net.getMyBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.requestBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.respondBuddyRequest
+import com.obsidianmedia.learnwithalphonso.core.net.sendBuddyMessage
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -170,4 +172,42 @@ class BuddyTest {
         assertEquals("""{"_request":"r2"}""", fake.seen[2].body)
         assertEquals("/rest/v1/rpc/end_buddy", fake.seen[3].path)
     }
+
+    @Test
+    fun `presets, the hourly limit and message lines match the web`() {
+        val presets = root["presets"]!!.jsonArray.map { it.jsonObject }
+        assertEquals(presets.map { it["id"]!!.jsonPrimitive.content }, BuddyCopy.PRESETS.map { it.id })
+        assertEquals(presets.map { it["text"]!!.jsonPrimitive.content }, BuddyCopy.PRESETS.map { it.text })
+        assertNull(BuddyCopy.presetText("hi there"))
+        assertEquals(root["messagesPerHour"]!!.jsonPrimitive.int, BuddyCopy.MESSAGES_PER_HOUR)
+        for (line in root["messageLines"]!!.jsonArray) {
+            val l = line.jsonObject
+            val expected = l["expected"]!!.let { if (it is kotlinx.serialization.json.JsonNull) null else it.jsonPrimitive.content }
+            assertEquals(
+                expected,
+                BuddyCopy.messageLine(l["isMine"]!!.jsonPrimitive.boolean, l["buddyName"]!!.jsonPrimitive.content, l["presetId"]!!.jsonPrimitive.content),
+            )
+        }
+    }
+
+    @Test
+    fun `sending posts the preset id, reading decodes rows and throws on a server error`() = runTest {
+        val fake = FakeSupabase { req ->
+            when {
+                req.path.endsWith("send_buddy_message") -> json("""[{"status":"rate_limited"}]""")
+                req.path.endsWith("get_buddy_messages") ->
+                    json("""[{"message_id":"m1","sender_id":"u2","is_mine":false,"preset_id":"nice_work","sent_at":"2026-10-07T00:00:00+00:00"}]""")
+                else -> json("[]")
+            }
+        }
+        assertEquals("rate_limited", client(fake).sendBuddyMessage("nice_work"))
+        assertEquals("""{"_preset":"nice_work"}""", fake.seen[0].body)
+        val messages = client(fake).getBuddyMessages()
+        assertEquals(listOf("nice_work"), messages.map { it.presetId })
+        assertEquals(false, messages.single().isMine)
+        assertThrows(Exception::class.java) {
+            kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[]", HttpStatusCode.InternalServerError) }).getBuddyMessages() }
+        }
+    }
 }
+
