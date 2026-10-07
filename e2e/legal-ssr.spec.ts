@@ -27,3 +27,19 @@ for (const path of Object.keys(LEGAL_REQUIRED_PHRASES) as LegalPath[]) {
     }
   });
 }
+
+test("legal and landing HTML contain no raw NUL bytes", async ({ request }) => {
+  for (const path of ["/", "/terms", "/privacy", "/cookies", "/support"]) {
+    const body = await (await request.get(path, { headers: { accept: "text/html" } })).body();
+    expect(body.includes(0), `${path} still contains a raw NUL byte`).toBe(false);
+  }
+});
+
+test("pages still hydrate after the NUL escaping", async ({ page }) => {
+  // The cookie banner opens only from a client useEffect (CookieConsent.tsx),
+  // so it appearing proves React hydrated the server HTML.
+  await page.goto("/terms");
+  await expect(page.getByRole("dialog", { name: "Cookie choices" })).toBeVisible();
+  await page.getByRole("button", { name: "Essential only" }).click();
+  await expect(page.getByRole("dialog", { name: "Cookie choices" })).toBeHidden();
+});

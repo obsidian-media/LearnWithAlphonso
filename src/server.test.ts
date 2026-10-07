@@ -58,4 +58,47 @@ describe("server.ts fetch handler", () => {
     expect(result.status).toBe(500);
     expect(await result.text()).toBe("<html>error</html>");
   });
+  it("escapes raw NUL bytes in HTML so the document is not binary, and drops content-length", async () => {
+    const raw = '<script>$R={i:"\u0000terms\u0000terms"}</script>';
+    entryFetch.mockResolvedValue(
+      new Response(raw, {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8", "content-length": String(raw.length) },
+      }),
+    );
+    const result = await server.fetch(new Request("https://x/terms"), {}, {});
+    const bytes = new Uint8Array(await result.arrayBuffer());
+    expect(bytes.includes(0)).toBe(false);
+    expect(new TextDecoder().decode(bytes)).toBe('<script>$R={i:"\\u0000terms\\u0000terms"}</script>');
+    expect(result.headers.get("content-length")).toBeNull();
+    expect(result.status).toBe(200);
+  });
+
+  it("keeps the JavaScript value identical: the escaped literal evaluates to the original string", async () => {
+    entryFetch.mockResolvedValue(
+      new Response('"\u0000terms\u0000terms"', { headers: { "content-type": "text/html" } }),
+    );
+    const escaped = await (await server.fetch(new Request("https://x/terms"), {}, {})).text();
+    expect(new Function(`return ${escaped};`)()).toBe("\u0000terms\u0000terms");
+  });
+
+  it("escapes NULs split across stream chunks", async () => {
+    const enc = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(c) {
+        c.enqueue(enc.encode('<p>a"\u0000'));
+        c.enqueue(enc.encode('\u0000b"</p>'));
+        c.close();
+      },
+    });
+    entryFetch.mockResolvedValue(new Response(body, { headers: { "content-type": "text/html" } }));
+    const text = await (await server.fetch(new Request("https://x/"), {}, {})).text();
+    expect(text).toBe('<p>a"\\u0000\\u0000b"</p>');
+  });
+
+  it("returns non-HTML responses as the same object", async () => {
+    const resp = new Response("a\u0000b", { headers: { "content-type": "application/octet-stream" } });
+    entryFetch.mockResolvedValue(resp);
+    expect(await server.fetch(new Request("https://x/file"), {}, {})).toBe(resp);
+  });
 });
