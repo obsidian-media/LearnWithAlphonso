@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso.core.content
 
 import kotlinx.serialization.SerializationException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -29,7 +30,7 @@ class ContentDecodingTest {
         assertEquals("Team player", team.title)
         assertEquals("team", team.category)
         assertEquals(1, team.threshold)
-        assertTrue(store.vocabImages.containsKey("children"))
+        assertTrue(store.vocabImages.containsKey("doctor"))
     }
 
     @Test
@@ -72,5 +73,20 @@ class ContentDecodingTest {
             val levels = store.placementPool(course).map { it.level }.toSet()
             assertEquals(placementOrder.toSet(), levels, "bands for ${course.code}")
         }
+    }
+
+    @Test
+    fun `vocab image provenance decodes when present and is null when absent`() {
+        val full = ContentJson.json.decodeFromString(
+            VocabImageRef.serializer(),
+            """{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:w1-review-r1-b001","reviewedAt":"2026-10-08"}""",
+        )
+        assertEquals("pexels", full.source)
+        assertEquals("agent:w1-review-r1-b001", full.reviewedBy)
+        assertEquals("2026-10-08", full.reviewedAt)
+
+        val legacy = ContentJson.json.decodeFromString(VocabImageRef.serializer(), """{"url":"u","alt":"a","credit":"c"}""")
+        assertNull(legacy.source)
+        assertEquals(VocabImageRef("u", "a", "c"), legacy)
     }
 }

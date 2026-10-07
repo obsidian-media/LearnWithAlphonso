@@ -84,4 +84,10 @@ data class VocabImageRef(
     val url: String,
     val alt: String,
     val credit: String,
+    /** Provenance (App Store remediation W1); optional so older bundles decode. */
+    val source: String? = null,
+    val sourcePageUrl: String? = null,
+    val license: String? = null,
+    val reviewedBy: String? = null,
+    val reviewedAt: String? = null,
 )
