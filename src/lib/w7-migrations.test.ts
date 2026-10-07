@@ -10,6 +10,7 @@ const FILES = {
   members: "20261008130200_team_members_block_filter.sql",
   reports: "20261008130300_content_reports_moderation_ops.sql",
   grants: "20261008130400_function_grants_hardening.sql",
+  teams: "20261008130500_team_integrity.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -204,3 +205,33 @@ describe("function grants hardening (L8)", () => {
     }
   });
 });
+
+describe("team integrity", () => {
+  const file = FILES.teams;
+  it("join codes come from Crockford base32 and are never base64", () => {
+    expect(fn(file, "_new_join_code")).toContain("'0123456789ABCDEFGHJKMNPQRSTVWXYZ'");
+    for (const name of ["create_team", "auto_join_team"]) {
+      expect(fn(file, name), name).toContain("public._new_join_code()");
+      expect(fn(file, name), name).not.toContain("'base64'");
+    }
+    expect(read(file)).toContain("WHERE t.join_code !~ '^[0-9A-HJKMNP-TV-Z]{8}$'");
+  });
+  it("one trigger hands the team on or closes it, for every way a member leaves", () => {
+    const trig = fn(file, "_team_after_member_removed");
+    expect(trig).toContain("ORDER BY m.joined_at, m.user_id");
+    expect(trig).toContain("DELETE FROM public.teams t WHERE t.id = OLD.team_id;");
+    expect(read(file)).toContain("AFTER DELETE ON public.team_members");
+  });
+  it("leave_team reports what happened to the team", () => {
+    const stmt = fn(file, "leave_team");
+    expect(stmt).toContain("'ownership-transferred'");
+    expect(stmt).toContain("'team-disbanded'");
+  });
+  it("re-joining your own team is a no-op", () => {
+    expect(fn(file, "_join_team_impl")).toMatch(/m\.user_id = _me AND m\.team_id = _team_id[\s\S]*RETURN QUERY SELECT true, NULL::text, _team_id;/);
+  });
+  it("no weekly team bonus when nobody earned XP", () => {
+    expect(fn(file, "get_my_team")).toContain("HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0");
+  });
+});
+
