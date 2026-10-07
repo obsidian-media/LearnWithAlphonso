@@ -11,6 +11,7 @@ const FILES = {
   reports: "20261008130300_content_reports_moderation_ops.sql",
   grants: "20261008130400_function_grants_hardening.sql",
   teams: "20261008130500_team_integrity.sql",
+  quests: "20261008130600_weekly_quest_integrity.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -232,6 +233,26 @@ describe("team integrity", () => {
   });
   it("no weekly team bonus when nobody earned XP", () => {
     expect(fn(file, "get_my_team")).toContain("HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0");
+  });
+});
+
+
+describe("weekly quest integrity", () => {
+  const stmt = () => fn(FILES.quests, "claim_weekly_quest");
+  it("derives the week server-side, in UTC, and refuses any other week", () => {
+    expect(header(stmt())).toMatch(/SET timezone = 'UTC'/);
+    expect(stmt()).toContain("IF _week_start IS DISTINCT FROM wk THEN");
+    expect(stmt()).not.toContain("CURRENT_DATE - INTERVAL '7 days'");
+  });
+  it("validates the course and refuses a course with no progress before recording a claim", () => {
+    const s = stmt();
+    expect(s).toContain("_course NOT IN ('en', 'fr', 'es')");
+    expect(s.indexOf("'no-course-progress'")).toBeGreaterThan(-1);
+    expect(s.indexOf("'no-course-progress'")).toBeLessThan(s.indexOf("INSERT INTO public.user_weekly_quest_claims"));
+  });
+  it("records the paid course", () => {
+    expect(read(FILES.quests)).toContain("ADD COLUMN IF NOT EXISTS course text NULL CHECK (course IN ('en', 'fr', 'es'))");
+    expect(stmt()).toContain("(user_id, quest_id, week_start, course)");
   });
 });
 
