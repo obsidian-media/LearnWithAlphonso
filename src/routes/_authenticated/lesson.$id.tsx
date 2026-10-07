@@ -8,6 +8,7 @@ import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { MascotBanner } from "../../components/MascotBanner";
+import { VocabImage } from "../../components/VocabImage";
 import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 import { getCourse, localeForCourse, type Course } from "../../data/courses";
@@ -395,16 +396,10 @@ function LessonPage() {
             {isReinforcing ? "Quick practice" : lesson.subtitle}
           </p>
           {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
-            <img
-              src={VOCAB_IMAGES[q.imageKey].url}
+            <VocabImage
+              url={VOCAB_IMAGES[q.imageKey].url}
               alt={VOCAB_IMAGES[q.imageKey].alt}
-              loading="lazy"
-              className="mb-4 h-40 w-full rounded-2xl object-cover"
-              // A dead/rate-limited image URL degrades to no image rather
-              // than a broken-image icon with no retry.
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
+              className="mb-4 h-40 w-full rounded-2xl"
             />
           )}
           {q.type === "listening" && (
@@ -619,17 +614,7 @@ function VocabScreen({
               className="py-3.5"
             >
               {v.image && (
-                <img
-                  src={v.image.url}
-                  alt={v.image.alt}
-                  loading="lazy"
-                  className="mb-3 h-32 w-full object-cover"
-                  // A dead/rate-limited image URL degrades to no image
-                  // rather than a broken-image icon with no retry.
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
+                <VocabImage url={v.image.url} alt={v.image.alt} className="mb-3 h-32 w-full" />
               )}
               <div className="flex items-center gap-2">
                 <p className="font-display text-base font-semibold text-ink">{v.term}</p>
@@ -656,17 +641,7 @@ function VocabScreen({
               className="overflow-hidden rounded-2xl border border-hairline bg-surface"
             >
               {v.image && (
-                <img
-                  src={v.image.url}
-                  alt={v.image.alt}
-                  loading="lazy"
-                  className="h-32 w-full object-cover"
-                  // A dead/rate-limited image URL degrades to no image
-                  // rather than a broken-image icon with no retry.
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
+                <VocabImage url={v.image.url} alt={v.image.alt} className="h-32 w-full" />
               )}
               <div className="px-4 py-3.5">
                 <div className="flex items-center gap-2">
