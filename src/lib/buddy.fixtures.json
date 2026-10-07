@@ -1,0 +1,66 @@
+{
+  "resolve": [
+    {
+      "name": "both hit",
+      "state": { "streakWeeks": 2, "graceAvailable": false },
+      "counts": { "a": 3, "b": 5 },
+      "isFirstWeek": false,
+      "expected": { "outcome": "hit", "streakWeeks": 3, "graceAvailable": true }
+    },
+    {
+      "name": "one short with grace",
+      "state": { "streakWeeks": 2, "graceAvailable": true },
+      "counts": { "a": 3, "b": 2 },
+      "isFirstWeek": false,
+      "expected": { "outcome": "grace", "streakWeeks": 2, "graceAvailable": false }
+    },
+    {
+      "name": "one short without grace",
+      "state": { "streakWeeks": 2, "graceAvailable": false },
+      "counts": { "a": 0, "b": 9 },
+      "isFirstWeek": false,
+      "expected": { "outcome": "miss", "streakWeeks": 0, "graceAvailable": false }
+    },
+    {
+      "name": "first week short changes nothing",
+      "state": { "streakWeeks": 0, "graceAvailable": true },
+      "counts": { "a": 1, "b": 0 },
+      "isFirstWeek": true,
+      "expected": { "outcome": "first_week", "streakWeeks": 0, "graceAvailable": true }
+    },
+    {
+      "name": "first week hit counts",
+      "state": { "streakWeeks": 0, "graceAvailable": true },
+      "counts": { "a": 3, "b": 3 },
+      "isFirstWeek": true,
+      "expected": { "outcome": "hit", "streakWeeks": 1, "graceAvailable": true }
+    },
+    {
+      "name": "exactly the goal is a hit",
+      "state": { "streakWeeks": 0, "graceAvailable": false },
+      "counts": { "a": 3, "b": 3 },
+      "isFirstWeek": false,
+      "expected": { "outcome": "hit", "streakWeeks": 1, "graceAvailable": true }
+    }
+  ],
+  "messages": {
+    "requested": "Request sent. They'll see it on their Friends page.",
+    "paired": "You're study buddies now.",
+    "declined": "Request declined.",
+    "cancelled": "Request cancelled.",
+    "ended": "You're no longer study buddies.",
+    "not_friends": "You can only ask a friend to be your study buddy.",
+    "blocked": "You can't be study buddies with this person.",
+    "already_paired": "You already have a study buddy.",
+    "friend_paired": "Your friend already has a study buddy.",
+    "already_requested": "You've already asked them.",
+    "not_found": "That request is no longer open.",
+    "not_paired": "You don't have a study buddy.",
+    "unauthenticated": "Sign in to find a study buddy.",
+    "unknown": "Something went wrong. Try again."
+  },
+  "weekLines": [
+    { "my": 0, "buddy": 0, "goal": 3, "expected": "You 0/3 · Buddy 0/3 this week" },
+    { "my": 4, "buddy": 1, "goal": 3, "expected": "You 3/3 · Buddy 1/3 this week" }
+  ]
+}
