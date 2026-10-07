@@ -39,8 +39,16 @@ const ALLOWED: Record<string, { cols: string[]; ownRowOnly: boolean; why: string
     ownRowOnly: true,
     why: "the caller's own name-prompt state",
   },
-  skip_display_name_prompt: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "the caller's own name-prompt state" },
-  confirm_display_name: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "the caller confirms their own name" },
+  skip_display_name_prompt: {
+    cols: ["name_confirmed_at"],
+    ownRowOnly: true,
+    why: "the caller's own name-prompt state",
+  },
+  confirm_display_name: {
+    cols: ["name_confirmed_at"],
+    ownRowOnly: true,
+    why: "the caller confirms their own name",
+  },
   admin_reset_display_name: {
     cols: ["name_confirmed_at"],
     ownRowOnly: false,
