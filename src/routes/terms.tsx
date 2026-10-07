@@ -212,8 +212,8 @@ function Terms() {
         <p>
           Our Privacy Policy explains what we collect and why. You can download a copy of your data
           or delete your account at any time: in the iOS app under Profile → Settings → Account
-          (Export My Data, Delete My Account), or on the website under Profile → Your data.
-          Deleting your account is permanent.
+          (Export My Data, Delete My Account), or on the website under Profile → Your data. Deleting
+          your account is permanent.
         </p>
       </Section>
 

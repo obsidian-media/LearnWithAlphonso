@@ -63,13 +63,18 @@ describe("server.ts fetch handler", () => {
     entryFetch.mockResolvedValue(
       new Response(raw, {
         status: 200,
-        headers: { "content-type": "text/html; charset=utf-8", "content-length": String(raw.length) },
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "content-length": String(raw.length),
+        },
       }),
     );
     const result = await server.fetch(new Request("https://x/terms"), {}, {});
     const bytes = new Uint8Array(await result.arrayBuffer());
     expect(bytes.includes(0)).toBe(false);
-    expect(new TextDecoder().decode(bytes)).toBe('<script>$R={i:"\\u0000terms\\u0000terms"}</script>');
+    expect(new TextDecoder().decode(bytes)).toBe(
+      '<script>$R={i:"\\u0000terms\\u0000terms"}</script>',
+    );
     expect(result.headers.get("content-length")).toBeNull();
     expect(result.status).toBe(200);
   });
@@ -97,7 +102,9 @@ describe("server.ts fetch handler", () => {
   });
 
   it("returns non-HTML responses as the same object", async () => {
-    const resp = new Response("a\u0000b", { headers: { "content-type": "application/octet-stream" } });
+    const resp = new Response("a\u0000b", {
+      headers: { "content-type": "application/octet-stream" },
+    });
     entryFetch.mockResolvedValue(resp);
     expect(await server.fetch(new Request("https://x/file"), {}, {})).toBe(resp);
   });

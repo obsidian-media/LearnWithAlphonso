@@ -27,9 +27,9 @@ function Cookies() {
     <LegalPage title="Cookie Policy" updated="7 October 2026">
       <Section heading="What this covers">
         <p>
-          The Learn with Alphonso website stores a few small items in your browser, in cookies or
-          in browser storage. This page lists each one, what it is for, and how to change your
-          choice. The iOS and Android apps do not use cookies.
+          The Learn with Alphonso website stores a few small items in your browser, in cookies or in
+          browser storage. This page lists each one, what it is for, and how to change your choice.
+          The iOS and Android apps do not use cookies.
         </p>
       </Section>
 
