@@ -13,6 +13,7 @@ const FILES = {
   teams: "20261008130500_team_integrity.sql",
   quests: "20261008130600_weekly_quest_integrity.sql",
   matching: "20261008130700_buddy_matching_hardening.sql",
+  profilesOwnRow: "20261008130800_profiles_own_row_read.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -279,6 +280,38 @@ describe("buddy matching hardening", () => {
     expect(sql).toContain("-- client-grants: none public.buddy_age_confirmations");
     expect(sql).toContain("-- client-grants: none public.buddy_pool_attempts");
     expect(checkNewTableGrants(sql)).toEqual([]);
+  });
+});
+
+
+describe("W7 addendum: migration window", () => {
+  it("every W7 file sorts after W1's reserved slot (20261008120000) and before W3's consent migration", () => {
+    for (const f of Object.values(FILES)) {
+      expect(f.slice(0, 14) >= "20261008130000", f).toBe(true);
+      expect(f < "20261009100000_ai_consent.sql", f).toBe(true);
+    }
+  });
+});
+
+describe("profiles own-row read (A1, O3)", () => {
+  const sql = () => read(FILES.profilesOwnRow);
+  it("drops the read-all policy and adds an own-row SELECT policy for authenticated", () => {
+    expect(sql()).toContain('DROP POLICY IF EXISTS "profiles_read_all_auth" ON public.profiles;');
+    expect(sql()).toMatch(
+      /CREATE POLICY profiles_select_own ON public\.profiles\s+FOR SELECT TO authenticated\s+USING \(\(SELECT auth\.uid\(\)\) = id\);/,
+    );
+  });
+  it("does not touch table grants (own-row reads still need SELECT) and creates no view", () => {
+    expect(sql()).not.toMatch(/\b(GRANT|REVOKE)\b[^;]*\bON (TABLE )?public\.profiles\b/i);
+    expect(sql()).not.toMatch(/CREATE\s+(OR\s+REPLACE\s+)?VIEW/i);
+  });
+  it("no later migration re-opens profiles to every signed-in user", () => {
+    const later = fs.readdirSync(DIR).filter((f) => f.endsWith(".sql") && f > FILES.profilesOwnRow);
+    for (const f of later) {
+      const text = read(f);
+      expect(text, f).not.toMatch(/ON\s+public\.profiles\s+FOR\s+(SELECT|ALL)[^;]*USING\s*\(\s*true\s*\)/i);
+      expect(text, f).not.toMatch(/"?profiles_read_all_auth"?/);
+    }
   });
 });
 
