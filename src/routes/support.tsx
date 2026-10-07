@@ -43,7 +43,7 @@ export const Route = createFileRoute("/support")({
 
 function Support() {
   return (
-    <LegalPage title="Support" updated="26 September 2026">
+    <LegalPage title="Support" updated="7 October 2026">
       <Section heading="Contact us">
         <p>
           Write to {CONTACT} and a person will reply. Tell us what you were doing, what you
@@ -55,9 +55,10 @@ function Support() {
       <Section heading="Signing in">
         <Bullets
           items={[
-            "We email you a 6-digit code rather than a password. Enter it in the app to sign in.",
-            "No code? Check spam, and make sure the address matches the one you signed up with — a different address creates a different account.",
-            "You can also sign in with Apple or Google. These are separate accounts from an email sign-in, even when the address looks the same.",
+            "In the iOS app, we email you a 6-digit code instead of using a password. Enter it in the app to sign in.",
+            "No code? Check your spam folder, and make sure the address matches the one you signed up with.",
+            "You can also sign in with Apple in the iOS app, or with Google. If your progress seems to be missing, sign in the same way you did the first time, or write to us.",
+            "On the website you can also sign in with your email address and a password. Use “Forgot your password?” on the sign-in page to reset it.",
           ]}
         />
       </Section>
@@ -65,9 +66,11 @@ function Support() {
       <Section heading="Subscriptions">
         <Bullets
           items={[
-            "Alphonso Pro is an auto-renewable subscription that unlocks Hector, the AI tutor. Everything else is free.",
-            "Manage or cancel it in the Settings app on your device, under your name, then Subscriptions. We cannot cancel it for you — Apple handles billing.",
-            "Already subscribed on another device? Use Restore Purchases on the paywall screen.",
+            "Alphonso Pro is an auto-renewable monthly subscription that unlocks Hector, the AI voice tutor. Everything else is free.",
+            "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before.",
+            "Manage or cancel it in the Settings app on your iPhone: tap your name, then Subscriptions. Cancel at least 24 hours before the end of the current period to avoid the next charge. We cannot cancel it for you, because Apple handles billing.",
+            "Refunds are handled by Apple at reportaproblem.apple.com.",
+            "Already subscribed on another device? Use Restore Purchases on the subscription screen.",
           ]}
         />
       </Section>
@@ -76,7 +79,8 @@ function Support() {
         <Bullets
           items={[
             "Export: Profile, then Settings, then Account, then Export My Data.",
-            "Deletion: the same screen, Delete My Account. It is permanent and removes your learning history, including Hector's -- Hector runs on the same account, not a separate one, so there is nothing extra to request.",
+            "Deletion: the same screen, Delete My Account. It is permanent and removes your learning history, including Hector's. Hector runs on the same account, not a separate one, so there is nothing extra to request.",
+            "AI features: turn them on or off any time under Profile → Settings → AI features.",
           ]}
         />
         <p>
@@ -87,8 +91,8 @@ function Support() {
       <Section heading="Reporting someone">
         <p>
           Every screen that shows another person has a “…” menu with Block and Report. Blocking
-          takes effect immediately. Reports are reviewed, and you can also write to {CONTACT} if
-          something needs urgent attention.
+          takes effect immediately. We review every report within 24 hours. If something needs
+          urgent attention, you can also write to {CONTACT}.
         </p>
       </Section>
     </LegalPage>

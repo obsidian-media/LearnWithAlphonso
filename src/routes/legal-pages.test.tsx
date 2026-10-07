@@ -135,7 +135,9 @@ describe("Support route", () => {
   it("uses no address the rest of the site does not", () => {
     const Support = SupportRoute.options.component!;
     const { container } = render(<Support />);
-    const addresses = (container.textContent ?? "").match(/[\w.+-]+@[\w.-]+/g) ?? [];
+    // The domain part must end in a label, so a sentence-ending "." after the
+    // address is not read as part of it.
+    const addresses = (container.textContent ?? "").match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? [];
     // Was ["privacy@...", "support@..."] before the 2026-09-28 fix below:
     // privacy@ was only here to route a manual Hector-deletion request,
     // which no longer exists now that Hector deletes with the account.
