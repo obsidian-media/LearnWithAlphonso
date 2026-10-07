@@ -1,6 +1,15 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { buddyStatusMessage, buddyWeekLine } from "../lib/buddy";
+import {
+  BUDDY_COPY,
+  buddyEndConfirm,
+  buddyGraceLine,
+  buddyIncomingLine,
+  buddyOutgoingLine,
+  buddyStatusMessage,
+  buddyStreakLine,
+  buddyWeekLine,
+} from "../lib/buddy";
 import {
   cancelBuddyRequest,
   endBuddy,
@@ -88,7 +97,7 @@ export function BuddyCard() {
   if (buddy.isError || requests.isError) {
     return (
       <div className={card}>
-        <p className="text-sm text-ink-soft">Couldn't load your study buddy.</p>
+        <p className="text-sm text-ink-soft">{BUDDY_COPY.loadFailed}</p>
         <button
           type="button"
           onClick={() => {
@@ -121,17 +130,11 @@ export function BuddyCard() {
         <p className="mt-2 text-sm text-ink">
           {buddyWeekLine(mine.myCount, mine.buddyCount, mine.goal)}
         </p>
-        <p className="mt-1 text-xs text-ink-soft">
-          Streak: {mine.streakWeeks} week{mine.streakWeeks === 1 ? "" : "s"}
-        </p>
-        <p className="text-xs text-ink-soft">
-          {mine.graceAvailable ? "1 grace week left" : "No grace week left"}
-        </p>
+        <p className="mt-1 text-xs text-ink-soft">{buddyStreakLine(mine.streakWeeks)}</p>
+        <p className="text-xs text-ink-soft">{buddyGraceLine(mine.graceAvailable)}</p>
         {confirmingEnd ? (
           <div className="mt-3">
-            <p className="text-xs text-ink">
-              End being study buddies with {mine.buddyName}? Your streak ends.
-            </p>
+            <p className="text-xs text-ink">{buddyEndConfirm(mine.buddyName)}</p>
             <div className="mt-2 flex gap-4">
               <button
                 type="button"
@@ -168,14 +171,11 @@ export function BuddyCard() {
   return (
     <div className={card}>
       <p className="font-display text-base font-semibold text-ink">Study buddy</p>
-      <p className="mt-1 text-xs text-ink-soft/80">
-        Pick a friend to study with. Each week you both aim for 3 lessons and keep a streak
-        together.
-      </p>
+      <p className="mt-1 text-xs text-ink-soft/80">{BUDDY_COPY.intro}</p>
       {pending.map((r) =>
         r.direction === "incoming" ? (
           <div key={r.requestId} className="mt-3">
-            <p className="text-sm text-ink">{r.otherName} wants to be your study buddy.</p>
+            <p className="text-sm text-ink">{buddyIncomingLine(r.otherName)}</p>
             <div className="mt-1 flex gap-4">
               <button
                 type="button"
@@ -203,7 +203,7 @@ export function BuddyCard() {
           </div>
         ) : (
           <div key={r.requestId} className="mt-3 flex items-center gap-4">
-            <p className="text-sm text-ink">Waiting for {r.otherName}.</p>
+            <p className="text-sm text-ink">{buddyOutgoingLine(r.otherName)}</p>
             <button
               type="button"
               disabled={busy}

@@ -69,3 +69,30 @@ export function buddyWeekLine(myCount: number, buddyCount: number, goal: number)
   const cap = (n: number) => Math.min(n, goal);
   return `You ${cap(myCount)}/${goal} · Buddy ${cap(buddyCount)}/${goal} this week`;
 }
+
+/** The study buddy card's fixed wording, identical on iOS and Android (pinned by buddy.fixtures.json "copy"). */
+export const BUDDY_COPY = {
+  intro:
+    "Pick a friend to study with. Each week you both aim for 3 lessons and keep a streak together.",
+  loadFailed: "Couldn't load your study buddy.",
+} as const;
+
+export function buddyStreakLine(weeks: number): string {
+  return `Streak: ${weeks} week${weeks === 1 ? "" : "s"}`;
+}
+
+export function buddyGraceLine(available: boolean): string {
+  return available ? "1 grace week left" : "No grace week left";
+}
+
+export function buddyIncomingLine(name: string): string {
+  return `${name} wants to be your study buddy.`;
+}
+
+export function buddyOutgoingLine(name: string): string {
+  return `Waiting for ${name}.`;
+}
+
+export function buddyEndConfirm(name: string): string {
+  return `End being study buddies with ${name}? Your streak ends.`;
+}

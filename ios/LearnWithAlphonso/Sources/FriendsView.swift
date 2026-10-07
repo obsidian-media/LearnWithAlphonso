@@ -58,6 +58,8 @@ struct FriendsView: View {
                     }
                     .listRowBackground(AlphonsoColor.parchment)
 
+                    BuddySection(session: session, friends: friends)
+
                     Section {
                         if isLoading {
                             ProgressView().tint(AlphonsoColor.moss)
