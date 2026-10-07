@@ -16,6 +16,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.getTeamMembers
 import com.obsidianmedia.learnwithalphonso.core.net.joinTeamByCode
 import com.obsidianmedia.learnwithalphonso.core.net.kickTeamMember
 import com.obsidianmedia.learnwithalphonso.core.net.leaveTeam
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,10 +46,22 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val nowMill
     fun loadAll() {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val teamResult = runCatching { client.getMyTeam() }
+            // Cancellation must stop the load, not be recorded as a failed lookup.
+            val teamResult = try {
+                Result.success(client.getMyTeam())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
             // A failed refresh keeps the team already on screen; only a first load with no team to show is a failure.
             val team = if (teamResult.isFailure) _state.value.myTeam else teamResult.getOrNull()
-            val members = if (team != null) runCatching { client.getTeamMembers() }.getOrDefault(emptyList()) else emptyList()
+            // A failed refresh keeps the members with the team; otherwise a team with no members would show.
+            val members = when {
+                teamResult.isFailure -> _state.value.members
+                team != null -> runCatching { client.getTeamMembers() }.getOrDefault(emptyList())
+                else -> emptyList()
+            }
             val board = runCatching { client.getTeamLeaderboard() }.getOrDefault(emptyList())
             _state.update { it.copy(isLoading = false, myTeam = team, members = members, leaderboard = board, teamLoadFailed = teamResult.isFailure && team == null, nowMillis = nowMillis()) }
         }

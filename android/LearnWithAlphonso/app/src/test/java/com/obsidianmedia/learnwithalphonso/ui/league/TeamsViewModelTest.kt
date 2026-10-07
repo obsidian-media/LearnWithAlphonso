@@ -101,15 +101,18 @@ class TeamsViewModelTest {
             when {
                 req.path.endsWith("get_my_team") ->
                     if (failing) json("{}", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                req.path.endsWith("get_team_members") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json("""[{"user_id":"u2","display_name":"Bo","avatar_seed":"cd","joined_at":"2026-09-21T00:00:00+00:00","is_owner":false}]""")
                 else -> json("[]")
             }
         }
         val v = TeamsViewModel(s.progressClient) { now }
-        awaitTrue("loaded") { v.state.value.myTeam != null }
+        awaitTrue("loaded") { v.state.value.myTeam != null && v.state.value.members.isNotEmpty() }
         failing = true
         v.loadAll()
         awaitTrue("refreshed") { !v.state.value.isLoading }
         assertEquals("Owls", v.state.value.myTeam!!.name)
+        assertEquals("members stay with the team", listOf("Bo"), v.state.value.members.map { it.displayName })
         assertFalse(v.state.value.teamLoadFailed)
     }
 
