@@ -65,6 +65,22 @@ CREATE POLICY buddy_weeks_select_own ON public.buddy_weeks FOR SELECT TO authent
 GRANT SELECT ON public.buddy_weeks TO authenticated;
 GRANT ALL ON public.buddy_weeks TO service_role;
 
+CREATE OR REPLACE FUNCTION public._lock_buddy_users(_x uuid, _y uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Per-person transaction locks, always in the same order, taken before any pairing, request or ending step. They
+  -- serialise a block (or unfriend) against a pairing of the same people (otherwise a pair could be created after the
+  -- block's trigger found nothing to end), two friends asking each other at once, and two acceptances involving the
+  -- same person (which could otherwise deadlock on the request rows).
+  PERFORM pg_advisory_xact_lock(hashtextextended('buddy:' || least(_x, _y)::text, 0));
+  PERFORM pg_advisory_xact_lock(hashtextextended('buddy:' || greatest(_x, _y)::text, 0));
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION public._end_buddy_pair_between(_x uuid, _y uuid, _reason text)
 RETURNS void
 LANGUAGE plpgsql
@@ -75,10 +91,12 @@ AS $$
 DECLARE
   pid uuid;
 BEGIN
+  PERFORM public._lock_buddy_users(_x, _y);
   SELECT bp.id INTO pid FROM public.buddy_pairs bp
     WHERE bp.user_a = least(_x, _y) AND bp.user_b = greatest(_x, _y) AND bp.ended_at IS NULL
     FOR UPDATE;
   IF pid IS NOT NULL THEN
+    PERFORM public._resolve_buddy_pair(pid); -- judge the finished weeks while the pair is still active
     UPDATE public.buddy_pairs bp SET ended_at = now(), ended_reason = _reason WHERE bp.id = pid;
     DELETE FROM public.buddy_members bm WHERE bm.pair_id = pid;
   END IF;
@@ -119,6 +137,7 @@ $$;
 CREATE TRIGGER buddy_end_on_block AFTER INSERT ON public.blocked_users
   FOR EACH ROW EXECUTE FUNCTION public._buddy_on_block();
 
+REVOKE ALL ON FUNCTION public._lock_buddy_users(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public._end_buddy_pair_between(uuid, uuid, text) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public._buddy_on_friendship_deleted() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public._buddy_on_block() FROM PUBLIC, anon, authenticated;
@@ -145,6 +164,14 @@ AS $$
 DECLARE
   pid uuid;
 BEGIN
+  PERFORM public._lock_buddy_users(_x, _y);
+  -- Re-checked under the lock: a block or unfriend that committed while we waited must win.
+  IF NOT EXISTS (SELECT 1 FROM public.friendships f WHERE f.user_id = _x AND f.friend_id = _y AND f.status = 'accepted') THEN
+    RETURN 'not_friends';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.blocked_users b WHERE (b.blocker = _x AND b.blocked = _y) OR (b.blocker = _y AND b.blocked = _x)) THEN
+    RETURN 'blocked';
+  END IF;
   IF EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = _x) THEN RETURN 'already_paired'; END IF;
   IF EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = _y) THEN RETURN 'friend_paired'; END IF;
   BEGIN
@@ -152,8 +179,8 @@ BEGIN
       RETURNING id INTO pid;
     INSERT INTO public.buddy_members (user_id, pair_id) VALUES (_x, pid), (_y, pid);
   EXCEPTION WHEN unique_violation THEN
-    -- a concurrent pairing won the race; this block's inserts are rolled back
-    RETURN 'already_paired';
+    -- a pairing with a third person (which holds a different lock pair) won the race; this block's inserts are rolled back
+    RETURN CASE WHEN EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = _x) THEN 'already_paired' ELSE 'friend_paired' END;
   END;
   UPDATE public.buddy_requests br SET status = 'cancelled', responded_at = now()
     WHERE br.status = 'pending' AND (br.from_user IN (_x, _y) OR br.to_user IN (_x, _y));
@@ -174,7 +201,10 @@ DECLARE
   result text;
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
-  IF _friend IS NULL OR _friend = me OR NOT EXISTS (
+  IF _friend IS NULL OR _friend = me THEN RETURN QUERY SELECT 'not_friends'::text; RETURN; END IF;
+  -- Serialise with the friend asking back at the same moment: the second asker then sees the first request and pairs.
+  PERFORM public._lock_buddy_users(me, _friend);
+  IF NOT EXISTS (
     SELECT 1 FROM public.friendships f WHERE f.user_id = me AND f.friend_id = _friend AND f.status = 'accepted'
   ) THEN RETURN QUERY SELECT 'not_friends'::text; RETURN; END IF;
   IF EXISTS (SELECT 1 FROM public.blocked_users b WHERE (b.blocker = me AND b.blocked = _friend) OR (b.blocker = _friend AND b.blocked = me))
@@ -186,8 +216,10 @@ BEGIN
   SELECT br.id INTO reverse_id FROM public.buddy_requests br
     WHERE br.from_user = _friend AND br.to_user = me AND br.status = 'pending' FOR UPDATE;
   IF reverse_id IS NOT NULL THEN
-    UPDATE public.buddy_requests br SET status = 'accepted', responded_at = now() WHERE br.id = reverse_id;
     result := public._create_buddy_pair(me, _friend, 'friend');
+    IF result = 'paired' THEN
+      UPDATE public.buddy_requests br SET status = 'accepted', responded_at = now() WHERE br.id = reverse_id;
+    END IF;
     RETURN QUERY SELECT result; RETURN;
   END IF;
 
@@ -206,22 +238,23 @@ SET timezone = 'UTC'
 AS $$
 DECLARE
   me uuid := auth.uid();
+  other uuid;
   req public.buddy_requests;
   result text;
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
+  SELECT br.from_user INTO other FROM public.buddy_requests br WHERE br.id = _request AND br.to_user = me;
+  IF other IS NULL THEN RETURN QUERY SELECT 'not_found'::text; RETURN; END IF;
+  -- Lock the people before the request row, in the same order as every other path (no deadlock with a pairing that
+  -- cancels this request).
+  PERFORM public._lock_buddy_users(me, other);
   SELECT * INTO req FROM public.buddy_requests br WHERE br.id = _request AND br.to_user = me AND br.status = 'pending' FOR UPDATE;
   IF NOT FOUND THEN RETURN QUERY SELECT 'not_found'::text; RETURN; END IF;
   IF NOT coalesce(_accept, false) THEN
     UPDATE public.buddy_requests br SET status = 'declined', responded_at = now() WHERE br.id = req.id;
     RETURN QUERY SELECT 'declined'::text; RETURN;
   END IF;
-  -- Re-check at accept time: things can change while a request waits.
-  IF NOT EXISTS (SELECT 1 FROM public.friendships f WHERE f.user_id = me AND f.friend_id = req.from_user AND f.status = 'accepted')
-  THEN RETURN QUERY SELECT 'not_friends'::text; RETURN; END IF;
-  IF EXISTS (SELECT 1 FROM public.blocked_users b WHERE (b.blocker = me AND b.blocked = req.from_user) OR (b.blocker = req.from_user AND b.blocked = me))
-  THEN RETURN QUERY SELECT 'blocked'::text; RETURN; END IF;
-  result := public._create_buddy_pair(me, req.from_user, 'friend');
+  result := public._create_buddy_pair(me, req.from_user, 'friend'); -- re-checks friendship and blocks under the lock
   IF result = 'paired' THEN
     UPDATE public.buddy_requests br SET status = 'accepted', responded_at = now() WHERE br.id = req.id;
   END IF;
@@ -256,14 +289,14 @@ SET timezone = 'UTC'
 AS $$
 DECLARE
   me uuid := auth.uid();
-  pid uuid;
+  a uuid;
+  b uuid;
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
-  SELECT bm.pair_id INTO pid FROM public.buddy_members bm WHERE bm.user_id = me;
-  IF pid IS NULL THEN RETURN QUERY SELECT 'not_paired'::text; RETURN; END IF;
-  PERFORM public._resolve_buddy_pair(pid); -- judge finished weeks before the pair stops being resolvable
-  UPDATE public.buddy_pairs bp SET ended_at = now(), ended_reason = 'ended' WHERE bp.id = pid AND bp.ended_at IS NULL;
-  DELETE FROM public.buddy_members bm WHERE bm.pair_id = pid;
+  SELECT bp.user_a, bp.user_b INTO a, b FROM public.buddy_members bm
+    JOIN public.buddy_pairs bp ON bp.id = bm.pair_id WHERE bm.user_id = me;
+  IF a IS NULL THEN RETURN QUERY SELECT 'not_paired'::text; RETURN; END IF;
+  PERFORM public._end_buddy_pair_between(a, b, 'ended'); -- locks, judges finished weeks, ends, clears members
   RETURN QUERY SELECT 'ended'::text;
 END;
 $$;

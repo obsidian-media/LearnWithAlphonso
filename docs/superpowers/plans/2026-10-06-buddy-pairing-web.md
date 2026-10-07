@@ -1,5 +1,7 @@
 # Buddy Pairing (Phase 3a: friends only) Implementation Plan
 
+> **As built (after review), these differ from the steps below:** a block is recorded as `unfriended`; every pairing, request and ending path first takes per-person advisory locks in a fixed order (`_lock_buddy_users`), `_create_buddy_pair` re-checks friendship and blocks under that lock, a reverse request is marked accepted only after the pair exists, and `_end_buddy_pair_between` resolves the finished weeks before ending (`end_buddy` goes through it). The migration file is the source of truth.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Two accepted friends can agree to be study buddies; each week both aim for 3 distinct lessons, and the pair keeps a shared streak with one grace week, on the server and the web app.
@@ -34,7 +36,7 @@
 
 1. **Both friends ask each other at the same moment** -> exactly one request survives (unique pending index); the second `request_buddy` finds the reverse request and pairs them (`paired`), never two pairs. Pinned by the live probe (Task 2, scenario P3) and the migration test (unique index present).
 2. **A request is accepted after either side has paired with someone else** -> pairing cancels every pending request involving either new buddy, so the late accept answers `not_found` (and if a race slips past that, `_create_buddy_pair` answers `already_paired` / `friend_paired`); no pair is created and no member row is left half-written. Live probe P5.
-3. **Unfriend or block mid-pair** -> the pair ends (`ended_reason` `unfriended` / `blocked`), `get_my_buddy` returns no row for both, pending requests between them are cancelled, `buddy_weeks` history stays. Live probe P6, P7.
+3. **Unfriend or block mid-pair** -> the pair ends (`ended_reason` `unfriended` in both cases; a block is visible only to the blocker), `get_my_buddy` returns no row for both, pending requests between them are cancelled, `buddy_weeks` history stays. Live probe P6, P7.
 4. **A pair nobody opened for several weeks** -> each missed week is resolved in order exactly once (grace spent on the first miss, streak reset on the second), even when both buddies open the app at the same time (`FOR UPDATE` on the pair). Pure fixtures (Task 3) + live probe P8.
 5. **A failed buddy lookup on web** -> "Couldn't load your study buddy." + Try again, never the "ask a friend" state (Task 5 test).
 
@@ -124,7 +126,7 @@ CREATE TABLE public.buddy_pairs (
   source text NOT NULL CHECK (source IN ('friend', 'match')),
   created_at timestamptz NOT NULL DEFAULT now(),
   ended_at timestamptz,
-  ended_reason text CHECK (ended_reason IN ('ended', 'unfriended', 'blocked')),
+  ended_reason text CHECK (ended_reason IN ('ended', 'unfriended')),
   streak_weeks integer NOT NULL DEFAULT 0 CHECK (streak_weeks >= 0),
   grace_available boolean NOT NULL DEFAULT true,
   resolved_through date,
@@ -227,8 +229,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- block_user inserts the block BEFORE deleting the friendship rows, so this fires first and the reason is 'blocked'.
-  PERFORM public._end_buddy_pair_between(NEW.blocker, NEW.blocked, 'blocked');
+  -- Recorded as 'unfriended', never 'blocked': buddy_pairs is readable to both buddies, a block only to the blocker.
+  PERFORM public._end_buddy_pair_between(NEW.blocker, NEW.blocked, 'unfriended');
   RETURN NEW;
 END;
 $$;
@@ -578,7 +580,7 @@ Note on the clash guard: `request_buddy` and friends return a column called `sta
   - P4 `get_my_buddy` for b1 and b2: each sees the other, `goal` 3, `streak_weeks` 0; after inserting 3 lesson completions for b1 this week, b1's `my_count` = 3 and b2's `buddy_count` = 3.
   - P5 b3 asks b4 (`requested`), b4 pairs with b5 another way (b5 asks b4, b4 asks b5 back), then b4 accepts b3 -> `not_found`; b3's request is `cancelled`, b3 has no pair, b4 and b5 have exactly one pair and two member rows.
   - P6 delete the b1<->b2 friendship rows -> pair `ended_reason = 'unfriended'`, `get_my_buddy` empty for both.
-  - P7 pair b5 and b6, then `block_user` as b5 -> `ended_reason = 'blocked'`.
+  - P7 pair b7 and b8, then `block_user` as b7 -> `ended_reason = 'unfriended'` (a block is never recorded where the blocked person can read it).
   - P8 week resolution: a pair with `created_at` 3 weeks ago (week W0) and lessons only in week W1 for both: `buddy_weeks` = W0 `first_week`, W1 `hit`, W2 `grace`; streak 1, grace false; calling `get_my_buddy` twice adds no rows.
   - P9 deployed-function clash check: every new function executed at least once without `42702`.
   Then the leftover check (0 `t-b%` users, 0 `idle in transaction`).

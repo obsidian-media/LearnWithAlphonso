@@ -103,4 +103,52 @@ describe("buddy pairing migration", () => {
       /WHERE bp\.id = pid AND bp\.ended_at IS NULL;/,
     );
   });
+
+  const fnBody = (name: string) => {
+    const s = sql().slice(sql().indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`));
+    return s.slice(0, s.indexOf("$$;"));
+  };
+
+  it("locks both people, in a fixed order, before any pairing, request or ending step", () => {
+    const lock = fnBody("_lock_buddy_users");
+    expect(lock).toMatch(
+      /pg_advisory_xact_lock\(.*least\(_x, _y\)[\s\S]*pg_advisory_xact_lock\(.*greatest\(_x, _y\)/,
+    );
+    expect(sql()).toContain(
+      "REVOKE ALL ON FUNCTION public._lock_buddy_users(uuid, uuid) FROM PUBLIC, anon, authenticated;",
+    );
+    for (const name of [
+      "request_buddy",
+      "respond_buddy_request",
+      "_create_buddy_pair",
+      "_end_buddy_pair_between",
+    ]) {
+      expect(fnBody(name), name).toContain("PERFORM public._lock_buddy_users(");
+    }
+  });
+
+  it("re-checks friendship and blocks inside _create_buddy_pair, after the lock, so a block that won the race wins", () => {
+    const body = fnBody("_create_buddy_pair");
+    const lockAt = body.indexOf("PERFORM public._lock_buddy_users(");
+    expect(body.indexOf("public.friendships", lockAt)).toBeGreaterThan(lockAt);
+    expect(body.indexOf("public.blocked_users", lockAt)).toBeGreaterThan(lockAt);
+    expect(body).toContain("RETURN 'not_friends';");
+    expect(body).toContain("RETURN 'blocked';");
+  });
+
+  it("marks a reverse request accepted only after the pair exists", () => {
+    const body = fnBody("request_buddy");
+    expect(body.indexOf("SET status = 'accepted'")).toBeGreaterThan(
+      body.indexOf("public._create_buddy_pair("),
+    );
+  });
+
+  it("judges the finished weeks before any ending (end_buddy, unfriend, block all go through one helper)", () => {
+    const end = fnBody("_end_buddy_pair_between");
+    expect(end.indexOf("PERFORM public._resolve_buddy_pair(")).toBeGreaterThan(-1);
+    expect(end.indexOf("PERFORM public._resolve_buddy_pair(")).toBeLessThan(
+      end.indexOf("SET ended_at = now()"),
+    );
+    expect(fnBody("end_buddy")).toMatch(/PERFORM public\._end_buddy_pair_between\([^)]*'ended'\)/);
+  });
 });
