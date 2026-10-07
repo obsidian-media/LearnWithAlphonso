@@ -9,11 +9,13 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 1 | Team mission: database, `get_team_mission()`, web card, privacy line, export | MERGED and live (PRs #230, #231) |
 | 2a | Team player badge (database grant, catalog, three bundles) | MERGED and live (#232) |
 | 2b | Team mission on iOS | MERGED (#233), in no build |
-| 2c | Team mission on Android | PR in flight (`feat/team-mission-android`) |
+| 2c | Team mission on Android | MERGED (#234), in no release |
 | 3 | Buddy pairing and weekly goal, server and web | NOT started |
 | 4 | Buddy on iOS and Android | NOT started |
 | 5 | Buddy preset messages, server and web | NOT started |
 | 6 | Buddy presets on iOS and Android | NOT started |
+
+**Part 1 (team mission) is complete on web, iOS and Android; what remains is Parts 2-3 (phases 3-6, the language buddy).** Native device checks are owner-run (`android/LearnWithAlphonso/DEVICE-CHECKLIST.md`, and the iOS checks listed in BACKLOG).
 
 Plans: `docs/superpowers/plans/2026-10-06-team-mission-web.md`, `2026-10-06-team-player-badge.md`. Phases 2b and 2c were executed directly from the web plan's fixtures and the patterns of the goal planner (no separate plan file). Findings that changed the design along the way: the payout course is the one the member studied, not `profiles.active_language` (BACKLOG 0.0-af); a team below two members is never paid; the dead `mergeGuestProgress` endpoint was removed because it could fake lesson completions.
 

@@ -1,0 +1,387 @@
+<title>Build 46 QA Pass</title>
+<style>
+  :root {
+    --bg: #faf7f0;
+    --surface: #ffffff;
+    --ink: #23281f;
+    --ink-soft: #5c6355;
+    --hairline: #e7e0d2;
+    --moss: #3f6b4f;
+    --moss-soft: #eaf1ec;
+    --ember: #c1502e;
+    --ember-soft: #fbeae4;
+    --slate: #55606b;
+    --slate-soft: #eceef0;
+    --done: #9aa398;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1d18;
+      --surface: #24261f;
+      --ink: #ece7da;
+      --ink-soft: #a8ad9d;
+      --hairline: #35392e;
+      --moss: #7fb894;
+      --moss-soft: #253028;
+      --ember: #e0805e;
+      --ember-soft: #332420;
+      --slate: #9aa6b2;
+      --slate-soft: #262b30;
+      --done: #565e51;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1d18;
+    --surface: #24261f;
+    --ink: #ece7da;
+    --ink-soft: #a8ad9d;
+    --hairline: #35392e;
+    --moss: #7fb894;
+    --moss-soft: #253028;
+    --ember: #e0805e;
+    --ember-soft: #332420;
+    --slate: #9aa6b2;
+    --slate-soft: #262b30;
+    --done: #565e51;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    padding-inline: 16px;
+    padding-block: 12px 40px;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+  h1 {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 4px 0 2px;
+  }
+  .sub {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin: 0 0 16px;
+  }
+  .progress-wrap {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: var(--bg);
+    padding-block: 10px 12px;
+    z-index: 5;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 18px;
+  }
+  .progress-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .progress-row span.count { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--moss);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+    width: 0%;
+  }
+  section.group {
+    margin-bottom: 22px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    overflow: hidden;
+  }
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .group.g-a .group-head { border-left: 5px solid var(--ember); }
+  .group.g-b .group-head { border-left: 5px solid var(--moss); }
+  .group.g-c .group-head { border-left: 5px solid var(--slate); }
+  .group-title { font-size: 15px; font-weight: 800; flex: 1; }
+  .group-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .g-a .group-tag { background: var(--ember-soft); color: var(--ember); }
+  .g-b .group-tag { background: var(--moss-soft); color: var(--moss); }
+  .g-c .group-tag { background: var(--slate-soft); color: var(--slate); }
+  .chev { font-size: 11px; color: var(--ink-soft); transition: transform 0.2s ease; }
+  .group.collapsed .chev { transform: rotate(-90deg); }
+  .group-body { border-top: 1px solid var(--hairline); }
+  .group.collapsed .group-body { display: none; }
+  .item {
+    display: flex;
+    gap: 11px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--hairline);
+    align-items: flex-start;
+  }
+  .item:last-child { border-bottom: none; }
+  .item input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    margin-top: 2px;
+    accent-color: var(--moss);
+    flex-shrink: 0;
+  }
+  .item-title {
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+  .item-detail {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+  .item.checked .item-title { color: var(--done); text-decoration: line-through; }
+  .item.checked .item-detail { color: var(--done); }
+  .notes-box {
+    margin-top: 20px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    padding: 14px;
+  }
+  .notes-box label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 10px;
+    resize: vertical;
+  }
+  .reset-row { text-align: center; margin-top: 18px; }
+  button.reset {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 8px;
+  }
+</style>
+
+<h1>Build 46 QA Pass</h1>
+<p class="sub">One list, three tiers: today's fixes first (untested on a real device), then a core regression sweep, then submission polish. Check items off as you go — your progress is saved on this device. Tell Claude the results (good / no good / other) when you're done with a section or the whole thing.</p>
+
+<div class="progress-wrap">
+  <div class="progress-row">
+    <span>Progress</span>
+    <span class="count" id="countLabel">0 / 0</span>
+  </div>
+  <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+</div>
+
+<div id="checklist"></div>
+
+<div class="notes-box">
+  <label for="notes">Scratch notes (saved on this device only)</label>
+  <textarea id="notes" placeholder="Jot anything odd you hit while testing — paste into chat when you report back."></textarea>
+</div>
+
+<div class="reset-row">
+  <button class="reset" id="resetBtn">Reset all checkboxes</button>
+</div>
+
+<script>
+(function () {
+  var DATA = [
+    {
+      id: "a", tag: "Test first", title: "A. Verify today's fixes (build 46, untested on a real device)",
+      items: [
+        ["a1", "Generate your own invite link (Profile → Friends → Copy invite link) and open it as a DIFFERENT account.", "Should land on “Add [name] as a friend?” — never a 404 / blank page."],
+        ["a2", "Open your OWN invite link while signed in as yourself.", "Should show “That's your own invite link.”"],
+        ["a3", "Open a made-up / garbage invite URL.", "Should show a graceful “Invite not found” screen, not a crash or blank page."],
+        ["a4", "Practice tab: rapid tap-and-release the mic button several times in a row (don't hold).", "No garbled/mixed-up answer, no message wrongly saying the mic is unavailable."],
+        ["a5", "Same rapid-tap test on: a Conversation scenario, Hector, and a Campaign scene.", "Same check as above — no dropped or garbled turn on any of the three."],
+        ["a6", "Hold the mic button, then leave the screen (back / switch tabs) BEFORE releasing.", "Come back later and confirm the mic isn't stuck “busy” anywhere else in the app."],
+        ["a7", "As a team owner: kick a member, then have that member try rejoining with the same join code right away.", "Should be blocked, not succeed instantly."],
+        ["a8", "Answer a Translate-type question for the first time this session, before ever using a voice screen.", "The “How Alphonso uses AI” disclosure sheet should appear before it's graded."],
+        ["a9", "Get a wrong answer on an iOS lesson (not a reinforcement question).", "A heart should actually be lost now (previously never happened on iOS)."]
+      ]
+    },
+    {
+      id: "b", tag: "Regression", title: "B. Core regression sweep (make sure nothing else broke)",
+      items: [
+        ["b1", "Sign up as a brand-new user.", "Placement test, first lesson, and onboarding all complete cleanly."],
+        ["b2", "Sign in with an existing account (email code, and Apple/Google if you use them).", "Signs in and lands on real, existing progress."],
+        ["b3", "Complete one full lesson touching every question type you can find.", "Multiple choice, fill-in, translate, speak, reorder, image-match, listening."],
+        ["b4", "Let hearts hit 0 and wait for the regen timer.", "Countdown shows and a heart is eventually restored."],
+        ["b5", "Do a full review-queue (SRS) session.", "Items are graded correctly and the queue clears."],
+        ["b6", "Podcast: play an episode, lock the screen, confirm it keeps playing; download one and play it in airplane mode.", "Both playback paths work."],
+        ["b7", "Open a lesson while a podcast is playing.", "The Begin/Check/Continue button is never hidden behind the mini-bar."],
+        ["b8", "Friends: remove a friend, block someone, report someone.", "Each action takes effect and the person disappears from the relevant list."],
+        ["b9", "Duels: challenge a friend, then accept/decline from the other account.", "Both directions work."],
+        ["b10", "Leaderboard: check the friends / global / country views.", "All three populate with real data."],
+        ["b11", "Teams: create a team, join a different team via code, view members, leave.", "All four actions work."],
+        ["b12", "Buy a heart with XP and buy a streak freeze with XP.", "XP deducted is exactly 50 / 75, hearts/freezes increase correctly."],
+        ["b13", "Subscription: open the paywall, confirm real price/currency shows, do a sandbox purchase, then Restore Purchases.", "No “can't load options” once the subscription is approved; restore works."],
+        ["b14", "Account: edit display name/country, use Export My Data, and (on a throwaway test account only) run Delete My Account start-to-finish.", "All three complete without errors."]
+      ]
+    },
+    {
+      id: "c", tag: "Polish", title: "C. Submission readiness (App Store polish, not code bugs)",
+      items: [
+        ["c1", "Check the app icon and launch screen on a real device.", "Matches what's in App Store Connect, no placeholder art."],
+        ["c2", "Compare the 7 live App Store listing screenshots against the current app UI.", "Nothing has visibly drifted since they were captured."],
+        ["c3", "Open the Privacy Policy link (Settings, or from the AI-disclosure sheet).", "Loads correctly, not a 404."],
+        ["c4", "Sign in as the demo account App Review will use.", "OTP sign-in works, and it has real seeded lesson progress."],
+        ["c5", "Turn on VoiceOver and swipe through a lesson and the tab bar.", "Labels read sensibly — flagged as still unverified on a real device."],
+        ["c6", "Turn up Dynamic Type (Settings → Accessibility → Larger Text) and revisit a few screens.", "Nothing clips or overlaps badly."],
+        ["c7", "Turn on Reduce Motion and revisit a few animated screens.", "Animations respect the setting."],
+        ["c8", "Cold-launch the app in airplane mode.", "No crash, a sensible offline state is shown."]
+      ]
+    }
+  ];
+
+  var STORAGE_KEY = "b46-qa-checklist-v1";
+  var NOTES_KEY = "b46-qa-notes-v1";
+  var state = {};
+  try {
+    state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch (e) { state = {}; }
+
+  var collapsedState = {};
+  try {
+    collapsedState = JSON.parse(localStorage.getItem(STORAGE_KEY + "-collapsed") || "{}");
+  } catch (e) { collapsedState = {}; }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function saveCollapsed() {
+    try { localStorage.setItem(STORAGE_KEY + "-collapsed", JSON.stringify(collapsedState)); } catch (e) {}
+  }
+
+  var root = document.getElementById("checklist");
+  var totalItems = 0;
+
+  DATA.forEach(function (group) {
+    var sec = document.createElement("section");
+    sec.className = "group g-" + group.id;
+    if (collapsedState[group.id]) sec.classList.add("collapsed");
+
+    var head = document.createElement("div");
+    head.className = "group-head";
+    head.innerHTML =
+      '<span class="group-title"></span>' +
+      '<span class="group-tag"></span>' +
+      '<span class="chev">▾</span>';
+    head.querySelector(".group-title").textContent = group.title;
+    head.querySelector(".group-tag").textContent = group.tag;
+    head.addEventListener("click", function () {
+      sec.classList.toggle("collapsed");
+      collapsedState[group.id] = sec.classList.contains("collapsed");
+      saveCollapsed();
+    });
+    sec.appendChild(head);
+
+    var body = document.createElement("div");
+    body.className = "group-body";
+
+    group.items.forEach(function (row) {
+      var id = row[0], title = row[1], detail = row[2];
+      totalItems++;
+      var item = document.createElement("div");
+      item.className = "item";
+      if (state[id]) item.classList.add("checked");
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!state[id];
+      cb.addEventListener("change", function () {
+        state[id] = cb.checked;
+        item.classList.toggle("checked", cb.checked);
+        save();
+        updateProgress();
+      });
+
+      var textWrap = document.createElement("div");
+      var t = document.createElement("div");
+      t.className = "item-title";
+      t.textContent = title;
+      var d = document.createElement("div");
+      d.className = "item-detail";
+      d.textContent = detail;
+      textWrap.appendChild(t);
+      textWrap.appendChild(d);
+
+      item.appendChild(cb);
+      item.appendChild(textWrap);
+      body.appendChild(item);
+    });
+
+    sec.appendChild(body);
+    root.appendChild(sec);
+  });
+
+  var countLabel = document.getElementById("countLabel");
+  var barFill = document.getElementById("barFill");
+  function updateProgress() {
+    var checked = Object.keys(state).filter(function (k) { return state[k]; }).length;
+    countLabel.textContent = checked + " / " + totalItems;
+    barFill.style.width = (totalItems ? (checked / totalItems * 100) : 0) + "%";
+  }
+  updateProgress();
+
+  var notes = document.getElementById("notes");
+  try {
+    notes.value = localStorage.getItem(NOTES_KEY) || "";
+  } catch (e) {}
+  notes.addEventListener("input", function () {
+    try { localStorage.setItem(NOTES_KEY, notes.value); } catch (e) {}
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Clear every checkbox? Notes are kept.")) return;
+    state = {};
+    save();
+    document.querySelectorAll(".item").forEach(function (el) { el.classList.remove("checked"); });
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (el) { el.checked = false; });
+    updateProgress();
+  });
+})();
+</script>
