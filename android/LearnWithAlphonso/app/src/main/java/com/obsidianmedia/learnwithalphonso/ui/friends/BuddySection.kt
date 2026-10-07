@@ -23,7 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyCopy
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyMessage
@@ -137,11 +140,14 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>) {
     var confirmingEnd by remember { mutableStateOf(false) }
     var choosingPreset by remember { mutableStateOf(false) }
 
-    // Refreshes every minute while the section is on screen (no realtime socket, spec Part 3).
-    LaunchedEffect(vm) {
-        while (true) {
-            delay(60_000)
-            vm.load()
+    // Refreshes every minute while the screen is visible (no realtime socket, spec Part 3); stops in the background.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(vm, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                delay(60_000)
+                vm.load()
+            }
         }
     }
 

@@ -76,6 +76,9 @@ final class BuddyTests: XCTestCase {
         XCTAssertNil(BuddyCopy.presetText("hi there"))
         XCTAssertEqual(BuddyCopy.messagesPerHour, all["messagesPerHour"] as? Int)
         for line in try XCTUnwrap(all["messageLines"] as? [[String: Any]]) {
+            // The key must be present: a string, or JSON null for an unknown preset (never just missing).
+            let expectedValue = try XCTUnwrap(line["expected"])
+            XCTAssertTrue(expectedValue is String || expectedValue is NSNull)
             XCTAssertEqual(
                 BuddyCopy.messageLine(
                     isMine: try XCTUnwrap(line["isMine"] as? Bool),
