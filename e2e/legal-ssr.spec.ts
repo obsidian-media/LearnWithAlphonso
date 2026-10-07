@@ -37,9 +37,21 @@ test("legal and landing HTML contain no raw NUL bytes", async ({ request }) => {
 
 test("pages still hydrate after the NUL escaping", async ({ page }) => {
   // The cookie banner opens only from a client useEffect (CookieConsent.tsx),
-  // so it appearing proves React hydrated the server HTML.
+  // so it appearing proves React is running. It also appears when React gives
+  // up on the server HTML and re-renders on the client, so a failed hydration
+  // is caught separately: React reports it as an uncaught "Hydration failed".
+  const hydrationFailures: string[] = [];
+  page.on("pageerror", (error) => {
+    if (/Hydration failed/i.test(error.message)) hydrationFailures.push(error.message);
+  });
+  page.on("console", (message) => {
+    if (message.type() === "error" && /Hydration failed/i.test(message.text())) {
+      hydrationFailures.push(message.text());
+    }
+  });
   await page.goto("/terms");
   await expect(page.getByRole("dialog", { name: "Cookie choices" })).toBeVisible();
   await page.getByRole("button", { name: "Essential only" }).click();
   await expect(page.getByRole("dialog", { name: "Cookie choices" })).toBeHidden();
+  expect(hydrationFailures, "React could not hydrate the server HTML").toEqual([]);
 });
