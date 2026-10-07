@@ -1,0 +1,65 @@
+{
+  "$comment": "Imageability data for vocab images (App Store remediation W1). A term gets an image ONLY if its lookup form (lowercased, leading article stripped) is in imageable[lang][category]. deny beats everything. fr/es imageable terms need an English search query. Edit via scripts/merge-vocab-imageability.ts, never by hand without re-running bun run test.",
+  "version": 1,
+  "imageable": {
+    "en": { "noun": ["doctor"], "action": [], "place": [], "food": ["apple"] },
+    "fr": { "noun": ["médecin"], "action": [], "place": ["école"], "food": ["pomme"] },
+    "es": { "noun": ["médico", "perro"], "action": [], "place": ["playa"], "food": ["manzana"] }
+  },
+  "queries": {
+    "en": {},
+    "fr": { "médecin": "doctor", "école": "school", "pomme": "apple" },
+    "es": { "médico": "doctor", "perro": "dog", "playa": "beach", "manzana": "apple" }
+  },
+  "deny": {
+    "en": [
+      "couldn't", "thick", "sunny", "appears", "stunning", "firing you", "scope", "militates",
+      "end", "totally", "poorly", "won't", "risk", "harm", "a past habit", "a chance", "a risk",
+      "call", "unemployed", "be exactly right", "despite", "persuasion", "persuasive", "got",
+      "misinformation",
+      "beer", "wine", "whisky", "whiskey", "vodka", "cocktail", "cigarette", "cigar", "tobacco",
+      "gun", "rifle", "pistol", "weapon", "bikini", "swimsuit", "underwear", "lingerie", "bra",
+      "casino", "poker", "drunk"
+    ],
+    "fr": [
+      "essayait", "de rien",
+      "bière", "vin", "cigarette", "cigare", "tabac", "pistolet", "fusil", "arme",
+      "maillot de bain", "sous-vêtements", "casino", "ivre"
+    ],
+    "es": [
+      "cerveza", "vino", "cigarrillo", "puro", "tabaco", "pistola", "rifle", "arma", "bikini",
+      "bañador", "ropa interior", "casino", "borracho"
+    ]
+  },
+  "functionWords": {
+    "en": [
+      "a", "an", "the", "is", "are", "was", "were", "am", "be", "been", "being", "do", "does", "did",
+      "have", "has", "had", "will", "would", "shall", "should", "can", "could", "may", "might",
+      "must", "to", "of", "in", "on", "at", "by", "for", "with", "about", "against", "between",
+      "into", "through", "during", "before", "after", "above", "below", "up", "down", "out", "off",
+      "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why",
+      "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no",
+      "nor", "not", "only", "own", "same", "so", "than", "too", "very", "just", "and", "but", "or",
+      "if", "because", "as", "until", "while", "i", "you", "he", "she", "it", "we", "they", "me",
+      "him", "her", "us", "them", "my", "your", "his", "its", "our", "their", "this", "that",
+      "these", "those", "who", "whom", "which", "what", "yes", "hello", "hi", "goodbye", "bye",
+      "please", "thanks", "thank you", "sorry"
+    ],
+    "fr": [
+      "le", "la", "les", "un", "une", "des", "du", "de", "à", "au", "aux", "et", "ou", "mais",
+      "donc", "or", "ni", "car", "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles",
+      "me", "te", "se", "moi", "toi", "lui", "leur", "y", "en", "ce", "cette", "ces", "mon", "ton",
+      "son", "ma", "ta", "sa", "mes", "tes", "ses", "notre", "votre", "nos", "vos", "qui", "que",
+      "quoi", "dont", "où", "ne", "pas", "plus", "très", "bien", "aussi", "oui", "non", "bonjour",
+      "bonsoir", "salut", "au revoir", "à bientôt", "merci", "pardon", "s'il vous plaît"
+    ],
+    "es": [
+      "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "a", "al", "y", "o",
+      "pero", "ni", "que", "quien", "yo", "tú", "él", "ella", "nosotros", "vosotros", "ellos",
+      "ellas", "me", "te", "se", "le", "les", "lo", "mi", "tu", "su", "mis", "tus", "sus",
+      "nuestro", "vuestro", "este", "esta", "estos", "estas", "ese", "esa", "no", "sí", "muy",
+      "más", "también", "hola", "adiós", "gracias", "por favor", "buenos días", "buenas noches",
+      "hasta luego"
+    ]
+  }
+}

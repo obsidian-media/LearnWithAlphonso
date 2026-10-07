@@ -1,0 +1,7 @@
+/** Terms whose images the 2026-10-07 App Store audit flagged (B1). None may ever have an image again. */
+export const FLAGGED_TERMS_2026_10_07: readonly string[] = [
+  "couldn't", "thick", "sunny", "appears", "stunning", "firing you", "scope", "militates", "end",
+  "essayait", "totally", "poorly", "won't", "risk", "harm", "a past habit", "a chance", "a risk",
+  "de rien", "call", "unemployed", "be exactly right", "despite", "persuasion", "persuasive", "got",
+  "misinformation",
+];
