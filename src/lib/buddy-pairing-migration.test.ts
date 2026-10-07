@@ -53,4 +53,40 @@ describe("buddy pairing migration", () => {
       /CREATE TRIGGER buddy_end_on_block AFTER INSERT ON public\.blocked_users/,
     );
   });
+  it("every public function is SECURITY DEFINER, pins search_path and UTC, and only authenticated may call it", () => {
+    const pub = [
+      "request_buddy(uuid)",
+      "respond_buddy_request(uuid, boolean)",
+      "cancel_buddy_request(uuid)",
+      "end_buddy()",
+      "get_buddy_requests()",
+      "get_my_buddy()",
+    ];
+    for (const sig of pub) {
+      const name = sig.slice(0, sig.indexOf("("));
+      const body = sql().slice(sql().indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`));
+      expect(body.slice(0, body.indexOf("AS $$"))).toMatch(
+        /SECURITY DEFINER\nSET search_path = public\nSET timezone = 'UTC'/,
+      );
+      expect(sql()).toContain(`REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon;`);
+      expect(sql()).toContain(`GRANT EXECUTE ON FUNCTION public.${sig} TO authenticated;`);
+    }
+    for (const sig of [
+      "_buddy_count(uuid, timestamptz, timestamptz)",
+      "_create_buddy_pair(uuid, uuid, text)",
+      "_resolve_buddy_pair(uuid)",
+    ]) {
+      expect(sql()).toContain(
+        `REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon, authenticated;`,
+      );
+    }
+  });
+
+  it("uses the shared goal of 3 lessons", () => {
+    expect(sql()).toMatch(/goal constant integer := 3;/);
+  });
+
+  it("serialises week resolution per pair so two buddies opening the app at once resolve each week once", () => {
+    expect(sql()).toMatch(/FROM public\.buddy_pairs bp WHERE bp\.id = _pair FOR UPDATE;/);
+  });
 });
