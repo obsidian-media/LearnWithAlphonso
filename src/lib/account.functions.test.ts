@@ -141,6 +141,28 @@ describe("exportMyData", () => {
     await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/buddy_weeks/);
   });
 
+  it("exports the caller's buddy messages and names the table when that read fails", async () => {
+    const ok = createSupabaseMock();
+    ok.from.mockImplementation((table: string) =>
+      table === "buddy_messages"
+        ? chainable({ data: [{ pair_id: "p1", preset_id: "nice_work" }] })
+        : chainable({ data: [] }),
+    );
+    const tables = JSON.parse((await exportMyData({ context: ctx(ok) })).tables);
+    expect(tables.buddy_messages).toEqual([{ pair_id: "p1", preset_id: "nice_work" }]);
+
+    const failing = createSupabaseMock();
+    failing.from.mockImplementation((table: string) =>
+      table === "buddy_messages"
+        ? chainable({
+            data: null,
+            error: { message: "permission denied for table buddy_messages" },
+          })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(failing) })).rejects.toThrow(/buddy_messages/);
+  });
+
   it("falls back to an empty array/object when a table has no rows", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation(() => chainable({ data: null }));
@@ -366,6 +388,8 @@ describe("GDPR export table coverage", () => {
     const covered = new Set<string>([
       ...exportTables,
       ...OTHER_OWNED_EXPORT_TABLES.map((t) => t.table),
+      // Read whole as the caller; each table's own-pairs SELECT policy is what scopes it.
+      ...accountModule.RLS_SCOPED_EXPORT_TABLES,
       // "profiles" is exported too, just keyed by `id` rather than
       // `user_id`, so it takes its own select below.
       "profiles",
@@ -410,6 +434,7 @@ describe("GDPR export table coverage", () => {
     const tables = [
       ...exportTables,
       ...accountModule.OTHER_OWNED_EXPORT_TABLES.map((o) => o.table),
+      ...accountModule.RLS_SCOPED_EXPORT_TABLES,
     ];
     const unreadable = tables.filter((table) => !policies.get(table)?.has("SELECT"));
     expect(unreadable).toEqual([]);

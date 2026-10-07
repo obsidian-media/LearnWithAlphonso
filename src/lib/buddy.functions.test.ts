@@ -29,6 +29,8 @@ const {
   respondBuddyRequest,
   cancelBuddyRequest,
   endBuddy,
+  sendBuddyMessage,
+  getBuddyMessages,
 } = asTestFns(await import("./buddy.functions"));
 
 const FRIEND = "3f2b6c1e-8a4d-4c7e-9b1a-2d5e6f708192";
@@ -206,5 +208,59 @@ describe("endBuddy", () => {
 
   it("throws on an RPC error", async () => {
     await expect(endBuddy({ context: ctx(rpcFailing()) })).rejects.toThrow("endBuddy: boom");
+  });
+});
+
+describe("sendBuddyMessage", () => {
+  it("sends a preset id and returns the server's status", async () => {
+    const supabase = rpcReturning([{ status: "rate_limited" }]);
+    await expect(
+      sendBuddyMessage({ context: ctx(supabase), data: { presetId: "nice_work" } }),
+    ).resolves.toEqual({ status: "rate_limited" });
+    expect(supabase.rpc).toHaveBeenCalledWith("send_buddy_message", { _preset: "nice_work" });
+  });
+
+  it("refuses anything that is not one of the presets before calling the server (no free text)", async () => {
+    const supabase = rpcReturning([]);
+    await expect(
+      sendBuddyMessage({ context: ctx(supabase), data: { presetId: "hi there" } }),
+    ).rejects.toThrow();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("throws on an RPC error", async () => {
+    await expect(
+      sendBuddyMessage({ context: ctx(rpcFailing()), data: { presetId: "nice_work" } }),
+    ).rejects.toThrow("sendBuddyMessage: boom");
+  });
+});
+
+describe("getBuddyMessages", () => {
+  it("maps the rows", async () => {
+    const supabase = rpcReturning([
+      {
+        message_id: "m1",
+        sender_id: "u2",
+        is_mine: false,
+        preset_id: "good_night",
+        sent_at: "2026-10-07T00:00:00Z",
+      },
+    ]);
+    await expect(getBuddyMessages({ context: ctx(supabase) })).resolves.toEqual([
+      {
+        messageId: "m1",
+        senderId: "u2",
+        isMine: false,
+        presetId: "good_night",
+        sentAt: "2026-10-07T00:00:00Z",
+      },
+    ]);
+    expect(supabase.rpc).toHaveBeenCalledWith("get_buddy_messages", {});
+  });
+
+  it("throws on an RPC error, never an empty history", async () => {
+    await expect(getBuddyMessages({ context: ctx(rpcFailing()) })).rejects.toThrow(
+      "getBuddyMessages: boom",
+    );
   });
 });

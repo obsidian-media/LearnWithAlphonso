@@ -215,6 +215,38 @@ export type Database = {
           },
         ];
       };
+      buddy_messages: {
+        Row: {
+          created_at: string;
+          id: string;
+          pair_id: string;
+          preset_id: string;
+          sender_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          pair_id: string;
+          preset_id: string;
+          sender_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          pair_id?: string;
+          preset_id?: string;
+          sender_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "buddy_messages_pair_id_fkey";
+            columns: ["pair_id"];
+            isOneToOne: false;
+            referencedRelation: "buddy_pairs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       buddy_pairs: {
         Row: {
           created_at: string;
@@ -1774,6 +1806,16 @@ export type Database = {
           status: string;
         }[];
       };
+      get_buddy_messages: {
+        Args: { _since?: string };
+        Returns: {
+          is_mine: boolean;
+          message_id: string;
+          preset_id: string;
+          sender_id: string;
+          sent_at: string;
+        }[];
+      };
       get_buddy_requests: {
         Args: never;
         Returns: {
@@ -2003,6 +2045,12 @@ export type Database = {
       save_placement_result: {
         Args: { _language: string; _level: string; _score: number };
         Returns: string;
+      };
+      send_buddy_message: {
+        Args: { _preset: string };
+        Returns: {
+          status: string;
+        }[];
       };
       set_cefr_level: {
         Args: { _language: string; _level: string };
