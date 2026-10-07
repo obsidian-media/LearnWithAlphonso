@@ -8,19 +8,85 @@ type Images = Record<string, VocabImageRecord>;
 
 /** Spec W1 guard 2, extended. Whole-word, case-insensitive. Kitchen "knife" is deliberately absent. */
 export const ALT_CREDIT_DENYLIST: readonly string[] = [
-  "nude", "nudes", "nudity", "naked", "topless", "underwear", "lingerie", "bra", "bikini", "bikinis",
-  "swimsuit", "swimsuits", "swimwear", "alluring", "sensual", "erotic", "sexy", "seductive",
-  "provocative", "gun", "guns", "handgun", "pistol", "rifle", "shotgun", "weapon", "weapons",
-  "firearm", "ammunition", "bullet", "bullets", "blood", "bloody", "injury", "injured", "wound",
-  "corpse", "war", "bomb", "explosion", "drunk", "beer", "wine", "whisky", "whiskey", "vodka",
-  "cocktail", "alcohol", "liquor", "cigarette", "cigarettes", "cigar", "smoking", "tobacco", "vape",
-  "drug", "drugs", "cannabis", "marijuana", "casino", "gamble", "gambling", "roulette", "poker",
-  "protest", "protester", "riot", "politician", "election", "homeless", "beggar",
+  "nude",
+  "nudes",
+  "nudity",
+  "naked",
+  "topless",
+  "underwear",
+  "lingerie",
+  "bra",
+  "bikini",
+  "bikinis",
+  "swimsuit",
+  "swimsuits",
+  "swimwear",
+  "alluring",
+  "sensual",
+  "erotic",
+  "sexy",
+  "seductive",
+  "provocative",
+  "gun",
+  "guns",
+  "handgun",
+  "pistol",
+  "rifle",
+  "shotgun",
+  "weapon",
+  "weapons",
+  "firearm",
+  "ammunition",
+  "bullet",
+  "bullets",
+  "blood",
+  "bloody",
+  "injury",
+  "injured",
+  "wound",
+  "corpse",
+  "war",
+  "bomb",
+  "explosion",
+  "drunk",
+  "beer",
+  "wine",
+  "whisky",
+  "whiskey",
+  "vodka",
+  "cocktail",
+  "alcohol",
+  "liquor",
+  "cigarette",
+  "cigarettes",
+  "cigar",
+  "smoking",
+  "tobacco",
+  "vape",
+  "drug",
+  "drugs",
+  "cannabis",
+  "marijuana",
+  "casino",
+  "gamble",
+  "gambling",
+  "roulette",
+  "poker",
+  "protest",
+  "protester",
+  "riot",
+  "politician",
+  "election",
+  "homeless",
+  "beggar",
 ];
 const DENY = new Set(ALT_CREDIT_DENYLIST);
 
 export function denylistHits(text: string): string[] {
-  const tokens = text.normalize("NFC").toLowerCase().split(/[^\p{L}\p{N}]+/u);
+  const tokens = text
+    .normalize("NFC")
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u);
   return [...new Set(tokens.filter((t) => DENY.has(t)))];
 }
 
@@ -33,7 +99,8 @@ export function hostViolations(images: Images): string[] {
       continue;
     }
     const expected = slugForTerm(key);
-    if (parsed.slug !== expected) out.push(`${key}: url slug "${parsed.slug}" != expected "${expected}"`);
+    if (parsed.slug !== expected)
+      out.push(`${key}: url slug "${parsed.slug}" != expected "${expected}"`);
   }
   return out;
 }
@@ -62,7 +129,9 @@ export function reviewStampViolations(
     if (!/^\d{4}-\d{2}-\d{2}$/.test(img.reviewedAt)) {
       out.push(`${key}: reviewedAt "${img.reviewedAt}" is not YYYY-MM-DD`);
     } else if (img.reviewedAt < PROGRAM_START) {
-      out.push(`${key}: reviewedAt "${img.reviewedAt}" predates the ${PROGRAM_START} review program`);
+      out.push(
+        `${key}: reviewedAt "${img.reviewedAt}" predates the ${PROGRAM_START} review program`,
+      );
     } else if (img.reviewedAt > today) {
       out.push(`${key}: reviewedAt "${img.reviewedAt}" is in the future`);
     }
@@ -77,12 +146,14 @@ export function provenanceViolations(images: Images): string[] {
       out.push(`${key}: unknown source "${String(img.source)}"`);
       continue;
     }
-    if (img.license !== LICENSE_FOR_SOURCE[img.source]) out.push(`${key}: license does not match source ${img.source}`);
+    if (img.license !== LICENSE_FOR_SOURCE[img.source])
+      out.push(`${key}: license does not match source ${img.source}`);
     if (!isSourcePageUrl(img.source, img.sourcePageUrl)) {
       out.push(`${key}: sourcePageUrl is not a ${img.source} photo page: ${img.sourcePageUrl}`);
     }
     if (img.alt.includes("--")) out.push(`${key}: alt contains "--"`);
-    if (img.alt.trim().length < 1 || img.alt.length > 160) out.push(`${key}: alt must be 1-160 characters`);
+    if (img.alt.trim().length < 1 || img.alt.length > 160)
+      out.push(`${key}: alt must be 1-160 characters`);
     if (!img.credit.trim()) out.push(`${key}: credit is empty`);
   }
   return out;

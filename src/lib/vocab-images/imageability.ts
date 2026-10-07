@@ -14,13 +14,7 @@ export type ImageabilityData = {
 };
 
 export type NotImageableReason =
-  | "empty"
-  | "phrase"
-  | "contraction"
-  | "denied"
-  | "function-word"
-  | "not-listed"
-  | "no-query";
+  "empty" | "phrase" | "contraction" | "denied" | "function-word" | "not-listed" | "no-query";
 
 export type Imageability =
   | { imageable: true; category: ImageCategory; lookup: string; query: string }
@@ -60,7 +54,11 @@ function indexFor(data: ImageabilityData): Record<ImageLang, LangIndex> {
   for (const lang of IMAGE_LANGS) {
     const category = new Map<string, ImageCategory>();
     for (const c of IMAGE_CATEGORIES) for (const t of data.imageable[lang][c]) category.set(t, c);
-    built[lang] = { deny: new Set(data.deny[lang]), fn: new Set(data.functionWords[lang]), category };
+    built[lang] = {
+      deny: new Set(data.deny[lang]),
+      fn: new Set(data.functionWords[lang]),
+      category,
+    };
   }
   indexCache.set(data, built);
   return built;

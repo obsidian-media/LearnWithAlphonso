@@ -39,12 +39,16 @@ describe("parseVocabImageUrl", () => {
 describe("isSourcePageUrl", () => {
   it("accepts provider photo pages", () => {
     expect(isSourcePageUrl("pexels", "https://www.pexels.com/photo/red-apple-590472/")).toBe(true);
-    expect(isSourcePageUrl("pixabay", "https://pixabay.com/photos/guitar-music-1180744/")).toBe(true);
+    expect(isSourcePageUrl("pixabay", "https://pixabay.com/photos/guitar-music-1180744/")).toBe(
+      true,
+    );
   });
 
   it("rejects download URLs and cross-provider pages", () => {
     expect(isSourcePageUrl("pixabay", "https://pixabay.com/get/gabc_640.jpg")).toBe(false);
-    expect(isSourcePageUrl("pexels", "https://pixabay.com/photos/guitar-music-1180744/")).toBe(false);
+    expect(isSourcePageUrl("pexels", "https://pixabay.com/photos/guitar-music-1180744/")).toBe(
+      false,
+    );
     expect(isSourcePageUrl("pexels", "https://images.pexels.com/photos/590472/x.jpeg")).toBe(false);
   });
 });

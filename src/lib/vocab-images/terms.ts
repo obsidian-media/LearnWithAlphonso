@@ -25,9 +25,11 @@ export function vocabTermIndex(): TermIndex {
   for (const { id } of COURSES) {
     for (const unit of getCourse(id).curriculum) {
       for (const lesson of unit.lessons) {
-        for (const item of deriveVocab(lesson)) add(item.term.trim().toLowerCase(), id, item.meaning);
+        for (const item of deriveVocab(lesson))
+          add(item.term.trim().toLowerCase(), id, item.meaning);
         for (const q of lesson.questions) {
-          if (q.type === "mc" && q.imageKey) add(q.imageKey.trim().toLowerCase(), id, q.explanation);
+          if (q.type === "mc" && q.imageKey)
+            add(q.imageKey.trim().toLowerCase(), id, q.explanation);
         }
       }
     }
@@ -65,7 +67,9 @@ export function planImageableTerms(
     if (!first || !first.result.imageable) {
       skipped.push({
         key,
-        reason: results.map((r) => `${r.lang}: ${r.result.imageable ? "ok" : r.result.reason}`).join(", "),
+        reason: results
+          .map((r) => `${r.lang}: ${r.result.imageable ? "ok" : r.result.reason}`)
+          .join(", "),
       });
       continue;
     }
@@ -74,11 +78,19 @@ export function planImageableTerms(
       (r) => !r.result.imageable || r.result.query.toLowerCase() !== firstQuery,
     );
     if (conflict) {
-      const why = conflict.result.imageable ? `query "${conflict.result.query}"` : conflict.result.reason;
+      const why = conflict.result.imageable
+        ? `query "${conflict.result.query}"`
+        : conflict.result.reason;
       skipped.push({ key, reason: `cross-language conflict (${conflict.lang}: ${why})` });
       continue;
     }
-    planned.push({ key, lang: first.lang, query: first.result.query, category: first.result.category, meaning });
+    planned.push({
+      key,
+      lang: first.lang,
+      query: first.result.query,
+      category: first.result.category,
+      meaning,
+    });
   }
   planned.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   return { planned, skipped };

@@ -16,7 +16,18 @@ describe("slugForTerm", () => {
   });
 
   it("never maps two different keys to one slug", () => {
-    const keys = ["ice cream", "ice-cream", "café", "cafe", "élève", "eleve", "niño", "nino", "a b", "a-b"];
+    const keys = [
+      "ice cream",
+      "ice-cream",
+      "café",
+      "cafe",
+      "élève",
+      "eleve",
+      "niño",
+      "nino",
+      "a b",
+      "a-b",
+    ];
     expect(new Set(keys.map(slugForTerm)).size).toBe(keys.length);
   });
 });

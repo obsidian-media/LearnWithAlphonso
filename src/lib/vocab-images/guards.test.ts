@@ -60,7 +60,10 @@ describe("reviewStampViolations", () => {
   it("passes a dated agent review, with or without a second pass", () => {
     expect(
       reviewStampViolations(
-        { a: good("a"), b: { ...good("b"), reviewedBy: "agent:w1-review-r1-b001+agent:w1-review2-r1-b001" } },
+        {
+          a: good("a"),
+          b: { ...good("b"), reviewedBy: "agent:w1-review-r1-b001+agent:w1-review2-r1-b001" },
+        },
         "2026-10-09",
       ),
     ).toEqual([]);
@@ -93,14 +96,19 @@ describe("provenanceViolations", () => {
   it("flags license, page URL, alt and credit problems", () => {
     const v = provenanceViolations({
       a: { ...good("a"), license: LICENSE_FOR_SOURCE.pixabay },
-      b: { ...good("b"), source: "pixabay", sourcePageUrl: "https://pixabay.com/get/gabc_640.jpg", license: LICENSE_FOR_SOURCE.pixabay },
+      b: {
+        ...good("b"),
+        source: "pixabay",
+        sourcePageUrl: "https://pixabay.com/get/gabc_640.jpg",
+        license: LICENSE_FOR_SOURCE.pixabay,
+      },
       c: { ...good("c"), alt: "Apple -- red" },
       d: { ...good("d"), alt: "" },
       e: { ...good("e"), credit: " " },
     });
     expect(v).toEqual([
       "a: license does not match source pexels",
-      'b: sourcePageUrl is not a pixabay photo page: https://pixabay.com/get/gabc_640.jpg',
+      "b: sourcePageUrl is not a pixabay photo page: https://pixabay.com/get/gabc_640.jpg",
       'c: alt contains "--"',
       "d: alt must be 1-160 characters",
       "e: credit is empty",

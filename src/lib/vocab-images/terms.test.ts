@@ -32,7 +32,12 @@ describe("planImageableTerms", () => {
   const byKey = new Map(plan.planned.map((p) => [p.key, p]));
 
   it("plans imageable terms with their language, query and meaning", () => {
-    expect(byKey.get("apple")).toMatchObject({ lang: "en", query: "apple", category: "food", meaning: "a fruit" });
+    expect(byKey.get("apple")).toMatchObject({
+      lang: "en",
+      query: "apple",
+      category: "food",
+      meaning: "a fruit",
+    });
     expect(byKey.get("pomme")).toMatchObject({ lang: "fr", query: "apple" });
   });
 
@@ -43,8 +48,14 @@ describe("planImageableTerms", () => {
   it("drops a homograph that is imageable in one course but not another", () => {
     expect(byKey.has("pain")).toBe(false);
     expect(byKey.has("coin")).toBe(false);
-    expect(plan.skipped).toContainEqual({ key: "pain", reason: "cross-language conflict (en: not-listed)" });
-    expect(plan.skipped).toContainEqual({ key: "coin", reason: "cross-language conflict (fr: not-listed)" });
+    expect(plan.skipped).toContainEqual({
+      key: "pain",
+      reason: "cross-language conflict (en: not-listed)",
+    });
+    expect(plan.skipped).toContainEqual({
+      key: "coin",
+      reason: "cross-language conflict (fr: not-listed)",
+    });
   });
 
   it("skips non-imageable terms with the per-course reasons", () => {
@@ -52,7 +63,11 @@ describe("planImageableTerms", () => {
   });
 
   it("honours restrictTo", () => {
-    const restricted = planImageableTerms(index([["apple", ["en"], "a fruit"]]), DATA, new Set(["pomme"]));
+    const restricted = planImageableTerms(
+      index([["apple", ["en"], "a fruit"]]),
+      DATA,
+      new Set(["pomme"]),
+    );
     expect(restricted.planned).toEqual([]);
   });
 });

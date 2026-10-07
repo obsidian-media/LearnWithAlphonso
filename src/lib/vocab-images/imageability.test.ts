@@ -81,8 +81,10 @@ describe("classifyImageability", () => {
 });
 
 describe("validateImageabilityData", () => {
-  it("reports exactly the fixture's one deliberate gap (es \"perro\" has no query)", () => {
-    expect(validateImageabilityData(FIXTURE)).toEqual(['es: imageable "perro" has no English query']);
+  it('reports exactly the fixture\'s one deliberate gap (es "perro" has no query)', () => {
+    expect(validateImageabilityData(FIXTURE)).toEqual([
+      'es: imageable "perro" has no English query',
+    ]);
   });
 
   it("reports every structural problem", () => {
