@@ -53,6 +53,9 @@ const ALLOWED: Record<string, { cols: string[]; ownRowOnly: boolean; why: string
   },
 };
 
+/** Functions that name profiles without an alias, each reviewed: what they read or write, and why it is safe. */
+const UNALIASED_OK: Record<string, string> = {};
+
 function latestFunctions(): Map<string, string> {
   const latest = new Map<string, string>();
   for (const file of fs
@@ -61,9 +64,10 @@ function latestFunctions(): Map<string, string> {
     .sort()) {
     const sql = fs.readFileSync(path.join(DIR, file), "utf8");
     for (const m of sql.matchAll(
-      /CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]+)\s*\(([\s\S]*?)\$\$([\s\S]*?)\$\$/gi,
+      /CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]+)\s*\(([\s\S]*?)(\$[a-z_0-9]*\$)([\s\S]*?)\3/gi,
     )) {
-      latest.set(m[1], m[3]);
+      // Any dollar-quote tag: the body ends at the tag that opened it. Comments are not reads.
+      latest.set(m[1], m[4].replace(/--[^\n]*/g, ""));
     }
   }
   return latest;
@@ -83,19 +87,25 @@ const KEYWORDS = new Set([
   "for",
 ]);
 
-/** Sensitive columns a body reads through an alias of public.profiles. */
+const PROFILES_REF =
+  /(?:FROM|JOIN|UPDATE)\s+(?:public\.)?profiles\b(?:\s+(?:AS\s+)?([a-z_][a-z_0-9]*))?/gi;
+
+/** Sensitive columns a body reads through an alias of profiles, or as profiles.<column> / public.profiles.<column>. */
 export function sensitiveProfileReads(body: string): string[] {
-  const aliases = [
-    ...body.matchAll(/(?:FROM|JOIN|UPDATE)\s+public\.profiles\s+(?:AS\s+)?([a-z_][a-z_0-9]*)/gi),
-  ]
-    .map((m) => m[1].toLowerCase())
-    .filter((a) => !KEYWORDS.has(a));
+  const aliases = [...body.matchAll(PROFILES_REF)]
+    .map((m) => (m[1] ?? "").toLowerCase())
+    .filter((a) => a && !KEYWORDS.has(a));
   const hits = new Set<string>();
-  for (const a of aliases) {
-    for (const m of body.matchAll(new RegExp(`\\b${a}\\.(${SENSITIVE.join("|")})\\b`, "gi")))
-      hits.add(m[1].toLowerCase());
+  for (const a of [...aliases, "profiles", "public\\.profiles"]) {
+    const re = new RegExp(`(?<![a-z_0-9.])${a}\\.(${SENSITIVE.join("|")})\\b`, "gi");
+    for (const m of body.matchAll(re)) hits.add(m[1].toLowerCase());
   }
   return [...hits].sort();
+}
+
+/** True when the body references profiles without an alias, so its column reads cannot be attributed. */
+export function hasUnaliasedProfileRef(body: string): boolean {
+  return [...body.matchAll(PROFILES_REF)].some((m) => !m[1] || KEYWORDS.has(m[1].toLowerCase()));
 }
 
 describe("profile exposure through SQL (O3)", () => {
@@ -108,6 +118,14 @@ describe("profile exposure through SQL (O3)", () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+  it("a function that names profiles without an alias is allowlisted as a known existence check or write", () => {
+    const unaliased = [...latestFunctions()]
+      .filter(([, body]) => hasUnaliasedProfileRef(body))
+      .map(([name]) => name)
+      .filter((name) => !(name in UNALIASED_OK))
+      .sort();
+    expect(unaliased).toEqual([]);
   });
   it("own-row allowlisted functions filter on the caller", () => {
     const fns = latestFunctions();
@@ -130,5 +148,13 @@ describe("profile exposure through SQL (O3)", () => {
       sensitiveProfileReads("SELECT p.display_name, p.theme FROM public.profiles p JOIN x ON true"),
     ).toEqual(["theme"]);
     expect(sensitiveProfileReads("SELECT o.display_name FROM public.profiles o")).toEqual([]);
+    expect(
+      sensitiveProfileReads("SELECT public.profiles.theme FROM public.profiles WHERE true"),
+    ).toEqual(["theme"]);
+    expect(sensitiveProfileReads("SELECT q.country FROM profiles q")).toEqual(["country"]);
+    expect(hasUnaliasedProfileRef("SELECT theme FROM public.profiles WHERE id = me")).toBe(true);
+    expect(hasUnaliasedProfileRef("SELECT p.theme FROM public.profiles p WHERE p.id = me")).toBe(
+      false,
+    );
   });
 });

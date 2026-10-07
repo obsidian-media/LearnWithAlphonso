@@ -166,7 +166,19 @@ describe("moderation filter v2", () => {
     expect(arrayOf("moderation_contextual_terms")).toEqual(contextualWords);
     expect(arrayOf("moderation_anatomy_terms")).toEqual(["dick", "cock", "cox"]);
     // Possessives and sizes only count next to an anatomy word: "My Gay Uncle" is a name, "Big Dick" is not.
-    const neutral = ["my", "your", "ur", "big", "huge", "tiny", "small", "hard", "head", "face", "hole"];
+    const neutral = [
+      "my",
+      "your",
+      "ur",
+      "big",
+      "huge",
+      "tiny",
+      "small",
+      "hard",
+      "head",
+      "face",
+      "hole",
+    ];
     const markers = arrayOf("moderation_context_markers");
     for (const m of neutral) expect(markers, m).not.toContain(m);
     expect(arrayOf("moderation_anatomy_markers")).toEqual(neutral);
@@ -179,7 +191,9 @@ describe("moderation filter v2", () => {
     expect(stmt).toContain("coalesce(_name, '') ~ '[\\u202A-\\u202E\\u2066-\\u2069]'");
     const trig = fn(file, "enforce_display_name_filter");
     expect(trig.indexOf("public.display_name_problem(NEW.display_name)")).toBeLessThan(
-      trig.indexOf("NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')"),
+      trig.indexOf(
+        "NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')",
+      ),
     );
   });
 
@@ -239,12 +253,16 @@ describe("display-name onboarding", () => {
     expect(stmt).toMatch(/EXCEPTION WHEN check_violation OR raise_exception THEN/);
   });
   it("handle_new_user judges the raw metadata name, so a bidi trick falls back to a handle", () => {
-    expect(fn(FILES.names, "handle_new_user")).toContain("public.display_name_problem(raw_name) IS NOT NULL");
+    expect(fn(FILES.names, "handle_new_user")).toContain(
+      "public.display_name_problem(raw_name) IS NOT NULL",
+    );
   });
   it("the self-rename trigger judges the raw name before storing the cleaned one", () => {
     const trig = fn(FILES.names, "enforce_display_name_filter");
     expect(trig.indexOf("public.display_name_problem(NEW.display_name)")).toBeLessThan(
-      trig.indexOf("NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')"),
+      trig.indexOf(
+        "NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')",
+      ),
     );
   });
 
@@ -367,7 +385,9 @@ describe("team integrity", () => {
   });
   it("auto_join_team never leaves an empty team behind when the join is refused", () => {
     const stmt = fn(file, "auto_join_team");
-    expect(stmt).toMatch(/IF NOT join_result\.ok AND new_id IS NOT NULL THEN\s+DELETE FROM public\.teams t WHERE t\.id = new_id;/);
+    expect(stmt).toMatch(
+      /IF NOT join_result\.ok AND new_id IS NOT NULL THEN\s+DELETE FROM public\.teams t WHERE t\.id = new_id;/,
+    );
   });
 });
 
