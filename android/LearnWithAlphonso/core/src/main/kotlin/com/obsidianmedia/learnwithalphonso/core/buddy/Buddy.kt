@@ -68,6 +68,7 @@ object BuddyCopy {
     const val POOL_INTRO = "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time."
     const val STOP_LOOKING = "Stop looking"
     const val MATCHED_LABEL = "Matched learner"
+    const val AGE_CONFIRM = "I'm 13 or older"
     private val courseNames = mapOf("en" to "English", "fr" to "French", "es" to "Spanish")
 
     /** "French" for "fr"; an unknown code is shown as-is. */

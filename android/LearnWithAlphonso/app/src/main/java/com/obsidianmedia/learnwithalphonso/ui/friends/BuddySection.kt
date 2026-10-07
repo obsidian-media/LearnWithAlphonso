@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -127,14 +128,22 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
     fun cancel(request: BuddyRequest) = act { client.cancelBuddyRequest(request.requestId) }
     fun end() = act { client.endBuddy() }
     fun send(presetId: String) = act { client.sendBuddyMessage(presetId) }
-    fun join(course: String) = act { client.joinBuddyPool(course) }
+    fun join(course: String, ageConfirmed: Boolean) = act { client.joinBuddyPool(course, ageConfirmed) }
     fun leave() = act { client.leaveBuddyPool() }
 
     /** Blocking a matched buddy ends the pair on the server (trigger); reload to show it. */
     fun block(userId: String) {
+        _state.update { it.copy(busy = true, message = null) }
         viewModelScope.launch {
-            runCatching { client.blockUser(userId) }
+            val blocked = try {
+                client.blockUser(userId).first
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                false
+            }
             reload()
+            _state.update { it.copy(busy = false, message = if (blocked) it.message else BuddyCopy.statusMessage("unknown")) }
         }
     }
 
@@ -162,6 +171,8 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
     var confirmingEnd by remember { mutableStateOf(false) }
     var choosingPreset by remember { mutableStateOf(false) }
     var blockTarget by remember { mutableStateOf<SocialTarget?>(null) }
+    // Declared-age confirmation for matching (owner decision: minimum age 13); the server refuses without it.
+    var ageConfirmed by remember { mutableStateOf(false) }
 
     // Refreshes when the screen comes back and every minute while it is visible (no realtime socket); stops in the background.
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -236,15 +247,23 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
                 }
                 // Opt-in matching. A waiting learner can always stop looking, even while matching is switched off.
                 val pool = state.pool
-                if (pool != null && pool.waiting && pool.course != null) {
+                // A local copy: BuddyPool lives in :core, and Kotlin does not smart-cast another module's properties.
+                val waitingCourse = pool?.takeIf { it.waiting }?.course
+                if (pool != null && waitingCourse != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(BuddyCopy.waitingLine(pool.course), color = palette.ink, modifier = Modifier.weight(1f))
+                        Text(BuddyCopy.waitingLine(waitingCourse), color = palette.ink, modifier = Modifier.weight(1f))
                         TextButton(onClick = { vm.leave() }, enabled = !state.busy) { Text(BuddyCopy.STOP_LOOKING, color = palette.inkSoft) }
                     }
                 } else if (pool != null && pool.matchingEnabled && pool.courses.isNotEmpty()) {
                     Text(BuddyCopy.POOL_INTRO, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = ageConfirmed, onCheckedChange = { ageConfirmed = it })
+                        Text(BuddyCopy.AGE_CONFIRM, color = palette.ink)
+                    }
                     pool.courses.forEach { course ->
-                        TextButton(onClick = { vm.join(course) }, enabled = !state.busy) { Text(BuddyCopy.findButton(course), color = palette.moss) }
+                        TextButton(onClick = { vm.join(course, ageConfirmed) }, enabled = !state.busy && ageConfirmed) {
+                            Text(BuddyCopy.findButton(course), color = palette.moss)
+                        }
                     }
                 }
                 val askable = state.askable(friends)

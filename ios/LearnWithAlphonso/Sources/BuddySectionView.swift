@@ -19,6 +19,8 @@ struct BuddySection: View {
     @State private var messages: [BuddyMessage] = []
     @State private var pool: BuddyPool?
     @State private var blockTarget: SocialTarget?
+    /// Declared-age confirmation for matching (owner decision: minimum age 13); the server refuses without it.
+    @State private var ageConfirmed = false
     @State private var reportTarget: SocialTarget?
     @State private var isLoading = true
     /// The spinner shows only before the first result; later reloads keep the section on screen.
@@ -218,12 +220,15 @@ struct BuddySection: View {
             Text(BuddyCopy.poolIntro)
                 .font(AlphonsoFont.sans(12))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+            Toggle(BuddyCopy.ageConfirm, isOn: $ageConfirmed)
+                .font(AlphonsoFont.sans(13))
+                .tint(AlphonsoColor.moss)
             ForEach(pool.courses, id: \.self) { course in
                 Button(BuddyCopy.findButton(course)) {
-                    Task { await run { try await $0.joinBuddyPool(course: course) } }
+                    Task { await run { try await $0.joinBuddyPool(course: course, ageConfirmed: ageConfirmed) } }
                 }
                 .tint(AlphonsoColor.moss)
-                .disabled(busy)
+                .disabled(busy || !ageConfirmed)
             }
         }
     }
@@ -294,9 +299,14 @@ struct BuddySection: View {
 
     /// Blocking a matched buddy ends the pair on the server (trigger); reload to show it.
     private func block(_ target: SocialTarget) async {
-        guard let client = await makeClient() else { return }
-        _ = try? await client.blockUser(target.id)
+        busy = true
+        defer { busy = false }
+        var blocked = false
+        if let client = await makeClient(), let result = try? await client.blockUser(target.id) {
+            blocked = result.ok
+        }
         await load()
+        if !blocked { message = BuddyCopy.statusMessage("unknown") }
     }
 
     /// Runs a buddy action, shows the server's answer in fixed wording, then reloads (busy until the reload lands, so

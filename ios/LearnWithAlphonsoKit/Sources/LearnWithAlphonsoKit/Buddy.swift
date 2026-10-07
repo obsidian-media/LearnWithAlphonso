@@ -87,6 +87,7 @@ public enum BuddyCopy {
         "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time."
     public static let stopLooking = "Stop looking"
     public static let matchedLabel = "Matched learner"
+    public static let ageConfirm = "I'm 13 or older"
 
     private static let courseNames = ["en": "English", "fr": "French", "es": "Spanish"]
 

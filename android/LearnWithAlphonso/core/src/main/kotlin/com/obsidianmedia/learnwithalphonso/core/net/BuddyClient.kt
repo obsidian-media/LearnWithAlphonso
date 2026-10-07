@@ -73,8 +73,9 @@ suspend fun ProgressSyncClient.cancelBuddyRequest(requestId: String): String =
 suspend fun ProgressSyncClient.endBuddy(): String = buddyStatus("end_buddy", buildJsonObject {})
 
 /** Opt in to be matched with another learner of this course at a similar level (Phase 3b). */
-suspend fun ProgressSyncClient.joinBuddyPool(course: String): String =
-    buddyStatus("join_buddy_pool", buildJsonObject { put("_course", course) })
+/** `ageConfirmed` is the learner's "I'm 13 or older" (owner decision: minimum age 13); the server answers "age_required" without it. */
+suspend fun ProgressSyncClient.joinBuddyPool(course: String, ageConfirmed: Boolean): String =
+    buddyStatus("join_buddy_pool", buildJsonObject { put("_course", course); put("_age_confirmed", ageConfirmed) })
 
 suspend fun ProgressSyncClient.leaveBuddyPool(): String = buddyStatus("leave_buddy_pool", buildJsonObject {})
 

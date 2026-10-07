@@ -99,7 +99,7 @@ Two test accounts that are friends (A and B).
 - [ ] Airplane mode, reopen Friends: "Couldn't load your study buddy." with Try again (never the ask list); turn the network back on, Try again recovers.
 - [ ] Paired: "Send B a message" opens the 8 presets (no text field anywhere). Pick "Nice work!": "Sent." appears and "You: Nice work!" shows in the history; B sees "A: Nice work!" within a minute while Friends is open.
 - [ ] Send 21 presets within an hour: the 21st answers "You've sent a lot of messages. Try again in a while."
-- [ ] Matching (two test accounts that are NOT friends, same course, similar level, neither with a buddy): A sees the opt-in explanation and "Find me a study buddy (English)"; tapping it shows "Looking for a study buddy learning English at your level." with Stop looking. B taps the same: both now show each other with "Matched learner" and the more-options menu (Block User / Report User).
+- [ ] Matching (two test accounts that are NOT friends, same course, similar level, neither with a buddy): A sees the opt-in explanation, an "I'm 13 or older" checkbox and "Find me a study buddy (English)" (disabled until the box is ticked); ticking it and tapping shows "Looking for a study buddy learning English at your level." with Stop looking. B taps the same: both now show each other with "Matched learner" and the more-options menu (Block User / Report User).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 

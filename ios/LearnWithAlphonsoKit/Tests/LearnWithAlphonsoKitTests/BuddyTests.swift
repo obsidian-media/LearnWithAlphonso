@@ -107,6 +107,7 @@ final class BuddyTests: XCTestCase {
         XCTAssertEqual(BuddyCopy.poolIntro, copy["poolIntro"] as? String)
         XCTAssertEqual(BuddyCopy.stopLooking, copy["stopLooking"] as? String)
         XCTAssertEqual(BuddyCopy.matchedLabel, copy["matchedLabel"] as? String)
+        XCTAssertEqual(BuddyCopy.ageConfirm, copy["ageConfirm"] as? String)
         for (code, name) in try XCTUnwrap(copy["courseNames"] as? [String: String]) {
             XCTAssertEqual(BuddyCopy.courseName(code), name)
         }

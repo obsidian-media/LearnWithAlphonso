@@ -52,8 +52,10 @@ extension ProgressSyncClient {
     }
 
     /// Opt in to be matched with another learner of this course at a similar level (Phase 3b).
-    public func joinBuddyPool(course: String) async throws -> String {
-        try await buddyStatus("join_buddy_pool", ["_course": course])
+    /// `ageConfirmed` is the learner's "I'm 13 or older" (owner decision: minimum age 13); the server answers
+    /// "age_required" without it.
+    public func joinBuddyPool(course: String, ageConfirmed: Bool) async throws -> String {
+        try await buddyStatus("join_buddy_pool", ["_course": course, "_age_confirmed": ageConfirmed])
     }
 
     public func leaveBuddyPool() async throws -> String {

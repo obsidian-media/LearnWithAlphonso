@@ -219,6 +219,7 @@ class BuddyTest {
         assertEquals(copy["poolIntro"]!!.jsonPrimitive.content, BuddyCopy.POOL_INTRO)
         assertEquals(copy["stopLooking"]!!.jsonPrimitive.content, BuddyCopy.STOP_LOOKING)
         assertEquals(copy["matchedLabel"]!!.jsonPrimitive.content, BuddyCopy.MATCHED_LABEL)
+        assertEquals(copy["ageConfirm"]!!.jsonPrimitive.content, BuddyCopy.AGE_CONFIRM)
         for ((code, name) in copy["courseNames"]!!.jsonObject) assertEquals(name.jsonPrimitive.content, BuddyCopy.courseName(code))
         val find = copy["findButton"]!!.jsonObject
         assertEquals(find["expected"]!!.jsonPrimitive.content, BuddyCopy.findButton(find["course"]!!.jsonPrimitive.content))
@@ -243,8 +244,8 @@ class BuddyTest {
                 else -> json("[]")
             }
         }
-        assertEquals("waiting", client(fake).joinBuddyPool("fr"))
-        assertEquals("""{"_course":"fr"}""", fake.seen[0].body)
+        assertEquals("waiting", client(fake).joinBuddyPool("fr", ageConfirmed = true))
+        assertEquals("""{"_course":"fr","_age_confirmed":true}""", fake.seen[0].body)
         assertEquals("left", client(fake).leaveBuddyPool())
         val pool = client(fake).getBuddyPool()
         assertEquals(true, pool.matchingEnabled)

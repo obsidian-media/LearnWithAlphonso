@@ -23,6 +23,9 @@ class BuddyViewModelTest {
     private val outgoingToCy =
         """{"request_id":"r2","direction":"outgoing","other_id":"u3","other_name":"Cy","other_avatar_seed":"ef","requested_at":"2026-10-06T00:00:00+00:00"}"""
 
+    /** What the server answers for an unpaired learner when matching is on and they study nothing yet. */
+    private val poolRow = """{"matching_enabled":true,"waiting":false,"course":null,"courses":[]}"""
+
     private fun friend(id: String, name: String) = FriendProgress(userId = id, displayName = name, avatarSeed = "a", streak = 0, weekXp = 0)
 
     @Test
@@ -30,6 +33,7 @@ class BuddyViewModelTest {
         val s = FakeServer { req ->
             when {
                 req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -46,6 +50,7 @@ class BuddyViewModelTest {
             when {
                 req.path.endsWith("get_my_buddy") ->
                     if (failing) json("[]", HttpStatusCode.InternalServerError) else json("[]")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -66,6 +71,7 @@ class BuddyViewModelTest {
             when {
                 req.path.endsWith("request_buddy") -> { asked = true; json("""[{"status":"requested"}]""") }
                 req.path.endsWith("get_buddy_requests") -> json(if (asked) "[${outgoingToCy.replace("u3", "u2")}]" else "[]")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -84,6 +90,7 @@ class BuddyViewModelTest {
             when {
                 req.path.endsWith("end_buddy") -> json("[]", HttpStatusCode.InternalServerError)
                 req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -99,6 +106,7 @@ class BuddyViewModelTest {
         val s = FakeServer { req ->
             when {
                 req.path.endsWith("request_buddy") -> json("""[{"status":"requested"}]""")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -118,6 +126,7 @@ class BuddyViewModelTest {
         val s = FakeServer { req ->
             when {
                 req.path.endsWith("get_buddy_requests") -> json("[$outgoingToCy]")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -136,6 +145,7 @@ class BuddyViewModelTest {
                 req.path.endsWith("get_buddy_messages") ->
                     if (failMessages) json("[]", HttpStatusCode.InternalServerError)
                     else json("""[{"message_id":"m1","sender_id":"u2","is_mine":false,"preset_id":"good_night","sent_at":"2026-10-07T00:00:00+00:00"}]""")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -154,6 +164,7 @@ class BuddyViewModelTest {
             when {
                 req.path.endsWith("get_my_buddy") -> json("[$buddyRow]")
                 req.path.endsWith("send_buddy_message") -> json("""[{"status":"sent"}]""")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
@@ -174,16 +185,17 @@ class BuddyViewModelTest {
                     if (failPool) json("[]", HttpStatusCode.InternalServerError)
                     else json("""[{"matching_enabled":true,"waiting":false,"course":null,"courses":["es"]}]""")
                 req.path.endsWith("join_buddy_pool") -> json("""[{"status":"waiting"}]""")
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
         val v = BuddyViewModel(s.progressClient)
         awaitTrue("loaded") { v.state.value.hasLoaded }
         assertEquals(listOf("es"), v.state.value.pool!!.courses)
-        v.join("es")
+        v.join("es", ageConfirmed = true)
         awaitTrue("answered") { v.state.value.message != null && !v.state.value.busy }
         assertEquals("You're on the list. We'll pair you with a learner at your level.", v.state.value.message)
-        assertEquals("""{"_course":"es"}""", s.seen.first { it.path.endsWith("join_buddy_pool") }.body)
+        assertEquals("""{"_course":"es","_age_confirmed":true}""", s.seen.first { it.path.endsWith("join_buddy_pool") }.body)
 
         failPool = true
         v.load()
@@ -198,6 +210,7 @@ class BuddyViewModelTest {
             when {
                 req.path.endsWith("get_my_buddy") -> json(if (blocked) "[]" else "[$matched]")
                 req.path.endsWith("block_user") -> { blocked = true; json("""[{"ok":true,"message":"blocked"}]""") }
+                req.path.endsWith("get_buddy_pool") -> json("[$poolRow]")
                 else -> json("[]")
             }
         }
