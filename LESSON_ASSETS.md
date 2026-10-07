@@ -9,14 +9,20 @@
 > above are current, the rest of this file is not. See `AGENTS.md`'s
 > Content Structure table for the authoritative numbers going forward.
 >
-> **The IMAGE ASSETS section below (§2) is superseded.** It describes a
-> planned category-based approach (`public/images/a1/greetings/`, stock
-> photos per topic) that was never built. What's actually implemented is
-> a completely different, working pipeline: `scripts/fetch-vocab-images.ts`
-> fetches a real image **per vocabulary term** (not per category) from
-> Pexels/Pixabay, and the results live in `src/data/vocab-images.ts`
-> (thousands of real URLs already in the codebase). Treat §2 as
-> historical context for the original plan, not a live checklist.
+> **The IMAGE ASSETS section below (§2) is superseded.** Vocab images are one
+> self-hosted photo **per vocabulary term**, defined in the generated
+> `src/data/vocab-images.ts` (App Store remediation W1, 2026-10). Pipeline:
+> `scripts/vocab-image-terms.ts` (imageable terms per
+> `scripts/vocab-imageability.json`; scope `scripts/vocab-images/scope-keys.json`)
+> → `scripts/fetch-vocab-images.ts` (Pexels/Pixabay, resized to 700px, staged
+> locally) → `scripts/vocab-image-review.ts` (agent visual review and second
+> pass, verdicts in `scripts/vocab-images/reviews/`) →
+> `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`)
+> → `scripts/write-vocab-images.ts` → owner sheet and
+> `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
+> `scripts/seed-vocab-images-db.ts`. `src/data/vocab-images.guard.test.ts`
+> enforces host, denylist, review stamp, imageability and sign-off on every PR,
+> and `.github/workflows/vocab-image-links.yml` checks every URL on PRs and weekly.
 >
 > **Audio (§1), Animations (§3), Icons (§4), Textures (§5), and Sound FX
 > (§6) all remain aspirational** — none of these have been built as of
