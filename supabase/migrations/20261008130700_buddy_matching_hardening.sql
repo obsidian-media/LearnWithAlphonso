@@ -1,4 +1,4 @@
--- W7, second scope addition 2026-10-07: stranger matching hardening (App Store guideline 1.2).
+-- Stranger matching hardening.
 -- Audit of 20261007120000_buddy_matching.sql: presets-only messages, block/report on the card, block ends the pair,
 -- no re-match, own-row RLS and the kill switch were already right (probe P9 pins each). Two gaps are closed here:
 --   * no rate limit: join_buddy_pool could be called without limit, and end_buddy + join cycles through strangers.
@@ -53,7 +53,7 @@ DECLARE
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
 
-  -- W7 addition 1: every call counts, refused ones included, so a client looping on an error is throttled too.
+  -- Rate limit: every call counts, refused ones included, so a client looping on an error is throttled too.
   DELETE FROM public.buddy_pool_attempts a WHERE a.user_id = me AND a.attempted_at < now() - interval '1 day';
   INSERT INTO public.buddy_pool_attempts (user_id) VALUES (me);
   IF (SELECT count(*) FROM public.buddy_pool_attempts a
@@ -64,7 +64,7 @@ BEGIN
   IF NOT coalesce(_age_confirmed, false) THEN
     RETURN QUERY SELECT 'age_required'::text; RETURN;
   END IF;
-  -- W7 addition 2: a durable record of the declared-age confirmation.
+  -- A durable record of the declared-age confirmation.
   INSERT INTO public.buddy_age_confirmations AS c (user_id) VALUES (me)
     ON CONFLICT (user_id) DO UPDATE SET last_confirmed_at = now(), confirmations = c.confirmations + 1;
 
@@ -78,7 +78,7 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = me) THEN
     RETURN QUERY SELECT 'already_paired'::text; RETURN;
   END IF;
-  -- W7 addition 3: at most 3 new matches per rolling 7 days.
+  -- At most 3 new matches per rolling 7 days.
   IF (SELECT count(*) FROM public.buddy_pairs bp
       WHERE bp.source = 'match' AND (bp.user_a = me OR bp.user_b = me) AND bp.created_at > now() - interval '7 days') >= 3 THEN
     RETURN QUERY SELECT 'match_limit'::text; RETURN;

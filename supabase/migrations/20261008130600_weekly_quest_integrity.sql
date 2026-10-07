@@ -1,9 +1,9 @@
--- W7, owner scope addition 2026-10-07: weekly quest integrity.
+-- Weekly quest integrity.
 --   1. claim_weekly_quest accepted any _week_start in the last 7 days, and the claim key includes week_start, so
---      the same quest could be claimed with 8 different "weeks" (W0 probe Q11). The week is now derived here (UTC
+--      the same quest could be claimed with 8 different "weeks". The week is now derived here (UTC
 --      ISO Monday) and any other value is 'invalid-week'.
 --   2. _course was not validated: an unknown course, or one with no language_progress row, returned ok and paid
---      nothing (W0 probe Q14). Now 'invalid-course' / 'no-course-progress', checked before anything is recorded.
+--      nothing. Now 'invalid-course' / 'no-course-progress', checked before anything is recorded.
 -- One claim per (user, quest, week) stays the key (the xp_earned quest counts all courses, so a per-course key
 -- would pay one week's XP three times); the paid course is recorded in the new course column.
 -- Rollback: re-run claim_weekly_quest from 20261006170000_fix_team_joins_and_course_aware_payouts.sql;

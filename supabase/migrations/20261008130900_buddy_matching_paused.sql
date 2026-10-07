@@ -1,4 +1,4 @@
--- W7 addendum A3 (owner decision O4, master plan 2b D-2): while matching is switched off
+-- While matching is switched off
 -- (UPDATE public.buddy_settings SET matching_enabled = false), matched-stranger pairs cannot send preset messages.
 -- Friend pairs are unaffected and every pair keeps its progress (counts, streak, grace). Turning the switch back on
 -- restores sending without any client release. Enforced here, so an old app build is muted too.
@@ -35,7 +35,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = me AND bm.pair_id = pid) THEN
     RETURN QUERY SELECT 'not_paired'::text; RETURN;
   END IF;
-  -- W7 A3 (O4): the kill switch also mutes matched-stranger pairs. Friend pairs keep sending.
+  -- The kill switch also mutes matched-stranger pairs. Friend pairs keep sending.
   IF EXISTS (SELECT 1 FROM public.buddy_pairs bp WHERE bp.id = pid AND bp.source = 'match')
      AND NOT coalesce((SELECT bs.matching_enabled FROM public.buddy_settings bs WHERE bs.id), false) THEN
     RETURN QUERY SELECT 'matching_paused'::text; RETURN;
@@ -85,7 +85,7 @@ BEGIN
     bp.grace_available,
     (SELECT bw.outcome FROM public.buddy_weeks bw WHERE bw.pair_id = bp.id ORDER BY bw.week_start DESC LIMIT 1),
     bp.source = 'match',
-    -- W7 A3 (O4): the live switch; clients hide the presets when is_match AND NOT matching_enabled.
+    -- The live switch; clients hide the presets when is_match AND NOT matching_enabled.
     coalesce((SELECT bs.matching_enabled FROM public.buddy_settings bs WHERE bs.id), false)
   FROM public.buddy_pairs bp
   JOIN public.profiles other ON other.id = CASE WHEN bp.user_a = me THEN bp.user_b ELSE bp.user_a END

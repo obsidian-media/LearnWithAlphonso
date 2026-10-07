@@ -1,4 +1,4 @@
--- W7 / L8: the last two security-advisor lints on functions.
+-- The last two security-advisor lints on functions.
 --   function_search_path_mutable: _random_team_name (blocked_moderation_terms is fixed in 20261008130000).
 --   anon_security_definer_function_executable: notify_nudge_push (a trigger function; it never needs EXECUTE for
 --     the trigger to fire: Postgres checks EXECUTE on a trigger function only at CREATE TRIGGER time).

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-// O3 (W7 addendum A1/A2): RLS limits direct reads of public.profiles to the caller's own row. A new direct read of
+// RLS limits direct reads of public.profiles to the caller's own row. A new direct read of
 // ANOTHER learner's row would silently return nothing and blank a screen. Every direct table access is listed here
 // with its count; changing a count means: confirm the new site reads only the caller's own row (or uses the service
 // role), then update this map in the same PR. Cross-user reads go through the SECURITY DEFINER RPCs instead.
@@ -28,7 +28,6 @@ const EXPECTED_SITES: Record<string, number> = {
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Profile.swift": 3,
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/SocialClient.kt": 3,
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProgressSyncClient.kt": 2,
-  // W3 adds: "src/lib/ai-consent.server.ts": 1 (own id), "supabase/functions/_shared/ai-consent.ts": 1 (service role).
 };
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -46,7 +45,7 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe("direct reads of public.profiles (O3)", () => {
+describe("direct reads of public.profiles", () => {
   it("match the reviewed list of own-row and service-role sites", () => {
     const found: Record<string, number> = {};
     for (const root of ROOTS) {

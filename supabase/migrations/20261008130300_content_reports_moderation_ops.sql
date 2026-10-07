@@ -1,13 +1,13 @@
--- W7 / L10 and master-plan contract 3.2: report kinds, structured context, and an email to the owner per report.
+-- Report kinds, structured context, and an email to the owner per report.
 --
 -- kind: 'user' (a person), 'team_name' (a team's name; context.team_id names the team; reported is the team's
--- creator), 'ai_response' (W3's "Report this response": no reported user; context carries source, course and the
+-- creator), 'ai_response' ("Report this response" on an AI reply: no reported user; context carries source, course and the
 -- AI message). Legacy iOS team-name reports encoded the team in reason as 'team_name:<uuid>:<reason>'; they are
 -- tagged below, and the admin app still parses the prefix for rows written by old builds after this migration.
 --
 -- notify_content_report: AFTER INSERT, posts the report to the Vercel route /api/internal/report-notify through
 -- pg_net (same mechanism as notify_nudge_push), authenticated by a shared secret read from Vault. Without the
--- Vault secret it does nothing (the owner creates it in Task 18). At most 10 notifications per reporter per hour.
+-- Vault secret it does nothing (the owner creates it). At most 10 notifications per reporter per hour.
 -- Any failure is a WARNING: a report is never lost because email is down.
 --
 -- Rollback (one transaction):

@@ -1,6 +1,6 @@
--- W7 / M23 DB half (App Store remediation): public display names are chosen, never derived from an email.
+-- Public display names are chosen, never derived from an email.
 --
--- 1. profiles.name_confirmed_at: NULL means W6's onboarding prompt still has to ask.
+-- 1. profiles.name_confirmed_at: NULL means the app's name prompt still has to ask.
 -- 2. generate_learner_handle(): 'Learner-' + 4 upper-case hex, the fallback public name. Handles are re-drawn
 --    until they pass the display-name filter.
 -- 3. handle_new_user never raises because of a name. Before this, a 41+ character Google full_name failed
@@ -9,7 +9,7 @@
 --    A candidate equal to the email's local part is ignored (web sign-up still sends it as metadata).
 -- 4. confirm_display_name(_name): the one validated path for a learner to set their public name.
 -- 5. Existing email-prefix names become handles (saved in display_name_migration_backup); everyone else is
---    marked confirmed so only migrated users see W6's prompt.
+--    marked confirmed so only migrated users see the name prompt.
 --
 -- Rollback (one transaction, before rolling back 20261008130000):
 --   ALTER TABLE public.profiles DISABLE TRIGGER enforce_display_name_filter;
@@ -146,7 +146,7 @@ $$;
 REVOKE ALL ON FUNCTION public.confirm_display_name(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.confirm_display_name(text) TO authenticated;
 
--- Admin "Reset display name" (L10): a fresh handle, and the learner is asked to choose again (W6 prompt).
+-- Admin "Reset display name": a fresh handle, and the learner is asked to choose again (name prompt).
 -- Service role only. Returns the new handle, or NULL when the profile no longer exists.
 CREATE OR REPLACE FUNCTION public.admin_reset_display_name(_user_id uuid)
 RETURNS text
@@ -168,7 +168,7 @@ $$;
 REVOKE ALL ON FUNCTION public.admin_reset_display_name(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_reset_display_name(uuid) TO service_role;
 
--- What the migration below changed, so it can be undone. Drop after 2026-11-08 (BACKLOG item, Task 19).
+-- What the migration below changed, so it can be undone. Drop after 2026-11-08.
 CREATE TABLE public.display_name_migration_backup (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   old_display_name text NOT NULL,

@@ -1,10 +1,9 @@
--- W7 addendum A8 (owner decision O6): existing public names that fail the new filter are reset, not left in place.
--- Display names become a fresh Learner-XXXX handle with name_confirmed_at = NULL (W6's prompt asks again); team names
+-- Existing public names that fail the new filter are reset, not left in place.
+-- Display names become a fresh Learner-XXXX handle with name_confirmed_at = NULL (the name prompt asks again); team names
 -- become a random team name. Both are backed up. The counts were shown to the owner before this file was committed
--- (W7 addendum A8 Step 2) and are written into the call at the bottom as a ceiling: if more rows fail at deploy time
+-- and are written into the call at the bottom as a ceiling: if more rows fail at deploy time
 -- (new sign-ups since the dry run), the migration aborts instead of renaming accounts nobody approved.
--- Also: generate_learner_handle now loops until the handle itself passes the filter (coordinator follow-up from W6:
--- never 'Learner-B00B').
+-- generate_learner_handle is restated here: it loops until the handle itself passes the filter.
 --
 -- Rollback (one transaction):
 --   ALTER TABLE public.profiles DISABLE TRIGGER enforce_display_name_filter;
@@ -63,7 +62,7 @@ REVOKE ALL ON FUNCTION public._safe_random_team_name() FROM PUBLIC, anon, authen
 GRANT EXECUTE ON FUNCTION public._safe_random_team_name() TO service_role;
 
 -- client-grants: none public.team_name_migration_backup
--- What the O6 reset changed for teams, so it can be undone. Drop after 2026-11-08 (BACKLOG, W7 A9).
+-- What the name reset changed for teams, so it can be undone. Drop after 2026-11-08.
 CREATE TABLE public.team_name_migration_backup (
   team_id uuid PRIMARY KEY REFERENCES public.teams(id) ON DELETE CASCADE,
   old_name text NOT NULL,
@@ -87,10 +86,10 @@ BEGIN
   SELECT count(*) INTO n_names FROM public.profiles p WHERE public.display_name_problem(p.display_name) IS NOT NULL;
   SELECT count(*) INTO n_teams FROM public.teams t
   WHERE public.team_name_problem(t.name) IS NOT NULL;
-  RAISE NOTICE 'O6 reset: % display names, % team names fail the filter (approved % and %)',
+  RAISE NOTICE 'Name reset: % display names, % team names fail the filter (approved % and %)',
     n_names, n_teams, _approved_names, _approved_teams;
   IF n_names > coalesce(_approved_names, 0) OR n_teams > coalesce(_approved_teams, 0) THEN
-    RAISE EXCEPTION 'o6-reset-not-approved: % names and % team names fail the filter; the owner approved % and %. Re-run W7 addendum A8 Step 2.',
+    RAISE EXCEPTION 'name-reset-not-approved: % names and % team names fail the filter; the owner approved % and %. Re-run the dry run and get a new approval.',
       n_names, n_teams, _approved_names, _approved_teams USING ERRCODE = 'P0001';
   END IF;
 
@@ -127,6 +126,6 @@ $$;
 REVOKE ALL ON FUNCTION public._reset_failing_public_names(integer, integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public._reset_failing_public_names(integer, integer) TO service_role;
 
--- Owner-approved counts from the A8 Step 2 dry run: 0 display names, 0 team names (owner OK 2026-10-07).
+-- Owner-approved counts from the dry run: 0 display names, 0 team names (owner OK 2026-10-07).
 SELECT * FROM public._reset_failing_public_names(0, 0);
 

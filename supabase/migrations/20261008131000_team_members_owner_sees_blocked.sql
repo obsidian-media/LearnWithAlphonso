@@ -1,4 +1,4 @@
--- W7 addendum A6 (owner decision O5): a blocked teammate is hidden from the blocker everywhere EXCEPT the team
+-- A blocked teammate is hidden from the blocker everywhere EXCEPT the team
 -- owner's kick list, where members the owner blocked appear with blocked = true ("Blocked") so the owner can remove
 -- them. A member who blocked the owner stays hidden from the owner (never disclose who blocked you). Non-owners keep
 -- 20261008130200's rule: blocks hide teammates in both directions. Base: get_team_members from 20261008130200.
@@ -42,7 +42,7 @@ BEGIN
       SELECT 1 FROM public.blocked_users bu
       WHERE (bu.blocker = tm.user_id AND bu.blocked = me)
     )
-    -- I blocked them: hidden, unless I own the team (O5: the owner must be able to remove them).
+    -- I blocked them: hidden, unless I own the team (the owner must be able to remove them).
     AND (i_own OR NOT EXISTS (
       SELECT 1 FROM public.blocked_users bu
       WHERE (bu.blocker = me AND bu.blocked = tm.user_id)

@@ -80,7 +80,7 @@ Grants for `anon` / `authenticated`, grouped by identical pattern. Every table l
 
 Default privileges for `postgres` in `public` before: tables `anon`, `authenticated`, `service_role` each `arwdDxtm`; sequences `rwU`; functions `X`. Only the table default changed. Rollback SQL is at the top of the migration.
 
-## W7 (2026-10-08)
+## Social, moderation and profile privacy (2026-10-08)
 
 - `profiles`: own-row SELECT policy (`profiles_select_own`, `20261008130800`) replaces the read-all policy. Other learners' public fields (display name, avatar seed, and the leaderboard's user-chosen country) are read only through relationship-scoped SECURITY DEFINER RPCs; no view. `src/lib/profile-exposure.test.ts` and `src/lib/profile-read-sites.test.ts` keep it that way.
 - Service-only functions: the moderation helpers and term lists, `_random_team_name`, `notify_nudge_push`, `_new_join_code`, `generate_learner_handle`, `_safe_random_team_name`, `admin_rename_team`, `admin_reset_display_name`, `_reset_failing_public_names`. The only new client-callable functions are `display_name_problem` and `confirm_display_name`.

@@ -1,4 +1,4 @@
--- W7 / L4: a user blocked in either direction no longer appears in the caller's team member list.
+-- A user blocked in either direction no longer appears in the caller's team member list.
 -- get_team_members from 20260930110000_team_members_and_kick.sql, unchanged except the NOT EXISTS filter.
 -- Rollback: re-run CREATE FUNCTION public.get_team_members() from 20260930110000_team_members_and_kick.sql as
 -- CREATE OR REPLACE.

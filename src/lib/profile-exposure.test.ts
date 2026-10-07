@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-// Owner decision O3 (W7 addendum A1): other learners see only display_name and avatar_seed (and the leaderboard's
+// Other learners see only display_name and avatar_seed (and the leaderboard's
 // user-chosen country). RLS now limits direct reads to the caller's own row, but SECURITY DEFINER functions and
 // default-security views bypass RLS, so this guard reads the LATEST definition of every function in the
 // migrations and fails when one reads a sensitive profiles column without an allowlisted reason.
@@ -22,34 +22,34 @@ const ALLOWED: Record<string, { cols: string[]; ownRowOnly: boolean; why: string
   get_leaderboard: {
     cols: ["country"],
     ownRowOnly: false,
-    why: "Country board filter and per-row country label (user-chosen; W9 discloses)",
+    why: "Country board filter and per-row country label (user-chosen; disclosed in the privacy policy)",
   },
   get_ai_consent: {
     cols: ["ai_consent_at"],
     ownRowOnly: true,
-    why: "W3: the caller's own consent",
+    why: "the caller's own AI consent",
   },
   set_ai_consent: {
     cols: ["ai_consent_at"],
     ownRowOnly: true,
-    why: "W3: the caller's own consent",
+    why: "the caller's own AI consent",
   },
   get_my_name_status: {
     cols: ["name_confirmed_at"],
     ownRowOnly: true,
-    why: "W6: the caller's own prompt state",
+    why: "the caller's own name-prompt state",
   },
-  skip_display_name_prompt: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "W6" },
-  confirm_display_name: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "W7 Task 3" },
+  skip_display_name_prompt: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "the caller's own name-prompt state" },
+  confirm_display_name: { cols: ["name_confirmed_at"], ownRowOnly: true, why: "the caller confirms their own name" },
   admin_reset_display_name: {
     cols: ["name_confirmed_at"],
     ownRowOnly: false,
-    why: "service role only (W7 Task 3)",
+    why: "service role only (admin name reset)",
   },
   _reset_failing_public_names: {
     cols: ["name_confirmed_at"],
     ownRowOnly: false,
-    why: "service role only (W7 A8)",
+    why: "service role only (one-time name reset)",
   },
 };
 
@@ -108,7 +108,7 @@ export function hasUnaliasedProfileRef(body: string): boolean {
   return [...body.matchAll(PROFILES_REF)].some((m) => !m[1] || KEYWORDS.has(m[1].toLowerCase()));
 }
 
-describe("profile exposure through SQL (O3)", () => {
+describe("profile exposure through SQL", () => {
   it("no function reads a sensitive profiles column unless allowlisted with a reason", () => {
     const offenders: string[] = [];
     for (const [name, body] of latestFunctions()) {

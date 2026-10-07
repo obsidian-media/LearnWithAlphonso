@@ -1,4 +1,4 @@
--- W7, owner scope addition 2026-10-07: team integrity.
+-- Team integrity.
 --   3. leave_team let the owner leave and orphaned the team. Now ONE trigger (team_after_member_removed) covers
 --      leave, kick, switching teams and account deletion: when the removed member owned the team, or the team had
 --      no owner, the earliest joiner becomes owner; when nobody is left, the team is closed. leave_team says which.

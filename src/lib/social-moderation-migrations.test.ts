@@ -30,7 +30,7 @@ function fn(file: string, name: string): string {
 }
 const header = (stmt: string) => stmt.slice(0, stmt.indexOf("$$"));
 
-describe("W7 migrations: ordering", () => {
+describe("social and moderation migrations: ordering", () => {
   it("are unique, in order, and after buddy matching", () => {
     const all = fs.readdirSync(DIR).filter((f) => f.endsWith(".sql"));
     const ours = Object.values(FILES);
@@ -320,7 +320,7 @@ describe("content reports moderation ops", () => {
   });
 });
 
-describe("function grants hardening (L8)", () => {
+describe("function grants hardening", () => {
   it("pins _random_team_name's search_path and revokes both functions from every client role", () => {
     const sql = read(FILES.grants);
     expect(sql).toContain("ALTER FUNCTION public._random_team_name() SET search_path = '';");
@@ -331,7 +331,7 @@ describe("function grants hardening (L8)", () => {
       "REVOKE ALL ON FUNCTION public.notify_nudge_push() FROM PUBLIC, anon, authenticated;",
     );
   });
-  it("every W7 function revokes PUBLIC (a CREATE OR REPLACE never removes the default PUBLIC grant)", () => {
+  it("every function in these migrations revokes PUBLIC (a CREATE OR REPLACE never removes the default PUBLIC grant)", () => {
     for (const file of Object.values(FILES)) {
       const sql = read(file);
       for (const m of sql.matchAll(/CREATE OR REPLACE FUNCTION public\.([a-z_0-9]+)\(/g)) {
@@ -449,8 +449,8 @@ describe("buddy matching hardening", () => {
   });
 });
 
-describe("W7 addendum: migration window", () => {
-  it("every W7 file sorts after W1's reserved slot (20261008120000) and before W3's consent migration", () => {
+describe("migration window", () => {
+  it("every file sorts after the storage migration slot (20261008120000) and before the consent migration", () => {
     for (const f of Object.values(FILES)) {
       expect(f.slice(0, 14) >= "20261008130000", f).toBe(true);
       expect(f < "20261009100000_ai_consent.sql", f).toBe(true);
@@ -458,7 +458,7 @@ describe("W7 addendum: migration window", () => {
   });
 });
 
-describe("profiles own-row read (A1, O3)", () => {
+describe("profiles own-row read", () => {
   const sql = () => read(FILES.profilesOwnRow);
   it("drops the read-all policy and adds an own-row SELECT policy for authenticated", () => {
     expect(sql()).toContain('DROP POLICY IF EXISTS "profiles_read_all_auth" ON public.profiles;');
@@ -482,7 +482,7 @@ describe("profiles own-row read (A1, O3)", () => {
   });
 });
 
-describe("kill switch mutes matched pairs (A3, O4)", () => {
+describe("kill switch mutes matched pairs", () => {
   const file = FILES.matchingPaused;
   it("send_buddy_message refuses a match pair while the switch is off, after the pair check and before the rate limit", () => {
     const stmt = fn(file, "send_buddy_message");
@@ -513,7 +513,7 @@ describe("kill switch mutes matched pairs (A3, O4)", () => {
   });
 });
 
-describe("owner sees blocked members to kick them (A6, O5)", () => {
+describe("owner sees blocked members to kick them", () => {
   const file = FILES.ownerSeesBlocked;
   it("adds blocked, shows the owner's own blocks only to the owner, hides blocks of the owner", () => {
     const stmt = fn(file, "get_team_members");
@@ -527,7 +527,7 @@ describe("owner sees blocked members to kick them (A6, O5)", () => {
   });
 });
 
-describe("O6 reset of failing names (A8)", () => {
+describe("reset of failing names", () => {
   const file = FILES.nameReset;
   it("handles loop until they pass the filter", () => {
     const stmt = fn(file, "generate_learner_handle");
@@ -539,8 +539,8 @@ describe("O6 reset of failing names (A8)", () => {
   });
   it("the reset refuses to run past the owner-approved counts and is service-only", () => {
     const stmt = fn(file, "_reset_failing_public_names");
-    expect(stmt).toContain("o6-reset-not-approved");
-    expect(stmt.indexOf("o6-reset-not-approved")).toBeLessThan(
+    expect(stmt).toContain("name-reset-not-approved");
+    expect(stmt.indexOf("name-reset-not-approved")).toBeLessThan(
       stmt.indexOf("UPDATE public.profiles"),
     );
     expect(stmt).toContain("name_confirmed_at = NULL");

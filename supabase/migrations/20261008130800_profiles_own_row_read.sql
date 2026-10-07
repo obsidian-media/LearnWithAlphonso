@@ -1,7 +1,7 @@
--- W7 addendum A1 (owner decision O3, master plan 2b D-3): a signed-in user reads only their OWN profile row.
+-- A signed-in user reads only their OWN profile row.
 --
 -- Before: profiles_read_all_auth (USING (true)) let any signed-in user read every column of every profile:
--- country, theme, created_at, updated_at, active_language, and after W7/W3 name_confirmed_at and ai_consent_at.
+-- country, theme, created_at, updated_at, active_language, and newer columns such as name_confirmed_at.
 -- A matched stranger got the buddy's id from get_my_buddy and could read that row.
 --
 -- After: own row only. Every cross-user read in the product already goes through a SECURITY DEFINER RPC that
@@ -22,5 +22,5 @@ CREATE POLICY profiles_select_own ON public.profiles
   USING ((SELECT auth.uid()) = id);
 
 COMMENT ON POLICY profiles_select_own ON public.profiles IS
-  'O3: own row only. Other learners are read through relationship-scoped SECURITY DEFINER RPCs (W7 addendum A1).';
+  'Own row only. Other learners are read through relationship-scoped SECURITY DEFINER RPCs.';
 
