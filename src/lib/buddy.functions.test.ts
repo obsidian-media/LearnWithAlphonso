@@ -31,6 +31,9 @@ const {
   endBuddy,
   sendBuddyMessage,
   getBuddyMessages,
+  joinBuddyPool,
+  leaveBuddyPool,
+  getBuddyPool,
 } = asTestFns(await import("./buddy.functions"));
 
 const FRIEND = "3f2b6c1e-8a4d-4c7e-9b1a-2d5e6f708192";
@@ -76,6 +79,7 @@ describe("getMyBuddy", () => {
         streak_weeks: 4,
         grace_available: false,
         last_outcome: "grace",
+        is_match: true,
       },
     ]);
     await expect(getMyBuddy({ context: ctx(supabase) })).resolves.toEqual({
@@ -91,6 +95,7 @@ describe("getMyBuddy", () => {
       streakWeeks: 4,
       graceAvailable: false,
       lastOutcome: "grace",
+      isMatch: true,
     });
   });
 });
@@ -262,5 +267,50 @@ describe("getBuddyMessages", () => {
     await expect(getBuddyMessages({ context: ctx(rpcFailing()) })).rejects.toThrow(
       "getBuddyMessages: boom",
     );
+  });
+});
+
+describe("buddy matching", () => {
+  it("joins the pool for a course and returns the server's status", async () => {
+    const supabase = rpcReturning([{ status: "waiting" }]);
+    await expect(
+      joinBuddyPool({ context: ctx(supabase), data: { course: "fr" } }),
+    ).resolves.toEqual({ status: "waiting" });
+    expect(supabase.rpc).toHaveBeenCalledWith("join_buddy_pool", { _course: "fr" });
+  });
+
+  it("refuses a course the app does not offer before calling the server", async () => {
+    const supabase = rpcReturning([]);
+    await expect(
+      joinBuddyPool({ context: ctx(supabase), data: { course: "de" } }),
+    ).rejects.toThrow();
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("leaves the pool", async () => {
+    const supabase = rpcReturning([{ status: "left" }]);
+    await expect(leaveBuddyPool({ context: ctx(supabase) })).resolves.toEqual({ status: "left" });
+    expect(supabase.rpc).toHaveBeenCalledWith("leave_buddy_pool");
+  });
+
+  it("reads the pool status", async () => {
+    const supabase = rpcReturning([
+      { matching_enabled: true, waiting: true, course: "en", courses: ["en", "fr"] },
+    ]);
+    await expect(getBuddyPool({ context: ctx(supabase) })).resolves.toEqual({
+      matchingEnabled: true,
+      waiting: true,
+      course: "en",
+      courses: ["en", "fr"],
+    });
+  });
+
+  it("throws on an RPC error (never 'matching is off' or 'not waiting' by accident)", async () => {
+    await expect(getBuddyPool({ context: ctx(rpcFailing()) })).rejects.toThrow(
+      "getBuddyPool: boom",
+    );
+    await expect(
+      joinBuddyPool({ context: ctx(rpcFailing()), data: { course: "en" } }),
+    ).rejects.toThrow("joinBuddyPool: boom");
   });
 });
