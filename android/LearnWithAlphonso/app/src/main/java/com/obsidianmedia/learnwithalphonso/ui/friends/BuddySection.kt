@@ -140,13 +140,14 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>) {
     var confirmingEnd by remember { mutableStateOf(false) }
     var choosingPreset by remember { mutableStateOf(false) }
 
-    // Refreshes every minute while the screen is visible (no realtime socket, spec Part 3); stops in the background.
+    // Refreshes when the screen comes back and every minute while it is visible (no realtime socket); stops in the background.
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(vm, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            // Load on every return to the foreground, then every minute while visible.
             while (true) {
-                delay(60_000)
                 vm.load()
+                delay(60_000)
             }
         }
     }
