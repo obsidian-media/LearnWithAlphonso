@@ -15,13 +15,35 @@ public struct VocabItem: Sendable, Equatable {
 }
 
 /// Mirrors src/data/vocab-images.ts's `VocabImage` type exactly -- a
-/// Pexels stock-photo reference (URL/alt-text/credit, no image bytes
-/// bundled). Images themselves load from Pexels' CDN at runtime via
-/// AsyncImage, same as the web's `<img src=...>`.
+/// self-hosted, reviewed stock photo (URL/alt-text/credit plus provenance, no
+/// image bytes bundled). Images load from the project's vocab-images bucket at
+/// runtime via AsyncImage, same as the web's `<VocabImage>`.
 public struct VocabImageRef: Decodable, Sendable, Equatable {
     public let url: String
     public let alt: String
     public let credit: String
+    /// Provenance (App Store remediation W1). Optional so older bundles and
+    /// test fixtures still decode; the web guard test requires them in data.
+    public let source: String?
+    public let sourcePageUrl: String?
+    public let license: String?
+    public let reviewedBy: String?
+    public let reviewedAt: String?
+
+    public init(
+        url: String, alt: String, credit: String,
+        source: String? = nil, sourcePageUrl: String? = nil, license: String? = nil,
+        reviewedBy: String? = nil, reviewedAt: String? = nil
+    ) {
+        self.url = url
+        self.alt = alt
+        self.credit = credit
+        self.source = source
+        self.sourcePageUrl = sourcePageUrl
+        self.license = license
+        self.reviewedBy = reviewedBy
+        self.reviewedAt = reviewedAt
+    }
 }
 
 /// "reorder" questions are about sentence structure, not a single
