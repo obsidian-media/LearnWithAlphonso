@@ -1,6 +1,6 @@
 name: Vocab image links
 
-# App Store remediation W1 (B2): every vocab image URL must resolve. Runs on PRs
+# App Store review fix: every vocab image URL must resolve. Runs on PRs
 # that touch the data or the checker, and weekly so a bucket or CDN problem is
 # caught even when nobody edits the file. Deliberately standalone: no job
 # `needs` this, so a red result never blocks deploy-supabase or a web deploy.

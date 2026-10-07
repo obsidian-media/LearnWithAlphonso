@@ -1,5 +1,5 @@
 /**
- * Controlled reseed of public.vocab_images ONLY: the spec 3.5 freeze exception for W1.
+ * Controlled reseed of public.vocab_images ONLY: the spec 3.5 freeze exception for this pipeline.
  * Never run scripts/seed-curriculum-db.ts during the freeze. OWNER-RUN (service role).
  * Dry run unless --apply.
  *   export SUPABASE_URL=https://qhcjpfbxfcltjbiuknyt.supabase.co

@@ -11,7 +11,7 @@
 >
 > **The IMAGE ASSETS section below (§2) is superseded.** Vocab images are one
 > self-hosted photo **per vocabulary term**, defined in the generated
-> `src/data/vocab-images.ts` (App Store remediation W1, 2026-10). Pipeline:
+> `src/data/vocab-images.ts` (App Store review fix, 2026-10). Pipeline:
 > `scripts/vocab-image-terms.ts` (imageable terms per
 > `scripts/vocab-imageability.json`; scope `scripts/vocab-images/scope-keys.json`)
 > → `scripts/fetch-vocab-images.ts` (Pexels/Pixabay, resized to 700px, staged

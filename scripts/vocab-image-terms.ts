@@ -1,5 +1,5 @@
 /**
- * W1 plan stage: in-scope, imageable vocab terms -> scripts/vocab-images/work/manifest.json.
+ * Vocab image plan stage: in-scope, imageable vocab terms -> scripts/vocab-images/work/manifest.json.
  * Keeps fetch/review progress for unchanged terms; drops terms no longer imageable.
  *   bun scripts/vocab-image-terms.ts
  */

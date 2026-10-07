@@ -1,5 +1,5 @@
 /**
- * W1 upload stage. OWNER-RUN: needs the service-role key, which an agent never handles.
+ * Vocab image upload stage. OWNER-RUN: needs the service-role key, which an agent never handles.
  *   cd <worktree>
  *   export SUPABASE_URL=https://qhcjpfbxfcltjbiuknyt.supabase.co
  *   read -rs SUPABASE_SERVICE_ROLE_KEY && export SUPABASE_SERVICE_ROLE_KEY   # silent prompt, stays out of history

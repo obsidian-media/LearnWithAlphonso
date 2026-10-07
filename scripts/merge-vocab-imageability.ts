@@ -1,5 +1,5 @@
 /**
- * W1: merges classifier-subagent results into scripts/vocab-imageability.json.
+ * Vocab image: merges classifier-subagent results into scripts/vocab-imageability.json.
  *   bun scripts/merge-vocab-imageability.ts scripts/vocab-images/work/imageability/fr-01.result.json [...]
  * Each <id>.result.json is checked against its <id>.json batch. Any problem -> nothing written, exit 1.
  */

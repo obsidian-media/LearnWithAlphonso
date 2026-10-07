@@ -1,5 +1,5 @@
--- Public bucket for self-hosted vocab-card images (App Store remediation W1,
--- audit items B1/B2). Objects live at <lang>/<slug>.jpg and are written ONLY by
+-- Public bucket for self-hosted vocab-card images (App Store review fix,
+-- audit items). Objects live at <lang>/<slug>.jpg and are written ONLY by
 -- the service-role pipeline (scripts/upload-vocab-images.ts), after visual
 -- review. Clients read through the public object URL, which needs no
 -- storage.objects policy. Deliberately there is NO policy on storage.objects

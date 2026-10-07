@@ -4,7 +4,7 @@ import { isRenderableVocabImageUrl } from "../lib/vocab-images/url-policy";
 type Phase = "loading" | "loaded" | "failed";
 
 /**
- * The one way the web app shows a vocab image (App Store remediation W1, B2).
+ * The one way the web app shows a vocab image (App Store review fix, 2026-10).
  * - Neutral placeholder only while loading.
  * - On failure the WHOLE slot collapses: no blank box, no broken-image icon.
  * - Only self-hosted bucket URLs ever render (url-policy.ts).

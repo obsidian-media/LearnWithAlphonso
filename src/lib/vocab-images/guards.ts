@@ -6,7 +6,7 @@ import { isSourcePageUrl, parseVocabImageUrl } from "./url-policy";
 
 type Images = Record<string, VocabImageRecord>;
 
-/** Spec W1 guard 2, extended. Whole-word, case-insensitive. Kitchen "knife" is deliberately absent. */
+/** Spec guard 2, extended. Whole-word, case-insensitive. Kitchen "knife" is deliberately absent. */
 export const ALT_CREDIT_DENYLIST: readonly string[] = [
   "nude",
   "nudes",

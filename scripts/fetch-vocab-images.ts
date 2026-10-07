@@ -1,5 +1,5 @@
 /**
- * W1 fetch stage. For every manifest entry in "pending-fetch": search Pexels,
+ * Vocab image fetch stage. For every manifest entry in "pending-fetch": search Pexels,
  * then Pixabay (safe search); pick the first clean, big-enough, not-rejected
  * photo; download it ONCE; resize to 700px JPEG without metadata; stage it in
  * scripts/vocab-images/work/staging/<lang>/<slug>-<sha8>.jpg. Never uploads,

@@ -1,5 +1,5 @@
 /**
- * W1 render stage: manifest (uploaded entries) -> src/data/vocab-images.ts, prettier-formatted.
+ * Vocab image render stage: manifest (uploaded entries) -> src/data/vocab-images.ts, prettier-formatted.
  * Refuses while any entry is unsettled or still awaits its second pass.
  *   bun scripts/write-vocab-images.ts
  */

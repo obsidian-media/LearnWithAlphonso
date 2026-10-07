@@ -10,7 +10,7 @@ import {
 
 export const MAX_FETCH_ATTEMPTS = 3;
 
-/** Spec W1 rejection criteria, one code each, plus the owner's own objection. */
+/** Spec rejection criteria, one code each, plus the owner's own objection. */
 export const REJECTION_REASONS = [
   "nudity-or-suggestive",
   "violence-weapons-disaster-injury",

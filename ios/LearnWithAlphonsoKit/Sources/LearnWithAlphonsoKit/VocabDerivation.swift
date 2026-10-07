@@ -22,7 +22,7 @@ public struct VocabImageRef: Decodable, Sendable, Equatable {
     public let url: String
     public let alt: String
     public let credit: String
-    /// Provenance (App Store remediation W1). Optional so older bundles and
+    /// Provenance (App Store review fix, 2026-10). Optional so older bundles and
     /// test fixtures still decode; the web guard test requires them in data.
     public let source: String?
     public let sourcePageUrl: String?

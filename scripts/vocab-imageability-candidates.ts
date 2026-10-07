@@ -1,5 +1,5 @@
 /**
- * W1: writes classification batches for every in-scope term the
+ * Vocab image: writes classification batches for every in-scope term the
  * classifier cannot decide yet (reason "not-listed" or "no-query").
  *
  *   bun scripts/vocab-imageability-candidates.ts --init-scope   # once: legacy keys -> scope-keys.json

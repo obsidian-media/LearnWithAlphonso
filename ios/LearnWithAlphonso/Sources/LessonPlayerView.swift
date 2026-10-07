@@ -884,7 +884,7 @@ private struct VocabScreen: View {
     }
 }
 
-/// The one way the iOS app shows a vocab image (App Store remediation W1, B2).
+/// The one way the iOS app shows a vocab image (App Store review fix, 2026-10).
 /// A neutral placeholder only while loading. On failure, or for any URL outside
 /// the self-hosted bucket, the slot collapses entirely: no blank box. Shared by
 /// VocabScreen's card image, OverviewScreen's thumbnails (`thumbnailSize`) and

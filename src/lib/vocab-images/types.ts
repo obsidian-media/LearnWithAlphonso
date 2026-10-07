@@ -12,7 +12,7 @@ export const LICENSE_FOR_SOURCE: Record<VocabImageSource, string> = {
 };
 
 /**
- * One vocab-card image (App Store remediation W1). Self-hosted in the
+ * One vocab-card image (App Store review fix, 2026-10). Self-hosted in the
  * `vocab-images` bucket, visually reviewed, provenance recorded. Every
  * field is required: src/data/vocab-images.guard.test.ts enforces the
  * values, the type enforces their presence.

@@ -2,7 +2,7 @@ import Foundation
 
 /// Whether a vocab image slot takes space at all. There is no "blank" case:
 /// a slot either shows (placeholder while loading, then the image) or
-/// collapses (App Store remediation W1, B2).
+/// collapses (App Store review fix, 2026-10).
 public enum VocabImageSlot: Sendable, Equatable {
     case visible
     case collapsed

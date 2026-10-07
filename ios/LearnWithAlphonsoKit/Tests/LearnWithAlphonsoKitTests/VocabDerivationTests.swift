@@ -91,7 +91,7 @@ final class VocabDerivationTests: XCTestCase {
         XCTAssertNil(vocab.first?.image)
     }
 
-    // MARK: - provenance fields (App Store remediation W1)
+    // MARK: - provenance fields (App Store review fix, 2026-10)
 
     func testDecodesAVocabImageWithProvenanceFields() throws {
         let json = #"{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:w1-review-r1-b001","reviewedAt":"2026-10-08"}"#

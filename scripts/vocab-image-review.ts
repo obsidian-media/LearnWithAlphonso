@@ -1,5 +1,5 @@
 /**
- * W1 review CLI (coordinator-run; the reviewers are subagents).
+ * Vocab image review CLI (coordinator-run; the reviewers are subagents).
  *   bun scripts/vocab-image-review.ts batches [--size 40] [--round r1]
  *   bun scripts/vocab-image-review.ts second-pass [--size 40] [--round r1]
  *   bun scripts/vocab-image-review.ts apply <work/review/<batch>.verdicts.json> [...]
