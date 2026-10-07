@@ -1,6 +1,6 @@
 import type { Lesson, Question } from "./curriculum";
 import { getCourse, type Course } from "./courses";
-import { VOCAB_IMAGES } from "./vocab-images";
+import { VOCAB_IMAGES, type VocabImage } from "./vocab-images";
 
 export type VocabItem = {
   /** The word, phrase or form to learn. */
@@ -9,8 +9,8 @@ export type VocabItem = {
   meaning: string;
   /** A model sentence showing the term in use. */
   example: string;
-  /** Stock photo illustrating the term, when one exists in VOCAB_IMAGES. */
-  image?: { url: string; alt: string; credit: string };
+  /** Self-hosted, reviewed photo illustrating the term, when one exists in VOCAB_IMAGES. */
+  image?: VocabImage;
 };
 
 /** "reorder", "listening" and "speak" questions are about sentence structure,

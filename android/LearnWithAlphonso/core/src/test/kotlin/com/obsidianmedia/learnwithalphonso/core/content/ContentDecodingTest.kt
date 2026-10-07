@@ -34,6 +34,13 @@ class ContentDecodingTest {
     }
 
     @Test
+    fun `every bundled vocab image is self-hosted and reviewed`() {
+        val prefix = "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/"
+        val bad = store.vocabImages.filterValues { !it.url.startsWith(prefix) || it.reviewedBy == null }.keys
+        assertEquals(emptySet<String>(), bad)
+    }
+
+    @Test
     fun `every question type in the english bundle decodes to its own case`() {
         val kinds = store.bundle(Course.ENGLISH).units
             .flatMap { it.lessons }

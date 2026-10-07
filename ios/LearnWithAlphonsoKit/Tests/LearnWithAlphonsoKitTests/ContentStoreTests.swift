@@ -57,9 +57,13 @@ final class ContentStoreTests: XCTestCase {
 
     func testLoadsVocabImages() throws {
         let store = try ContentStore()
-        XCTAssertGreaterThan(store.vocabImages.count, 1000, "src/data/vocab-images.ts has ~1,900 entries")
-        let children = try XCTUnwrap(store.vocabImages["children"], "vocab-images.ts's first entry should be keyed 'children'")
-        XCTAssertTrue(children.url.hasPrefix("https://images.pexels.com/"))
+        XCTAssertGreaterThan(store.vocabImages.count, 100, "the reviewed set from src/data/vocab-images.ts")
+        let doctor = try XCTUnwrap(store.vocabImages["doctor"], "curriculum.ts's only imageKey must keep its image")
+        XCTAssertTrue(VocabImagePolicy.isRenderable(doctor.url))
+        let notSelfHosted = store.vocabImages.filter { !VocabImagePolicy.isRenderable($0.value.url) }.map(\.key)
+        XCTAssertEqual(notSelfHosted, [], "every bundled vocab image must be in the vocab-images bucket")
+        let unreviewed = store.vocabImages.filter { $0.value.reviewedBy == nil || $0.value.reviewedAt == nil }.map(\.key)
+        XCTAssertEqual(unreviewed, [])
     }
 
     func testLoadsThePlacementPoolForEveryCourseWithEveryBandRepresented() throws {
