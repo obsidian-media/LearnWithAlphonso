@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { checkNewTableGrants } from "./migration-grants";
 
 const DIR = path.join(process.cwd(), "supabase", "migrations");
 const FILES = {
   filter: "20261008130000_moderation_filter_v2.sql",
+  names: "20261008130100_display_name_onboarding.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -109,5 +111,43 @@ describe("moderation filter v2", () => {
 
   it("the trigger raises 23514 with the blocked-content code clients map", () => {
     expect(fn(file, "enforce_display_name_filter")).toContain("RAISE EXCEPTION 'blocked-content' USING ERRCODE = '23514';");
+  });
+});
+
+describe("display-name onboarding", () => {
+  const file = FILES.names;
+
+  it("adds name_confirmed_at as a nullable column", () => {
+    expect(read(file)).toContain("ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name_confirmed_at timestamptz NULL;");
+  });
+
+  it("confirm_display_name is a definer RPC only signed-in users may call", () => {
+    const stmt = fn(file, "confirm_display_name");
+    expect(header(stmt)).toMatch(/RETURNS text\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = public/);
+    expect(stmt).toContain("public.display_name_problem(_name)");
+    expect(stmt).toContain("name_confirmed_at = now()");
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.confirm_display_name(text) FROM PUBLIC, anon;");
+    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.confirm_display_name(text) TO authenticated;");
+  });
+
+  it("generate_learner_handle has no client EXECUTE and the documented shape", () => {
+    const stmt = fn(file, "generate_learner_handle");
+    expect(stmt).toContain("'Learner-' || upper(substr(md5(");
+    expect(stmt).toMatch(/FOR i IN 1\.\.50 LOOP/);
+    expect(stmt).toContain("public.display_name_problem(candidate) IS NULL");
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.generate_learner_handle() FROM PUBLIC, anon, authenticated;");
+  });
+
+  it("handle_new_user falls back to a handle and never raises a name error", () => {
+    const stmt = fn(file, "handle_new_user");
+    expect(stmt).not.toMatch(/RAISE\s+EXCEPTION/);
+    expect(stmt).toContain("public.generate_learner_handle()");
+    expect(stmt).toContain("lower(split_part(NEW.email, '@', 1))");
+    expect(stmt).toMatch(/EXCEPTION WHEN check_violation OR raise_exception THEN/);
+  });
+
+  it("the backup table is service-only and the grant guard accepts the file", () => {
+    expect(read(file)).toContain("-- client-grants: none public.display_name_migration_backup");
+    expect(checkNewTableGrants(read(file))).toEqual([]);
   });
 });
