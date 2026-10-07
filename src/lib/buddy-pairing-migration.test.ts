@@ -89,4 +89,18 @@ describe("buddy pairing migration", () => {
   it("serialises week resolution per pair so two buddies opening the app at once resolve each week once", () => {
     expect(sql()).toMatch(/FROM public\.buddy_pairs bp WHERE bp\.id = _pair FOR UPDATE;/);
   });
+
+  it("never records 'blocked' where the blocked person can read it (a block ends the pair as 'unfriended')", () => {
+    // blocked_users is readable only by the blocker; buddy_pairs is readable (and exported) to both buddies.
+    expect(sql()).toMatch(/ended_reason text CHECK \(ended_reason IN \('ended', 'unfriended'\)\)/);
+    expect(sql()).toMatch(/_end_buddy_pair_between\(NEW\.blocker, NEW\.blocked, 'unfriended'\)/);
+    expect(sql()).not.toMatch(/'blocked'\)/);
+  });
+
+  it("get_my_buddy never returns a pair that ended while it waited for the pair lock", () => {
+    const body = sql().slice(sql().indexOf("CREATE OR REPLACE FUNCTION public.get_my_buddy()"));
+    expect(body.slice(0, body.indexOf("$$;"))).toMatch(
+      /WHERE bp\.id = pid AND bp\.ended_at IS NULL;/,
+    );
+  });
 });

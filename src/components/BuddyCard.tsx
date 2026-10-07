@@ -23,26 +23,48 @@ function useBuddyQueries() {
   return { buddy, requests };
 }
 
+type BuddyQueries = ReturnType<typeof useBuddyQueries>;
+
+// When the two queries last changed (data or error). An answer is shown only until they change again, so it never
+// outlives the state it described (a cancelled request, a pair the other side ended).
+function stampOf(q: BuddyQueries) {
+  return [
+    q.buddy.dataUpdatedAt,
+    q.buddy.errorUpdatedAt,
+    q.requests.dataUpdatedAt,
+    q.requests.errorUpdatedAt,
+  ].join(":");
+}
+
 /** Runs a buddy action, keeps its answer as fixed wording, and refreshes everything the answer can change. */
-function useBuddyAction() {
+function useBuddyAction(queries: BuddyQueries) {
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<{ text: string; stamp: string } | null>(null);
   const [busy, setBusy] = useState(false);
   async function run(action: () => Promise<BuddyActionResult>) {
     setBusy(true);
+    let text: string;
     try {
-      const { status } = await action();
-      setMessage(buddyStatusMessage(status));
+      text = buddyStatusMessage((await action()).status);
     } catch {
-      setMessage(buddyStatusMessage("unknown"));
-    } finally {
-      setBusy(false);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["myBuddy"] }),
-        queryClient.invalidateQueries({ queryKey: ["buddyRequests"] }),
-      ]);
+      text = buddyStatusMessage("unknown");
     }
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["myBuddy"] }),
+      queryClient.invalidateQueries({ queryKey: ["buddyRequests"] }),
+    ]);
+    // Stamp with the state AFTER the refresh this action caused; busy stays on until then, so a second click
+    // cannot act on a request that is already gone.
+    const state = (key: string) => queryClient.getQueryState([key]);
+    const b = state("myBuddy");
+    const r = state("buddyRequests");
+    setAnswer({
+      text,
+      stamp: [b?.dataUpdatedAt, b?.errorUpdatedAt, r?.dataUpdatedAt, r?.errorUpdatedAt].join(":"),
+    });
+    setBusy(false);
   }
+  const message = answer && answer.stamp === stampOf(queries) ? answer.text : null;
   return { message, busy, run };
 }
 
@@ -51,8 +73,9 @@ const linkButton = "text-xs font-semibold underline underline-offset-4 disabled:
 
 /** The Friends page's study buddy card: the current buddy's week, or pending requests and how to ask. */
 export function BuddyCard() {
-  const { buddy, requests } = useBuddyQueries();
-  const { message, busy, run } = useBuddyAction();
+  const queries = useBuddyQueries();
+  const { buddy, requests } = queries;
+  const { message, busy, run } = useBuddyAction(queries);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
 
   if (buddy.isLoading || requests.isLoading) {
@@ -199,8 +222,9 @@ export function BuddyCard() {
 
 /** On a friend's row: ask them to be your study buddy. Hidden when it could only fail or is already done. */
 export function AskBuddyButton({ friendId }: { friendId: string }) {
-  const { buddy, requests } = useBuddyQueries();
-  const { message, busy, run } = useBuddyAction();
+  const queries = useBuddyQueries();
+  const { buddy, requests } = queries;
+  const { message, busy, run } = useBuddyAction(queries);
 
   const eligible =
     buddy.isSuccess &&
@@ -208,17 +232,22 @@ export function AskBuddyButton({ friendId }: { friendId: string }) {
     buddy.data === null &&
     !(requests.data ?? []).some((r) => r.otherId === friendId);
 
-  // The answer stays visible after the button hides (a sent request makes the row ineligible on refresh).
-  if (message) return <p className="mt-0.5 text-[11px] text-ink-soft">{message}</p>;
-  if (!eligible) return null;
+  // The answer and the button are independent: a sent request hides the button but keeps "Request sent"; a failed
+  // one keeps the button so the friend can be asked again.
+  if (!message && !eligible) return null;
   return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={() => run(() => requestBuddy({ data: { friendId } }))}
-      className={`mt-0.5 ${linkButton} text-moss`}
-    >
-      Ask to be study buddy
-    </button>
+    <>
+      {message && <p className="mt-0.5 text-[11px] text-ink-soft">{message}</p>}
+      {eligible && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run(() => requestBuddy({ data: { friendId } }))}
+          className={`mt-0.5 ${linkButton} text-moss`}
+        >
+          Ask to be study buddy
+        </button>
+      )}
+    </>
   );
 }

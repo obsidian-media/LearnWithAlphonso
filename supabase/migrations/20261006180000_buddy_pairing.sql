@@ -13,7 +13,7 @@ CREATE TABLE public.buddy_pairs (
   source text NOT NULL CHECK (source IN ('friend', 'match')),
   created_at timestamptz NOT NULL DEFAULT now(),
   ended_at timestamptz,
-  ended_reason text CHECK (ended_reason IN ('ended', 'unfriended', 'blocked')),
+  ended_reason text CHECK (ended_reason IN ('ended', 'unfriended')),
   streak_weeks integer NOT NULL DEFAULT 0 CHECK (streak_weeks >= 0),
   grace_available boolean NOT NULL DEFAULT true,
   resolved_through date,
@@ -110,8 +110,9 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- block_user inserts the block BEFORE deleting the friendship rows, so this fires first and the reason is 'blocked'.
-  PERFORM public._end_buddy_pair_between(NEW.blocker, NEW.blocked, 'blocked');
+  -- Recorded as 'unfriended', never 'blocked': buddy_pairs is readable (and exported) to BOTH buddies, while a block is
+  -- visible only to the blocker (blocked_users policy). The blocked person already sees the friendship disappear.
+  PERFORM public._end_buddy_pair_between(NEW.blocker, NEW.blocked, 'unfriended');
   RETURN NEW;
 END;
 $$;
@@ -346,7 +347,7 @@ BEGIN
     (SELECT bw.outcome FROM public.buddy_weeks bw WHERE bw.pair_id = bp.id ORDER BY bw.week_start DESC LIMIT 1)
   FROM public.buddy_pairs bp
   JOIN public.profiles other ON other.id = CASE WHEN bp.user_a = me THEN bp.user_b ELSE bp.user_a END
-  WHERE bp.id = pid;
+  WHERE bp.id = pid AND bp.ended_at IS NULL; -- the pair may have ended while we waited for its lock
 END;
 $$;
 

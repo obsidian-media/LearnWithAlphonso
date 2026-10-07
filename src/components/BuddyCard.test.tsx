@@ -264,3 +264,56 @@ describe("AskBuddyButton", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("AskBuddyButton after an answer", () => {
+  it("keeps the button after a failed request so the friend can be asked again", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    requestBuddy.mockRejectedValueOnce(new Error("network"));
+    renderWithClient(<AskBuddyButton friendId={FRIEND} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Ask to be study buddy" }));
+    expect(await screen.findByText("Something went wrong. Try again.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ask to be study buddy" })).toBeInTheDocument();
+  });
+
+  it("comes back, without the old answer, once the request is cancelled from the card", async () => {
+    const outgoing = {
+      requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      direction: "outgoing",
+      otherId: FRIEND,
+      otherName: "Cy",
+      otherAvatarSeed: "ef",
+      requestedAt: "2026-10-06T00:00:00Z",
+    };
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    requestBuddy.mockImplementation(async () => {
+      getBuddyRequests.mockResolvedValue([outgoing]);
+      return { status: "requested" };
+    });
+    cancelBuddyRequest.mockImplementation(async () => {
+      getBuddyRequests.mockResolvedValue([]);
+      return { status: "cancelled" };
+    });
+    renderWithClient(
+      <>
+        <BuddyCard />
+        <AskBuddyButton friendId={FRIEND} />
+      </>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Ask to be study buddy" }));
+    expect(
+      await screen.findByText("Request sent. They'll see it on their Friends page."),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Waiting for Cy.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ask to be study buddy" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel request" }));
+    expect(
+      await screen.findByRole("button", { name: "Ask to be study buddy" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Request sent. They'll see it on their Friends page."),
+    ).not.toBeInTheDocument();
+  });
+});
