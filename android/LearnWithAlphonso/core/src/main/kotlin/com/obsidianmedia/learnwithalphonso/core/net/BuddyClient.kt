@@ -2,7 +2,9 @@ package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.buddy.MyBuddy
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -27,7 +29,13 @@ suspend fun ProgressSyncClient.getMyBuddy(): MyBuddy? {
         goal = row.int("goal") ?: bad(),
         streakWeeks = row.int("streak_weeks") ?: bad(),
         graceAvailable = row.bool("grace_available") ?: bad(),
-        lastOutcome = row.string("last_outcome"),
+        // Required key: a string, or JSON null before the pair's first judged week. Anything else is a broken row.
+        lastOutcome = when (val outcome = row["last_outcome"]) {
+            null -> bad()
+            is JsonNull -> null
+            is JsonPrimitive -> if (outcome.isString) outcome.content else bad()
+            else -> bad()
+        },
     )
 }
 

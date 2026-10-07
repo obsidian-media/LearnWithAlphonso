@@ -127,6 +127,19 @@ class BuddyTest {
     }
 
     @Test
+    fun `getMyBuddy rejects a missing or non-string last_outcome`() = runTest {
+        val missing = buddyRow.replace(",\"last_outcome\":null", "")
+        val mistyped = buddyRow.replace("\"last_outcome\":null", "\"last_outcome\":3")
+        for (row in listOf(missing, mistyped)) {
+            assertThrows(Exception::class.java) {
+                kotlinx.coroutines.runBlocking { client(FakeSupabase { json("[$row]") }).getMyBuddy() }
+            }
+        }
+        val named = buddyRow.replace("\"last_outcome\":null", "\"last_outcome\":\"hit\"")
+        assertEquals("hit", client(FakeSupabase { json("[$named]") }).getMyBuddy()!!.lastOutcome)
+    }
+
+    @Test
     fun `getBuddyRequests decodes both directions and rejects an unknown one`() = runTest {
         val row = """{"request_id":"r1","direction":"incoming","other_id":"u2","other_name":"Bo","other_avatar_seed":"cd","requested_at":"2026-10-06T00:00:00+00:00"}"""
         val requests = client(FakeSupabase { json("[$row, ${row.replace("r1", "r2").replace("incoming", "outgoing")}]") }).getBuddyRequests()
