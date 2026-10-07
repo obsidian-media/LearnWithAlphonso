@@ -54,10 +54,28 @@ describe("moderation filter v2", () => {
   });
 
   it("no client role may read the lists or run the matcher directly", () => {
+    const sql = read(file);
     for (const sig of helpers) {
-      expect(read(file)).toContain(`REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon, authenticated;`);
-      expect(read(file)).not.toMatch(new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${sig.replace(/[()]/g, "\\$&")} TO [^;]*\\b(anon|authenticated)\\b`));
+      expect(sql).toContain(`REVOKE ALL ON FUNCTION public.${sig} FROM PUBLIC, anon, authenticated;`);
     }
+    // Every GRANT that names a helper, in any position of a multi-function list, may go only to service_role.
+    const grants = sql
+      .split(";")
+      .map((stmt) => stmt.replace(/--[^\n]*/g, "").trim())
+      .filter((stmt) => /^GRANT\b/i.test(stmt) && helpers.some((sig) => stmt.includes(`public.${sig}`)));
+    expect(grants.length).toBeGreaterThan(0);
+    for (const stmt of grants) {
+      const to = stmt.slice(stmt.search(/\bTO\b/i));
+      expect(to, stmt).not.toMatch(/\b(anon|authenticated|public)\b/i);
+    }
+  });
+
+  it("admin_rename_team is a service-only definer", () => {
+    const head = header(fn(file, "admin_rename_team"));
+    expect(head).toMatch(/SECURITY DEFINER/);
+    expect(head).toMatch(/SET search_path = public/);
+    expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.admin_rename_team(uuid, text) FROM PUBLIC, anon, authenticated;");
+    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.admin_rename_team(uuid, text) TO service_role;");
   });
 
   it("the trigger and the verdict run as definer, so revoking the helpers cannot break a client write", () => {
