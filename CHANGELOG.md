@@ -10,7 +10,7 @@ works now_.
 
 ## V5 — iOS Canopy theme, English content quality, GDPR export fix, podcast library (2026-09-23 – in progress)
 
-**Team mission on Android (2026-10-06, study together Phase 2c).** `:core`: `TeamMission`, `getTeamMission`, `TeamMissionModel` with 11 + 5 tests (the first group decodes all 11 shared fixture cases; mutation-checked, 12 of 12 killed); app: `TeamMissionViewModel`, `TeamMissionCard`, mounted on the Learn screen and the team screen. The Android copy of the fixtures is now pinned byte-for-byte too. Merged but in no release; not run on a device (see DEVICE-CHECKLIST.md).
+**Team mission on Android (2026-10-06, study together Phase 2c, merged as #234).** `:core`: `TeamMission`, `getTeamMission`, `TeamMissionModel` with 11 + 5 tests (the first group decodes all 11 shared fixture cases; mutation-checked, 12 of 12 killed); app: `TeamMissionViewModel`, `TeamMissionCard`, mounted on the Learn screen and the team screen. The Android copy of the fixtures is now pinned byte-for-byte too. Merged but in no release; not run on a device (see DEVICE-CHECKLIST.md).
 
 **Team mission on iOS (2026-10-06, study together Phase 2b).** `TeamMission` + `ProgressSyncClient.getTeamMission` in the Kit (13 tests incl. the shared fixture contract and client behaviour, mutation-checked), `TeamMissionSection` on the team screen and the Learn tab. Merged to main but in no build; the SwiftUI layer is compiled by CI only. Android follows.
 
