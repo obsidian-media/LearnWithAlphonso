@@ -115,6 +115,32 @@ describe("exportMyData", () => {
     expect(tables).toHaveProperty("ai_rate_limits");
   });
 
+  it("exports the buddy weeks of the caller's pairs (no user column, so not covered by the generic scans)", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "buddy_weeks"
+        ? chainable({ data: [{ pair_id: "p1", week_start: "2026-09-28", outcome: "hit" }] })
+        : chainable({ data: [] }),
+    );
+    const result = await exportMyData({ context: ctx(supabase) });
+    const tables = JSON.parse(result.tables);
+    expect(tables.buddy_weeks).toEqual([
+      { pair_id: "p1", week_start: "2026-09-28", outcome: "hit" },
+    ]);
+    expect(tables).toHaveProperty("buddy_pairs");
+    expect(tables).toHaveProperty("buddy_requests");
+  });
+
+  it("fails, naming buddy_weeks, when that read errors", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "buddy_weeks"
+        ? chainable({ data: null, error: { message: "permission denied for table buddy_weeks" } })
+        : chainable({ data: [] }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/buddy_weeks/);
+  });
+
   it("falls back to an empty array/object when a table has no rows", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation(() => chainable({ data: null }));
@@ -258,6 +284,9 @@ describe("GDPR export table coverage", () => {
     //  3. Deletion is already handled: user_id REFERENCES auth.users
     //     ON DELETE CASCADE, so the row goes when the account does.
     "admin_users",
+    // buddy_members (20261006180000_buddy_pairing.sql) is server-only (no SELECT policy) and holds nothing the
+    // export lacks: an active membership is the account's open row in buddy_pairs, which IS exported.
+    "buddy_members",
     // blocked_users (supabase/migrations/20260928020000_block_and_report.sql):
     // the `blocker` half is genuinely this account's own data and RLS
     // does let the caller read it back, but the generic USER_ID_EXPORT_TABLES

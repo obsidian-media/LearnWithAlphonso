@@ -192,6 +192,127 @@ export type Database = {
         };
         Relationships: [];
       };
+      buddy_members: {
+        Row: {
+          pair_id: string;
+          user_id: string;
+        };
+        Insert: {
+          pair_id: string;
+          user_id: string;
+        };
+        Update: {
+          pair_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "buddy_members_pair_id_fkey";
+            columns: ["pair_id"];
+            isOneToOne: false;
+            referencedRelation: "buddy_pairs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      buddy_pairs: {
+        Row: {
+          created_at: string;
+          ended_at: string | null;
+          ended_reason: string | null;
+          grace_available: boolean;
+          id: string;
+          resolved_through: string | null;
+          source: string;
+          streak_weeks: number;
+          user_a: string;
+          user_b: string;
+        };
+        Insert: {
+          created_at?: string;
+          ended_at?: string | null;
+          ended_reason?: string | null;
+          grace_available?: boolean;
+          id?: string;
+          resolved_through?: string | null;
+          source: string;
+          streak_weeks?: number;
+          user_a: string;
+          user_b: string;
+        };
+        Update: {
+          created_at?: string;
+          ended_at?: string | null;
+          ended_reason?: string | null;
+          grace_available?: boolean;
+          id?: string;
+          resolved_through?: string | null;
+          source?: string;
+          streak_weeks?: number;
+          user_a?: string;
+          user_b?: string;
+        };
+        Relationships: [];
+      };
+      buddy_requests: {
+        Row: {
+          created_at: string;
+          from_user: string;
+          id: string;
+          responded_at: string | null;
+          status: string;
+          to_user: string;
+        };
+        Insert: {
+          created_at?: string;
+          from_user: string;
+          id?: string;
+          responded_at?: string | null;
+          status?: string;
+          to_user: string;
+        };
+        Update: {
+          created_at?: string;
+          from_user?: string;
+          id?: string;
+          responded_at?: string | null;
+          status?: string;
+          to_user?: string;
+        };
+        Relationships: [];
+      };
+      buddy_weeks: {
+        Row: {
+          a_count: number;
+          b_count: number;
+          outcome: string;
+          pair_id: string;
+          week_start: string;
+        };
+        Insert: {
+          a_count: number;
+          b_count: number;
+          outcome: string;
+          pair_id: string;
+          week_start: string;
+        };
+        Update: {
+          a_count?: number;
+          b_count?: number;
+          outcome?: string;
+          pair_id?: string;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "buddy_weeks_pair_id_fkey";
+            columns: ["pair_id"];
+            isOneToOne: false;
+            referencedRelation: "buddy_pairs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       challenge_completions: {
         Row: {
           completed_at: string;
@@ -1575,6 +1696,12 @@ export type Database = {
           xp: number;
         }[];
       };
+      cancel_buddy_request: {
+        Args: { _request: string };
+        Returns: {
+          status: string;
+        }[];
+      };
       claim_review_clear_bonus: {
         Args: { _course: string };
         Returns: {
@@ -1624,6 +1751,23 @@ export type Database = {
           team_id: string;
         }[];
       };
+      end_buddy: {
+        Args: never;
+        Returns: {
+          status: string;
+        }[];
+      };
+      get_buddy_requests: {
+        Args: never;
+        Returns: {
+          direction: string;
+          other_avatar_seed: string;
+          other_id: string;
+          other_name: string;
+          request_id: string;
+          requested_at: string;
+        }[];
+      };
       get_cohort_weekly_xp: {
         Args: { _cohort_id: string; _week_start: string };
         Returns: {
@@ -1658,6 +1802,23 @@ export type Database = {
           display_name: string;
           user_id: string;
           xp: number;
+        }[];
+      };
+      get_my_buddy: {
+        Args: never;
+        Returns: {
+          buddy_avatar_seed: string;
+          buddy_count: number;
+          buddy_id: string;
+          buddy_name: string;
+          goal: number;
+          grace_available: boolean;
+          last_outcome: string;
+          my_count: number;
+          pair_id: string;
+          paired_at: string;
+          streak_weeks: number;
+          week_start: string;
         }[];
       };
       get_my_duels: {
@@ -1794,6 +1955,18 @@ export type Database = {
         Returns: {
           message: string;
           ok: boolean;
+        }[];
+      };
+      request_buddy: {
+        Args: { _friend: string };
+        Returns: {
+          status: string;
+        }[];
+      };
+      respond_buddy_request: {
+        Args: { _accept: boolean; _request: string };
+        Returns: {
+          status: string;
         }[];
       };
       respond_to_duel: {
