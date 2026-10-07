@@ -50,7 +50,8 @@ final class ProgressSyncClientBuddyTests: XCTestCase {
 
     func testGetMyBuddyThrowsOnAServerErrorInsteadOfLookingLikeNoBuddy() async {
         let client = makeClient { request in
-            self.jsonResponse(for: request.url!, body: ["message": "boom"], status: 500)
+            // A well-formed empty array: only the 500 can make this throw (an object body would throw for the wrong reason).
+            self.jsonResponse(for: request.url!, body: [] as [Any], status: 500)
         }
         do {
             _ = try await client.getMyBuddy()
@@ -123,7 +124,7 @@ final class ProgressSyncClientBuddyTests: XCTestCase {
         let empty = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [Any]) }
         let status = try await empty.endBuddy()
         XCTAssertEqual(status, "unknown")
-        let failing = makeClient { request in self.jsonResponse(for: request.url!, body: ["message": "x"], status: 500) }
+        let failing = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [Any], status: 500) }
         do {
             _ = try await failing.requestBuddy(friendID: "u2")
             XCTFail("a server error must throw")

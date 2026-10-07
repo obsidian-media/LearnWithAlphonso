@@ -17,6 +17,8 @@ struct BuddySection: View {
     @State private var buddy: MyBuddy?
     @State private var requests: [BuddyRequest] = []
     @State private var isLoading = true
+    /// The spinner shows only before the first result; later reloads keep the section on screen.
+    @State private var hasLoaded = false
     @State private var loadFailed = false
     @State private var busy = false
     @State private var message: String?
@@ -25,7 +27,7 @@ struct BuddySection: View {
 
     var body: some View {
         Section {
-            if isLoading && buddy == nil && !loadFailed {
+            if !hasLoaded && !loadFailed {
                 ProgressView().tint(AlphonsoColor.moss)
             } else if loadFailed {
                 Text(BuddyCopy.loadFailed)
@@ -153,27 +155,36 @@ struct BuddySection: View {
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
     }
 
-    private func load() async {
+    /// Returns true when this load's result was applied (it was still the newest load and not cancelled).
+    @discardableResult
+    private func load() async -> Bool {
         loadGeneration += 1
         let generation = loadGeneration
         isLoading = true
         guard let client = await makeClient() else {
-            if generation == loadGeneration { isLoading = false; loadFailed = true }
-            return
+            // freshAccessToken() also answers nil when the refresh was cancelled; a cancelled load is not a failure.
+            if generation == loadGeneration, !Task.isCancelled { isLoading = false; loadFailed = true }
+            return false
         }
         do {
             let newBuddy = try await client.getMyBuddy()
             let newRequests = try await client.getBuddyRequests()
-            guard generation == loadGeneration else { return }
+            guard generation == loadGeneration else { return false }
             buddy = newBuddy
             requests = newRequests
             loadFailed = false
+            hasLoaded = true
+            // An answer describes the state before this load; it must not outlive it (web: the stamp in BuddyCard).
+            message = nil
+            isLoading = false
+            return true
         } catch {
             // A cancelled load (the view went away) is not a failure; only the newest load may report one.
-            guard generation == loadGeneration, !Task.isCancelled else { return }
+            guard generation == loadGeneration, !Task.isCancelled else { return false }
             loadFailed = true
+            isLoading = false
+            return false
         }
-        isLoading = false
     }
 
     /// Runs a buddy action, shows the server's answer in fixed wording, then reloads (busy until the reload lands, so
@@ -185,8 +196,8 @@ struct BuddySection: View {
         if let client = await makeClient(), let status = try? await action(client) {
             text = BuddyCopy.statusMessage(status)
         }
-        await load()
-        message = text
+        // The answer is shown only with the state its own reload produced; a superseded reload drops it.
+        if await load() { message = text }
         busy = false
     }
 }
