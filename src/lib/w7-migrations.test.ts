@@ -9,6 +9,7 @@ const FILES = {
   names: "20261008130100_display_name_onboarding.sql",
   members: "20261008130200_team_members_block_filter.sql",
   reports: "20261008130300_content_reports_moderation_ops.sql",
+  grants: "20261008130400_function_grants_hardening.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -184,5 +185,22 @@ describe("content reports moderation ops", () => {
     expect(stmt).toMatch(/EXCEPTION WHEN OTHERS THEN\s+RAISE WARNING/);
     expect(read(file)).toContain("REVOKE ALL ON FUNCTION public.notify_content_report() FROM PUBLIC, anon, authenticated;");
     expect(read(file)).toContain("AFTER INSERT ON public.content_reports");
+  });
+});
+
+describe("function grants hardening (L8)", () => {
+  it("pins _random_team_name's search_path and revokes both functions from every client role", () => {
+    const sql = read(FILES.grants);
+    expect(sql).toContain("ALTER FUNCTION public._random_team_name() SET search_path = '';");
+    expect(sql).toContain("REVOKE ALL ON FUNCTION public._random_team_name() FROM PUBLIC, anon, authenticated;");
+    expect(sql).toContain("REVOKE ALL ON FUNCTION public.notify_nudge_push() FROM PUBLIC, anon, authenticated;");
+  });
+  it("every W7 function revokes PUBLIC (a CREATE OR REPLACE never removes the default PUBLIC grant)", () => {
+    for (const file of Object.values(FILES)) {
+      const sql = read(file);
+      for (const m of sql.matchAll(/CREATE OR REPLACE FUNCTION public\.([a-z_0-9]+)\(/g)) {
+        expect(sql, `${file}: ${m[1]}`).toMatch(new RegExp(`REVOKE ALL ON FUNCTION public\\.${m[1]}\\([^)]*\\) FROM PUBLIC`));
+      }
+    }
   });
 });
