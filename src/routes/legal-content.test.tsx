@@ -81,3 +81,11 @@ describe("Terms title", () => {
     expect(titles).toEqual(["Terms of Use — Alphonso"]);
   });
 });
+
+describe("legal pages share one 'Last updated' date", () => {
+  it("shows the same date on terms, privacy, cookies and support", () => {
+    const dates = PATHS.map((p) => pageText(p).match(/Last updated (\d{1,2} [A-Z][a-z]+ \d{4})/)?.[1]);
+    expect(dates.every(Boolean)).toBe(true);
+    expect(new Set(dates).size).toBe(1);
+  });
+});
