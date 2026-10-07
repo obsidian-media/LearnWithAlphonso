@@ -15,6 +15,7 @@ const FILES = {
   matching: "20261008130700_buddy_matching_hardening.sql",
   profilesOwnRow: "20261008130800_profiles_own_row_read.sql",
   matchingPaused: "20261008130900_buddy_matching_paused.sql",
+  ownerSeesBlocked: "20261008131000_team_members_owner_sees_blocked.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -337,6 +338,19 @@ describe("kill switch mutes matched pairs (A3, O4)", () => {
     expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.get_my_buddy() TO authenticated, service_role;");
     expect(sql).toContain("REVOKE ALL ON FUNCTION public.send_buddy_message(text) FROM PUBLIC, anon;");
     expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.send_buddy_message(text) TO authenticated, service_role;");
+  });
+});
+
+
+describe("owner sees blocked members to kick them (A6, O5)", () => {
+  const file = FILES.ownerSeesBlocked;
+  it("adds blocked, shows the owner's own blocks only to the owner, hides blocks of the owner", () => {
+    const stmt = fn(file, "get_team_members");
+    expect(header(stmt)).toMatch(/is_owner boolean,\s*blocked boolean\)/);
+    expect(stmt).toContain("(bu.blocker = tm.user_id AND bu.blocked = me)"); // they blocked me: hidden, always
+    expect(stmt).toMatch(/i_own OR NOT EXISTS/);
+    expect(read(file)).toContain("DROP FUNCTION public.get_team_members();");
+    expect(read(file)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated, service_role;");
   });
 });
 
