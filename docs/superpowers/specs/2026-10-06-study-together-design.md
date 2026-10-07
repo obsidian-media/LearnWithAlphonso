@@ -15,7 +15,7 @@ Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.
 | 5 | Buddy preset messages, server and web | NOT started |
 | 6 | Buddy presets on iOS and Android | NOT started |
 
-Plans: `docs/superpowers/plans/2026-10-06-team-mission-web.md`, `2026-10-06-team-player-badge.md`. Phases 2b and 2c were executed directly from the web plan's fixtures and the patterns of the goal planner (no separate plan file). Findings that changed the design along the way: the payout course is the one the member studied, not `profiles.active_language` (BACKLOG 0.0-af); a team below two members is never paid; the dead `mergeGuestProgress` endpoint was removed because it could fake lesson completions.
+Plans: `docs/superpowers/plans/2026-10-06-team-mission-web.md`, `2026-10-06-team-player-badge.md`. Phases 2b and 2c were executed directly from the web plan's fixtures and the patterns of the goal planner (no separate plan file). Findings that changed the design along the way: the payout course is the one the member studied, not `profiles.active_language` (BACKLOG 0.0-af); a team below two members is never paid; the dead `mergeGuestProgress` endpoint was removed because it could fake lesson completions. Running the SQL while verifying the older payouts also showed that **joining or creating a team never worked in production** (an ambiguous `team_id` in `_join_team_impl` and `get_my_team`, fixed in `20261006170000`), so the team screen and the mission card on it were unreachable for anyone until that migration; the card on the Learn tab only depends on `get_team_mission`.
 
 ## Goal
 
