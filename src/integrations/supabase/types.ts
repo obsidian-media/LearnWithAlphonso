@@ -1638,6 +1638,18 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      _buddy_count: {
+        Args: { _from: string; _to: string; _user: string };
+        Returns: number;
+      };
+      _create_buddy_pair: {
+        Args: { _source: string; _x: string; _y: string };
+        Returns: string;
+      };
+      _end_buddy_pair_between: {
+        Args: { _reason: string; _x: string; _y: string };
+        Returns: undefined;
+      };
       _join_team_impl: {
         Args: { _me: string; _team_id: string };
         Returns: {
@@ -1646,7 +1658,12 @@ export type Database = {
           team_id: string;
         }[];
       };
+      _lock_buddy_users: {
+        Args: { _x: string; _y: string };
+        Returns: undefined;
+      };
       _random_team_name: { Args: never; Returns: string };
+      _resolve_buddy_pair: { Args: { _pair: string }; Returns: undefined };
       _resolve_team_mission: {
         Args: { _team: string; _wk: string };
         Returns: undefined;
