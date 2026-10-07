@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,22 +26,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyCopy
+import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyMessage
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.buddy.MyBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.cancelBuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.net.endBuddy
+import com.obsidianmedia.learnwithalphonso.core.net.getBuddyMessages
 import com.obsidianmedia.learnwithalphonso.core.net.getBuddyRequests
 import com.obsidianmedia.learnwithalphonso.core.net.getMyBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.requestBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.respondBuddyRequest
+import com.obsidianmedia.learnwithalphonso.core.net.sendBuddyMessage
 import com.obsidianmedia.learnwithalphonso.ui.league.SectionCard
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -50,6 +57,8 @@ data class BuddyUiState(
     val loadFailed: Boolean = false,
     val buddy: MyBuddy? = null,
     val requests: List<BuddyRequest> = emptyList(),
+    /** The active pair's newest messages, oldest first (empty while unpaired). */
+    val messages: List<BuddyMessage> = emptyList(),
     /** An action is running, or its reload has not landed yet: a second tap could act on a request that is gone. */
     val busy: Boolean = false,
     /** The last action's answer in fixed wording (BuddyCopy.statusMessage). */
@@ -82,10 +91,12 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
         return try {
             val buddy = client.getMyBuddy()
             val requests = client.getBuddyRequests()
+            // Messages only while paired; their failure is a load failure, never an empty history.
+            val messages = if (buddy == null) emptyList() else client.getBuddyMessages()
             if (generation != loadGeneration) return false
             // An answer describes the state before this reload; it must not outlive it (web: the stamp in BuddyCard).
             _state.update {
-                it.copy(isLoading = false, hasLoaded = true, loadFailed = false, buddy = buddy, requests = requests, message = null)
+                it.copy(isLoading = false, hasLoaded = true, loadFailed = false, buddy = buddy, requests = requests, messages = messages, message = null)
             }
             true
         } catch (e: CancellationException) {
@@ -100,6 +111,7 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
     fun respond(request: BuddyRequest, accept: Boolean) = act { client.respondBuddyRequest(request.requestId, accept) }
     fun cancel(request: BuddyRequest) = act { client.cancelBuddyRequest(request.requestId) }
     fun end() = act { client.endBuddy() }
+    fun send(presetId: String) = act { client.sendBuddyMessage(presetId) }
 
     private fun act(action: suspend () -> String) {
         _state.update { it.copy(busy = true, message = null) }
@@ -123,6 +135,15 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>) {
     val palette = AlphonsoColor.palette
     val state by vm.state.collectAsState()
     var confirmingEnd by remember { mutableStateOf(false) }
+    var choosingPreset by remember { mutableStateOf(false) }
+
+    // Refreshes every minute while the section is on screen (no realtime socket, spec Part 3).
+    LaunchedEffect(vm) {
+        while (true) {
+            delay(60_000)
+            vm.load()
+        }
+    }
 
     SectionCard("Study buddy") {
         val buddy = state.buddy
@@ -139,6 +160,21 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>) {
                     Text(BuddyCopy.weekLine(buddy.myCount, buddy.buddyCount, buddy.goal), color = palette.ink)
                     Text(BuddyCopy.streakLine(buddy.streakWeeks), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                     Text(BuddyCopy.graceLine(buddy.graceAvailable), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                }
+                Box {
+                    TextButton(onClick = { choosingPreset = true }, enabled = !state.busy) {
+                        Text("Send ${buddy.buddyName} a message", color = palette.moss)
+                    }
+                    DropdownMenu(expanded = choosingPreset, onDismissRequest = { choosingPreset = false }) {
+                        BuddyCopy.PRESETS.forEach { preset ->
+                            DropdownMenuItem(text = { Text(preset.text) }, onClick = { choosingPreset = false; vm.send(preset.id) })
+                        }
+                    }
+                }
+                state.messages.takeLast(10).forEach { m ->
+                    BuddyCopy.messageLine(m.isMine, buddy.buddyName, m.presetId)?.let { line ->
+                        Text(line, style = MaterialTheme.typography.bodySmall, color = palette.ink)
+                    }
                 }
                 TextButton(onClick = { confirmingEnd = true }, enabled = !state.busy) { Text("End study buddy", color = palette.destructive) }
             }

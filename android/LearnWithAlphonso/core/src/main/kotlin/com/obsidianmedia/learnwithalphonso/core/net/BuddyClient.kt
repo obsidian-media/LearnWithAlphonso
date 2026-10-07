@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyMessage
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.buddy.MyBuddy
 import kotlinx.serialization.json.JsonNull
@@ -66,6 +67,23 @@ suspend fun ProgressSyncClient.cancelBuddyRequest(requestId: String): String =
     buddyStatus("cancel_buddy_request", buildJsonObject { put("_request", requestId) })
 
 suspend fun ProgressSyncClient.endBuddy(): String = buddyStatus("end_buddy", buildJsonObject {})
+
+/** Sends one of BuddyCopy.PRESETS by id (the server refuses anything else). */
+suspend fun ProgressSyncClient.sendBuddyMessage(presetId: String): String =
+    buddyStatus("send_buddy_message", buildJsonObject { put("_preset", presetId) })
+
+/** The active pair's newest messages, oldest first. Throws on failure, never an empty history. */
+suspend fun ProgressSyncClient.getBuddyMessages(): List<BuddyMessage> =
+    rowsOf(http.rpc("get_buddy_messages", buildJsonObject {})).map { row ->
+        fun bad(): Nothing = throw ProgressSyncError.InvalidPayload()
+        BuddyMessage(
+            messageId = row.string("message_id") ?: bad(),
+            senderId = row.string("sender_id") ?: bad(),
+            isMine = row.bool("is_mine") ?: bad(),
+            presetId = row.string("preset_id") ?: bad(),
+            sentAt = row.string("sent_at") ?: bad(),
+        )
+    }
 
 private suspend fun ProgressSyncClient.buddyStatus(function: String, body: JsonObject): String =
     rowsOf(http.rpc(function, body)).firstOrNull()?.string("status") ?: "unknown"
