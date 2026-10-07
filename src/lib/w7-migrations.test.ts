@@ -7,6 +7,7 @@ const DIR = path.join(process.cwd(), "supabase", "migrations");
 const FILES = {
   filter: "20261008130000_moderation_filter_v2.sql",
   names: "20261008130100_display_name_onboarding.sql",
+  members: "20261008130200_team_members_block_filter.sql",
 } as const;
 const read = (file: string) => fs.readFileSync(path.join(DIR, file), "utf8");
 
@@ -149,5 +150,15 @@ describe("display-name onboarding", () => {
   it("the backup table is service-only and the grant guard accepts the file", () => {
     expect(read(file)).toContain("-- client-grants: none public.display_name_migration_backup");
     expect(checkNewTableGrants(read(file))).toEqual([]);
+  });
+});
+
+describe("team members block filter", () => {
+  it("excludes blocks in both directions and keeps the grants", () => {
+    const stmt = fn(FILES.members, "get_team_members");
+    expect(stmt).toContain("(bu.blocker = me AND bu.blocked = tm.user_id)");
+    expect(stmt).toContain("(bu.blocker = tm.user_id AND bu.blocked = me)");
+    expect(read(FILES.members)).toContain("REVOKE ALL ON FUNCTION public.get_team_members() FROM PUBLIC, anon;");
+    expect(read(FILES.members)).toContain("GRANT EXECUTE ON FUNCTION public.get_team_members() TO authenticated;");
   });
 });
