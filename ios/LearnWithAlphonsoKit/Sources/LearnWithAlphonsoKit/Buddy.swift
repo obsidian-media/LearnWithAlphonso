@@ -81,6 +81,22 @@ public enum BuddyCopy {
         "End being study buddies with \(name)? Your streak ends."
     }
 
+    // MARK: Opt-in matching (Phase 3b)
+
+    public static let poolIntro =
+        "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time."
+    public static let stopLooking = "Stop looking"
+    public static let matchedLabel = "Matched learner"
+
+    private static let courseNames = ["en": "English", "fr": "French", "es": "Spanish"]
+
+    /// "French" for "fr"; an unknown code is shown as-is.
+    public static func courseName(_ course: String) -> String { courseNames[course] ?? course }
+    public static func findButton(_ course: String) -> String { "Find me a study buddy (\(courseName(course)))" }
+    public static func waitingLine(_ course: String) -> String {
+        "Looking for a study buddy learning \(courseName(course)) at your level."
+    }
+
     /// Most preset messages one buddy may send per hour (the server's limit).
     public static let messagesPerHour = 20
 
@@ -150,6 +166,9 @@ public struct MyBuddy: Equatable, Sendable {
     public let streakWeeks: Int
     public let graceAvailable: Bool
     public let lastOutcome: String?
+    /// Paired through opt-in matching (not a friend): the section offers block and report. A server without matching
+    /// sends no `is_match`, which means a friend pair.
+    public let isMatch: Bool
 
     /// nil for a row with a missing or mistyped field (the client treats that as a broken contract and throws).
     public init?(row: [String: Any]) {
@@ -181,6 +200,7 @@ public struct MyBuddy: Equatable, Sendable {
         self.streakWeeks = streakWeeks
         self.graceAvailable = graceAvailable
         self.lastOutcome = rawOutcome as? String
+        self.isMatch = (row["is_match"] as? Bool) ?? false
     }
 }
 
@@ -216,3 +236,24 @@ public struct BuddyRequest: Equatable, Sendable, Identifiable {
         self.requestedAt = requestedAt
     }
 }
+
+/// The `get_buddy_pool` row: whether matching is switched on, whether the caller is waiting, and their courses.
+public struct BuddyPool: Equatable, Sendable {
+    public let matchingEnabled: Bool
+    public let waiting: Bool
+    public let course: String?
+    public let courses: [String]
+
+    public init?(row: [String: Any]) {
+        guard
+            let matchingEnabled = row["matching_enabled"] as? Bool,
+            let waiting = row["waiting"] as? Bool,
+            let courses = row["courses"] as? [String]
+        else { return nil }
+        self.matchingEnabled = matchingEnabled
+        self.waiting = waiting
+        self.course = row["course"] as? String
+        self.courses = courses
+    }
+}
+

@@ -164,5 +164,48 @@ class BuddyViewModelTest {
         assertEquals("Sent.", v.state.value.message)
         assertEquals("""{"_preset":"proud_of_you"}""", s.seen.first { it.path.endsWith("send_buddy_message") }.body)
     }
+
+    @Test
+    fun `while unpaired the pool loads, joining posts the course, and a pool failure is a load failure`() = runBlocking {
+        var failPool = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_buddy_pool") ->
+                    if (failPool) json("[]", HttpStatusCode.InternalServerError)
+                    else json("""[{"matching_enabled":true,"waiting":false,"course":null,"courses":["es"]}]""")
+                req.path.endsWith("join_buddy_pool") -> json("""[{"status":"waiting"}]""")
+                else -> json("[]")
+            }
+        }
+        val v = BuddyViewModel(s.progressClient)
+        awaitTrue("loaded") { v.state.value.hasLoaded }
+        assertEquals(listOf("es"), v.state.value.pool!!.courses)
+        v.join("es")
+        awaitTrue("answered") { v.state.value.message != null && !v.state.value.busy }
+        assertEquals("You're on the list. We'll pair you with a learner at your level.", v.state.value.message)
+        assertEquals("""{"_course":"es"}""", s.seen.first { it.path.endsWith("join_buddy_pool") }.body)
+
+        failPool = true
+        v.load()
+        awaitTrue("failed") { v.state.value.loadFailed }
+    }
+
+    @Test
+    fun `blocking a matched buddy calls block_user then reloads`() = runBlocking {
+        val matched = buddyRow.replace("\"last_outcome\":\"hit\"", "\"last_outcome\":\"hit\",\"is_match\":true")
+        var blocked = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_buddy") -> json(if (blocked) "[]" else "[$matched]")
+                req.path.endsWith("block_user") -> { blocked = true; json("""[{"ok":true,"message":"blocked"}]""") }
+                else -> json("[]")
+            }
+        }
+        val v = BuddyViewModel(s.progressClient)
+        awaitTrue("loaded") { v.state.value.buddy?.isMatch == true }
+        v.block("u2")
+        awaitTrue("ended") { v.state.value.buddy == null && v.state.value.hasLoaded && !v.state.value.isLoading }
+        assertEquals("""{"_target":"u2"}""", s.seen.first { it.path.endsWith("block_user") }.body)
+    }
 }
 

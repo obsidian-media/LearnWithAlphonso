@@ -64,6 +64,17 @@ object BuddyCopy {
     fun outgoingLine(name: String): String = "Waiting for $name."
     fun endConfirm(name: String): String = "End being study buddies with $name? Your streak ends."
 
+    // Opt-in matching (Phase 3b).
+    const val POOL_INTRO = "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time."
+    const val STOP_LOOKING = "Stop looking"
+    const val MATCHED_LABEL = "Matched learner"
+    private val courseNames = mapOf("en" to "English", "fr" to "French", "es" to "Spanish")
+
+    /** "French" for "fr"; an unknown code is shown as-is. */
+    fun courseName(course: String): String = courseNames[course] ?: course
+    fun findButton(course: String): String = "Find me a study buddy (${courseName(course)})"
+    fun waitingLine(course: String): String = "Looking for a study buddy learning ${courseName(course)} at your level."
+
     /** Most preset messages one buddy may send per hour (the server's limit). */
     const val MESSAGES_PER_HOUR = 20
 
@@ -106,7 +117,12 @@ data class MyBuddy(
     val streakWeeks: Int,
     val graceAvailable: Boolean,
     val lastOutcome: String?,
+    /** Paired through opt-in matching (not a friend): the section offers block and report. */
+    val isMatch: Boolean = false,
 )
+
+/** The `get_buddy_pool` row: whether matching is switched on, whether the caller is waiting, and their courses. */
+data class BuddyPool(val matchingEnabled: Boolean, val waiting: Boolean, val course: String?, val courses: List<String>)
 
 /** One pending request from `get_buddy_requests`. */
 data class BuddyRequest(

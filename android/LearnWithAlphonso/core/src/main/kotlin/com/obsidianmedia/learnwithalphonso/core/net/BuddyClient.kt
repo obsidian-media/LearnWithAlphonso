@@ -1,8 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyMessage
+import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyPool
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.buddy.MyBuddy
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -37,6 +39,8 @@ suspend fun ProgressSyncClient.getMyBuddy(): MyBuddy? {
             is JsonPrimitive -> if (outcome.isString) outcome.content else bad()
             else -> bad()
         },
+        // A server without matching sends no is_match: a friend pair.
+        isMatch = row.bool("is_match") ?: false,
     )
 }
 
@@ -67,6 +71,27 @@ suspend fun ProgressSyncClient.cancelBuddyRequest(requestId: String): String =
     buddyStatus("cancel_buddy_request", buildJsonObject { put("_request", requestId) })
 
 suspend fun ProgressSyncClient.endBuddy(): String = buddyStatus("end_buddy", buildJsonObject {})
+
+/** Opt in to be matched with another learner of this course at a similar level (Phase 3b). */
+suspend fun ProgressSyncClient.joinBuddyPool(course: String): String =
+    buddyStatus("join_buddy_pool", buildJsonObject { put("_course", course) })
+
+suspend fun ProgressSyncClient.leaveBuddyPool(): String = buddyStatus("leave_buddy_pool", buildJsonObject {})
+
+/** Whether matching is on, whether the caller is waiting, and their courses. Throws on failure. */
+suspend fun ProgressSyncClient.getBuddyPool(): BuddyPool {
+    val row = rowsOf(http.rpc("get_buddy_pool", buildJsonObject {})).firstOrNull() ?: throw ProgressSyncError.InvalidPayload()
+    fun bad(): Nothing = throw ProgressSyncError.InvalidPayload()
+    val courses = (row["courses"] as? JsonArray)?.map { element ->
+        (element as? JsonPrimitive)?.takeIf { it.isString }?.content ?: bad()
+    } ?: bad()
+    return BuddyPool(
+        matchingEnabled = row.bool("matching_enabled") ?: bad(),
+        waiting = row.bool("waiting") ?: bad(),
+        course = row.string("course"),
+        courses = courses,
+    )
+}
 
 /** Sends one of BuddyCopy.PRESETS by id (the server refuses anything else). */
 suspend fun ProgressSyncClient.sendBuddyMessage(presetId: String): String =

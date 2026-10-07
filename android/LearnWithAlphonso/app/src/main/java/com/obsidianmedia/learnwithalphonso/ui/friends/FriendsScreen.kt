@@ -78,7 +78,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
                     AlphonsoSecondaryButton("Add", onClick = { onEnterCode(manualCode.trim()); manualCode = "" }, enabled = manualCode.isNotBlank(), fullWidth = false)
                 }
             }
-            BuddySection(buddyVm, state.friends)
+            BuddySection(buddyVm, state.friends, onReport = { reportTarget = it })
             SectionCard(if (state.friends.isEmpty()) "Your friends" else "${state.friends.size} friend${if (state.friends.size == 1) "" else "s"}") {
                 when {
                     state.isLoading -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
