@@ -57,14 +57,18 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val nowMill
     fun joinByCode(code: String) = outcome { client.joinTeamByCode(code.trim()).let { it.ok to it.reason } }
     fun autoJoin() = outcome { client.autoJoinTeam().let { it.ok to it.reason } }
     fun createTeam(name: String, visibility: String) = outcome { client.createTeam(name.trim(), visibility).let { it.ok to it.reason } }
-    fun leave() = outcome { client.leaveTeam().let { it.ok to it.reason } }
+    fun leave() = outcome(clearTeamOnSuccess = true) { client.leaveTeam().let { it.ok to it.reason } }
     fun kick(member: TeamMember) = outcome { client.kickTeamMember(member.userId).let { it.ok to it.reason } }
 
-    private fun outcome(call: suspend () -> Pair<Boolean, String?>) {
+    private fun outcome(clearTeamOnSuccess: Boolean = false, call: suspend () -> Pair<Boolean, String?>) {
         _state.update { it.copy(error = null) }
         viewModelScope.launch {
             val result = runCatching { call() }.getOrElse { false to "Check your connection and try again." }
-            if (result.first) loadAll() else _state.update { it.copy(error = result.second ?: "Something went wrong. Try again.") }
+            if (result.first) {
+                // Clear first: if the reload fails, a kept stale team would show the team the user just left.
+                if (clearTeamOnSuccess) _state.update { it.copy(myTeam = null, members = emptyList()) }
+                loadAll()
+            } else _state.update { it.copy(error = result.second ?: "Something went wrong. Try again.") }
         }
     }
 

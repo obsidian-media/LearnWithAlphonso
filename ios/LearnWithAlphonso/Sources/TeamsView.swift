@@ -290,6 +290,13 @@ struct TeamsView: View {
         guard let client else { return }
         errorMessage = nil
         let result = try? await client.leaveTeam()
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        if result?.ok == true {
+            // Clear first: if the reload below fails, a kept stale team would show the team the user just left.
+            myTeam = nil
+            members = []
+            await loadAll()
+        } else {
+            errorMessage = result?.reason
+        }
     }
 }

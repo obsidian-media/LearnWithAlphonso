@@ -32,6 +32,8 @@ function TeamsPage() {
   } = useQuery({
     queryKey: ["myTeam"],
     queryFn: () => getMyTeam(),
+    // A failing lookup is not transient (the default 3 retries would show the forms for ~7 s first).
+    retry: false,
   });
   const { data: leaderboard, isLoading: loadingBoard } = useQuery({
     queryKey: ["teamLeaderboard"],
@@ -48,6 +50,12 @@ function TeamsPage() {
     return null;
   }
 
+  if (loadingMyTeam)
+    return (
+      <MobileFrame>
+        <p className="p-6 text-sm text-ink-soft">Loading…</p>
+      </MobileFrame>
+    );
   if (myTeamFailed)
     return (
       <MobileFrame>

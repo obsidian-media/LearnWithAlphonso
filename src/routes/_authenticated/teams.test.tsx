@@ -57,6 +57,16 @@ beforeEach(() => {
 });
 
 describe("Teams page", () => {
+  it("does not offer create/join while the team lookup is still pending", async () => {
+    getMyTeam.mockReturnValue(new Promise(() => {}));
+    getTeamLeaderboard.mockResolvedValue([]);
+    renderPage();
+
+    expect(await screen.findByText("Loading…")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Join code")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create team" })).not.toBeInTheDocument();
+  });
+
   it("says it could not load the team, with a retry, instead of offering to create or join one", async () => {
     getMyTeam.mockRejectedValueOnce(new Error("boom"));
     getTeamLeaderboard.mockResolvedValue([]);
@@ -88,7 +98,9 @@ describe("Teams page", () => {
     joinTeamByCode.mockResolvedValue({ ok: true, reason: null, teamId: "t1" });
     renderPage();
 
-    fireEvent.change(screen.getByPlaceholderText("Join code"), { target: { value: "ABC123" } });
+    fireEvent.change(await screen.findByPlaceholderText("Join code"), {
+      target: { value: "ABC123" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
 
     await waitFor(() => expect(joinTeamByCode).toHaveBeenCalledWith({ data: { code: "ABC123" } }));
@@ -103,7 +115,9 @@ describe("Teams page", () => {
     joinTeamByCode.mockResolvedValue({ ok: false, reason: "invalid-code", teamId: null });
     renderPage();
 
-    fireEvent.change(screen.getByPlaceholderText("Join code"), { target: { value: "BADCODE" } });
+    fireEvent.change(await screen.findByPlaceholderText("Join code"), {
+      target: { value: "BADCODE" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
 
     expect(await screen.findByText("invalid-code")).toBeInTheDocument();
@@ -129,7 +143,9 @@ describe("Teams page", () => {
     createTeam.mockResolvedValue({ ok: true, reason: null, teamId: "t9", joinCode: "XYZ999" });
     renderPage();
 
-    fireEvent.change(screen.getByPlaceholderText("Team name"), { target: { value: "Night Owls" } });
+    fireEvent.change(await screen.findByPlaceholderText("Team name"), {
+      target: { value: "Night Owls" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Create team" }));
 
     await waitFor(() =>
@@ -153,7 +169,7 @@ describe("Teams page", () => {
     });
     renderPage();
 
-    fireEvent.change(screen.getByPlaceholderText("Team name"), { target: { value: "x" } });
+    fireEvent.change(await screen.findByPlaceholderText("Team name"), { target: { value: "x" } });
     fireEvent.click(screen.getByRole("button", { name: "Create team" }));
 
     expect(await screen.findByText("invalid-name")).toBeInTheDocument();
