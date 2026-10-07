@@ -78,4 +78,23 @@ describe("buddy matching migration", () => {
       expect(sql()).toContain(`GRANT EXECUTE ON FUNCTION public.${sig} TO authenticated;`);
     }
   });
+
+  it("re-checks under the joiner's own lock that a friend pairing has not landed meanwhile, before waiting", () => {
+    const body = fnBody("join_buddy_pool");
+    const waitAt = body.indexOf("INSERT INTO public.buddy_pool");
+    const ownLockAt = body.indexOf(
+      "pg_advisory_xact_lock(hashtextextended('buddy:' || me::text, 0))",
+    );
+    expect(ownLockAt).toBeGreaterThan(
+      body.indexOf("pg_advisory_xact_lock(hashtextextended('buddy:pool', 0))"),
+    );
+    expect(ownLockAt).toBeLessThan(waitAt);
+    expect(body.indexOf("public.buddy_members", ownLockAt)).toBeLessThan(waitAt);
+  });
+
+  it("leaving takes the pool lock, so a match cannot land just after Stop looking", () => {
+    expect(fnBody("leave_buddy_pool")).toContain(
+      "pg_advisory_xact_lock(hashtextextended('buddy:pool', 0))",
+    );
+  });
 });

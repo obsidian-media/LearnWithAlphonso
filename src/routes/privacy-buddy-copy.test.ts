@@ -29,6 +29,6 @@ describe("privacy page: study buddies", () => {
     expect(page).toMatch(
       /you can choose to be matched with another learner of the same course at a similar level/,
     );
-    expect(page).toMatch(/only your display name and weekly progress/);
+    expect(page).toMatch(/only your display name, avatar and weekly progress/);
   });
 });

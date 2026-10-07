@@ -305,7 +305,9 @@ export function BuddyCard() {
           </div>
         ),
       )}
-      {pool.data?.matchingEnabled &&
+      {/* A waiting learner can always stop looking, even while matching is switched off (consent is theirs);
+          only the Find buttons depend on the switch. */}
+      {pool.data &&
         (pool.data.waiting && pool.data.course ? (
           <div className="mt-3 flex items-center gap-4">
             <p className="text-sm text-ink">{buddyWaitingLine(pool.data.course)}</p>
@@ -319,6 +321,7 @@ export function BuddyCard() {
             </button>
           </div>
         ) : (
+          pool.data.matchingEnabled &&
           pool.data.courses.length > 0 && (
             <div className="mt-3">
               <p className="text-xs text-ink-soft/80">{BUDDY_COPY.poolIntro}</p>

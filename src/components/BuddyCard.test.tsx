@@ -577,4 +577,23 @@ describe("BuddyCard matching (opt-in)", () => {
     renderWithClient(<BuddyCard />);
     expect(await screen.findByText("Couldn't load your study buddy.")).toBeInTheDocument();
   });
+
+  it("a waiting learner can still stop looking while matching is switched off", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyPool.mockResolvedValue({
+      matchingEnabled: false,
+      waiting: true,
+      course: "en",
+      courses: ["en"],
+    });
+    leaveBuddyPool.mockResolvedValue({ status: "left" });
+    renderWithClient(<BuddyCard />);
+    expect(
+      await screen.findByText("Looking for a study buddy learning English at your level."),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stop looking" }));
+    await waitFor(() => expect(leaveBuddyPool).toHaveBeenCalled());
+    expect(screen.queryByRole("button", { name: /Find me a study buddy/ })).not.toBeInTheDocument();
+  });
 });

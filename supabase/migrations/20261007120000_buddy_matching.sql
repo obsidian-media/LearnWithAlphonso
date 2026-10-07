@@ -123,6 +123,13 @@ BEGIN
     IF result = 'paired' THEN RETURN QUERY SELECT 'paired'::text; RETURN; END IF;
   END IF;
 
+  -- Re-check under my own person lock: a friend pairing that ran while I waited for the pool lock found no pool row to
+  -- clear, and inserting one now would leave me paired AND waiting (matchable later without opting in again).
+  PERFORM pg_advisory_xact_lock(hashtextextended('buddy:' || me::text, 0));
+  IF EXISTS (SELECT 1 FROM public.buddy_members bm WHERE bm.user_id = me) THEN
+    RETURN QUERY SELECT 'already_paired'::text; RETURN;
+  END IF;
+
   -- Nobody suitable yet (or the candidate paired elsewhere a moment ago): wait. Re-joining the same course keeps the
   -- place in the queue; switching course starts a new wait.
   INSERT INTO public.buddy_pool AS bpl (user_id, course, cefr_level) VALUES (me, _course, mine)
@@ -145,6 +152,8 @@ DECLARE
   me uuid := auth.uid();
 BEGIN
   IF me IS NULL THEN RETURN QUERY SELECT 'unauthenticated'::text; RETURN; END IF;
+  -- The pool lock: a join that already picked me as its candidate finishes first, so a match cannot land after I left.
+  PERFORM pg_advisory_xact_lock(hashtextextended('buddy:pool', 0));
   DELETE FROM public.buddy_pool bpl WHERE bpl.user_id = me;
   IF NOT FOUND THEN RETURN QUERY SELECT 'not_waiting'::text; RETURN; END IF;
   RETURN QUERY SELECT 'left'::text;
