@@ -24,6 +24,17 @@ const getFriends = vi.fn();
 const removeFriend = vi.fn();
 const getMyFriendCode = vi.fn();
 vi.mock("../../lib/friends.functions", () => ({ getFriends, removeFriend, getMyFriendCode }));
+const getMyBuddy = vi.fn();
+const getBuddyRequests = vi.fn();
+const requestBuddy = vi.fn();
+vi.mock("../../lib/buddy.functions", () => ({
+  getMyBuddy,
+  getBuddyRequests,
+  requestBuddy,
+  respondBuddyRequest: vi.fn(),
+  cancelBuddyRequest: vi.fn(),
+  endBuddy: vi.fn(),
+}));
 
 const { Route } = await import("./profile_.friends");
 const { useTheme } = await import("../../lib/theme");
@@ -42,6 +53,9 @@ beforeEach(() => {
   getFriends.mockReset();
   removeFriend.mockReset();
   getMyFriendCode.mockReset();
+  getMyBuddy.mockReset().mockResolvedValue(null);
+  getBuddyRequests.mockReset().mockResolvedValue([]);
+  requestBuddy.mockReset();
   useTheme.setState({ theme: "meadow" });
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
@@ -50,6 +64,28 @@ beforeEach(() => {
 });
 
 describe("Friends page", () => {
+  it("shows the study buddy card and lets you ask a friend from their row", async () => {
+    getFriends.mockResolvedValue([
+      {
+        userId: "3f2b6c1e-8a4d-4c7e-9b1a-2d5e6f708192",
+        displayName: "Ada",
+        avatarSeed: "A",
+        streak: 5,
+        weekXp: 120,
+      },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    requestBuddy.mockResolvedValue({ status: "requested" });
+    renderPage();
+    expect(await screen.findByText(/Pick a friend to study with/)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Ask to be study buddy" }));
+    await waitFor(() =>
+      expect(requestBuddy).toHaveBeenCalledWith({
+        data: { friendId: "3f2b6c1e-8a4d-4c7e-9b1a-2d5e6f708192" },
+      }),
+    );
+  });
+
   it("shows a loading state before the friends list resolves", () => {
     getFriends.mockReturnValue(new Promise(() => {}));
     getMyFriendCode.mockReturnValue(new Promise(() => {}));
