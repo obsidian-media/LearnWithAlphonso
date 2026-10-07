@@ -53,7 +53,7 @@ function Terms() {
       <Section heading="Who can use Alphonso">
         <Bullets
           items={[
-            "You must be at least 13 years old to use the app. Where the law where you live sets a higher minimum age for using online services without a parent’s consent, you must meet that age or have your parent or guardian’s consent.",
+            "You must be at least 13 years old to use the app. Where the law where you live sets a higher minimum age for using online services without a parent’s consent, you must be at least that age.",
             "If you are under 18, please read these terms with a parent or guardian.",
             "You must not use the app if the law where you live forbids it, or if we have previously closed your account for breaking these terms.",
           ]}
@@ -107,8 +107,10 @@ function Terms() {
           ]}
         />
         <p>
-          Every screen that shows another learner has a … menu with Report and Block. Blocking takes
-          effect immediately. You can also report a problem by writing to {CONTACT}.
+          In the iOS app, every screen that shows another learner (leaderboards, friends, teams,
+          duels and study buddies) has a … menu with Report and Block. On the website, the same menu
+          is on leagues, friends and study buddies. Blocking takes effect immediately. You can also
+          report a problem, including a team name, by writing to {CONTACT}.
         </p>
         <p>
           We review every report and act on it within 24 hours. When content or a learner breaks
@@ -151,7 +153,7 @@ function Terms() {
           items={[
             "Price: the price and billing period are shown in the app, in your local currency, before you confirm the purchase.",
             "Free trial: if a free trial is offered and you are eligible, the app shows it before you confirm. When the trial ends, your paid subscription starts automatically unless you cancel at least 24 hours before the trial ends. Apple or Google decides who is eligible for a trial.",
-            "Payment: Payment is charged to your Apple Account at confirmation of purchase. If you subscribe through Google Play on Android, payment is charged to your Google Play account. We never receive your card details.",
+            "Billing: Payment is charged to your Apple Account at confirmation of purchase. If you subscribe through Google Play on Android, payment is charged to your Google Play account. We never receive your card details.",
             "Renewal: your subscription renews automatically for another month unless you cancel it at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the current period ends.",
             "Cancelling: manage or cancel your subscription in your Apple Account settings (on iPhone: Settings → your name → Subscriptions), or on Android in Google Play → Payments & subscriptions. Cancelling stops the next renewal, and you keep Pro until the end of the period you have paid for. Deleting your Alphonso account does not cancel your subscription.",
             "Refunds: App Store purchases are handled by Apple under Apple’s refund policies. You can ask Apple for a refund at reportaproblem.apple.com. Google Play purchases are handled under Google Play’s refund policies. We cannot refund store purchases ourselves.",

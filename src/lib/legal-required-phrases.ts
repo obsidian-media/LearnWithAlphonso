@@ -38,6 +38,9 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
     "AI output can be wrong, incomplete or inappropriate",
     "governed by the laws of the Province of Ontario",
     "and, on leaderboards, the country you chose",
+    "you must be at least that age",
+    "In the iOS app, every screen that shows another learner",
+    "Billing: Payment is charged",
   ],
   "/privacy": [
     "Shayan Salimi",
@@ -65,14 +68,22 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
     "Leaderboards also show the country you chose",
     "we keep it in your account record",
     "Skip gives you a generated name",
+    "Our marketing website (discover.alphonsoecosystem.app)",
+    "Neon:",
+    "Vercel Web Analytics",
   ],
-  "/cookies": [SUPPORT_EMAIL, "We do not set any optional cookies or storage today"],
+  "/cookies": [
+    SUPPORT_EMAIL,
+    "On learn.alphonsoecosystem.app we do not set any optional cookies or storage",
+    "uses Vercel Web Analytics, which does not use cookies",
+  ],
   "/support": [
     SUPPORT_EMAIL,
     "within 24 hours",
     "Restore Purchases",
     "Profile → Settings → AI features",
     "removes your learning history, including Hector",
+    "In the iOS app, every screen that shows another person",
   ],
 };
 
@@ -83,6 +94,8 @@ export const LEGAL_FORBIDDEN_PHRASES: Readonly<Record<LegalPath, readonly string
     "You can delete your account at any time from Profile → Your data",
     "privacy@alphonsoecosystem.app",
     "keep the generated name",
+    "parent or guardian’s consent",
+    "Payment: Payment",
   ],
   "/privacy": [
     "privacy@alphonsoecosystem.app",

@@ -91,9 +91,11 @@ function Support() {
 
       <Section heading="Reporting someone">
         <p>
-          Every screen that shows another person has a “…” menu with Block and Report. Blocking
-          takes effect immediately. We review every report within 24 hours. If something needs
-          urgent attention, you can also write to {CONTACT}.
+          In the iOS app, every screen that shows another person has a “…” menu with Block and
+          Report. On the website, the same menu is on leagues, friends and study buddies. Blocking
+          takes effect immediately. We review every report within 24 hours. To report something the
+          menu does not cover, such as a team name on the website, or if something needs urgent
+          attention, write to {CONTACT}.
         </p>
       </Section>
     </LegalPage>

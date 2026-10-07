@@ -173,8 +173,20 @@ function Privacy() {
             "RevenueCat: manages subscription status. It receives an account identifier and purchase and renewal information from Apple or Google, not your payment details.",
             "Apple: Sign in with Apple if you choose it, App Store billing for Alphonso Pro, and the Apple Push Notification service for notifications on iPhone.",
             "Google: Sign in with Google if you choose it and, on Android, Google Play billing and Firebase Cloud Messaging for notifications.",
+            "Neon: hosts the database behind the launch email list on our marketing website. It stores the email address you enter there and when you entered it.",
+            "Vercel Web Analytics: counts page views and a few events, such as joining the launch email list, on our marketing website. It counts them in aggregate and does not use cookies.",
           ]}
         />
+      </Section>
+
+      <Section heading="Our marketing website">
+        <p>
+          Our marketing website (discover.alphonsoecosystem.app) has no accounts. If you join the
+          launch email list there, we store your email address and the time you joined in a database
+          hosted by Neon, and we use it only to tell you when the iPhone app is available. Write to{" "}
+          {SUPPORT} and we will delete it. The site uses Vercel Web Analytics, which counts page
+          views and events such as joining the list, in aggregate and without cookies.
+        </p>
       </Section>
 
       <Section heading="Where your data goes">

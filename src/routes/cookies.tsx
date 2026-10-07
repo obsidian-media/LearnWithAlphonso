@@ -55,9 +55,11 @@ function Cookies() {
 
       <Section heading="Optional">
         <p>
-          We do not set any optional cookies or storage today: no analytics, no advertising and no
-          cross-site tracking. If we ever add optional analytics, we will list it here first and
-          only use it if you choose Accept all in the banner.
+          On learn.alphonsoecosystem.app we do not set any optional cookies or storage today: no
+          analytics, no advertising and no cross-site tracking. If we ever add optional analytics
+          here, we will list it here first and only use it if you choose Accept all in the banner.
+          Our marketing website, discover.alphonsoecosystem.app, uses Vercel Web Analytics, which
+          does not use cookies and counts page views and events only in aggregate.
         </p>
       </Section>
 
