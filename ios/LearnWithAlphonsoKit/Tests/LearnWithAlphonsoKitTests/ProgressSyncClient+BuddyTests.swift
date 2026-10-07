@@ -130,4 +130,34 @@ final class ProgressSyncClientBuddyTests: XCTestCase {
             XCTFail("a server error must throw")
         } catch {}
     }
+
+    func testSendBuddyMessagePostsThePresetAndGetBuddyMessagesDecodesRows() async throws {
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/rest/v1/rpc/send_buddy_message":
+                XCTAssertEqual(self.body(request)["_preset"] as? String, "nice_work")
+                return self.jsonResponse(for: request.url!, body: [["status": "rate_limited"]])
+            case "/rest/v1/rpc/get_buddy_messages":
+                return self.jsonResponse(for: request.url!, body: [[
+                    "message_id": "m1", "sender_id": "u2", "is_mine": false, "preset_id": "nice_work",
+                    "sent_at": "2026-10-07T00:00:00+00:00",
+                ]])
+            default:
+                XCTFail("unexpected \(request.url?.path ?? "")")
+                return self.jsonResponse(for: request.url!, body: [] as [Any])
+            }
+        }
+        let status = try await client.sendBuddyMessage(presetID: "nice_work")
+        XCTAssertEqual(status, "rate_limited")
+        let messages = try await client.getBuddyMessages()
+        XCTAssertEqual(messages.map(\.presetID), ["nice_work"])
+    }
+
+    func testGetBuddyMessagesThrowsOnAServerErrorNeverAnEmptyHistory() async {
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [Any], status: 500) }
+        do {
+            _ = try await client.getBuddyMessages()
+            XCTFail("a failed read must throw")
+        } catch {}
+    }
 }

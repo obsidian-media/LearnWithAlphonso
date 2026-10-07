@@ -16,6 +16,7 @@ struct BuddySection: View {
 
     @State private var buddy: MyBuddy?
     @State private var requests: [BuddyRequest] = []
+    @State private var messages: [BuddyMessage] = []
     @State private var isLoading = true
     /// The spinner shows only before the first result; later reloads keep the section on screen.
     @State private var hasLoaded = false
@@ -52,7 +53,15 @@ struct BuddySection: View {
                 .foregroundStyle(AlphonsoColor.ember)
         }
         .listRowBackground(AlphonsoColor.parchment)
-        .task { await load() }
+        // Loads on appear, then refreshes every minute while the section is on screen (no realtime socket, spec Part 3).
+        .task {
+            await load()
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                guard !Task.isCancelled else { return }
+                await load()
+            }
+        }
         .confirmationDialog(
             BuddyCopy.endConfirm(buddy?.buddyName ?? "your buddy"),
             isPresented: $confirmingEnd,
@@ -83,6 +92,20 @@ struct BuddySection: View {
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
+        Menu("Send \(buddy.buddyName) a message") {
+            ForEach(BuddyCopy.presets, id: \.id) { preset in
+                Button(preset.text) {
+                    Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
+                }
+            }
+        }
+        .tint(AlphonsoColor.moss)
+        .disabled(busy)
+        ForEach(historyLines(buddy)) { item in
+            Text(item.line)
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.ink)
+        }
         Button("End study buddy", role: .destructive) { confirmingEnd = true }
             .tint(AlphonsoColor.destructive)
             .disabled(busy)
@@ -142,6 +165,19 @@ struct BuddySection: View {
         }
     }
 
+    /// The last 10 messages as display lines; a preset this client does not know is skipped.
+    private func historyLines(_ buddy: MyBuddy) -> [HistoryLine] {
+        messages.suffix(10).compactMap { message in
+            BuddyCopy.messageLine(isMine: message.isMine, buddyName: buddy.buddyName, presetID: message.presetID)
+                .map { HistoryLine(id: message.id, line: $0) }
+        }
+    }
+
+    private struct HistoryLine: Identifiable {
+        let id: String
+        let line: String
+    }
+
     /// Friends with no pending request either way (the server answers the rest, but offering them would only fail).
     private var askable: [FriendProgress] {
         let pending = Set(requests.map(\.otherID))
@@ -169,9 +205,12 @@ struct BuddySection: View {
         do {
             let newBuddy = try await client.getMyBuddy()
             let newRequests = try await client.getBuddyRequests()
+            // Messages only while paired; their failure is a load failure, never an empty history.
+            let newMessages = newBuddy == nil ? [] : try await client.getBuddyMessages()
             guard generation == loadGeneration else { return false }
             buddy = newBuddy
             requests = newRequests
+            messages = newMessages
             loadFailed = false
             hasLoaded = true
             // An answer describes the state before this load; it must not outlive it (web: the stamp in BuddyCard).

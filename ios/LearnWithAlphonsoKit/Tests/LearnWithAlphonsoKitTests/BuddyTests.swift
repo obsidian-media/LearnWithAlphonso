@@ -68,6 +68,40 @@ final class BuddyTests: XCTestCase {
         XCTAssertEqual(BuddyCopy.endConfirm(try XCTUnwrap(endConfirm["name"])), endConfirm["expected"])
     }
 
+    func testPresetsAndMessageLinesMatchTheWeb() throws {
+        let all = try fixtures()
+        let presets = try XCTUnwrap(all["presets"] as? [[String: String]])
+        XCTAssertEqual(BuddyCopy.presets.map(\.id), presets.map { $0["id"]! })
+        XCTAssertEqual(BuddyCopy.presets.map(\.text), presets.map { $0["text"]! })
+        XCTAssertNil(BuddyCopy.presetText("hi there"))
+        XCTAssertEqual(BuddyCopy.messagesPerHour, all["messagesPerHour"] as? Int)
+        for line in try XCTUnwrap(all["messageLines"] as? [[String: Any]]) {
+            // The key must be present: a string, or JSON null for an unknown preset (never just missing).
+            let expectedValue = try XCTUnwrap(line["expected"])
+            XCTAssertTrue(expectedValue is String || expectedValue is NSNull)
+            XCTAssertEqual(
+                BuddyCopy.messageLine(
+                    isMine: try XCTUnwrap(line["isMine"] as? Bool),
+                    buddyName: try XCTUnwrap(line["buddyName"] as? String),
+                    presetID: try XCTUnwrap(line["presetId"] as? String)),
+                line["expected"] as? String)
+        }
+    }
+
+    func testBuddyMessageDecodesARowAndRejectsAMistypedOne() {
+        let row: [String: Any] = [
+            "message_id": "m1", "sender_id": "u2", "is_mine": false, "preset_id": "good_night",
+            "sent_at": "2026-10-07T00:00:00+00:00",
+        ]
+        let message = BuddyMessage(row: row)
+        XCTAssertEqual(message?.id, "m1")
+        XCTAssertEqual(message?.isMine, false)
+        XCTAssertEqual(message?.presetID, "good_night")
+        var bad = row
+        bad["is_mine"] = "no"
+        XCTAssertNil(BuddyMessage(row: bad))
+    }
+
     // MARK: - Decoding the RPC rows
 
     private func buddyRow() -> [String: Any] {

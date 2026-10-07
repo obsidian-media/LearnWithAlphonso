@@ -38,6 +38,19 @@ extension ProgressSyncClient {
         try await buddyStatus("end_buddy", [:])
     }
 
+    /// Sends one of `BuddyCopy.presets` by id (the server refuses anything else).
+    public func sendBuddyMessage(presetID: String) async throws -> String {
+        try await buddyStatus("send_buddy_message", ["_preset": presetID])
+    }
+
+    /// The active pair's newest messages, oldest first. Throws on failure, never an empty history.
+    public func getBuddyMessages() async throws -> [BuddyMessage] {
+        try await buddyRPC("get_buddy_messages", [:]).map { row in
+            guard let message = BuddyMessage(row: row) else { throw ProgressSyncError.invalidPayload }
+            return message
+        }
+    }
+
     private func buddyStatus(_ function: String, _ body: [String: Any]) async throws -> String {
         let rows = try await buddyRPC(function, body)
         return rows.first?["status"] as? String ?? "unknown"

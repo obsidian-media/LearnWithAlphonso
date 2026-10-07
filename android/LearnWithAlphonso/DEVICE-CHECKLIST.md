@@ -97,4 +97,6 @@ Two test accounts that are friends (A and B).
 - [ ] After A finishes a lesson, B's card (reopen Friends) shows "Buddy 1/3".
 - [ ] End study buddy asks "End being study buddies with A? Your streak ends."; Keep does nothing, Yes, end shows "You're no longer study buddies."
 - [ ] Airplane mode, reopen Friends: "Couldn't load your study buddy." with Try again (never the ask list); turn the network back on, Try again recovers.
+- [ ] Paired: "Send B a message" opens the 8 presets (no text field anywhere). Pick "Nice work!": "Sent." appears and "You: Nice work!" shows in the history; B sees "A: Nice work!" within a minute while Friends is open.
+- [ ] Send 21 presets within an hour: the 21st answers "You've sent a lot of messages. Try again in a while."
 

@@ -79,6 +79,60 @@ public enum BuddyCopy {
     public static func endConfirm(_ name: String) -> String {
         "End being study buddies with \(name)? Your streak ends."
     }
+
+    /// Most preset messages one buddy may send per hour (the server's limit).
+    public static let messagesPerHour = 20
+
+    public struct Preset: Equatable, Sendable {
+        public let id: String
+        public let text: String
+    }
+
+    /// The only things buddies can say to each other: fixed encouragements, never free text (owner decision
+    /// 2026-10-06). The server stores and checks only the id.
+    public static let presets: [Preset] = [
+        Preset(id: "lets_study", text: "Let's study together!"),
+        Preset(id: "nice_work", text: "Nice work!"),
+        Preset(id: "keep_going", text: "Keep going, you've got this!"),
+        Preset(id: "need_a_hand", text: "Need a hand?"),
+        Preset(id: "on_my_way", text: "On my way to a lesson!"),
+        Preset(id: "good_morning", text: "Good morning!"),
+        Preset(id: "good_night", text: "Good night!"),
+        Preset(id: "proud_of_you", text: "Proud of you!"),
+    ]
+
+    /// The preset's text, or nil for an id this client does not know (the history skips that message).
+    public static func presetText(_ id: String) -> String? { presets.first { $0.id == id }?.text }
+
+    /// "You: Nice work!" / "Bo: Nice work!", or nil for an unknown preset.
+    public static func messageLine(isMine: Bool, buddyName: String, presetID: String) -> String? {
+        guard let text = presetText(presetID) else { return nil }
+        return "\(isMine ? "You" : buddyName): \(text)"
+    }
+}
+
+/// One `get_buddy_messages` row.
+public struct BuddyMessage: Equatable, Sendable, Identifiable {
+    public let id: String
+    public let senderID: String
+    public let isMine: Bool
+    public let presetID: String
+    public let sentAt: String
+
+    public init?(row: [String: Any]) {
+        guard
+            let id = row["message_id"] as? String,
+            let senderID = row["sender_id"] as? String,
+            let isMine = row["is_mine"] as? Bool,
+            let presetID = row["preset_id"] as? String,
+            let sentAt = row["sent_at"] as? String
+        else { return nil }
+        self.id = id
+        self.senderID = senderID
+        self.isMine = isMine
+        self.presetID = presetID
+        self.sentAt = sentAt
+    }
 }
 
 /// One `get_my_buddy` row: the caller's active buddy and this week's counts.

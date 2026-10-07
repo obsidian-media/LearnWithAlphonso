@@ -62,7 +62,34 @@ object BuddyCopy {
     fun incomingLine(name: String): String = "$name wants to be your study buddy."
     fun outgoingLine(name: String): String = "Waiting for $name."
     fun endConfirm(name: String): String = "End being study buddies with $name? Your streak ends."
+
+    /** Most preset messages one buddy may send per hour (the server's limit). */
+    const val MESSAGES_PER_HOUR = 20
+
+    data class Preset(val id: String, val text: String)
+
+    /** The only things buddies can say to each other: fixed encouragements, never free text (owner decision 2026-10-06). */
+    val PRESETS = listOf(
+        Preset("lets_study", "Let's study together!"),
+        Preset("nice_work", "Nice work!"),
+        Preset("keep_going", "Keep going, you've got this!"),
+        Preset("need_a_hand", "Need a hand?"),
+        Preset("on_my_way", "On my way to a lesson!"),
+        Preset("good_morning", "Good morning!"),
+        Preset("good_night", "Good night!"),
+        Preset("proud_of_you", "Proud of you!"),
+    )
+
+    /** The preset's text, or null for an id this client does not know (the history skips that message). */
+    fun presetText(id: String): String? = PRESETS.firstOrNull { it.id == id }?.text
+
+    /** "You: Nice work!" / "Bo: Nice work!", or null for an unknown preset. */
+    fun messageLine(isMine: Boolean, buddyName: String, presetId: String): String? =
+        presetText(presetId)?.let { "${if (isMine) "You" else buddyName}: $it" }
 }
+
+/** One `get_buddy_messages` row. */
+data class BuddyMessage(val messageId: String, val senderId: String, val isMine: Boolean, val presetId: String, val sentAt: String)
 
 /** One `get_my_buddy` row: the caller's active buddy and this week's counts. */
 data class MyBuddy(
