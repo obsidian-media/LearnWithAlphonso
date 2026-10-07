@@ -1713,6 +1713,7 @@ export type Database = {
         Args: { _from: string; _to: string; _user: string };
         Returns: number;
       };
+      _cefr_rank: { Args: { _level: string }; Returns: number };
       _create_buddy_pair: {
         Args: { _source: string; _x: string; _y: string };
         Returns: string;
