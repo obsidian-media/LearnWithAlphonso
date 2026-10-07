@@ -26,6 +26,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,6 +93,14 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit) {
                     if (state.canLeave) TextButton(onClick = vm::leave) { Text("Leave team", color = palette.destructive) }
                     else Text("Can't leave until ${DateUtils.formatDateTime(context, team.switchLockedUntilMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH)}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                 }
+                // The mission card follows the member count: an owner removing someone turns a two-person mission
+                // into "invite a friend" on the server, and the card must follow (a refresh also fires on entry).
+                val missionVm: TeamMissionViewModel = viewModel(key = "team-mission-teams") { TeamMissionViewModel(container.progressClient) }
+                val mission by missionVm.state.collectAsState()
+                LaunchedEffect(state.members.size) { missionVm.refresh() }
+                // Only a mission that belongs to the team on screen: after leaving one team and joining another here, the
+                // view-model still holds the old team's mission until the new refresh returns.
+                mission?.takeIf { it.teamId == team.teamId }?.let { TeamMissionCard(it) }
                 SectionCard("Members") {
                     state.members.forEach { m ->
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

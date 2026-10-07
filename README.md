@@ -287,6 +287,10 @@ compile verification that exists):
   (deliberately the weaker polling-based V2 version, not real push — see
   `ARCHITECTURE.md`)
 - **Achievements/leagues**: browse screen + unlock celebrations
+- **Team mission**: every team of two or more gets a weekly shared goal (members x 4 lessons); reaching it pays each
+  contributing member +50 XP and a "Team player" badge. One server function (`get_team_mission`) behind web, iOS and
+  Android; no cron. Language buddies (pairing, a shared weekly goal, preset messages only) are designed but not built:
+  `docs/superpowers/specs/2026-10-06-study-together-design.md`
 - **Teams, weekly challenges, open duels, season ladder**: persistent
   teams with weekly-XP competition; fixed weekly solo goals plus
   stranger-matchmaking duels (alongside friend duels); a weekly

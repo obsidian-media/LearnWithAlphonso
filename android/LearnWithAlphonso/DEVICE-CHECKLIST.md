@@ -69,6 +69,18 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] Display size and font scale at 200%: the dialog scrolls and no text is clipped.
 - [ ] Sign out, sign in as someone else: the other account's goal never appears, even offline.
 
+## Team mission (study together, nothing here has been run on a device)
+
+- [ ] Alone on a team: the Teams screen and the Learn tab show "Invite a friend to start your team's weekly mission" and no progress bar.
+- [ ] With a second member: the card shows "N of M lessons done", a progress bar, and "You added X · D days left" (M is members x 4; "Last day" when one day is left).
+- [ ] Finish a lesson, go back to Learn: your count and the bar move without a flash; the same numbers show on the web and iOS.
+- [ ] The team reaches its target: "Mission complete!" and "+50 XP for everyone who joined in"; a member who added no lesson gets no XP; a "Team player" badge appears under Achievements for the members who were paid.
+- [ ] As the team owner remove the other member: the team screen's card changes to "Invite a friend" without reopening the screen.
+- [ ] No team at all: neither screen shows a card or a blank gap in the Learn list.
+- [ ] Airplane mode: the card disappears rather than showing old numbers.
+- [ ] TalkBack reads the headline, "Team mission progress, N percent" and the footer; the bar is not the only carrier of the information.
+- [ ] Font scale 200%: nothing is clipped.
+
 ## Links
 
 - [ ] Tap an invite link `https://learn.alphonsoecosystem.app/invite/<code>` from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9).

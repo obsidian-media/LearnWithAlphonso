@@ -50,6 +50,8 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
+import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionCard
+import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionViewModel
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 val Course.flag: String get() = when (this) { Course.ENGLISH -> "🇬🇧"; Course.FRENCH -> "🇫🇷"; Course.SPANISH -> "🇪🇸" }
@@ -73,6 +75,12 @@ fun LearnScreen(
     val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) { vm.refresh() }
+
+    // The team mission: this view-model outlives the screen (kept with the Learn back-stack entry), so refresh on every
+    // entry. Null (no team, loading, or a failed refresh) means no card, and no list item either.
+    val missionVm: TeamMissionViewModel = viewModel(key = "team-mission-learn") { TeamMissionViewModel(container.progressClient) }
+    val teamMission by missionVm.state.collectAsState()
+    LaunchedEffect(missionVm) { missionVm.refresh() }
 
     val continueId = state.continueLessonId(container.content)
     var scrolled by remember { mutableStateOf(false) }
@@ -110,6 +118,7 @@ fun LearnScreen(
                 LaunchedEffect(goalVm) { goalVm.reload(quiet = true) }
                 GoalCard(goalVm)
             }
+            teamMission?.let { mission -> item(key = "team-mission") { TeamMissionCard(mission) } }
             if (state.challenges.isNotEmpty()) {
                 item(key = "challenges") {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
