@@ -33,7 +33,8 @@ test("reset-password page loads without a recovery token", async ({ page }) => {
 
 for (const [path, titlePattern] of [
   ["/privacy", /Privacy Policy — Alphonso/],
-  ["/terms", /Terms of Service — Alphonso/],
+  ["/terms", /Terms of Use — Alphonso/],
+  ["/support", /Support — Alphonso/],
   ["/cookies", /Cookie Policy — Alphonso/],
 ] as const) {
   test(`${path} loads`, async ({ page }) => {
