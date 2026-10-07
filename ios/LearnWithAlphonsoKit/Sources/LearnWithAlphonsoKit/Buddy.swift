@@ -45,6 +45,9 @@ public enum BuddyCopy {
         "not_found": "That request is no longer open.",
         "not_paired": "You don't have a study buddy.",
         "unauthenticated": "Sign in to find a study buddy.",
+        "sent": "Sent.",
+        "rate_limited": "You've sent a lot of messages. Try again in a while.",
+        "bad_preset": "Something went wrong. Try again.",
         "unknown": "Something went wrong. Try again.",
     ]
 

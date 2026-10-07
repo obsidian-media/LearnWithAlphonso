@@ -34,6 +34,8 @@ vi.mock("../../lib/buddy.functions", () => ({
   respondBuddyRequest: vi.fn(),
   cancelBuddyRequest: vi.fn(),
   endBuddy: vi.fn(),
+  sendBuddyMessage: vi.fn(),
+  getBuddyMessages: vi.fn().mockResolvedValue([]),
 }));
 
 const { Route } = await import("./profile_.friends");

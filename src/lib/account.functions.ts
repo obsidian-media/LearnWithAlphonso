@@ -48,6 +48,10 @@ export const OTHER_OWNED_EXPORT_TABLES = [
   { table: "buddy_requests", columns: ["from_user", "to_user"] },
 ] as const;
 
+// Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's
+// own-pairs SELECT policy is what limits the export to this account's pairs.
+export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as const;
+
 // deleteMyAccount issues its DELETEs *as the caller*, so this is deliberately
 // only the tables where `authenticated` has a DELETE *policy*, not merely a
 // grant. With RLS on and no DELETE policy a delete matches zero rows and still
@@ -86,7 +90,7 @@ export const exportMyData = createServerFn({ method: "POST" })
     // Independent selects -- batched instead of a sequential loop, so a GDPR
     // export stays one round trip's worth of latency rather than one per
     // table as this list grows.
-    const [userIdRows, otherOwnedRows, { data: profile }, buddyWeeks] = await Promise.all([
+    const [userIdRows, otherOwnedRows, { data: profile }, rlsScopedRows] = await Promise.all([
       Promise.all(
         USER_ID_EXPORT_TABLES.map((table) =>
           supabase
@@ -104,8 +108,7 @@ export const exportMyData = createServerFn({ method: "POST" })
         ),
       ),
       supabase.from("profiles").select("*").eq("id", userId),
-      // buddy_weeks has no user column; its SELECT policy already limits it to the caller's own pairs.
-      supabase.from("buddy_weeks").select("*"),
+      Promise.all(RLS_SCOPED_EXPORT_TABLES.map((table) => supabase.from(table).select("*"))),
     ]);
     // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
     // could look complete while omitting a table. Fail instead and name the tables.
@@ -114,7 +117,7 @@ export const exportMyData = createServerFn({ method: "POST" })
       ...OTHER_OWNED_EXPORT_TABLES.map(({ table }) => table).filter(
         (_, i) => otherOwnedRows[i].error,
       ),
-      ...(buddyWeeks.error ? ["buddy_weeks"] : []),
+      ...RLS_SCOPED_EXPORT_TABLES.filter((_, i) => rlsScopedRows[i].error),
     ];
     if (failed.length > 0) {
       throw new Error(
@@ -129,7 +132,9 @@ export const exportMyData = createServerFn({ method: "POST" })
       tables[table] = (otherOwnedRows[i].data as unknown[]) ?? [];
     });
     tables.profiles = profile ?? [];
-    tables.buddy_weeks = (buddyWeeks.data as unknown[]) ?? [];
+    RLS_SCOPED_EXPORT_TABLES.forEach((table, i) => {
+      tables[table] = (rlsScopedRows[i].data as unknown[]) ?? [];
+    });
     return {
       exported_at: new Date().toISOString(),
       user_id: userId,

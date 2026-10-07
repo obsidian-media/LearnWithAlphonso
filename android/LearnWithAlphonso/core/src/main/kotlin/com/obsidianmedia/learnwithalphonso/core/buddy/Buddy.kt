@@ -39,6 +39,9 @@ object BuddyCopy {
         "not_found" to "That request is no longer open.",
         "not_paired" to "You don't have a study buddy.",
         "unauthenticated" to "Sign in to find a study buddy.",
+        "sent" to "Sent.",
+        "rate_limited" to "You've sent a lot of messages. Try again in a while.",
+        "bad_preset" to "Something went wrong. Try again.",
         "unknown" to "Something went wrong. Try again.",
     )
 

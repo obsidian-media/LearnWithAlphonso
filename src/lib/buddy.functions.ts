@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { BUDDY_PRESETS } from "./buddy";
 
 // Study buddies (study together, Phase 3a). Every write is a SECURITY DEFINER RPC that answers with a typed status
 // (see BuddyStatus in ./buddy); every function here throws on an RPC error, so a failed lookup is never shown as
@@ -116,4 +117,41 @@ export const endBuddy = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase.rpc("end_buddy");
     if (error) throw new Error(`endBuddy: ${error.message}`);
     return statusOf(rows);
+  });
+
+export type BuddyMessage = {
+  messageId: string;
+  senderId: string;
+  isMine: boolean;
+  presetId: string;
+  sentAt: string;
+};
+
+const PRESET_IDS = BUDDY_PRESETS.map((p) => p.id) as [string, ...string[]];
+
+/** Sends one of the fixed presets. Anything else is refused here AND by the server (no free text, ever). */
+export const sendBuddyMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ presetId: z.enum(PRESET_IDS) }).parse(d))
+  .handler(async ({ data, context }): Promise<BuddyActionResult> => {
+    const { data: rows, error } = await context.supabase.rpc("send_buddy_message", {
+      _preset: data.presetId,
+    });
+    if (error) throw new Error(`sendBuddyMessage: ${error.message}`);
+    return statusOf(rows);
+  });
+
+/** The active pair's newest messages, oldest first; throws on failure so the card never shows an empty history. */
+export const getBuddyMessages = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<BuddyMessage[]> => {
+    const { data: rows, error } = await context.supabase.rpc("get_buddy_messages", {});
+    if (error) throw new Error(`getBuddyMessages: ${error.message}`);
+    return (rows ?? []).map((r) => ({
+      messageId: r.message_id,
+      senderId: r.sender_id,
+      isMine: r.is_mine,
+      presetId: r.preset_id,
+      sentAt: r.sent_at,
+    }));
   });
