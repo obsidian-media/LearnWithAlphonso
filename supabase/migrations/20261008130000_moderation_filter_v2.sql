@@ -100,9 +100,9 @@ IMMUTABLE
 SET search_path = ''
 AS $$
   SELECT ARRAY[
-    'nigger', 'nigga', 'chink', 'spic', 'kike', 'faggot', 'fag', 'retard', 'tranny', 'wetback', 'gook',
+    'nigger', 'nigga', 'chink', 'spic', 'kike', 'faggot', 'fag', 'retard', 'tranny', 'wetback', 'gook', 'paki',
     'fuck', 'fucking', 'shit', 'bitch', 'cunt', 'whore', 'slut', 'asshole', 'motherfucker', 'pussy', 'rape',
-    'rapist', 'pedo', 'pedophile', 'hitler', 'twat', 'wanker', 'porn', 'porno',
+    'rapist', 'pedo', 'pedophile', 'nazi', 'hitler', 'twat', 'wanker', 'porn', 'porno',
     'salope', 'pute', 'encule', 'puta', 'maricon', 'gilipollas'
   ];
 $$;
@@ -139,7 +139,7 @@ LANGUAGE sql
 IMMUTABLE
 SET search_path = ''
 AS $$
-  SELECT ARRAY['dick', 'cock', 'coon', 'cox', 'gay', 'nazi', 'negre', 'cono', 'paki'];
+  SELECT ARRAY['dick', 'cock', 'coon', 'cox', 'gay', 'negre', 'cono'];
 $$;
 
 CREATE OR REPLACE FUNCTION public.moderation_context_markers()

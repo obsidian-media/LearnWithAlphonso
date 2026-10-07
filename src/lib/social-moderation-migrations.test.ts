@@ -158,12 +158,14 @@ describe("moderation filter v2", () => {
       const stmt = fn(file, name);
       return [...stmt.slice(stmt.indexOf("ARRAY[")).matchAll(/'([^']+)'/g)].map((m) => m[1]);
     };
-    const contextualWords = ["dick", "cock", "coon", "cox", "gay", "nazi", "negre", "cono", "paki"];
+    const contextualWords = ["dick", "cock", "coon", "cox", "gay", "negre", "cono"];
     const terms = arrayOf("blocked_moderation_terms");
     expect(terms.length).toBeGreaterThanOrEqual(35);
     for (const t of terms) expect(t, t).toMatch(/^[a-z]+$/);
     for (const name of contextualWords) expect(terms).not.toContain(name);
     expect(arrayOf("moderation_contextual_terms")).toEqual(contextualWords);
+    // Hate terms stay blocked as whole words, alone or in any phrase.
+    for (const w of ["nazi", "paki"]) expect(terms, w).toContain(w);
     expect(arrayOf("moderation_anatomy_terms")).toEqual(["dick", "cock", "cox"]);
     // Possessives and sizes only count next to an anatomy word: "My Gay Uncle" is a name, "Big Dick" is not.
     const neutral = [
