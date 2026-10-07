@@ -51,7 +51,7 @@ DECLARE
 BEGIN
   FOR i IN 1..50 LOOP
     candidate := public._random_team_name();
-    IF NOT public.contains_blocked_term(candidate) THEN
+    IF public.team_name_problem(candidate) IS NULL THEN
       RETURN candidate;
     END IF;
   END LOOP;
@@ -86,8 +86,7 @@ DECLARE
 BEGIN
   SELECT count(*) INTO n_names FROM public.profiles p WHERE public.display_name_problem(p.display_name) IS NOT NULL;
   SELECT count(*) INTO n_teams FROM public.teams t
-  WHERE public.moderation_clean_text(t.name) IS NULL OR char_length(public.moderation_clean_text(t.name)) > 40
-     OR public.contains_blocked_term(public.moderation_clean_text(t.name));
+  WHERE public.team_name_problem(t.name) IS NOT NULL;
   RAISE NOTICE 'O6 reset: % display names, % team names fail the filter (approved % and %)',
     n_names, n_teams, _approved_names, _approved_teams;
   IF n_names > coalesce(_approved_names, 0) OR n_teams > coalesce(_approved_teams, 0) THEN
@@ -112,8 +111,7 @@ BEGIN
   WITH targets AS (
     SELECT t.id, t.name AS old_name, public._safe_random_team_name() AS new_name
     FROM public.teams t
-    WHERE public.moderation_clean_text(t.name) IS NULL OR char_length(public.moderation_clean_text(t.name)) > 40
-       OR public.contains_blocked_term(public.moderation_clean_text(t.name))
+    WHERE public.team_name_problem(t.name) IS NOT NULL
   ), saved AS (
     INSERT INTO public.team_name_migration_backup (team_id, old_name, new_name)
     SELECT id, old_name, new_name FROM targets

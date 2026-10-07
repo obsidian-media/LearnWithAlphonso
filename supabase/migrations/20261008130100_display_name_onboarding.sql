@@ -60,10 +60,10 @@ SET search_path = ''
 AS $$
 BEGIN
   IF NEW.display_name IS NOT NULL THEN
-    NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '');
     IF public.display_name_problem(NEW.display_name) = 'blocked-content' THEN
       RAISE EXCEPTION 'blocked-content' USING ERRCODE = '23514';
     END IF;
+    NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '');
   END IF;
   IF TG_OP = 'UPDATE' AND NEW.display_name IS DISTINCT FROM OLD.display_name
      AND auth.uid() IS NOT NULL AND auth.uid() = NEW.id THEN
@@ -82,17 +82,20 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
+  raw_name text;
   candidate text;
 BEGIN
-  candidate := public.moderation_clean_text(COALESCE(
+  raw_name := COALESCE(
     NULLIF(NEW.raw_user_meta_data->>'display_name', ''),
     NULLIF(NEW.raw_user_meta_data->>'full_name', ''),
-    NULLIF(NEW.raw_user_meta_data->>'name', '')));
+    NULLIF(NEW.raw_user_meta_data->>'name', ''));
+  candidate := public.moderation_clean_text(raw_name);
   IF candidate IS NOT NULL AND NEW.email IS NOT NULL
      AND lower(candidate) = lower(split_part(NEW.email, '@', 1)) THEN
     candidate := NULL;
   END IF;
-  IF candidate IS NULL OR public.display_name_problem(candidate) IS NOT NULL THEN
+  -- Judged as written: cleaning removes bidi controls that display_name_problem refuses.
+  IF candidate IS NULL OR public.display_name_problem(raw_name) IS NOT NULL THEN
     candidate := public.generate_learner_handle();
   END IF;
 

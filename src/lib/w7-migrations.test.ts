@@ -54,7 +54,12 @@ describe("moderation filter v2", () => {
     "moderation_contextual_terms()",
     "moderation_context_markers()",
     "moderation_allowlist_pattern()",
+    "moderation_accented_allowlist_pattern()",
+    "moderation_fold(text)",
+    "moderation_anatomy_terms()",
+    "moderation_anatomy_markers()",
     "contains_blocked_term(text)",
+    "team_name_problem(text)",
     "enforce_display_name_filter()",
   ];
 
@@ -106,33 +111,83 @@ describe("moderation filter v2", () => {
     );
   });
 
-  it("folds NFKC, strips invisible and bidi characters, and drops combining marks", () => {
+  it("stores NFKC text without default-ignorable characters, but keeps ZWNJ and ZWJ (Persian and Indic names)", () => {
     const clean = fn(file, "moderation_clean_text");
     expect(clean).toContain("normalize(coalesce(input, ''), NFKC)");
     for (const range of [
-      "\\u200B-\\u200F",
+      "\\u200B",
+      "\\u180B-\\u180F",
       "\\u202A-\\u202E",
-      "\\u2066-\\u206F",
+      "\\u2060-\\u206F",
+      "\\uFE00-\\uFE0F",
       "\\uFEFF",
       "\\u3164",
+      "\\U0001D173-\\U0001D17A",
+      "\\U000E0000-\\U000E0FFF",
     ]) {
       expect(clean, range).toContain(range);
     }
-    expect(fn(file, "normalize_for_moderation")).toContain("'[\\u0300-\\u036f]'");
+    expect(clean).not.toMatch(/\\u200[CD]|\\u200B-/);
   });
 
-  it("keeps the list in normalized ASCII and moves name-words to the contextual list", () => {
+  it("compares without ZWNJ, ZWJ or any combining mark", () => {
+    const fold = fn(file, "moderation_fold");
+    expect(fold).toContain("'[\\u200C\\u200D]'");
+    for (const range of [
+      "\\u0300-\\u036F",
+      "\\u1AB0-\\u1AFF",
+      "\\u1DC0-\\u1DFF",
+      "\\u20D0-\\u20FF",
+      "\\uFE20-\\uFE2F",
+    ]) {
+      expect(fold, range).toContain(range);
+    }
+    expect(fn(file, "normalize_for_moderation")).toContain("public.moderation_fold(input)");
+  });
+
+  it("checks a second form with punctuation inside words deleted, so a dot or hyphen cannot split a word", () => {
+    const stmt = fn(file, "contains_blocked_term");
+    expect(stmt).toContain("UNION ALL");
+    expect(stmt).toContain("'[^a-z0-9*\\s]+', ''");
+    expect(stmt).toContain("public.moderation_accented_allowlist_pattern()");
+  });
+
+  it("keeps the list in normalized ASCII and moves name-words and ambiguous words to the contextual list", () => {
     // Only the array literal: the header's `search_path = ''` would otherwise pair up with the first term's quote.
     const arrayOf = (name: string) => {
       const stmt = fn(file, name);
       return [...stmt.slice(stmt.indexOf("ARRAY[")).matchAll(/'([^']+)'/g)].map((m) => m[1]);
     };
+    const contextualWords = ["dick", "cock", "coon", "cox", "gay", "nazi", "negre", "cono", "paki"];
     const terms = arrayOf("blocked_moderation_terms");
-    expect(terms.length).toBeGreaterThanOrEqual(40);
+    expect(terms.length).toBeGreaterThanOrEqual(35);
     for (const t of terms) expect(t, t).toMatch(/^[a-z]+$/);
-    for (const name of ["dick", "cock", "coon", "cox", "gay"]) expect(terms).not.toContain(name);
-    const contextual = arrayOf("moderation_contextual_terms");
-    expect(contextual).toEqual(["dick", "cock", "coon", "cox", "gay"]);
+    for (const name of contextualWords) expect(terms).not.toContain(name);
+    expect(arrayOf("moderation_contextual_terms")).toEqual(contextualWords);
+    expect(arrayOf("moderation_anatomy_terms")).toEqual(["dick", "cock", "cox"]);
+    // Possessives and sizes only count next to an anatomy word: "My Gay Uncle" is a name, "Big Dick" is not.
+    const neutral = ["my", "your", "ur", "big", "huge", "tiny", "small", "hard", "head", "face", "hole"];
+    const markers = arrayOf("moderation_context_markers");
+    for (const m of neutral) expect(markers, m).not.toContain(m);
+    expect(arrayOf("moderation_anatomy_markers")).toEqual(neutral);
+    const allow = fn(file, "moderation_allowlist_pattern");
+    for (const name of ["shital", "shitanshu"]) expect(allow, name).toContain(name);
+  });
+
+  it("refuses bidi override and isolate characters in the raw name, before cleaning hides them", () => {
+    const stmt = fn(file, "display_name_problem");
+    expect(stmt).toContain("coalesce(_name, '') ~ '[\\u202A-\\u202E\\u2066-\\u2069]'");
+    const trig = fn(file, "enforce_display_name_filter");
+    expect(trig.indexOf("public.display_name_problem(NEW.display_name)")).toBeLessThan(
+      trig.indexOf("NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')"),
+    );
+  });
+
+  it("team names use the same rules and are stored cleaned", () => {
+    expect(fn(file, "team_name_problem")).toContain("public.display_name_problem(_name)");
+    const rename = fn(file, "admin_rename_team");
+    expect(rename).toContain("public.team_name_problem(_name)");
+    expect(rename).toContain("SET name = public.moderation_clean_text(_name)");
   });
 
   it("the trigger raises 23514 with the blocked-content code clients map", () => {
@@ -182,6 +237,15 @@ describe("display-name onboarding", () => {
     expect(stmt).toContain("public.generate_learner_handle()");
     expect(stmt).toContain("lower(split_part(NEW.email, '@', 1))");
     expect(stmt).toMatch(/EXCEPTION WHEN check_violation OR raise_exception THEN/);
+  });
+  it("handle_new_user judges the raw metadata name, so a bidi trick falls back to a handle", () => {
+    expect(fn(FILES.names, "handle_new_user")).toContain("public.display_name_problem(raw_name) IS NOT NULL");
+  });
+  it("the self-rename trigger judges the raw name before storing the cleaned one", () => {
+    const trig = fn(FILES.names, "enforce_display_name_filter");
+    expect(trig.indexOf("public.display_name_problem(NEW.display_name)")).toBeLessThan(
+      trig.indexOf("NEW.display_name := coalesce(public.moderation_clean_text(NEW.display_name), '')"),
+    );
   });
 
   it("the backup table is readable by its owner only (it is in the data export) and the grant guard accepts the file", () => {
@@ -291,6 +355,19 @@ describe("team integrity", () => {
     expect(fn(file, "get_my_team")).toContain(
       "HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0",
     );
+  });
+  it("a weekly tie always resolves to the same team", () => {
+    expect(fn(file, "get_my_team")).toContain("DESC, t.id");
+  });
+  it("team names are judged by team_name_problem and stored cleaned", () => {
+    const stmt = fn(file, "create_team");
+    expect(stmt).toContain("public.team_name_problem(_name)");
+    expect(stmt).toContain("public.moderation_clean_text(_name)");
+    expect(stmt).not.toContain("trim(_name)");
+  });
+  it("auto_join_team never leaves an empty team behind when the join is refused", () => {
+    const stmt = fn(file, "auto_join_team");
+    expect(stmt).toMatch(/IF NOT join_result\.ok AND new_id IS NOT NULL THEN\s+DELETE FROM public\.teams t WHERE t\.id = new_id;/);
   });
 });
 
@@ -451,6 +528,10 @@ describe("O6 reset of failing names (A8)", () => {
       "REVOKE ALL ON FUNCTION public._reset_failing_public_names(integer, integer) FROM PUBLIC, anon, authenticated;",
     );
     expect(read(file)).toMatch(/SELECT \* FROM public\._reset_failing_public_names\(\d+, \d+\);/);
+  });
+  it("the reset judges team names with the same rule as create_team", () => {
+    const stmt = fn(file, "_reset_failing_public_names");
+    expect(stmt.match(/public\.team_name_problem\(t\.name\) IS NOT NULL/g)?.length).toBe(2);
   });
   it("the team backup table is service-only", () => {
     expect(read(file)).toContain("-- client-grants: none public.team_name_migration_backup");

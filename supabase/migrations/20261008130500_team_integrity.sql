@@ -103,7 +103,8 @@ SET search_path = public
 AS $$
 DECLARE
   me uuid := auth.uid();
-  trimmed_name text := trim(_name);
+  clean_name text := public.moderation_clean_text(_name);
+  name_problem text := public.team_name_problem(_name);
   new_id uuid;
   new_code text;
   join_result record;
@@ -112,12 +113,9 @@ BEGIN
     RETURN QUERY SELECT false, 'unauthenticated', NULL::uuid, NULL::text;
     RETURN;
   END IF;
-  IF char_length(trimmed_name) < 1 OR char_length(trimmed_name) > 40 THEN
-    RETURN QUERY SELECT false, 'invalid-name', NULL::uuid, NULL::text;
-    RETURN;
-  END IF;
-  IF public.contains_blocked_term(trimmed_name) THEN
-    RETURN QUERY SELECT false, 'blocked-content', NULL::uuid, NULL::text;
+  -- The display-name rules ('invalid-name' or 'blocked-content'); the stored name is the cleaned one.
+  IF name_problem IS NOT NULL THEN
+    RETURN QUERY SELECT false, name_problem, NULL::uuid, NULL::text;
     RETURN;
   END IF;
   IF _visibility NOT IN ('public', 'private') THEN
@@ -131,7 +129,7 @@ BEGIN
 
   new_code := public._new_join_code();
   INSERT INTO public.teams (name, join_code, visibility, member_cap, created_by)
-  VALUES (trimmed_name, new_code, _visibility, _member_cap, me)
+  VALUES (clean_name, new_code, _visibility, _member_cap, me)
   RETURNING id INTO new_id;
 
   SELECT * INTO join_result FROM public._join_team_impl(new_id, me);
@@ -156,6 +154,7 @@ DECLARE
   me uuid := auth.uid();
   target uuid;
   new_id uuid;
+  join_result record;
 BEGIN
   IF me IS NULL THEN
     RETURN QUERY SELECT false, 'unauthenticated', NULL::uuid;
@@ -176,7 +175,12 @@ BEGIN
     target := new_id;
   END IF;
 
-  RETURN QUERY SELECT * FROM public._join_team_impl(target, me);
+  SELECT * INTO join_result FROM public._join_team_impl(target, me);
+  -- A refused join (switch or kick lock) must not leave the team created above behind, empty.
+  IF NOT join_result.ok AND new_id IS NOT NULL THEN
+    DELETE FROM public.teams t WHERE t.id = new_id;
+  END IF;
+  RETURN QUERY SELECT join_result.ok, join_result.reason, join_result.team_id;
 END;
 $$;
 
@@ -316,7 +320,7 @@ BEGIN
   JOIN public.team_members tm2 ON tm2.team_id = t.id
   GROUP BY t.id
   HAVING COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) > 0
-  ORDER BY COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) DESC
+  ORDER BY COALESCE(SUM(public.weekly_xp(tm2.user_id, prev_wk)), 0) DESC, t.id
   LIMIT 1;
 
   IF winner_team IS NOT NULL AND NOT EXISTS (
