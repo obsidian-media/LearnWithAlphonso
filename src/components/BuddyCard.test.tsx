@@ -12,6 +12,9 @@ const cancelBuddyRequest = vi.fn();
 const endBuddy = vi.fn();
 const sendBuddyMessage = vi.fn();
 const getBuddyMessages = vi.fn();
+const joinBuddyPool = vi.fn();
+const leaveBuddyPool = vi.fn();
+const getBuddyPool = vi.fn();
 vi.mock("../lib/buddy.functions", () => ({
   getMyBuddy,
   getBuddyRequests,
@@ -21,7 +24,11 @@ vi.mock("../lib/buddy.functions", () => ({
   endBuddy,
   sendBuddyMessage,
   getBuddyMessages,
+  joinBuddyPool,
+  leaveBuddyPool,
+  getBuddyPool,
 }));
+vi.mock("../lib/social-safety.functions", () => ({ blockUser: vi.fn(), reportUser: vi.fn() }));
 
 const { BuddyCard, AskBuddyButton } = await import("./BuddyCard");
 
@@ -57,10 +64,19 @@ beforeEach(() => {
     endBuddy,
     sendBuddyMessage,
     getBuddyMessages,
+    joinBuddyPool,
+    leaveBuddyPool,
+    getBuddyPool,
   ]) {
     f.mockReset();
   }
   getBuddyMessages.mockResolvedValue([]);
+  getBuddyPool.mockResolvedValue({
+    matchingEnabled: false,
+    waiting: false,
+    course: null,
+    courses: [],
+  });
 });
 
 describe("BuddyCard", () => {
@@ -475,5 +491,90 @@ describe("BuddyCard messages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Yes, end" }));
     expect(await screen.findByText("Send Cy a message")).toBeInTheDocument();
     expect(screen.queryByText("Cy: Nice work!")).not.toBeInTheDocument();
+  });
+});
+
+describe("BuddyCard matching (opt-in)", () => {
+  const intro =
+    "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.";
+
+  it("explains matching and offers one button per course the learner studies", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyPool.mockResolvedValue({
+      matchingEnabled: true,
+      waiting: false,
+      course: null,
+      courses: ["en", "fr"],
+    });
+    joinBuddyPool.mockResolvedValue({ status: "waiting" });
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText(intro)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Find me a study buddy (English)" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Find me a study buddy (French)" }));
+    await waitFor(() => expect(joinBuddyPool).toHaveBeenCalledWith({ data: { course: "fr" } }));
+    expect(
+      await screen.findByText("You're on the list. We'll pair you with a learner at your level."),
+    ).toBeInTheDocument();
+  });
+
+  it("while waiting, says so and lets the learner stop looking", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyPool.mockResolvedValue({
+      matchingEnabled: true,
+      waiting: true,
+      course: "es",
+      courses: ["es"],
+    });
+    leaveBuddyPool.mockResolvedValue({ status: "left" });
+    renderWithClient(<BuddyCard />);
+    expect(
+      await screen.findByText("Looking for a study buddy learning Spanish at your level."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Find me a study buddy/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Stop looking" }));
+    await waitFor(() => expect(leaveBuddyPool).toHaveBeenCalled());
+  });
+
+  it("offers nothing about matching while the switch is off", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyPool.mockResolvedValue({
+      matchingEnabled: false,
+      waiting: false,
+      course: null,
+      courses: ["en"],
+    });
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText(/Pick a friend to study with/)).toBeInTheDocument();
+    expect(screen.queryByText(intro)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Find me a study buddy/ })).not.toBeInTheDocument();
+  });
+
+  it("a matched buddy is labelled and can be blocked or reported from the card", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: true });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Matched learner")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "More options for Bo" })).toBeInTheDocument();
+  });
+
+  it("a friend buddy is not labelled as matched", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: false });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Bo")).toBeInTheDocument();
+    expect(screen.queryByText("Matched learner")).not.toBeInTheDocument();
+  });
+
+  it("a failed pool read is a load failure, never 'matching is off'", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyPool.mockRejectedValue(new Error("boom"));
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Couldn't load your study buddy.")).toBeInTheDocument();
   });
 });

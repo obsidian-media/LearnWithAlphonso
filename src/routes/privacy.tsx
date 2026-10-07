@@ -91,7 +91,10 @@ function Privacy() {
           your pair's history after it ends. Only friends who both agree can pair, and either of you
           can end it at any time. Study buddies can send each other short fixed messages from a list
           (like "Nice work!"). There is no free text, and the messages are kept as your pair's
-          history.
+          history. If you want a study buddy who is not a friend, you can choose to be matched with
+          another learner of the same course at a similar level: they see only your display name and
+          weekly progress, you can only exchange the preset messages, and you can end it, block or
+          report them at any time. You can stop looking for a match whenever you like.
         </p>
         <p>
           You can change your display name on the website under Profile. Changing it from inside the
