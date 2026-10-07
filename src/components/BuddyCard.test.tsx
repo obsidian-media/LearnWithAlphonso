@@ -450,4 +450,30 @@ describe("BuddyCard messages", () => {
     await new Promise((r) => setTimeout(r, 50));
     expect(screen.getByText("You're study buddies now.")).toBeInTheDocument();
   });
+
+  it("never shows one pair's messages under a new buddy's name", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyMessages.mockResolvedValue([
+      {
+        messageId: "m1",
+        senderId: "u2",
+        isMine: false,
+        presetId: "nice_work",
+        sentAt: "2026-10-07T00:00:00Z",
+      },
+    ]);
+    endBuddy.mockImplementation(async () => {
+      // The pair ends and, by the next read, the user is paired with someone else whose messages are still loading.
+      getMyBuddy.mockResolvedValue({ ...buddy, pairId: "p2", buddyId: "u3", buddyName: "Cy" });
+      getBuddyMessages.mockReturnValue(new Promise(() => {}));
+      return { status: "ended" };
+    });
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Bo: Nice work!")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "End study buddy" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, end" }));
+    expect(await screen.findByText("Send Cy a message")).toBeInTheDocument();
+    expect(screen.queryByText("Cy: Nice work!")).not.toBeInTheDocument();
+  });
 });

@@ -22,6 +22,7 @@ import {
   respondBuddyRequest,
   sendBuddyMessage,
   type BuddyActionResult,
+  type MyBuddy,
 } from "../lib/buddy.functions";
 
 // A failed lookup is shown as a failure with a retry, never as "no buddy" (retry: false so that state appears at once,
@@ -35,7 +36,9 @@ function useBuddyQueries() {
   });
   // Polled while the Friends page is open (no realtime socket, spec Part 3); only asked for while paired.
   const messages = useQuery({
-    queryKey: ["buddyMessages"],
+    // Keyed by the pair: after a new pairing, the previous pair's cached messages (or error) can never show under the
+    // new buddy's name.
+    queryKey: ["buddyMessages", buddy.data?.pairId ?? null],
     queryFn: () => getBuddyMessages(),
     retry: false,
     refetchInterval: 60_000,
@@ -82,7 +85,8 @@ function useBuddyAction(queries: BuddyQueries) {
     const state = (key: string) => queryClient.getQueryState([key]);
     const b = state("myBuddy");
     const r = state("buddyRequests");
-    const m = state("buddyMessages");
+    const pairId = queryClient.getQueryData<MyBuddy>(["myBuddy"])?.pairId ?? null;
+    const m = queryClient.getQueryState(["buddyMessages", pairId]);
     // A query with no cache entry yet (messages before the first pairing) reads 0, matching what the hook reports.
     const parts = [b, r, ...(withMessages ? [m] : [])];
     setAnswer({
