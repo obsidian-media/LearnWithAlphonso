@@ -1,5 +1,5 @@
--- Teams were broken in production: nobody could create or join a team, and a member could not load their own team.
--- Plus BACKLOG 0.0-af: two XP payouts paid nobody who studies a language other than English.
+-- Teams were broken in production: nobody could create or join a team, and a member could not load their own team; the same
+-- mistake also stopped every weekly quest claim. Plus BACKLOG 0.0-af: two XP payouts paid nobody who studies a language other than English.
 --
 -- 1. _join_team_impl (every join path: join_team, join_public_team, auto_join_team, create_team) and get_my_team both
 --    declare a RETURNS TABLE column called team_id, then used an unqualified `WHERE team_id = ...` in their bodies.
@@ -8,7 +8,10 @@
 --    2026-10-06 by running the deployed functions as seeded users in a rolled-back transaction: create_team and
 --    auto_join_team failed, and get_my_team failed for any user who is on a team (production had 0 team members).
 --    The references are now qualified (team_members.team_id, rw.team_id). src/lib/plpgsql-output-column-clash.test.ts
---    reads every migration and fails on this whole class from now on.
+--    reads every migration and fails on the common forms of this mistake from now on (an output column used unqualified in a
+--    condition, a SELECT ... INTO, an ORDER BY, a RETURNING or a USING).
+--    The same mistake was in claim_weekly_quest (`SELECT xp INTO cur_xp FROM language_progress lp` while returning an xp
+--    column): no weekly quest could ever be claimed on any platform. Fixed the same way (lp.xp).
 -- 2. get_weekly_challenges (+100 XP per completed challenge) and get_my_team (+100 XP to every member of last week's
 --    winning team) paid `language_progress WHERE language = profiles.active_language`. Nothing ever writes that column
 --    (live: all 15 profiles are 'en'), so a French or Spanish learner was recorded as paid and received nothing, forever,
@@ -16,7 +19,7 @@
 --    completed lesson (lesson_completions.completed_at is the FIRST completion time and is never updated on a replay).
 --    Team missions already pay the studied course (20261006150000).
 --
--- Each function is the deployed one (20260930150000, 20260922030500, 20260930110000) with exactly the changes above plus
+-- Each function is the deployed one (20260930150000, 20260922030500, 20260930110000, 20260920060000) with exactly the changes above plus
 -- SET timezone = 'UTC' on the two that use current_date (the ISO week must not follow the caller's session time zone).
 -- src/lib/team-and-payout-fixes-migration.test.ts pins that nothing else changed.
 --
@@ -24,7 +27,8 @@
 -- they were paid there), and no team bonus was ever paid because no team ever had a member.
 --
 -- ROLLBACK: re-apply _join_team_impl from 20260930150000_fix_kicked_member_instant_rejoin.sql, get_weekly_challenges from
--- 20260922030500_weekly_challenges.sql and get_my_team from 20260930110000_team_members_and_kick.sql (that restores the bug).
+-- 20260922030500_weekly_challenges.sql, get_my_team from 20260930110000_team_members_and_kick.sql and claim_weekly_quest
+-- from 20260920060000_v3_engagement_mechanics.sql (that restores the bugs).
 
 CREATE OR REPLACE FUNCTION public._join_team_impl(_team_id uuid, _me uuid)
 RETURNS TABLE(ok boolean, reason text, team_id uuid)
@@ -202,9 +206,68 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.claim_weekly_quest(_quest_id text, _course text, _week_start date)
+RETURNS TABLE(ok boolean, reason text, xp integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  q public.weekly_quests;
+  progress integer;
+  cur_xp integer;
+BEGIN
+  IF me IS NULL THEN
+    RETURN QUERY SELECT false, 'unauthenticated', NULL::integer;
+    RETURN;
+  END IF;
+  IF _week_start > CURRENT_DATE OR _week_start < CURRENT_DATE - INTERVAL '7 days' THEN
+    RETURN QUERY SELECT false, 'invalid-week', NULL::integer;
+    RETURN;
+  END IF;
+
+  SELECT * INTO q FROM public.weekly_quests WHERE id = _quest_id;
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT false, 'unknown-quest', NULL::integer;
+    RETURN;
+  END IF;
+
+  IF q.metric = 'xp_earned' THEN
+    SELECT COALESCE(SUM(xp_earned), 0) INTO progress FROM public.activity_days
+      WHERE user_id = me AND day >= _week_start AND day < _week_start + INTERVAL '7 days';
+  ELSE -- 'lessons_completed', the only other CHECK-allowed value
+    SELECT COUNT(*) INTO progress FROM public.lesson_completions
+      WHERE user_id = me AND language = _course
+        AND completed_at >= _week_start AND completed_at < _week_start + INTERVAL '7 days';
+  END IF;
+
+  IF progress < q.target THEN
+    RETURN QUERY SELECT false, 'not-yet-completed', NULL::integer;
+    RETURN;
+  END IF;
+
+  INSERT INTO public.user_weekly_quest_claims (user_id, quest_id, week_start)
+    VALUES (me, _quest_id, _week_start)
+    ON CONFLICT (user_id, quest_id, week_start) DO NOTHING;
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT false, 'already-claimed', NULL::integer;
+    RETURN;
+  END IF;
+
+  SELECT lp.xp INTO cur_xp FROM public.language_progress lp WHERE lp.user_id = me AND lp.language = _course FOR UPDATE;
+  IF NOT FOUND OR cur_xp IS NULL THEN cur_xp := 0; END IF;
+  UPDATE public.language_progress SET xp = cur_xp + q.xp_reward WHERE user_id = me AND language = _course;
+
+  RETURN QUERY SELECT true, NULL::text, cur_xp + q.xp_reward;
+END;
+$$;
+
 -- CREATE OR REPLACE keeps the existing privileges; state them so nobody has to wonder. _join_team_impl is internal.
 REVOKE ALL ON FUNCTION public._join_team_impl(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.get_weekly_challenges() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_weekly_challenges() TO authenticated;
 REVOKE ALL ON FUNCTION public.get_my_team() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_my_team() TO authenticated;
+REVOKE ALL ON FUNCTION public.claim_weekly_quest(text, text, date) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.claim_weekly_quest(text, text, date) TO authenticated, service_role;

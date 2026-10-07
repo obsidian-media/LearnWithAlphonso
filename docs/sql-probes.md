@@ -1,0 +1,65 @@
+# Proving a SQL function works: the probe harness
+
+There is no local Postgres for this project, so migrations only ever run against production, and a text-pattern test cannot
+see a run-time SQL error. Teams were broken for weeks (`_join_team_impl`, `get_my_team`, `claim_weekly_quest`: SQLSTATE 42702
+"column reference is ambiguous") behind green tests. Before merging any new or changed SQL function, **execute it** as a
+seeded user inside a transaction that ends in `ROLLBACK`.
+
+## The pattern
+
+Run through the Supabase MCP `execute_sql` (project `qhcjpfbxfcltjbiuknyt`), one transaction:
+
+```sql
+BEGIN;
+SET LOCAL statement_timeout = '60s';   -- a huge single script once hit an MCP "expired requestState" with no DB harm
+SET LOCAL lock_timeout = '10s';
+CREATE TEMP TABLE res (n serial, scenario text, detail text);
+GRANT ALL ON res TO PUBLIC; GRANT ALL ON SEQUENCE res_n_seq TO PUBLIC;   -- the function runs as another role
+
+-- seed throwaway users (the signup trigger creates profiles / user_progress), then whatever rows the scenario needs
+INSERT INTO auth.users (id, email, instance_id, aud, role) VALUES
+ ('00000000-0000-0000-0000-0000000000e1','t-1@example.test','00000000-0000-0000-0000-000000000000','authenticated','authenticated');
+INSERT INTO public.language_progress (user_id, language, xp, league_tier) VALUES ('00000000-0000-0000-0000-0000000000e1','en',0,'bronze');
+
+-- call a function AS a user and capture an error instead of aborting the script
+CREATE FUNCTION pg_temp.probe(lbl text, uid uuid, q text) RETURNS void LANGUAGE plpgsql AS $f$
+DECLARE r text;
+BEGIN
+  PERFORM set_config('request.jwt.claim.sub', uid::text, true);          -- this is what auth.uid() reads
+  EXECUTE 'SELECT row_to_json(x)::text FROM (' || q || ') x' INTO r;
+  INSERT INTO res (scenario, detail) VALUES (lbl, coalesce(r, 'no row'));
+EXCEPTION WHEN OTHERS THEN
+  INSERT INTO res (scenario, detail) VALUES (lbl, SQLSTATE || ': ' || SQLERRM);
+END $f$;
+
+SELECT pg_temp.probe('OLD behaviour', '00000000-0000-0000-0000-0000000000e1', 'SELECT * FROM public.claim_weekly_quest(...)');
+-- CREATE OR REPLACE FUNCTION ... (the migration's SQL, installed inside the transaction)
+SELECT pg_temp.probe('NEW behaviour', '00000000-0000-0000-0000-0000000000e1', 'SELECT * FROM public.claim_weekly_quest(...)');
+
+SELECT n, scenario, detail FROM res ORDER BY n;
+ROLLBACK;
+```
+
+Afterwards confirm nothing leaked: `SELECT count(*) FROM auth.users WHERE email LIKE 't-%@example.test'` is 0, no `idle in transaction`
+in `pg_stat_activity`, and the deployed function text is unchanged.
+
+## Rules that cost us time
+
+- **An early-exit "ok" proves nothing.** A function that returns early (no team, no rows) never reaches the broken statement.
+  Seed state that drives EVERY branch: a team member for `get_my_team`, enough lessons to complete a challenge, a quest whose target is met.
+- Show the OLD function failing in the same script, then the NEW one working: that is what makes the proof falsifiable.
+- Do not call `get_my_team`-style functions with real user ids; use throwaway users and a rolled-back transaction only.
+- Functions that pay once (`rewarded_at IS NULL` guards, `ON CONFLICT DO NOTHING` recorded rows) need a fresh user per scenario, or the second call proves nothing.
+
+## Scenarios proven this way (2026-10-06)
+
+| Function | What the script showed |
+|---|---|
+| `create_team`, `auto_join_team`, `join_team` (via `_join_team_impl`) | deployed: 42702; fixed: team created, joiner added (2 members), auto-join places the user |
+| `get_my_team` | deployed: 42702 for any team member; fixed: returns the member's team |
+| `get_weekly_challenges` | French-only learner: deployed pays nothing; fixed +100 per completed challenge on `fr`; a learner with `en` and `fr` rows whose newest lesson is French gets `fr` only |
+| weekly team bonus (in `get_my_team`) | French member +100, Spanish member +100, member with no lessons 0 |
+| `claim_weekly_quest` | deployed: 42702; fixed: pays the reward once (+40), second claim answers `already-claimed`, one claim row |
+| `get_team_mission`, `_resolve_team_mission` | single payout, late joiner, French-only team paid on `fr`, team shrinking to one member, previous week resolved, UTC boundary under a UTC+14 session |
+
+The static guard for the most common mistake is `src/lib/plpgsql-output-column-clash.test.ts`.

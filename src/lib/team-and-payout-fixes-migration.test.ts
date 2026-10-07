@@ -34,17 +34,32 @@ describe("team joins and course-aware payouts migration", () => {
           WHERE lc.user_id = ${user} ORDER BY lc.completed_at DESC LIMIT 1
         )`;
 
-  it("runs after the latest migration", () => {
-    expect(FILE.slice(0, 14) > "20261006160000").toBe(true);
+  it("is the newest migration, so it runs after everything it replaces a function of", () => {
+    const others = fs
+      .readdirSync(MIGRATIONS)
+      .filter((f) => f.endsWith(".sql") && f !== FILE)
+      .map((f) => f.slice(0, 14));
+    expect(others.length).toBeGreaterThan(50);
+    // The version is unique, and it sorts after every source file it copies a function from (a later migration may be
+    // added after this one: this guards the order that matters, not "latest forever").
+    expect(others).not.toContain(FILE.slice(0, 14));
+    for (const source of [
+      "20260930150000_fix_kicked_member_instant_rejoin.sql",
+      "20260922030500_weekly_challenges.sql",
+      "20260930110000_team_members_and_kick.sql",
+      "20260920060000_v3_engagement_mechanics.sql",
+    ]) {
+      expect(FILE > source, source).toBe(true);
+    }
   });
 
   it("no longer reads profiles.active_language anywhere", () => {
     expect(code(FILE)).not.toMatch(/active_language/i);
   });
 
-  it("replaces exactly the three functions, each SECURITY DEFINER with its search_path", () => {
+  it("replaces exactly the four functions, each SECURITY DEFINER with its search_path", () => {
     const sql = code(FILE);
-    expect(sql.match(/CREATE OR REPLACE FUNCTION/gi)).toHaveLength(3);
+    expect(sql.match(/CREATE OR REPLACE FUNCTION/gi)).toHaveLength(4);
     const joinImpl = fn(sql, "_join_team_impl", "_team_id uuid, _me uuid");
     expect(joinImpl).not.toBe("");
     expect(joinImpl).toMatch(/SECURITY DEFINER/i);
@@ -113,6 +128,21 @@ describe("team joins and course-aware payouts migration", () => {
     expect(squash(fn(code(FILE), "get_my_team"))).toBe(squash(expected));
   });
 
+  it("claim_weekly_quest is the deployed function with its one ambiguous xp read qualified, nothing else", () => {
+    const args = "_quest_id text, _course text, _week_start date";
+    const original = fn(
+      code("20260920060000_v3_engagement_mechanics.sql"),
+      "claim_weekly_quest",
+      args,
+    );
+    const expected = original.replace(
+      "SELECT xp INTO cur_xp FROM public.language_progress lp",
+      "SELECT lp.xp INTO cur_xp FROM public.language_progress lp",
+    );
+    expect(expected).not.toBe(original);
+    expect(squash(fn(code(FILE), "claim_weekly_quest", args))).toBe(squash(expected));
+  });
+
   it("re-asserts who may call each function: the join helper nobody, the other two signed-in users only", () => {
     const sql = code(FILE);
     expect(sql).toMatch(
@@ -127,6 +157,12 @@ describe("team joins and course-aware payouts migration", () => {
         new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${name}\\(\\) TO authenticated`, "i"),
       );
     }
+    expect(sql).toMatch(
+      /REVOKE ALL ON FUNCTION public\.claim_weekly_quest\(text, text, date\) FROM PUBLIC, anon/i,
+    );
+    expect(sql).toMatch(
+      /GRANT EXECUTE ON FUNCTION public\.claim_weekly_quest\(text, text, date\) TO authenticated, service_role/i,
+    );
     expect(sql).not.toMatch(/\bTO anon\b/i);
   });
 

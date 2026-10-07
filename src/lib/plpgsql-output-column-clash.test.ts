@@ -15,7 +15,13 @@ import { describe, expect, it } from "vitest";
  */
 const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations");
 
-type FunctionDefinition = { name: string; file: string; columns: string[]; body: string };
+type FunctionDefinition = {
+  name: string;
+  file: string;
+  columns: string[];
+  body: string;
+  language: string;
+};
 
 /** The text after `from` up to the parenthesis that closes the one opened at `from - 1`, plus the end offset. */
 function balanced(src: string, from: number): { inner: string; end: number } | null {
@@ -59,12 +65,16 @@ export function latestDefinitions(files: { file: string; sql: string }[]): Funct
       const bodyEnd = rest.indexOf(tag[0], bodyStart);
       if (bodyEnd < 0) continue;
       const table = returns ? balanced(rest, returns[0].length) : null;
+      const language =
+        /language\s+([a-z_0-9]+)/i.exec(rest.slice(0, tag.index ?? 0))?.[1]?.toLowerCase() ??
+        "plpgsql";
       const key = `${m[1].toLowerCase()}(${args.inner.replace(/\s+/g, " ").trim().toLowerCase()})`;
       latest.set(key, {
         name: m[1],
         file,
         columns: table ? columnsOfReturnsTable(table.inner) : [],
         body: rest.slice(bodyStart, bodyEnd),
+        language,
       });
     }
   }
@@ -72,13 +82,26 @@ export function latestDefinitions(files: { file: string; sql: string }[]): Funct
 }
 
 export function clashes(def: FunctionDefinition): string[] {
-  if (/#variable_conflict/i.test(def.body)) return [];
-  return def.columns.filter((col) =>
-    new RegExp(
-      `(^|\\s)(where|and|or|on|when)\\s+(not\\s+)?${col}\\s*(=|<>|!=|<=|>=|<|>|in[\\s(]|is\\s|like\\s)`,
-      "i",
-    ).test(def.body),
-  );
+  // The clash is a plpgsql rule: in a LANGUAGE sql function an output column is not a variable.
+  if (def.language !== "plpgsql" || /#variable_conflict/i.test(def.body)) return [];
+  return def.columns.filter((col) => {
+    // The column name on its own: not part of a longer identifier and not already qualified (`t.col`) or an alias target.
+    const bare = String.raw`(?<![\w.])${col}(?![\w.])`;
+    const op = String.raw`(=|<>|!=|<=|>=|<|>|in[\s(]|is\s|like\s|between\s)`;
+    const forms = [
+      // WHERE col = x, AND NOT col IS NULL, ON col = u.id, WHEN col THEN ...
+      String.raw`(^|\s)(where|and|or|on|when)\s+(not\s+)?${bare}\s*${op}`,
+      // WHERE (col = 1), AND (col IS NULL ...
+      String.raw`(where|and|or|on|when)\s*\(\s*(not\s+)?${bare}\s*${op}`,
+      // SELECT col INTO v FROM ... (the claim_weekly_quest form)
+      String.raw`select\s+${bare}\s+into\s`,
+      // RETURNING col, ORDER BY col, GROUP BY col, JOIN ... USING (col)
+      String.raw`returning\s+${bare}`,
+      String.raw`(order|group)\s+by\s+${bare}`,
+      String.raw`using\s*\(\s*${bare}`,
+    ];
+    return forms.some((form) => new RegExp(form, "i").test(def.body));
+  });
 }
 
 const files = () =>
@@ -89,11 +112,12 @@ const files = () =>
     .map((file) => ({ file, sql: fs.readFileSync(path.join(MIGRATIONS, file), "utf8") }));
 
 describe("the checker itself", () => {
-  const def = (columns: string[], body: string): FunctionDefinition => ({
+  const def = (columns: string[], body: string, language = "plpgsql"): FunctionDefinition => ({
     name: "f",
     file: "x",
     columns,
     body,
+    language,
   });
 
   it("flags an output column used unqualified in a condition", () => {
@@ -112,6 +136,56 @@ describe("the checker itself", () => {
     expect(clashes(def(["team_id"], "SELECT 1 FROM t WHERE team_id IN (1, 2)"))).toEqual([
       "team_id",
     ]);
+  });
+
+  it("flags the other forms that clash at run time: SELECT col INTO, parentheses, BETWEEN, RETURNING, ORDER BY, USING", () => {
+    expect(
+      clashes(
+        def(["xp"], "SELECT xp INTO cur_xp FROM public.language_progress lp WHERE lp.user_id = me"),
+      ),
+    ).toEqual(["xp"]);
+    expect(clashes(def(["xp"], "SELECT 1 FROM t WHERE (xp = 1 AND y = 2)"))).toEqual(["xp"]);
+    expect(clashes(def(["xp"], "SELECT 1 FROM t WHERE xp BETWEEN 1 AND 2"))).toEqual(["xp"]);
+    expect(clashes(def(["team_id"], "DELETE FROM t WHERE a = 1 RETURNING team_id INTO x"))).toEqual(
+      ["team_id"],
+    );
+    expect(clashes(def(["xp"], "SELECT 1 FROM t ORDER BY xp DESC"))).toEqual(["xp"]);
+    expect(clashes(def(["team_id"], "SELECT 1 FROM a JOIN b USING (team_id)"))).toEqual([
+      "team_id",
+    ]);
+    expect(clashes(def(["xp"], "SELECT 1 FROM t WHERE x = 1 OR xp > 3"))).toEqual(["xp"]);
+  });
+
+  it("does not flag the safe look-alikes: qualified, longer names, SET targets, aliases, column lists, strings", () => {
+    expect(
+      clashes(
+        def(
+          ["xp"],
+          "SELECT lp.xp INTO cur_xp FROM public.language_progress lp WHERE lp.user_id = me",
+        ),
+      ),
+    ).toEqual([]);
+    expect(
+      clashes(def(["xp"], "SELECT cur_xp INTO v FROM t WHERE xp_earned > 1 ORDER BY xp_earned")),
+    ).toEqual([]);
+    expect(clashes(def(["xp"], "UPDATE t SET xp = cur_xp + 1 WHERE t.user_id = me"))).toEqual([]);
+    expect(clashes(def(["xp"], "SELECT CASE WHEN a THEN 1 END AS xp FROM t"))).toEqual([]);
+    expect(clashes(def(["xp"], "INSERT INTO t (xp, user_id) VALUES (1, me)"))).toEqual([]);
+    expect(clashes(def(["xp"], "SELECT 'xp' FROM t WHERE kind = 'xp'"))).toEqual([]);
+  });
+
+  it("ignores LANGUAGE sql functions, where an output column is not a variable", () => {
+    expect(
+      clashes(def(["week_xp"], "SELECT 1 FROM t WHERE week_xp > 3 ORDER BY week_xp", "sql")),
+    ).toEqual([]);
+    const defs = latestDefinitions([
+      {
+        file: "1.sql",
+        sql: "CREATE FUNCTION public.f() RETURNS TABLE(a int) LANGUAGE sql AS $$ SELECT 1 WHERE a = 1 $$;",
+      },
+    ]);
+    expect(defs[0].language).toBe("sql");
+    expect(clashes(defs[0])).toEqual([]);
   });
 
   it("accepts qualified references, column lists and a function that opts in", () => {
@@ -168,7 +242,15 @@ describe("the migrations", () => {
     }
   });
 
-  it("no function in its latest definition uses one of its own output columns unqualified in a condition", () => {
+  it("catches the claim_weekly_quest bug exactly as it was originally written", () => {
+    const original = files().filter((f) => f.file === "20260920060000_v3_engagement_mechanics.sql");
+    const flagged = latestDefinitions(original).filter(
+      (d) => d.name === "claim_weekly_quest" && clashes(d).length > 0,
+    );
+    expect(flagged.map((d) => clashes(d))).toEqual([["xp"]]);
+  });
+
+  it("no function in its latest definition uses one of its own output columns unqualified where it clashes", () => {
     const problems = defs.flatMap((d) =>
       clashes(d).map((col) => `${d.name} (${d.file}): unqualified ${col}`),
     );
