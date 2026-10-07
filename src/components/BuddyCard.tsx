@@ -48,23 +48,23 @@ type BuddyQueries = ReturnType<typeof useBuddyQueries>;
 
 // When the two queries last changed (data or error). An answer is shown only until they change again, so it never
 // outlives the state it described (a cancelled request, a pair the other side ended).
-function stampOf(q: BuddyQueries) {
-  return [
-    q.buddy.dataUpdatedAt,
-    q.buddy.errorUpdatedAt,
-    q.requests.dataUpdatedAt,
-    q.requests.errorUpdatedAt,
-    q.messages.dataUpdatedAt,
-    q.messages.errorUpdatedAt,
-  ].join(":");
+// The messages query is part of the stamp only for a sent message: pairing turns that query on, and its first load must
+// not hide "You're study buddies now.".
+function stampOf(q: BuddyQueries, withMessages: boolean) {
+  const parts = [q.buddy, q.requests, ...(withMessages ? [q.messages] : [])];
+  return parts.flatMap((s) => [s.dataUpdatedAt, s.errorUpdatedAt]).join(":");
 }
 
 /** Runs a buddy action, keeps its answer as fixed wording, and refreshes everything the answer can change. */
 function useBuddyAction(queries: BuddyQueries) {
   const queryClient = useQueryClient();
-  const [answer, setAnswer] = useState<{ text: string; stamp: string } | null>(null);
+  const [answer, setAnswer] = useState<{
+    text: string;
+    stamp: string;
+    withMessages: boolean;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
-  async function run(action: () => Promise<BuddyActionResult>) {
+  async function run(action: () => Promise<BuddyActionResult>, withMessages = false) {
     setBusy(true);
     let text: string;
     try {
@@ -84,13 +84,16 @@ function useBuddyAction(queries: BuddyQueries) {
     const r = state("buddyRequests");
     const m = state("buddyMessages");
     // A query with no cache entry yet (messages before the first pairing) reads 0, matching what the hook reports.
+    const parts = [b, r, ...(withMessages ? [m] : [])];
     setAnswer({
       text,
-      stamp: [b, r, m].flatMap((s) => [s?.dataUpdatedAt ?? 0, s?.errorUpdatedAt ?? 0]).join(":"),
+      stamp: parts.flatMap((s) => [s?.dataUpdatedAt ?? 0, s?.errorUpdatedAt ?? 0]).join(":"),
+      withMessages,
     });
     setBusy(false);
   }
-  const message = answer && answer.stamp === stampOf(queries) ? answer.text : null;
+  const message =
+    answer && answer.stamp === stampOf(queries, answer.withMessages) ? answer.text : null;
   return { message, busy, run };
 }
 
@@ -111,7 +114,8 @@ export function BuddyCard() {
       </div>
     );
   }
-  if (buddy.isError || requests.isError || messages.isError) {
+  // A messages failure only counts while paired (after the pair ends that query is off and must not pin the error).
+  if (buddy.isError || requests.isError || (messages.isError && !!buddy.data)) {
     return (
       <div className={card}>
         <p className="text-sm text-ink-soft">{BUDDY_COPY.loadFailed}</p>
@@ -120,6 +124,7 @@ export function BuddyCard() {
           onClick={() => {
             void buddy.refetch();
             void requests.refetch();
+            if (buddy.data) void messages.refetch();
           }}
           className="mt-3 rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
         >
@@ -157,7 +162,7 @@ export function BuddyCard() {
                 key={p.id}
                 type="button"
                 disabled={busy}
-                onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }))}
+                onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
                 className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
               >
                 {p.text}

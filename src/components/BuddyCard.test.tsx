@@ -405,4 +405,49 @@ describe("BuddyCard messages", () => {
     renderWithClient(<BuddyCard />);
     expect(await screen.findByText("Couldn't load your study buddy.")).toBeInTheDocument();
   });
+
+  it("Try again also retries the messages read, which is what failed", async () => {
+    getMyBuddy.mockResolvedValue(buddy);
+    getBuddyRequests.mockResolvedValue([]);
+    getBuddyMessages.mockRejectedValueOnce(new Error("boom"));
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByText("Couldn't load your study buddy.")).toBeInTheDocument();
+    getBuddyMessages.mockResolvedValue([
+      {
+        messageId: "m1",
+        senderId: "u2",
+        isMine: false,
+        presetId: "nice_work",
+        sentAt: "2026-10-07T00:00:00Z",
+      },
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Bo: Nice work!")).toBeInTheDocument();
+  });
+
+  it("keeps 'You're study buddies now.' after accepting, although the messages then load for the first time", async () => {
+    getMyBuddy.mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([
+      {
+        requestId: "r1",
+        direction: "incoming",
+        otherId: "u2",
+        otherName: "Bo",
+        otherAvatarSeed: "cd",
+        requestedAt: "2026-10-06T00:00:00Z",
+      },
+    ]);
+    respondBuddyRequest.mockImplementation(async () => {
+      getMyBuddy.mockResolvedValue(buddy);
+      getBuddyRequests.mockResolvedValue([]);
+      return { status: "paired" };
+    });
+    renderWithClient(<BuddyCard />);
+    fireEvent.click(await screen.findByRole("button", { name: "Accept" }));
+    expect(await screen.findByText("Send Bo a message")).toBeInTheDocument();
+    await waitFor(() => expect(getBuddyMessages).toHaveBeenCalled());
+    // Let the first messages load land, then the answer must still be there.
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByText("You're study buddies now.")).toBeInTheDocument();
+  });
 });

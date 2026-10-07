@@ -64,7 +64,8 @@ describe("buddy messages migration", () => {
   it("re-reads the membership under the lock, so a message cannot land after an unfriend or block", () => {
     const body = fnBody("send_buddy_message");
     const lockAt = body.indexOf("PERFORM public._lock_buddy_users(");
-    expect(body.indexOf("public.buddy_members", lockAt)).toBeGreaterThan(lockAt);
+    // The re-check must compare the SAME pair (a re-pairing with someone else in between must also stop the send).
+    expect(body.indexOf("bm.user_id = me AND bm.pair_id = pid", lockAt)).toBeGreaterThan(lockAt);
   });
 
   it("reads only the caller's active pair", () => {
