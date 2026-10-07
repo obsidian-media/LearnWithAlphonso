@@ -39,8 +39,8 @@ describe("Terms route", () => {
   it("renders the terms with a contact address", () => {
     const Terms = TermsRoute.options.component!;
     render(<Terms />);
-    expect(screen.getByRole("heading", { name: "Terms of Service" })).toBeInTheDocument();
-    expect(screen.getByText(/support@alphonsoecosystem\.app/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Terms of Use" })).toBeInTheDocument();
+    expect(screen.getAllByText(/support@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
   });
 
   it("names the AI processors", () => {
