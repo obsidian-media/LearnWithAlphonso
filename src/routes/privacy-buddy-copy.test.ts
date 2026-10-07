@@ -14,9 +14,9 @@ describe("privacy page: study buddies", () => {
     expect(page).toMatch(/kept as your pair's history after it ends/);
   });
 
-  it("says only friends who both agree can pair and either can end it", () => {
+  it("says a friend pairing needs both friends to agree and either can end it", () => {
     expect(page).toMatch(
-      /Only friends who both agree can pair, and either of you can end it at any time/,
+      /A friend pairing needs both friends to agree, and either of you can end it at any time/,
     );
   });
 
@@ -25,10 +25,19 @@ describe("privacy page: study buddies", () => {
     expect(page).toMatch(/There is no free text/);
   });
 
-  it("says matching is opt-in, by course and level, and shows only name and weekly progress", () => {
+  it("says matching is opt-in, by course and level, and lists exactly what a matched learner sees", () => {
     expect(page).toMatch(
       /you can choose to be matched with another learner of the same course at a similar level/,
     );
-    expect(page).toMatch(/only your display name, avatar and weekly progress/);
+    expect(page).toMatch(
+      /A matched learner sees only your display name, your avatar, your weekly lesson counts, your shared streak, the preset messages you send, and that you study the same course at a similar level/,
+    );
+  });
+
+  it("says a matching pause stops matched buddies messaging and leaves friend pairings alone", () => {
+    expect(page).toMatch(
+      /If we pause matching, matched study buddies cannot send messages until it resumes/,
+    );
+    expect(page).toMatch(/Friend pairings are not affected/);
   });
 });
