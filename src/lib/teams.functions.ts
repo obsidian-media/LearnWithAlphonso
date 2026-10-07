@@ -119,7 +119,9 @@ export const getTeamMission = createServerFn({ method: "GET" })
 export const getMyTeam = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<MyTeam> => {
-    const { data: rows } = await context.supabase.rpc("get_my_team");
+    const { data: rows, error } = await context.supabase.rpc("get_my_team");
+    // A failed lookup must not read as "no team": the screens would offer to create or join one.
+    if (error) throw new Error(`getMyTeam: ${error.message}`);
     const row = rows?.[0];
     if (!row) return null;
     return {

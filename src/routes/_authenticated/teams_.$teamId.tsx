@@ -11,7 +11,12 @@ export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
 function TeamDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: myTeam, isLoading } = useQuery({
+  const {
+    data: myTeam,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["myTeam"],
     queryFn: () => getMyTeam(),
   });
@@ -28,6 +33,21 @@ function TeamDetailPage() {
     return (
       <MobileFrame>
         <p className="p-6 text-sm text-ink-soft">Loading…</p>
+      </MobileFrame>
+    );
+  if (isError)
+    return (
+      <MobileFrame>
+        <div className="p-6">
+          <p className="text-sm text-ink-soft">Couldn't load your team.</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="mt-3 rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink"
+          >
+            Try again
+          </button>
+        </div>
       </MobileFrame>
     );
   if (!myTeam)

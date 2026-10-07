@@ -16,6 +16,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.getTeamMembers
 import com.obsidianmedia.learnwithalphonso.core.net.joinTeamByCode
 import com.obsidianmedia.learnwithalphonso.core.net.kickTeamMember
 import com.obsidianmedia.learnwithalphonso.core.net.leaveTeam
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +29,8 @@ data class TeamsUiState(
     val members: List<TeamMember> = emptyList(),
     val leaderboard: List<TeamLeaderboardRow> = emptyList(),
     val error: String? = null,
+    /** The team lookup itself failed: that is not "no team", and the screen must not offer create/join. */
+    val teamLoadFailed: Boolean = false,
     val nowMillis: Long = 0,
 ) {
     val canLeave: Boolean get() = myTeam != null && myTeam.switchLockedUntilMillis <= nowMillis
@@ -38,29 +41,54 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val nowMill
     private val _state = MutableStateFlow(TeamsUiState())
     val state: StateFlow<TeamsUiState> = _state.asStateFlow()
 
+    // Latest load wins: an older load finishing late (one started by a kick, then Leave) must not put back a left team.
+    private var loadGeneration = 0
+
     init { loadAll() }
 
     fun loadAll() {
+        val generation = ++loadGeneration
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val team = runCatching { client.getMyTeam() }.getOrNull()
-            val members = if (team != null) runCatching { client.getTeamMembers() }.getOrDefault(emptyList()) else emptyList()
+            // Cancellation must stop the load, not be recorded as a failed lookup.
+            val teamResult = try {
+                Result.success(client.getMyTeam())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+            // A failed refresh keeps the team already on screen; only a first load with no team to show is a failure.
+            val team = if (teamResult.isFailure) _state.value.myTeam else teamResult.getOrNull()
+            // A failed refresh keeps the members with the team; otherwise a team with no members would show.
+            val members = when {
+                teamResult.isFailure -> _state.value.members
+                team != null -> runCatching { client.getTeamMembers() }.getOrDefault(emptyList())
+                else -> emptyList()
+            }
             val board = runCatching { client.getTeamLeaderboard() }.getOrDefault(emptyList())
-            _state.update { it.copy(isLoading = false, myTeam = team, members = members, leaderboard = board, nowMillis = nowMillis()) }
+            if (generation != loadGeneration) return@launch
+            _state.update { it.copy(isLoading = false, myTeam = team, members = members, leaderboard = board, teamLoadFailed = teamResult.isFailure && team == null, nowMillis = nowMillis()) }
         }
     }
 
     fun joinByCode(code: String) = outcome { client.joinTeamByCode(code.trim()).let { it.ok to it.reason } }
     fun autoJoin() = outcome { client.autoJoinTeam().let { it.ok to it.reason } }
     fun createTeam(name: String, visibility: String) = outcome { client.createTeam(name.trim(), visibility).let { it.ok to it.reason } }
-    fun leave() = outcome { client.leaveTeam().let { it.ok to it.reason } }
-    fun kick(member: TeamMember) = outcome { client.kickTeamMember(member.userId).let { it.ok to it.reason } }
+    // Each success first applies what is now known, so a failed reload cannot show a team just left or a member just removed.
+    fun leave() = outcome(onSuccess = { it.copy(myTeam = null, members = emptyList()) }) { client.leaveTeam().let { it.ok to it.reason } }
+    fun kick(member: TeamMember) = outcome(onSuccess = { s -> s.copy(members = s.members.filterNot { it.userId == member.userId }) }) {
+        client.kickTeamMember(member.userId).let { it.ok to it.reason }
+    }
 
-    private fun outcome(call: suspend () -> Pair<Boolean, String?>) {
+    private fun outcome(onSuccess: (TeamsUiState) -> TeamsUiState = { it }, call: suspend () -> Pair<Boolean, String?>) {
         _state.update { it.copy(error = null) }
         viewModelScope.launch {
             val result = runCatching { call() }.getOrElse { false to "Check your connection and try again." }
-            if (result.first) loadAll() else _state.update { it.copy(error = result.second ?: "Something went wrong. Try again.") }
+            if (result.first) {
+                _state.update(onSuccess)
+                loadAll()
+            } else _state.update { it.copy(error = result.second ?: "Something went wrong. Try again.") }
         }
     }
 

@@ -120,6 +120,13 @@ describe("Team detail page", () => {
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith({ to: "/teams" }));
   });
 
+  it("says it could not load the team, not 'not on a team', when the request fails", async () => {
+    getMyTeam.mockRejectedValue(new Error("boom"));
+    renderPage();
+    expect(await screen.findByText("Couldn't load your team.")).toBeInTheDocument();
+    expect(screen.queryByText("You're not on a team yet.")).not.toBeInTheDocument();
+  });
+
   it("shows a fallback message when the user has no team", async () => {
     getMyTeam.mockResolvedValue(null);
     renderPage();

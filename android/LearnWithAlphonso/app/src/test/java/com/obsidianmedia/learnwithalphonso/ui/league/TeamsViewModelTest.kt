@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -70,6 +71,95 @@ class TeamsViewModelTest {
         awaitTrue("reloaded") { s.seen.count { it.path.endsWith("get_my_team") } >= 2 }
         assertEquals("""{"_name":"Night Owls","_visibility":"private"}""", s.seen.first { it.path.endsWith("create_team") }.body)
         assertNull(v.state.value.error)
+    }
+
+    @Test
+    fun `a failed team lookup is a load failure, not no team, and a retry recovers`() = runBlocking {
+        var failing = true
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        assertNull(v.state.value.myTeam)
+        assertTrue("the screen must not offer create/join during an outage", v.state.value.teamLoadFailed)
+
+        failing = false
+        v.loadAll()
+        awaitTrue("recovered") { v.state.value.myTeam != null }
+        assertFalse(v.state.value.teamLoadFailed)
+    }
+
+    @Test
+    fun `a failed refresh keeps the team already on screen`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                req.path.endsWith("get_team_members") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json("""[{"user_id":"u2","display_name":"Bo","avatar_seed":"cd","joined_at":"2026-09-21T00:00:00+00:00","is_owner":false}]""")
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { v.state.value.myTeam != null && v.state.value.members.isNotEmpty() }
+        failing = true
+        v.loadAll()
+        awaitTrue("refreshed") { !v.state.value.isLoading }
+        assertEquals("Owls", v.state.value.myTeam!!.name)
+        assertEquals("members stay with the team", listOf("Bo"), v.state.value.members.map { it.displayName })
+        assertFalse(v.state.value.teamLoadFailed)
+    }
+
+    @Test
+    fun `leaving clears the team even if the reload then fails`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-09-01T00:00:00+00:00"))
+                req.path.endsWith("leave_team") -> { failing = true; json("""[{"ok":true}]""") }
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { v.state.value.myTeam != null }
+        v.leave()
+        awaitTrue("left") { v.state.value.myTeam == null && !v.state.value.isLoading }
+        assertTrue("a failed reload after leaving shows the retry card, not the old team", v.state.value.teamLoadFailed)
+    }
+
+    @Test
+    fun `a removed member disappears even if the reload then fails`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                req.path.endsWith("get_team_members") ->
+                    json("""[{"user_id":"u2","display_name":"Bo","avatar_seed":"cd","joined_at":"2026-09-21T00:00:00+00:00","is_owner":false}]""")
+                req.path.endsWith("kick_team_member") -> { failing = true; json("""[{"ok":true}]""") }
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { v.state.value.members.isNotEmpty() }
+        v.kick(v.state.value.members.single())
+        awaitTrue("reloaded") { s.seen.count { it.path.endsWith("get_my_team") } >= 2 && !v.state.value.isLoading }
+        assertEquals("Owls", v.state.value.myTeam!!.name)
+        assertTrue("the removed member is gone", v.state.value.members.isEmpty())
+    }
+
+    @Test
+    fun `no team is not a load failure`() = runBlocking {
+        val v = TeamsViewModel(server(hasTeam = false).progressClient) { now }
+        awaitTrue("loaded") { !v.state.value.isLoading }
+        assertFalse(v.state.value.teamLoadFailed)
     }
 
     private fun assertFalse(msg: String, v: Boolean) = assertFalse(v)

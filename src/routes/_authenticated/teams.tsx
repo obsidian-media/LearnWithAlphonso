@@ -24,9 +24,16 @@ export const Route = createFileRoute("/_authenticated/teams")({
 function TeamsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: myTeam, isLoading: loadingMyTeam } = useQuery({
+  const {
+    data: myTeam,
+    isLoading: loadingMyTeam,
+    isError: myTeamFailed,
+    refetch: retryMyTeam,
+  } = useQuery({
     queryKey: ["myTeam"],
     queryFn: () => getMyTeam(),
+    // A failing lookup is not transient (the default 3 retries would show the forms for ~7 s first).
+    retry: false,
   });
   const { data: leaderboard, isLoading: loadingBoard } = useQuery({
     queryKey: ["teamLeaderboard"],
@@ -42,6 +49,28 @@ function TeamsPage() {
     navigate({ to: "/teams/$teamId", params: { teamId: myTeam.teamId } });
     return null;
   }
+
+  if (loadingMyTeam)
+    return (
+      <MobileFrame>
+        <p className="p-6 text-sm text-ink-soft">Loading…</p>
+      </MobileFrame>
+    );
+  if (myTeamFailed)
+    return (
+      <MobileFrame>
+        <div className="px-6 pt-6">
+          <p className="text-sm text-ink-soft">Couldn't load your team.</p>
+          <button
+            type="button"
+            onClick={() => retryMyTeam()}
+            className="mt-3 rounded-full border border-hairline px-4 py-2.5 text-sm font-semibold text-ink"
+          >
+            Try again
+          </button>
+        </div>
+      </MobileFrame>
+    );
 
   async function handleJoinByCode() {
     setBusy(true);

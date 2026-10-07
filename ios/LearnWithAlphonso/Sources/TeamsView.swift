@@ -13,6 +13,10 @@ struct TeamsView: View {
     @State private var leaderboard: [TeamLeaderboardRow] = []
     @State private var code = ""
     @State private var isLoading = true
+    // A failed team lookup is not "no team": without this the screen offered to create or join one during an outage.
+    @State private var loadFailed = false
+    // Latest load wins: an older load finishing late (one started by a kick, then Leave) must not put back a left team.
+    @State private var loadGeneration = 0
     @State private var errorMessage: String?
     @State private var newTeamName = ""
     @State private var newTeamVisibility = "public"
@@ -105,6 +109,15 @@ struct TeamsView: View {
                         .font(AlphonsoFont.sans(12, weight: .semiBold))
                         .tracking(0.4)
                         .foregroundStyle(AlphonsoColor.ember)
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+            } else if loadFailed {
+                Section {
+                    Text("Couldn't load your team.")
+                        .font(AlphonsoFont.sans(15))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    Button("Try again") { Task { await loadAll() } }
+                        .tint(AlphonsoColor.moss)
                 }
                 .listRowBackground(AlphonsoColor.parchment)
             } else {
@@ -228,10 +241,34 @@ struct TeamsView: View {
 
     private func loadAll() async {
         guard let client else { return }
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
-        myTeam = try? await client.getMyTeam()
-        members = myTeam != nil ? ((try? await client.getTeamMembers()) ?? []) : []
-        leaderboard = (try? await client.getTeamLeaderboard()) ?? []
+        var team = myTeam
+        var failed = loadFailed
+        var lookupSucceeded = false
+        do {
+            team = try await client.getMyTeam()
+            failed = false
+            lookupSucceeded = true
+        } catch {
+            // A cancelled load (the view went away or reloaded) is not a failure; a failed refresh keeps the loaded team.
+            if !Task.isCancelled { failed = team == nil }
+        }
+        let newMembers: [TeamMember]
+        if !lookupSucceeded {
+            newMembers = members // keep the members with a kept team
+        } else if team != nil {
+            newMembers = (try? await client.getTeamMembers()) ?? []
+        } else {
+            newMembers = []
+        }
+        let board = (try? await client.getTeamLeaderboard()) ?? []
+        guard generation == loadGeneration else { return }
+        myTeam = team
+        loadFailed = failed
+        members = newMembers
+        leaderboard = board
         isLoading = false
     }
 
@@ -239,7 +276,13 @@ struct TeamsView: View {
         guard let client else { return }
         errorMessage = nil
         let result = try? await client.kickTeamMember(userID: member.userID)
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        if result?.ok == true {
+            // Drop them now: if the reload fails, the kept member list would still show the removed member.
+            members.removeAll { $0.userID == member.userID }
+            await loadAll()
+        } else {
+            errorMessage = result?.reason
+        }
     }
 
     private func joinByCode() async {
@@ -273,6 +316,13 @@ struct TeamsView: View {
         guard let client else { return }
         errorMessage = nil
         let result = try? await client.leaveTeam()
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        if result?.ok == true {
+            // Clear first: if the reload below fails, a kept stale team would show the team the user just left.
+            myTeam = nil
+            members = []
+            await loadAll()
+        } else {
+            errorMessage = result?.reason
+        }
     }
 }

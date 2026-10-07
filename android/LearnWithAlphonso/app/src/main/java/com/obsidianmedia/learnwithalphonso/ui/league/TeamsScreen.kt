@@ -110,6 +110,11 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit) {
                         }
                     }
                 }
+            } else if (state.teamLoadFailed) {
+                SectionCard("Your team") {
+                    Text("Couldn't load your team.", color = palette.ink)
+                    TextButton(onClick = { vm.loadAll() }) { Text("Try again", color = palette.moss) }
+                }
             } else {
                 SectionCard("Join a team") {
                     OutlinedTextField(value = code, onValueChange = { code = it }, label = { Text("Join code") }, singleLine = true, modifier = Modifier.fillMaxWidth())
