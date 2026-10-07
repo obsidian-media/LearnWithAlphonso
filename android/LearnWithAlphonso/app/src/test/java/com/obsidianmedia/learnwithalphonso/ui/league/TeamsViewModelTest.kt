@@ -135,6 +135,27 @@ class TeamsViewModelTest {
     }
 
     @Test
+    fun `a removed member disappears even if the reload then fails`() = runBlocking {
+        var failing = false
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("get_my_team") ->
+                    if (failing) json("{}", HttpStatusCode.InternalServerError) else json(teamJson.format("2026-10-06T01:23:45.678901+00:00"))
+                req.path.endsWith("get_team_members") ->
+                    json("""[{"user_id":"u2","display_name":"Bo","avatar_seed":"cd","joined_at":"2026-09-21T00:00:00+00:00","is_owner":false}]""")
+                req.path.endsWith("kick_team_member") -> { failing = true; json("""[{"ok":true}]""") }
+                else -> json("[]")
+            }
+        }
+        val v = TeamsViewModel(s.progressClient) { now }
+        awaitTrue("loaded") { v.state.value.members.isNotEmpty() }
+        v.kick(v.state.value.members.single())
+        awaitTrue("reloaded") { s.seen.count { it.path.endsWith("get_my_team") } >= 2 && !v.state.value.isLoading }
+        assertEquals("Owls", v.state.value.myTeam!!.name)
+        assertTrue("the removed member is gone", v.state.value.members.isEmpty())
+    }
+
+    @Test
     fun `no team is not a load failure`() = runBlocking {
         val v = TeamsViewModel(server(hasTeam = false).progressClient) { now }
         awaitTrue("loaded") { !v.state.value.isLoading }

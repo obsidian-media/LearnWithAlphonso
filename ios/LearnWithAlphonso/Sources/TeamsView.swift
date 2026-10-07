@@ -15,6 +15,8 @@ struct TeamsView: View {
     @State private var isLoading = true
     // A failed team lookup is not "no team": without this the screen offered to create or join one during an outage.
     @State private var loadFailed = false
+    // Latest load wins: an older load finishing late (one started by a kick, then Leave) must not put back a left team.
+    @State private var loadGeneration = 0
     @State private var errorMessage: String?
     @State private var newTeamName = ""
     @State private var newTeamVisibility = "public"
@@ -239,16 +241,34 @@ struct TeamsView: View {
 
     private func loadAll() async {
         guard let client else { return }
+        loadGeneration += 1
+        let generation = loadGeneration
         isLoading = true
+        var team = myTeam
+        var failed = loadFailed
+        var lookupSucceeded = false
         do {
-            myTeam = try await client.getMyTeam()
-            loadFailed = false
+            team = try await client.getMyTeam()
+            failed = false
+            lookupSucceeded = true
         } catch {
             // A cancelled load (the view went away or reloaded) is not a failure; a failed refresh keeps the loaded team.
-            if !Task.isCancelled { loadFailed = myTeam == nil }
+            if !Task.isCancelled { failed = team == nil }
         }
-        members = myTeam != nil ? ((try? await client.getTeamMembers()) ?? []) : []
-        leaderboard = (try? await client.getTeamLeaderboard()) ?? []
+        let newMembers: [TeamMember]
+        if !lookupSucceeded {
+            newMembers = members // keep the members with a kept team
+        } else if team != nil {
+            newMembers = (try? await client.getTeamMembers()) ?? []
+        } else {
+            newMembers = []
+        }
+        let board = (try? await client.getTeamLeaderboard()) ?? []
+        guard generation == loadGeneration else { return }
+        myTeam = team
+        loadFailed = failed
+        members = newMembers
+        leaderboard = board
         isLoading = false
     }
 
@@ -256,7 +276,13 @@ struct TeamsView: View {
         guard let client else { return }
         errorMessage = nil
         let result = try? await client.kickTeamMember(userID: member.userID)
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        if result?.ok == true {
+            // Drop them now: if the reload fails, the kept member list would still show the removed member.
+            members.removeAll { $0.userID == member.userID }
+            await loadAll()
+        } else {
+            errorMessage = result?.reason
+        }
     }
 
     private func joinByCode() async {
