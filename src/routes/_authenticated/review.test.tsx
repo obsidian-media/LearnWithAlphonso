@@ -286,7 +286,10 @@ describe("Review page", () => {
     renderPage();
 
     expect(await screen.findByText("What is shown in the picture?")).toBeInTheDocument();
-    expect(screen.getByRole("img")).toHaveAttribute("alt", expect.stringContaining("doctor"));
+    // Decorative on purpose: a descriptive alt ("a doctor ...") would give the answer away.
+    const img = screen.getByTestId("vocab-image").querySelector("img");
+    expect(img).toHaveAttribute("alt", "");
+    expect(img?.getAttribute("src")).toContain("/vocab-images/en/doctor.jpg");
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));
