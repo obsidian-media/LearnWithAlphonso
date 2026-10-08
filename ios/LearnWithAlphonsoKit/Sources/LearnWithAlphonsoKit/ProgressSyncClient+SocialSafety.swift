@@ -67,8 +67,8 @@ extension ProgressSyncClient {
     }
 
     /// Reports an offensive team name, filed against the team's creator
-    /// with the team tagged in `reason` as `team_name:<teamID>:<reason>`
-    /// so a moderator can find the exact team. Added in the 2026-09-29
+    /// with `kind: "team_name"` and `context.team_id`, so a moderator can
+    /// find the exact team. Added in the 2026-09-29
     /// pre-submission audit: public team names were the one piece of
     /// user-written content shown to strangers with no report path.
     /// `teams` is readable by every signed-in user (`teams_select_all`),
@@ -88,7 +88,18 @@ extension ProgressSyncClient {
             throw ProgressSyncError.invalidPayload
         }
         guard let creator = rows.first?["created_by"] as? String else { return false }
-        try await reportUser(creator, reason: "team_name:\(teamID):\(reason)")
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/content_reports"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        // kind/context (20261008130300_content_reports_moderation_ops.sql) replace the old "team_name:<id>:" prefix.
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "reported": creator, "reason": reason, "kind": "team_name", "context": ["team_id": teamID],
+        ])
+        let (insertData, insertResponse) = try await requester(request)
+        try Self.requireSuccess(data: insertData, response: insertResponse)
         return true
     }
 }
