@@ -165,7 +165,7 @@ async function synthesise(script: string, voice: string): Promise<Uint8Array> {
   const audio: Uint8Array[] = [];
   for (const [index, piece] of pieces.entries()) {
     const response = await fetch(
-      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(voice)}&encoding=mp3`,
+      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(voice)}&encoding=mp3&mip_opt_out=true`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },

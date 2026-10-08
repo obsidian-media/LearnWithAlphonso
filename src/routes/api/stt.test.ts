@@ -99,6 +99,8 @@ describe("POST /api/stt", () => {
 
     const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain("api.deepgram.com/v1/listen");
+    // Deepgram must not keep the recording or use it to improve its models (the privacy policy says so).
+    expect(url).toContain("mip_opt_out=true");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("audio/mp4");
   });
 

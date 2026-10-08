@@ -255,4 +255,19 @@ describe("POST /api/hector-respond", () => {
     );
     expect(ttsBody).toEqual({ text: AI_OUTPUT_FALLBACK.en });
   });
+
+  it("opts the spoken reply out of Deepgram's model improvement program", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [{ message: { content: "Hello!" } }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    await handler({ request: req() });
+    const ttsUrl = String((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[1][0]);
+    expect(ttsUrl).toContain("api.deepgram.com/v1/speak");
+    expect(ttsUrl).toContain("mip_opt_out=true");
+  });
 });

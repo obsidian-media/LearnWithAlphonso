@@ -122,7 +122,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const ttsStart = performance.now();
   const tts = await timer.time("tts", async () => {
     const ttsResp = await fetch(
-      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(ttsModel)}&encoding=mp3`,
+      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(ttsModel)}&encoding=mp3&mip_opt_out=true`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Token ${deepgramKey}` },

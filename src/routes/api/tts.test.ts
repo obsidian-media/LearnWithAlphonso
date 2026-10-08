@@ -78,6 +78,7 @@ describe("POST /api/tts", () => {
     await handler({ request: req({ text: "hello" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain(encodeURIComponent("aura-2-thalia-en"));
+    expect(url).toContain("mip_opt_out=true");
   });
 
   it("uses a caller-provided voice model", async () => {

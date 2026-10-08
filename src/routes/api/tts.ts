@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/tts")({
         // model id if overriding the default.
         const model = body.voice || "aura-2-thalia-en";
         const resp = await fetch(
-          `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(model)}&encoding=mp3`,
+          `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(model)}&encoding=mp3&mip_opt_out=true`,
           {
             method: "POST",
             headers: {

@@ -91,7 +91,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     ...messages,
   ];
 
-  // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
+  // NVIDIA NIM's hosted inference API is
   // OpenAI-compatible, so only the URL/key/model name change from the
   // Lovable Gateway. See nvidia-chat-model.server.ts for why the
   // model id lives there instead of being hardcoded here.

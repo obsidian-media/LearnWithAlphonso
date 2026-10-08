@@ -72,7 +72,7 @@ export const Route = createFileRoute("/api/stt")({
           return boxes.join(" ");
         }
         const resp = await fetch(
-          `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true`,
+          `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true&mip_opt_out=true`,
           {
             method: "POST",
             headers: {
