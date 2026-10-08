@@ -10,16 +10,18 @@ import {
 } from "react";
 import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AI_CONSENT_COPY } from "./ai-consent-copy";
-import { getAiConsent, setAiConsent } from "./ai-consent.functions";
 
 export type AiConsentApi = {
   get: () => Promise<string | null>;
   set: (granted: boolean) => Promise<string | null>;
 };
 
+// The server functions are imported on first use, not at module load: this file is reached from many components
+// (save word, speaking, translate) and a static import would drag the auth middleware into every page test.
 const serverApi: AiConsentApi = {
-  get: async () => (await getAiConsent()).grantedAt,
-  set: async (granted) => (await setAiConsent({ data: { granted } })).grantedAt,
+  get: async () => (await (await import("./ai-consent.functions")).getAiConsent()).grantedAt,
+  set: async (granted) =>
+    (await (await import("./ai-consent.functions")).setAiConsent({ data: { granted } })).grantedAt,
 };
 
 export type AiConsentStatus = "loading" | "granted" | "denied" | "unknown";
@@ -44,12 +46,17 @@ const AiConsentContext = createContext<AiConsent | null>(null);
 export function AiConsentProvider({
   children,
   api = serverApi,
+  initialGrantedAt,
 }: {
   children: ReactNode;
   api?: AiConsentApi;
+  /** Tests only: start from a known state instead of "loading". The first read still replaces it. */
+  initialGrantedAt?: string | null;
 }) {
-  const [status, setStatus] = useState<AiConsentStatus>("loading");
-  const [grantedAt, setGrantedAt] = useState<string | null>(null);
+  const [status, setStatus] = useState<AiConsentStatus>(
+    initialGrantedAt === undefined ? "loading" : initialGrantedAt ? "granted" : "denied",
+  );
+  const [grantedAt, setGrantedAt] = useState<string | null>(initialGrantedAt ?? null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

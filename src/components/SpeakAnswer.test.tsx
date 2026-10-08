@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { fakeConsentApi, withAiConsent } from "../lib/__testutils__/ai-consent";
 import { SpeakAnswer } from "./SpeakAnswer";
 
 const capture = vi.hoisted(() => ({
@@ -38,14 +39,16 @@ beforeEach(() => {
 describe("SpeakAnswer", () => {
   it("shows the phrase to say and a way to hear it", () => {
     render(
-      <SpeakAnswer
-        target="She's a doctor."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={() => {}}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="She's a doctor."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+      ),
     );
     expect(screen.getByText("She's a doctor.")).toBeTruthy();
     expect(screen.getByRole("button", { name: /hear it/i })).toBeTruthy();
@@ -57,14 +60,16 @@ describe("SpeakAnswer", () => {
     // presses Check.
     const onChange = vi.fn();
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={onChange}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={onChange}
+          checked={false}
+        />,
+      ),
     );
     capture.onTranscript?.("good morning", 0.9);
     expect(onChange).toHaveBeenCalledWith("good morning");
@@ -72,14 +77,16 @@ describe("SpeakAnswer", () => {
 
   it("shows the captured transcript back so a mishearing can be redone", () => {
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value="good mourning"
-        onChange={() => {}}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value="good mourning"
+          onChange={() => {}}
+          checked={false}
+        />,
+      ),
     );
     expect(screen.getByText("good mourning")).toBeTruthy();
     expect(screen.getByText(/say it again/i)).toBeTruthy();
@@ -87,28 +94,32 @@ describe("SpeakAnswer", () => {
 
   it("starts and stops the recorder from the same control", () => {
     const { rerender } = render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={() => {}}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+      ),
     );
     fireEvent.click(screen.getByRole("button", { name: /record your answer/i }));
     expect(capture.start).toHaveBeenCalled();
 
     capture.state = "recording";
     rerender(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={() => {}}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+      ),
     );
     fireEvent.click(screen.getByRole("button", { name: /stop recording/i }));
     expect(capture.stop).toHaveBeenCalled();
@@ -117,14 +128,16 @@ describe("SpeakAnswer", () => {
   it("surfaces a capture error instead of silently failing", () => {
     capture.error = "Microphone access is needed to speak.";
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={() => {}}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+      ),
     );
     expect(screen.getByRole("alert").textContent).toMatch(/microphone/i);
   });
@@ -136,14 +149,16 @@ describe("SpeakAnswer", () => {
     capture.canRecord = false;
     const onChange = vi.fn();
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={onChange}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={onChange}
+          checked={false}
+        />,
+      ),
     );
     const input = screen.getByLabelText("Type the phrase");
     fireEvent.change(input, { target: { value: "good morning" } });
@@ -152,14 +167,16 @@ describe("SpeakAnswer", () => {
 
   it("locks the control once the answer has been checked", () => {
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value="good morning"
-        onChange={() => {}}
-        checked
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value="good morning"
+          onChange={() => {}}
+          checked
+        />,
+      ),
     );
     expect(
       screen.getByRole("button", { name: /record your answer/i }).hasAttribute("disabled"),
@@ -176,14 +193,16 @@ describe("SpeakAnswer", () => {
     capture.error = "Microphone access is needed to speak.";
     const onChange = vi.fn();
     render(
-      <SpeakAnswer
-        target="Good morning."
-        locale="en-US"
-        course="en"
-        value={null}
-        onChange={onChange}
-        checked={false}
-      />,
+      withAiConsent(
+        <SpeakAnswer
+          target="Good morning."
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={onChange}
+          checked={false}
+        />,
+      ),
     );
 
     const input = screen.getByLabelText("Type the phrase");
@@ -191,5 +210,44 @@ describe("SpeakAnswer", () => {
     expect(onChange).toHaveBeenCalledWith("good morning");
     expect(screen.getByRole("alert").textContent).toMatch(/microphone/i);
     expect(screen.queryByRole("button", { name: /record your answer/i })).toBeNull();
+  });
+
+  it("without consent offers typing with consent copy, not 'offline', and never records", () => {
+    render(
+      withAiConsent(
+        <SpeakAnswer
+          target="Hello"
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+        fakeConsentApi(null),
+      ),
+    );
+    expect(
+      screen.getByText("Speaking answers use AI, which is turned off. Type the phrase instead."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Type the phrase")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Record your answer" })).toBeNull();
+    expect(capture.start).not.toHaveBeenCalled();
+  });
+
+  it("offers to turn voice on from the typed fallback", () => {
+    render(
+      withAiConsent(
+        <SpeakAnswer
+          target="Hello"
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+        fakeConsentApi(null),
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Use your voice instead" })).toBeInTheDocument();
   });
 });

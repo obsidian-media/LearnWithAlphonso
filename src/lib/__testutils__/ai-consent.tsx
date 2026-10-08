@@ -3,11 +3,12 @@ import { AiConsentProvider, type AiConsentApi } from "../ai-consent-context";
 
 export function fakeConsentApi(
   grantedAt: string | null = "2026-10-09T10:00:00Z",
-): AiConsentApi & { setCalls: boolean[] } {
+): AiConsentApi & { setCalls: boolean[]; initial: string | null } {
   let current = grantedAt;
   const setCalls: boolean[] = [];
   return {
     setCalls,
+    initial: grantedAt,
     get: async () => current,
     set: async (granted: boolean) => {
       setCalls.push(granted);
@@ -19,7 +20,12 @@ export function fakeConsentApi(
 
 export function withAiConsent(
   ui: ReactElement,
-  api: AiConsentApi = fakeConsentApi(),
+  api: AiConsentApi & { initial?: string | null } = fakeConsentApi(),
 ): ReactElement {
-  return <AiConsentProvider api={api}>{ui}</AiConsentProvider>;
+  // Starts from the fake's state so a test does not have to wait for the first read.
+  return (
+    <AiConsentProvider api={api} initialGrantedAt={api.initial}>
+      {ui}
+    </AiConsentProvider>
+  );
 }
