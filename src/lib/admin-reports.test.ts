@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
+import {
+  asTestFns,
+  chainable,
+  createSupabaseMock,
+  type ChainCall,
+} from "./__testutils__/supabase-mock";
 
 // requireAdmin's own gating is covered by admin.functions.test.ts's
 // source-scan suite (every createServerFn in this file must carry
@@ -36,10 +41,22 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 
 const adminModule = await import("./admin.functions");
-const { adminListReports, adminDeleteReportedUser } = asTestFns({
+const {
+  adminListReports,
+  adminDeleteReportedUser,
+  adminResetDisplayName,
+  adminRenameTeam,
+  adminDisbandTeam,
+  adminDismissReport,
+} = asTestFns({
   adminListReports: adminModule.adminListReports,
   adminDeleteReportedUser: adminModule.adminDeleteReportedUser,
+  adminResetDisplayName: adminModule.adminResetDisplayName,
+  adminRenameTeam: adminModule.adminRenameTeam,
+  adminDisbandTeam: adminModule.adminDisbandTeam,
+  adminDismissReport: adminModule.adminDismissReport,
 });
+const { teamIdForReport } = adminModule;
 
 function ctx(supabaseAdmin: ReturnType<typeof createSupabaseMock>) {
   return { supabaseAdmin, userId: "admin-1" };
@@ -54,9 +71,11 @@ describe("adminListReports", () => {
           data: [
             {
               id: "r1",
+              kind: "user",
               reporter: "u1",
               reported: "u2",
               reason: "spam",
+              context: null,
               created_at: "2026-01-01T00:00:00Z",
             },
           ],
@@ -80,11 +99,14 @@ describe("adminListReports", () => {
     expect(result).toEqual([
       {
         id: "r1",
+        kind: "user",
         reporterId: "u1",
         reporterName: "Ada",
         reportedId: "u2",
         reportedName: "Bea",
         reason: "spam",
+        context: null,
+        teamId: null,
         createdAt: "2026-01-01T00:00:00Z",
       },
     ]);
@@ -221,5 +243,154 @@ describe("adminDeleteReportedUser", () => {
       adminDeleteReportedUser({ context: ctx(supabaseAdmin), data: { reportId: "not-a-uuid" } }),
     ).rejects.toThrow();
     expect(supabaseAdmin.from).not.toHaveBeenCalled();
+  });
+});
+
+describe("teamIdForReport", () => {
+  it("reads context.team_id, then the legacy reason prefix, else null", () => {
+    const id = "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b";
+    expect(teamIdForReport({ reason: "spam", context: { team_id: id } })).toBe(id);
+    expect(teamIdForReport({ reason: `team_name:${id}:spam`, context: null })).toBe(id);
+    expect(teamIdForReport({ reason: "spam", context: { team_id: "not-a-uuid" } })).toBeNull();
+    expect(teamIdForReport({ reason: "spam", context: null })).toBeNull();
+  });
+});
+
+describe("moderation actions", () => {
+  const REPORT = "8a0c7d0e-6a8f-4f41-9d3c-2f0f6a7b1c11";
+  const TEAM = "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b";
+
+  it("adminListReports keeps an AI report with no reported account", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockImplementation((table: string) =>
+      table === "content_reports"
+        ? chainable({
+            data: [
+              {
+                id: "r1",
+                kind: "ai_response",
+                reporter: "u1",
+                reported: null,
+                reason: "other",
+                context: { source: "hector", course: "fr", message: "m" },
+                created_at: "2026-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
+          })
+        : chainable({ data: [{ id: "u1", display_name: "Ada" }], error: null }),
+    );
+    const [row] = await adminListReports({ context: ctx(supabaseAdmin) });
+    expect(row).toMatchObject({
+      kind: "ai_response",
+      reportedId: null,
+      reportedName: null,
+      teamId: null,
+      reporterName: "Ada",
+    });
+  });
+
+  it("reset name calls the RPC for the REPORTED user and resolves the report", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    const deletes: ChainCall[] = [];
+    supabaseAdmin.from
+      .mockReturnValueOnce(
+        chainable({
+          data: { id: REPORT, kind: "user", reported: "u2", reason: "spam", context: null },
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }, deletes));
+    supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "Learner-1A2B", error: null }));
+    const result = await adminResetDisplayName({
+      data: { reportId: REPORT },
+      context: ctx(supabaseAdmin),
+    });
+    expect(supabaseAdmin.rpc).toHaveBeenCalledWith("admin_reset_display_name", { _user_id: "u2" });
+    expect(result).toEqual({ ok: true, newName: "Learner-1A2B" });
+    expect(deletes.some((c) => c.method === "delete")).toBe(true);
+  });
+
+  it("rename refuses a blocked name with the shared copy and keeps the report", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockReturnValueOnce(
+      chainable({
+        data: {
+          id: REPORT,
+          kind: "team_name",
+          reported: "u2",
+          reason: "spam",
+          context: { team_id: TEAM },
+        },
+        error: null,
+      }),
+    );
+    supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "blocked-content", error: null }));
+    await expect(
+      adminRenameTeam({ data: { reportId: REPORT, name: "FuckYou" }, context: ctx(supabaseAdmin) }),
+    ).rejects.toThrow("That name isn't allowed. Try another.");
+    expect(supabaseAdmin.rpc).toHaveBeenCalledWith("admin_rename_team", {
+      _team_id: TEAM,
+      _name: "FuckYou",
+    });
+    expect(supabaseAdmin.from).toHaveBeenCalledTimes(1);
+  });
+
+  it("disband deletes the team the REPORT names, then resolves the report", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    const teamCalls: ChainCall[] = [];
+    supabaseAdmin.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            id: REPORT,
+            kind: "team_name",
+            reported: "u2",
+            reason: "spam",
+            context: { team_id: TEAM },
+          },
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }, teamCalls))
+      .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }));
+    expect(
+      await adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+    ).toEqual({ ok: true });
+    expect(supabaseAdmin.from).toHaveBeenNthCalledWith(2, "teams");
+    expect(teamCalls.find((c) => c.method === "eq")?.args).toEqual(["id", TEAM]);
+  });
+
+  it("team actions refuse a report that names no team", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockReturnValueOnce(
+      chainable({
+        data: { id: REPORT, kind: "user", reported: "u2", reason: "spam", context: null },
+        error: null,
+      }),
+    );
+    await expect(
+      adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+    ).rejects.toThrow("This report is not about a team.");
+  });
+
+  it("deleting the account refuses an AI report", async () => {
+    const deleteUser = vi.fn();
+    const supabaseAdmin = { ...createSupabaseMock(), auth: { admin: { deleteUser } } };
+    supabaseAdmin.from.mockReturnValueOnce(chainable({ data: { reported: null }, error: null }));
+    await expect(
+      adminDeleteReportedUser({ data: { reportId: REPORT }, context: ctx(supabaseAdmin as never) }),
+    ).rejects.toThrow("This report has no account to delete.");
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it("dismiss deletes only that report", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    const calls: ChainCall[] = [];
+    supabaseAdmin.from.mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }, calls));
+    expect(
+      await adminDismissReport({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+    ).toEqual({ ok: true });
+    expect(calls.find((c) => c.method === "eq")?.args).toEqual(["id", REPORT]);
   });
 });

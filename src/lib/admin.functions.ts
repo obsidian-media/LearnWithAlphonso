@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { requireAdmin } from "./admin-middleware";
 import { findCycle, isValidSlug, slugPathFor, type PodcastFolder } from "./podcast-tree";
@@ -14,6 +14,7 @@ import {
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 import { revokeAppleGrantForUser } from "./account.functions";
+import { socialReasonMessage } from "./social-reason-copy";
 
 // Matches podcast_folders/podcast_episodes.course's own CHECK constraint
 // (20260926030000_podcast_library.sql) verbatim. Not imported from
@@ -50,6 +51,10 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminSaveTranscript",
   "adminListReports",
   "adminDeleteReportedUser",
+  "adminResetDisplayName",
+  "adminRenameTeam",
+  "adminDisbandTeam",
+  "adminDismissReport",
 ] as const;
 
 const BUCKET = "podcast-audio";
@@ -749,13 +754,26 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
 
 export type AdminReport = {
   id: string;
+  kind: "user" | "team_name" | "ai_response";
   reporterId: string;
   reporterName: string;
-  reportedId: string;
-  reportedName: string;
+  reportedId: string | null;
+  reportedName: string | null;
   reason: string;
+  /** The report's own detail (team_id, or an AI reply's source/course/message); JSON so it crosses the server boundary. */
+  context: { [key: string]: Json | undefined } | null;
+  teamId: string | null;
   createdAt: string;
 };
+
+const LEGACY_TEAM_REASON = /^team_name:([0-9a-f-]{36}):/i;
+
+/** The team a report is about: context.team_id (current clients) or the legacy iOS reason prefix. */
+export function teamIdForReport(report: { reason: string; context: unknown }): string | null {
+  const teamId = (report.context as { team_id?: unknown } | null)?.team_id;
+  if (typeof teamId === "string" && z.string().uuid().safeParse(teamId).success) return teamId;
+  return LEGACY_TEAM_REASON.exec(report.reason)?.[1] ?? null;
+}
 
 /**
  * Every abuse report, newest first, with both accounts' display names
@@ -777,12 +795,16 @@ export const adminListReports = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AdminReport[]> => {
     const { data: reports, error } = await context.supabaseAdmin
       .from("content_reports")
-      .select("id, reporter, reported, reason, created_at")
+      .select("id, kind, reporter, reported, reason, context, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     if (!reports || reports.length === 0) return [];
 
-    const userIds = [...new Set(reports.flatMap((r) => [r.reporter, r.reported]))];
+    const userIds = [
+      ...new Set(
+        reports.flatMap((r) => [r.reporter, r.reported]).filter((id): id is string => !!id),
+      ),
+    ];
     const { data: profiles, error: profilesError } = await context.supabaseAdmin
       .from("profiles")
       .select("id, display_name")
@@ -790,29 +812,26 @@ export const adminListReports = createServerFn({ method: "GET" })
     if (profilesError) throw new Error(profilesError.message);
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
 
-    // A missing profile means the account was already deleted through
-    // some other path since the report was filed -- content_reports rows
-    // for a deleted account are gone too (ON DELETE CASCADE on both
-    // reporter and reported), so this is a display-timing gap, not a
-    // real case the admin needs to act on. Named plainly rather than
-    // left blank.
     return reports.map((r) => ({
       id: r.id,
+      kind: r.kind as AdminReport["kind"],
       reporterId: r.reporter,
       reporterName: nameById.get(r.reporter) ?? "(deleted account)",
       reportedId: r.reported,
-      reportedName: nameById.get(r.reported) ?? "(deleted account)",
+      reportedName: r.reported ? (nameById.get(r.reported) ?? "(deleted account)") : null,
       reason: r.reason,
+      context: (r.context as { [key: string]: Json | undefined } | null) ?? null,
+      teamId: teamIdForReport({ reason: r.reason, context: r.context }),
       createdAt: r.created_at,
     }));
   });
 
 /**
- * The one action on a report: delete the reported account. There is no
- * separate "dismiss" -- content_reports.reported REFERENCES auth.users
- * ON DELETE CASCADE, so deleting the account also removes every report
- * against them (this one and any others) from the queue, with no status
- * column needed. Revokes the Apple grant first, same as self-service
+ * The heaviest action on a report: delete the reported account (lighter
+ * ones -- reset the name, rename or disband a team, dismiss -- are below).
+ * content_reports.reported REFERENCES auth.users ON DELETE CASCADE, so
+ * deleting the account also removes every report against them from the
+ * queue. An AI-response report names no account and is refused. Revokes the Apple grant first, same as self-service
  * deleteMyAccount, because Apple requires that on any account deletion
  * regardless of who initiates it -- see revokeAppleGrantForUser's own
  * doc comment for why it lives in account.functions.ts and is reused
@@ -841,6 +860,7 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!report) throw new Error("That report no longer exists.");
+    if (!report.reported) throw new Error("This report has no account to delete.");
 
     const appleRevocationStatus = await revokeAppleGrantForUser(
       context.supabaseAdmin,
@@ -856,5 +876,93 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
     );
     if (deleteError) throw new Error(deleteError.message);
 
+    return { ok: true };
+  });
+
+type ReportRow = {
+  id: string;
+  kind: string;
+  reported: string | null;
+  reason: string;
+  context: unknown;
+};
+type AdminClient = SupabaseClient<Database>;
+
+async function loadReport(supabaseAdmin: AdminClient, reportId: string): Promise<ReportRow> {
+  const { data, error } = await supabaseAdmin
+    .from("content_reports")
+    .select("id, kind, reported, reason, context")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("That report no longer exists.");
+  return data as ReportRow;
+}
+
+async function resolveReport(supabaseAdmin: AdminClient, reportId: string): Promise<void> {
+  affectedOrThrow(
+    await supabaseAdmin.from("content_reports").delete({ count: "exact" }).eq("id", reportId),
+    "That report no longer exists.",
+  );
+}
+
+const reportIdSchema = z.object({ reportId: z.string().uuid() });
+
+export const adminDismissReport = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await resolveReport(context.supabaseAdmin, data.reportId);
+    return { ok: true };
+  });
+
+/** A fresh Learner-XXXX handle for the reported account; they are asked to choose a name again. */
+export const adminResetDisplayName = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true; newName: string }> => {
+    const report = await loadReport(context.supabaseAdmin, data.reportId);
+    if (!report.reported) throw new Error("This report has no account to rename.");
+    const { data: newName, error } = await context.supabaseAdmin.rpc("admin_reset_display_name", {
+      _user_id: report.reported,
+    });
+    if (error) throw new Error(error.message);
+    if (!newName) throw new Error("That account no longer exists.");
+    await resolveReport(context.supabaseAdmin, data.reportId);
+    return { ok: true, newName };
+  });
+
+export const adminRenameTeam = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) =>
+    reportIdSchema.extend({ name: z.string().min(1).max(80) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const report = await loadReport(context.supabaseAdmin, data.reportId);
+    const teamId = teamIdForReport(report);
+    if (!teamId) throw new Error("This report is not about a team.");
+    const { data: reason, error } = await context.supabaseAdmin.rpc("admin_rename_team", {
+      _team_id: teamId,
+      _name: data.name,
+    });
+    if (error) throw new Error(error.message);
+    if (reason) throw new Error(socialReasonMessage(reason));
+    await resolveReport(context.supabaseAdmin, data.reportId);
+    return { ok: true };
+  });
+
+/** Deletes the team the report names; members, missions, rewards and kicks cascade. */
+export const adminDisbandTeam = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const report = await loadReport(context.supabaseAdmin, data.reportId);
+    const teamId = teamIdForReport(report);
+    if (!teamId) throw new Error("This report is not about a team.");
+    affectedOrThrow(
+      await context.supabaseAdmin.from("teams").delete({ count: "exact" }).eq("id", teamId),
+      "That team no longer exists.",
+    );
+    await resolveReport(context.supabaseAdmin, data.reportId);
     return { ok: true };
   });
