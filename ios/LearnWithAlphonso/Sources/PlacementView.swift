@@ -44,17 +44,10 @@ struct PlacementView: View {
     /// sentence, and isPlacementAnswerCorrect grades all three the same
     /// way only because of that. Matches placement.tsx's own `picked`.
     @State private var picked: String?
-    /// True only while a translation's second opinion is in flight.
-    @State private var checking = false
     @State private var answers: [Bool] = []
     @State private var done = false
     @State private var skippedLevels: [String] = []
     @State private var correctByLevel: [String: Int] = [:]
-    /// Which attempt is live -- guards the one place this view awaits
-    /// (a translation's second opinion) against a reset that happened
-    /// while it was in flight. Same reasoning, same shape, as
-    /// placement.tsx's own `attemptRef`.
-    @State private var attemptToken = UUID()
 
     init(contentStore: ContentStore, session: Session, course: Course, onFinished: @escaping () -> Void = {}) {
         self.contentStore = contentStore
@@ -146,14 +139,10 @@ struct PlacementView: View {
                 Button {
                     Task { await submit() }
                 } label: {
-                    if checking {
-                        ProgressView().tint(AlphonsoColor.surface)
-                    } else {
-                        Text(isFinalQuestion ? "See my level" : "Continue")
-                    }
+                    Text(isFinalQuestion ? "See my level" : "Continue")
                 }
                 .buttonStyle(.alphonsoPrimary)
-                .disabled(checking || (picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true))
+                .disabled(picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
 
                 Text("No hearts lost — this just finds your starting point.")
                     .font(AlphonsoFont.sans(11))
@@ -280,7 +269,6 @@ struct PlacementView: View {
     }
 
     private func restart() {
-        attemptToken = UUID()
         correctByLevel = [:]
         attempt = PlacementAttempt(pool: contentStore.placementPool(for: course))
         answers = []
@@ -293,26 +281,12 @@ struct PlacementView: View {
     /// Mirrors placement.tsx's `submit()` exactly -- see that function's
     /// own comments for the band-complete/adaptive-advance branches this
     /// ports one-for-one.
+    ///
+    /// Graded on the device only: placement runs during onboarding, before any consent question, so nothing it
+    /// sees may leave the device, and it never waits on the network.
     private func submit() async {
         guard let picked, let q = currentQuestion else { return }
-        let token = attemptToken
-        var correct = isPlacementAnswerCorrect(q, answer: picked)
-        if !correct, case .translate(let t) = q {
-            checking = true
-            guard let accessToken = session.accessToken else {
-                checking = false
-                return
-            }
-            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-            let verdict = await client.gradeTranslation(placementId: t.id, submission: picked, course: course.code)
-            // Nothing below this line may run for an attempt that's gone --
-            // restart() or a reset makes global writes (correctByLevel,
-            // savePlacementResult) that must not land against a stale
-            // closure's session.
-            guard attemptToken == token else { return }
-            checking = false
-            if verdict?.correct == true { correct = true }
-        }
+        let correct = isPlacementAnswerCorrect(q, answer: picked)
         let next = answers + [correct]
         self.picked = nil
         answers = next

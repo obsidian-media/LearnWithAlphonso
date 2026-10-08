@@ -28,6 +28,7 @@ struct LessonPlayerView: View {
     let contentStore: ContentStore
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    @EnvironmentObject private var aiConsent: AIConsentStore
 
     init(
         lesson: Lesson, course: Course, session: Session, notificationScheduler: NotificationScheduler,
@@ -188,15 +189,11 @@ struct LessonPlayerView: View {
         }
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
-        // 2026-09-30 audit (Codex/Fable): a translate question's written
-        // answer is sent to NVIDIA for grading (settledTranslationVerdict)
-        // with no disclosure at all. That was first closed by wrapping the
-        // whole lesson in .aiDisclosureGate(), but "Not now" then popped the
-        // learner out of EVERY lesson, including ones with no AI question
-        // (BACKLOG 0.0-z #2). Consent is now enforced where the answer
-        // actually leaves the device -- settledTranslationVerdict, via
-        // TranslationGradingPolicy -- and a speak question still carries its
-        // own gate (SpeakQuestionCard), so no lesson is blocked wholesale.
+        // Consent is the account's (AIConsentStore). Without it a translate
+        // answer is graded on the device and complete-lesson grades it the
+        // same way server-side (it checks the same account consent), so the
+        // verdict shown and the verdict scored agree. A speak question offers
+        // typing (SpeakQuestionCard). No lesson is walled.
         //
         // Tap-to-save in explanations: the shared ExplanationView and
         // AlphonsoTipCard read this handler from the environment, so every
@@ -306,6 +303,7 @@ struct LessonPlayerView: View {
             course: course,
             session: session,
             isConnected: networkMonitor.isConnected,
+            hasAIConsent: aiConsent.isGranted,
             submission: picked)
     }
 
@@ -632,7 +630,7 @@ private struct QuestionCard: View {
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course)
+                    verdict: $translationVerdict, course: course, surface: .lesson)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,

@@ -124,4 +124,52 @@ final class TutorConversationClientTests: XCTestCase {
             XCTAssertEqual(error as? TutorConversationError, .server(status: 401, message: nil))
         }
     }
+
+    private func refusal(status: Int, error: String) -> TutorConversationClient {
+        makeClient { _ in self.jsonResponse(["error": error], status: status) }
+    }
+
+    func testAConsentRefusalCodeIsAnnouncedButNeverShown() async {
+        let announced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        do {
+            _ = try await refusal(status: 403, error: "ai-consent-required")
+                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            XCTFail("Expected an error to be thrown")
+        } catch {
+            XCTAssertEqual(
+                error as? TutorConversationError, .server(status: 403, message: nil), "the code is never the shown message")
+        }
+        await fulfillment(of: [announced], timeout: 2)
+    }
+
+    /// Machine codes in "error" are never the message a learner reads.
+    func testMachineCodesInTheErrorFieldAreNotThrownAsMessages() async {
+        let cases: [(Int, String)] = [
+            (403, "not-entitled"), (401, "unauthorized"), (500, "Hector is not configured"),
+            (400, "text required"), (502, "empty reply from model"),
+        ]
+        for (status, code) in cases {
+            do {
+                _ = try await refusal(status: status, error: code)
+                    .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+                XCTFail("Expected an error to be thrown")
+            } catch {
+                XCTAssertEqual(error as? TutorConversationError, .server(status: status, message: nil), code)
+            }
+        }
+    }
+
+    func testAConsentCheckFailureIsNotAConsentRefusal() async {
+        let notAnnounced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        notAnnounced.isInverted = true
+        do {
+            _ = try await refusal(status: 503, error: "consent-check-failed")
+                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            XCTFail("Expected an error to be thrown")
+        } catch {
+            XCTAssertEqual(
+                error as? TutorConversationError, .server(status: 503, message: nil))
+        }
+        await fulfillment(of: [notAnnounced], timeout: 0.3)
+    }
 }

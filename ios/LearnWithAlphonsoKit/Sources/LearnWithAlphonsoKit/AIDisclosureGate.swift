@@ -1,5 +1,9 @@
 import Foundation
 
+/// Since the account became the source of truth (`AIConsentStore`), this key holds a pre-update acknowledgement
+/// until the one-time sync, then mirrors the signed-in account's consent for views not yet reading the store. Only
+/// `AIConsentStore` writes it.
+///
 /// Whether the learner has acknowledged that voice audio and conversation
 /// text are sent to third-party speech/AI providers -- the single check
 /// every AI entry point (ConversationView, HectorView, CampaignView,

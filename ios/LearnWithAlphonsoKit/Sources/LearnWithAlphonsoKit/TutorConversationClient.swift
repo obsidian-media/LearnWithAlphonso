@@ -117,7 +117,12 @@ public final class TutorConversationClient: Sendable {
             throw TutorConversationError.badResponse
         }
         guard (200...299).contains(httpResponse.statusCode) else {
-            throw TutorConversationError.server(status: httpResponse.statusCode, message: Self.errorMessage(from: data))
+            // The "error" field is a machine code (e.g. ai-consent-required): it only drives the consent signal and
+            // is never shown. The thrown message stays the human-readable "detail".
+            AIConsentSignal.noteIfConsentRequired(
+                status: httpResponse.statusCode, message: Self.string(in: data, key: "error"))
+            throw TutorConversationError.server(
+                status: httpResponse.statusCode, message: Self.string(in: data, key: "detail"))
         }
         do {
             return try JSONDecoder().decode(TutorReply.self, from: data)
@@ -126,12 +131,12 @@ public final class TutorConversationClient: Sendable {
         }
     }
 
-    private static func errorMessage(from data: Data) -> String? {
+    private static func string(in data: Data, key: String) -> String? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let detail = object["detail"] as? String,
-              !detail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+              let text = object[key] as? String,
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return nil
         }
-        return detail
+        return text
     }
 }

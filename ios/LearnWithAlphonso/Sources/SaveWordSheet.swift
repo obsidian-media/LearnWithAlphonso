@@ -42,6 +42,7 @@ struct SaveWordSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var phase: Phase = .idle
     @State private var showDisclosure = false
+    @EnvironmentObject private var aiConsent: AIConsentStore
 
     private enum Phase: Equatable {
         case idle
@@ -123,18 +124,26 @@ struct SaveWordSheet: View {
         // `define` quota twice (the server survives the race, but the second
         // call is still billed); only one save may be in flight.
         guard phase != .saving else { return }
-        // The word and sentence go to NVIDIA, so the same consent every other
-        // AI path needs applies. Declining just closes the disclosure.
-        guard AIDisclosureGate.isAcknowledged() else {
+        // `.saving` BEFORE any await, so a second tap during the consent read is blocked too.
+        phase = .saving
+        // The word and sentence go to NVIDIA, so the account's AI consent applies. Anything but a known "yes" is read
+        // again first (a remembered "no" may be out of date), and a setting still unknown or unreadable is never
+        // treated as "off". Declining just closes the sheet.
+        if !aiConsent.isGranted { await aiConsent.refresh() }
+        switch aiConsent.status {
+        case .granted: break
+        case .denied:
+            phase = .idle
             showDisclosure = true
+            return
+        case .loading, .unavailable:
+            phase = .failed(.unavailable)
             return
         }
         guard session.accessToken != nil else {
             phase = .failed(.notSignedIn)
             return
         }
-        // `.saving` BEFORE the refresh await, so a second tap during it is blocked.
-        phase = .saving
         // freshAccessToken + a refresh backstop, like every other AI screen (see
         // HectorView.sendTurn): the raw stored token goes stale after about an
         // hour, and Hector sessions are long-lived, so reading it directly
@@ -152,6 +161,11 @@ struct SaveWordSheet: View {
         do {
             phase = .saved(try await client.defineWord(
                 word: request.word, sentence: request.sentence, course: request.course))
+        } catch let error as SavedWordError where error == .aiConsentRequired {
+            // Withdrawn on another device since this sheet opened.
+            await aiConsent.refresh()
+            phase = .idle
+            showDisclosure = true
         } catch let error as SavedWordError {
             phase = .failed(error)
         } catch is URLError {

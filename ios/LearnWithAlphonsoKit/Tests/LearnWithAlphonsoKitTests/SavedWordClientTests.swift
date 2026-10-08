@@ -68,6 +68,37 @@ final class SavedWordClientTests: XCTestCase {
         }
     }
 
+    func testConsentRequiredIsNotASignInProblem() async {
+        XCTAssertEqual(SavedWordError.from(status: 403, message: "ai-consent-required"), .aiConsentRequired)
+        XCTAssertEqual(SavedWordError.from(status: 403, message: nil), .notSignedIn)
+        XCTAssertEqual(SavedWordError.from(status: 503, message: "consent-check-failed"), .unavailable)
+        XCTAssertFalse(SavedWordError.aiConsentRequired.userMessage.contains("Sign in"))
+
+        let c = client(status: 403, json: ["error": "ai-consent-required"])
+        do {
+            _ = try await c.defineWord(word: "w", sentence: "w", course: "en")
+            XCTFail("should throw")
+        } catch {
+            XCTAssertEqual(error as? SavedWordError, .aiConsentRequired)
+        }
+    }
+
+    func testAConsentRefusalAnnouncesItselfSoTheAccountStoreFollows() async {
+        let heard = TestCapture<Bool>(false)
+        let token = NotificationCenter.default.addObserver(
+            forName: AIConsentSignal.requiredNotification, object: nil, queue: nil
+        ) { _ in heard.value = true }
+        defer { NotificationCenter.default.removeObserver(token) }
+        _ = try? await client(status: 403, json: ["error": "ai-consent-required"])
+            .defineWord(word: "w", sentence: "w", course: "en")
+        XCTAssertTrue(heard.value)
+
+        heard.value = false
+        _ = try? await client(status: 503, json: ["error": "consent-check-failed"])
+            .defineWord(word: "w", sentence: "w", course: "en")
+        XCTAssertFalse(heard.value, "a failed consent read is not a refusal")
+    }
+
     func testAMalformedSuccessBodyIsUnavailableNotACrash() async {
         let c = client(status: 200, raw: Data("not json".utf8))
         do {

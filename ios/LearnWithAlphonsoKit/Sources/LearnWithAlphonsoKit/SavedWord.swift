@@ -23,13 +23,16 @@ public enum SavedWordError: Error, Equatable {
     case limitReached
     case quotaExceeded
     case notSignedIn
+    case aiConsentRequired
     case unavailable
     case offline
 
     /// The server's status code mapped to what the learner should be told.
-    public static func from(status: Int) -> SavedWordError {
+    public static func from(status: Int, message: String? = nil) -> SavedWordError {
         switch status {
         case 400: return .invalid
+        // A 403 can mean the session or the AI consent; only the server's message tells them apart.
+        case 403 where message == "ai-consent-required": return .aiConsentRequired
         case 401, 403: return .notSignedIn
         case 409: return .limitReached
         case 429: return .quotaExceeded
@@ -43,6 +46,7 @@ public enum SavedWordError: Error, Equatable {
         case .limitReached: return "You've reached the limit of 500 saved words. Finish some reviews first."
         case .quotaExceeded: return "You've saved a lot of words for now. Try again in a bit."
         case .notSignedIn: return "Sign in again to save words."
+        case .aiConsentRequired: return "Saving a word uses AI, which is turned off. Turn it on to save words."
         case .unavailable: return "Couldn't look that word up. Try again."
         case .offline: return "Saving a word needs a connection."
         }
