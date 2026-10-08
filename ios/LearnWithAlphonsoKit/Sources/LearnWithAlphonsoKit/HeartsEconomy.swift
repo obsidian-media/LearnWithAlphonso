@@ -1,7 +1,7 @@
 import Foundation
 
 /// Direct port of src/lib/hearts.ts -- pure hearts-economy math. Keep this
-/// in sync with that file (and supabase/functions/complete-lesson/hearts.ts,
+/// in sync with that file (and supabase/functions/_shared/hearts.ts,
 /// the Deno port).
 ///
 /// 2026-09-18 comprehensive audit, finding H2: the hearts-regeneration fix

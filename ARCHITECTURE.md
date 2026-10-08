@@ -817,7 +817,7 @@ per-question grading `grade-review` already had instead of a second
 hand-kept copy — see §0.1-d #6 above). `srs.ts`/`hearts.ts`/the shared
 answer-correctness cluster now have a parity/coverage guard (`deno-tests`
 in `.github/workflows/ci.yml`, running `grade-review/srs.test.ts`,
-`complete-lesson/hearts.test.ts` and the `_shared/*.test.ts` files, which
+`_shared/hearts.test.ts` and the `_shared/*.test.ts` files, which
 mirror `src/lib/srs.test.ts`/`hearts.test.ts`'s exact vectors) so a
 future drift fails CI instead of surfacing as a silent behavior mismatch
 between web and iOS; `progress-math.ts` and `lesson-session.ts` don't

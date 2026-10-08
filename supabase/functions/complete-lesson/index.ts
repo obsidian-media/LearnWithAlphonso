@@ -32,7 +32,7 @@ import {
   perfectLessonBonusEarned,
   resolveHeartsRefill,
   streakHeartMilestoneReached,
-} from "./hearts.ts";
+} from "../_shared/hearts.ts";
 import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
 // instead of trusting a client-claimed missedQuestionIds list. The same

@@ -43,3 +43,33 @@ export function streakHeartMilestoneReached(
 ): boolean {
   return newStreak > oldStreak && newStreak % STREAK_HEART_MILESTONE_DAYS === 0;
 }
+
+/**
+ * The lesson gate: lessons are blocked at 0 hearts, and the server enforces it for every client.
+ * Resolves a due refill first, so a learner whose timer has passed is never blocked by a stale row.
+ * Keep identical to src/lib/hearts.ts's heartsGate.
+ */
+export type HeartsGate = { blocked: false } | { blocked: true; refillAt: number | null };
+
+export function heartsGate(
+  hearts: number,
+  heartsRefillAt: number | null,
+  now: number,
+): HeartsGate {
+  const resolved = resolveHeartsRefill(hearts, heartsRefillAt, now);
+  return resolved.hearts > 0
+    ? { blocked: false }
+    : { blocked: true, refillAt: resolved.heartsRefillAt };
+}
+
+/** 409 body: { error: "out-of-hearts", refillAt (ISO 8601, or null when no timer is set) }. */
+export function outOfHeartsBody(refillAt: number | null): { error: "out-of-hearts"; refillAt: string | null } {
+  return { error: "out-of-hearts", refillAt: refillAt === null ? null : new Date(refillAt).toISOString() };
+}
+
+/** Emergency off switch, default on. Only the literal "false" disables the gate. */
+export function heartsGateEnforced(
+  get: (k: string) => string | undefined = (k) => Deno.env.get(k),
+): boolean {
+  return get("ENFORCE_HEARTS_GATE") !== "false";
+}

@@ -55,3 +55,15 @@ export function buyHeartWithXp(hearts: number, xp: number, cost = XP_HEART_COST)
   if (xp < cost) return { ok: false, reason: "insufficient-xp" };
   return { ok: true, hearts: hearts + 1, xp: xp - cost };
 }
+
+/**
+ * A lesson may start only with at least one heart, after resolving a due refill.
+ * The server functions call this; the UI's own `hearts <= 0` check is a fast path, not the rule.
+ * Keep identical to supabase/functions/_shared/hearts.ts's heartsGate.
+ */
+export type HeartsGate = { blocked: false } | { blocked: true; refillAt: number | null };
+
+export function heartsGate(hearts: number, heartsRefillAt: number | null, now: number): HeartsGate {
+  const resolved = resolveHeartsRefill(hearts, heartsRefillAt, now);
+  return resolved.hearts > 0 ? { blocked: false } : { blocked: true, refillAt: resolved.heartsRefillAt };
+}
