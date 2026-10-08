@@ -65,5 +65,7 @@ export type HeartsGate = { blocked: false } | { blocked: true; refillAt: number 
 
 export function heartsGate(hearts: number, heartsRefillAt: number | null, now: number): HeartsGate {
   const resolved = resolveHeartsRefill(hearts, heartsRefillAt, now);
-  return resolved.hearts > 0 ? { blocked: false } : { blocked: true, refillAt: resolved.heartsRefillAt };
+  return resolved.hearts > 0
+    ? { blocked: false }
+    : { blocked: true, refillAt: resolved.heartsRefillAt };
 }

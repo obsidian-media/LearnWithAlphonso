@@ -80,7 +80,9 @@ export async function generatePracticeQuestions(params: {
         signal: AbortSignal.timeout(PRACTICE_ATTEMPT_TIMEOUT_MS),
         body: {
           model: params.nvidiaModel,
-          messages: [{ role: "user", content: practicePrompt(params.topic, params.sampleQuestions) }],
+          messages: [
+            { role: "user", content: practicePrompt(params.topic, params.sampleQuestions) },
+          ],
           max_tokens: 1200,
         },
       });

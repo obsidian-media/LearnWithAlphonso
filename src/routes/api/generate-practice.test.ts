@@ -127,7 +127,9 @@ describe("POST /api/generate-practice", () => {
 
   it("falls back to the lesson's own questions when the model returns nothing", async () => {
     global.fetch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "[]" } }] }), { status: 200 }),
+      new Response(JSON.stringify({ choices: [{ message: { content: "[]" } }] }), {
+        status: 200,
+      }),
     );
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
     const body = await res.json();

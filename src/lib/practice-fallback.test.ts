@@ -21,7 +21,11 @@ describe("buildFallbackPractice", () => {
       expect(s.choices[s.answerIndex]).toBeDefined();
       const source = lesson.questions.find((x) => x.prompt === s.prompt)!;
       const answer =
-        source.type === "mc" ? source.choices[source.answer] : source.type === "fill" ? source.answer : null;
+        source.type === "mc"
+          ? source.choices[source.answer]
+          : source.type === "fill"
+            ? source.answer
+            : null;
       expect(s.choices[s.answerIndex]).toBe(answer);
     }
   });
@@ -29,7 +33,15 @@ describe("buildFallbackPractice", () => {
     const only = {
       ...lesson,
       questions: [
-        { id: "x1", type: "mc" as const, prompt: "What is this?", choices: ["a", "b", "c"], answer: 0, explanation: "e", imageKey: "cat" },
+        {
+          id: "x1",
+          type: "mc" as const,
+          prompt: "What is this?",
+          choices: ["a", "b", "c"],
+          answer: 0,
+          explanation: "e",
+          imageKey: "cat",
+        },
         { id: "x2", type: "speak" as const, prompt: "Say hi", answer: "hi", explanation: "e" },
       ],
     };

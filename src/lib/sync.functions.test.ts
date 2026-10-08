@@ -183,7 +183,9 @@ describe("fetchProgress", () => {
 describe("startLessonSession", () => {
   function heartsRow(hearts: number, refillAt: string | null) {
     const supabase = createSupabaseMock();
-    supabase.from.mockReturnValueOnce(chainable({ data: { hearts, hearts_refill_at: refillAt }, error: null }));
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: { hearts, hearts_refill_at: refillAt }, error: null }),
+    );
     return supabase;
   }
   afterEach(() => {
@@ -234,7 +236,10 @@ describe("startLessonSession", () => {
 
   it("throws for a lesson that doesn't exist", async () => {
     await expect(
-      startLessonSession({ context: ctx(createSupabaseMock()), data: { lessonId: "nope999", course: "en" } }),
+      startLessonSession({
+        context: ctx(createSupabaseMock()),
+        data: { lessonId: "nope999", course: "en" },
+      }),
     ).rejects.toThrow("Lesson not found");
   });
 });

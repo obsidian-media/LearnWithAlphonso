@@ -52,9 +52,11 @@ export function HeartsModal({
       // could escape into the bottom-tab nav behind the (still visible)
       // backdrop.
       if (e.key === "Tab") {
-        const focusables = [buyButtonRef.current, practiceButtonRef.current, closeButtonRef.current].filter(
-          (el): el is HTMLButtonElement => el !== null,
-        );
+        const focusables = [
+          buyButtonRef.current,
+          practiceButtonRef.current,
+          closeButtonRef.current,
+        ].filter((el): el is HTMLButtonElement => el !== null);
         if (focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];

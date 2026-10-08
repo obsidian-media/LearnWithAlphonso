@@ -117,7 +117,10 @@ beforeEach(() => {
 
 describe("out of hearts", () => {
   it("shows the hearts dialog, not the lesson, when the server says out-of-hearts", async () => {
-    startLessonSession.mockResolvedValue({ error: "out-of-hearts", refillAt: Date.now() + 5 * 60_000 });
+    startLessonSession.mockResolvedValue({
+      error: "out-of-hearts",
+      refillAt: Date.now() + 5 * 60_000,
+    });
     renderPage();
     expect(await screen.findByRole("dialog", { name: "Out of hearts" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Begin lesson" })).not.toBeInTheDocument();

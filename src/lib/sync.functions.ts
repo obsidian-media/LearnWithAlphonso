@@ -183,8 +183,7 @@ const lessonIdSchema = z
  * mounts; completeLessonRemote below requires and verifies it.
  */
 export type StartLessonSessionResult =
-  | { token: string }
-  | { error: "out-of-hearts"; refillAt: number | null };
+  { token: string } | { error: "out-of-hearts"; refillAt: number | null };
 
 export const startLessonSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

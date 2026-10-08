@@ -1,5 +1,10 @@
 /** The wire shape both clients render (GeneratedPracticeQuestion on iOS). */
-export type PracticeQuestion = { prompt: string; choices: string[]; answerIndex: number; explanation: string };
+export type PracticeQuestion = {
+  prompt: string;
+  choices: string[];
+  answerIndex: number;
+  explanation: string;
+};
 
 export const MIN_DISTINCT_CHOICES = 3;
 
@@ -10,7 +15,8 @@ export const MIN_DISTINCT_CHOICES = 3;
  * choices is dropped rather than shown as a two-option guess.
  */
 export function normalizePracticeQuestion(q: PracticeQuestion): PracticeQuestion | null {
-  if (!Number.isInteger(q.answerIndex) || q.answerIndex < 0 || q.answerIndex >= q.choices.length) return null;
+  if (!Number.isInteger(q.answerIndex) || q.answerIndex < 0 || q.answerIndex >= q.choices.length)
+    return null;
   if (q.choices.some((c) => c.trim() === "")) return null;
   const answerKey = q.choices[q.answerIndex].trim().toLowerCase();
   const seen = new Set<string>();

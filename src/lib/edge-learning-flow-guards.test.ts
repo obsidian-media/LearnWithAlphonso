@@ -18,7 +18,9 @@ describe("start-lesson-session hearts gate", () => {
   });
   it("checks the flag, reads hearts and returns the 409 body", () => {
     expect(src).toContain("heartsGateEnforced()");
-    expect(src).toMatch(/heartsGate\(\s*state\.hearts,\s*state\.heartsRefillAt,\s*Date\.now\(\)\s*\)/);
+    expect(src).toMatch(
+      /heartsGate\(\s*state\.hearts,\s*state\.heartsRefillAt,\s*Date\.now\(\)\s*\)/,
+    );
     expect(src).toMatch(/jsonResponse\(outOfHeartsBody\(gate\.refillAt\),\s*409\)/);
   });
   it("gates before issuing a token", () => {

@@ -63,7 +63,9 @@ describe("FinishScreen", () => {
     global.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
-          questions: [{ prompt: "p", choices: ["same", "same", "x"], answerIndex: 1, explanation: "e" }],
+          questions: [
+            { prompt: "p", choices: ["same", "same", "x"], answerIndex: 1, explanation: "e" },
+          ],
           source: "ai",
         }),
         { status: 200 },
@@ -80,7 +82,9 @@ describe("FinishScreen", () => {
   it("a practice 429 shows the server's own message, not a generic failure", async () => {
     const user = userEvent.setup();
     global.fetch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ error: "Daily limit reached. Try again tomorrow." }), { status: 429 }),
+      new Response(JSON.stringify({ error: "Daily limit reached. Try again tomorrow." }), {
+        status: 429,
+      }),
     );
     renderFinish();
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));

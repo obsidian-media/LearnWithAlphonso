@@ -9,9 +9,19 @@ function toPractice(q: Question): PracticeQuestion | null {
     case "mc":
       // An image question ("What is this?") is unanswerable without its picture, which practice does not show.
       if (q.imageKey) return null;
-      return normalizePracticeQuestion({ prompt: q.prompt, choices: q.choices, answerIndex: q.answer, explanation: q.explanation });
+      return normalizePracticeQuestion({
+        prompt: q.prompt,
+        choices: q.choices,
+        answerIndex: q.answer,
+        explanation: q.explanation,
+      });
     case "fill":
-      return normalizePracticeQuestion({ prompt: q.prompt, choices: q.bank, answerIndex: q.bank.indexOf(q.answer), explanation: q.explanation });
+      return normalizePracticeQuestion({
+        prompt: q.prompt,
+        choices: q.bank,
+        answerIndex: q.bank.indexOf(q.answer),
+        explanation: q.explanation,
+      });
     default:
       // listening needs audio; speak, translate and reorder are not multiple choice.
       return null;

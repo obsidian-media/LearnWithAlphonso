@@ -214,7 +214,11 @@ function LessonPage() {
                   spendXpForHeartLocal(res.cost);
                   setSessionAttempt((n) => n + 1);
                 } else {
-                  setBuyHeartError(res.reason === "hearts-full" ? "Hearts already full." : "Not enough XP for a heart.");
+                  setBuyHeartError(
+                    res.reason === "hearts-full"
+                      ? "Hearts already full."
+                      : "Not enough XP for a heart.",
+                  );
                 }
               })
               .catch(() => setBuyHeartError("Something went wrong. Try again."));
