@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCourse, isCourse, type Course } from "@/data/courses";
 import type { Question } from "@/data/curriculum";
+import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
@@ -63,9 +64,14 @@ export const Route = createFileRoute("/api/generate-practice")({
           return Response.json({ questions: [] });
         }
 
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "chat");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+        // Not consent-gated: the model sees only the lesson's own public wording, never anything the learner
+        // wrote or said (see the doc comment above).
+        const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+        const access = await authorizeAiRequest(request, "chat", {
+          route: "generate-practice",
+          requireConsent: false,
+        });
+        if (!access.ok) return access.response;
 
         const sampleQuestions = found.lesson.questions
           .map((q) => ({ prompt: q.prompt, answer: sampleAnswer(q) }))
@@ -79,7 +85,11 @@ export const Route = createFileRoute("/api/generate-practice")({
           nvidiaModel: resolveNvidiaChatModel(),
         });
 
-        return Response.json({ questions });
+        const blocked = await filterModelOutputs(
+          questions.map((q) => [q.prompt, ...q.choices, q.explanation].join("\n")),
+          { check: makeBlockedTermCheck(access.supabase), course, route: "generate-practice" },
+        );
+        return Response.json({ questions: questions.filter((_, i) => !blocked[i]) });
       },
     },
   },

@@ -240,7 +240,8 @@ export const gradeReview = createServerFn({ method: "POST" })
       // through, so it was a real unbounded-NVIDIA-spend gap.
       if (!correct && ref.question.type === "translate" && data.answer.trim()) {
         const apiKey = process.env.NVIDIA_API_KEY;
-        if (apiKey) {
+        const { hasAiConsent } = await import("./ai-consent.server");
+        if (apiKey && (await hasAiConsent(supabase, userId))) {
           const { consumeQuota } = await import("./ai-quota.server");
           const quota = await consumeQuota(getRequest(), "translate");
           if (quota.ok) {

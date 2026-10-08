@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { SAVED_WORD_LIMIT, buildSavedWordCard, validateSavedWordInput } from "@/lib/saved-word";
@@ -32,6 +33,10 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   if (userError || !userData?.user)
     return Response.json({ error: "unauthorized" }, { status: 401 });
   const userId = userData.user.id;
+
+  const { requireAiConsent } = await import("@/lib/ai-consent.server");
+  const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "define-word" });
+  if (denied) return denied;
 
   let raw: unknown;
   try {
@@ -106,6 +111,14 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     defineWord({ input, apiKey: nvidiaKey, model: resolveNvidiaChatModel() }),
   );
   if (!definition) {
+    return Response.json({ error: "Could not look that word up. Try again." }, { status: 502 });
+  }
+
+  const [definitionBlocked] = await filterModelOutputs(
+    [[definition.meaning, definition.translation, ...definition.wrong].join("\n")],
+    { check: makeBlockedTermCheck(supabaseAdmin), course: input.course, route: "define-word" },
+  );
+  if (definitionBlocked) {
     return Response.json({ error: "Could not look that word up. Try again." }, { status: 502 });
   }
 

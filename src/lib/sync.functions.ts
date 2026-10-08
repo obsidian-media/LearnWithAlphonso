@@ -14,6 +14,7 @@ import {
   computeStreakUpdate,
   validateLessonAnswerCoverage,
 } from "./progress-math";
+import { makeBlockedTermCheck } from "./ai-safety";
 import { gradeLessonAnswer } from "./grade-lesson-answer.server";
 import {
   MAX_HEARTS,
@@ -264,13 +265,24 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       return quota.ok;
     };
 
+    // Read once, and only if some answer needs the AI grader or weakness detection.
+    let consent: Promise<boolean> | undefined;
+    const aiAllowed = async () => {
+      const { hasAiConsent } = await import("./ai-consent.server");
+      consent ??= hasAiConsent(supabase, userId);
+      return consent;
+    };
+
     const questionById = new Map(found.lesson.questions.map((q) => [q.id, q]));
     const missedQuestionIds: string[] = [];
     for (const { questionId, answer } of answers) {
       // Safe: validateLessonAnswerCoverage already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
-      const isCorrect = await gradeLessonAnswer(question, answer, course, checkQuota);
+      const isCorrect = await gradeLessonAnswer(question, answer, course, {
+        allowed: aiAllowed,
+        checkQuota,
+      });
       if (!isCorrect) missedQuestionIds.push(questionId);
     }
     const correct = answers.length - missedQuestionIds.length;
@@ -529,7 +541,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // actually have a mistake to learn from, not silently-dropped work.
     // Wrapped in try/catch -- a classification failure must never fail
     // the lesson completion itself.
-    if (missedQuestionIds.length > 0 && xpGain > 0 && process.env.NVIDIA_API_KEY) {
+    if (
+      missedQuestionIds.length > 0 &&
+      xpGain > 0 &&
+      process.env.NVIDIA_API_KEY &&
+      (await aiAllowed())
+    ) {
       try {
         const missedQuestions = found.lesson.questions.filter((q) =>
           missedQuestionIds.includes(q.id),
@@ -568,6 +585,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             transcriptMessages,
             nvidiaApiKey: process.env.NVIDIA_API_KEY,
             nvidiaModel: resolveNvidiaChatModel(),
+            course,
+            outputCheck: makeBlockedTermCheck(supabase),
             dedupCheck: async (label) => {
               const { data: existing } = await supabase
                 .from("review_items")

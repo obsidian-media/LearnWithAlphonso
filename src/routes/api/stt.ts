@@ -8,9 +8,9 @@ export const Route = createFileRoute("/api/stt")({
       POST: async ({ request }) => {
         const key = process.env.DEEPGRAM_API_KEY;
         if (!key) return Response.json({ error: "STT is not configured" }, { status: 500 });
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "stt");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+        const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+        const access = await authorizeAiRequest(request, "stt", { route: "stt" });
+        if (!access.ok) return access.response;
         const inForm = await request.formData().catch(() => null);
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {

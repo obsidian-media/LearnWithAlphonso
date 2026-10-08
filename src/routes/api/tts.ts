@@ -7,9 +7,9 @@ export const Route = createFileRoute("/api/tts")({
       POST: async ({ request }) => {
         const key = process.env.DEEPGRAM_API_KEY;
         if (!key) return Response.json({ error: "TTS is not configured" }, { status: 500 });
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "tts");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+        const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+        const access = await authorizeAiRequest(request, "tts", { route: "tts" });
+        if (!access.ok) return access.response;
         let body: { text?: string; voice?: string };
         try {
           body = await request.json();

@@ -3,6 +3,9 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
+import { isCourse } from "@/data/courses";
+import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
+import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -51,22 +54,26 @@ function withDifficultyHint(systemPrompt: string, cefrLevel?: string): string {
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
   const key = process.env.NVIDIA_API_KEY;
   if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
-  const quota = await timer.time("quota", async () => {
-    const { consumeQuota } = await import("@/lib/ai-quota.server");
-    return consumeQuota(request, "chat");
+  const access = await timer.time("auth", async () => {
+    const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+    return authorizeAiRequest(request, "chat", { route: "chat" });
   });
-  if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
-  let body: { messages?: ChatMessage[]; systemPrompt?: string; cefrLevel?: string };
+  if (!access.ok) return access.response;
+  let body: {
+    messages?: ChatMessage[];
+    systemPrompt?: string;
+    cefrLevel?: string;
+    course?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  // See VALID_SYSTEM_PROMPTS's own comment: an omitted systemPrompt
-  // is fine (some callers send none), but a present one must be one
-  // of the real personas -- not arbitrary client text.
-  if (body.systemPrompt !== undefined && !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
-    return Response.json({ error: "Unknown systemPrompt" }, { status: 400 });
+  // A known persona is required, not merely allowed. With no system prompt the model would answer anything, which
+  // is exactly the general-purpose proxy VALID_SYSTEM_PROMPTS exists to prevent.
+  if (typeof body.systemPrompt !== "string" || !VALID_SYSTEM_PROMPTS.has(body.systemPrompt)) {
+    return Response.json({ error: "unknown-system-prompt" }, { status: 400 });
   }
   // Found alongside the same bug in Hector's own message builder
   // (2026-09-28 audit): a client-supplied entry here could claim
@@ -79,12 +86,10 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
       !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
   );
   if (messages.length === 0) return Response.json({ error: "messages required" }, { status: 400 });
-  const finalMessages: ChatMessage[] = body.systemPrompt
-    ? [
-        { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
-        ...messages,
-      ]
-    : messages;
+  const finalMessages: ChatMessage[] = [
+    { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
+    ...messages,
+  ];
 
   // NVIDIA NIM's hosted inference API (integrate.api.nvidia.com) is
   // OpenAI-compatible, so only the URL/key/model name change from the
@@ -92,16 +97,9 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // model id lives there instead of being hardcoded here.
   const model = resolveNvidiaChatModel();
   const llm = await timer.time("llm", async () => {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: finalMessages,
-      }),
+    const resp = await nvidiaChatCompletion({
+      apiKey: key,
+      body: { model, messages: finalMessages },
     });
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
@@ -113,7 +111,13 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     return { ok: true as const, content: data.choices?.[0]?.message?.content ?? "" };
   });
   if (!llm.ok) return llm.failure;
-  return Response.json({ content: llm.content });
+  const course = typeof body.course === "string" && isCourse(body.course) ? body.course : "en";
+  const safe = await filterModelOutput(llm.content, {
+    check: makeBlockedTermCheck(access.supabase),
+    course,
+    route: "chat",
+  });
+  return Response.json({ content: safe.text });
 }
 
 export const Route = createFileRoute("/api/chat")({

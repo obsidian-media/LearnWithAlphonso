@@ -1,3 +1,4 @@
+import { nvidiaChatCompletion } from "./nvidia-chat.ts";
 // Deno copy of src/lib/translation-grader.server.ts. Same bundling reason as
 // the other ports here, and the same contract: `null` means "no usable AI
 // opinion", never "wrong". The caller keeps its local verdict.
@@ -65,19 +66,15 @@ export async function gradeTranslationWithAi(args: {
   model: string;
 }): Promise<AiTranslationVerdict | null> {
   try {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
+    const resp = await nvidiaChatCompletion({
+      apiKey: args.apiKey,
       // A slow or half-open vendor connection would otherwise hold the
       // learner on a disabled "Checking..." button for the platform default.
       // 15s is well past a normal completion and well short of feeling stuck;
       // a timeout lands in the catch below and yields null, which means "no
       // opinion" and leaves the local verdict standing.
       signal: AbortSignal.timeout(15_000),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${args.apiKey}`,
-      },
-      body: JSON.stringify({
+      body: {
         model: args.model,
         temperature: 0,
         messages: [
@@ -90,7 +87,7 @@ export async function gradeTranslationWithAi(args: {
             }),
           },
         ],
-      }),
+      },
     });
     if (!resp.ok) return null;
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };

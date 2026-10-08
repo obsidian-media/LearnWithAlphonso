@@ -212,6 +212,12 @@ jobs:
         # whether an AI second opinion is even available.
         run: deno test --allow-env supabase/functions/_shared/answer-correctness.test.ts
 
+      - name: Test the shared AI-consent read
+        run: deno test --allow-env supabase/functions/_shared/ai-consent.test.ts
+
+      - name: Test the shared NVIDIA chokepoint adds the safety preamble
+        run: deno test supabase/functions/_shared/nvidia-chat.test.ts
+
       - name: Test complete-lesson's hearts.ts port
         run: deno test supabase/functions/complete-lesson/hearts.test.ts
 
