@@ -63,7 +63,7 @@ enum class ReportReason(val raw: String, val label: String) {
 
 object SocialSafetyCopy {
     fun blockConfirmationMessage(displayName: String): String =
-        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you need help with this."
+        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you need help with this."
 }
 
 @Composable
@@ -109,7 +109,7 @@ fun ReportSheet(target: SocialTarget?, container: AppContainer, onDismiss: () ->
             if (submitted) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Report submitted", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact report@alphonsoecosystem.app.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                    Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

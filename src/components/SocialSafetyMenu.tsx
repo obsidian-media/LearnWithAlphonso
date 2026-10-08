@@ -168,7 +168,7 @@ function BlockConfirmDialog({
     <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
       <p className="mb-4 text-sm text-ink-soft">
         {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
-        see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you
+        see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you
         need help with this.
       </p>
       <div className="flex justify-end gap-2">
@@ -213,7 +213,7 @@ function ReportDialog({
       <DialogFrame title="Report submitted" onClose={onClose}>
         <p className="text-sm text-ink-soft">
           Thanks for letting us know. Our team reviews every report. If you need to follow up,
-          contact report@alphonsoecosystem.app.
+          contact support@alphonsoecosystem.app.
         </p>
         <div className="mt-4 flex justify-end">
           <button
