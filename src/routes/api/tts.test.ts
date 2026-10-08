@@ -143,4 +143,34 @@ describe("POST /api/tts", () => {
     expect(global.fetch).not.toHaveBeenCalled();
     expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "tts", { route: "tts" });
   });
+
+  it("speaks a French course with the native French voice", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("mp3", { status: 200 }),
+    );
+    await handler({ request: req({ text: "Bonjour", course: "fr" }) });
+    const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String(url)).toContain("model=aura-2-agathe-fr");
+    expect(String(url)).toContain("mip_opt_out=true");
+  });
+
+  it("speaks a Spanish course with the Latin American voice", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("mp3", { status: 200 }),
+    );
+    await handler({ request: req({ text: "Hola", course: "es" }) });
+    const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String(url)).toContain("model=aura-2-selena-es");
+  });
+
+  it("lets an explicit voice win over course, and ignores an unknown course", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("mp3", { status: 200 }),
+    );
+    await handler({ request: req({ text: "x", voice: "aura-2-hector-fr", course: "es" }) });
+    await handler({ request: req({ text: "x", course: "de" }) });
+    const urls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(([u]) => String(u));
+    expect(urls[0]).toContain("model=aura-2-hector-fr");
+    expect(urls[1]).toContain("model=aura-2-thalia-en");
+  });
 });
