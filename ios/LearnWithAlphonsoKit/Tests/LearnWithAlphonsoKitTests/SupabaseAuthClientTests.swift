@@ -217,4 +217,45 @@ final class SupabaseAuthClientTests: XCTestCase {
             XCTAssertEqual(error as? SupabaseAuthError, .server(status: 401, message: "Invalid Refresh Token"))
         }
     }
+
+    // MARK: - user names and metadata (name prompt prefill)
+
+    func testFetchUserNamesReadsUserMetadataWithTheUsersToken() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.response(for: request.url!, body: [
+                "id": "u1",
+                "user_metadata": ["full_name": "Jenny Coon", "name": "Jenny Coon", "given_name": "Jenny"],
+            ])
+        }
+        let names = try await client.fetchUserNames(accessToken: "access-1")
+        XCTAssertEqual(names, AuthUserNames(givenName: "Jenny", fullName: "Jenny Coon", name: "Jenny Coon"))
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/user")
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer access-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "apikey"), "publishable-key")
+    }
+
+    func testMissingMetadataIsAllNil() async throws {
+        let client = makeClient { request in self.response(for: request.url!, body: ["id": "u1"]) }
+        let names = try await client.fetchUserNames(accessToken: "access-1")
+        XCTAssertEqual(names, AuthUserNames(givenName: nil, fullName: nil, name: nil))
+    }
+
+    func testUpdateUserMetadataPutsDataOnly() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.response(for: request.url!, body: ["id": "u1"])
+        }
+        try await client.updateUserMetadata(accessToken: "access-1", ["given_name": "Zoë"])
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertEqual(request.httpMethod, "PUT")
+        XCTAssertEqual(request.url?.absoluteString, "https://example.supabase.co/auth/v1/user")
+        let payload = try JSONSerialization.jsonObject(with: try XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(Set(payload.keys), ["data"])
+        XCTAssertEqual((payload["data"] as? [String: String])?["given_name"], "Zoë")
+    }
 }
