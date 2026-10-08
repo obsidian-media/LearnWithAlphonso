@@ -18,6 +18,6 @@ export function quotaExceededMessage(
   const time = reset
     .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone })
     // ICU 72+ separates "AM"/"PM" with a narrow no-break space.
-    .replace(/ /g, " ");
+    .replace(/\u202f/g, " ");
   return `You've reached today's AI practice limit. It resets at ${time}.`;
 }
