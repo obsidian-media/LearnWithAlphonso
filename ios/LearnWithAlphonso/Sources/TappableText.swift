@@ -19,8 +19,8 @@ import LearnWithAlphonsoKit
 struct TappableText: View {
     let text: String
     let color: Color
-    /// The course the word is saved under ("en" today: Hector, Practice and
-    /// Campaign are English-only).
+    /// The course the word is saved under ("en", "fr" or "es"): the course of the
+    /// conversation or lesson the text came from.
     let course: String
     let onSave: (SaveWordRequest) -> Void
 

@@ -1,28 +1,26 @@
 import SwiftUI
-import AVFoundation
-import Observation
 import LearnWithAlphonsoKit
 
 /// V4 candidate #4: connected multi-scene campaigns, additive alongside
-/// ConversationView's existing one-shot scenarios -- see
-/// docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md for
-/// the full design writeup (this mirrors ConversationSessionView's
-/// record/transcribe/chat/speak turn loop, plus the scene-pointer state
-/// described there).
+/// ConversationView's one-shot scenarios. See
+/// docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md.
+/// The active course's variant, stored per (campaign,
+/// course), on the shared VoiceSessionController.
 struct CampaignPickerSection: View {
     let campaigns: [Campaign]
+    let course: Course
     let session: Session
+    let conversationStore: ConversationStore
 
     var body: some View {
-        let rows = ForEach(campaigns) { campaign in
-            NavigationLink {
-                CampaignSessionView(campaign: campaign, session: session)
-            } label: {
-                AlphonsoRowCard(title: campaign.title, subtitle: campaign.blurb, leadingEmoji: campaign.emoji)
-            }
-        }
         Section {
-            rows
+            ForEach(campaigns) { campaign in
+                NavigationLink {
+                    CampaignSessionView(campaign: campaign, course: course, session: session, conversationStore: conversationStore)
+                } label: {
+                    AlphonsoRowCard(title: campaign.title, subtitle: campaign.blurb, leadingEmoji: campaign.emoji)
+                }
+            }
         } header: {
             Text("Campaigns")
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
@@ -35,75 +33,39 @@ struct CampaignPickerSection: View {
 
 private struct CampaignSessionView: View {
     let campaign: Campaign
+    let course: Course
     let session: Session
+    let conversationStore: ConversationStore
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var turns: [ChatMessage]
+    @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
-    // Message index where the *current* scene's opener lives -- lets
-    // "Restart this scene" truncate back to a known point, and lets the
-    // turn-count gate count only turns since this scene began. Same
-    // approach as the web's campaign_.$campaignId.tsx.
-    @State private var sceneIndex = 0
-    @State private var sceneAnchor = 0
-    @State private var finished = false
-
-    @State private var recorder = CampaignTurnRecorder()
-    @State private var isRecording = false
-    // 2026-09-30 audit (Fable, Codex #3) -- see ConversationView's
-    // identical isRequestingMic/wantsToStop for the full reasoning: closes
-    // the window where a DragGesture's repeated .onChanged during a hold
-    // (before the async permission callback resolves) could call
-    // startRecording() more than once, and the window where a tap shorter
-    // than that same hop leaves a recording with no way left to stop it.
-    @State private var isRequestingMic = false
-    @State private var wantsToStop = false
-    // 2026-09-30 audit (fresh-context pre-ship review) -- see
-    // ConversationView's identical recordingGeneration/isTornDown for the
-    // full reasoning: closes the shared-recorder rapid-double-press race
-    // (a stale delayed stop() operating on a NEWER press's live
-    // recording) and the in-flight-permission-request teardown gap.
-    @State private var recordingGeneration = 0
-    @State private var isTornDown = false
-    @State private var phase: Phase = .idle
-    @State private var errorMessage: String?
-    @State private var player: AVAudioPlayer?
-    // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
-    // debugTiming doc comment. The real touch-down moment, independent of
-    // however long the async permission-check/record() chain inside
-    // startRecording() takes to actually begin capturing.
-    @State private var pressBeganAt: Date?
+    @State private var voice = VoiceSessionController()
+    @State private var notice: String?
     @State private var cefrLevel: String?
 
-    init(campaign: Campaign, session: Session) {
-        self.campaign = campaign
-        self.session = session
-        _turns = State(initialValue: [ChatMessage(role: "assistant", content: campaign.scenes[0].opener)])
-    }
-
-    private enum Phase: Equatable {
-        case idle, transcribing, thinking, speaking
-    }
-
+    private var key: ConversationKey { .campaign(campaign.id, course: course) }
+    private var turns: [ChatMessage] { conversation.turns }
+    private var sceneIndex: Int { conversation.sceneIndex }
     private var scene: CampaignScene { campaign.scenes[sceneIndex] }
     private var isLastScene: Bool { sceneIndex == campaign.scenes.count - 1 }
     private var userTurnsInScene: Int {
-        turns[sceneAnchor...].filter { $0.role == "user" }.count
+        guard conversation.sceneAnchor < turns.count else { return 0 }
+        return turns[conversation.sceneAnchor...].filter { $0.role == "user" }.count
     }
     private var canContinue: Bool { userTurnsInScene >= scene.minTurns }
 
-    /// Full campaign transcript + the current scene's persona -- gives
-    /// scene 2+ visibility into what happened earlier without
-    /// AIConversationClient.chat needing any new "session" concept.
+    /// Full campaign transcript plus the current scene's persona, composed
+    /// exactly as the /api/chat whitelist expects (premise + "\n\n" + scene).
     private func systemPrompt(for scene: CampaignScene) -> String {
         "\(campaign.premise)\n\n\(scene.systemPrompt)"
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            if !finished {
+            if !conversation.finished {
                 Text("Scene \(sceneIndex + 1) of \(campaign.scenes.count) — \(scene.title)")
                     .font(AlphonsoFont.sans(12, weight: .semiBold))
                     .foregroundStyle(AlphonsoColor.inkSoft)
@@ -116,10 +78,10 @@ private struct CampaignSessionView: View {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn).id(index)
                         }
-                        if canContinue && !finished {
+                        if canContinue && !conversation.finished {
                             continueButton
                         }
-                        if finished {
+                        if conversation.finished {
                             completionCard
                         }
                     }
@@ -134,14 +96,14 @@ private struct CampaignSessionView: View {
                 }
             }
 
-            if let errorMessage {
-                Text(errorMessage)
+            if let message = voice.failure?.userMessage() ?? notice {
+                Text(message)
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.destructive)
                     .padding(.horizontal)
             }
 
-            if !finished {
+            if !conversation.finished {
                 if turns.contains(where: { $0.role == "assistant" }) {
                     Text("Tap any word in a reply to save it.")
                         .font(AlphonsoFont.sans(12))
@@ -159,7 +121,7 @@ private struct CampaignSessionView: View {
         }
         .tint(AlphonsoColor.moss)
         .toolbar {
-            if !finished {
+            if !conversation.finished {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Restart scene", systemImage: "arrow.counterclockwise") {
                         restartScene()
@@ -167,22 +129,16 @@ private struct CampaignSessionView: View {
                 }
             }
         }
-        .task {
-            if let accessToken = session.accessToken {
-                let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-                cefrLevel = try? await client.fetchCefrLevel(course: "en")
-            }
+        .onAppear {
+            conversation = conversationStore.snapshot(for: key, seededWith: campaign.scenes[0].opener)
+            voice.onCapture = { capture in await handle(capture) }
+            voice.appeared()
         }
+        .task(id: course) { cefrLevel = await loadCefrLevel() }
         .onDisappear {
-            // See ConversationView's identical onDisappear/isTornDown for
-            // why this must be set before cancelIfRecording(), not instead
-            // of it -- that only covers an already-started recorder.
-            isTornDown = true
-            recorder.cancelIfRecording()
-            guard turns.count >= 4, let accessToken = session.accessToken else { return }
-            let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-            let transcript = turns
-            Task { _ = try? await client.analyzeWeaknesses(transcript: transcript) }
+            voice.disappeared()
+            voice.onCapture = nil
+            analyzeWeaknessesIfNew()
         }
     }
 
@@ -208,14 +164,13 @@ private struct CampaignSessionView: View {
         .padding(.top, 8)
     }
 
-    /// The partner's replies have tappable words (tap to save); the learner's own
-    /// turns are plain text.
     @ViewBuilder
     private func bubbleText(for turn: ChatMessage) -> some View {
         if turn.role == "assistant" {
-            TappableText(text: turn.content, color: AlphonsoColor.ink, course: "en") {
-                savingWord = $0
-            }
+            // A scene's fixed opening line is ours, not the model's.
+            AssistantReply(
+                turn: turn, isOpener: campaign.scenes.contains { $0.opener == turn.content },
+                course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
         }
@@ -238,300 +193,122 @@ private struct CampaignSessionView: View {
     }
 
     private var micButton: some View {
-        Group {
-            switch phase {
-            case .transcribing, .thinking, .speaking:
+        VStack(spacing: 6) {
+            if voice.isBusy {
                 ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
-            case .idle:
-                // See ConversationView's identical mic button for why this
-                // is a stable outer container hosting the gesture, with a
-                // purely-visual color-changing Circle nested inside
-                // (found live 2026-09-29, via real press/capture timing
-                // data): a view mutating its OWN appearance in response to
-                // state a gesture attached to it just set can reset the
-                // in-flight gesture recognizer, firing a false release
-                // almost instantly regardless of real hold duration.
-                Color.clear
-                    .frame(width: 72, height: 72)
-                    .contentShape(Circle())
-                    .overlay(
-                        Circle()
-                            .fill(isRecording ? AlphonsoColor.destructive : AlphonsoColor.moss)
-                            .overlay(Image(systemName: "mic.fill").foregroundStyle(.white).font(.title2))
-                            .allowsHitTesting(false)
-                    )
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { _ in
-                                if !isRecording && !isRequestingMic {
-                                    pressBeganAt = Date()
-                                    isRequestingMic = true
-                                    recordingGeneration += 1
-                                    startRecording()
-                                }
-                            }
-                            .onEnded { _ in
-                                if isRequestingMic {
-                                    wantsToStop = true
-                                } else {
-                                    stopRecordingAndSend()
-                                }
-                            }
-                    )
+            } else {
+                HoldToTalkButton(
+                    isRecording: voice.isRecording,
+                    idleColor: AlphonsoColor.moss,
+                    recordingColor: AlphonsoColor.destructive,
+                    accessibilityLabel: "Hold to talk",
+                    onPress: { if voice.pressBegan() { notice = nil } },
+                    onRelease: { voice.pressEnded() }
+                )
+                Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                if voice.microphoneUnavailable {
+                    Text("Microphone access is off. Turn it on in Settings > Privacy > Microphone.")
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.destructive)
+                        .multilineTextAlignment(.center)
+                }
             }
         }
         .frame(maxWidth: .infinity)
     }
 
-    private func startRecording() {
-        errorMessage = nil
-        // Permission is asked for EXPLICITLY rather than left to the implicit
-        // prompt AVAudioRecorder.record() raises -- see ConversationView's
-        // identical startRecording for the full story.
-        requestMicrophonePermission { granted in
-            isRequestingMic = false
-            // See ConversationView's identical guard/isTornDown comment.
-            guard !isTornDown else { return }
-            guard granted else {
-                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
-                wantsToStop = false
-                return
-            }
-            do {
-                try recorder.start()
-                isRecording = true
-                if wantsToStop {
-                    wantsToStop = false
-                    stopRecordingAndSend()
-                }
-            } catch {
-                errorMessage = "Couldn't access the microphone. Check Settings > Privacy > Microphone."
-                wantsToStop = false
-            }
+    private func handle(_ capture: VoiceCapture) async {
+        switch capture {
+        case .tooShort:
+            notice = "Didn't catch that. Hold the button while you speak."
+        case let .audio(audio, generation, debugTiming):
+            await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
         }
     }
 
-    /// Calls back on the main actor whether or not permission was granted.
-    private func requestMicrophonePermission(_ completion: @escaping @MainActor (Bool) -> Void) {
-        if #available(iOS 17.0, *) {
-            AVAudioApplication.requestRecordPermission { granted in
-                Task { @MainActor in completion(granted) }
-            }
-        } else {
-            AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                Task { @MainActor in completion(granted) }
-            }
-        }
-    }
-
-    private func stopRecordingAndSend() {
-        guard isRecording else { return }
-        isRecording = false
-        // See ConversationView's identical recordingGeneration comment.
-        let myGeneration = recordingGeneration
-        // TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
-        // debugTiming doc comment. Captured here, at the true touch-up
-        // moment, not inside the Task below (which can start running
-        // noticeably later).
-        let pressElapsed = pressBeganAt.map { Date().timeIntervalSince($0) }
-        Task {
-            // Same fix as ConversationView/HectorView's identical
-            // stopRecordingAndSend (a sweep for the same bug class,
-            // 2026-09-28, after finding it live): guarantee a real
-            // minimum run before finalizing, then drop a still-too-small
-            // result silently instead of sending a request api/stt.ts's
-            // `file.size < 512` guard cannot accept.
-            if let remaining = recorder.remainingTimeToMinimumDuration() {
-                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
-            }
-            // See ConversationView's identical guard's own comment: a
-            // newer press already claimed the shared recorder during the
-            // sleep above.
-            guard myGeneration == recordingGeneration else { return }
-            let captureElapsed = recorder.elapsedSinceStart()
-            guard let audio = await recorder.stop(), audio.count >= CampaignTurnRecorder.minimumAudioBytes else { return }
-            let debugTiming = "press=\(pressElapsed.map { String(format: "%.2f", $0) } ?? "?")" +
-                " capture=\(captureElapsed.map { String(format: "%.2f", $0) } ?? "?")"
-            await sendTurn(audio: audio, debugTiming: debugTiming)
-        }
-    }
-
-    private func sendTurn(audio: Data, debugTiming: String) async {
+    private func runTurn(audio: Data, generation: Int, debugTiming: String) async {
+        let key = self.key
+        let courseCode = course.wireCode
+        let prompt = systemPrompt(for: scene)
         guard let accessToken = await session.freshAccessToken() else {
-            errorMessage = "You've been signed out. Please sign in again."
+            voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
             return
         }
         let client = AIConversationClient(
             baseURL: AppConfig.apiBaseURL,
             accessToken: { accessToken },
-            // See ConversationView.swift's ConversationSessionView.sendTurn
-            // for the full story -- same fix, same reasoning, same
-            // duplication-over-sharing posture this file's other helpers
-            // already use.
             refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
         )
         do {
-            phase = .transcribing
-            let result = try await client.transcribe(audio: audio, mimeType: "audio/m4a", debugTiming: debugTiming)
-            guard !result.text.trimmingCharacters(in: .whitespaces).isEmpty else {
-                // See ConversationView/HectorView's identical guard for why
-                // this needs a message rather than a silent reset: a live
-                // report 2026-09-28 described a run of these as "hits a
-                // timeout" -- with zero feedback it reads as the app
-                // hanging, not as a recognized, retryable failure.
-                errorMessage = "Didn't catch that -- try again."
-                phase = .idle
+            let result = try await client.transcribe(
+                audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
+            guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                notice = "Didn't catch that — try again."
                 return
             }
-            turns.append(ChatMessage(role: "user", content: result.text))
+            var snapshot = conversationStore.append(ChatMessage(role: "user", content: result.text), to: key)
+            conversation = snapshot
+            voice.transcribed(generation)
 
-            phase = .thinking
-            let reply = try await client.chat(messages: turns, systemPrompt: systemPrompt(for: scene), cefrLevel: cefrLevel)
-            turns.append(ChatMessage(role: "assistant", content: reply))
+            let reply = try await client.chat(
+                messages: snapshot.turns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode)
+            snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
+            conversation = snapshot
 
-            phase = .speaking
-            let audioReply = try await client.synthesizeSpeech(text: reply)
-            player = try AVAudioPlayer(data: audioReply)
-            // Same discarded-Bool shape as AVAudioRecorder.record() (found
-            // in the same sweep, 2026-09-28) -- see ConversationView's
-            // identical fix for the full reasoning.
-            if player?.play() == false {
-                errorMessage = "Got a reply, but couldn't play it back."
+            do {
+                let speech = try await client.synthesizeSpeech(text: reply, course: courseCode)
+                if !voice.play(speech, generation: generation) {
+                    notice = "Got a reply, but couldn't play it back."
+                }
+            } catch {
+                voice.replyWithoutAudio(generation)
+                notice = "Got a reply, but couldn't play it back."
             }
-            phase = .idle
         } catch {
-            errorMessage = "Something went wrong. Try again."
-            phase = .idle
+            voice.fail(generation, TutorError.from(error))
         }
     }
 
     private func continueToNextScene() {
+        notice = nil
         if isLastScene {
-            finished = true
+            conversation = conversationStore.update(key) { $0.finished = true }
             return
         }
         let nextScene = campaign.scenes[sceneIndex + 1]
-        turns.append(ChatMessage(role: "assistant", content: nextScene.opener))
-        sceneAnchor = turns.count - 1
-        sceneIndex += 1
-        errorMessage = nil
+        conversation = conversationStore.update(key) {
+            $0.turns.append(ChatMessage(role: "assistant", content: nextScene.opener))
+            $0.sceneAnchor = $0.turns.count - 1
+            $0.sceneIndex += 1
+        }
     }
 
     private func restartScene() {
-        turns = Array(turns[0...sceneAnchor])
-        errorMessage = nil
-    }
-}
-
-/// AVAudioRecorder.record() returns false rather than throwing on failure
-/// -- this makes that a catchable error instead of a silently-ignored Bool.
-private enum RecordingStartError: Error {
-    case recordCallFailed
-}
-
-/// Same recording approach as ConversationView's TurnRecorder -- duplicated
-/// rather than shared, matching this codebase's existing pattern of small
-/// file-private helpers per screen.
-@Observable
-private final class CampaignTurnRecorder: NSObject, AVAudioRecorderDelegate {
-    static let minimumAudioBytes = 4_096
-    private static let minimumDuration: TimeInterval = 0.4
-
-    private var recorder: AVAudioRecorder?
-    private var fileURL: URL?
-    private var startedAt: Date?
-    private var finishContinuation: CheckedContinuation<Void, Never>?
-
-    func start() throws {
-        // Set before touching the session, so the flag is already true
-        // when iOS delivers interruption-began to the podcast player --
-        // that is how it tells an in-app mic takeover from a phone call.
-        // See RecordingState. Wrapped in do/catch so ANY failure below
-        // still calls the matching ended() -- see ConversationView's
-        // identical TurnRecorder.start() for the full reasoning.
-        RecordingState.shared.began()
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default)
-            try session.setActive(true)
-
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".m4a")
-            let settings: [String: Any] = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC,
-                AVSampleRateKey: 44_100,
-                AVNumberOfChannelsKey: 1,
-                AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue,
-            ]
-            let newRecorder = try AVAudioRecorder(url: url, settings: settings)
-            newRecorder.delegate = self
-            guard newRecorder.record() else {
-                throw RecordingStartError.recordCallFailed
-            }
-            recorder = newRecorder
-            fileURL = url
-            startedAt = Date()
-        } catch {
-            RecordingState.shared.ended()
-            throw error
+        notice = nil
+        conversation = conversationStore.update(key) { snapshot in
+            let anchor = snapshot.sceneAnchor
+            snapshot.turns = Array(snapshot.turns[0...anchor])
+            snapshot.confidenceByTurnIndex = snapshot.confidenceByTurnIndex.filter { $0.key <= anchor }
         }
     }
 
-    func remainingTimeToMinimumDuration() -> TimeInterval? {
-        guard let startedAt else { return nil }
-        let remaining = Self.minimumDuration - Date().timeIntervalSince(startedAt)
-        return remaining > 0 ? remaining : nil
+    private func loadCefrLevel() async -> String? {
+        guard let accessToken = session.accessToken else { return nil }
+        let client = ProgressSyncClient(
+            supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        return (try? await client.fetchCefrLevel(course: course.wireCode)) ?? nil
     }
 
-    /// TEMPORARY (2026-09-28) -- see AIConversationClient.transcribe's
-    /// debugTiming doc comment. Reads startedAt without clearing it
-    /// (unlike stop(), which nils it as part of finalizing), so this must
-    /// be called before stop().
-    func elapsedSinceStart() -> TimeInterval? {
-        guard let startedAt else { return nil }
-        return Date().timeIntervalSince(startedAt)
-    }
-
-    /// See ConversationView's identical TurnRecorder.stop() for why this
-    /// awaits the delegate callback instead of trusting stop()'s
-    /// synchronous return: the file isn't guaranteed finalized on disk
-    /// until audioRecorderDidFinishRecording fires.
-    func stop() async -> Data? {
-        RecordingState.shared.ended()
-        guard let recorder, let fileURL else { return nil }
-        await withCheckedContinuation { continuation in
-            finishContinuation = continuation
-            recorder.stop()
-        }
-        self.recorder = nil
-        startedAt = nil
-        defer { self.fileURL = nil }
-        guard let data = try? Data(contentsOf: fileURL) else { return nil }
-        try? FileManager.default.removeItem(at: fileURL)
-        return data
-    }
-
-    /// See ConversationView's identical TurnRecorder.cancelIfRecording()
-    /// for the full reasoning (2026-09-29 whole-codebase audit): a view
-    /// torn down mid-hold never fires the drag gesture's .onEnded, so
-    /// without this, RecordingState's counter leaks and every later real
-    /// phone-call interruption is wrongly treated as an in-app mic
-    /// takeover, permanently suppressing the podcast player's resume.
-    func cancelIfRecording() {
-        guard let recorder else { return }
-        recorder.stop()
-        self.recorder = nil
-        fileURL = nil
-        startedAt = nil
-        RecordingState.shared.ended()
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
-    }
-
-    // AVAudioRecorderDelegate fires on an arbitrary thread, not
-    // necessarily the main actor -- hop over explicitly.
-    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        Task { @MainActor in
-            self.finishContinuation?.resume()
-            self.finishContinuation = nil
-        }
+    private func analyzeWeaknessesIfNew() {
+        let snapshot = conversationStore.snapshot(for: key) ?? conversation
+        guard snapshot.turns.count >= 4, snapshot.turns.count > snapshot.analyzedTurnCount,
+              let accessToken = session.accessToken else { return }
+        conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
+        let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
+        let transcript = snapshot.turns
+        let courseCode = course.wireCode
+        Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
     }
 }
