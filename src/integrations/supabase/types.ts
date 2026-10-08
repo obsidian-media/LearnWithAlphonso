@@ -192,6 +192,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      buddy_age_confirmations: {
+        Row: {
+          confirmations: number;
+          first_confirmed_at: string;
+          last_confirmed_at: string;
+          user_id: string;
+        };
+        Insert: {
+          confirmations?: number;
+          first_confirmed_at?: string;
+          last_confirmed_at?: string;
+          user_id: string;
+        };
+        Update: {
+          confirmations?: number;
+          first_confirmed_at?: string;
+          last_confirmed_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       buddy_members: {
         Row: {
           pair_id: string;
@@ -306,6 +327,21 @@ export type Database = {
           cefr_level?: string;
           course?: string;
           joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      buddy_pool_attempts: {
+        Row: {
+          attempted_at: string;
+          user_id: string;
+        };
+        Insert: {
+          attempted_at?: string;
+          user_id: string;
+        };
+        Update: {
+          attempted_at?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -439,24 +475,30 @@ export type Database = {
       };
       content_reports: {
         Row: {
+          context: Json | null;
           created_at: string;
           id: string;
+          kind: string;
           reason: string;
-          reported: string;
+          reported: string | null;
           reporter: string;
         };
         Insert: {
+          context?: Json | null;
           created_at?: string;
           id?: string;
+          kind?: string;
           reason: string;
-          reported: string;
+          reported?: string | null;
           reporter?: string;
         };
         Update: {
+          context?: Json | null;
           created_at?: string;
           id?: string;
+          kind?: string;
           reason?: string;
-          reported?: string;
+          reported?: string | null;
           reporter?: string;
         };
         Relationships: [];
@@ -484,6 +526,27 @@ export type Database = {
           platform?: string;
           token?: string;
           updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      display_name_migration_backup: {
+        Row: {
+          migrated_at: string;
+          new_display_name: string;
+          old_display_name: string;
+          user_id: string;
+        };
+        Insert: {
+          migrated_at?: string;
+          new_display_name: string;
+          old_display_name: string;
+          user_id: string;
+        };
+        Update: {
+          migrated_at?: string;
+          new_display_name?: string;
+          old_display_name?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -1061,6 +1124,7 @@ export type Database = {
           created_at: string;
           display_name: string;
           id: string;
+          name_confirmed_at: string | null;
           theme: string | null;
           updated_at: string;
         };
@@ -1071,6 +1135,7 @@ export type Database = {
           created_at?: string;
           display_name: string;
           id: string;
+          name_confirmed_at?: string | null;
           theme?: string | null;
           updated_at?: string;
         };
@@ -1081,6 +1146,7 @@ export type Database = {
           created_at?: string;
           display_name?: string;
           id?: string;
+          name_confirmed_at?: string | null;
           theme?: string | null;
           updated_at?: string;
         };
@@ -1428,6 +1494,35 @@ export type Database = {
           },
         ];
       };
+      team_name_migration_backup: {
+        Row: {
+          migrated_at: string;
+          new_name: string;
+          old_name: string;
+          team_id: string;
+        };
+        Insert: {
+          migrated_at?: string;
+          new_name: string;
+          old_name: string;
+          team_id: string;
+        };
+        Update: {
+          migrated_at?: string;
+          new_name?: string;
+          old_name?: string;
+          team_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "team_name_migration_backup_team_id_fkey";
+            columns: ["team_id"];
+            isOneToOne: true;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       team_weekly_rewards: {
         Row: {
           resolved_at: string | null;
@@ -1608,18 +1703,21 @@ export type Database = {
       user_weekly_quest_claims: {
         Row: {
           claimed_at: string;
+          course: string | null;
           quest_id: string;
           user_id: string;
           week_start: string;
         };
         Insert: {
           claimed_at?: string;
+          course?: string | null;
           quest_id: string;
           user_id: string;
           week_start: string;
         };
         Update: {
           claimed_at?: string;
+          course?: string | null;
           quest_id?: string;
           user_id?: string;
           week_start?: string;
@@ -1734,12 +1832,21 @@ export type Database = {
         Args: { _x: string; _y: string };
         Returns: undefined;
       };
+      _new_join_code: { Args: never; Returns: string };
       _random_team_name: { Args: never; Returns: string };
+      _reset_failing_public_names: {
+        Args: { _approved_names: number; _approved_teams: number };
+        Returns: {
+          names_reset: number;
+          teams_reset: number;
+        }[];
+      };
       _resolve_buddy_pair: { Args: { _pair: string }; Returns: undefined };
       _resolve_team_mission: {
         Args: { _team: string; _wk: string };
         Returns: undefined;
       };
+      _safe_random_team_name: { Args: never; Returns: string };
       _team_mission_count: {
         Args: { _team: string; _user?: string; _wk: string };
         Returns: number;
@@ -1751,6 +1858,11 @@ export type Database = {
           ok: boolean;
         }[];
       };
+      admin_rename_team: {
+        Args: { _name: string; _team_id: string };
+        Returns: string;
+      };
+      admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
       auto_join_team: {
         Args: never;
         Returns: {
@@ -1806,6 +1918,7 @@ export type Database = {
           xp: number;
         }[];
       };
+      confirm_display_name: { Args: { _name: string }; Returns: string };
       consume_ai_quota: {
         Args: { _kind: string };
         Returns: {
@@ -1840,12 +1953,14 @@ export type Database = {
           team_id: string;
         }[];
       };
+      display_name_problem: { Args: { _name: string }; Returns: string };
       end_buddy: {
         Args: never;
         Returns: {
           status: string;
         }[];
       };
+      generate_learner_handle: { Args: never; Returns: string };
       get_buddy_messages: {
         Args: { _since?: string };
         Returns: {
@@ -1923,6 +2038,7 @@ export type Database = {
           grace_available: boolean;
           is_match: boolean;
           last_outcome: string;
+          matching_enabled: boolean;
           my_count: number;
           pair_id: string;
           paired_at: string;
@@ -1976,6 +2092,7 @@ export type Database = {
         Args: never;
         Returns: {
           avatar_seed: string;
+          blocked: boolean;
           display_name: string;
           is_owner: boolean;
           joined_at: string;
@@ -2066,6 +2183,16 @@ export type Database = {
           hearts_refill_at: string;
         }[];
       };
+      moderation_accented_allowlist_pattern: { Args: never; Returns: string };
+      moderation_allowlist_pattern: { Args: never; Returns: string };
+      moderation_anatomy_markers: { Args: never; Returns: string[] };
+      moderation_anatomy_terms: { Args: never; Returns: string[] };
+      moderation_anywhere_patterns: { Args: never; Returns: string[] };
+      moderation_clean_text: { Args: { input: string }; Returns: string };
+      moderation_context_markers: { Args: never; Returns: string[] };
+      moderation_contextual_terms: { Args: never; Returns: string[] };
+      moderation_edge_patterns: { Args: never; Returns: string[] };
+      moderation_fold: { Args: { input: string }; Returns: string };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
@@ -2118,6 +2245,7 @@ export type Database = {
         Args: { _language: string; _level: string };
         Returns: undefined;
       };
+      team_name_problem: { Args: { _name: string }; Returns: string };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
         Returns: number;
