@@ -34,4 +34,13 @@ enum WidgetProgressPublisher {
         defaults.set(data, forKey: WidgetSharing.streakSnapshotDefaultsKey)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)
     }
+
+    /// Sign-out / account deletion: remove the previous account's streak from the shared
+    /// App Group and reload every timeline, so the home screen stops showing it.
+    static func clear() {
+        if let defaults = UserDefaults(suiteName: WidgetSharing.appGroupID) {
+            WidgetSharing.clearSnapshot(in: defaults)
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 }

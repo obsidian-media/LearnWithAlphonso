@@ -9,7 +9,7 @@ import LearnWithAlphonsoKit
 /// LeaderboardView -- overtake detection runs independently of the
 /// picker's own live selection.
 enum LeaderboardSnapshotCache {
-    private static let key = "lastGlobalWeeklyLeaderboardSnapshot"
+    private static let key = AccountCacheKeys.leaderboardSnapshot
 
     static var lastSnapshot: [LeaderboardSnapshotEntry]? {
         get {

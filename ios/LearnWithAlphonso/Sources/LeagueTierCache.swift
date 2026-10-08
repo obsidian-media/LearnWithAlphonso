@@ -1,4 +1,5 @@
 import Foundation
+import LearnWithAlphonsoKit
 
 /// Tracks the user's league tier across lesson completions, purely as a
 /// local signal for whether the *next* completion is a promotion --
@@ -8,7 +9,7 @@ import Foundation
 /// this). Not a source of truth for anything else; the server's own
 /// `progress.leagueTier` on each completion response is that.
 enum LeagueTierCache {
-    private static let key = "lastKnownLeagueTier"
+    private static let key = AccountCacheKeys.leagueTier
 
     static var lastKnownTier: String? {
         get { UserDefaults.standard.string(forKey: key) }

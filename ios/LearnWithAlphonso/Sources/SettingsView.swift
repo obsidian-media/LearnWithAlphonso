@@ -351,8 +351,9 @@ struct SettingsView: View {
     /// Mirrors profile.tsx's remove(): delete on the server, then sign out
     /// locally so RootView drops back to AuthView. The server-side DELETE
     /// itself is what revokes the account's Sign in with Apple grant (see
-    /// AccountClient.deleteMyAccount / apple-revocation.ts) -- signOut()
-    /// here only clears local session state, nothing more is needed.
+    /// AccountClient.deleteMyAccount / apple-revocation.ts) -- accountDeleted()
+    /// then clears local session state and runs every SessionLifecycle handler
+    /// for `.accountDeleted`.
     ///
     /// Uses a freshly-refreshed token plus a one-retry-on-401 backstop
     /// (2026-09-29 pre-submission audit): with the plain stored token,
@@ -373,7 +374,7 @@ struct SettingsView: View {
                 refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) }
             )
             try await client.deleteMyAccount()
-            session.signOut()
+            session.accountDeleted()
         } catch {
             accountErrorMessage = "Couldn't delete your account. Try again."
         }

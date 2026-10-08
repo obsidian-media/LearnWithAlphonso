@@ -34,12 +34,21 @@ final class Session {
     private var proactiveRefreshTask: Task<Void, Never>?
     private let googleSignInPresenter = GoogleSignInPresenter()
     private let appleSignInPresenter = AppleSignInPresenter()
+    private let lifecycle: SessionLifecycle
+    /// The cleanup started by the last sign-out or deletion. Every path that can establish a
+    /// new session awaits it first, so a quick re-sign-in never interleaves with the previous
+    /// account's cleanup.
+    private var lifecycleTask: Task<Void, Never>?
 
-    init(authClient: SupabaseAuthClient = SupabaseAuthClient(
-        supabaseURL: AppConfig.supabaseURL,
-        publishableKey: AppConfig.supabasePublishableKey
-    )) {
+    init(
+        authClient: SupabaseAuthClient = SupabaseAuthClient(
+            supabaseURL: AppConfig.supabaseURL,
+            publishableKey: AppConfig.supabasePublishableKey
+        ),
+        lifecycle: SessionLifecycle
+    ) {
         self.authClient = authClient
+        self.lifecycle = lifecycle
     }
 
     var accessToken: String? {
@@ -117,6 +126,7 @@ final class Session {
     }
 
     func verifyCode(_ code: String) async {
+        await finishPendingCleanup()
         guard case .awaitingCode(let email) = state else { return }
         errorMessage = nil
         isBusy = true
@@ -138,6 +148,7 @@ final class Session {
     /// (every subsequent API call would 401, with no obvious reason why
     /// to a user who's staring at what looks like a normal signed-in app).
     func restoreSession() async {
+        await finishPendingCleanup()
         defer { isRestoring = false }
         if let bootstrapped = Self.uiTestBootstrapSession() {
             establishSession(bootstrapped)
@@ -170,6 +181,7 @@ final class Session {
     /// actual Google consent screen, then completes Supabase's PKCE
     /// exchange once it redirects back to this app's custom URL scheme.
     func signInWithGoogle() async {
+        await finishPendingCleanup()
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
@@ -203,6 +215,7 @@ final class Session {
     /// App Store Guideline 4.8: an app offering a third-party social login
     /// must also offer Sign in with Apple.
     func signInWithApple() async {
+        await finishPendingCleanup()
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
@@ -228,12 +241,38 @@ final class Session {
         }
     }
 
+    /// Ends the session locally and runs every SessionLifecycle handler for `.signedOut`
+    /// (entitlements, the offline queue, caches, the widget, and whatever other features
+    /// registered).
     func signOut() {
+        endSession(.signedOut)
+    }
+
+    /// Called only after the server has deleted the account (SettingsView.deleteAccount).
+    /// Same local teardown as sign-out, but handlers see `.accountDeleted`, so they can also
+    /// remove what only deletion should.
+    func accountDeleted() {
+        endSession(.accountDeleted)
+    }
+
+    /// Awaited by every sign-in path before it establishes a session.
+    func finishPendingCleanup() async {
+        await lifecycleTask?.value
+    }
+
+    private func endSession(_ event: SessionLifecycle.Event) {
         proactiveRefreshTask?.cancel()
         proactiveRefreshTask = nil
         state = .signedOut
         errorMessage = nil
         KeychainSessionStore.clear()
+        // Chained, never concurrent: a second sign-out waits for the first one's cleanup.
+        let previous = lifecycleTask
+        let lifecycle = self.lifecycle
+        lifecycleTask = Task { @MainActor in
+            await previous?.value
+            await lifecycle.run(event)
+        }
     }
 
     /// Refreshes the session when its access token is expired or within

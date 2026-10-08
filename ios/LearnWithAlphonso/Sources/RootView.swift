@@ -208,18 +208,23 @@ struct RootView: View {
     /// Safe to call opportunistically: an empty queue is a no-op, and
     /// SyncEngine.sync leaves any failed item queued for the next trigger.
     private func triggerSync() async {
-        guard let accessToken = session.accessToken else { return }
+        guard let accessToken = session.accessToken, let syncingUserID = session.userID else { return }
+        // A sign-out (or a different sign-in) while this was in flight: the result belongs to
+        // the previous account, whose queue and caches the session lifecycle already cleared.
+        // Writing it back would show that account's progress and widget streak to the next one.
+        func stillSameAccount() -> Bool { session.userID == syncingUserID }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let result = await SyncEngine.sync(
             pendingLessonCompletions: syncQueueStore.pendingLessonCompletions(),
             pendingReviewGrades: syncQueueStore.pendingReviewGrades(),
             client: client
         )
+        guard stillSameAccount() else { return }
         syncQueueStore.removeSyncedLessonCompletions(result.syncedLessonCompletions)
         syncQueueStore.removeSyncedReviewGrades(result.syncedReviewGrades)
         if let lastKnownProgress = result.lastKnownProgress {
             syncQueueStore.updateLastKnownProgress(lastKnownProgress)
-        } else if let fetched = try? await client.fetchProgress() {
+        } else if let fetched = try? await client.fetchProgress(), stillSameAccount() {
             // SyncEngine.sync only learns progress as a side effect of
             // *pushing* a queued lesson completion, so with an empty queue
             // -- the normal state after a user has synced and then updated
@@ -258,7 +263,7 @@ struct RootView: View {
         // (Swift's `private` is file-scoped), not visible here. Six
         // other files each keep an identical private copy of this same
         // Course -> code mapping; matching that established pattern.
-        if let dueReviews = try? await client.fetchDueReviews(course: "en") {
+        if let dueReviews = try? await client.fetchDueReviews(course: "en"), stillSameAccount() {
             syncQueueStore.replaceLastKnownDueReviews(dueReviews.due)
         }
     }

@@ -9,14 +9,17 @@ struct LearnWithAlphonsoApp: App {
     // callback-based remote-notification registration into this
     // otherwise pure-SwiftUI app. See AppDelegate.swift's doc comment.
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var session = Session()
-    @State private var entitlementStore = EntitlementStore()
+    @State private var session: Session
+    @State private var entitlementStore: EntitlementStore
     @State private var notificationScheduler = NotificationScheduler()
     @State private var remotePushRegistrar = RemotePushRegistrar()
     @State private var networkMonitor = NetworkMonitor()
     private let contentStore: ContentStore?
     private let syncQueueStore: SyncQueueStore
     private let podcastDownloadManager: PodcastDownloadManager
+    /// The app's one SessionLifecycle. Created here so every store's cleanup is registered
+    /// before any view, and so before any sign-out can happen.
+    private let sessionLifecycle: SessionLifecycle
 
     init() {
         // ContentStore reads JSON bundled at build time (see that type's
@@ -26,9 +29,10 @@ struct LearnWithAlphonsoApp: App {
         // fail visibly in TestFlight, not silently terminate on launch.
         contentStore = try? ContentStore()
         // Skip configure entirely when no key resolved (see
-        // AppConfig.revenueCatAPIKey's doc comment) -- EntitlementStore
-        // checks the same condition before ever touching `Purchases.shared`,
-        // which fatalErrors if accessed pre-configure.
+        // AppConfig.revenueCatAPIKey's doc comment) -- no provider is built in
+        // that case, so nothing touches `Purchases.shared`, which fatalErrors
+        // if accessed pre-configure. RevenueCatPurchases and EntitlementStore
+        // are inert until start() or a call, so building them below is safe.
         if let revenueCatAPIKey = AppConfig.revenueCatAPIKey {
             Purchases.configure(withAPIKey: revenueCatAPIKey)
         }
@@ -50,11 +54,25 @@ struct LearnWithAlphonsoApp: App {
         // opening at all.
         let container = (try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)]))
             ?? (try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]))
-        syncQueueStore = SyncQueueStore(modelContext: ModelContext(container))
+        let queue = SyncQueueStore(modelContext: ModelContext(container))
+        syncQueueStore = queue
         // Same container, its own context: the download manager and the
         // sync queue touch different models and should not contend for
         // one context's pending changes.
         podcastDownloadManager = PodcastDownloadManager(modelContext: ModelContext(container))
+
+        let lifecycle = SessionLifecycle()
+        let entitlements = EntitlementStore(provider: AppConfig.revenueCatAPIKey == nil ? nil : RevenueCatPurchases())
+        AccountDataCleanup.register(
+            on: lifecycle,
+            queue: queue,
+            caches: AccountLocalCaches(),
+            clearWidget: { WidgetProgressPublisher.clear() },
+            entitlements: entitlements
+        )
+        sessionLifecycle = lifecycle
+        _session = State(initialValue: Session(lifecycle: lifecycle))
+        _entitlementStore = State(initialValue: entitlements)
     }
 
     var body: some Scene {
@@ -71,6 +89,7 @@ struct LearnWithAlphonsoApp: App {
                     podcastDownloadManager: podcastDownloadManager
                 )
                 .task { await entitlementStore.start() }
+                .environment(\.sessionLifecycle, sessionLifecycle)
             } else {
                 ContentUnavailableView(
                     "Couldn't load lesson content",
