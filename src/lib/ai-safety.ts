@@ -28,7 +28,8 @@ export function withSafety(systemPrompt: string): string {
 /** The first system message gets the rules appended; a prompt with none gets them as its system message. */
 export function applySafety(messages: LlmMessage[]): LlmMessage[] {
   const [first, ...rest] = messages;
-  if (first?.role === "system") return [{ role: "system", content: withSafety(first.content) }, ...rest];
+  if (first?.role === "system")
+    return [{ role: "system", content: withSafety(first.content) }, ...rest];
   return [{ role: "system", content: SAFETY_PREAMBLE }, ...messages];
 }
 
@@ -83,7 +84,8 @@ export async function filterModelOutputs(texts: string[], opts: FilterOptions): 
   if (texts.length === 0) return [];
   const pieces: { owner: number; text: string }[] = [];
   texts.forEach((t, owner) => {
-    for (const piece of splitForCheck(maskLegitimateTerms(t, opts.course))) pieces.push({ owner, text: piece });
+    for (const piece of splitForCheck(maskLegitimateTerms(t, opts.course)))
+      pieces.push({ owner, text: piece });
   });
   const verdicts: (boolean | undefined)[] = [];
   try {
@@ -92,7 +94,13 @@ export async function filterModelOutputs(texts: string[], opts: FilterOptions): 
       verdicts.push(...(await opts.check(chunk)));
     }
   } catch (err) {
-    console.error(JSON.stringify({ event: "ai_output_filter_unavailable", route: opts.route, error: String(err) }));
+    console.error(
+      JSON.stringify({
+        event: "ai_output_filter_unavailable",
+        route: opts.route,
+        error: String(err),
+      }),
+    );
     return texts.map(() => true);
   }
   const blocked = texts.map(() => false);
@@ -120,7 +128,9 @@ export async function filterModelOutput(
   opts: FilterOptions,
 ): Promise<{ text: string; blocked: boolean }> {
   const [blocked] = await filterModelOutputs([text], opts);
-  return blocked ? { text: AI_OUTPUT_FALLBACK[opts.course], blocked: true } : { text, blocked: false };
+  return blocked
+    ? { text: AI_OUTPUT_FALLBACK[opts.course], blocked: true }
+    : { text, blocked: false };
 }
 
 type RpcCaller = {

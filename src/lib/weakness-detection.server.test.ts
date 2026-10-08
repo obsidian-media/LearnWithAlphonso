@@ -96,16 +96,14 @@ describe("detectAndRecordWeaknesses", () => {
   it("drops a model-written question the blocked-term check rejects, and keeps the rest", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const second = { ...WEAKNESS, label: "articles", display: "Articles" };
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            choices: [{ message: { content: JSON.stringify([WEAKNESS, second]) } }],
-          }),
-          { status: 200 },
-        ),
-      );
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify([WEAKNESS, second]) } }],
+        }),
+        { status: 200 },
+      ),
+    );
     const params = callbacks({ outputCheck: vi.fn(async () => [true, false]) });
     const count = await detectAndRecordWeaknesses(params);
     expect(count).toBe(1);

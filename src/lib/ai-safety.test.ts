@@ -78,16 +78,27 @@ describe("filterModelOutput", () => {
   });
 
   it("passes clean text through untouched", async () => {
-    const result = await filterModelOutput("Hi! What can I get you?", opts(async (t) => t.map(() => false)));
+    const result = await filterModelOutput(
+      "Hi! What can I get you?",
+      opts(async (t) => t.map(() => false)),
+    );
     expect(result).toEqual({ text: "Hi! What can I get you?", blocked: false });
   });
 
   it("replaces a hit with the course fallback and logs it", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const result = await filterModelOutput("something bad", opts(async (t) => t.map(() => true), "fr"));
+    const result = await filterModelOutput(
+      "something bad",
+      opts(async (t) => t.map(() => true), "fr"),
+    );
     expect(result).toEqual({ text: AI_OUTPUT_FALLBACK.fr, blocked: true });
     const logged = JSON.parse(String(warn.mock.calls[0][0]));
-    expect(logged).toMatchObject({ event: "ai_output_blocked", route: "chat", course: "fr", blocked: 1 });
+    expect(logged).toMatchObject({
+      event: "ai_output_blocked",
+      route: "chat",
+      course: "fr",
+      blocked: 1,
+    });
   });
 
   it("fails closed when the check is unavailable", async () => {
@@ -99,12 +110,19 @@ describe("filterModelOutput", () => {
       }),
     );
     expect(result).toEqual({ text: AI_OUTPUT_FALLBACK.en, blocked: true });
-    expect(JSON.parse(String(error.mock.calls[0][0]))).toMatchObject({ event: "ai_output_filter_unavailable" });
+    expect(JSON.parse(String(error.mock.calls[0][0]))).toMatchObject({
+      event: "ai_output_filter_unavailable",
+    });
   });
 
   it("treats a missing verdict as blocked", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    expect(await filterModelOutputs(["a", "b"], opts(async () => [false]))).toEqual([false, true]);
+    expect(
+      await filterModelOutputs(
+        ["a", "b"],
+        opts(async () => [false]),
+      ),
+    ).toEqual([false, true]);
   });
 
   it("sends the masked text, not the raw text, to the check", async () => {
@@ -143,7 +161,9 @@ describe("makeBlockedTermCheck", () => {
   });
 
   it("throws on an RPC error so the caller fails closed", async () => {
-    const check = makeBlockedTermCheck({ rpc: async () => ({ data: null, error: { message: "boom" } }) } as never);
+    const check = makeBlockedTermCheck({
+      rpc: async () => ({ data: null, error: { message: "boom" } }),
+    } as never);
     await expect(check(["a"])).rejects.toThrow("ai_output_blocked failed: boom");
   });
 });
