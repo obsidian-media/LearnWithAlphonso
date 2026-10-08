@@ -1,3 +1,4 @@
+import AuthenticationServices
 import Foundation
 import Observation
 import LearnWithAlphonsoKit
@@ -33,7 +34,18 @@ final class Session {
     /// `scheduleProactiveRefresh`.
     private var proactiveRefreshTask: Task<Void, Never>?
     private let googleSignInPresenter = GoogleSignInPresenter()
-    private let appleSignInPresenter = AppleSignInPresenter()
+    private let appleSignIn = AppleSignInCoordinator()
+    private let appleCredentials = AppleCredentialStore()
+    private let appleGivenNames = AppleGivenNameStore()
+    @ObservationIgnored private var appleRevocationObserver: NSObjectProtocol?
+
+    /// The email sign-in steps (Kit EmailCodeFlow). AuthView binds the address field to `emailFlow.email`.
+    var emailFlow = EmailCodeFlow()
+    /// A non-error message for the sign-in screen, e.g. why the learner was signed out.
+    private(set) var notice: String?
+    /// The access token of the session that is ending, readable only while SessionLifecycle handlers run, so
+    /// the push-token handler can delete the old account's device row (AuthAccountCleanup).
+    @ObservationIgnored private(set) var retiringAccessToken: String?
     private let lifecycle: SessionLifecycle
     /// The cleanup started by the last sign-out or deletion. Every path that can establish a
     /// new session awaits it first, so a quick re-sign-in never interleaves with the previous
@@ -53,6 +65,15 @@ final class Session {
     ) {
         self.authClient = authClient
         self.lifecycle = lifecycle
+        // Apple posts this when the learner stops using Apple ID with this app (Settings > Apple ID > Sign in
+        // with Apple). Re-check the state rather than trusting the post alone.
+        appleRevocationObserver = NotificationCenter.default.addObserver(
+            forName: ASAuthorizationAppleIDProvider.credentialRevokedNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in await self?.checkAppleCredential() }
+        }
     }
 
     var accessToken: String? {
@@ -117,30 +138,65 @@ final class Session {
         return nil
     }
 
-    func requestCode(email: String) async {
+    func requestCode() async {
         errorMessage = nil
+        notice = nil
+        guard emailFlow.canSendCode else {
+            emailFlow.markInvalidEmail()
+            return
+        }
+        isBusy = true
+        defer { isBusy = false }
+        let email = emailFlow.trimmedEmail
+        do {
+            try await authClient.requestEmailOTP(email: email)
+            emailFlow.codeSent(at: Date())
+            state = .awaitingCode(email: email)
+        } catch {
+            emailFlow.sendFailed(error, now: Date())
+        }
+    }
+
+    /// "Resend code": allowed 60 s after the last send (EmailCodeFlow), longer if the server asks.
+    func resendCode() async {
+        guard case .awaitingCode(let email) = state, emailFlow.canResend(now: Date()), !isBusy else { return }
         isBusy = true
         defer { isBusy = false }
         do {
             try await authClient.requestEmailOTP(email: email)
-            state = .awaitingCode(email: email)
+            emailFlow.codeResent(at: Date())
         } catch {
-            errorMessage = Self.message(for: error)
+            emailFlow.sendFailed(error, now: Date())
         }
     }
 
-    func verifyCode(_ code: String) async {
+    /// "Use a different email": back to the email step with the address kept.
+    func useDifferentEmail() {
+        emailFlow.useDifferentEmail()
+        errorMessage = nil
+        state = .signedOut
+    }
+
+    /// The code field's setter. The sixth digit submits without a tap.
+    func enterCode(_ text: String) {
+        if emailFlow.enterCode(text), !isBusy {
+            Task { await verifyCode() }
+        }
+    }
+
+    func verifyCode() async {
         // Busy first, so a double tap during the pending cleanup cannot start a second verify.
+        guard !isBusy, emailFlow.isCodeComplete else { return }
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
         await finishPendingCleanup()
         guard case .awaitingCode(let email) = state else { return }
         do {
-            let session = try await authClient.verifyEmailOTP(email: email, code: code)
+            let session = try await authClient.verifyEmailOTP(email: email, code: emailFlow.code)
             establishSession(session)
         } catch {
-            errorMessage = Self.message(for: error)
+            emailFlow.verificationFailed(error, now: Date())
         }
     }
 
@@ -216,36 +272,88 @@ final class Session {
         }
     }
 
-    /// Signs in with the system Apple ID dialog (ASAuthorizationController)
-    /// and completes Supabase's native id_token exchange -- no browser
-    /// sheet, unlike Google's flow above. Required alongside Google per
-    /// App Store Guideline 4.8: an app offering a third-party social login
-    /// must also offer Sign in with Apple.
-    func signInWithApple() async {
+    /// SignInWithAppleButton's onRequest.
+    func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        errorMessage = nil
+        notice = nil
+        appleSignIn.prepare(request)
+    }
+
+    /// SignInWithAppleButton's onCompletion. Required alongside Google by App Store Guideline 4.8.
+    func completeAppleSignIn(_ result: Result<ASAuthorization, Error>) async {
+        let authorization: ASAuthorization
+        switch result {
+        case .success(let value):
+            authorization = value
+        case .failure(let error):
+            if AppleSignInCoordinator.isCancellation(error) { return }
+            errorMessage = Self.message(for: error)
+            return
+        }
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
         await finishPendingCleanup()
         do {
-            let result = try await appleSignInPresenter.authenticate()
-            let session = try await authClient.signInWithIDToken(
-                provider: "apple",
-                idToken: result.identityToken,
-                nonce: result.rawNonce
-            )
+            let apple = try appleSignIn.result(from: authorization)
+            let session = try await authClient.signInWithIDToken(provider: "apple", idToken: apple.identityToken, nonce: apple.rawNonce)
             establishSession(session)
-            // Apple does not always return an authorization code. Nil means
-            // there is simply nothing to link -- and nothing to revoke later
-            // either -- so skip rather than force-unwrap. Deletion already
-            // treats a missing token as "could not revoke" and proceeds.
-            if let code = result.authorizationCode {
+            // Remember which Apple ID signed in on this device, for which account.
+            appleCredentials.save(AppleCredentialLink(appleUserID: apple.appleUserID, supabaseUserID: session.userID))
+            // Apple sends the name only on the first authorization: keep it for the name prompt's prefill,
+            // locally and in the account's metadata (so a reinstall before the prompt still has it).
+            if let givenName = apple.givenName {
+                appleGivenNames.save(givenName, userID: session.userID)
+                saveAppleGivenName(givenName, accessToken: session.accessToken)
+            }
+            // Apple does not always return an authorization code. Nil means there is nothing to link or revoke
+            // later; deletion already treats a missing token as "could not revoke" and proceeds.
+            if let code = apple.authorizationCode {
                 linkAppleAuthorization(code: code)
             }
-        } catch AppleSignInPresenterError.cancelled {
-            // The user dismissed the dialog -- not a real error.
         } catch {
             errorMessage = Self.message(for: error)
         }
+    }
+
+    var appleGivenNameForCurrentUser: String? {
+        userID.flatMap { appleGivenNames.load(userID: $0) }
+    }
+
+    /// Fire-and-forget, same posture as linkAppleAuthorization: the local copy already serves the prompt.
+    private func saveAppleGivenName(_ givenName: String, accessToken: String) {
+        let client = authClient
+        Task {
+            do {
+                try await client.updateUserMetadata(accessToken: accessToken, ["given_name": givenName])
+            } catch {
+                print("[Session] Could not save the Apple given name to the account: \(error)")
+            }
+        }
+    }
+
+    /// At launch, on every return to the foreground (RootView), and on Apple's revocation notification. Only the
+    /// account that signed in with Apple on this device is checked (AppleCredentialPolicy).
+    func checkAppleCredential() async {
+        guard let checkedUser = userID,
+              let appleUserID = AppleCredentialPolicy.appleUserToCheck(link: appleCredentials.load(), signedInUserID: checkedUser)
+        else { return }
+        let status = await AppleCredentialStateReader.status(forAppleUserID: appleUserID)
+        // A sign-out or a different sign-in while the system answered wins.
+        guard userID == checkedUser else { return }
+        if case .signOut(let message) = AppleCredentialPolicy.decision(for: status) {
+            endSession(.signedOut, notice: message)
+        }
+    }
+
+    /// Prefill source for the name prompt (Google full_name/name/given_name, or Apple's saved given_name).
+    func fetchUserNames() async -> AuthUserNames? {
+        guard let token = await freshAccessToken() else { return nil }
+        return try? await authClient.fetchUserNames(accessToken: token)
+    }
+
+    func dismissNotice() {
+        notice = nil
     }
 
     /// Ends the session locally and runs every SessionLifecycle handler for `.signedOut`
@@ -267,23 +375,31 @@ final class Session {
         await lifecycleTask?.value
     }
 
-    private func endSession(_ event: SessionLifecycle.Event) {
+    private func endSession(_ event: SessionLifecycle.Event, notice: String? = nil) {
+        // Captured BEFORE the state is cleared: the push-token handler deletes the old account's device row with
+        // it (GoTrue access tokens stay valid until expiry; signOut does not call /logout).
+        let endingAccessToken = accessToken
         proactiveRefreshTask?.cancel()
         proactiveRefreshTask = nil
         state = .signedOut
         errorMessage = nil
+        self.notice = notice
+        emailFlow = EmailCodeFlow()
         KeychainSessionStore.clear()
         // Durable before anything can suspend: if the process dies now, the next launch
         // runs the cleanup (restoreSession).
         pendingCleanup.mark(event)
         cleanupSequence += 1
         let sequence = cleanupSequence
-        // Chained, never concurrent: a second sign-out waits for the first one's cleanup.
+        // Chained, never concurrent: a second sign-out waits for the first one's cleanup, and each run sees
+        // its own ending token.
         let previous = lifecycleTask
         let lifecycle = self.lifecycle
         lifecycleTask = Task { @MainActor [weak self] in
             await previous?.value
+            self?.retiringAccessToken = endingAccessToken
             await lifecycle.run(event)
+            self?.retiringAccessToken = nil
             // Only the newest sign-out clears the marker; an older one finishing must not
             // hide a newer cleanup that is still owed.
             if let self, self.cleanupSequence == sequence {
@@ -426,14 +542,11 @@ final class Session {
     }
 
     private static func message(for error: Error) -> String {
-        if let authError = error as? SupabaseAuthError {
-            switch authError {
-            case .server(_, let message):
-                return message ?? "Something went wrong. Please try again."
-            case .badResponse, .invalidPayload:
-                return "Something went wrong. Please try again."
-            }
+        if error is URLError { return Copy.connectionFailure }
+        if case SupabaseAuthError.server(let status, let message) = error {
+            if status == 429 { return AuthCopy.tooManyRequests }
+            return message ?? AuthCopy.generic
         }
-        return "Couldn't connect. Check your internet connection and try again."
+        return AuthCopy.generic
     }
 }
