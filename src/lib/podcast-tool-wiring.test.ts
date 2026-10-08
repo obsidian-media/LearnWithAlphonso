@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 
 // scripts/ is outside the typecheck include and has no tests of its own, so the wiring
 // that the lib modules depend on is pinned here as text.
-const tool = readFileSync(path.resolve(import.meta.dirname, "../../scripts/podcast-tool.ts"), "utf8");
+const tool = readFileSync(
+  path.resolve(import.meta.dirname, "../../scripts/podcast-tool.ts"),
+  "utf8",
+);
 
 describe("podcast-tool.ts wiring", () => {
   it("builds every Deepgram URL through deepgramSpeakUrl, so mip_opt_out cannot be dropped", () => {
@@ -39,6 +42,8 @@ describe("podcast-tool.ts wiring", () => {
 
   it("publish is the only command that sets published to true", () => {
     expect(tool.match(/published: true/g)?.length).toBe(1);
-    expect(tool.indexOf("published: true")).toBeGreaterThan(tool.indexOf("async function cmdPublish"));
+    expect(tool.indexOf("published: true")).toBeGreaterThan(
+      tool.indexOf("async function cmdPublish"),
+    );
   });
 });

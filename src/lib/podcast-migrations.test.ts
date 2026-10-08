@@ -51,7 +51,9 @@ describe("podcast voice provenance migration", () => {
   it("defaults existing and admin-uploaded rows to unknown, and marks Deepgram TTS rows", () => {
     const sql = read(PROVENANCE);
     expect(sql).toContain("voice_provider text NOT NULL DEFAULT 'unknown'");
-    expect(sql).toMatch(/UPDATE public\.podcast_episodes SET voice_provider = 'deepgram' WHERE source = 'tts';/);
+    expect(sql).toMatch(
+      /UPDATE public\.podcast_episodes SET voice_provider = 'deepgram' WHERE source = 'tts';/,
+    );
   });
 
   it("grants nothing new to clients and creates no table", () => {
@@ -61,6 +63,8 @@ describe("podcast voice provenance migration", () => {
   });
 
   it("documents its rollback", () => {
-    expect(read(PROVENANCE)).toMatch(/Rollback:[\s\S]*DROP COLUMN voice_model, DROP COLUMN voice_provider/);
+    expect(read(PROVENANCE)).toMatch(
+      /Rollback:[\s\S]*DROP COLUMN voice_model, DROP COLUMN voice_provider/,
+    );
   });
 });

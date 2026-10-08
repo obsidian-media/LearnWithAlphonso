@@ -37,7 +37,13 @@ const episodes: UnpublishEpisode[] = [
     audioPath: "en/c1/why-we-procrastinate-v2.mp3",
     voiceProvider: "deepgram",
   }),
-  episode({ id: "e3", slug: "old-draft", published: false, voiceProvider: "edge-tts", audioPath: "en/c1/old-draft.mp3" }),
+  episode({
+    id: "e3",
+    slug: "old-draft",
+    published: false,
+    voiceProvider: "edge-tts",
+    audioPath: "en/c1/old-draft.mp3",
+  }),
   episode({
     id: "e4",
     folderId: "fr-a1",
@@ -50,13 +56,17 @@ const episodes: UnpublishEpisode[] = [
 
 describe("parseUnpublishList", () => {
   it("reads folder/slug lines, skipping blanks and comments, with CRLF", () => {
-    const { targets, problems } = parseUnpublishList("# old audio\r\nen/c1/why-we-procrastinate\r\n\r\n");
+    const { targets, problems } = parseUnpublishList(
+      "# old audio\r\nen/c1/why-we-procrastinate\r\n\r\n",
+    );
     expect(problems).toEqual([]);
     expect(targets).toEqual([{ segments: ["en", "c1"], slug: "why-we-procrastinate", line: 2 }]);
   });
 
   it("names every bad line instead of guessing", () => {
-    const { targets, problems } = parseUnpublishList("why-we-procrastinate\nen/C1/Bad Slug\nen/c1/x\nen/c1/x\n");
+    const { targets, problems } = parseUnpublishList(
+      "why-we-procrastinate\nen/C1/Bad Slug\nen/c1/x\nen/c1/x\n",
+    );
     expect(targets).toHaveLength(1);
     expect(problems).toEqual([
       'line 1: "why-we-procrastinate" needs a folder path and a slug, e.g. en/c1/why-we-procrastinate.',

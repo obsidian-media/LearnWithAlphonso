@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { chunkScript, DEFAULT_VOICE_FOR_COURSE, deepgramSpeakUrl, voiceLanguage, voiceMatchesCourse } from "./podcast-tts";
+import {
+  chunkScript,
+  DEFAULT_VOICE_FOR_COURSE,
+  deepgramSpeakUrl,
+  voiceLanguage,
+  voiceMatchesCourse,
+} from "./podcast-tts";
 
 describe("chunkScript", () => {
   it("returns a single chunk when the script fits", () => {

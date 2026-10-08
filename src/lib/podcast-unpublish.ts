@@ -29,7 +29,10 @@ export type UnpublishPlan = {
   problems: string[];
 };
 
-export function parseUnpublishList(text: string): { targets: UnpublishTarget[]; problems: string[] } {
+export function parseUnpublishList(text: string): {
+  targets: UnpublishTarget[];
+  problems: string[];
+} {
   const targets: UnpublishTarget[] = [];
   const problems: string[] = [];
   const seen = new Set<string>();
@@ -39,7 +42,9 @@ export function parseUnpublishList(text: string): { targets: UnpublishTarget[]; 
     if (!value || value.startsWith("#")) return;
     const parts = value.split("/").filter(Boolean);
     if (parts.length < 2) {
-      problems.push(`line ${line}: "${value}" needs a folder path and a slug, e.g. en/c1/why-we-procrastinate.`);
+      problems.push(
+        `line ${line}: "${value}" needs a folder path and a slug, e.g. en/c1/why-we-procrastinate.`,
+      );
       return;
     }
     if (!parts.every(isValidSlug)) {
@@ -70,7 +75,9 @@ export function planUnpublishTargets(
       plan.problems.push(`line ${target.line}: folder "${folderPath}" does not exist.`);
       continue;
     }
-    const match = episodes.find((episode) => episode.folderId === folder.id && episode.slug === target.slug);
+    const match = episodes.find(
+      (episode) => episode.folderId === folder.id && episode.slug === target.slug,
+    );
     if (!match) {
       plan.problems.push(`line ${target.line}: no episode "${target.slug}" in ${folderPath}.`);
       continue;
@@ -99,7 +106,8 @@ export function publishedCountsAfter(
 ): Record<CourseId, number> {
   const counts: Record<CourseId, number> = { en: 0, fr: 0, es: 0 };
   for (const episode of episodes) {
-    if (episode.published && episode.course && !removing.has(episode.id)) counts[episode.course] += 1;
+    if (episode.published && episode.course && !removing.has(episode.id))
+      counts[episode.course] += 1;
   }
   return counts;
 }

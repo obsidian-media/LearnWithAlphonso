@@ -46,8 +46,17 @@ import {
 } from "../src/lib/podcast-authoring";
 import { findCycle, isValidSlug, resolveFolderPath } from "../src/lib/podcast-tree";
 import { normalizeTranscript } from "../src/lib/podcast-transcript";
-import { chunkScript, DEFAULT_VOICE_FOR_COURSE, deepgramSpeakUrl, voiceMatchesCourse } from "../src/lib/podcast-tts";
-import { isPublishableProvider, LICENSED_PROVIDERS, VOICE_PROVIDERS } from "../src/lib/podcast-provenance";
+import {
+  chunkScript,
+  DEFAULT_VOICE_FOR_COURSE,
+  deepgramSpeakUrl,
+  voiceMatchesCourse,
+} from "../src/lib/podcast-tts";
+import {
+  isPublishableProvider,
+  LICENSED_PROVIDERS,
+  VOICE_PROVIDERS,
+} from "../src/lib/podcast-provenance";
 import {
   coursesLeftEmpty,
   episodePath,
@@ -180,14 +189,11 @@ async function synthesise(script: string, voice: string): Promise<Uint8Array> {
 
   const audio: Uint8Array[] = [];
   for (const [index, piece] of pieces.entries()) {
-    const response = await fetch(
-      deepgramSpeakUrl(voice),
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
-        body: JSON.stringify({ text: piece }),
-      },
-    );
+    const response = await fetch(deepgramSpeakUrl(voice), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
+      body: JSON.stringify({ text: piece }),
+    });
     if (!response.ok) {
       fail(`Deepgram returned ${response.status} on chunk ${index + 1}/${pieces.length}.`);
     }
@@ -336,10 +342,13 @@ async function cmdAdd(flags: CliFlags) {
   let voiceModel: string | null;
   let voice = "";
   if (script) {
-    if (!course) fail("--course is required with --script, so the voice can be checked against it.");
+    if (!course)
+      fail("--course is required with --script, so the voice can be checked against it.");
     voice = (flags.voice as string | undefined) ?? DEFAULT_VOICE_FOR_COURSE[course];
     if (!voiceMatchesCourse(voice, course)) {
-      fail(`voice "${voice}" does not speak course "${course}". Use ${DEFAULT_VOICE_FOR_COURSE[course]}.`);
+      fail(
+        `voice "${voice}" does not speak course "${course}". Use ${DEFAULT_VOICE_FOR_COURSE[course]}.`,
+      );
     }
     provider = "deepgram";
     voiceModel = voice;
@@ -362,8 +371,12 @@ async function cmdAdd(flags: CliFlags) {
       `Dry run. Would synthesise ${chunkScript(text).length} chunk(s), ${text.trim().length} characters, ` +
         `with ${voice} (Deepgram, mip_opt_out=true),`,
     );
-    console.log(`  upload to ${BUCKET}/${storagePathFor(draft)} and insert "${slug}" (course=${course}, unpublished).`);
-    console.log("Re-run with --confirm to write it. Synthesis is billed, so it runs only with --confirm.");
+    console.log(
+      `  upload to ${BUCKET}/${storagePathFor(draft)} and insert "${slug}" (course=${course}, unpublished).`,
+    );
+    console.log(
+      "Re-run with --confirm to write it. Synthesis is billed, so it runs only with --confirm.",
+    );
     return;
   }
 
@@ -492,7 +505,9 @@ async function cmdValidate(flags: CliFlags) {
 
   const { data, error } = await db
     .from("podcast_episodes")
-    .select("slug, title, duration_seconds, audio_path, published, source, voice_provider, voice_model")
+    .select(
+      "slug, title, duration_seconds, audio_path, published, source, voice_provider, voice_model",
+    )
     .eq("folder_id", folder.id)
     .eq("slug", slug)
     .maybeSingle();
@@ -511,7 +526,9 @@ async function cmdValidate(flags: CliFlags) {
   };
   console.log(`${episode.title} (${episode.slug})`);
   console.log(`  source:    ${episode.source}`);
-  console.log(`  voice:     ${episode.voice_provider}${episode.voice_model ? ` (${episode.voice_model})` : ""}`);
+  console.log(
+    `  voice:     ${episode.voice_provider}${episode.voice_model ? ` (${episode.voice_model})` : ""}`,
+  );
   console.log(`  duration:  ${episode.duration_seconds}s`);
   console.log(`  audio:     ${BUCKET}/${episode.audio_path}`);
   console.log(`  published: ${episode.published ? "yes" : "no"}`);
@@ -706,7 +723,9 @@ async function cmdUnpublish(flags: CliFlags) {
     };
   });
 
-  const plan = targets ? planUnpublishTargets(targets, folders, episodes) : planUnpublishUnlicensed(episodes);
+  const plan = targets
+    ? planUnpublishTargets(targets, folders, episodes)
+    : planUnpublishUnlicensed(episodes);
   if (plan.problems.length > 0) {
     for (const problem of plan.problems) console.error(`  [ERROR] ${problem}`);
     fail("Nothing was changed.");
@@ -718,19 +737,29 @@ async function cmdUnpublish(flags: CliFlags) {
   }
   if (plan.alreadyUnpublished.length > 0) {
     console.log(`Already unpublished (${plan.alreadyUnpublished.length}):`);
-    for (const episode of plan.alreadyUnpublished) console.log(`  ${episodePath(folders, episode)}`);
+    for (const episode of plan.alreadyUnpublished)
+      console.log(`  ${episodePath(folders, episode)}`);
   }
-  const counts = publishedCountsAfter(episodes, new Set(plan.toUnpublish.map((episode) => episode.id)));
+  const counts = publishedCountsAfter(
+    episodes,
+    new Set(plan.toUnpublish.map((episode) => episode.id)),
+  );
   console.log(`Published afterwards: en ${counts.en}, fr ${counts.fr}, es ${counts.es}.`);
   for (const course of coursesLeftEmpty(counts)) {
-    console.log(`WARNING: nothing would stay published for "${course}". Listen shows its empty state.`);
+    console.log(
+      `WARNING: nothing would stay published for "${course}". Listen shows its empty state.`,
+    );
   }
 
   const removeAudio = flags["remove-audio"] === true;
-  const audioPaths = [...plan.toUnpublish, ...plan.alreadyUnpublished].map((episode) => episode.audioPath);
+  const audioPaths = [...plan.toUnpublish, ...plan.alreadyUnpublished].map(
+    (episode) => episode.audioPath,
+  );
   if (flags.confirm !== true) {
     console.log(
-      removeAudio ? `Dry run. Would also DELETE ${audioPaths.length} audio object(s) from ${BUCKET}.` : "Dry run.",
+      removeAudio
+        ? `Dry run. Would also DELETE ${audioPaths.length} audio object(s) from ${BUCKET}.`
+        : "Dry run.",
     );
     console.log("Re-run with --confirm to write it.");
     return;

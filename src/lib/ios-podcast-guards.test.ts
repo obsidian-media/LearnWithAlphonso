@@ -52,7 +52,9 @@ describe("iOS podcast guards", () => {
 
   it("the player's observers are removed with the item, so an old item cannot report into a new one", () => {
     const player = source("Sources/PodcastAudioPlayer.swift");
-    expect(player).toContain("itemNotificationTokens.forEach { NotificationCenter.default.removeObserver($0) }");
+    expect(player).toContain(
+      "itemNotificationTokens.forEach { NotificationCenter.default.removeObserver($0) }",
+    );
     expect(player).toContain("keyValueObservations.forEach { $0.invalidate() }");
   });
 
@@ -61,7 +63,9 @@ describe("iOS podcast guards", () => {
     expect(source("Sources/RootView.swift")).toContain(
       "PodcastLifecycleHooks.stopPlayback = { [weak podcastPlayer] in podcastPlayer?.stopForAccountChange() }",
     );
-    const assigners = sources.filter(({ text }) => /stopPlayback\s*=/.test(code(text))).map((s) => s.file);
+    const assigners = sources
+      .filter(({ text }) => /stopPlayback\s*=/.test(code(text)))
+      .map((s) => s.file);
     expect(assigners).toEqual(["ios/LearnWithAlphonso/Sources/RootView.swift"]);
   });
 
@@ -112,7 +116,9 @@ describe("iOS podcast guards", () => {
     ]) {
       expect(listen, needle).toContain(needle);
     }
-    expect(source("Sources/RootView.swift")).toMatch(/ListenView\([\s\S]*?activeCourse: activeCourse/);
+    expect(source("Sources/RootView.swift")).toMatch(
+      /ListenView\([\s\S]*?activeCourse: activeCourse/,
+    );
   });
 
   it("the mini bar shows the machine's control and a Retry, never a Pause over a failure", () => {
