@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
-import { SCENARIOS } from "@/data/scenarios";
-import { CAMPAIGNS } from "@/data/campaigns";
+import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -22,10 +21,11 @@ type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
  * client -- both already send one of these values verbatim (iOS bundles
  * the identical JSON export of the same source, see CurriculumModels.swift).
  */
-const VALID_SYSTEM_PROMPTS = new Set<string>([
-  ...SCENARIOS.map((s) => s.systemPrompt),
-  ...CAMPAIGNS.flatMap((c) => c.scenes.map((scene) => `${c.premise}\n\n${scene.systemPrompt}`)),
-]);
+// The whitelist is every course variant of every scenario and every composed
+// campaign scene, owned by src/data/scenarios.ts. It still contains the
+// earlier English prompts byte for byte (pinned by
+// src/data/legacy-system-prompts.test.ts), so installed clients keep working.
+const VALID_SYSTEM_PROMPTS: ReadonlySet<string> = ALL_SYSTEM_PROMPTS;
 
 const CEFR_DIFFICULTY_HINTS: Record<string, string> = {
   A1: "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",

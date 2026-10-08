@@ -18,7 +18,9 @@ describe("campaigns data", () => {
   });
 
   it("getCampaign finds a known campaign by id and returns undefined for an unknown one", () => {
-    expect(getCampaign("city-day")?.title).toBe("A day in a new city");
+    expect(getCampaign("city-day")?.title.en).toBe("A day in a new city");
+    expect(getCampaign("city-day")?.title.fr).toBe("Une journée à Lyon");
+    expect(getCampaign("city-day")?.title.es).toBe("Un día en la Ciudad de México");
     expect(getCampaign("does-not-exist")).toBeUndefined();
   });
 

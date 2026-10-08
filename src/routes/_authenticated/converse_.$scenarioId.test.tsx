@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -26,13 +26,16 @@ const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 
 const { Route } = await import("./converse_.$scenarioId");
-const { getScenario } = await import("../../data/scenarios");
+const { getScenario, localizeScenario, scenarioPrompt } = await import("../../data/scenarios");
+const { useProgress } = await import("../../lib/progress");
 
-const scenario = getScenario("coffee")!;
+const rawScenario = getScenario("coffee")!;
+// Existing assertions read the flat English view; the loader returns the raw record.
+const scenario = localizeScenario(rawScenario, "en");
 // @ts-expect-error -- overriding the router-bound hook with a plain
 // function; the real one needs a <RouterProvider>, which this test
 // doesn't set up (nothing else here depends on router context).
-Route.useLoaderData = () => ({ scenario });
+Route.useLoaderData = () => ({ scenario: rawScenario });
 
 class FakeMediaRecorder {
   static isTypeSupported = vi.fn((mime: string) => mime === "audio/webm");
@@ -89,6 +92,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  useProgress.setState({ course: "en" });
   // jsdom doesn't implement scrollTo on elements.
   Element.prototype.scrollTo = vi.fn();
   getSession.mockReset();
@@ -331,5 +335,56 @@ describe("Converse chat page", () => {
       "Microphone access is needed to speak.",
     );
     expect(screen.getByRole("button", { name: "Record a voice message" })).toBeInTheDocument();
+  });
+
+  it("shows the French variant and sends the French prompt when the course is French", async () => {
+    useProgress.setState({ course: "fr" });
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Très bien, et avec ceci ?" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const fr = localizeScenario(rawScenario, "fr");
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByRole("heading", { name: "Au café" })).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(fr.opener);
+    await waitFor(() => expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "fr" } }));
+
+    await user.type(
+      screen.getByPlaceholderText("Type or tap the mic"),
+      "Un crème, s'il vous plaît",
+    );
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() =>
+      expect(screen.getByRole("log")).toHaveTextContent("Très bien, et avec ceci ?"),
+    );
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(([u]) =>
+      String(u).includes("/api/chat"),
+    )!;
+    const body = JSON.parse(init.body as string);
+    expect(body.systemPrompt).toBe(scenarioPrompt("coffee", "fr"));
+    expect(body.messages[0]).toEqual({ role: "assistant", content: fr.opener });
+  });
+
+  it("starts a fresh conversation in the new language when the course changes mid-chat", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Sure, what size?" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Sure, what size?"));
+
+    act(() => useProgress.setState({ course: "es" }));
+
+    const log = screen.getByRole("log");
+    expect(log).toHaveTextContent(localizeScenario(rawScenario, "es").opener);
+    expect(log).not.toHaveTextContent("A latte please");
+    expect(log).not.toHaveTextContent(scenario.opener);
   });
 });

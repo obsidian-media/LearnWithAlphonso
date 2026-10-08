@@ -19,10 +19,12 @@ describe("SCENARIOS", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("every scenario has an opener and a system prompt", () => {
+  it("every scenario has an opener and a system prompt in every course", () => {
     for (const s of SCENARIOS) {
-      expect(s.opener).toBeTruthy();
-      expect(s.systemPrompt).toBeTruthy();
+      for (const c of ["en", "fr", "es"] as const) {
+        expect(s.opener[c]).toBeTruthy();
+        expect(s.systemPrompt[c]).toBeTruthy();
+      }
       expect(["Beginner", "Intermediate", "Advanced"]).toContain(s.level);
     }
   });

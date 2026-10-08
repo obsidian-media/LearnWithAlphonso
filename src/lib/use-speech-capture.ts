@@ -28,8 +28,7 @@ export function useSpeechCapture({
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
   /** Forwarded to /api/stt so Deepgram transcribes in the right language
    * instead of defaulting to English. Optional and defaults server-side to
-   * "en" -- the conversation route (converse_.$scenarioId.tsx) has no course
-   * on its scenarios yet and is unaffected by omitting this. */
+   * "en" -- the conversation routes pass the active course. */
   course?: Course;
 }) {
   const [state, setState] = useState<SpeechCaptureState>("idle");

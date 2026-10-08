@@ -189,7 +189,7 @@ public struct ContentBundle: Decodable, Sendable {
     public let units: [Unit]
 }
 
-/// Mirrors src/data/scenarios.ts's `Scenario` type exactly -- one of the 6
+/// Mirrors src/data/scenarios.ts's `LocalizedScenario` (one course's flat view of a `Scenario`) -- one of the 12
 /// AI-conversation roleplay scenarios. `systemPrompt` is sent as-is to
 /// /api/chat; `opener` is shown as the assistant's first message without a
 /// round trip, matching the web app's converse.$scenarioId.tsx.
@@ -203,7 +203,7 @@ public struct Scenario: Decodable, Identifiable, Sendable {
     public let opener: String
 }
 
-/// Mirrors src/data/campaigns.ts's `CampaignScene` type exactly (V4
+/// Mirrors src/data/campaigns.ts's `LocalizedCampaignScene` exactly (V4
 /// candidate #4). One scene within a `Campaign` -- roughly a `Scenario` on
 /// its own (own persona via `systemPrompt`, own `opener`), plus `minTurns`:
 /// the minimum number of learner turns in this scene before the
@@ -218,7 +218,7 @@ public struct CampaignScene: Decodable, Identifiable, Sendable {
     public let minTurns: Int
 }
 
-/// Mirrors src/data/campaigns.ts's `Campaign` type exactly -- an ordered,
+/// Mirrors src/data/campaigns.ts's `LocalizedCampaign` exactly -- an ordered,
 /// connected sequence of scenes sharing one continuous chat transcript, as
 /// opposed to `Scenario`'s one-shot, independent roleplays. `premise` is
 /// framing shared by every scene; CampaignSessionView composes
