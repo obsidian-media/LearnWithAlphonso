@@ -20,7 +20,9 @@ describe("RevenueCat version pin", () => {
   });
 
   it("has no range or moving reference beside the pin", () => {
-    expect(block).not.toMatch(/^ {4}(from|minorVersion|majorVersion|branch|revision|minVersion|maxVersion):/m);
+    expect(block).not.toMatch(
+      /^ {4}(from|minorVersion|majorVersion|branch|revision|minVersion|maxVersion):/m,
+    );
   });
 
   it("is checked against what Xcode actually resolves, in CI and in the release archive", () => {
@@ -44,7 +46,9 @@ describe("PaywallView copy", () => {
   });
 
   it("never mentions App Review or an unavailable subscription", () => {
-    expect(source).not.toMatch(/finishes reviewing|reviewing our subscription|aren't available yet/i);
+    expect(source).not.toMatch(
+      /finishes reviewing|reviewing our subscription|aren't available yet/i,
+    );
   });
 
   it("does not import RevenueCat (the adapter is the only RevenueCat file besides app launch)", () => {
