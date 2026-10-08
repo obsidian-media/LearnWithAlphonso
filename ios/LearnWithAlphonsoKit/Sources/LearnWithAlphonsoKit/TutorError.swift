@@ -85,7 +85,7 @@ public enum TutorError: Error, Equatable, Sendable {
     /// Copy for a lesson card (speaking question) rather than a tutor conversation: a withdrawn consent there
     /// means "type the phrase", not "turn on AI to practise with a tutor".
     public func cardMessage(now: Date = Date(), timeZone: TimeZone = .current) -> String {
-        if self == .aiConsentRequired {
+        if self == .notEntitled {
             return "Voice answers are turned off. Type the phrase instead."
         }
         return userMessage(now: now, timeZone: timeZone)

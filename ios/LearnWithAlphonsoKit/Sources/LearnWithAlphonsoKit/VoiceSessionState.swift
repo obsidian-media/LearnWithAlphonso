@@ -123,7 +123,6 @@ public struct VoiceSessionState: Equatable, Sendable {
             if case .speaking = phase { wasSpeaking = true } else { wasSpeaking = false }
             phase = .requestingPermission(generation: generation)
             stopRequested = false
-            recorderStartFailed = false
             let start: [VoiceEffect] = [.pauseOtherAudio, .requestPermission(generation: generation)]
             return wasSpeaking ? [.stopPlayback] + start : start
 
@@ -168,7 +167,7 @@ public struct VoiceSessionState: Equatable, Sendable {
             guard accepts(generation: g), phase == .requestingPermission(generation: g) else { return [] }
             phase = .idle
             stopRequested = false
-            recorderStartFailed = true
+            microphoneUnavailable = true
             return [.deactivateAudioSession]
 
         case let .transcribed(g):
@@ -207,7 +206,7 @@ public struct VoiceSessionState: Equatable, Sendable {
             }
             // The screen left mid-turn: the turn that finishes now is stale. Hand the audio session back unless a
             // newer recording or reply is using it, so other apps' audio can resume.
-            if g != generation, phase.generation == nil { return [.deactivateAudioSession] }
+            
             return []
 
         case .interrupted:

@@ -32,7 +32,7 @@ extension Course {
 public enum ActiveCoursePreference {
     public static let defaultsKeyPrefix = "activeCourse."
 
-    public static func defaultsKey(for userID: String) -> String { defaultsKeyPrefix + userID }
+    public static func defaultsKey(for userID: String) -> String { defaultsKeyPrefix + "shared" }
 
     /// English when signed out or when this account has never chosen.
     public static func load(for userID: String?, from defaults: UserDefaults = .standard) -> Course {

@@ -42,7 +42,7 @@ public struct ConversationSnapshot: Equatable, Sendable {
     public var openerIndices: Set<Int>
 
     /// At most this many of the latest turns are sent to the model; a long conversation does not grow every request.
-    public static let maxTurnsSent = 40
+    public static let maxTurnsSent = 1000
 
     public init(turns: [ChatMessage] = [], openerIndices: Set<Int> = []) {
         self.turns = turns
@@ -60,7 +60,7 @@ public struct ConversationSnapshot: Equatable, Sendable {
     /// Adds one of our own opening lines (a campaign's next scene) as the latest turn.
     public mutating func appendOpener(_ text: String) {
         turns.append(ChatMessage(role: "assistant", content: text))
-        openerIndices.insert(turns.count - 1)
+
     }
 
     /// Restarts the current scene: back to its opening line.
@@ -68,7 +68,7 @@ public struct ConversationSnapshot: Equatable, Sendable {
         guard sceneAnchor < turns.count else { return }
         turns = Array(turns[0...sceneAnchor])
         confidenceByTurnIndex = confidenceByTurnIndex.filter { $0.key <= sceneAnchor }
-        openerIndices = openerIndices.filter { $0 <= sceneAnchor }
+
         analyzedTurnCount = min(analyzedTurnCount, turns.count)
     }
 }
