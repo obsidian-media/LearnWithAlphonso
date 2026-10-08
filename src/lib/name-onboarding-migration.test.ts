@@ -53,6 +53,23 @@ describe("name onboarding migration", () => {
     );
   });
 
+  it("leaves an already confirmed name unchanged", () => {
+    const stmt = fnStatement("skip_display_name_prompt");
+    expect(stmt).toMatch(/IF confirmed_at IS NOT NULL THEN\s+RETURN current_name;/);
+    // the early return must come before any write
+    expect(stmt.indexOf("RETURN current_name;")).toBeLessThan(
+      stmt.indexOf("UPDATE public.profiles"),
+    );
+  });
+
+  it("refuses to store a handle that still fails the filter", () => {
+    const stmt = fnStatement("skip_display_name_prompt");
+    expect(stmt).toMatch(
+      /IF public\.display_name_problem\(candidate\) IS NOT NULL THEN\s+RAISE EXCEPTION 'handle-unavailable' USING ERRCODE = 'P0001';/,
+    );
+    expect(stmt.indexOf("handle-unavailable")).toBeLessThan(stmt.indexOf("UPDATE public.profiles"));
+  });
+
   it("never writes anyone else's profile", () => {
     const stmt = fnStatement("skip_display_name_prompt");
     expect(stmt).toMatch(

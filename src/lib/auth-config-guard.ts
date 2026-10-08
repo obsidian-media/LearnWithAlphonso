@@ -43,7 +43,19 @@ export type AuthConfig = {
 /** AppConfig.googleSignInRedirectURL in the iOS app; pinned by a test that reads AppConfig.swift. */
 export const IOS_OAUTH_CALLBACK = "com.obsidianmedia.learnwithalphonso://login-callback";
 
-const CATCH_ALL = /^(\*{1,2}|https?:\/\/\*{1,2})$/;
+/**
+ * A wildcard in the scheme, or in the host of a web URL, lets any site receive a sign-in redirect. A glob on the
+ * app's own custom scheme (`com.example.app://**`) is not a catch-all: only that app registers the scheme.
+ */
+function isCatchAll(entry: string): boolean {
+  if (/^\*{1,2}$/.test(entry)) return true;
+  const m = /^([^:/]*):\/\/(.*)$/.exec(entry);
+  if (!m) return entry.startsWith("*");
+  const [, scheme, rest] = m;
+  if (scheme.includes("*")) return true;
+  if (!/^https?$/i.test(scheme)) return false;
+  return rest.split("/")[0].startsWith("*");
+}
 
 /** An entry covers `url` when it is the same string, or a `<scheme>://...*` glob whose prefix `url` starts with. */
 function allowlistCovers(entry: string, url: string): boolean {
@@ -63,7 +75,7 @@ function oauthProblems(cfg: AuthConfig): string[] {
       `uri_allow_list does not allow ${IOS_OAUTH_CALLBACK}: Google sign-in on iOS would end on the website instead of returning to the app`,
     );
   }
-  for (const entry of entries.filter((e) => CATCH_ALL.test(e))) {
+  for (const entry of entries.filter(isCatchAll)) {
     problems.push(
       `uri_allow_list contains the catch-all "${entry}": any site could receive a sign-in redirect`,
     );

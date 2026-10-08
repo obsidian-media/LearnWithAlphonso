@@ -132,12 +132,32 @@ describe("OAuth redirect allowlist and Google provider", () => {
     ]);
   });
 
-  it.each(["**", "*", "https://**", "http://*"])("catches the catch-all entry %s", (entry) => {
+  it.each([
+    "**",
+    "*",
+    "https://**",
+    "http://*",
+    "https://**/**",
+    "*://**",
+    "**/**",
+    "http*://**",
+    "https://**.vercel.app/**",
+    "https://*.vercel.app/**",
+  ])("catches the catch-all entry %s", (entry) => {
     const problems = findAuthConfigProblems({
       ...GOOD,
       uri_allow_list: `${GOOD.uri_allow_list},${entry}`,
     });
     expect(problems).toEqual([expect.stringContaining("catch-all")]);
+  });
+
+  it("still accepts exact, explicit entries", () => {
+    expect(
+      findAuthConfigProblems({
+        ...GOOD,
+        uri_allow_list: `${GOOD.uri_allow_list},https://learn.alphonsoecosystem.app/auth/callback,http://localhost:3000/**`,
+      }),
+    ).toEqual([]);
   });
 
   it.each([false, undefined])("catches external_google_enabled = %s", (external_google_enabled) => {
