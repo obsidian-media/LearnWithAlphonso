@@ -20,6 +20,10 @@
  *    app asks for six digits (2026-09-26, found by reading a received
  *    email).
  *
+ * 4. nothing guarded the OAuth redirect allowlist or the Google provider
+ *    (2026-10-07): without the app's callback on the list, Google sign-in on
+ *    iOS ends on the website instead of returning to the app.
+ *
  * **These are necessary, not sufficient.** A template containing
  * `{{ .Token }}` does not prove a code arrives. Only receiving the mail
  * does (sec 0.0r).
@@ -31,7 +35,42 @@ export type AuthConfig = {
   mailer_templates_confirmation_content?: string;
   mailer_subjects_magic_link?: string;
   mailer_subjects_confirmation?: string;
+  /** Comma-separated, as the Management API returns it. */
+  uri_allow_list?: string;
+  external_google_enabled?: boolean;
 };
+
+/** AppConfig.googleSignInRedirectURL in the iOS app; pinned by a test that reads AppConfig.swift. */
+export const IOS_OAUTH_CALLBACK = "com.obsidianmedia.learnwithalphonso://login-callback";
+
+const CATCH_ALL = /^(\*{1,2}|https?:\/\/\*{1,2})$/;
+
+/** An entry covers `url` when it is the same string, or a `<scheme>://...*` glob whose prefix `url` starts with. */
+function allowlistCovers(entry: string, url: string): boolean {
+  if (entry === url) return true;
+  const glob = /^(.+?)\*{1,2}$/.exec(entry);
+  return glob !== null && glob[1].includes("://") && url.startsWith(glob[1]);
+}
+
+function oauthProblems(cfg: AuthConfig): string[] {
+  const problems: string[] = [];
+  const entries = (cfg.uri_allow_list ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  if (!entries.some((entry) => allowlistCovers(entry, IOS_OAUTH_CALLBACK))) {
+    problems.push(
+      `uri_allow_list does not allow ${IOS_OAUTH_CALLBACK}: Google sign-in on iOS would end on the website instead of returning to the app`,
+    );
+  }
+  for (const entry of entries.filter((e) => CATCH_ALL.test(e))) {
+    problems.push(`uri_allow_list contains the catch-all "${entry}": any site could receive a sign-in redirect`);
+  }
+  if (cfg.external_google_enabled !== true) {
+    problems.push(`external_google_enabled is ${cfg.external_google_enabled}: "Continue with Google" fails on iOS and the web`);
+  }
+  return problems;
+}
 
 /**
  * The assertions, as a pure function so they can be unit-tested against
@@ -77,6 +116,8 @@ export function findAuthConfigProblems(cfg: AuthConfig): string[] {
       `mailer_otp_length is ${cfg.mailer_otp_length}, but the app asks for a 6-digit code`,
     );
   }
+
+  problems.push(...oauthProblems(cfg));
 
   return problems;
 }

@@ -1,5 +1,7 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { findAuthConfigProblems, type AuthConfig } from "./auth-config-guard";
+import { findAuthConfigProblems, IOS_OAUTH_CALLBACK, type AuthConfig } from "./auth-config-guard";
 
 /**
  * Each case is a shape that ACTUALLY SHIPPED, not an invented one. The
@@ -11,6 +13,8 @@ const GOOD: AuthConfig = {
   mailer_otp_length: 6,
   mailer_templates_magic_link_content: "<p>{{ .Token }}</p>",
   mailer_templates_confirmation_content: "<p>{{ .Token }}</p>",
+  uri_allow_list: "https://learn.alphonsoecosystem.app/**,com.obsidianmedia.learnwithalphonso://login-callback",
+  external_google_enabled: true,
 };
 
 describe("findAuthConfigProblems", () => {
@@ -90,6 +94,57 @@ describe("findAuthConfigProblems", () => {
         mailer_templates_magic_link_content: "<p>no token</p>",
         mailer_templates_confirmation_content: "<p>no token</p>",
       }),
-    ).toHaveLength(4);
+    ).toHaveLength(6);
+  });
+});
+
+describe("OAuth redirect allowlist and Google provider", () => {
+  // Without the app's callback on the list, GoTrue silently falls back to site_url and the iOS Google
+  // sheet ends on the website instead of returning to the app.
+  it("catches an allowlist without the iOS callback", () => {
+    const problems = findAuthConfigProblems({ ...GOOD, uri_allow_list: "https://learn.alphonsoecosystem.app/**" });
+    expect(problems).toEqual([expect.stringContaining(IOS_OAUTH_CALLBACK)]);
+  });
+
+  it("catches an unset allowlist", () => {
+    expect(findAuthConfigProblems({ ...GOOD, uri_allow_list: undefined })).toEqual([
+      expect.stringContaining("does not allow"),
+    ]);
+  });
+
+  it("accepts a glob on the app's own scheme, and tolerates spaces around entries", () => {
+    expect(
+      findAuthConfigProblems({
+        ...GOOD,
+        uri_allow_list: " https://learn.alphonsoecosystem.app/** , com.obsidianmedia.learnwithalphonso://** ",
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not let another scheme's glob stand in for the app's", () => {
+    expect(findAuthConfigProblems({ ...GOOD, uri_allow_list: "com.example.other://**" })).toEqual([
+      expect.stringContaining("does not allow"),
+    ]);
+  });
+
+  it.each(["**", "*", "https://**", "http://*"])("catches the catch-all entry %s", (entry) => {
+    const problems = findAuthConfigProblems({ ...GOOD, uri_allow_list: `${GOOD.uri_allow_list},${entry}` });
+    expect(problems).toEqual([expect.stringContaining("catch-all")]);
+  });
+
+  it.each([false, undefined])("catches external_google_enabled = %s", (external_google_enabled) => {
+    expect(findAuthConfigProblems({ ...GOOD, external_google_enabled })).toEqual([
+      expect.stringContaining("external_google_enabled"),
+    ]);
+  });
+
+  it("pins the same callback the iOS app sends", () => {
+    const swift = fs.readFileSync(
+      path.resolve(import.meta.dirname, "../../ios/LearnWithAlphonso/Sources/AppConfig.swift"),
+      "utf8",
+    );
+    expect(swift).toContain('static let googleSignInURLScheme = "com.obsidianmedia.learnwithalphonso"');
+    expect(swift).toContain('static let googleSignInRedirectURL = "\\(googleSignInURLScheme)://login-callback"');
+    expect(IOS_OAUTH_CALLBACK).toBe("com.obsidianmedia.learnwithalphonso://login-callback");
   });
 });

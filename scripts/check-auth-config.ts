@@ -52,6 +52,8 @@ async function main() {
   console.log(`  site_url          = ${cfg.site_url}`);
   console.log(`  mailer_otp_length = ${cfg.mailer_otp_length}`);
   console.log("  both magic-link and confirm-signup templates render {{ .Token }}");
+  console.log("  uri_allow_list allows the iOS Google callback and has no catch-all");
+  console.log("  Google provider is enabled");
 }
 
 main().catch((err) => {
