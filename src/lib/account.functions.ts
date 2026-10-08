@@ -157,13 +157,34 @@ export const exportMyData = createServerFn({ method: "POST" })
 /** Permanently delete the account and all associated data (GDPR erasure). */
 /**
  * "revoked": Apple confirmed the grant is gone.
- * "not_applicable": nothing to revoke -- no Apple secrets configured, or
- * this user never linked Sign in with Apple. Expected and common; not
- * worth logging.
+ * "not_applicable": nothing to revoke. This learner never signed in with
+ * Apple, or (with secrets present) never linked a grant. Expected and
+ * common; not logged.
+ * "not_configured": the Apple secrets are missing, and this learner did
+ * sign in with Apple (or the lookup failed, so we cannot tell). A live
+ * grant may remain, which App Review treats as a deletion defect. Logged
+ * with console.error so it shows in Vercel logs.
  * "failed": there WAS a stored grant and Apple's revoke call did not
- * succeed. This is the one outcome worth chasing -- see the call sites.
+ * succeed. See the call sites.
  */
-export type AppleRevocationStatus = "revoked" | "not_applicable" | "failed";
+export type AppleRevocationStatus = "revoked" | "not_applicable" | "not_configured" | "failed";
+
+/** true / false from the auth record; "unknown" when the lookup itself failed. Never throws. */
+async function appleIdentityOf(
+  supabaseAdmin: SupabaseClient<Database>,
+  userId: string,
+): Promise<boolean | "unknown"> {
+  try {
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+    if (error || !data?.user) return "unknown";
+    const providers = Array.isArray(data.user.app_metadata?.providers)
+      ? (data.user.app_metadata.providers as unknown[])
+      : [];
+    return providers.includes("apple") || (data.user.identities ?? []).some((i) => i.provider === "apple");
+  } catch {
+    return "unknown";
+  }
+}
 
 /**
  * Revokes the user's Apple grant if there is one, reporting what
@@ -190,7 +211,16 @@ export async function revokeAppleGrantForUser(
   try {
     const { appleConfigFromEnv, revokeAppleGrant } = await import("@/lib/apple-revocation");
     const config = appleConfigFromEnv();
-    if (!config) return "not_applicable";
+    if (!config) {
+      const apple = await appleIdentityOf(supabaseAdmin, userId);
+      if (apple === false) return "not_applicable";
+      console.error(
+        apple === true
+          ? `[apple-revocation] NOT CONFIGURED: user ${userId} signed in with Apple, but APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY or APPLE_CLIENT_ID is missing, so the Apple grant was not revoked.`
+          : `[apple-revocation] NOT CONFIGURED: the Apple secrets are missing and the identity lookup for user ${userId} failed, so an Apple grant may not have been revoked.`,
+      );
+      return "not_configured";
+    }
 
     const { data } = await supabaseAdmin
       .from("apple_auth_tokens")

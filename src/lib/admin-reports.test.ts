@@ -161,7 +161,12 @@ describe("adminDeleteReportedUser", () => {
     const deleteUser = vi.fn().mockResolvedValue({ error: null });
     const supabaseAdmin = {
       ...createSupabaseMock(),
-      auth: { admin: { deleteUser } },
+      auth: {
+        admin: {
+          deleteUser,
+          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+        },
+      },
     };
     supabaseAdmin.from.mockImplementation((table: string) => {
       if (table === "content_reports") return chainable({ data: { reported: "u2" }, error: null });
@@ -185,7 +190,12 @@ describe("adminDeleteReportedUser", () => {
     const deleteUser = vi.fn();
     const supabaseAdmin = {
       ...createSupabaseMock(),
-      auth: { admin: { deleteUser } },
+      auth: {
+        admin: {
+          deleteUser,
+          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+        },
+      },
     };
     supabaseAdmin.from.mockImplementation(() => chainable({ data: null, error: null }));
 
@@ -219,7 +229,12 @@ describe("adminDeleteReportedUser", () => {
     const deleteUser = vi.fn().mockResolvedValue({ error: new Error("auth service down") });
     const supabaseAdmin = {
       ...createSupabaseMock(),
-      auth: { admin: { deleteUser } },
+      auth: {
+        admin: {
+          deleteUser,
+          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+        },
+      },
     };
     supabaseAdmin.from.mockImplementation((table: string) => {
       if (table === "content_reports") return chainable({ data: { reported: "u2" }, error: null });

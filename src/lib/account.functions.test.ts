@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { replayPolicies } from "./__testutils__/policy-replay";
 import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
 
@@ -30,9 +30,10 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 
 const deleteUser = vi.fn();
+const getUserById = vi.fn();
 const supabaseAdminFrom = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom, auth: { admin: { deleteUser } } },
+  supabaseAdmin: { from: supabaseAdminFrom, auth: { admin: { deleteUser, getUserById } } },
 }));
 
 const accountModule = await import("./account.functions");
@@ -61,6 +62,12 @@ beforeEach(() => {
   deleteUser.mockReset();
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({}));
+  getUserById.mockReset();
+  // An email-only learner unless a test says otherwise.
+  getUserById.mockResolvedValue({
+    data: { user: { id: USER_ID, app_metadata: { providers: ["email"] }, identities: [{ provider: "email" }] } },
+    error: null,
+  });
 });
 
 describe("exportMyData", () => {
@@ -450,5 +457,61 @@ describe("GDPR export table coverage", () => {
         "language_progress",
       ].sort(),
     );
+  });
+});
+
+describe("revokeAppleGrantForUser without Apple secrets", () => {
+  const APPLE_KEYS = ["APPLE_TEAM_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY", "APPLE_CLIENT_ID"];
+  beforeEach(() => {
+    for (const key of APPLE_KEYS) vi.stubEnv(key, "");
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  function admin(lookup: unknown) {
+    return {
+      from: vi.fn(() => chainable({ data: null, error: null })),
+      auth: { admin: { getUserById: vi.fn().mockResolvedValue(lookup) } },
+    } as never;
+  }
+
+  it("reports not_configured and logs when the user signed in with Apple", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const status = await accountModule.revokeAppleGrantForUser(
+      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["apple"] }, identities: [{ provider: "apple" }] } }, error: null }),
+      USER_ID,
+    );
+    expect(status).toBe("not_configured");
+    expect(log).toHaveBeenCalledOnce();
+    expect(String(log.mock.calls[0][0])).toContain("[apple-revocation] NOT CONFIGURED");
+    expect(String(log.mock.calls[0][0])).toContain(USER_ID);
+  });
+
+  it("finds an Apple identity linked to an email account too", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const status = await accountModule.revokeAppleGrantForUser(
+      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["email"] }, identities: [{ provider: "email" }, { provider: "apple" }] } }, error: null }),
+      USER_ID,
+    );
+    expect(status).toBe("not_configured");
+  });
+
+  it("stays not_applicable and silent for a learner without Apple", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const status = await accountModule.revokeAppleGrantForUser(
+      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["google"] }, identities: [{ provider: "google" }] } }, error: null }),
+      USER_ID,
+    );
+    expect(status).toBe("not_applicable");
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("reports not_configured and logs when the identity lookup itself fails", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const status = await accountModule.revokeAppleGrantForUser(admin({ data: { user: null }, error: { message: "boom" } }), USER_ID);
+    expect(status).toBe("not_configured");
+    expect(String(log.mock.calls[0][0])).toContain("NOT CONFIGURED");
   });
 });
