@@ -66,7 +66,19 @@ struct LessonPlayerView: View {
     @State private var result: LessonCompletionResult?
     @State private var isLeaguePromotion = false
     @State private var queuedOffline: PendingLessonCompletion?
-    @State private var errorMessage: String?
+    /// Why the completion was queued (offline, timeout or server), for the offline finish screen's wording.
+    @State private var queuedReason: LessonCompletionError = .offline
+    /// A completion failure that is NOT queued (a rejected 4xx, or signed out).
+    @State private var completionFailure: LessonCompletionError?
+    /// The start-lesson-session token from when this lesson opened. Using it at finish means a heart lost
+    /// mid-lesson never blocks saving the lesson (the hearts gate applies when a lesson starts, as on the web).
+    @State private var sessionToken: String?
+    @State private var outOfHearts: OutOfHeartsModel?
+    @State private var heartsGateState: HeartsGateState = .open
+    @State private var showingReviewInstead = false
+    @Environment(\.dismiss) private var dismiss
+
+    private enum HeartsGateState { case open, blocked, reviewInstead }
     // V3 pkg 4b: in-lesson reinforcement, staged in two steps -- see
     // pickReinforcementQuestion's doc comment (LessonReinforcement.swift)
     // and lesson.$id.tsx's identical web-side pattern for why. Never
@@ -144,7 +156,9 @@ struct LessonPlayerView: View {
         result = nil
         isLeaguePromotion = false
         queuedOffline = nil
-        errorMessage = nil
+        completionFailure = nil
+        queuedReason = .offline
+        sessionToken = nil
         pendingReinforcement = nil
         activeReinforcement = nil
         // 2026-09-30 whole-codebase audit: this function's own doc
@@ -165,13 +179,11 @@ struct LessonPlayerView: View {
                     onContinueToNextLesson: nextLessonID != nil ? continueToNextLesson : nil
                 )
             } else if let queuedOffline {
-                OfflineFinishView(pending: queuedOffline, correct: correctCount, total: total)
-            } else if let errorMessage {
-                ContentUnavailableView {
-                    Label("Couldn't save your progress", systemImage: "wifi.slash")
-                } description: {
-                    Text(errorMessage)
-                }
+                OfflineFinishView(
+                    pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
+                    onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() })
+            } else if let completionFailure {
+                LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
             } else if total == 0 {
                 ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
             } else {
@@ -189,6 +201,32 @@ struct LessonPlayerView: View {
         }
         .navigationTitle(lesson.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task(id: lesson.id) { await openLessonSession() }
+        .sheet(item: $outOfHearts, onDismiss: {
+            // Closed without a heart: leave the lesson (it can't be saved). "Review instead" opens Review first.
+            switch heartsGateState {
+            case .blocked: dismiss()
+            case .reviewInstead: showingReviewInstead = true
+            case .open: break
+            }
+        }) { model in
+            OutOfHeartsSheet(
+                model: model, course: course, session: session, isOnline: networkMonitor.isConnected,
+                onUnblocked: {
+                    heartsGateState = .open
+                    outOfHearts = nil
+                    Task { await openLessonSession() }
+                },
+                onPracticeInstead: {
+                    heartsGateState = .reviewInstead
+                    outOfHearts = nil
+                })
+        }
+        .sheet(isPresented: $showingReviewInstead, onDismiss: { dismiss() }) {
+            ReviewQueueView(
+                contentStore: contentStore, session: session, notificationScheduler: notificationScheduler,
+                networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
+        }
         // Consent is the account's (AIConsentStore). Without it a translate
         // answer is graded on the device and complete-lesson grades it the
         // same way server-side (it checks the same account consent), so the
@@ -378,40 +416,60 @@ struct LessonPlayerView: View {
         Task { _ = try? await client.loseHeart() }
     }
 
+    /// The lesson session starts when the lesson opens, which is where the server's hearts gate applies
+    /// (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
+    /// A failure here is not fatal: finish() mints a token if none is held.
+    private func openLessonSession() async {
+        sessionToken = nil
+        guard networkMonitor.isConnected else {
+            if let cached = syncQueueStore.lastKnownProgress(),
+               case let .outOfHearts(refillAt) = HeartsEconomy.gate(
+                   hearts: cached.hearts,
+                   heartsRefillAt: cached.heartsRefillAt.map { Date(timeIntervalSince1970: $0 / 1000) },
+                   now: Date()) {
+                block(refillAt: refillAt)
+            }
+            return
+        }
+        guard let accessToken = await session.freshAccessToken() else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        do {
+            sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.wireCode)
+        } catch let ProgressSyncError.outOfHearts(refillAt) {
+            block(refillAt: refillAt)
+        } catch {
+            // Best-effort: finish() starts a session itself when none is held.
+        }
+    }
+
+    private func block(refillAt: Date?) {
+        heartsGateState = .blocked
+        outOfHearts = OutOfHeartsModel(refillAt: refillAt)
+    }
+
     private func finish() async {
         isSubmitting = true
         defer { isSubmitting = false }
-        guard let accessToken = session.accessToken else {
-            errorMessage = "You've been signed out. Please sign in again."
+        guard session.accessToken != nil else {
+            completionFailure = .unauthorized
             return
         }
-
-        // Never attempt startLessonSession/completeLesson while offline --
-        // both calls are deferred to sync time, called fresh, exactly like
-        // this online path. This sidesteps any concern about a pre-fetched
-        // session token going stale during a long offline period
-        // (start-lesson-session's MAX_AGE_MS is 3 hours): there's no
-        // pre-fetched token to go stale, because none is fetched until
-        // sync. See docs/v2-kickoffs/01-offline-first.md.
+        // Offline: never attempt the calls. The queued row keeps the session token from the lesson's start, so
+        // sync can use it within its 3 h lifetime (LessonCompletionService re-mints an expired one).
         guard networkMonitor.isConnected else {
-            queueOffline()
+            queueOffline(reason: .offline)
             return
         }
-
-        let client = ProgressSyncClient(
-            supabaseURL: AppConfig.supabaseURL,
-            anonKey: AppConfig.supabasePublishableKey,
-            accessToken: accessToken
-        )
-        do {
-            let sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.code)
-            let completion = try await client.completeLesson(
-                lessonID: lesson.id,
-                total: total,
-                answers: answers,
-                course: course.code,
-                sessionToken: sessionToken
-            )
+        let session = self.session
+        let service = LessonCompletionService(
+            token: { force in
+                if let token = await session.freshAccessToken(forceRefresh: force) { return .token(token) }
+                return await session.accessToken == nil ? .signedOut : .unreachable
+            },
+            makeClient: { ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: $0) })
+        let request = LessonCompletionRequest(lessonID: lesson.id, total: total, answers: answers, course: course.wireCode, sessionToken: sessionToken)
+        switch await service.complete(request) {
+        case let .success(completion):
             // nil previousTier means this is the first completion this
             // cache has ever seen (fresh install, or cleared) -- there's no
             // real "before" to compare against, so that case is never
@@ -425,11 +483,14 @@ struct LessonPlayerView: View {
             if isLeaguePromotion || !completion.newlyUnlocked.isEmpty {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
-        } catch {
-            // The monitor thought we were online but the call still failed
-            // (a monitor can be momentarily wrong) -- queue rather than
-            // lose the attempt, same as the explicitly-offline path above.
-            queueOffline()
+        case let .failure(error):
+            // Queue only what waiting can fix. A rejected attempt is never queued (it would sit in the queue
+            // forever), and is never described as "offline".
+            if error.shouldQueue {
+                queueOffline(reason: error)
+            } else {
+                completionFailure = error
+            }
         }
     }
 
@@ -438,16 +499,19 @@ struct LessonPlayerView: View {
     /// played an entire lesson. `optimisticXpEstimate` is a naive guess
     /// (see PendingLessonCompletion's doc comment); the real XP is shown
     /// once sync confirms it.
-    private func queueOffline() {
+    private func queueOffline(reason: LessonCompletionError) {
         let pending = PendingLessonCompletion(
             lessonID: lesson.id,
             total: total,
             answers: answers,
-            course: course.code,
+            course: course.wireCode,
             queuedAt: Date(),
-            optimisticXpEstimate: computeXpGain(correct: correctCount, total: total)
+            optimisticXpEstimate: computeXpGain(correct: correctCount, total: total),
+            ownerUserID: session.userID,
+            sessionToken: sessionToken
         )
         syncQueueStore.appendLessonCompletion(pending)
+        queuedReason = reason
         queuedOffline = pending
     }
 
@@ -498,14 +562,6 @@ private func speak(_ text: String, languageCode: String) {
 }
 
 private extension Course {
-    var code: String {
-        switch self {
-        case .english: return "en"
-        case .french: return "fr"
-        case .spanish: return "es"
-        }
-    }
-
     var speechLanguageCode: String {
         switch self {
         case .english: return "en-US"
@@ -1033,8 +1089,9 @@ private struct GeneratedPracticeSection: View {
     @State private var status: Status = .idle
     @State private var questions: [GeneratedPracticeQuestion] = []
     @State private var idx = 0
-    @State private var picked: String?
+    @State private var picked: Int?
     @State private var checked = false
+    @State private var errorText: String?
 
     var body: some View {
         switch status {
@@ -1052,19 +1109,10 @@ private struct GeneratedPracticeSection: View {
                 .buttonStyle(.alphonsoSecondary)
                 .disabled(status == .loading)
 
-                // TestFlight feedback (2026-09-29): "unlimited buffering
-                // cycle." The one real production log for this found no
-                // server error at all -- the request just took a while
-                // (a real LLM call) with zero on-screen indication that
-                // was expected, which reads as broken. This text plus
-                // generatePractice's new 45s client-side timeout are the
-                // fix for that -- the timeout can't distinguish "still
-                // legitimately working" from "actually stuck," so if it
-                // turns out this was a real hang, the next report should
-                // include whether the button flipped to the error state
-                // on its own after roughly 45 seconds.
+                // The server answers within about 20 seconds (two short model attempts, then its own fallback
+                // set), and generatePractice gives up after 25. This text says a wait is expected.
                 if status == .loading {
-                    Text("This can take up to 30 seconds.")
+                    Text("This can take up to 20 seconds.")
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)
                 } else if status == .empty {
@@ -1072,7 +1120,7 @@ private struct GeneratedPracticeSection: View {
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)
                 } else if status == .error {
-                    Text("Something went wrong -- try again.")
+                    Text(errorText ?? "Something went wrong. Try again.")
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.inkSoft)
                 }
@@ -1080,7 +1128,7 @@ private struct GeneratedPracticeSection: View {
             .padding(.top, 8)
         case .ready:
             if idx >= questions.count {
-                Text("Nice work -- that's all the extra practice for this lesson.")
+                Text("Nice work. That's all the extra practice for this lesson.")
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .padding(.top, 8)
@@ -1099,22 +1147,23 @@ private struct GeneratedPracticeSection: View {
             Text(q.prompt)
                 .font(AlphonsoFont.sans(16, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
-            ForEach(q.choices, id: \.self) { choice in
+            // Keyed by position, not text: a repeated choice would otherwise collide and light up twice.
+            ForEach(Array(q.choices.enumerated()), id: \.offset) { index, choice in
                 Button {
-                    picked = choice
+                    picked = index
                 } label: {
                     HStack {
                         Text(choice).font(AlphonsoFont.sans(15))
                         Spacer()
-                        if checked && q.choices[q.answerIndex] == choice {
+                        if checked && q.answerIndex == index {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
-                        } else if checked && picked == choice {
+                        } else if checked && picked == index {
                             Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
                         }
                     }
                     .padding(AlphonsoSpacing.sm + 4)
                     .background(
-                        picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
+                        picked == index ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
                         in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
                     )
                 }
@@ -1122,7 +1171,7 @@ private struct GeneratedPracticeSection: View {
                 .foregroundStyle(AlphonsoColor.ink)
             }
             if checked {
-                if picked == q.choices[q.answerIndex] {
+                if picked == q.answerIndex {
                     if let saveCourse, let saveWordHandler {
                         TappableText(
                             text: q.explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
@@ -1157,13 +1206,14 @@ private struct GeneratedPracticeSection: View {
 
     private func generate() async {
         status = .loading
+        errorText = nil
         guard let accessToken = session.accessToken else {
             status = .error
             return
         }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
         do {
-            let result = try await client.generatePractice(lessonID: lessonID, course: course.code)
+            let result = try await client.generatePractice(lessonID: lessonID, course: course.wireCode)
             if result.isEmpty {
                 status = .empty
                 return
@@ -1173,7 +1223,12 @@ private struct GeneratedPracticeSection: View {
             picked = nil
             checked = false
             status = .ready
+        } catch let error as TutorError {
+            // A quota 429 says when it resets; other failures say what happened (TutorError's copy).
+            errorText = error.userMessage()
+            status = .error
         } catch {
+            errorText = nil
             status = .error
         }
     }
@@ -1189,79 +1244,30 @@ private struct OfflineFinishView: View {
     let pending: PendingLessonCompletion
     let correct: Int
     let total: Int
+    let reason: LessonCompletionError
+    let onContinue: () -> Void
 
     var body: some View {
         VStack(spacing: AlphonsoSpacing.md) {
             Image(systemName: "icloud.and.arrow.up.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(AlphonsoColor.ember)
-            Text("Saved -- will sync when you're back online")
+                .accessibilityHidden(true)
+            Text(reason.userMessage)
                 .font(AlphonsoFont.display(19, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
                 .multilineTextAlignment(.center)
-            Text("~+\(pending.optimisticXpEstimate) XP (estimated)")
+            Text("About +\(pending.optimisticXpEstimate) XP (estimated)")
                 .font(AlphonsoFont.display(24, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ember)
             Text("\(correct)/\(total) correct")
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)
+            Button("Continue", action: onContinue)
+                .buttonStyle(.alphonsoPrimary)
+                .padding(.top, AlphonsoSpacing.sm)
         }
         .padding()
         .background(AlphonsoColor.surface)
-    }
-}
-
-// SpringEntrance/`.springEntrance(...)` moved to
-// DesignSystem/AlphonsoComponents.swift so other screens can share it.
-
-/// A distinct, bigger celebration for a league promotion -- rarer and more
-/// significant than a typical achievement unlock, so it gets a full-screen
-/// takeover rather than another card in the achievement grid above.
-private struct LeaguePromotionOverlay: View {
-    let tier: String
-    let onContinue: () -> Void
-
-    var body: some View {
-        ZStack {
-            LeagueTierPalette.color(for: tier).opacity(0.15).ignoresSafeArea()
-            VStack(spacing: 20) {
-                Spacer()
-                Image(systemName: "shield.fill")
-                    .font(.system(size: 96))
-                    .foregroundStyle(LeagueTierPalette.color(for: tier))
-                    .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
-                Text("League up!")
-                    .font(AlphonsoFont.display(34, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                AlphonsoMascotBanner(mascot: .alphonso, message: "You've been promoted to \(LeagueTierPalette.label(for: tier))!")
-                    .padding(.horizontal)
-                Spacer()
-                Button("Continue", action: onContinue)
-                    .buttonStyle(.alphonsoPrimary)
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 40)
-            }
-        }
-    }
-}
-
-/// Ports src/data/achievements.ts's LEAGUE_TIER_META hex values exactly --
-/// a different, 5-tier palette (bronze/silver/sapphire/ruby/diamond) from
-/// AchievementBadgeView's 4-tier achievement-tier palette, so kept separate
-/// rather than merged.
-enum LeagueTierPalette {
-    static func color(for tier: String) -> Color {
-        switch tier {
-        case "bronze": return Color(hex: 0xB07242)
-        case "silver": return Color(hex: 0x8A9099)
-        case "sapphire": return Color(hex: 0x4A6B8A)
-        case "ruby": return Color(hex: 0x9A4A4A)
-        case "diamond": return Color(hex: 0x4A7F7A)
-        default: return Color(white: 0.53)
-        }
-    }
-
-    static func label(for tier: String) -> String {
-        tier.prefix(1).uppercased() + tier.dropFirst()
     }
 }

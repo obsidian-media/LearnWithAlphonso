@@ -30,7 +30,7 @@ struct StreakWidgetView: View {
                 Text("\(snapshot.streak)")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
             }
-            Text(snapshot.streak == 1 ? "day streak" : "day streak")
+            Text(StreakWidgetCopy.caption(streak: snapshot.streak))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)

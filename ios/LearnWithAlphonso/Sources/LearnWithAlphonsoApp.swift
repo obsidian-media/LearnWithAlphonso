@@ -40,23 +40,17 @@ struct LearnWithAlphonsoApp: App {
             Purchases.configure(withAPIKey: revenueCatAPIKey)
         }
 
-        let schema = Schema([
-            PendingLessonCompletionRecord.self,
-            PendingReviewGradeRecord.self,
-            CachedDueReviewRecord.self,
-            AppSyncStateRecord.self,
-            // Offline podcast downloads share this container rather than
-            // opening a second store -- one more thing to migrate, for no
-            // benefit.
-            PodcastDownloadRecord.self,
-        ])
-        // Falls back to an in-memory-only store on failure (e.g. disk full,
-        // a corrupt store from a prior crash) rather than crashing launch --
-        // the offline queue just won't persist across relaunches in that
-        // rare case, which is a much smaller problem than the app not
-        // opening at all.
-        let container = (try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)]))
-            ?? (try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]))
+        // Versioned schema plus an explicit migration plan (SyncSchema.swift): a store written by an earlier
+        // build migrates to the current models. The in-memory fallback remains only for a genuinely unopenable
+        // store (e.g. disk full), and it is logged; the offline queue then just won't persist across relaunches.
+        let schema = Schema(versionedSchema: SyncSchemaV2.self)
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(for: schema, migrationPlan: SyncMigrationPlan.self, configurations: [ModelConfiguration(schema: schema)])
+        } catch {
+            print("[LearnWithAlphonsoApp] persistent store failed to open, using memory: \(error)")
+            container = try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        }
         let queue = SyncQueueStore(modelContext: ModelContext(container))
         syncQueueStore = queue
         // Same container, its own context: the download manager and the
