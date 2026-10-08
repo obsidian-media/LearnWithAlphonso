@@ -200,7 +200,10 @@
     },
     "stopLooking": "Stop looking",
     "matchedLabel": "Matched learner",
-    "ageConfirm": "I'm 13 or older"
+    "ageConfirm": "I'm 13 or older",
+    "blockConfirm": { "name": "Bo", "expected": "Block Bo? Your study buddy pairing ends and you won't be matched again." },
+    "blockedLine": { "name": "Bo", "expected": "You blocked Bo. Your study buddy pairing has ended." },
+    "safetyMenuLabel": { "name": "Bo", "expected": "Block or report Bo" }
   },
   "presets": [
     {

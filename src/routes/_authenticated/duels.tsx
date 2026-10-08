@@ -5,6 +5,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/duels")({
   component: DuelsPage,
@@ -50,26 +51,34 @@ function DuelsPage() {
 
   async function handleRespond(duelId: string, accept: boolean) {
     setError(null);
-    const result = await respondToDuel({ data: { duelId, accept } });
-    if (!result.ok) {
-      setError(result.reason);
-      return;
+    try {
+      const result = await respondToDuel({ data: { duelId, accept } });
+      if (!result.ok) {
+        setError(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      await refetchDuels();
+    } catch (e) {
+      setError(socialFailureMessage(e));
     }
-    await refetchDuels();
   }
 
   async function handleChallengeFriend() {
     if (!challengeFriendId) return;
     setError(null);
-    const result = await createDuel({
-      data: { opponentId: challengeFriendId, course: challengeCourse },
-    });
-    if (!result.ok) {
-      setError(result.reason);
-      return;
+    try {
+      const result = await createDuel({
+        data: { opponentId: challengeFriendId, course: challengeCourse },
+      });
+      if (!result.ok) {
+        setError(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      setChallengeFriendId("");
+      await refetchDuels();
+    } catch (e) {
+      setError(socialFailureMessage(e));
     }
-    setChallengeFriendId("");
-    await refetchDuels();
   }
 
   async function handleJoinOpenQueue() {

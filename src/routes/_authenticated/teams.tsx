@@ -10,6 +10,7 @@ import {
   autoJoinTeam,
   createTeam,
 } from "../../lib/teams.functions";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/teams")({
   component: TeamsPage,
@@ -75,40 +76,55 @@ function TeamsPage() {
   async function handleJoinByCode() {
     setBusy(true);
     setError(null);
-    const result = await joinTeamByCode({ data: { code } });
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.reason);
-      return;
+    try {
+      const result = await joinTeamByCode({ data: { code } });
+      if (!result.ok) {
+        setError(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
+    } catch (e) {
+      setError(socialFailureMessage(e));
+    } finally {
+      setBusy(false);
     }
-    await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
-    navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
   }
 
   async function handleAutoJoin() {
     setBusy(true);
     setError(null);
-    const result = await autoJoinTeam();
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.reason);
-      return;
+    try {
+      const result = await autoJoinTeam();
+      if (!result.ok) {
+        setError(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
+    } catch (e) {
+      setError(socialFailureMessage(e));
+    } finally {
+      setBusy(false);
     }
-    await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
-    navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
   }
 
   async function handleCreate() {
     setBusy(true);
     setError(null);
-    const result = await createTeam({ data: { name: teamName, visibility } });
-    setBusy(false);
-    if (!result.ok) {
-      setError(result.reason);
-      return;
+    try {
+      const result = await createTeam({ data: { name: teamName, visibility } });
+      if (!result.ok) {
+        setError(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
+    } catch (e) {
+      setError(socialFailureMessage(e));
+    } finally {
+      setBusy(false);
     }
-    await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
-    navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
   }
 
   return (

@@ -63,15 +63,15 @@ enum class ReportReason(val raw: String, val label: String) {
 
 object SocialSafetyCopy {
     fun blockConfirmationMessage(displayName: String): String =
-        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you need help with this."
+        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you need help with this."
 }
 
 @Composable
-fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit) {
+fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit, contentDescription: String = "More options") {
     var open by remember { mutableStateOf(false) }
     val palette = AlphonsoColor.palette
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "More options", tint = palette.inkSoft) }
+        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = contentDescription, tint = palette.inkSoft) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(text = { Text("Block User", color = palette.destructive) }, onClick = { open = false; onBlock() })
             DropdownMenuItem(text = { Text("Report User") }, onClick = { open = false; onReport() })
@@ -80,12 +80,12 @@ fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit) {
 }
 
 @Composable
-fun BlockConfirmDialog(target: SocialTarget?, onConfirm: (SocialTarget) -> Unit, onDismiss: () -> Unit) {
+fun BlockConfirmDialog(target: SocialTarget?, onConfirm: (SocialTarget) -> Unit, onDismiss: () -> Unit, title: String? = null) {
     if (target == null) return
     val palette = AlphonsoColor.palette
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Block ${target.displayName}?") },
+        title = { Text(title ?: "Block ${target.displayName}?") },
         text = { Text(SocialSafetyCopy.blockConfirmationMessage(target.displayName)) },
         confirmButton = { TextButton(onClick = { onConfirm(target) }) { Text("Block", color = palette.destructive) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
@@ -109,7 +109,7 @@ fun ReportSheet(target: SocialTarget?, container: AppContainer, onDismiss: () ->
             if (submitted) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Report submitted", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact report@alphonsoecosystem.app.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                    Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

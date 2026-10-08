@@ -291,7 +291,7 @@ struct SettingsView: View {
     }
 
     private func saveDisplayName() async {
-        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        guard let accessToken = session.accessToken else { return }
         let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         identityErrorMessage = nil
@@ -299,10 +299,10 @@ struct SettingsView: View {
         defer { isSavingName = false }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
-            try await client.updateProfileDisplayName(trimmed, userID: userID)
-            displayName = trimmed
+            // confirm_display_name validates (2 to 40 characters, the filter) and returns the cleaned, stored name.
+            displayName = try await client.confirmDisplayName(trimmed)
         } catch {
-            identityErrorMessage = "Couldn't save your name. Try again."
+            identityErrorMessage = SocialReasonCopy.nameSaveMessage(for: error)
         }
     }
 

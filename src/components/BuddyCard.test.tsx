@@ -28,7 +28,8 @@ vi.mock("../lib/buddy.functions", () => ({
   leaveBuddyPool,
   getBuddyPool,
 }));
-vi.mock("../lib/social-safety.functions", () => ({ blockUser: vi.fn(), reportUser: vi.fn() }));
+const blockUser = vi.fn();
+vi.mock("../lib/social-safety.functions", () => ({ blockUser, reportUser: vi.fn() }));
 
 const { BuddyCard, AskBuddyButton } = await import("./BuddyCard");
 
@@ -52,6 +53,7 @@ const buddy = {
   streakWeeks: 4,
   graceAvailable: true,
   lastOutcome: "hit",
+  matchingEnabled: true,
 };
 
 beforeEach(() => {
@@ -67,6 +69,7 @@ beforeEach(() => {
     joinBuddyPool,
     leaveBuddyPool,
     getBuddyPool,
+    blockUser,
   ]) {
     f.mockReset();
   }
@@ -495,6 +498,26 @@ describe("BuddyCard messages", () => {
 });
 
 describe("BuddyCard matching (opt-in)", () => {
+  it("a matched buddy while matching is off: no presets, the paused line, progress still shown", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: true, matchingEnabled: false });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(
+      await screen.findByText(
+        "Messages with matched learners are paused right now. Your progress is kept.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Send Bo a message" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Nice work!" })).toBeNull();
+    expect(screen.getByText("You 2/3 · Buddy 3/3 this week")).toBeTruthy();
+  });
+  it("a friend buddy keeps the presets while matching is off", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: false, matchingEnabled: false });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByRole("button", { name: "Nice work!" })).toBeTruthy();
+    expect(screen.queryByText(/paused right now/)).toBeNull();
+  });
   const intro =
     "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.";
 
@@ -559,12 +582,40 @@ describe("BuddyCard matching (opt-in)", () => {
     expect(screen.queryByRole("button", { name: /Find me a study buddy/ })).not.toBeInTheDocument();
   });
 
+  it("blocking a matched buddy asks with the buddy wording, then says the pairing ended", async () => {
+    getMyBuddy.mockResolvedValueOnce({ ...buddy, isMatch: true }).mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    blockUser.mockResolvedValue({ ok: true, message: "blocked" });
+    renderWithClient(<BuddyCard />);
+    fireEvent.click(await screen.findByRole("button", { name: "Block or report Bo" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Block user" }));
+    expect(
+      screen.getByText("Block Bo? Your study buddy pairing ends and you won't be matched again."),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Block" }));
+    expect(
+      await screen.findByText("You blocked Bo. Your study buddy pairing has ended."),
+    ).toBeTruthy();
+  });
+  it("a failed block shows no success line and keeps the card", async () => {
+    // If a failed block were treated as success, the refetch would find no buddy and show the notice.
+    getMyBuddy.mockResolvedValueOnce({ ...buddy, isMatch: true }).mockResolvedValue(null);
+    getBuddyRequests.mockResolvedValue([]);
+    blockUser.mockResolvedValue({ ok: false, message: "server-error" });
+    renderWithClient(<BuddyCard />);
+    fireEvent.click(await screen.findByRole("button", { name: "Block or report Bo" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Block user" }));
+    fireEvent.click(screen.getByRole("button", { name: "Block" }));
+    await waitFor(() => expect(blockUser).toHaveBeenCalled());
+    expect(screen.queryByText(/You blocked Bo/)).toBeNull();
+    expect(screen.getByText("Bo")).toBeTruthy();
+  });
   it("a matched buddy is labelled and can be blocked or reported from the card", async () => {
     getMyBuddy.mockResolvedValue({ ...buddy, isMatch: true });
     getBuddyRequests.mockResolvedValue([]);
     renderWithClient(<BuddyCard />);
     expect(await screen.findByText("Matched learner")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "More options for Bo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Block or report Bo" })).toBeInTheDocument();
   });
 
   it("a friend buddy is not labelled as matched", async () => {

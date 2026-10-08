@@ -13,6 +13,8 @@ struct BuddySection: View {
     let session: Session
     /// The accepted friends already loaded by FriendsView: the people who can be asked.
     let friends: [FriendProgress]
+    /// Tells the friends list who the current buddy is, so blocking them from a friend row uses the buddy wording.
+    var onBuddyChange: (String?) -> Void = { _ in }
 
     @State private var buddy: MyBuddy?
     @State private var requests: [BuddyRequest] = []
@@ -78,7 +80,7 @@ struct BuddySection: View {
             Button("Keep", role: .cancel) {}
         }
         .confirmationDialog(
-            "Block \(blockTarget?.displayName ?? "this user")?",
+            BuddyCopy.blockConfirm(blockTarget?.displayName ?? "your buddy"),
             isPresented: Binding(get: { blockTarget != nil }, set: { if !$0 { blockTarget = nil } }),
             titleVisibility: .visible
         ) {
@@ -97,45 +99,58 @@ struct BuddySection: View {
 
     @ViewBuilder
     private func buddyRows(_ buddy: MyBuddy) -> some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            HStack {
-                Text(buddy.buddyName)
-                    .font(AlphonsoFont.display(17, weight: .semiBold))
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                HStack {
+                    Text(buddy.buddyName)
+                        .font(AlphonsoFont.display(17, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    if buddy.isMatch {
+                        Text(BuddyCopy.matchedLabel)
+                            .font(AlphonsoFont.sans(11))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                    }
+                }
+                Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
+                    .font(AlphonsoFont.sans(14))
                     .foregroundStyle(AlphonsoColor.ink)
-                if buddy.isMatch {
-                    Text(BuddyCopy.matchedLabel)
-                        .font(AlphonsoFont.sans(11))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    Spacer()
-                    // A matched buddy is not a friend: block and report live right here (guideline 1.2).
-                    SocialSafetyMenu(
-                        onBlock: { blockTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
-                        onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) }
-                    )
-                    .buttonStyle(.borderless)
+                Text(BuddyCopy.streakLine(buddy.streakWeeks))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Text(BuddyCopy.graceLine(buddy.graceAvailable))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
+            .padding(.vertical, 2)
+            .accessibilityElement(children: .combine)
+            if buddy.isMatch {
+                Spacer()
+                // A matched buddy is not a friend: block and report live right here (guideline 1.2). Kept OUTSIDE the
+                // combined element above so VoiceOver can reach it as its own button.
+                SocialSafetyMenu(
+                    onBlock: { blockTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
+                    onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
+                    accessibilityName: buddy.buddyName
+                )
+                .buttonStyle(.borderless)
+            }
+        }
+        if buddy.canSendPresets {
+            Menu("Send \(buddy.buddyName) a message") {
+                ForEach(BuddyCopy.presets, id: \.id) { preset in
+                    Button(preset.text) {
+                        Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
+                    }
                 }
             }
-            Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.ink)
-            Text(BuddyCopy.streakLine(buddy.streakWeeks))
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            Text(BuddyCopy.graceLine(buddy.graceAvailable))
+            .tint(AlphonsoColor.moss)
+            .disabled(busy)
+        } else {
+            // Matching is switched off; the server refuses this pair's presets (matching_paused).
+            Text(BuddyCopy.statusMessage("matching_paused"))
                 .font(AlphonsoFont.sans(12))
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
-        .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
-        Menu("Send \(buddy.buddyName) a message") {
-            ForEach(BuddyCopy.presets, id: \.id) { preset in
-                Button(preset.text) {
-                    Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
-                }
-            }
-        }
-        .tint(AlphonsoColor.moss)
-        .disabled(busy)
         ForEach(historyLines(buddy)) { item in
             Text(item.line)
                 .font(AlphonsoFont.sans(12))
@@ -280,6 +295,7 @@ struct BuddySection: View {
             guard generation == loadGeneration else { return false }
             pool = newPool
             buddy = newBuddy
+            onBuddyChange(newBuddy?.buddyID)
             requests = newRequests
             messages = newMessages
             loadFailed = false
@@ -297,26 +313,37 @@ struct BuddySection: View {
         }
     }
 
-    /// Blocking a matched buddy ends the pair on the server (trigger); reload to show it.
+    /// Blocking a matched buddy ends the pair on the server (trigger). Reload, then say so in the buddy wording.
     private func block(_ target: SocialTarget) async {
         busy = true
         defer { busy = false }
-        var blocked = false
-        if let client = await makeClient(), let result = try? await client.blockUser(target.id) {
-            blocked = result.ok
+        var failure: String?
+        if let client = await makeClient() {
+            do {
+                if try await client.blockUser(target.id).ok == false { failure = BuddyCopy.statusMessage("unknown") }
+            } catch {
+                failure = SocialReasonCopy.failureMessage(for: error)
+            }
+        } else {
+            failure = Copy.connectionFailure
         }
         await load()
-        if !blocked { message = BuddyCopy.statusMessage("unknown") }
+        message = failure ?? BuddyCopy.blockedLine(target.displayName)
     }
 
-    /// Runs a buddy action, shows the server's answer in fixed wording, then reloads (busy until the reload lands, so
-    /// a second tap cannot act on a request that is already gone).
+    /// Runs a buddy action, shows the server's answer in fixed wording (or what actually failed), then reloads.
     private func run(_ action: @escaping (ProgressSyncClient) async throws -> String) async {
         busy = true
         message = nil
-        var text = BuddyCopy.statusMessage("unknown")
-        if let client = await makeClient(), let status = try? await action(client) {
-            text = BuddyCopy.statusMessage(status)
+        var text: String
+        if let client = await makeClient() {
+            do {
+                text = BuddyCopy.statusMessage(try await action(client))
+            } catch {
+                text = SocialReasonCopy.failureMessage(for: error)
+            }
+        } else {
+            text = Copy.connectionFailure
         }
         // The answer is shown only with the state its own reload produced; a superseded reload drops it.
         if await load() { message = text }

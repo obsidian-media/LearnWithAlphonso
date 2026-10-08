@@ -11,6 +11,8 @@ import {
   type FriendEntry,
 } from "../../lib/friends.functions";
 import { useTheme } from "../../lib/theme";
+import { buddyBlockConfirm } from "../../lib/buddy";
+import { getMyBuddy } from "../../lib/buddy.functions";
 
 export const Route = createFileRoute("/_authenticated/profile_/friends")({
   component: FriendsPage,
@@ -28,6 +30,8 @@ export const Route = createFileRoute("/_authenticated/profile_/friends")({
 function FriendsPage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const queryClient = useQueryClient();
+  // Same cache entry as BuddyCard: blocking the current buddy from their friend row gets the buddy wording.
+  const myBuddy = useQuery({ queryKey: ["myBuddy"], queryFn: () => getMyBuddy(), retry: false });
   const { data: friendCode } = useQuery({
     queryKey: ["myFriendCode"],
     queryFn: () => getMyFriendCode(),
@@ -203,11 +207,17 @@ function FriendsPage() {
                     <SocialSafetyMenu
                       userId={f.userId}
                       displayName={f.displayName}
-                      onBlocked={() =>
+                      blockTitle={
+                        myBuddy.data?.buddyId === f.userId
+                          ? buddyBlockConfirm(f.displayName)
+                          : undefined
+                      }
+                      onBlocked={() => {
                         queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
                           (prev ?? []).filter((x) => x.userId !== f.userId),
-                        )
-                      }
+                        );
+                        void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
+                      }}
                     />
                   </>
                 )}

@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Display name + avatar-color editing (BACKLOG §0.0p). Own extension
 /// file, same merge-conflict-avoidance reasoning as
@@ -42,6 +45,26 @@ public func updateProfileDisplayName(_ displayName: String, userID: String) asyn
     request.httpBody = try JSONSerialization.data(withJSONObject: ["display_name": displayName])
     let (data, response) = try await requester(request)
     try Self.requireSuccess(data: data, response: response)
+}
+
+/// `confirm_display_name` (supabase/migrations/20261008130100_display_name_onboarding.sql): the validated way to set
+/// the public name. Stores the cleaned name (invisible characters stripped, spaces collapsed), stamps
+/// name_confirmed_at, and returns what was stored. A refused name throws ProgressSyncError.server with the code
+/// ("blocked-content" or "invalid-name") as the message; SocialReasonCopy.nameSaveMessage turns it into words.
+public func confirmDisplayName(_ name: String) async throws -> String {
+    var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/confirm_display_name"))
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue(anonKey, forHTTPHeaderField: "apikey")
+    request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+    request.httpBody = try JSONSerialization.data(withJSONObject: ["_name": name])
+    let (data, response) = try await requester(request)
+    try Self.requireSuccess(data: data, response: response)
+    // A scalar-returning RPC answers with a bare JSON string.
+    guard let stored = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]) as? String else {
+        throw ProgressSyncError.invalidPayload
+    }
+    return stored
 }
 
 public func updateProfileAvatarSeed(_ avatarSeed: String, userID: String) async throws {

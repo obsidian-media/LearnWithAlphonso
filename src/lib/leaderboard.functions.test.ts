@@ -85,20 +85,69 @@ describe("getLeaderboard", () => {
 });
 
 describe("updateProfile", () => {
-  it("updates only the caller's own profile row", async () => {
+  it("updates only the caller's own profile row for the other fields", async () => {
     const supabase = createSupabaseMock();
-    const updateChain = chainable({});
+    const updateChain = chainable({ data: null, error: null });
     supabase.from.mockReturnValueOnce(updateChain);
+    const result = await updateProfile({ context: ctx(supabase), data: { country: "FR" } });
+    expect(result).toEqual({ ok: true });
+    expect(supabase.rpc).not.toHaveBeenCalled();
+    expect(supabase.from).toHaveBeenCalledWith("profiles");
+    expect(updateChain.calls.find((c) => c.method === "update")?.args[0]).toEqual({
+      country: "FR",
+    });
+    expect(updateChain.calls.find((c) => c.method === "eq")?.args).toEqual(["id", USER_ID]);
+  });
+
+  it("sets the display name through confirm_display_name and maps a refusal", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { code: "P0001", message: "blocked-content" },
+    });
+    const result = await updateProfile({
+      context: ctx(supabase),
+      data: { display_name: "Bad Name" },
+    });
+    expect(supabase.rpc).toHaveBeenCalledWith("confirm_display_name", { _name: "Bad Name" });
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(result).toEqual({ ok: false, error: "blocked-content", part: "name" });
+  });
+
+  it("an accepted name is ok", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValueOnce({ data: "New Name", error: null });
     const result = await updateProfile({
       context: ctx(supabase),
       data: { display_name: "New Name" },
     });
     expect(result).toEqual({ ok: true });
-    expect(supabase.from).toHaveBeenCalledWith("profiles");
-    expect(updateChain.calls.find((c) => c.method === "update")?.args[0]).toEqual({
-      display_name: "New Name",
+  });
+
+  it("never reports success for a failed write", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: null, error: { code: "42501", message: "denied" } }),
+    );
+    expect(await updateProfile({ context: ctx(supabase), data: { country: "FR" } })).toEqual({
+      ok: false,
+      error: "server-error",
+      part: "details",
     });
-    expect(updateChain.calls.find((c) => c.method === "eq")?.args).toEqual(["id", USER_ID]);
+  });
+
+  it("says the name was saved when only the other fields failed", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValueOnce({ data: "New Name", error: null });
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: null, error: { code: "42501", message: "denied" } }),
+    );
+    expect(
+      await updateProfile({
+        context: ctx(supabase),
+        data: { display_name: "New Name", country: "FR" },
+      }),
+    ).toEqual({ ok: false, error: "server-error", part: "details" });
   });
 
   it("rejects a display name over the length limit", async () => {
@@ -110,7 +159,7 @@ describe("updateProfile", () => {
 
   it("accepts the canopy theme", async () => {
     const supabase = createSupabaseMock();
-    const updateChain = chainable({});
+    const updateChain = chainable({ data: null, error: null });
     supabase.from.mockReturnValueOnce(updateChain);
     const result = await updateProfile({
       context: ctx(supabase),

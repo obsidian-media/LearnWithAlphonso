@@ -88,6 +88,11 @@ export function buddyStatusMessage(status: string): string {
     : MESSAGES.unknown;
 }
 
+/** While matching is switched off, a matched-stranger pair cannot send presets; friend pairs always can. */
+export function buddyCanSendPresets(b: { isMatch: boolean; matchingEnabled: boolean }): boolean {
+  return !b.isMatch || b.matchingEnabled;
+}
+
 /** "You 2/3 · Buddy 3/3 this week"; counts above the goal show as the goal. */
 export function buddyWeekLine(myCount: number, buddyCount: number, goal: number): string {
   const cap = (n: number) => Math.min(n, goal);
@@ -139,6 +144,16 @@ export function buddyOutgoingLine(name: string): string {
 
 export function buddyEndConfirm(name: string): string {
   return `End being study buddies with ${name}? Your streak ends.`;
+}
+
+export function buddyBlockConfirm(name: string): string {
+  return `Block ${name}? Your study buddy pairing ends and you won't be matched again.`;
+}
+export function buddyBlockedLine(name: string): string {
+  return `You blocked ${name}. Your study buddy pairing has ended.`;
+}
+export function buddySafetyMenuLabel(name: string): string {
+  return `Block or report ${name}`;
 }
 
 /** Most preset messages one buddy may send per hour. Must equal the limit in 20261007100000_buddy_messages.sql. */

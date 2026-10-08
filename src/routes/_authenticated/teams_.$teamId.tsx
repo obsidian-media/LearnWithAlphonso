@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
+import { useState } from "react";
 import { getMyTeam, leaveTeam } from "../../lib/teams.functions";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
   component: TeamDetailPage,
@@ -21,11 +23,25 @@ function TeamDetailPage() {
     queryFn: () => getMyTeam(),
   });
 
+  const [notice, setNotice] = useState<string | null>(null);
+  const [left, setLeft] = useState(false);
+
   async function handleLeave() {
-    const result = await leaveTeam();
-    if (result.ok) {
+    setNotice(null);
+    setLeft(false);
+    try {
+      const result = await leaveTeam();
+      if (!result.ok) {
+        setNotice(socialReasonMessage(result.reason ?? "unknown-error"));
+        return;
+      }
+      setLeft(true);
       await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
-      navigate({ to: "/teams" });
+      // A plain leave goes back to the list; a hand-on or a close is said first.
+      if (result.reason) setNotice(socialReasonMessage(result.reason));
+      else navigate({ to: "/teams" });
+    } catch (e) {
+      setNotice(socialFailureMessage(e));
     }
   }
 
@@ -53,7 +69,17 @@ function TeamDetailPage() {
   if (!myTeam)
     return (
       <MobileFrame>
-        <p className="p-6 text-sm text-ink-soft">You're not on a team yet.</p>
+        {/* After leaving, the refetch finds no team: keep saying what happened to it. */}
+        {notice ? (
+          <div role="status" className="p-6 text-sm text-ink-soft">
+            <p>{notice}</p>
+            <Link to="/teams" className="underline">
+              Back to teams
+            </Link>
+          </div>
+        ) : (
+          <p className="p-6 text-sm text-ink-soft">You're not on a team yet.</p>
+        )}
       </MobileFrame>
     );
 
@@ -85,6 +111,17 @@ function TeamDetailPage() {
         >
           {locked ? "Can't leave yet (7-day lock)" : "Leave team"}
         </button>
+        {notice && (
+          <div role="status" className="mt-3 text-sm text-ink-soft">
+            <p>{notice}</p>
+            {/* Only after leaving: a refused leave keeps them a member, and /teams sends members back here. */}
+            {left && (
+              <Link to="/teams" className="underline">
+                Back to teams
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </MobileFrame>
   );

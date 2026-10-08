@@ -115,6 +115,11 @@ final class BuddyTests: XCTestCase {
         XCTAssertEqual(BuddyCopy.findButton(try XCTUnwrap(find["course"])), find["expected"])
         let waiting = try XCTUnwrap(copy["waitingLine"] as? [String: String])
         XCTAssertEqual(BuddyCopy.waitingLine(try XCTUnwrap(waiting["course"])), waiting["expected"])
+        for (key, f) in [("blockConfirm", BuddyCopy.blockConfirm), ("blockedLine", BuddyCopy.blockedLine),
+                         ("safetyMenuLabel", BuddyCopy.safetyMenuLabel)] as [(String, (String) -> String)] {
+            let pair = try XCTUnwrap(copy[key] as? [String: String], key)
+            XCTAssertEqual(f(try XCTUnwrap(pair["name"])), pair["expected"], key)
+        }
     }
 
     func testMyBuddyReadsIsMatchAndPoolDecodes() throws {
@@ -141,6 +146,22 @@ final class BuddyTests: XCTestCase {
             "paired_at": "2026-10-01T00:00:00+00:00", "week_start": "2026-10-05", "my_count": 2, "buddy_count": 3,
             "goal": 3, "streak_weeks": 4, "grace_available": false, "last_outcome": "grace",
         ]
+    }
+
+    func testMyBuddyReadsMatchingEnabledAndDecidesPresets() throws {
+        var row = buddyRow()
+        row["is_match"] = true
+        row["matching_enabled"] = false
+        let muted = try XCTUnwrap(MyBuddy(row: row))
+        XCTAssertFalse(muted.matchingEnabled)
+        XCTAssertFalse(muted.canSendPresets)
+        row["is_match"] = false
+        XCTAssertTrue(try XCTUnwrap(MyBuddy(row: row)).canSendPresets, "a friend pair is never muted")
+        row["is_match"] = true
+        row.removeValue(forKey: "matching_enabled")
+        XCTAssertTrue(try XCTUnwrap(MyBuddy(row: row)).matchingEnabled, "an older server sends no column: assume on")
+        XCTAssertEqual(BuddyCopy.statusMessage("matching_paused"),
+                       "Messages with matched learners are paused right now. Your progress is kept.")
     }
 
     func testMyBuddyDecodesTheRow() throws {

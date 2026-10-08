@@ -22,6 +22,19 @@ final class ProgressSyncClientTeamsTests: XCTestCase {
 
     // MARK: - Teams
 
+    func testGetTeamMembersReadsBlockedAndDefaultsToFalse() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [
+                ["user_id": "u2", "display_name": "Grace", "avatar_seed": "g",
+                 "joined_at": "2026-09-05T00:00:00.123456+00:00", "is_owner": false, "blocked": true],
+                ["user_id": "u3", "display_name": "Ada", "avatar_seed": "a",
+                 "joined_at": "2026-09-06T00:00:00.123456+00:00", "is_owner": false],
+            ])
+        }
+        let members = try await client.getTeamMembers()
+        XCTAssertEqual(members.map(\.isBlocked), [true, false], "an older server sends no blocked column")
+    }
+
     func testGetTeamLeaderboardDecodesRows() async throws {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: [["team_id": "t1", "name": "Swift Falcons", "weekly_xp": 420]])

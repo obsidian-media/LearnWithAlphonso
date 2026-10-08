@@ -269,9 +269,13 @@ struct DuelsView: View {
     private func loadAll() async {
         guard let client else { isLoading = false; return }
         isLoading = true
-        duels = (try? await client.fetchMyDuels()) ?? []
-        friends = (try? await client.fetchFriendsProgress()) ?? []
-        isLoading = false
+        defer { isLoading = false }
+        do {
+            duels = try await client.fetchMyDuels()
+            friends = try await client.fetchFriendsProgress()
+        } catch {
+            if !Task.isCancelled { errorMessage = SocialReasonCopy.failureMessage(for: error) }
+        }
     }
 
     private func respond(_ d: Duel, accept: Bool) async {
@@ -279,9 +283,9 @@ struct DuelsView: View {
         errorMessage = nil
         do {
             let result = try await client.respondToDuel(duelID: d.duelID, accept: accept)
-            if result.ok { await loadAll() } else { errorMessage = result.reason }
+            if result.ok { await loadAll() } else { errorMessage = SocialReasonCopy.message(for: result.reason ?? "unknown-error") }
         } catch {
-            errorMessage = "Check your connection and try again."
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
         }
     }
 
@@ -294,10 +298,10 @@ struct DuelsView: View {
                 challengeFriendID = ""
                 await loadAll()
             } else {
-                errorMessage = result.reason
+                errorMessage = SocialReasonCopy.message(for: result.reason ?? "unknown-error")
             }
         } catch {
-            errorMessage = "Check your connection and try again."
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
         }
     }
 
@@ -305,9 +309,9 @@ struct DuelsView: View {
         guard let client else { return }
         queueing = true
         errorMessage = nil
+        defer { queueing = false }
         do {
             let result = try await client.joinOpenDuelQueue(course: openCourse.rawValue, matchByLevel: matchByLevel)
-            queueing = false
             if result.matched {
                 waitingInQueue = false
                 await loadAll()
@@ -315,14 +319,17 @@ struct DuelsView: View {
                 waitingInQueue = true
             }
         } catch {
-            queueing = false
-            errorMessage = "Check your connection and try again."
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
         }
     }
 
     private func leaveQueue() async {
         guard let client else { return }
-        try? await client.leaveOpenDuelQueue()
-        waitingInQueue = false
+        do {
+            try await client.leaveOpenDuelQueue()
+            waitingInQueue = false
+        } catch {
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
+        }
     }
 }

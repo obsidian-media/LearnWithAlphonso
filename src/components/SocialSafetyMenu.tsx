@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { blockUser, reportUser } from "../lib/social-safety.functions";
+import { socialFailureMessage } from "../lib/social-reason-copy";
 
 const REPORT_REASONS = [
   { value: "spam", label: "Spam" },
@@ -25,10 +26,16 @@ export function SocialSafetyMenu({
   userId,
   displayName,
   onBlocked,
+  blockTitle,
+  menuLabel,
 }: {
   userId: string;
   displayName: string;
   onBlocked?: () => void;
+  /** The block dialog's title; defaults to "Block <name>?". */
+  blockTitle?: string;
+  /** The menu button's accessible name; defaults to "More options for <name>". */
+  menuLabel?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<"block" | "report" | null>(null);
@@ -39,7 +46,7 @@ export function SocialSafetyMenu({
       <button
         ref={buttonRef}
         type="button"
-        aria-label={`More options for ${displayName}`}
+        aria-label={menuLabel ?? `More options for ${displayName}`}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
@@ -96,11 +103,19 @@ export function SocialSafetyMenu({
       {dialog === "block" && (
         <BlockConfirmDialog
           displayName={displayName}
+          title={blockTitle}
           onCancel={() => setDialog(null)}
           onConfirm={async () => {
-            await blockUser({ data: { userId } });
+            // Only a block the server accepted counts: a failure keeps the dialog open and says why.
+            try {
+              const result = await blockUser({ data: { userId } });
+              if (!result.ok) return `Couldn't block ${displayName}. Try again.`;
+            } catch (e) {
+              return socialFailureMessage(e);
+            }
             setDialog(null);
             onBlocked?.();
+            return null;
           }}
         />
       )}
@@ -143,21 +158,30 @@ function DialogFrame({
 
 function BlockConfirmDialog({
   displayName,
+  title,
   onCancel,
   onConfirm,
 }: {
   displayName: string;
+  title?: string;
   onCancel: () => void;
-  onConfirm: () => Promise<void>;
+  /** Resolves to null on success, or the words to show when the block failed. */
+  onConfirm: () => Promise<string | null>;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   return (
-    <DialogFrame title={`Block ${displayName}?`} onClose={onCancel}>
+    <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
       <p className="mb-4 text-sm text-ink-soft">
         {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
-        see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you
+        see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you
         need help with this.
       </p>
+      {error && (
+        <p role="alert" className="mb-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
       <div className="flex justify-end gap-2">
         <button
           type="button"
@@ -171,7 +195,12 @@ function BlockConfirmDialog({
           disabled={isSubmitting}
           onClick={async () => {
             setIsSubmitting(true);
-            await onConfirm();
+            setError(null);
+            const failure = await onConfirm();
+            if (failure) {
+              setError(failure);
+              setIsSubmitting(false);
+            }
           }}
           className="rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
@@ -200,7 +229,7 @@ function ReportDialog({
       <DialogFrame title="Report submitted" onClose={onClose}>
         <p className="text-sm text-ink-soft">
           Thanks for letting us know. Our team reviews every report. If you need to follow up,
-          contact report@alphonsoecosystem.app.
+          contact support@alphonsoecosystem.app.
         </p>
         <div className="mt-4 flex justify-end">
           <button

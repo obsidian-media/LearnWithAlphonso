@@ -41,6 +41,8 @@ suspend fun ProgressSyncClient.getMyBuddy(): MyBuddy? {
         },
         // A server without matching sends no is_match: a friend pair.
         isMatch = row.bool("is_match") ?: false,
+        // A server without the column means matching is on.
+        matchingEnabled = row.bool("matching_enabled") ?: true,
     )
 }
 

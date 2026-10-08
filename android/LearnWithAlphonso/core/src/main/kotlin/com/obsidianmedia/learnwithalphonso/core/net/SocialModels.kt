@@ -49,7 +49,15 @@ data class MyTeam(
     val isOwner: Boolean,
 )
 
-data class TeamMember(val userId: String, val displayName: String, val avatarSeed: String, val joinedAtMillis: Long, val isOwner: Boolean)
+/** [isBlocked] is only ever true in the owner's list: members the owner blocked, shown so they can be removed. */
+data class TeamMember(
+    val userId: String,
+    val displayName: String,
+    val avatarSeed: String,
+    val joinedAtMillis: Long,
+    val isOwner: Boolean,
+    val isBlocked: Boolean = false,
+)
 
 data class SeasonLastWeekResult(val division: Int, val rankInCohort: Int, val cohortSize: Int)
 

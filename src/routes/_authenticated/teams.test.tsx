@@ -120,7 +120,39 @@ describe("Teams page", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
 
-    expect(await screen.findByText("invalid-code")).toBeInTheDocument();
+    expect(
+      await screen.findByText("That code doesn't match a team. Check it and try again."),
+    ).toBeInTheDocument();
+  });
+
+  it("says the connection failed when joining throws", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    joinTeamByCode.mockRejectedValue(new TypeError("fetch failed"));
+    renderPage();
+
+    fireEvent.change(await screen.findByPlaceholderText("Join code"), {
+      target: { value: "BADCODE" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
+
+    expect(
+      await screen.findByText("Couldn't reach the server. Check your connection and try again."),
+    ).toBeInTheDocument();
+  });
+
+  it("asks to sign in again, not to check the connection, when the session was rejected", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    joinTeamByCode.mockRejectedValue(new Error("Unauthorized: Invalid token"));
+    renderPage();
+
+    fireEvent.change(await screen.findByPlaceholderText("Join code"), {
+      target: { value: "BADCODE" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
+
+    expect(await screen.findByText("Sign in again to continue.")).toBeInTheDocument();
   });
 
   it("auto-joins a team and navigates to its detail route", async () => {
@@ -172,6 +204,6 @@ describe("Teams page", () => {
     fireEvent.change(await screen.findByPlaceholderText("Team name"), { target: { value: "x" } });
     fireEvent.click(screen.getByRole("button", { name: "Create team" }));
 
-    expect(await screen.findByText("invalid-name")).toBeInTheDocument();
+    expect(await screen.findByText("That name is too short or too long.")).toBeInTheDocument();
   });
 });

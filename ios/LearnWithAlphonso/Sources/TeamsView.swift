@@ -82,6 +82,12 @@ struct TeamsView: View {
                                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                                     .foregroundStyle(AlphonsoColor.ember)
                             }
+                            if member.isBlocked {
+                                // Only the owner's list contains blocked members; shown so they can be removed.
+                                Text("Blocked")
+                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                                    .foregroundStyle(AlphonsoColor.destructive)
+                            }
                             Spacer()
                             if myTeam.isOwner && !member.isOwner {
                                 Button(role: .destructive) {
@@ -95,7 +101,7 @@ struct TeamsView: View {
                                 // fires both.
                                 .buttonStyle(.borderless)
                             }
-                            if member.userID != session.userID {
+                            if member.userID != session.userID && !member.isBlocked {
                                 SocialSafetyMenu(
                                     onBlock: { blockTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
                                     onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) }
@@ -222,16 +228,21 @@ struct TeamsView: View {
         }
     }
 
-    /// Blocking hides the person everywhere else but can't remove them from
-    /// a shared team (membership is the owner's call), so this says so
-    /// rather than implying they're gone from this list.
+    /// Blocking hides the person from a member's team list; the owner still sees them, marked Blocked, to remove them.
     private func block(_ target: SocialTarget) async {
-        guard let client else { return }
+        guard let client else { errorMessage = SocialReasonCopy.message(for: "unauthenticated"); return }
         errorMessage = nil
-        let result = try? await client.blockUser(target.id)
-        errorMessage = result?.ok == true
-            ? "\(target.displayName) is blocked. They can't friend you or challenge you to a duel. Leave the team if you don't want to share it with them."
-            : "Couldn't block \(target.displayName). Try again."
+        do {
+            let result = try await client.blockUser(target.id)
+            if result.ok {
+                await loadAll()
+                errorMessage = SocialReasonCopy.teamBlockedLine(target.displayName, viewerIsOwner: myTeam?.isOwner == true)
+            } else {
+                errorMessage = "Couldn't block \(target.displayName). Try again."
+            }
+        } catch {
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
+        }
     }
 
     private var client: ProgressSyncClient? {
@@ -247,6 +258,7 @@ struct TeamsView: View {
         var team = myTeam
         var failed = loadFailed
         var lookupSucceeded = false
+        var partialError: Error?
         do {
             team = try await client.getMyTeam()
             failed = false
@@ -255,74 +267,71 @@ struct TeamsView: View {
             // A cancelled load (the view went away or reloaded) is not a failure; a failed refresh keeps the loaded team.
             if !Task.isCancelled { failed = team == nil }
         }
-        let newMembers: [TeamMember]
-        if !lookupSucceeded {
-            newMembers = members // keep the members with a kept team
-        } else if team != nil {
-            newMembers = (try? await client.getTeamMembers()) ?? []
-        } else {
-            newMembers = []
+        var newMembers = members // kept when the lookup or the member read fails
+        if lookupSucceeded {
+            if team == nil {
+                newMembers = []
+            } else {
+                do { newMembers = try await client.getTeamMembers() } catch { partialError = error }
+            }
         }
-        let board = (try? await client.getTeamLeaderboard()) ?? []
+        var board = leaderboard
+        do { board = try await client.getTeamLeaderboard() } catch { partialError = error }
         guard generation == loadGeneration else { return }
         myTeam = team
         loadFailed = failed
         members = newMembers
         leaderboard = board
         isLoading = false
+        if let partialError, !Task.isCancelled { errorMessage = SocialReasonCopy.failureMessage(for: partialError) }
+    }
+
+    /// One team RPC: a refusal shows the server's reason in words, a thrown error shows what actually failed.
+    private func perform(_ action: (ProgressSyncClient) async throws -> (ok: Bool, reason: String?)) async -> (ok: Bool, reason: String?)? {
+        guard let client else { errorMessage = SocialReasonCopy.message(for: "unauthenticated"); return nil }
+        errorMessage = nil
+        do {
+            let result = try await action(client)
+            if !result.ok { errorMessage = SocialReasonCopy.message(for: result.reason ?? "unknown-error") }
+            return result
+        } catch {
+            errorMessage = SocialReasonCopy.failureMessage(for: error)
+            return nil
+        }
     }
 
     private func kick(_ member: TeamMember) async {
-        guard let client else { return }
-        errorMessage = nil
-        let result = try? await client.kickTeamMember(userID: member.userID)
-        if result?.ok == true {
-            // Drop them now: if the reload fails, the kept member list would still show the removed member.
-            members.removeAll { $0.userID == member.userID }
-            await loadAll()
-        } else {
-            errorMessage = result?.reason
-        }
+        guard await perform({ try await $0.kickTeamMember(userID: member.userID) })?.ok == true else { return }
+        // Drop them now: if the reload fails, the kept member list would still show the removed member.
+        members.removeAll { $0.userID == member.userID }
+        await loadAll()
     }
 
     private func joinByCode() async {
-        guard let client else { return }
-        errorMessage = nil
-        let result = try? await client.joinTeamByCode(code)
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        guard await perform({ let r = try await $0.joinTeamByCode(code); return (r.ok, r.reason) })?.ok == true else { return }
+        await loadAll()
     }
 
     private func autoJoin() async {
-        guard let client else { return }
-        errorMessage = nil
-        let result = try? await client.autoJoinTeam()
-        if result?.ok == true { await loadAll() } else { errorMessage = result?.reason }
+        guard await perform({ let r = try await $0.autoJoinTeam(); return (r.ok, r.reason) })?.ok == true else { return }
+        await loadAll()
     }
 
     private func createTeam() async {
-        guard let client else { return }
-        errorMessage = nil
         let name = newTeamName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let result = try? await client.createTeam(name: name, visibility: newTeamVisibility)
-        if result?.ok == true {
-            newTeamName = ""
-            await loadAll()
-        } else {
-            errorMessage = result?.reason
-        }
+        guard await perform({ let r = try await $0.createTeam(name: name, visibility: newTeamVisibility); return (r.ok, r.reason) })?.ok == true
+        else { return }
+        newTeamName = ""
+        await loadAll()
     }
 
     private func leave() async {
-        guard let client else { return }
-        errorMessage = nil
-        let result = try? await client.leaveTeam()
-        if result?.ok == true {
-            // Clear first: if the reload below fails, a kept stale team would show the team the user just left.
-            myTeam = nil
-            members = []
-            await loadAll()
-        } else {
-            errorMessage = result?.reason
-        }
+        guard let result = await perform({ try await $0.leaveTeam() }), result.ok else { return }
+        // Clear first: if the reload below fails, a kept stale team would show the team the user just left.
+        myTeam = nil
+        members = []
+        await loadAll()
+        // ownership-transferred / team-disbanded are successes that still need saying.
+        if let reason = result.reason { errorMessage = SocialReasonCopy.message(for: reason) }
     }
 }

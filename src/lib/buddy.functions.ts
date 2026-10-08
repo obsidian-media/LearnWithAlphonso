@@ -22,6 +22,8 @@ export type MyBuddy = {
   lastOutcome: string | null;
   /** Paired through opt-in matching (not a friend): the card offers block and report. */
   isMatch: boolean;
+  /** The live matching switch. A matched pair cannot send presets while it is off. */
+  matchingEnabled: boolean;
 } | null;
 
 export type BuddyRequest = {
@@ -60,6 +62,7 @@ export const getMyBuddy = createServerFn({ method: "GET" })
       graceAvailable: r.grace_available,
       lastOutcome: r.last_outcome ?? null,
       isMatch: r.is_match === true,
+      matchingEnabled: r.matching_enabled !== false,
     };
   });
 

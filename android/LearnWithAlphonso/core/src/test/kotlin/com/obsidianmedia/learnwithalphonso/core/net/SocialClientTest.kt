@@ -139,6 +139,17 @@ class SocialClientTest {
     }
 
     @Test
+    fun `team members read blocked and default it to false`() = runTest {
+        val fake = FakeSupabase {
+            json(
+                """[{"user_id":"u2","display_name":"Grace","avatar_seed":"g","joined_at":"2026-09-05T00:00:00+00:00","is_owner":false,"blocked":true},""" +
+                    """{"user_id":"u3","display_name":"Ada","avatar_seed":"a","joined_at":"2026-09-06T00:00:00+00:00","is_owner":false}]""",
+            )
+        }
+        assertEquals(listOf(true, false), client(fake).getTeamMembers().map { it.isBlocked })
+    }
+
+    @Test
     fun `team members leaderboard join create kick leave`() = runTest {
         val fake = FakeSupabase { req ->
             when {

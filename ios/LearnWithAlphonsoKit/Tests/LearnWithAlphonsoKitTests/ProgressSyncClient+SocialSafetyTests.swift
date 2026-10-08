@@ -125,7 +125,9 @@ final class ProgressSyncClientSocialSafetyTests: XCTestCase {
         XCTAssertTrue(insert.url!.absoluteString.hasSuffix("/rest/v1/content_reports"))
         let body = try JSONSerialization.jsonObject(with: XCTUnwrap(insert.httpBody)) as! [String: Any]
         XCTAssertEqual(body["reported"] as? String, "creator-1")
-        XCTAssertEqual(body["reason"] as? String, "team_name:team-9:harassment")
+        XCTAssertEqual(body["reason"] as? String, "harassment")
+        XCTAssertEqual(body["kind"] as? String, "team_name")
+        XCTAssertEqual((body["context"] as? [String: Any])?["team_id"] as? String, "team-9")
     }
 
     func testReportTeamNameFilesNothingWhenTheTeamHasNoCreator() async throws {

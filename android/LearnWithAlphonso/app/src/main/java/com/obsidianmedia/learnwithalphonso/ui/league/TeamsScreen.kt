@@ -106,6 +106,8 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(m.displayName, color = palette.ink, modifier = Modifier.weight(1f))
                             if (m.isOwner) Text("Owner", style = MaterialTheme.typography.labelSmall, color = palette.ember, fontWeight = FontWeight.SemiBold)
+                            // Only the owner's list contains blocked members; shown so they can be removed.
+                            if (m.isBlocked) Text("Blocked", style = MaterialTheme.typography.labelSmall, color = palette.destructive, fontWeight = FontWeight.SemiBold)
                             if (team.isOwner && !m.isOwner) TextButton(onClick = { vm.kick(m) }) { Text("Remove", color = palette.destructive) }
                         }
                     }

@@ -146,7 +146,7 @@ struct ReportSheet: View {
             Text("Report submitted")
                 .font(AlphonsoFont.display(18, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
-            Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact report@alphonsoecosystem.app.")
+            Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)
                 .multilineTextAlignment(.center)
@@ -187,6 +187,9 @@ struct ReportSheet: View {
 struct SocialSafetyMenu: View {
     let onBlock: () -> Void
     let onReport: () -> Void
+    /// The person the menu acts on. When set, VoiceOver reads "Block or report <name>"; the other call sites keep
+    /// the generic label.
+    var accessibilityName: String? = nil
 
     var body: some View {
         Menu {
@@ -200,15 +203,16 @@ struct SocialSafetyMenu: View {
             Image(systemName: "ellipsis.circle")
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
+        .accessibilityLabel(accessibilityName.map(BuddyCopy.safetyMenuLabel) ?? "More options")
     }
 }
 
 /// Shared block confirmation -- one line of copy every surface uses
 /// verbatim, so the "does not delete/report anything, only blocks"
-/// scope and the report@alphonsoecosystem.app contact stay consistent
+/// scope and the support@alphonsoecosystem.app contact stay consistent
 /// wherever this is shown.
 enum SocialSafetyCopy {
     static func blockConfirmationMessage(_ displayName: String) -> String {
-        "\(displayName) won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you need help with this."
+        "\(displayName) won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you need help with this."
     }
 }

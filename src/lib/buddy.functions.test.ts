@@ -96,7 +96,18 @@ describe("getMyBuddy", () => {
       graceAvailable: false,
       lastOutcome: "grace",
       isMatch: true,
+      matchingEnabled: true,
     });
+  });
+
+  it("maps matching_enabled, and treats a missing column as on", async () => {
+    const row = { pair_id: "p1", buddy_id: "u2", buddy_name: "Bo", is_match: true };
+    const off = await getMyBuddy({
+      context: ctx(rpcReturning([{ ...row, matching_enabled: false }])),
+    });
+    expect(off?.matchingEnabled).toBe(false);
+    const missing = await getMyBuddy({ context: ctx(rpcReturning([row])) });
+    expect(missing?.matchingEnabled).toBe(true);
   });
 });
 
