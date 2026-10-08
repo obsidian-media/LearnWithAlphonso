@@ -69,4 +69,11 @@ final class SocialReasonCopyTests: XCTestCase {
         XCTAssertEqual(SocialReasonCopy.nameSaveMessage(for: ProgressSyncError.server(status: 401, message: nil)), signIn)
         XCTAssertEqual(SocialReasonCopy.nameSaveMessage(for: ProgressSyncError.server(status: 401, message: "JWT expired")), signIn)
     }
+
+    func testTeamBlockedLineMatchesWhatEachViewerSees() {
+        XCTAssertEqual(SocialReasonCopy.teamBlockedLine("Bo", viewerIsOwner: false),
+                       "Bo is blocked. They won't appear in your team list, and they can't friend you or challenge you to a duel.")
+        XCTAssertEqual(SocialReasonCopy.teamBlockedLine("Bo", viewerIsOwner: true),
+                       "Bo is blocked. They stay in your team list, shown as Blocked, so you can remove them. They can't friend you or challenge you to a duel.")
+    }
 }

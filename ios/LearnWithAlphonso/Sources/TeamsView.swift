@@ -228,10 +228,7 @@ struct TeamsView: View {
         }
     }
 
-    /// Blocking hides the person everywhere else but can't remove them from
-    /// a shared team (membership is the owner's call), so this says so
-    /// rather than implying they're gone from this list.
-    /// Blocking hides the person from this list too (get_team_members filters blocks both ways).
+    /// Blocking hides the person from a member's team list; the owner still sees them, marked Blocked, to remove them.
     private func block(_ target: SocialTarget) async {
         guard let client else { errorMessage = SocialReasonCopy.message(for: "unauthenticated"); return }
         errorMessage = nil
@@ -239,7 +236,7 @@ struct TeamsView: View {
             let result = try await client.blockUser(target.id)
             if result.ok {
                 await loadAll()
-                errorMessage = "\(target.displayName) is blocked. They won't appear in your team list, and they can't friend you or challenge you to a duel."
+                errorMessage = SocialReasonCopy.teamBlockedLine(target.displayName, viewerIsOwner: myTeam?.isOwner == true)
             } else {
                 errorMessage = "Couldn't block \(target.displayName). Try again."
             }

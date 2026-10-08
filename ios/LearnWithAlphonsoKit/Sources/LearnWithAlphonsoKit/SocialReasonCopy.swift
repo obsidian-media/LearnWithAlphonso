@@ -62,6 +62,14 @@ public enum SocialReasonCopy {
         }
     }
 
+    /// The line after blocking a teammate. get_team_members hides a blocked member from everyone except the
+    /// team owner, who still sees them (marked Blocked) so they can remove them.
+    public static func teamBlockedLine(_ name: String, viewerIsOwner: Bool) -> String {
+        viewerIsOwner
+            ? "\(name) is blocked. They stay in your team list, shown as Blocked, so you can remove them. They can't friend you or challenge you to a duel."
+            : "\(name) is blocked. They won't appear in your team list, and they can't friend you or challenge you to a duel."
+    }
+
     /// Copy for a failed display-name save (confirm_display_name raises P0001 with the code as the message; a
     /// direct PATCH raises 23514 "blocked-content" or the length CHECK).
     public static func nameSaveMessage(for error: Error) -> String {
