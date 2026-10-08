@@ -24,15 +24,18 @@ function TeamDetailPage() {
   });
 
   const [notice, setNotice] = useState<string | null>(null);
+  const [left, setLeft] = useState(false);
 
   async function handleLeave() {
     setNotice(null);
+    setLeft(false);
     try {
       const result = await leaveTeam();
       if (!result.ok) {
         setNotice(socialReasonMessage(result.reason ?? "unknown-error"));
         return;
       }
+      setLeft(true);
       await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
       // A plain leave goes back to the list; a hand-on or a close is said first.
       if (result.reason) setNotice(socialReasonMessage(result.reason));
@@ -111,9 +114,12 @@ function TeamDetailPage() {
         {notice && (
           <div role="status" className="mt-3 text-sm text-ink-soft">
             <p>{notice}</p>
-            <Link to="/teams" className="underline">
-              Back to teams
-            </Link>
+            {/* Only after leaving: a refused leave keeps them a member, and /teams sends members back here. */}
+            {left && (
+              <Link to="/teams" className="underline">
+                Back to teams
+              </Link>
+            )}
           </div>
         )}
       </div>

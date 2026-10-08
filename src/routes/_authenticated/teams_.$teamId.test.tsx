@@ -177,6 +177,8 @@ describe("Team detail page", () => {
     expect(
       await screen.findByText("You can't join or leave a team for a few days. Try again later."),
     ).toBeInTheDocument();
+    // Still a member: /teams would send them straight back here.
+    expect(screen.queryByText("Back to teams")).toBeNull();
   });
 
   it("says it could not load the team, not 'not on a team', when the request fails", async () => {
