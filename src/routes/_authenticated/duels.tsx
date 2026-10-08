@@ -5,7 +5,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";
-import { socialReasonMessage } from "../../lib/social-reason-copy";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/duels")({
   component: DuelsPage,
@@ -58,8 +58,8 @@ function DuelsPage() {
         return;
       }
       await refetchDuels();
-    } catch {
-      setError(socialReasonMessage(null));
+    } catch (e) {
+      setError(socialFailureMessage(e));
     }
   }
 
@@ -76,8 +76,8 @@ function DuelsPage() {
       }
       setChallengeFriendId("");
       await refetchDuels();
-    } catch {
-      setError(socialReasonMessage(null));
+    } catch (e) {
+      setError(socialFailureMessage(e));
     }
   }
 

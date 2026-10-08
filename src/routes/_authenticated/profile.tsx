@@ -9,7 +9,11 @@ import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
-import { SOCIAL_COPY, socialReasonMessage } from "../../lib/social-reason-copy";
+import {
+  SOCIAL_COPY,
+  socialFailureMessage,
+  socialReasonMessage,
+} from "../../lib/social-reason-copy";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,8 +79,8 @@ function ProfilePage() {
         );
       }
       await qc.invalidateQueries({ queryKey: ["me"] });
-    } catch {
-      setNameError(socialReasonMessage(null));
+    } catch (e) {
+      setNameError(socialFailureMessage(e));
     } finally {
       setSaving(false);
     }

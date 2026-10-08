@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import fixtures from "./social-reason.fixtures.json";
 import { COPY } from "./copy";
-import { socialReasonMessage } from "./social-reason-copy";
+import { socialFailureMessage, socialReasonMessage } from "./social-reason-copy";
 
 const DIR = path.join(process.cwd(), "supabase", "migrations");
 const REASONS = fixtures.reasons as Record<string, string>;
@@ -94,6 +94,15 @@ describe("social reason copy", () => {
     expect(socialReasonMessage(undefined)).toBe(COPY.connectionFailure);
     expect(socialReasonMessage("something-new")).toBe(fixtures.generic);
     expect(socialReasonMessage("blocked-content")).toBe(COPY.nameNotAllowed);
+  });
+
+  it("a thrown call is a connection failure only when the network failed", () => {
+    expect(socialFailureMessage(new TypeError("Failed to fetch"))).toBe(fixtures.connection);
+    expect(socialFailureMessage(new Error("Unauthorized: Invalid token"))).toBe(
+      REASONS["unauthenticated"],
+    );
+    expect(socialFailureMessage(new Error("Internal Server Error"))).toBe(fixtures.generic);
+    expect(socialFailureMessage("odd")).toBe(fixtures.generic);
   });
 
   it("shares its strings with the master copy constants and has no literal --", () => {

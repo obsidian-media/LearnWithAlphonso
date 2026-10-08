@@ -10,7 +10,7 @@ import {
   autoJoinTeam,
   createTeam,
 } from "../../lib/teams.functions";
-import { socialReasonMessage } from "../../lib/social-reason-copy";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/teams")({
   component: TeamsPage,
@@ -84,8 +84,8 @@ function TeamsPage() {
       }
       await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
-    } catch {
-      setError(socialReasonMessage(null));
+    } catch (e) {
+      setError(socialFailureMessage(e));
     } finally {
       setBusy(false);
     }
@@ -102,8 +102,8 @@ function TeamsPage() {
       }
       await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
-    } catch {
-      setError(socialReasonMessage(null));
+    } catch (e) {
+      setError(socialFailureMessage(e));
     } finally {
       setBusy(false);
     }
@@ -120,8 +120,8 @@ function TeamsPage() {
       }
       await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
-    } catch {
-      setError(socialReasonMessage(null));
+    } catch (e) {
+      setError(socialFailureMessage(e));
     } finally {
       setBusy(false);
     }

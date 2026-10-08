@@ -166,6 +166,22 @@ describe("Duels page", () => {
     ).toBeInTheDocument();
   });
 
+  it("a server failure on a challenge is generic, not a connection problem", async () => {
+    getMyDuels.mockResolvedValue([]);
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "a", streak: 1, weekXp: 10 },
+    ]);
+    createDuel.mockRejectedValue(new Error("Internal Server Error"));
+    renderPage();
+
+    const select = await screen.findByDisplayValue("Choose a friend…");
+    await screen.findByRole("option", { name: "Ada" });
+    fireEvent.change(select, { target: { value: "f1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send challenge" }));
+
+    expect(await screen.findByText("Something went wrong. Try again.")).toBeInTheDocument();
+  });
+
   it("shows a waiting state when the open queue doesn't find an immediate match", async () => {
     getMyDuels.mockResolvedValue([]);
     joinOpenDuelQueue.mockResolvedValue({ matched: false, duelId: null });

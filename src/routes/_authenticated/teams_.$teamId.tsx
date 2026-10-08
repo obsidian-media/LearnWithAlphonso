@@ -4,7 +4,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { useState } from "react";
 import { getMyTeam, leaveTeam } from "../../lib/teams.functions";
-import { socialReasonMessage } from "../../lib/social-reason-copy";
+import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 
 export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
   component: TeamDetailPage,
@@ -37,8 +37,8 @@ function TeamDetailPage() {
       // A plain leave goes back to the list; a hand-on or a close is said first.
       if (result.reason) setNotice(socialReasonMessage(result.reason));
       else navigate({ to: "/teams" });
-    } catch {
-      setNotice(socialReasonMessage(null));
+    } catch (e) {
+      setNotice(socialFailureMessage(e));
     }
   }
 

@@ -141,6 +141,20 @@ describe("Teams page", () => {
     ).toBeInTheDocument();
   });
 
+  it("asks to sign in again, not to check the connection, when the session was rejected", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    joinTeamByCode.mockRejectedValue(new Error("Unauthorized: Invalid token"));
+    renderPage();
+
+    fireEvent.change(await screen.findByPlaceholderText("Join code"), {
+      target: { value: "BADCODE" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Join by code" }));
+
+    expect(await screen.findByText("Sign in again to continue.")).toBeInTheDocument();
+  });
+
   it("auto-joins a team and navigates to its detail route", async () => {
     getMyTeam.mockResolvedValue(null);
     getTeamLeaderboard.mockResolvedValue([]);
