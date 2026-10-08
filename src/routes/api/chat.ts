@@ -140,6 +140,12 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     return { ok: true as const, content: data.choices?.[0]?.message?.content ?? "" };
   });
   if (!llm.ok) return llm.failure;
+  // An empty completion is an upstream failure, not a reply. It used to return 200 with "" and the clients
+  // rendered an ellipsis as the partner's turn. 502 lets each client retry once.
+  if (!llm.content.trim()) {
+    console.warn(JSON.stringify({ event: "chat_empty_reply", model }));
+    return Response.json({ error: "empty-reply" }, { status: 502 });
+  }
   // The fallback language and the output mask follow the persona the server matched, never a client field.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const safe = await filterModelOutput(llm.content, {
