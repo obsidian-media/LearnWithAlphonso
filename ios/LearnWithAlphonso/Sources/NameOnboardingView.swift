@@ -119,18 +119,22 @@ struct NameOnboardingView: View {
         }
     }
 
+    /// Skip never traps the learner: whether or not the server could record it, the prompt closes. A failure
+    /// stamps nothing, so the prompt returns next launch (DisplayNameOnboarding.resolveSkip).
     private func skip() async {
         guard state.canSkip, state.beginSubmit() else { return }
-        guard let client = await makeClient() else {
-            state.submitFailed(ProgressSyncError.server(status: 401, message: "unauthenticated"))
-            return
+        let outcome: Result<String, Error>
+        if let client = await makeClient() {
+            do {
+                outcome = .success(try await client.skipDisplayNamePrompt())
+            } catch {
+                outcome = .failure(error)
+            }
+        } else {
+            outcome = .failure(ProgressSyncError.server(status: 401, message: "unauthenticated"))
         }
-        do {
-            _ = try await client.skipDisplayNamePrompt()
-            state.submitSucceeded()
-            onFinish()
-        } catch {
-            state.submitFailed(error)
-        }
+        _ = DisplayNameOnboarding.resolveSkip(outcome)
+        state.submitSucceeded()
+        onFinish()
     }
 }

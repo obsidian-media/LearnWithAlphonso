@@ -38,6 +38,17 @@ final class ProgressSyncClientNameOnboardingTests: XCTestCase {
         XCTAssertEqual(status?.needsPrompt, false)
     }
 
+    func testAnUnparseableConfirmationTimestampStillCountsAsConfirmed() async throws {
+        // Confirmed is decided by the column holding a value, not by this client understanding its format:
+        // a format change must never send a learner who already chose a name back to the prompt.
+        let client = makeClient { request in
+            self.reply(request, #"[{"display_name":"Ana","name_confirmed_at":"not a timestamp"}]"#)
+        }
+        let status = try await client.fetchNameStatus()
+        XCTAssertEqual(status?.needsPrompt, false)
+        XCTAssertNil(status?.nameConfirmedAt)
+    }
+
     func testNoProfileRowIsNil() async throws {
         let client = makeClient { request in self.reply(request, "[]") }
         let status = try await client.fetchNameStatus()

@@ -8,12 +8,16 @@ import FoundationNetworking
 /// depend on profiles' SELECT policy.
 public struct NameStatus: Sendable, Equatable {
     public let displayName: String
+    /// Parsed for display only. Whether the name is confirmed is `nameConfirmed`, decided by the column holding
+    /// a value, so an unfamiliar timestamp format never sends a learner back to the prompt.
     public let nameConfirmedAt: Date?
-    public var needsPrompt: Bool { DisplayNameOnboarding.needsPrompt(nameConfirmedAt: nameConfirmedAt) }
+    public let nameConfirmed: Bool
+    public var needsPrompt: Bool { !nameConfirmed }
 
-    public init(displayName: String, nameConfirmedAt: Date?) {
+    public init(displayName: String, nameConfirmedAt: Date?, nameConfirmed: Bool? = nil) {
         self.displayName = displayName
         self.nameConfirmedAt = nameConfirmedAt
+        self.nameConfirmed = nameConfirmed ?? (nameConfirmedAt != nil)
     }
 }
 
@@ -39,8 +43,12 @@ public func fetchNameStatus() async throws -> NameStatus? {
         throw ProgressSyncError.invalidPayload
     }
     guard let row = rows.first, let displayName = row["display_name"] as? String else { return nil }
-    let confirmedAt = (row["name_confirmed_at"] as? String).flatMap { Self.parsePostgresTimestamp($0) }
-    return NameStatus(displayName: displayName, nameConfirmedAt: confirmedAt)
+    let rawConfirmedAt = row["name_confirmed_at"] as? String
+    return NameStatus(
+        displayName: displayName,
+        nameConfirmedAt: rawConfirmedAt.flatMap { Self.parsePostgresTimestamp($0) },
+        nameConfirmed: rawConfirmedAt != nil
+    )
 }
 
 /// The server filter's verdict without saving: nil (allowed), "invalid-name" or "blocked-content".

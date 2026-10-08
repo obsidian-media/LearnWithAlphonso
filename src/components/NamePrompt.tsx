@@ -115,6 +115,10 @@ export function NamePrompt() {
     }
   }
 
+  /**
+   * Skip never traps the learner: if the server could not record it, the prompt still closes. Nothing was
+   * stamped, so it asks again on the next visit.
+   */
   async function skip() {
     if (busy) return;
     setBusy(true);
@@ -122,16 +126,41 @@ export function NamePrompt() {
     try {
       const result = await skipName();
       if (result.ok) await finish();
-      else setError(SOCIAL_COPY.nameSaveFailed);
+      else setClosed(true);
     } catch {
-      setError(socialReasonMessage(null));
+      setClosed(true);
     } finally {
       setBusy(false);
     }
   }
 
+  /** Keeps Tab and Shift+Tab inside the dialog while it is open. */
+  function trapTab(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "Tab") return;
+    const focusable = Array.from(
+      e.currentTarget.querySelectorAll<HTMLElement>(
+        "input:not([disabled]), button:not([disabled])",
+      ),
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || !e.currentTarget.contains(active))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && (active === last || !e.currentTarget.contains(active))) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 px-4">
+    <div
+      role="presentation"
+      className="fixed inset-0 z-50 grid place-items-center bg-ink/40 px-4"
+      onKeyDown={trapTab}
+    >
       <div
         role="dialog"
         aria-modal="true"

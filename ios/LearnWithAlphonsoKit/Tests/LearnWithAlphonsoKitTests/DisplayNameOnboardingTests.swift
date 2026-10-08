@@ -123,6 +123,16 @@ final class DisplayNameOnboardingTests: XCTestCase {
         XCTAssertTrue(state.canSave, "the learner can try again")
     }
 
+    func testASkipThatFailsStillLetsTheLearnerContinue() {
+        // A name prompt that cannot be left is a trap (App Review 5.1.1): whatever the server answers to Skip,
+        // the prompt closes. Nothing is stamped on failure, so it returns next launch.
+        XCTAssertEqual(DisplayNameOnboarding.resolveSkip(.success("Learner-9C0D")), .saved("Learner-9C0D"))
+        XCTAssertEqual(DisplayNameOnboarding.resolveSkip(.failure(URLError(.notConnectedToInternet))), .deferred)
+        XCTAssertEqual(DisplayNameOnboarding.resolveSkip(.failure(ProgressSyncError.server(status: 500, message: nil))), .deferred)
+        XCTAssertTrue(DisplayNameOnboarding.resolveSkip(.failure(URLError(.timedOut))).closesPrompt)
+        XCTAssertTrue(DisplayNameOnboarding.resolveSkip(.success("Learner-9C0D")).closesPrompt)
+    }
+
     func testHandleShape() {
         XCTAssertTrue(DisplayNameOnboarding.isLearnerHandle("Learner-4F2A"))
         XCTAssertFalse(DisplayNameOnboarding.isLearnerHandle("Learner-4f2a"))

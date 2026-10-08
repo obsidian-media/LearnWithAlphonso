@@ -158,6 +158,22 @@ public struct DisplayNameOnboarding: Equatable, Sendable {
 
     // MARK: - Save or skip
 
+    /// What a Skip did. Skip can never trap the learner: a failure still closes the prompt (App Review 5.1.1),
+    /// and because nothing was stamped the prompt returns next launch.
+    public enum SkipResolution: Equatable, Sendable {
+        case saved(String)
+        case deferred
+
+        public var closesPrompt: Bool { true }
+    }
+
+    public static func resolveSkip(_ outcome: Result<String, Error>) -> SkipResolution {
+        switch outcome {
+        case .success(let name): return .saved(name)
+        case .failure: return .deferred
+        }
+    }
+
     public mutating func beginSubmit() -> Bool {
         guard !isSubmitting else { return false }
         isSubmitting = true

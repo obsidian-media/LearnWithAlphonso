@@ -136,14 +136,48 @@ describe("NamePrompt", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
-  it("skip closes through skip_display_name_prompt, and a failed skip stays open with a message", async () => {
-    skipName.mockResolvedValueOnce({ ok: false });
+  it("skip closes through skip_display_name_prompt", async () => {
+    skipName.mockResolvedValueOnce({ ok: true, name: "Learner-9C0D" });
     const user = userEvent.setup();
     renderPrompt();
     await user.click(await screen.findByRole("button", { name: "Skip for now" }));
-    expect(await screen.findByText("Couldn't save your name. Try again.")).toBeInTheDocument();
-    skipName.mockResolvedValueOnce({ ok: true, name: "Learner-9C0D" });
-    await user.click(screen.getByRole("button", { name: "Skip for now" }));
+    expect(skipName).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("skip failure still lets the learner continue (a prompt they cannot leave is a trap)", async () => {
+    for (const failure of [
+      () => skipName.mockResolvedValueOnce({ ok: false }),
+      () => skipName.mockRejectedValueOnce(new TypeError("Failed to fetch")),
+    ]) {
+      failure();
+      const user = userEvent.setup();
+      const view = renderPrompt();
+      await user.click(await screen.findByRole("button", { name: "Skip for now" }));
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+      view.unmount();
+    }
+  });
+
+  it("keeps Tab inside the dialog in both directions", async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <button>outside</button>
+        <NamePrompt />
+      </QueryClientProvider>,
+    );
+    const dialog = await screen.findByRole("dialog");
+    await screen.findByText("Looks good.", {}, { timeout: 2000 });
+    screen.getByLabelText("Display name").focus();
+    for (let i = 0; i < 6; i++) {
+      await user.tab();
+      expect(dialog.contains(document.activeElement), `forward ${i}`).toBe(true);
+    }
+    for (let i = 0; i < 6; i++) {
+      await user.tab({ shift: true });
+      expect(dialog.contains(document.activeElement), `backward ${i}`).toBe(true);
+    }
   });
 });
