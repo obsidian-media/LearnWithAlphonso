@@ -46,7 +46,9 @@ describe("iOS AI consent wiring", () => {
 
   it("translation grading offers the opt-in only when the account said no, never for a failed read", () => {
     const s = code("TranslateQuestionCard.swift");
-    expect(s).toContain("AIConsentPolicy.offersAIGradingOptIn(on: surface, status: aiConsent.status)");
+    expect(s).toContain(
+      "AIConsentPolicy.offersAIGradingOptIn(on: surface, status: aiConsent.status)",
+    );
     expect(s).not.toContain("aiConsent.isGranted");
     expect(s).toContain("hasAIConsent: Bool");
     expect(s).not.toContain("AIDisclosureGate");
