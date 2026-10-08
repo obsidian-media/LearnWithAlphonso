@@ -82,4 +82,53 @@ final class ContentStoreTests: XCTestCase {
             }
         }
     }
+
+    // Per-course conversation content. The ids and order must match
+    // across courses (the web parity test enforces the same on the source).
+    func testLoadsScenariosForEveryCourseWithTheSameIds() throws {
+        let store = try ContentStore()
+        let englishIds = store.scenarios(for: .english).map(\.id)
+        XCTAssertEqual(englishIds.count, 12)
+        for course: Course in [.french, .spanish] {
+            XCTAssertEqual(store.scenarios(for: course).map(\.id), englishIds, "\(course)")
+        }
+    }
+
+    func testScenarioLookupReturnsTheCoursesVariant() throws {
+        let store = try ContentStore()
+        let en = try XCTUnwrap(store.scenario(id: "coffee", course: .english))
+        let fr = try XCTUnwrap(store.scenario(id: "coffee", course: .french))
+        let es = try XCTUnwrap(store.scenario(id: "coffee", course: .spanish))
+        XCTAssertEqual(en.title, "Order coffee")
+        XCTAssertEqual(fr.title, "Au café")
+        XCTAssertEqual(es.title, "En la cafetería")
+        XCTAssertEqual(fr.opener, "Bonjour ! Bienvenue au Café des Lilas. Qu'est-ce que je vous sers ?")
+        XCTAssertEqual(es.opener, "¡Buenos días, bienvenidos a Café La Ceiba! ¿Qué le preparo?")
+        XCTAssertTrue(fr.systemPrompt.contains("Réponds toujours en français"))
+        XCTAssertTrue(es.systemPrompt.contains("Responde siempre en español latinoamericano"))
+        XCTAssertNil(store.scenario(id: "nope", course: .french))
+    }
+
+    func testCampaignLookupMirrorsScenesPerCourse() throws {
+        let store = try ContentStore()
+        for course: Course in [.english, .french, .spanish] {
+            let campaign = try XCTUnwrap(store.campaign(id: "city-day", course: course), "\(course)")
+            XCTAssertEqual(campaign.scenes.map(\.id), ["coffee-stop", "directions", "small-talk"])
+            XCTAssertEqual(campaign.scenes.map(\.minTurns), [3, 2, 3])
+        }
+        XCTAssertEqual(store.campaign(id: "city-day", course: .french)?.title, "Une journée à Lyon")
+        XCTAssertEqual(
+            store.campaign(id: "city-day", course: .spanish)?.scenes.first?.opener,
+            "¡Buenos días! Bienvenidos a Café Jacaranda. ¿Qué le preparo?"
+        )
+        XCTAssertNil(store.campaign(id: "nope", course: .english))
+    }
+
+    func testLegacyPropertiesStayEnglish() throws {
+        // The app target's ConversationView/CampaignView still read these
+        // until they switch to the course-aware lookups.
+        let store = try ContentStore()
+        XCTAssertEqual(store.scenarios.map(\.title), store.scenarios(for: .english).map(\.title))
+        XCTAssertEqual(store.campaigns.first?.title, "A day in a new city")
+    }
 }
