@@ -10,6 +10,9 @@ struct LearnWithAlphonsoApp: App {
     // otherwise pure-SwiftUI app. See AppDelegate.swift's doc comment.
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var session: Session
+    /// The learner's AI consent, from the account (see AIConsentStore), shared by every screen that asks.
+    @StateObject private var aiConsentStore: AIConsentStore
+    @Environment(\.scenePhase) private var scenePhase
     @State private var entitlementStore: EntitlementStore
     @State private var notificationScheduler: NotificationScheduler
     @State private var remotePushRegistrar: RemotePushRegistrar
@@ -93,6 +96,7 @@ struct LearnWithAlphonsoApp: App {
         _session = State(initialValue: session)
         _notificationScheduler = State(initialValue: scheduler)
         _remotePushRegistrar = State(initialValue: pushRegistrar)
+        _aiConsentStore = StateObject(wrappedValue: AIConsentStore(backend: SessionAIConsentBackend(session: session)))
         _entitlementStore = State(initialValue: entitlements)
     }
 
@@ -111,6 +115,13 @@ struct LearnWithAlphonsoApp: App {
                 )
                 .task { await entitlementStore.start() }
                 .environment(\.sessionLifecycle, sessionLifecycle)
+                .environmentObject(aiConsentStore)
+                // Account consent follows the signed-in account and is re-read whenever the app comes forward, so a
+                // withdrawal on the web takes effect here without a relaunch.
+                .task(id: session.userID) { await aiConsentStore.refresh() }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { Task { await aiConsentStore.refresh() } }
+                }
             } else {
                 ContentUnavailableView(
                     "Couldn't load lesson content",

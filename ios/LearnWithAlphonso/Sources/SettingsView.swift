@@ -17,6 +17,10 @@ import LearnWithAlphonsoKit
 /// and deletion requires typing DELETE, same as web.
 struct SettingsView: View {
     let session: Session
+    @EnvironmentObject private var aiConsent: AIConsentStore
+    @State private var showAIDisclosure = false
+    @State private var isUpdatingAIConsent = false
+    @State private var aiConsentErrorMessage: String?
 
     @State private var selectedTheme = AlphonsoThemeManager.shared.themeID
 
@@ -144,6 +148,52 @@ struct SettingsView: View {
                 .listRowBackground(AlphonsoColor.parchment)
 
                 Section {
+                    if aiConsent.status == .unavailable {
+                        // The setting could not be read: say so and offer a retry, never a switch that reads "off".
+                        HStack {
+                            Text(AIConsentCopy.checkFailedTitle)
+                                .font(AlphonsoFont.sans(15))
+                            Spacer()
+                            Button(AIConsentCopy.retry) { Task { await aiConsent.refresh() } }
+                                .font(AlphonsoFont.sans(14, weight: .semiBold))
+                                .tint(AlphonsoColor.moss)
+                        }
+                    } else {
+                        Toggle(isOn: Binding(
+                            get: { aiConsent.isGranted },
+                            set: { wantsOn in
+                                if wantsOn {
+                                    // Turning it on is informed consent: the same sheet, not a silent write.
+                                    showAIDisclosure = true
+                                } else {
+                                    Task { await withdrawAIConsent() }
+                                }
+                            }
+                        )) {
+                            Text(AIConsentCopy.settingsTitle)
+                                .font(AlphonsoFont.sans(15, weight: .medium))
+                        }
+                        .tint(AlphonsoColor.moss)
+                        .disabled(isUpdatingAIConsent || aiConsent.status == .loading)
+                    }
+                    if let aiConsentErrorMessage {
+                        Text(aiConsentErrorMessage)
+                            .font(AlphonsoFont.sans(13))
+                            .foregroundStyle(AlphonsoColor.destructive)
+                    }
+                } header: {
+                    Text(AIConsentCopy.settingsTitle)
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tracking(0.4)
+                        .foregroundStyle(AlphonsoColor.ember)
+                } footer: {
+                    Text(AIConsentCopy.settingsFooter)
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                }
+                .listRowBackground(AlphonsoColor.parchment)
+
+                Section {
                     Button {
                         Task { await exportData() }
                     } label: {
@@ -210,6 +260,8 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .task { await loadIdentity() }
+            .task { await aiConsent.refresh() }
+            .aiDisclosureSheet(isPresented: $showAIDisclosure) {}
             .fileExporter(
                 isPresented: $isPresentingExporter,
                 document: exportDocument,
@@ -278,6 +330,17 @@ struct SettingsView: View {
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         Task {
             try? await client.updateProfileTheme(themeID.rawValue, userID: userID)
+        }
+    }
+
+    private func withdrawAIConsent() async {
+        isUpdatingAIConsent = true
+        aiConsentErrorMessage = nil
+        defer { isUpdatingAIConsent = false }
+        do {
+            try await aiConsent.set(false)
+        } catch {
+            aiConsentErrorMessage = AIConsentCopy.saveFailed
         }
     }
 

@@ -85,11 +85,10 @@ struct ReviewQueueView: View {
         }
         .tint(AlphonsoColor.moss)
         .task(id: course) { await loadQueue() }
-        // 2026-09-30 audit (Codex/Fable): a translate review item's written
-        // answer is sent server-side to NVIDIA for grading (grade-review,
-        // via gradeTranslationReviewItem) with no disclosure at all -- see
-        // AIDisclosureSheet.swift's own doc comment.
-        .aiDisclosureGate()
+        // No whole-screen consent wall. Each item decides (AIConsentPolicy): a
+        // translate item is graded by grade-review, which skips the AI grader
+        // without account consent, and shows "Turn on AI grading"; a speak
+        // item offers typing.
         // Tap-to-save in explanations, like the lesson player: the shared
         // ExplanationView / AlphonsoTipCard read this from the environment and
         // use it only for a course whose text is wholly in its own language.
@@ -545,7 +544,7 @@ private struct ReviewQuestionCard: View {
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course)
+                    verdict: $translationVerdict, course: course, surface: .review)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,

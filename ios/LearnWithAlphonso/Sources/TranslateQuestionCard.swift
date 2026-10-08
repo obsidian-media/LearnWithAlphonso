@@ -26,6 +26,10 @@ struct TranslateQuestionCard: View {
     /// score it. Nil until then.
     @Binding var verdict: TranslationVerdict?
     let course: Course
+    /// Which player this card sits in; the account's AI consent decides what it offers there (AIConsentPolicy).
+    let surface: AIConsentSurface
+    @EnvironmentObject private var aiConsent: AIConsentStore
+    @State private var showDisclosure = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
@@ -47,6 +51,21 @@ struct TranslateQuestionCard: View {
             .padding(AlphonsoSpacing.sm)
             .alphonsoInputBackground()
             .disabled(checked)
+
+            // Without the account's AI consent the written answer is checked against our list only, and the learner is
+            // told so with a way to turn AI grading on (AIConsentPolicy). Never a wall: the lesson goes on.
+            if !checked
+                && AIConsentPolicy.translateMode(on: surface, consentGranted: aiConsent.isGranted) == .localWithOptIn
+            {
+                HStack(spacing: AlphonsoSpacing.xs) {
+                    Text(AIConsentCopy.localGradingNote)
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    Button(AIConsentCopy.turnOnAiGrading) { showDisclosure = true }
+                        .font(AlphonsoFont.sans(12, weight: .semiBold))
+                        .tint(AlphonsoColor.moss)
+                }
+            }
 
             if checked, let verdict, !verdict.correct {
                 VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
@@ -85,6 +104,7 @@ struct TranslateQuestionCard: View {
                     correctOverride: verdict?.correct)
             }
         }
+        .aiDisclosureSheet(isPresented: $showDisclosure) {}
     }
 
 }
@@ -98,8 +118,8 @@ struct TranslateQuestionCard: View {
 ///
 /// The local match is the floor and is never overturned; the server is asked
 /// only about what it rejects, and only when there is a network, a token to
-/// ask with, and the learner has allowed AI processing
-/// (`TranslationGradingPolicy`). Everything else leaves the local verdict
+/// ask with, and the learner has allowed AI processing on their account
+/// (`AIConsentStore`, through `TranslationGradingPolicy` and `AIConsentPolicy`). Everything else leaves the local verdict
 /// standing, because being offline -- or having declined to share answers --
 /// is not evidence about the learner's English.
 ///
@@ -114,6 +134,7 @@ func settledTranslationVerdict(
     course: Course,
     session: Session,
     isConnected: Bool,
+    hasAIConsent: Bool,
     submission rawSubmission: String?
 ) async -> TranslationVerdict {
     let submission = (rawSubmission ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -121,10 +142,11 @@ func settledTranslationVerdict(
         return TranslationVerdict(correct: true, reason: nil)
     }
     guard
+        AIConsentPolicy.translateMode(on: .lesson, consentGranted: hasAIConsent) == .ai,
         TranslationGradingPolicy.mayAskServer(
             isConnected: isConnected,
             hasAccessToken: session.accessToken != nil,
-            hasAIConsent: AIDisclosureGate.isAcknowledged()),
+            hasAIConsent: hasAIConsent),
         let accessToken = session.accessToken
     else {
         return TranslationVerdict(correct: false, reason: nil)

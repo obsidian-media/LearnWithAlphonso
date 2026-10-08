@@ -42,6 +42,7 @@ struct SaveWordSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var phase: Phase = .idle
     @State private var showDisclosure = false
+    @EnvironmentObject private var aiConsent: AIConsentStore
 
     private enum Phase: Equatable {
         case idle
@@ -123,9 +124,14 @@ struct SaveWordSheet: View {
         // `define` quota twice (the server survives the race, but the second
         // call is still billed); only one save may be in flight.
         guard phase != .saving else { return }
-        // The word and sentence go to NVIDIA, so the same consent every other
-        // AI path needs applies. Declining just closes the disclosure.
-        guard AIDisclosureGate.isAcknowledged() else {
+        // The word and sentence go to NVIDIA, so the account's AI consent applies. A setting that is still loading or
+        // could not be read is read again first: it must never be treated as "off". Declining just closes the sheet.
+        if aiConsent.status == .loading || aiConsent.status == .unavailable { await aiConsent.refresh() }
+        guard aiConsent.status != .unavailable else {
+            phase = .failed(.unavailable)
+            return
+        }
+        guard aiConsent.isGranted else {
             showDisclosure = true
             return
         }
@@ -152,6 +158,11 @@ struct SaveWordSheet: View {
         do {
             phase = .saved(try await client.defineWord(
                 word: request.word, sentence: request.sentence, course: request.course))
+        } catch let error as SavedWordError where error == .aiConsentRequired {
+            // Withdrawn on another device since this sheet opened.
+            await aiConsent.refresh()
+            phase = .idle
+            showDisclosure = true
         } catch let error as SavedWordError {
             phase = .failed(error)
         } catch is URLError {
