@@ -107,6 +107,7 @@ describe("adminListReports", () => {
         reason: "spam",
         context: null,
         teamId: null,
+        teamName: null,
         createdAt: "2026-01-01T00:00:00Z",
       },
     ]);
@@ -392,5 +393,82 @@ describe("moderation actions", () => {
       await adminDismissReport({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
     ).toEqual({ ok: true });
     expect(calls.find((c) => c.method === "eq")?.args).toEqual(["id", REPORT]);
+  });
+
+  it("names the reported team, read from the team the report points at", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockImplementation((table: string) => {
+      if (table === "content_reports") {
+        return chainable({
+          data: [
+            {
+              id: "r1",
+              kind: "team_name",
+              reporter: "u1",
+              reported: "u2",
+              reason: "spam",
+              context: { team_id: TEAM },
+              created_at: "2026-01-01T00:00:00Z",
+            },
+          ],
+          error: null,
+        });
+      }
+      if (table === "teams")
+        return chainable({ data: [{ id: TEAM, name: "Swift Falcons" }], error: null });
+      return chainable({ data: [{ id: "u1", display_name: "Ada" }], error: null });
+    });
+    const [row] = await adminListReports({ context: ctx(supabaseAdmin) });
+    expect(row).toMatchObject({ teamId: TEAM, teamName: "Swift Falcons" });
+  });
+
+  it("says the action happened when only resolving the report failed", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from
+      .mockReturnValueOnce(
+        chainable({
+          data: { id: REPORT, kind: "user", reported: "u2", reason: "spam", context: null },
+          error: null,
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: null, error: { message: "connection lost" } }));
+    supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "Learner-1A2B", error: null }));
+    await expect(
+      adminResetDisplayName({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+    ).rejects.toThrow("Action done, but the report wasn't dismissed. Refresh the list.");
+    expect(supabaseAdmin.rpc).toHaveBeenCalledOnce();
+  });
+
+  it("logs one structured line per action with ids only", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const supabaseAdmin = createSupabaseMock();
+      supabaseAdmin.from
+        .mockReturnValueOnce(
+          chainable({
+            data: {
+              id: REPORT,
+              kind: "team_name",
+              reported: "u2",
+              reason: "spam",
+              context: { team_id: TEAM },
+            },
+            error: null,
+          }),
+        )
+        .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }))
+        .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }));
+      await adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) });
+      expect(info).toHaveBeenCalledOnce();
+      expect(JSON.parse(info.mock.calls[0][0] as string)).toEqual({
+        event: "admin_action",
+        action: "disband_team",
+        reportId: REPORT,
+        targetId: TEAM,
+        adminId: "admin-1",
+      });
+    } finally {
+      info.mockRestore();
+    }
   });
 });

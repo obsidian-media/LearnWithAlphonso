@@ -763,6 +763,8 @@ export type AdminReport = {
   /** The report's own detail (team_id, or an AI reply's source/course/message); JSON so it crosses the server boundary. */
   context: { [key: string]: Json | undefined } | null;
   teamId: string | null;
+  /** The team's current name, so the admin sees what they are renaming or disbanding; null if it is gone. */
+  teamName: string | null;
   createdAt: string;
 };
 
@@ -812,6 +814,23 @@ export const adminListReports = createServerFn({ method: "GET" })
     if (profilesError) throw new Error(profilesError.message);
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
 
+    const teamIds = [
+      ...new Set(
+        reports
+          .map((r) => teamIdForReport({ reason: r.reason, context: r.context }))
+          .filter((id): id is string => !!id),
+      ),
+    ];
+    const teamNameById = new Map<string, string>();
+    if (teamIds.length > 0) {
+      const { data: teams, error: teamsError } = await context.supabaseAdmin
+        .from("teams")
+        .select("id, name")
+        .in("id", teamIds);
+      if (teamsError) throw new Error(teamsError.message);
+      for (const t of teams ?? []) teamNameById.set(t.id, t.name);
+    }
+
     return reports.map((r) => ({
       id: r.id,
       kind: r.kind as AdminReport["kind"],
@@ -822,6 +841,8 @@ export const adminListReports = createServerFn({ method: "GET" })
       reason: r.reason,
       context: (r.context as { [key: string]: Json | undefined } | null) ?? null,
       teamId: teamIdForReport({ reason: r.reason, context: r.context }),
+      teamName:
+        teamNameById.get(teamIdForReport({ reason: r.reason, context: r.context }) ?? "") ?? null,
       createdAt: r.created_at,
     }));
   });
@@ -875,6 +896,7 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
       report.reported,
     );
     if (deleteError) throw new Error(deleteError.message);
+    logAdminAction("delete_account", data.reportId, report.reported, context.userId);
 
     return { ok: true };
   });
@@ -908,11 +930,34 @@ async function resolveReport(supabaseAdmin: AdminClient, reportId: string): Prom
 
 const reportIdSchema = z.object({ reportId: z.string().uuid() });
 
+/** Audit trail: one structured line per admin action, ids only (never names, reasons or messages). */
+function logAdminAction(
+  action: string,
+  reportId: string,
+  targetId: string | null,
+  adminId: string,
+) {
+  console.info(JSON.stringify({ event: "admin_action", action, reportId, targetId, adminId }));
+}
+
+const ACTION_DONE_REPORT_KEPT =
+  "Action done, but the report wasn't dismissed. Refresh the list.";
+
+/** After an action that already changed something: a failed resolve must not read as a failed action. */
+async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string): Promise<void> {
+  try {
+    await resolveReport(supabaseAdmin, reportId);
+  } catch {
+    throw new Error(ACTION_DONE_REPORT_KEPT);
+  }
+}
+
 export const adminDismissReport = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await resolveReport(context.supabaseAdmin, data.reportId);
+    logAdminAction("dismiss_report", data.reportId, null, context.userId);
     return { ok: true };
   });
 
@@ -928,7 +973,8 @@ export const adminResetDisplayName = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     if (!newName) throw new Error("That account no longer exists.");
-    await resolveReport(context.supabaseAdmin, data.reportId);
+    logAdminAction("reset_display_name", data.reportId, report.reported, context.userId);
+    await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true, newName };
   });
 
@@ -947,7 +993,8 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     if (reason) throw new Error(socialReasonMessage(reason));
-    await resolveReport(context.supabaseAdmin, data.reportId);
+    logAdminAction("rename_team", data.reportId, teamId, context.userId);
+    await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };
   });
 
@@ -963,6 +1010,7 @@ export const adminDisbandTeam = createServerFn({ method: "POST" })
       await context.supabaseAdmin.from("teams").delete({ count: "exact" }).eq("id", teamId),
       "That team no longer exists.",
     );
-    await resolveReport(context.supabaseAdmin, data.reportId);
+    logAdminAction("disband_team", data.reportId, teamId, context.userId);
+    await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };
   });

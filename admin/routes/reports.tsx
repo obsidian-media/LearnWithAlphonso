@@ -123,7 +123,12 @@ function ReportRow({
           {report.context.message}
         </p>
       ) : null}
-      {report.teamId ? <p className="mt-1 text-xs text-ink-soft">Team: {report.teamId}</p> : null}
+      {report.teamId ? (
+        <p className="mt-1 text-sm">
+          Team: <strong>{report.teamName ?? "(team no longer exists)"}</strong>{" "}
+          <span className="text-xs text-ink-soft">{report.teamId}</span>
+        </p>
+      ) : null}
       <p className="mt-1 text-xs text-ink-soft">{new Date(report.createdAt).toLocaleString()}</p>
 
       <div className="mt-2 flex flex-wrap gap-4">
@@ -185,8 +190,8 @@ function ReportRow({
           ) : (
             <div className="space-y-2 rounded border border-hairline p-3">
               <p className="text-xs text-ember">
-                This deletes the team for every member. It cannot be undone. Type DISBAND to
-                confirm.
+                This deletes {report.teamName ?? "the team"} for every member. It cannot be undone.
+                Type DISBAND to confirm.
               </p>
               <input
                 value={disbandText}
