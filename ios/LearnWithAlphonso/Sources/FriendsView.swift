@@ -29,6 +29,7 @@ struct FriendsView: View {
     @State private var nudgeBannerMessage: String?
     @State private var friendPendingRemoval: FriendProgress?
     @State private var friendPendingBlock: FriendProgress?
+    @State private var currentBuddyID: String?
     @State private var reportTarget: SocialTarget?
     @State private var inviteLink: URL?
 
@@ -58,7 +59,7 @@ struct FriendsView: View {
                     }
                     .listRowBackground(AlphonsoColor.parchment)
 
-                    BuddySection(session: session, friends: friends)
+                    BuddySection(session: session, friends: friends, onBuddyChange: { currentBuddyID = $0 })
 
                     Section {
                         if isLoading {
@@ -153,7 +154,8 @@ struct FriendsView: View {
             Text("You won't see each other's activity or streaks anymore.")
         }
         .confirmationDialog(
-            "Block \(friendPendingBlock?.displayName ?? "this friend")?",
+            friendPendingBlock.map { $0.userID == currentBuddyID ? BuddyCopy.blockConfirm($0.displayName) : "Block \($0.displayName)?" }
+                ?? "Block this friend?",
             isPresented: Binding(
                 get: { friendPendingBlock != nil },
                 set: { if !$0 { friendPendingBlock = nil } },

@@ -115,6 +115,11 @@ final class BuddyTests: XCTestCase {
         XCTAssertEqual(BuddyCopy.findButton(try XCTUnwrap(find["course"])), find["expected"])
         let waiting = try XCTUnwrap(copy["waitingLine"] as? [String: String])
         XCTAssertEqual(BuddyCopy.waitingLine(try XCTUnwrap(waiting["course"])), waiting["expected"])
+        for (key, f) in [("blockConfirm", BuddyCopy.blockConfirm), ("blockedLine", BuddyCopy.blockedLine),
+                         ("safetyMenuLabel", BuddyCopy.safetyMenuLabel)] as [(String, (String) -> String)] {
+            let pair = try XCTUnwrap(copy[key] as? [String: String], key)
+            XCTAssertEqual(f(try XCTUnwrap(pair["name"])), pair["expected"], key)
+        }
     }
 
     func testMyBuddyReadsIsMatchAndPoolDecodes() throws {

@@ -10,7 +10,10 @@ import {
   buddyGraceLine,
   buddyIncomingLine,
   buddyOutgoingLine,
+  buddyBlockConfirm,
+  buddyBlockedLine,
   buddyCanSendPresets,
+  buddySafetyMenuLabel,
   buddyStatusMessage,
   buddyStreakLine,
   buddyWeekLine,
@@ -121,6 +124,12 @@ export function BuddyCard() {
   const { buddy, requests, messages, pool } = queries;
   const { message, busy, run } = useBuddyAction(queries);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
+  // After blocking a matched buddy the pair is gone; say so on the card that replaces it.
+  const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
+  const act = (...args: Parameters<typeof run>) => {
+    setBlockedNotice(null);
+    return run(...args);
+  };
   // Matching needs a declared-age confirmation (owner decision 2026-10-07: minimum age 13); the server refuses without it.
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
@@ -182,7 +191,12 @@ export function BuddyCard() {
                 <SocialSafetyMenu
                   userId={mine.buddyId}
                   displayName={mine.buddyName}
-                  onBlocked={() => void buddy.refetch()}
+                  blockTitle={buddyBlockConfirm(mine.buddyName)}
+                  menuLabel={buddySafetyMenuLabel(mine.buddyName)}
+                  onBlocked={() => {
+                    setBlockedNotice(buddyBlockedLine(mine.buddyName));
+                    void buddy.refetch();
+                  }}
                 />
               </span>
             </>
@@ -204,7 +218,7 @@ export function BuddyCard() {
                   key={p.id}
                   type="button"
                   disabled={busy}
-                  onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
+                  onClick={() => act(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
                   className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
                 >
                   {p.text}
@@ -246,7 +260,7 @@ export function BuddyCard() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => run(() => endBuddy()).then(() => setConfirmingEnd(false))}
+                onClick={() => act(() => endBuddy()).then(() => setConfirmingEnd(false))}
                 className={`${linkButton} text-rose-500`}
               >
                 Yes, end
@@ -270,6 +284,11 @@ export function BuddyCard() {
   return (
     <div className={card}>
       <p className="font-display text-base font-semibold text-ink">Study buddy</p>
+      {blockedNotice && (
+        <p role="status" className="mt-2 text-xs text-ink-soft">
+          {blockedNotice}
+        </p>
+      )}
       <p className="mt-1 text-xs text-ink-soft/80">{BUDDY_COPY.intro}</p>
       {pending.map((r) =>
         r.direction === "incoming" ? (
@@ -280,7 +299,7 @@ export function BuddyCard() {
                 type="button"
                 disabled={busy}
                 onClick={() =>
-                  run(() => respondBuddyRequest({ data: { requestId: r.requestId, accept: true } }))
+                  act(() => respondBuddyRequest({ data: { requestId: r.requestId, accept: true } }))
                 }
                 className={`${linkButton} text-moss`}
               >
@@ -290,7 +309,7 @@ export function BuddyCard() {
                 type="button"
                 disabled={busy}
                 onClick={() =>
-                  run(() =>
+                  act(() =>
                     respondBuddyRequest({ data: { requestId: r.requestId, accept: false } }),
                   )
                 }
@@ -306,7 +325,7 @@ export function BuddyCard() {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => cancelBuddyRequest({ data: { requestId: r.requestId } }))}
+              onClick={() => act(() => cancelBuddyRequest({ data: { requestId: r.requestId } }))}
               className={`${linkButton} text-ink-soft`}
             >
               Cancel request
@@ -323,7 +342,7 @@ export function BuddyCard() {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => leaveBuddyPool())}
+              onClick={() => act(() => leaveBuddyPool())}
               className={`${linkButton} text-ink-soft`}
             >
               {BUDDY_COPY.stopLooking}
@@ -349,7 +368,7 @@ export function BuddyCard() {
                     type="button"
                     disabled={busy || !ageConfirmed}
                     onClick={() =>
-                      run(() =>
+                      act(() =>
                         joinBuddyPool({
                           data: { course: course as "en" | "fr" | "es", ageConfirmed },
                         }),

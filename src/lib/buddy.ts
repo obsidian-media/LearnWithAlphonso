@@ -146,6 +146,16 @@ export function buddyEndConfirm(name: string): string {
   return `End being study buddies with ${name}? Your streak ends.`;
 }
 
+export function buddyBlockConfirm(name: string): string {
+  return `Block ${name}? Your study buddy pairing ends and you won't be matched again.`;
+}
+export function buddyBlockedLine(name: string): string {
+  return `You blocked ${name}. Your study buddy pairing has ended.`;
+}
+export function buddySafetyMenuLabel(name: string): string {
+  return `Block or report ${name}`;
+}
+
 /** Most preset messages one buddy may send per hour. Must equal the limit in 20261007100000_buddy_messages.sql. */
 export const BUDDY_MESSAGES_PER_HOUR = 20;
 

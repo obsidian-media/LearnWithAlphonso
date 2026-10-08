@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.FakeServer
 import com.obsidianmedia.learnwithalphonso.FakeServer.Companion.json
 import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
+import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyCopy
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
@@ -216,9 +217,11 @@ class BuddyViewModelTest {
         }
         val v = BuddyViewModel(s.progressClient)
         awaitTrue("loaded") { v.state.value.buddy?.isMatch == true }
-        v.block("u2")
+        v.block("u2", "Bo")
         awaitTrue("ended") { v.state.value.buddy == null && v.state.value.hasLoaded && !v.state.value.isLoading }
         assertEquals("""{"_target":"u2"}""", s.seen.first { it.path.endsWith("block_user") }.body)
+        // A successful block says the pairing ended, in the shared buddy wording.
+        awaitTrue("said so") { v.state.value.message == BuddyCopy.blockedLine("Bo") }
     }
 }
 

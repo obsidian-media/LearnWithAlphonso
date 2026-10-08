@@ -187,6 +187,9 @@ struct ReportSheet: View {
 struct SocialSafetyMenu: View {
     let onBlock: () -> Void
     let onReport: () -> Void
+    /// The person the menu acts on. When set, VoiceOver reads "Block or report <name>"; the other call sites keep
+    /// the generic label.
+    var accessibilityName: String? = nil
 
     var body: some View {
         Menu {
@@ -200,6 +203,7 @@ struct SocialSafetyMenu: View {
             Image(systemName: "ellipsis.circle")
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
+        .accessibilityLabel(accessibilityName.map(BuddyCopy.safetyMenuLabel) ?? "More options")
     }
 }
 

@@ -83,6 +83,11 @@ public enum BuddyCopy {
     public static func endConfirm(_ name: String) -> String {
         "End being study buddies with \(name)? Your streak ends."
     }
+    public static func blockConfirm(_ name: String) -> String {
+        "Block \(name)? Your study buddy pairing ends and you won't be matched again."
+    }
+    public static func blockedLine(_ name: String) -> String { "You blocked \(name). Your study buddy pairing has ended." }
+    public static func safetyMenuLabel(_ name: String) -> String { "Block or report \(name)" }
 
     // MARK: Opt-in matching (Phase 3b)
 

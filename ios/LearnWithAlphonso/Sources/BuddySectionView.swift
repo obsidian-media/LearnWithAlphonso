@@ -13,6 +13,8 @@ struct BuddySection: View {
     let session: Session
     /// The accepted friends already loaded by FriendsView: the people who can be asked.
     let friends: [FriendProgress]
+    /// Tells the friends list who the current buddy is, so blocking them from a friend row uses the buddy wording.
+    var onBuddyChange: (String?) -> Void = { _ in }
 
     @State private var buddy: MyBuddy?
     @State private var requests: [BuddyRequest] = []
@@ -78,7 +80,7 @@ struct BuddySection: View {
             Button("Keep", role: .cancel) {}
         }
         .confirmationDialog(
-            "Block \(blockTarget?.displayName ?? "this user")?",
+            BuddyCopy.blockConfirm(blockTarget?.displayName ?? "your buddy"),
             isPresented: Binding(get: { blockTarget != nil }, set: { if !$0 { blockTarget = nil } }),
             titleVisibility: .visible
         ) {
@@ -97,36 +99,42 @@ struct BuddySection: View {
 
     @ViewBuilder
     private func buddyRows(_ buddy: MyBuddy) -> some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            HStack {
-                Text(buddy.buddyName)
-                    .font(AlphonsoFont.display(17, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                if buddy.isMatch {
-                    Text(BuddyCopy.matchedLabel)
-                        .font(AlphonsoFont.sans(11))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    Spacer()
-                    // A matched buddy is not a friend: block and report live right here (guideline 1.2).
-                    SocialSafetyMenu(
-                        onBlock: { blockTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
-                        onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) }
-                    )
-                    .buttonStyle(.borderless)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                HStack {
+                    Text(buddy.buddyName)
+                        .font(AlphonsoFont.display(17, weight: .semiBold))
+                        .foregroundStyle(AlphonsoColor.ink)
+                    if buddy.isMatch {
+                        Text(BuddyCopy.matchedLabel)
+                            .font(AlphonsoFont.sans(11))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                    }
                 }
+                Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+                Text(BuddyCopy.streakLine(buddy.streakWeeks))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Text(BuddyCopy.graceLine(buddy.graceAvailable))
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
-            Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.ink)
-            Text(BuddyCopy.streakLine(buddy.streakWeeks))
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            Text(BuddyCopy.graceLine(buddy.graceAvailable))
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+            .padding(.vertical, 2)
+            .accessibilityElement(children: .combine)
+            if buddy.isMatch {
+                Spacer()
+                // A matched buddy is not a friend: block and report live right here (guideline 1.2). Kept OUTSIDE the
+                // combined element above so VoiceOver can reach it as its own button.
+                SocialSafetyMenu(
+                    onBlock: { blockTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
+                    onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
+                    accessibilityName: buddy.buddyName
+                )
+                .buttonStyle(.borderless)
+            }
         }
-        .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
         if buddy.canSendPresets {
             Menu("Send \(buddy.buddyName) a message") {
                 ForEach(BuddyCopy.presets, id: \.id) { preset in
@@ -287,6 +295,7 @@ struct BuddySection: View {
             guard generation == loadGeneration else { return false }
             pool = newPool
             buddy = newBuddy
+            onBuddyChange(newBuddy?.buddyID)
             requests = newRequests
             messages = newMessages
             loadFailed = false
@@ -304,7 +313,7 @@ struct BuddySection: View {
         }
     }
 
-    /// Blocking a matched buddy ends the pair on the server (trigger); reload to show it.
+    /// Blocking a matched buddy ends the pair on the server (trigger). Reload, then say so in the buddy wording.
     private func block(_ target: SocialTarget) async {
         busy = true
         defer { busy = false }
@@ -319,7 +328,7 @@ struct BuddySection: View {
             failure = Copy.connectionFailure
         }
         await load()
-        if let failure { message = failure }
+        message = failure ?? BuddyCopy.blockedLine(target.displayName)
     }
 
     /// Runs a buddy action, shows the server's answer in fixed wording (or what actually failed), then reloads.

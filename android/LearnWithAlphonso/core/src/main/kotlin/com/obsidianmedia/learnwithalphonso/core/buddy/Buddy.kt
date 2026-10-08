@@ -66,6 +66,9 @@ object BuddyCopy {
     fun incomingLine(name: String): String = "$name wants to be your study buddy."
     fun outgoingLine(name: String): String = "Waiting for $name."
     fun endConfirm(name: String): String = "End being study buddies with $name? Your streak ends."
+    fun blockConfirm(name: String): String = "Block $name? Your study buddy pairing ends and you won't be matched again."
+    fun blockedLine(name: String): String = "You blocked $name. Your study buddy pairing has ended."
+    fun safetyMenuLabel(name: String): String = "Block or report $name"
 
     // Opt-in matching (Phase 3b).
     const val POOL_INTRO = "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time."

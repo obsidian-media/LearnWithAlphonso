@@ -25,10 +25,16 @@ export function SocialSafetyMenu({
   userId,
   displayName,
   onBlocked,
+  blockTitle,
+  menuLabel,
 }: {
   userId: string;
   displayName: string;
   onBlocked?: () => void;
+  /** The block dialog's title; defaults to "Block <name>?". */
+  blockTitle?: string;
+  /** The menu button's accessible name; defaults to "More options for <name>". */
+  menuLabel?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<"block" | "report" | null>(null);
@@ -39,7 +45,7 @@ export function SocialSafetyMenu({
       <button
         ref={buttonRef}
         type="button"
-        aria-label={`More options for ${displayName}`}
+        aria-label={menuLabel ?? `More options for ${displayName}`}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
@@ -96,11 +102,16 @@ export function SocialSafetyMenu({
       {dialog === "block" && (
         <BlockConfirmDialog
           displayName={displayName}
+          title={blockTitle}
           onCancel={() => setDialog(null)}
           onConfirm={async () => {
-            await blockUser({ data: { userId } });
+            const result = await blockUser({ data: { userId } }).catch(() => ({
+              ok: false,
+              message: "server-error",
+            }));
             setDialog(null);
-            onBlocked?.();
+            // Only a block the server accepted counts: no success line or list removal for a failure.
+            if (result.ok) onBlocked?.();
           }}
         />
       )}
@@ -143,16 +154,18 @@ function DialogFrame({
 
 function BlockConfirmDialog({
   displayName,
+  title,
   onCancel,
   onConfirm,
 }: {
   displayName: string;
+  title?: string;
   onCancel: () => void;
   onConfirm: () => Promise<void>;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   return (
-    <DialogFrame title={`Block ${displayName}?`} onClose={onCancel}>
+    <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
       <p className="mb-4 text-sm text-ink-soft">
         {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
         see them in friends, activity, or leaderboards. Contact report@alphonsoecosystem.app if you

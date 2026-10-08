@@ -133,7 +133,7 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
     fun leave() = act { client.leaveBuddyPool() }
 
     /** Blocking a matched buddy ends the pair on the server (trigger); reload to show it. */
-    fun block(userId: String) {
+    fun block(userId: String, name: String) {
         _state.update { it.copy(busy = true, message = null) }
         viewModelScope.launch {
             val blocked = try {
@@ -144,7 +144,7 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
                 false
             }
             reload()
-            _state.update { it.copy(busy = false, message = if (blocked) it.message else BuddyCopy.statusMessage("unknown")) }
+            _state.update { it.copy(busy = false, message = if (blocked) BuddyCopy.blockedLine(name) else BuddyCopy.statusMessage("unknown")) }
         }
     }
 
@@ -197,21 +197,27 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
                 TextButton(onClick = { vm.load() }) { Text("Try again", color = palette.moss) }
             }
             buddy != null -> {
-                Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(buddy.buddyName, style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.weight(1f))
-                        if (buddy.isMatch) {
-                            Text(BuddyCopy.MATCHED_LABEL, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-                            // A matched buddy is not a friend: block and report live right here (guideline 1.2).
-                            SocialSafetyMenu(
-                                onBlock = { blockTarget = SocialTarget(buddy.buddyId, buddy.buddyName) },
-                                onReport = { onReport(SocialTarget(buddy.buddyId, buddy.buddyName)) },
-                            )
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(buddy.buddyName, style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.weight(1f))
+                            if (buddy.isMatch) {
+                                Text(BuddyCopy.MATCHED_LABEL, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                            }
                         }
+                        Text(BuddyCopy.weekLine(buddy.myCount, buddy.buddyCount, buddy.goal), color = palette.ink)
+                        Text(BuddyCopy.streakLine(buddy.streakWeeks), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                        Text(BuddyCopy.graceLine(buddy.graceAvailable), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                     }
-                    Text(BuddyCopy.weekLine(buddy.myCount, buddy.buddyCount, buddy.goal), color = palette.ink)
-                    Text(BuddyCopy.streakLine(buddy.streakWeeks), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    Text(BuddyCopy.graceLine(buddy.graceAvailable), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    if (buddy.isMatch) {
+                        // A matched buddy is not a friend: block and report live right here (guideline 1.2), outside the
+                        // merged semantics above so TalkBack reaches the menu on its own.
+                        SocialSafetyMenu(
+                            onBlock = { blockTarget = SocialTarget(buddy.buddyId, buddy.buddyName) },
+                            onReport = { onReport(SocialTarget(buddy.buddyId, buddy.buddyName)) },
+                            contentDescription = BuddyCopy.safetyMenuLabel(buddy.buddyName),
+                        )
+                    }
                 }
                 if (buddy.canSendPresets) {
                     Box {
@@ -284,7 +290,14 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
         state.message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
     }
 
-    BlockConfirmDialog(blockTarget, onConfirm = { t -> blockTarget = null; vm.block(t.id) }, onDismiss = { blockTarget = null })
+    blockTarget?.let { target ->
+        BlockConfirmDialog(
+            target,
+            onConfirm = { t -> blockTarget = null; vm.block(t.id, t.displayName) },
+            onDismiss = { blockTarget = null },
+            title = BuddyCopy.blockConfirm(target.displayName),
+        )
+    }
 
     if (confirmingEnd) {
         AlertDialog(

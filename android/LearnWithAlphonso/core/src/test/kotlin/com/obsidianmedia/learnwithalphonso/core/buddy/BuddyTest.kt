@@ -226,6 +226,12 @@ class BuddyTest {
         assertEquals(find["expected"]!!.jsonPrimitive.content, BuddyCopy.findButton(find["course"]!!.jsonPrimitive.content))
         val waiting = copy["waitingLine"]!!.jsonObject
         assertEquals(waiting["expected"]!!.jsonPrimitive.content, BuddyCopy.waitingLine(waiting["course"]!!.jsonPrimitive.content))
+        for ((key, f) in listOf<Pair<String, (String) -> String>>(
+            "blockConfirm" to BuddyCopy::blockConfirm, "blockedLine" to BuddyCopy::blockedLine, "safetyMenuLabel" to BuddyCopy::safetyMenuLabel,
+        )) {
+            val pair = copy[key]!!.jsonObject
+            assertEquals(pair["expected"]!!.jsonPrimitive.content, f(pair["name"]!!.jsonPrimitive.content), key)
+        }
     }
 
     @Test

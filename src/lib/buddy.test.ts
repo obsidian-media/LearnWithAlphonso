@@ -16,6 +16,9 @@ import {
   buddyOutgoingLine,
   buddyStatusMessage,
   buddyCanSendPresets,
+  buddyBlockConfirm,
+  buddyBlockedLine,
+  buddySafetyMenuLabel,
   buddyStreakLine,
   buddyWeekLine,
   resolveBuddyWeek,
@@ -102,5 +105,14 @@ describe("kill switch", () => {
   });
   it("the paused line is the shared fixture wording", () => {
     expect(buddyStatusMessage("matching_paused")).toBe(fixtures.messages.matching_paused);
+  });
+});
+
+describe("buddy block wording", () => {
+  const c = fixtures.copy;
+  it("matches the shared fixtures", () => {
+    expect(buddyBlockConfirm(c.blockConfirm.name)).toBe(c.blockConfirm.expected);
+    expect(buddyBlockedLine(c.blockedLine.name)).toBe(c.blockedLine.expected);
+    expect(buddySafetyMenuLabel(c.safetyMenuLabel.name)).toBe(c.safetyMenuLabel.expected);
   });
 });

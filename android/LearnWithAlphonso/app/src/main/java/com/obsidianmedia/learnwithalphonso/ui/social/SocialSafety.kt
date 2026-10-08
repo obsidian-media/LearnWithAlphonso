@@ -67,11 +67,11 @@ object SocialSafetyCopy {
 }
 
 @Composable
-fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit) {
+fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit, contentDescription: String = "More options") {
     var open by remember { mutableStateOf(false) }
     val palette = AlphonsoColor.palette
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "More options", tint = palette.inkSoft) }
+        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = contentDescription, tint = palette.inkSoft) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(text = { Text("Block User", color = palette.destructive) }, onClick = { open = false; onBlock() })
             DropdownMenuItem(text = { Text("Report User") }, onClick = { open = false; onReport() })
@@ -80,12 +80,12 @@ fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit) {
 }
 
 @Composable
-fun BlockConfirmDialog(target: SocialTarget?, onConfirm: (SocialTarget) -> Unit, onDismiss: () -> Unit) {
+fun BlockConfirmDialog(target: SocialTarget?, onConfirm: (SocialTarget) -> Unit, onDismiss: () -> Unit, title: String? = null) {
     if (target == null) return
     val palette = AlphonsoColor.palette
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Block ${target.displayName}?") },
+        title = { Text(title ?: "Block ${target.displayName}?") },
         text = { Text(SocialSafetyCopy.blockConfirmationMessage(target.displayName)) },
         confirmButton = { TextButton(onClick = { onConfirm(target) }) { Text("Block", color = palette.destructive) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
