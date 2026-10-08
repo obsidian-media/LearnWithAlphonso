@@ -126,6 +126,14 @@ describe("authorizeAiRequest", () => {
     const r = await authorizeAiRequest(req(), "chat", { route: "chat" });
     if (r.ok) throw new Error("expected a failure");
     expect(r.response.status).toBe(429);
+    const body = (await r.response.json()) as {
+      error: string;
+      resetsAt: string | null;
+      message: string;
+    };
+    expect(body.error).toBe("quota-exceeded");
+    expect(body.resetsAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(body.message.length).toBeGreaterThan(0);
   });
 
   it("requireConsent: false skips the consent read (generate-practice only)", async () => {

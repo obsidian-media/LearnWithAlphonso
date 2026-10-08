@@ -438,4 +438,24 @@ describe("Campaign chat page", () => {
       expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
     );
   });
+
+  it("sends the course to /api/chat and /api/tts", async () => {
+    useProgress.setState({ course: "es" });
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Reply 1" });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await sendAndAwaitReply(user, "Un café de olla, por favor", "Reply 1");
+
+    const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const chat = calls.find(([u]) => String(u).includes("/api/chat"))!;
+    expect(JSON.parse(chat[1].body as string).course).toBe("es");
+    await waitFor(() => expect(calls.some(([u]) => String(u).includes("/api/tts"))).toBe(true));
+    for (const [, init] of calls.filter(([u]) => String(u).includes("/api/tts"))) {
+      expect(JSON.parse(init.body as string).course).toBe("es");
+    }
+  });
 });

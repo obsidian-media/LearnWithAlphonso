@@ -19,6 +19,11 @@ struct RootView: View {
     /// makes playback survive navigation for free on iOS -- the web app had
     /// to be restructured to get the same property.
     @State private var podcastPlayer = PodcastAudioPlayer()
+    /// The active course, shared by Learn, Practice and Hector.
+    @State private var activeCourse = ActiveCourseModel()
+    /// Every open conversation keyed by (scenario, course), held above the tabs so a conversation survives tab
+    /// switches. Cleared when the signed-in account changes.
+    @State private var conversationStore = ConversationStore()
     /// Onboarding after a sign-in: the public-name prompt first (while name_confirmed_at is NULL), then
     /// English placement (while it has never been taken; see PlacementView's doc comment). Each step shows at
     /// most once per sign-in, and a failed check skips its step this launch instead of blocking the app
@@ -77,7 +82,7 @@ struct RootView: View {
                     // the tab bar's own region and the bar overlaps it (device
                     // check #12). See View.podcastMiniBar.
                     TabView {
-                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager)
+                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))
@@ -89,10 +94,10 @@ struct RootView: View {
                         )
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Listen", systemImage: "headphones") }
-                        ConversationView(contentStore: contentStore, session: session)
+                        ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
-                        HectorView(session: session, entitlementStore: entitlementStore)
+                        HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Hector", systemImage: "sparkles") }
                         ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
@@ -124,6 +129,10 @@ struct RootView: View {
                         // holding one, because PodcastClient cannot refresh the
                         // token it was given.
                         podcastPlayer.makeClient = { makePodcastClient(session: session) }
+                        // The voice engine silences the podcast through this hook. It is registered here, with the
+                        // player this view actually keeps, because RootView's state initializer can build throwaway
+                        // players that would otherwise claim the hook and then disappear.
+                        VoiceAudioHooks.pauseOtherAudio = { [weak podcastPlayer] in podcastPlayer?.pauseForVoice() }
                         // Identity first: RevenueCat can still hold a previous account
                         // (an upgrade, an interrupted sign-out), and nothing here should
                         // run, or show Pro, before it is aliased to this account. See
@@ -185,6 +194,15 @@ struct RootView: View {
             if session.userID == nil {
                 await entitlementStore.reconcileSignedOut()
             }
+        }
+        // The next account on this device must not see the previous account's conversations, nor start in its course.
+        // The store is replaced, not emptied: a turn still in flight for the previous account holds the old store,
+        // so its late reply lands in a store nobody reads.
+        .onChange(of: session.userID) {
+            conversationStore = ConversationStore()
+        }
+        .onChange(of: session.userID, initial: true) {
+            activeCourse.accountChanged(to: session.userID)
         }
         .onAppear {
             // See updateRealSystemColorScheme's doc comment. Runs once,

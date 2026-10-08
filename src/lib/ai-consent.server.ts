@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { quotaFailureResponse } from "./ai-quota-response";
 import { consumeQuotaFor, verifyAuth, type QuotaKind } from "./ai-quota.server";
 
 /**
@@ -75,7 +76,7 @@ export async function authorizeAiRequest(
   if (!quota.ok)
     return {
       ok: false,
-      response: Response.json({ error: quota.message }, { status: quota.status }),
+      response: quotaFailureResponse(quota),
     };
   return { ok: true, userId: auth.userId, supabase: auth.supabase };
 }

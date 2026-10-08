@@ -114,7 +114,8 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         const resp = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ text }),
+          // The server picks this course's native voice.
+          body: JSON.stringify({ text, course }),
         });
         if (!resp.ok) return;
         const blob = await resp.blob();
@@ -130,7 +131,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         /* ignore */
       }
     },
-    [ttsOn],
+    [ttsOn, course],
   );
 
   // Auto-speak the opener once on mount
@@ -159,6 +160,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           body: JSON.stringify({
             systemPrompt: scenario.systemPrompt,
             cefrLevel,
+            course,
             // Only role/content -- confidence is this app's own UI
             // metadata, not part of the chat wire format.
             messages: next.map(({ role, content }) => ({ role, content })),
@@ -191,7 +193,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         setSending(false);
       }
     },
-    [messages, scenario.systemPrompt, cefrLevel, sending, speak, consent],
+    [messages, scenario.systemPrompt, cefrLevel, course, sending, speak, consent],
   );
 
   // The capture flow lives in useSpeechCapture so the speaking question type

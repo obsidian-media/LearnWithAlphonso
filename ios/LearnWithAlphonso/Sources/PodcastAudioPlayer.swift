@@ -75,6 +75,19 @@ final class PodcastAudioPlayer {
         configureRemoteCommands()
     }
 
+    /// The learner started speaking. RootView registers this as the voice engine's pause hook for the one player it
+    /// keeps (not here: RootView's state initializer can build throwaway players that must not claim the hook).
+    /// Never auto-resumes: resuming a podcast
+    /// over a speaking exercise is exactly what RecordingState exists to
+    /// prevent. The learner resumes from the mini bar.
+    func pauseForVoice() {
+        guard isPlaying else { return }
+        player?.pause()
+        isPlaying = false
+        pausedByRecording = false
+        updateNowPlaying()
+    }
+
     // MARK: - Playback
 
     /// Plays an episode, preferring a downloaded copy.

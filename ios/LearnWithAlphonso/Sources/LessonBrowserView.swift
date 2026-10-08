@@ -23,7 +23,10 @@ struct LessonBrowserView: View {
     let podcastPlayer: PodcastAudioPlayer
     let podcastDownloadManager: PodcastDownloadManager
 
-    @State private var course: Course = .english
+    /// Shared with Practice and Hector, so the course picked here is the course
+    /// every conversation speaks. Persisted across launches.
+    @Bindable var activeCourse: ActiveCourseModel
+    private var course: Course { activeCourse.course }
     @State private var showingSettings = false
     @State private var showingReview = false
     /// Which CEFR band is currently showing. Defaults to A1 until
@@ -227,7 +230,7 @@ struct LessonBrowserView: View {
             .navigationTitle("Learn with Alphonso")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    CoursePicker(course: $course)
+                    CoursePicker(course: $activeCourse.course)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

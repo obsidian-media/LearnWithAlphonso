@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createSupabaseFetch } from "@/integrations/supabase/fetch";
+import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 
 export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define";
 
@@ -29,7 +30,8 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
 };
 
 export type QuotaResult =
-  { ok: true; used: number; limit: number } | { ok: false; status: number; message: string };
+  | { ok: true; used: number; limit: number }
+  | { ok: false; status: number; message: string; code?: "quota-exceeded"; resetsAt?: string };
 
 export type AuthResult =
   | { ok: true; supabase: ReturnType<typeof createClient<Database>>; userId: string }
@@ -81,16 +83,21 @@ export async function verifyAuth(request: Request): Promise<AuthResult> {
  * their daily quota for `kind`. Returns a failure result when unauthenticated
  * or over the cap.
  */
-export async function consumeQuota(request: Request, kind: QuotaKind): Promise<QuotaResult> {
+export async function consumeQuota(
+  request: Request,
+  kind: QuotaKind,
+  now: Date = new Date(),
+): Promise<QuotaResult> {
   const auth = await verifyAuth(request);
   if (!auth.ok) return auth;
-  return consumeQuotaFor(auth.supabase, kind);
+  return consumeQuotaFor(auth.supabase, kind, now);
 }
 
 /** The rate-limit and daily-cap half of consumeQuota, for a caller that has already verified the session. */
 export async function consumeQuotaFor(
   supabase: ReturnType<typeof createClient<Database>>,
   kind: QuotaKind,
+  now: Date = new Date(),
 ): Promise<QuotaResult> {
   // Per-minute burst limit, on top of the daily cap below — checked first
   // so a rejected burst doesn't also eat into the day's quota.
@@ -104,6 +111,8 @@ export async function consumeQuotaFor(
       ok: false,
       status: 429,
       message: "Too many requests — slow down and try again in a minute.",
+      code: "quota-exceeded",
+      resetsAt: nextMinute(now),
     };
   }
 
@@ -119,6 +128,8 @@ export async function consumeQuotaFor(
       ok: false,
       status: 429,
       message: `Daily ${kind.toUpperCase()} limit reached (${limit}/day). Try again tomorrow.`,
+      code: "quota-exceeded",
+      resetsAt: nextUtcMidnight(now),
     };
   }
   return { ok: true, used: row.used ?? 0, limit };

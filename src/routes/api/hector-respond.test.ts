@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE } from "@/lib/ai-safety";
+import { buildHectorSystemPrompt } from "@/lib/hector-conversation";
 
 const getUser = vi.fn();
 const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
@@ -269,5 +270,88 @@ describe("POST /api/hector-respond", () => {
     const ttsUrl = String((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[1][0]);
     expect(ttsUrl).toContain("api.deepgram.com/v1/speak");
     expect(ttsUrl).toContain("mip_opt_out=true");
+  });
+});
+
+describe("POST /api/hector-respond course plumbing", () => {
+  function mockUpstream(reply = "Bonjour !") {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("integrate.api.nvidia.com")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: reply } }] }), {
+          status: 200,
+        });
+      }
+      return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    return fetchMock;
+  }
+
+  it("builds the French prompt at the sent level and speaks with the French voice", async () => {
+    const fetchMock = mockUpstream();
+    const res = await handler({
+      request: req({ text: "Salut", course: "fr", cefr_level: "B1", history: [] }),
+    });
+    expect(res.status).toBe(200);
+    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("nvidia"))!;
+    const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
+    expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("fr", "B1"));
+    const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
+    expect(String(ttsCall[0])).toContain("model=aura-2-agathe-fr");
+    expect(String(ttsCall[0])).toContain("mip_opt_out=true");
+    const json = await res.json();
+    expect(json.language).toBe("fr");
+    expect(json.tts_model).toBe("aura-2-agathe-fr");
+  });
+
+  it("uses the Latin American Spanish voice for the Spanish course", async () => {
+    const fetchMock = mockUpstream("¡Hola!");
+    await handler({ request: req({ text: "Hola", course: "es", cefr_level: "a2" }) });
+    const ttsCall = fetchMock.mock.calls.find(([u]) => String(u).includes("deepgram"))!;
+    expect(String(ttsCall[0])).toContain("model=aura-2-selena-es");
+  });
+
+  it("keeps a build that sends language 'en' and no course or level on English", async () => {
+    const fetchMock = mockUpstream("Hi!");
+    const res = await handler({ request: req({ text: "hello", language: "en" }) });
+    const llmCall = fetchMock.mock.calls.find(([u]) => String(u).includes("nvidia"))!;
+    const llmBody = JSON.parse((llmCall[1] as RequestInit).body as string);
+    expect(llmBody.messages[0].content).toContain(buildHectorSystemPrompt("en", ""));
+    expect((await res.json()).tts_model).toBe("aura-2-thalia-en");
+  });
+
+  it("falls back to the course's own fallback line when a reply is blocked", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [{ message: { content: "something bad" } }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    blockedRpc.mockImplementationOnce(async (_fn: string, args: { _texts: string[] }) => ({
+      data: args._texts.map(() => true),
+      error: null,
+    }));
+    const res = await handler({ request: req({ text: "Salut", course: "fr" }) });
+    expect(((await res.json()) as { reply: string }).reply).toBe(AI_OUTPUT_FALLBACK.fr);
+  });
+
+  it("returns the quota-exceeded contract", async () => {
+    consumeQuota.mockResolvedValue({
+      ok: false,
+      status: 429,
+      message: "Daily CHAT limit reached (60/day). Try again tomorrow.",
+      code: "quota-exceeded",
+      resetsAt: "2026-10-08T00:00:00.000Z",
+    });
+    const res = await handler({ request: req({ text: "hi", course: "fr" }) });
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({
+      error: "quota-exceeded",
+      resetsAt: "2026-10-08T00:00:00.000Z",
+      message: "Daily CHAT limit reached (60/day). Try again tomorrow.",
+    });
   });
 });

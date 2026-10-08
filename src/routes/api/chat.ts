@@ -3,6 +3,7 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
+import { COURSES, isCourse, type Course } from "@/data/courses";
 import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
@@ -30,12 +31,26 @@ type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 // src/data/legacy-system-prompts.test.ts), so installed clients keep working.
 const VALID_SYSTEM_PROMPTS: ReadonlySet<string> = ALL_SYSTEM_PROMPTS;
 
-const CEFR_DIFFICULTY_HINTS: Record<string, string> = {
-  A1: "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",
-  A2: "The learner's level is CEFR A2 (elementary). Use simple vocabulary and short, clear sentences. Avoid idioms and rare phrasal verbs; keep tenses mostly present/simple past.",
-  B1: "The learner's level is CEFR B1 (intermediate). Use everyday vocabulary and moderately complex sentences. Common idioms are fine if used naturally.",
-  B2: "The learner's level is CEFR B2 (upper-intermediate). Use natural, varied vocabulary and sentence structure, similar to talking with a competent English speaker.",
-  C1: "The learner's level is CEFR C1 (advanced). Use natural, idiomatic English with varied sentence structure -- don't simplify for them.",
+/**
+ * Language-neutral. The B2 and C1 hints used to say "English" for every course,
+ * which pulled French and Spanish partners toward English. `language` is the
+ * course's target language; for "en" every string is byte-identical to the
+ * earlier hint, so legacy clients see no change.
+ */
+/** The most recent turns forwarded to the model, matching the tutor route's cap. */
+const MAX_TURNS_SENT = 40;
+
+const CEFR_DIFFICULTY_HINTS: Record<string, (language: string) => string> = {
+  A1: () =>
+    "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",
+  A2: () =>
+    "The learner's level is CEFR A2 (elementary). Use simple vocabulary and short, clear sentences. Avoid idioms and rare phrasal verbs; keep tenses mostly present/simple past.",
+  B1: () =>
+    "The learner's level is CEFR B1 (intermediate). Use everyday vocabulary and moderately complex sentences. Common idioms are fine if used naturally.",
+  B2: (language) =>
+    `The learner's level is CEFR B2 (upper-intermediate). Use natural, varied vocabulary and sentence structure, similar to talking with a competent ${language} speaker.`,
+  C1: (language) =>
+    `The learner's level is CEFR C1 (advanced). Use natural, idiomatic ${language} with varied sentence structure -- don't simplify for them.`,
 };
 
 /**
@@ -46,9 +61,15 @@ const CEFR_DIFFICULTY_HINTS: Record<string, string> = {
  * already was. Appended after the scenario's own systemPrompt so it
  * doesn't override the scenario's persona/character instructions.
  */
-function withDifficultyHint(systemPrompt: string, cefrLevel?: string): string {
+function withDifficultyHint(
+  systemPrompt: string,
+  cefrLevel: string | undefined,
+  course: Course,
+): string {
   const hint = cefrLevel ? CEFR_DIFFICULTY_HINTS[cefrLevel] : undefined;
-  return hint ? `${systemPrompt}\n\n${hint}` : systemPrompt;
+  if (!hint) return systemPrompt;
+  const language = COURSES.find((c) => c.id === course)?.targetLanguage ?? "English";
+  return `${systemPrompt}\n\n${hint(language)}`;
 }
 
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
@@ -63,6 +84,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     messages?: ChatMessage[];
     systemPrompt?: string;
     cefrLevel?: string;
+    course?: string;
   };
   try {
     body = await request.json();
@@ -80,13 +102,21 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // (below, from body.systemPrompt) gets prepended to -- a second,
   // client-controlled system message the model would see, not just
   // the one this route intends to send.
-  const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
-    (m): m is ChatMessage =>
-      !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
-  );
+  const messages = (Array.isArray(body.messages) ? body.messages : [])
+    .filter(
+      (m): m is ChatMessage =>
+        !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+    )
+    // A conversation can run long; the model only needs the recent turns.
+    .slice(-MAX_TURNS_SENT);
   if (messages.length === 0) return Response.json({ error: "messages required" }, { status: 400 });
+  // The conversation's course. Clients that send none (earlier builds) get the course the matched persona belongs
+  // to, which is English for every earlier persona.
+  const course: Course =
+    courseOfSystemPrompt(body.systemPrompt) ??
+    (typeof body.course === "string" && isCourse(body.course) ? body.course : "en");
   const finalMessages: ChatMessage[] = [
-    { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel) },
+    { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel, course) },
     ...messages,
   ];
 
@@ -111,11 +141,10 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   });
   if (!llm.ok) return llm.failure;
   // The fallback language and the output mask follow the persona the server matched, never a client field.
-  const course = courseOfSystemPrompt(body.systemPrompt) ?? "en";
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const safe = await filterModelOutput(llm.content, {
     check: makeBlockedTermCheck(supabaseAdmin),
-    course,
+    course: courseOfSystemPrompt(body.systemPrompt) ?? "en",
     route: "chat",
   });
   return Response.json({ content: safe.text });

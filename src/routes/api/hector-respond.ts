@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
-import { isCourse } from "@/data/courses";
 import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
+  buildHectorSystemPrompt,
   deepgramVoiceForLanguage,
+  resolveTutorCourse,
   shapeTutorReply,
   type TutorHistoryMessage,
 } from "@/lib/hector-conversation";
@@ -56,12 +58,14 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     const { consumeQuota } = await import("@/lib/ai-quota.server");
     return consumeQuota(request, "chat");
   });
-  if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+  if (!quota.ok) return quotaFailureResponse(quota);
 
   let body: {
     session_id?: string;
     text?: string;
     language?: string;
+    course?: string;
+    cefr_level?: string;
     agent_id?: string;
     history?: TutorHistoryMessage[];
   };
@@ -72,7 +76,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   }
   const text = (body.text ?? "").trim();
   if (!text) return Response.json({ error: "text required" }, { status: 400 });
-  const language = body.language || "en";
+  // `course` and `cefr_level` come from current clients; `language` is what every earlier build sends ("en").
+  // The resolved course drives the prompt, the voice, the output filter's fallback and the reply's `language`.
+  const course = resolveTutorCourse(body.course, body.language);
+  const systemPrompt = buildHectorSystemPrompt(course, body.cefr_level ?? "");
   const sessionId = body.session_id || crypto.randomUUID();
   const agent = body.agent_id || "tutor";
 
@@ -83,7 +90,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       apiKey: nvidiaKey,
       body: {
         model: resolveNvidiaChatModel(),
-        messages: buildHectorMessages(body.history ?? [], text),
+        messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
       },
     });
     if (!llmResp.ok) {
@@ -112,13 +119,13 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const safeReply = (
     await filterModelOutput(reply, {
       check: makeBlockedTermCheck(supabaseAdmin),
-      course: isCourse(language) ? language : "en",
+      course,
       route: "hector-respond",
     })
   ).text;
 
   // --- TTS (Deepgram, same as /api/tts) → base64 for the client ---
-  const ttsModel = deepgramVoiceForLanguage(language);
+  const ttsModel = deepgramVoiceForLanguage(course);
   const ttsStart = performance.now();
   const tts = await timer.time("tts", async () => {
     const ttsResp = await fetch(
@@ -156,7 +163,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       reply: safeReply,
       audioBase64,
       ttsModel,
-      language,
+      language: course,
       llmMs,
       ttsMs,
     }),

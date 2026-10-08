@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
-import { isCourse } from "@/data/courses";
+import { COURSES, isCourse, type Course } from "@/data/courses";
 import { makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
@@ -42,14 +42,23 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           return Response.json({ weaknessesDetected: 0 });
         }
 
+        // The conversation's course. Clients that send none (earlier builds) are English.
+        const course: Course =
+          typeof body.course === "string" && isCourse(body.course) ? body.course : "en";
+        const language = COURSES.find((c) => c.id === course)?.targetLanguage ?? "English";
+        const sourceDescription =
+          course === "en"
+            ? "English-learner conversation"
+            : `conversation with a learner of ${language} (write the question, its choices and the display text in ${language}; write the explanation in English)`;
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const inserted = await detectAndRecordWeaknesses({
           userId,
-          sourceDescription: "English-learner conversation",
+          sourceDescription,
           transcriptMessages: messages,
           nvidiaApiKey: key,
           nvidiaModel: resolveNvidiaChatModel(),
-          course: typeof body.course === "string" && isCourse(body.course) ? body.course : "en",
+          course,
           outputCheck: makeBlockedTermCheck(supabaseAdmin),
           dedupCheck: async (label) => {
             const { data: existing } = await supabase
@@ -58,6 +67,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
               .eq("user_id", userId)
               .eq("source", "weakness")
               .eq("weakness_label", label)
+              .eq("language", course)
               .maybeSingle();
             return !!existing;
           },
@@ -68,7 +78,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
               item_key: itemKey,
               lesson_id: "weakness",
               level: "A1",
-              language: "en",
+              language: course,
               ease: 2.5,
               interval_days: 0,
               repetitions: 0,

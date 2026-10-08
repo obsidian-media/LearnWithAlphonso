@@ -208,4 +208,31 @@ describe("POST /api/analyze-weaknesses", () => {
     expect(await res.json()).toEqual({ weaknessesDetected: 0 });
     expect(reviewItemsInsert).not.toHaveBeenCalled();
   });
+
+  it("records a French conversation's weaknesses under fr and asks for French questions", async () => {
+    const res = await handler({
+      request: req({
+        course: "fr",
+        messages: [
+          { role: "assistant", content: "Salut ! Ton week-end ?" },
+          { role: "user", content: "Je suis allé au parc hier." },
+        ],
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(reviewItemsInsert).toHaveBeenCalledWith(expect.objectContaining({ language: "fr" }));
+    expect(supabaseSelectChain.eq).toHaveBeenCalledWith("language", "fr");
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String((init as RequestInit).body)).toContain("learner of French");
+  });
+
+  it("keeps English for a client that sends no course", async () => {
+    await handler({
+      request: req({ messages: [{ role: "user", content: "I go to the park yesterday." }] }),
+    });
+    expect(reviewItemsInsert).toHaveBeenCalledWith(expect.objectContaining({ language: "en" }));
+    expect(supabaseSelectChain.eq).toHaveBeenCalledWith("language", "en");
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String((init as RequestInit).body)).toContain("English-learner conversation");
+  });
 });

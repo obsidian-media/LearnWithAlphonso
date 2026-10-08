@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
@@ -105,7 +106,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     const { consumeQuota } = await import("@/lib/ai-quota.server");
     return consumeQuota(request, "define");
   });
-  if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+  if (!quota.ok) return quotaFailureResponse(quota);
 
   const definition = await timer.time("llm", () =>
     defineWord({ input, apiKey: nvidiaKey, model: resolveNvidiaChatModel() }),

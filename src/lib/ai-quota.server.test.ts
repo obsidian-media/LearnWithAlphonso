@@ -44,25 +44,40 @@ describe("consumeQuota", () => {
     });
   });
 
-  it("rejects when the per-minute burst limit is exceeded", async () => {
+  it("rejects when the per-minute burst limit is exceeded, with the next-minute reset", async () => {
     getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
     rpc.mockResolvedValueOnce({ data: [{ allowed: false }], error: null }); // consume_ai_rate_limit
-    const result = await consumeQuota(req({ Authorization: "Bearer tok" }), "chat");
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.status).toBe(429);
+    const result = await consumeQuota(
+      req({ Authorization: "Bearer tok" }),
+      "chat",
+      new Date("2026-10-07T18:00:40Z"),
+    );
+    expect(result).toEqual({
+      ok: false,
+      status: 429,
+      message: "Too many requests — slow down and try again in a minute.",
+      code: "quota-exceeded",
+      resetsAt: "2026-10-07T18:01:00.000Z",
+    });
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects when the daily quota is exhausted", async () => {
+  it("rejects when the daily quota is exhausted, with the next UTC midnight as the reset", async () => {
     getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
     rpc
       .mockResolvedValueOnce({ data: [{ allowed: true }], error: null }) // rate limit ok
       .mockResolvedValueOnce({ data: [{ allowed: false, used: 60 }], error: null }); // daily cap hit
-    const result = await consumeQuota(req({ Authorization: "Bearer tok" }), "chat");
+    const result = await consumeQuota(
+      req({ Authorization: "Bearer tok" }),
+      "chat",
+      new Date("2026-10-07T18:00:00Z"),
+    );
     expect(result).toEqual({
       ok: false,
       status: 429,
       message: "Daily CHAT limit reached (60/day). Try again tomorrow.",
+      code: "quota-exceeded",
+      resetsAt: "2026-10-08T00:00:00.000Z",
     });
   });
 
