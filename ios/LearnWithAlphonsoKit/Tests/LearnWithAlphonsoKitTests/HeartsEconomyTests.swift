@@ -101,4 +101,19 @@ final class HeartsEconomyTests: XCTestCase {
         let result = HeartsEconomy.buyHeartWithXp(hearts: 2, xp: HeartsEconomy.xpHeartCost)
         XCTAssertEqual(result, .ok(hearts: 3, xp: 0))
     }
+
+    // MARK: - gate: same vectors as src/lib/hearts.test.ts's heartsGate block
+    func testGateOpenWithHeartsLeft() {
+        XCTAssertEqual(HeartsEconomy.gate(hearts: 1, heartsRefillAt: nil, now: Date(timeIntervalSince1970: 1)), .open)
+    }
+    func testGateBlocksAtZeroBeforeRefillAndReportsIt() {
+        let refill = Date(timeIntervalSince1970: 5)
+        XCTAssertEqual(HeartsEconomy.gate(hearts: 0, heartsRefillAt: refill, now: Date(timeIntervalSince1970: 1)), .outOfHearts(refillAt: refill))
+    }
+    func testGateOpensOnceRefillHasPassed() {
+        XCTAssertEqual(HeartsEconomy.gate(hearts: 0, heartsRefillAt: Date(timeIntervalSince1970: 5), now: Date(timeIntervalSince1970: 5)), .open)
+    }
+    func testGateBlocksANegativeCountWithNoTimer() {
+        XCTAssertEqual(HeartsEconomy.gate(hearts: -1, heartsRefillAt: nil, now: Date(timeIntervalSince1970: 1)), .outOfHearts(refillAt: nil))
+    }
 }

@@ -116,11 +116,15 @@ public final class AIConversationClient: Sendable {
     /// quota with its reset time, not-entitled, consent, network. A consent
     /// refusal also announces itself so the consent store can follow. The other
     /// calls keep their existing error types.
-    private func performConversationCall(_ request: URLRequest) async throws -> Data {
-        let data: Data
-        let response: URLResponse
+    private func performConversationCall(_ request: URLRequest, retryEmptyReply: Bool = false) async throws -> Data {
+        var data: Data
+        var response: URLResponse
         do {
             (data, response) = try await perform(request)
+            // The server says 502 empty-reply when the model returned nothing. One retry, never a loop.
+            if retryEmptyReply, Self.isEmptyReply(data: data, response: response) {
+                (data, response) = try await perform(request)
+            }
         } catch {
             throw TutorError.from(error)
         }
@@ -130,6 +134,11 @@ public final class AIConversationClient: Sendable {
             throw TutorError.from(status: http.statusCode, body: data)
         }
         return data
+    }
+
+    static func isEmptyReply(data: Data, response: URLResponse) -> Bool {
+        guard (response as? HTTPURLResponse)?.statusCode == 502 else { return false }
+        return TutorError.errorCode(in: data) == "empty-reply"
     }
 
     /// POST /api/chat -- returns the assistant's reply text. `cefrLevel`
@@ -150,7 +159,7 @@ public final class AIConversationClient: Sendable {
         if let course { payload["course"] = course }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let data = try await performConversationCall(request)
+        let data = try await performConversationCall(request, retryEmptyReply: true)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let content = object["content"] as? String else {
             throw TutorError.server(message: nil)
@@ -267,7 +276,7 @@ public final class AIConversationClient: Sendable {
             alreadySaved: alreadySaved, word: savedWord, sentence: savedSentence, explanation: explanation)
     }
 
-    /// POST /api/generate-practice -- V3 pkg 4b "generative sentence
+    /// Throws `TutorError` for HTTP failures. POST /api/generate-practice -- V3 pkg 4b "generative sentence
     /// content." On-demand extra practice for a lesson the learner just
     /// finished; entirely ephemeral on the caller's side too (never
     /// persisted, never touches XP/hearts/review scheduling), same
@@ -280,20 +289,15 @@ public final class AIConversationClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["lessonId": lessonID, "course": course])
-        // TestFlight feedback (2026-09-29): "unlimited buffering cycle
-        // without ever generating any more practice." A real production
-        // log for the one attempt found showed the request actually
-        // succeeded server-side with no error -- most likely a genuinely
-        // slow LLM call with zero on-screen indication of how long that
-        // can take, not a true infinite hang. This caps it as a real
-        // safety net regardless: URLRequest's un-set default
-        // (60s per-attempt, but URLSession's resource timeout is 7 days)
-        // could otherwise leave the spinner running far longer than any
-        // user would wait.
-        request.timeoutInterval = 45
+        // The server answers within about 20 s (two 8 s model attempts, then its own fallback set), so a request
+        // still open after 25 s is a dead connection, not a slow model.
+        request.timeoutInterval = 25
 
         let (data, response) = try await requester(request)
-        try Self.requireSuccess(data: data, response: response)
+        if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            // A quota 429 carries resetsAt, so the learner sees when it resets (TutorError's copy).
+            throw TutorError.from(status: http.statusCode, body: data)
+        }
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let rows = object["questions"] as? [[String: Any]] else {
             throw AIConversationError.invalidPayload

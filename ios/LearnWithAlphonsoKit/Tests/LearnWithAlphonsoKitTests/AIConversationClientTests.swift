@@ -171,7 +171,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.generatePractice(lessonID: "u1l1", course: "en")
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? AIConversationError, .server(status: 429, message: "slow down"))
+            XCTAssertEqual(error as? TutorError, .server(message: nil))
         }
     }
 
@@ -619,5 +619,64 @@ final class AIConversationClientTests: XCTestCase {
             XCTAssertEqual(error as? TutorError, .server(message: nil))
         }
         await fulfillment(of: [notAnnounced], timeout: 0.3)
+    }
+
+    // MARK: - learning flow
+
+    func testChatRetriesOnceOnEmptyReplyAndReturnsTheSecondReply() async throws {
+        let calls = TestCapture(0)
+        let client = makeClient { request in
+            calls.value += 1
+            if calls.value == 1 {
+                let body = try! JSONSerialization.data(withJSONObject: ["error": "empty-reply"])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 502, httpVersion: nil, headerFields: nil)!)
+            }
+            let body = try! JSONSerialization.data(withJSONObject: ["content": "Bonjour"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        let reply = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+        XCTAssertEqual(reply, "Bonjour")
+        XCTAssertEqual(calls.value, 2)
+    }
+
+    func testChatDoesNotRetryASecondEmptyReplyOrAnOther502() async {
+        for code in ["empty-reply", "upstream"] {
+            let calls = TestCapture(0)
+            let client = makeClient { request in
+                calls.value += 1
+                return (try! JSONSerialization.data(withJSONObject: ["error": code]), HTTPURLResponse(url: request.url!, statusCode: 502, httpVersion: nil, headerFields: nil)!)
+            }
+            do {
+                _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+                XCTFail("expected an error")
+            } catch {
+                XCTAssertTrue(error is TutorError)
+            }
+            XCTAssertEqual(calls.value, code == "empty-reply" ? 2 : 1)
+        }
+    }
+
+    func testGeneratePracticeQuotaIsATutorQuotaErrorWithResetsAt() async {
+        let client = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "quota-exceeded", "resetsAt": "2026-10-09T00:00:00.000Z"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!)
+        }
+        do {
+            _ = try await client.generatePractice(lessonID: "u1l1", course: "en")
+            XCTFail("expected an error")
+        } catch {
+            guard case .quotaExceeded(let resetsAt)? = error as? TutorError else { return XCTFail("\(error)") }
+            XCTAssertNotNil(resetsAt)
+        }
+    }
+
+    func testGeneratePracticeTimeoutIs25Seconds() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return (try! JSONSerialization.data(withJSONObject: ["questions": [] as [Any]]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        _ = try await client.generatePractice(lessonID: "u1l1", course: "en")
+        XCTAssertEqual(captured.value?.timeoutInterval, 25)
     }
 }
