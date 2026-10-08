@@ -35,6 +35,8 @@ public struct TeamMember: Sendable, Equatable, Identifiable {
     public let avatarSeed: String
     public let joinedAt: Date
     public let isOwner: Bool
+    /// Only the owner's list contains members they blocked (so they can remove them); false from an older server.
+    public var isBlocked: Bool = false
 }
 
 extension ProgressSyncClient {
@@ -112,7 +114,8 @@ extension ProgressSyncClient {
                   let joinedAt = Self.parsePostgresTimestamp(joinedAtStr) else { return nil }
             return TeamMember(
                 userID: userID, displayName: displayName, avatarSeed: avatarSeed,
-                joinedAt: joinedAt, isOwner: row["is_owner"] as? Bool ?? false
+                joinedAt: joinedAt, isOwner: row["is_owner"] as? Bool ?? false,
+                isBlocked: row["blocked"] as? Bool ?? false
             )
         }
     }

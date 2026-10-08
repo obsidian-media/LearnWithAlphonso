@@ -9,7 +9,9 @@ describe("iOS social views", () => {
   for (const file of ["TeamsView.swift", "DuelsView.swift", "BuddySectionView.swift"]) {
     it(`${file} has no try? on a user-visible call`, () => {
       // Allowed: try? await Task.sleep (a cancelled sleep is not a failure).
-      const offenders = read(file).split("\n").filter((l) => /try\?/.test(l) && !/Task\.sleep/.test(l));
+      const offenders = read(file)
+        .split("\n")
+        .filter((l) => /try\?/.test(l) && !/Task\.sleep/.test(l));
       expect(offenders).toEqual([]);
     });
   }
@@ -23,6 +25,11 @@ describe("iOS social views", () => {
     const settings = read("SettingsView.swift");
     expect(settings).toContain("client.confirmDisplayName(");
     expect(settings).toContain("SocialReasonCopy.nameSaveMessage(for: error)");
-    expect(settings).not.toContain("\"Couldn't save your name. Try again.\"");
+    expect(settings).not.toContain('"Couldn\'t save your name. Try again."');
+  });
+  it("the owner's kick list marks blocked members", () => {
+    const teams = read("TeamsView.swift");
+    expect(teams).toMatch(/if member\.isBlocked \{[\s\S]{0,300}Text\("Blocked"\)/);
+    expect(teams).toContain("!member.isBlocked");
   });
 });

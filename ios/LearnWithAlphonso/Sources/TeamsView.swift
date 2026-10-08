@@ -82,6 +82,12 @@ struct TeamsView: View {
                                     .font(AlphonsoFont.sans(11, weight: .semiBold))
                                     .foregroundStyle(AlphonsoColor.ember)
                             }
+                            if member.isBlocked {
+                                // Only the owner's list contains blocked members; shown so they can be removed.
+                                Text("Blocked")
+                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
+                                    .foregroundStyle(AlphonsoColor.destructive)
+                            }
                             Spacer()
                             if myTeam.isOwner && !member.isOwner {
                                 Button(role: .destructive) {
@@ -95,7 +101,7 @@ struct TeamsView: View {
                                 // fires both.
                                 .buttonStyle(.borderless)
                             }
-                            if member.userID != session.userID {
+                            if member.userID != session.userID && !member.isBlocked {
                                 SocialSafetyMenu(
                                     onBlock: { blockTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
                                     onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) }

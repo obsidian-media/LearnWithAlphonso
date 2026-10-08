@@ -212,6 +212,7 @@ suspend fun ProgressSyncClient.getTeamMembers(): List<TeamMember> =
             avatarSeed = row.string("avatar_seed") ?: return@mapNotNull null,
             joinedAtMillis = row.millis(this, "joined_at") ?: return@mapNotNull null,
             isOwner = row.bool("is_owner") ?: false,
+            isBlocked = row.bool("blocked") ?: false,
         )
     }
 
