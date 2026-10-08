@@ -391,4 +391,89 @@ describe("POST /api/chat", () => {
     });
     expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.fr });
   });
+
+  describe("CEFR hints follow the course", () => {
+    function okReply() {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+          status: 200,
+        }),
+      );
+    }
+    function sentSystemPrompt(): string {
+      const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      return JSON.parse(init.body as string).messages[0].content as string;
+    }
+
+    it("names French in the C1 hint for a French conversation", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: scenarioPrompt("coffee", "fr"),
+          cefrLevel: "C1",
+          course: "fr",
+          messages: [{ role: "user", content: "Bonjour" }],
+        }),
+      });
+      const prompt = sentSystemPrompt();
+      expect(prompt).toContain(
+        "The learner's level is CEFR C1 (advanced). Use natural, idiomatic French with varied sentence structure -- don't simplify for them.",
+      );
+      expect(prompt).not.toContain("idiomatic English");
+    });
+
+    it("names Spanish in the B2 hint for a Spanish conversation", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: scenarioPrompt("coffee", "es"),
+          cefrLevel: "B2",
+          course: "es",
+          messages: [{ role: "user", content: "Hola" }],
+        }),
+      });
+      expect(sentSystemPrompt()).toContain("similar to talking with a competent Spanish speaker.");
+    });
+
+    it("keeps the English hint byte-identical for a legacy client that sends no course", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: REAL_PROMPT,
+          cefrLevel: "C1",
+          messages: [{ role: "user", content: "hi" }],
+        }),
+      });
+      expect(sentSystemPrompt()).toContain(
+        "The learner's level is CEFR C1 (advanced). Use natural, idiomatic English with varied sentence structure -- don't simplify for them.",
+      );
+    });
+
+    it("treats an unknown course as English", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: REAL_PROMPT,
+          cefrLevel: "B2",
+          course: "de",
+          messages: [{ role: "user", content: "hi" }],
+        }),
+      });
+      expect(sentSystemPrompt()).toContain("a competent English speaker");
+    });
+
+    it("follows the persona's own course when the client sends none", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: scenarioPrompt("coffee", "fr"),
+          cefrLevel: "B2",
+          messages: [{ role: "user", content: "Bonjour" }],
+        }),
+      });
+      const prompt = sentSystemPrompt();
+      expect(prompt).toContain("a competent French speaker");
+      expect(prompt).not.toContain("English speaker");
+    });
+  });
 });
