@@ -159,6 +159,12 @@ describe("buildScenarioRows", () => {
       expect(["Beginner", "Intermediate", "Advanced"]).toContain(r.level);
     }
   });
+
+  it("seeds the English variant (the scenarios table has no course column)", () => {
+    const coffee = buildScenarioRows().find((r) => r.id === "coffee")!;
+    expect(coffee.title).toBe("Order coffee");
+    expect(coffee.system_prompt).toBe(SCENARIOS.find((s) => s.id === "coffee")!.systemPrompt.en);
+  });
 });
 
 describe("buildFullSeed", () => {

@@ -6,7 +6,7 @@
  * -- ContentStore and its tests depend on that copy specifically). Both
  * are written from the same generated payload in one pass so they can't
  * drift from each other. Re-run this whenever curriculum.ts,
- * curriculum-fr.ts, or scenarios.ts change -- the native app has no other
+ * curriculum-fr.ts, scenarios.ts, or campaigns.ts change -- the native app has no other
  * way to pick up content changes short of a new build (see the native
  * app's design doc, docs/superpowers/specs/2026-09-17-native-ios-app-design.md,
  * for why content is bundled rather than fetched at runtime for V1).
@@ -52,8 +52,14 @@ function writeJSON(filename: string, data: unknown) {
 writeJSON("curriculum-en.json", buildIOSContentBundle("en"));
 writeJSON("curriculum-fr.json", buildIOSContentBundle("fr"));
 writeJSON("curriculum-es.json", buildIOSContentBundle("es"));
-writeJSON("scenarios.json", buildIOSScenariosBundle());
-writeJSON("campaigns.json", buildIOSCampaignsBundle());
+// English keeps the unsuffixed names (shared shape with Android);
+// fr/es are separate flat files read only by the Kit's ContentStore.
+writeJSON("scenarios.json", buildIOSScenariosBundle("en"));
+writeJSON("scenarios-fr.json", buildIOSScenariosBundle("fr"));
+writeJSON("scenarios-es.json", buildIOSScenariosBundle("es"));
+writeJSON("campaigns.json", buildIOSCampaignsBundle("en"));
+writeJSON("campaigns-fr.json", buildIOSCampaignsBundle("fr"));
+writeJSON("campaigns-es.json", buildIOSCampaignsBundle("es"));
 writeJSON("achievements.json", buildIOSAchievementsBundle());
 writeJSON("vocab-images.json", buildIOSVocabImagesBundle());
 writeJSON("placement-en.json", buildIOSPlacementBundle("en"));

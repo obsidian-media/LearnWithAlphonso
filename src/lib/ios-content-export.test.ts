@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   buildIOSContentBundle,
   buildIOSScenariosBundle,
+  buildIOSCampaignsBundle,
   buildIOSPlacementBundle,
 } from "./ios-content-export";
 import { PLACEMENT_ORDER } from "@/data/placement";
+import { scenarioPrompt } from "@/data/scenarios";
+import { campaignScenePrompt } from "@/data/campaigns";
 
 describe("buildIOSContentBundle", () => {
   it("exports the full English curriculum with the expected lesson count", () => {
@@ -34,14 +37,53 @@ describe("buildIOSContentBundle", () => {
     expect(hasFill).toBe(true);
   });
 
-  it("exports conversation scenarios with all required fields", () => {
-    const scenarios = buildIOSScenariosBundle();
-    expect(scenarios.length).toBeGreaterThan(0);
-    for (const s of scenarios) {
-      expect(s.id).toBeTruthy();
-      expect(s.systemPrompt).toBeTruthy();
-      expect(s.opener).toBeTruthy();
+  it("exports each course's scenarios flat, in the legacy key order, with the same ids", () => {
+    const en = buildIOSScenariosBundle("en");
+    expect(en).toHaveLength(12);
+    for (const course of ["en", "fr", "es"] as const) {
+      const bundle = buildIOSScenariosBundle(course);
+      expect(bundle.map((s) => s.id)).toEqual(en.map((s) => s.id));
+      for (const s of bundle) {
+        expect(Object.keys(s)).toEqual([
+          "id",
+          "title",
+          "emoji",
+          "blurb",
+          "level",
+          "systemPrompt",
+          "opener",
+        ]);
+        expect(s.systemPrompt).toBe(scenarioPrompt(s.id, course));
+        expect(s.opener).toBeTruthy();
+      }
     }
+  });
+
+  it("exports each course's campaigns flat, composing to the whitelisted scene prompt", () => {
+    for (const course of ["en", "fr", "es"] as const) {
+      const [campaign] = buildIOSCampaignsBundle(course);
+      expect(Object.keys(campaign)).toEqual([
+        "id",
+        "title",
+        "emoji",
+        "blurb",
+        "level",
+        "premise",
+        "scenes",
+      ]);
+      expect(campaign.scenes.map((s) => s.id)).toEqual(["coffee-stop", "directions", "small-talk"]);
+      for (const scene of campaign.scenes) {
+        expect(Object.keys(scene)).toEqual(["id", "title", "systemPrompt", "opener", "minTurns"]);
+        expect(`${campaign.premise}\n\n${scene.systemPrompt}`).toBe(
+          campaignScenePrompt(campaign.id, scene.id, course),
+        );
+      }
+    }
+  });
+
+  it("defaults to English, so the Android export's no-argument calls are unchanged", () => {
+    expect(buildIOSScenariosBundle()).toEqual(buildIOSScenariosBundle("en"));
+    expect(buildIOSCampaignsBundle()).toEqual(buildIOSCampaignsBundle("en"));
   });
 
   it("exports the full placement pool for every course, with every band represented", () => {

@@ -1,6 +1,6 @@
 import { getCourse, type Course } from "@/data/courses";
-import { SCENARIOS } from "@/data/scenarios";
-import { CAMPAIGNS, type Campaign } from "@/data/campaigns";
+import { scenariosFor, type LocalizedScenario } from "@/data/scenarios";
+import { campaignsFor, type LocalizedCampaign } from "@/data/campaigns";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
 import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
@@ -26,28 +26,29 @@ export function buildIOSContentBundle(course: Course): IOSContentBundle {
   return { course, units: curriculum };
 }
 
-export type IOSScenario = {
-  id: string;
-  title: string;
-  emoji: string;
-  blurb: string;
-  level: "Beginner" | "Intermediate" | "Advanced";
-  systemPrompt: string;
-  opener: string;
-};
-
-/** Same pass-through reasoning as buildIOSContentBundle, for SCENARIOS. */
-export function buildIOSScenariosBundle(): IOSScenario[] {
-  return SCENARIOS;
-}
+/** One course's flat scenario, exactly the shape the Kit's `Scenario` decodes. */
+export type IOSScenario = LocalizedScenario;
 
 /**
- * V4 candidate #4: same pass-through reasoning as buildIOSScenariosBundle,
- * for CAMPAIGNS -- iOS decodes this into the mirrored `Campaign`/
- * `CampaignScene` Decodable structs in CurriculumModels.swift.
+ * One course's scenarios, flat. Defaults to English because
+ * scripts/export-android-content.ts calls this with no argument and Android
+ * must keep decoding the unchanged English file.
  */
-export function buildIOSCampaignsBundle(): Campaign[] {
-  return CAMPAIGNS;
+export function buildIOSScenariosBundle(course: Course = "en"): IOSScenario[] {
+  return scenariosFor(course);
+}
+
+/** One course's flat campaign, exactly the shape the Kit's `Campaign` decodes. */
+export type IOSCampaign = LocalizedCampaign;
+
+/**
+ * V4 candidate #4, made per-course: same pass-through reasoning as
+ * buildIOSScenariosBundle. iOS decodes this into the mirrored `Campaign`/
+ * `CampaignScene` structs in CurriculumModels.swift; the course lives in the
+ * file name (campaigns.json = en, campaigns-fr.json, campaigns-es.json).
+ */
+export function buildIOSCampaignsBundle(course: Course = "en"): IOSCampaign[] {
+  return campaignsFor(course);
 }
 
 /** Same pass-through reasoning as buildIOSContentBundle, for ACHIEVEMENTS. */

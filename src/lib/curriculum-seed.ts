@@ -1,6 +1,6 @@
 import { COURSES, getCourse, type Course } from "@/data/courses";
 import { LEVELS } from "@/data/levels";
-import { SCENARIOS } from "@/data/scenarios";
+import { scenariosFor } from "@/data/scenarios";
 import { VOCAB_IMAGES } from "@/data/vocab-images";
 import type { Question } from "@/data/curriculum";
 
@@ -252,9 +252,14 @@ export function buildPlacementQuestionRows(course: Course): PlacementQuestionRow
   });
 }
 
-/** SCENARIOS is course-agnostic (no French variant exists today). */
+/**
+ * The `scenarios` table has no course column, so it keeps the English
+ * variant (the original content). Nothing reads this table at runtime -- the
+ * apps use src/data/scenarios.ts and its bundled exports -- so seeding fr/es
+ * here would need a migration for no reader. Revisit only if a reader appears.
+ */
 export function buildScenarioRows(): ScenarioRow[] {
-  return SCENARIOS.map((s) => ({
+  return scenariosFor("en").map((s) => ({
     id: s.id,
     title: s.title,
     emoji: s.emoji,
