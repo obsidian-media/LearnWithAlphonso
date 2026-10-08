@@ -52,10 +52,14 @@ vi.mock("../../data/bank-engine", async (importOriginal) => {
 const startLessonSession = vi.fn();
 const completeLessonRemote = vi.fn();
 const loseHeartRemote = vi.fn();
+const buyHeartWithXpRemote = vi.fn();
+const restoreHeartsRemote = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({
   startLessonSession,
   completeLessonRemote,
   loseHeartRemote,
+  buyHeartWithXpRemote,
+  restoreHeartsRemote,
 }));
 
 const recordMisses = vi.fn();
@@ -101,11 +105,47 @@ beforeEach(() => {
   completeLessonRemote.mockReset();
   loseHeartRemote.mockReset();
   loseHeartRemote.mockResolvedValue({ hearts: 4 });
+  buyHeartWithXpRemote.mockReset();
+  restoreHeartsRemote.mockReset();
+  restoreHeartsRemote.mockResolvedValue({ hearts: 5 });
   recordMisses.mockReset();
   recordMisses.mockResolvedValue({ added: 1 });
   pickReinforcementQuestion.mockReset();
   pickReinforcementQuestion.mockReturnValue(null);
   useProgress.getState().reset();
+});
+
+describe("out of hearts", () => {
+  it("shows the hearts dialog, not the lesson, when the server says out-of-hearts", async () => {
+    startLessonSession.mockResolvedValue({ error: "out-of-hearts", refillAt: Date.now() + 5 * 60_000 });
+    renderPage();
+    expect(await screen.findByRole("dialog", { name: "Out of hearts" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Begin lesson" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Practice or review instead" })).toBeInTheDocument();
+  });
+
+  it("buying a heart with XP retries the session and opens the lesson", async () => {
+    const user = userEvent.setup();
+    useProgress.setState({ xp: 120 });
+    startLessonSession
+      .mockResolvedValueOnce({ error: "out-of-hearts", refillAt: Date.now() + 5 * 60_000 })
+      .mockResolvedValueOnce({ token: "session-tok" });
+    buyHeartWithXpRemote.mockResolvedValue({ ok: true, hearts: 1, xp: 70, cost: 50 });
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Use 50 XP for a heart" }));
+    expect(await screen.findByRole("button", { name: "Begin lesson" })).toBeInTheDocument();
+    expect(startLessonSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("Practice or review instead goes to review; closing goes back to learn", async () => {
+    const user = userEvent.setup();
+    startLessonSession.mockResolvedValue({ error: "out-of-hearts", refillAt: null });
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Practice or review instead" }));
+    expect(navigate).toHaveBeenCalledWith({ to: "/review" });
+    await user.click(screen.getByRole("button", { name: "Got it" }));
+    expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
 });
 
 describe("Lesson page", () => {

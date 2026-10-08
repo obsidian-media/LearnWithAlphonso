@@ -13,6 +13,7 @@ export function HeartsModal({
   onClose,
   onRefillDue,
   onBuyWithXp,
+  onPracticeInstead,
 }: {
   open: boolean;
   refillAt: number | null;
@@ -25,11 +26,14 @@ export function HeartsModal({
   onRefillDue?: () => void;
   /** Fired when the user chooses to spend XP for an immediate heart. */
   onBuyWithXp?: () => void;
+  /** Always offered when provided, so out-of-hearts is never a dead end. */
+  onPracticeInstead?: () => void;
 }) {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const countdown = useCountdown(refillAt);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const buyButtonRef = useRef<HTMLButtonElement | null>(null);
+  const practiceButtonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const [buying, setBuying] = useState(false);
 
@@ -48,7 +52,7 @@ export function HeartsModal({
       // could escape into the bottom-tab nav behind the (still visible)
       // backdrop.
       if (e.key === "Tab") {
-        const focusables = [buyButtonRef.current, closeButtonRef.current].filter(
+        const focusables = [buyButtonRef.current, practiceButtonRef.current, closeButtonRef.current].filter(
           (el): el is HTMLButtonElement => el !== null,
         );
         if (focusables.length === 0) return;
@@ -153,11 +157,21 @@ export function HeartsModal({
                 {buyError}
               </p>
             )}
+            {onPracticeInstead && (
+              <button
+                type="button"
+                ref={practiceButtonRef}
+                onClick={onPracticeInstead}
+                className="mt-2.5 w-full rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:border-ink/30"
+              >
+                Practice or review instead
+              </button>
+            )}
             <button
               type="button"
               ref={closeButtonRef}
               onClick={onClose}
-              className={`w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 ${canBuyWithXp ? "mt-2.5" : "mt-5"}`}
+              className={`w-full rounded-full bg-ink px-4 py-3 text-sm font-semibold text-surface transition hover:opacity-90 ${canBuyWithXp || onPracticeInstead ? "mt-2.5" : "mt-5"}`}
             >
               Got it
             </button>

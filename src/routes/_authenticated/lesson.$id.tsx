@@ -18,10 +18,13 @@ import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { canSpeak, speak } from "../../lib/speech";
 import { useProgress } from "../../lib/progress";
 import {
+  buyHeartWithXpRemote,
   completeLessonRemote,
   loseHeartRemote,
+  restoreHeartsRemote,
   startLessonSession,
 } from "../../lib/sync.functions";
+import { HeartsModal } from "../../components/HeartsModal";
 import { recordMisses } from "../../lib/review.functions";
 import { deriveAnswerCorrectness } from "../../lib/srs";
 import { useOptionalAiConsent } from "../../lib/ai-consent-context";
@@ -148,18 +151,32 @@ function LessonPage() {
   );
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  // The server refuses to start a lesson at 0 hearts. Held here so the page shows the hearts dialog
+  // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
+  const [heartsBlock, setHeartsBlock] = useState<{ refillAt: number | null } | null>(null);
+  const [buyHeartError, setBuyHeartError] = useState<string | null>(null);
+  const [sessionAttempt, setSessionAttempt] = useState(0);
+  const heartsXp = useProgress((s) => s.xp);
+  const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
+  const restoreHeartsLocal = useProgress((s) => s.restoreHeartsLocal);
   useEffect(() => {
     if (!maybeLesson) return;
     let alive = true;
     void startLessonSession({ data: { lessonId: maybeLesson.id, course } })
       .then((res) => {
-        if (alive) setSessionToken(res.token);
+        if (!alive) return;
+        if ("error" in res) {
+          setHeartsBlock({ refillAt: res.refillAt });
+          return;
+        }
+        setHeartsBlock(null);
+        setSessionToken(res.token);
       })
       .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [maybeLesson, course]);
+  }, [maybeLesson, course, sessionAttempt]);
 
   if (!maybeLesson) {
     return (
@@ -170,6 +187,39 @@ function LessonPage() {
             Back to learn
           </Link>
         </div>
+      </LessonFrame>
+    );
+  }
+  if (heartsBlock) {
+    return (
+      <LessonFrame>
+        <HeartsModal
+          open
+          refillAt={heartsBlock.refillAt}
+          xp={heartsXp}
+          buyError={buyHeartError}
+          onClose={() => navigate({ to: "/learn" })}
+          onRefillDue={() => {
+            restoreHeartsLocal();
+            void restoreHeartsRemote()
+              .catch(() => {})
+              .finally(() => setSessionAttempt((n) => n + 1));
+          }}
+          onBuyWithXp={() => {
+            setBuyHeartError(null);
+            void buyHeartWithXpRemote({ data: { course } })
+              .then((res) => {
+                if (res.ok) {
+                  spendXpForHeartLocal(res.cost);
+                  setSessionAttempt((n) => n + 1);
+                } else {
+                  setBuyHeartError(res.reason === "hearts-full" ? "Hearts already full." : "Not enough XP for a heart.");
+                }
+              })
+              .catch(() => setBuyHeartError("Something went wrong. Try again."));
+          }}
+          onPracticeInstead={() => navigate({ to: "/review" })}
+        />
       </LessonFrame>
     );
   }

@@ -23,6 +23,7 @@ import {
   perfectLessonBonusEarned,
   resolveHeartsRefill,
   streakHeartMilestoneReached,
+  heartsGate,
 } from "./hearts";
 
 /**
@@ -181,14 +182,37 @@ const lessonIdSchema = z
  * before they can claim it complete. Called once when the lesson player
  * mounts; completeLessonRemote below requires and verifies it.
  */
+export type StartLessonSessionResult =
+  | { token: string }
+  | { error: "out-of-hearts"; refillAt: number | null };
+
 export const startLessonSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z.object({ lessonId: lessonIdSchema, course: courseSchema }).parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<StartLessonSessionResult> => {
     const found = getCourse(data.course).findLesson(data.lessonId);
     if (!found) throw new Error("Lesson not found");
+    // No lesson starts at 0 hearts. This is the same heartsGate as the start-lesson-session edge function, so
+    // web and iOS share one rule. Returned as a value rather than thrown, because the page needs refillAt for
+    // its countdown. A failed hearts read fails OPEN (an economy rule must not lock a learner out).
+    const { heartsGateEnforced } = await import("./hearts-gate.server");
+    if (heartsGateEnforced()) {
+      const { data: row, error } = await context.supabase
+        .from("user_progress")
+        .select("hearts, hearts_refill_at")
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      if (!error) {
+        const gate = heartsGate(
+          typeof row?.hearts === "number" ? row.hearts : MAX_HEARTS,
+          row?.hearts_refill_at ? new Date(row.hearts_refill_at).getTime() : null,
+          Date.now(),
+        );
+        if (gate.blocked) return { error: "out-of-hearts", refillAt: gate.refillAt };
+      }
+    }
     const { issueLessonSessionToken } = await import("./lesson-session.server");
     return {
       token: issueLessonSessionToken({

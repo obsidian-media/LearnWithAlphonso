@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
@@ -114,6 +114,7 @@ function LessonNode({
 }
 
 function LearnPage() {
+  const navigate = useNavigate();
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const completed = useProgress((s) => s.completedLessons);
   const hydrated = useProgress((s) => s.hydrated);
@@ -448,6 +449,10 @@ function LearnPage() {
         }}
         onRefillDue={handleRefillDue}
         onBuyWithXp={handleBuyWithXp}
+        onPracticeInstead={() => {
+          setShowHeartsModal(false);
+          void navigate({ to: "/review" });
+        }}
       />
     </MobileFrame>
   );
