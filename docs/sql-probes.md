@@ -86,3 +86,12 @@ Same harness, each migration installed inside `BEGIN ... ROLLBACK` with the depl
 `net.http_request_queue` and Vault: the MCP role cannot write `vault.secrets`, so the "no secret" branch is probed before a throwaway secret is created, not by deleting one.
 
 The static guard for the most common mistake is `src/lib/plpgsql-output-column-clash.test.ts`.
+
+## AI consent and AI output check (2026-10-09)
+
+Same harness, both migrations installed inside `BEGIN ... ROLLBACK` after checking the deployed behaviour ("old"): 24 rows, 0 failures, leak check 0 users / 0 functions / 0 columns.
+
+| Function | What the script showed |
+|---|---|
+| `set_ai_consent`, `get_ai_consent`, column guard (`20261009100000`) | missing before install; anon refused; grant stamps a time, withdraw clears it, NULL refused, signed-out refused, no profile row refused; another learner unaffected and unable to read the row; a direct PATCH of `ai_consent_at` refused with `ai-consent-via-rpc-only` while other columns still update; `service_role` and `postgres` may write the column (the review account can be reset); sign-up still works |
+| `ai_output_blocked` (`20261009100100`) | blocked-term verdicts on prose (English profanity and French `retard` blocked; `râpé` and `cono` not blocked by the v2 filter); 20-element cap; empty and NULL inputs; anon refused; service role allowed |
