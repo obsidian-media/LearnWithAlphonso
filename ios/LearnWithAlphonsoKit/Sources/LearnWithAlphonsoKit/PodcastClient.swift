@@ -88,7 +88,7 @@ public final class PodcastClient: Sendable {
     public func fetchFolders() async throws -> [PodcastFolder] {
         let request = request(
             path: "rest/v1/podcast_folders",
-            query: "select=id,parent_id,slug,title,description,sort_order&order=sort_order.asc",
+            query: "select=id,parent_id,slug,title,description,sort_order,course&order=sort_order.asc",
             method: "GET"
         )
         let (data, response) = try await requester(request)
@@ -103,8 +103,25 @@ public final class PodcastClient: Sendable {
                 slug: slug,
                 title: title,
                 description: row["description"] as? String,
-                sortOrder: row["sort_order"] as? Int ?? 0
+                sortOrder: row["sort_order"] as? Int ?? 0,
+                course: row["course"] as? String
             )
+        }
+    }
+
+    /// Every published episode's id and folder. RLS already hides unpublished rows; the
+    /// explicit filter states the intent and keeps this correct for any role.
+    public func fetchPublishedIndex() async throws -> [PodcastPublishedEpisodeRef] {
+        let request = request(
+            path: "rest/v1/podcast_episodes",
+            query: "select=id,folder_id&published=eq.true",
+            method: "GET"
+        )
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(response: response)
+        return try Self.rows(from: data).compactMap { row in
+            guard let id = row["id"] as? String, let folderID = row["folder_id"] as? String else { return nil }
+            return PodcastPublishedEpisodeRef(episodeID: id, folderID: folderID)
         }
     }
 
@@ -272,12 +289,22 @@ public final class PodcastClient: Sendable {
     /// lands -- the stale device's flush *is* the newest write. Only
     /// observation recency separates the two, and a rewind is a fresh
     /// observation.
+    ///
+    /// **No row yet** (`lastSeenUpdatedAt == nil`): an upsert on the `(user_id, episode_id)`
+    /// key (`on_conflict=user_id,episode_id`, `Prefer: resolution=merge-duplicates`). The body
+    /// never carries `user_id`: the column defaults to `auth.uid()` (migration
+    /// 20261012500000) and RLS checks it. A plain POST failed here for every learner, and
+    /// once a row existed a plain POST would conflict instead.
+    ///
+    /// Returns the `updated_at` the server stored, which is the only correct value to guard
+    /// the next write on.
+    @discardableResult
     public func savePlaybackPosition(
         episodeID: String,
         positionSeconds: Int,
         completed: Bool,
         lastSeenUpdatedAt: String?
-    ) async throws {
+    ) async throws -> String? {
         var body: [String: Any] = [
             "episode_id": episodeID,
             "position_seconds": positionSeconds,
@@ -297,21 +324,25 @@ public final class PodcastClient: Sendable {
                 query: "episode_id=eq.\(episodeID)&updated_at=eq.\(encoded)",
                 method: "PATCH"
             )
+            // An empty array back is how a filtered PATCH reports that it matched nothing.
+            request.setValue("return=representation", forHTTPHeaderField: "Prefer")
         } else {
-            // No row yet, so there is nothing to guard against: a PATCH
-            // would match nothing and look like a conflict.
-            request = self.request(path: "rest/v1/podcast_playback", method: "POST")
+            // No row known, so nothing to guard against: upsert on the key.
+            request = self.request(
+                path: "rest/v1/podcast_playback",
+                query: "on_conflict=user_id,episode_id",
+                method: "POST"
+            )
+            request.setValue("resolution=merge-duplicates,return=representation", forHTTPHeaderField: "Prefer")
         }
-        // Ask for the affected rows back -- an empty array is how a
-        // filtered PATCH reports that it matched nothing.
-        request.setValue("return=representation", forHTTPHeaderField: "Prefer")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await requester(request)
         try Self.requireSuccess(response: response)
-        if try Self.rows(from: data).isEmpty {
+        guard let row = try Self.rows(from: data).first else {
             throw PodcastClientError.staleWrite
         }
+        return row["updated_at"] as? String
     }
 
     /// Records a play session through the `record_podcast_play_event`

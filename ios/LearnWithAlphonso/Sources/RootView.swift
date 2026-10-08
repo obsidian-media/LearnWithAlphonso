@@ -90,7 +90,8 @@ struct RootView: View {
                             session: session,
                             networkMonitor: networkMonitor,
                             player: podcastPlayer,
-                            downloads: podcastDownloadManager
+                            downloads: podcastDownloadManager,
+                            activeCourse: activeCourse
                         )
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
                             .tabItem { Label("Listen", systemImage: "headphones") }
@@ -133,6 +134,10 @@ struct RootView: View {
                         // player this view actually keeps, because RootView's state initializer can build throwaway
                         // players that would otherwise claim the hook and then disappear.
                         VoiceAudioHooks.pauseOtherAudio = { [weak podcastPlayer] in podcastPlayer?.pauseForVoice() }
+                        // Sign-out and account deletion stop the podcast through this hook (the Kit's
+                        // PodcastAccountCleanup handlers, registered in LearnWithAlphonsoApp). Same reason
+                        // as above for registering it here.
+                        PodcastLifecycleHooks.stopPlayback = { [weak podcastPlayer] in podcastPlayer?.stopForAccountChange() }
                         // Identity first: RevenueCat can still hold a previous account
                         // (an upgrade, an interrupted sign-out), and nothing here should
                         // run, or show Pro, before it is aliased to this account. See

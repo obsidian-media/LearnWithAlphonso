@@ -14,6 +14,8 @@ public struct PodcastFolder: Sendable, Equatable, Identifiable {
     public let title: String
     public let description: String?
     public let sortOrder: Int
+    /// The root folder's course code (`en`, `fr`, `es`); nil means shown for every course.
+    public let course: String?
 
     public init(
         id: String,
@@ -21,7 +23,8 @@ public struct PodcastFolder: Sendable, Equatable, Identifiable {
         slug: String,
         title: String,
         description: String?,
-        sortOrder: Int
+        sortOrder: Int,
+        course: String? = nil
     ) {
         self.id = id
         self.parentID = parentID
@@ -29,6 +32,19 @@ public struct PodcastFolder: Sendable, Equatable, Identifiable {
         self.title = title
         self.description = description
         self.sortOrder = sortOrder
+        self.course = course
+    }
+}
+
+/// One published episode's id and folder: enough to prune empty folders and to sweep
+/// downloads of episodes that have been unpublished, without fetching every folder.
+public struct PodcastPublishedEpisodeRef: Equatable, Sendable {
+    public let episodeID: String
+    public let folderID: String
+
+    public init(episodeID: String, folderID: String) {
+        self.episodeID = episodeID
+        self.folderID = folderID
     }
 }
 

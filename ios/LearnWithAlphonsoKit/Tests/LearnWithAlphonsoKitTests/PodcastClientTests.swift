@@ -269,20 +269,89 @@ final class PodcastClientTests: XCTestCase {
         XCTAssertEqual(body["position_seconds"] as? Int, 30)
     }
 
-    func testPostsWhenThereIsNoExistingPlaybackRow() async throws {
+    // The first save has no row to guard against. It must be an upsert on the
+    // (user_id, episode_id) key and must NOT send user_id: the database default
+    // (auth.uid(), migration 20261012500000) supplies it, and the RLS policy checks it.
+    func testTheFirstSaveUpsertsOnTheUserEpisodeKeyWithoutSendingUserID() async throws {
         let box = RequestBox()
         let client = makeClient { request in
             await box.record(request)
-            return self.jsonResponse(for: request.url!, body: [["position_seconds": 5]])
+            return self.jsonResponse(for: request.url!, body: [["position_seconds": 5, "updated_at": "2026-10-12T10:00:05+00:00"]], status: 201)
         }
-        try await client.savePlaybackPosition(
-            episodeID: "e1",
-            positionSeconds: 5,
-            completed: false,
-            lastSeenUpdatedAt: nil
+        try await client.savePlaybackPosition(episodeID: "e1", positionSeconds: 5, completed: false, lastSeenUpdatedAt: nil)
+        let request = await box.last!
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(request.url!.path.hasSuffix("/rest/v1/podcast_playback"))
+        XCTAssertEqual(request.url!.query, "on_conflict=user_id,episode_id")
+        let prefer = request.value(forHTTPHeaderField: "Prefer") ?? ""
+        XCTAssertTrue(prefer.contains("resolution=merge-duplicates"), prefer)
+        XCTAssertTrue(prefer.contains("return=representation"), prefer)
+        let body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+        XCTAssertNil(body["user_id"], "the server owns user_id; a client-supplied one is either redundant or an attack")
+        XCTAssertEqual(body["episode_id"] as? String, "e1")
+    }
+
+    // The next write is guarded on what the SERVER stored, not on the device clock.
+    func testReturnsTheUpdatedAtTheServerStored() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["position_seconds": 40, "updated_at": "2026-10-12T10:00:40+00:00"]])
+        }
+        let stored = try await client.savePlaybackPosition(
+            episodeID: "e1", positionSeconds: 40, completed: false, lastSeenUpdatedAt: "2026-10-12T10:00:30+00:00"
         )
-        let method = await box.last!.httpMethod
-        XCTAssertEqual(method, "POST")
+        XCTAssertEqual(stored, "2026-10-12T10:00:40+00:00")
+    }
+
+    func testAGuardedPatchDoesNotAskForAMerge() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [["position_seconds": 40, "updated_at": "x"]])
+        }
+        try await client.savePlaybackPosition(episodeID: "e1", positionSeconds: 40, completed: false, lastSeenUpdatedAt: "2026-10-12T10:00:30+00:00")
+        let request = await box.last!
+        XCTAssertEqual(request.httpMethod, "PATCH")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Prefer"), "return=representation")
+    }
+
+    func testAFailedFirstSaveIsReportedNotSwallowed() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: ["code": "23502"], status: 400)
+        }
+        do {
+            try await client.savePlaybackPosition(episodeID: "e1", positionSeconds: 5, completed: false, lastSeenUpdatedAt: nil)
+            XCTFail("expected a server error")
+        } catch {
+            XCTAssertEqual(error as? PodcastClientError, .server(status: 400))
+        }
+    }
+
+    func testFetchFoldersReadsTheCourse() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [[
+                "id": "f1", "parent_id": NSNull(), "slug": "fr", "title": "French",
+                "description": NSNull(), "sort_order": 1, "course": "fr",
+            ]])
+        }
+        let folders = try await client.fetchFolders()
+        XCTAssertEqual(folders.first?.course, "fr")
+        let query = await box.last!.url!.query ?? ""
+        XCTAssertTrue(query.contains("course"), query)
+    }
+
+    func testFetchPublishedIndexReadsIDsAndFoldersOfPublishedEpisodesOnly() async throws {
+        let box = RequestBox()
+        let client = makeClient { request in
+            await box.record(request)
+            return self.jsonResponse(for: request.url!, body: [["id": "e1", "folder_id": "f1"], ["id": "e2"]])
+        }
+        let index = try await client.fetchPublishedIndex()
+        XCTAssertEqual(index, [PodcastPublishedEpisodeRef(episodeID: "e1", folderID: "f1")])
+        let query = await box.last!.url!.query ?? ""
+        XCTAssertTrue(query.contains("select=id,folder_id"), query)
+        XCTAssertTrue(query.contains("published=eq.true"), query)
     }
 
     func testMarksCompletionWhenAskedTo() async throws {
