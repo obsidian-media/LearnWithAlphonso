@@ -181,6 +181,9 @@ public final class AIConversationClient: Sendable {
         // binding wants a plain identifier, not a tuple pattern.
         guard let result = try? await requester(request) else { return nil }
         let (data, response) = result
+        if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+            AIConsentSignal.noteIfConsentRequired(status: http.statusCode, message: Self.errorMessage(from: data))
+        }
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
             let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             let correct = object["correct"] as? Bool
@@ -227,7 +230,9 @@ public final class AIConversationClient: Sendable {
         let (data, response) = try await perform(request)
         guard let http = response as? HTTPURLResponse else { throw SavedWordError.unavailable }
         guard (200...299).contains(http.statusCode) else {
-            throw SavedWordError.from(status: http.statusCode)
+            let message = Self.errorMessage(from: data)
+            AIConsentSignal.noteIfConsentRequired(status: http.statusCode, message: message)
+            throw SavedWordError.from(status: http.statusCode, message: message)
         }
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let alreadySaved = object["alreadySaved"] as? Bool,
@@ -405,7 +410,9 @@ public final class AIConversationClient: Sendable {
             throw AIConversationError.badResponse
         }
         guard (200...299).contains(httpResponse.statusCode) else {
-            throw AIConversationError.server(status: httpResponse.statusCode, message: errorMessage(from: data))
+            let message = errorMessage(from: data)
+            AIConsentSignal.noteIfConsentRequired(status: httpResponse.statusCode, message: message)
+            throw AIConversationError.server(status: httpResponse.statusCode, message: message)
         }
     }
 

@@ -117,7 +117,9 @@ public final class TutorConversationClient: Sendable {
             throw TutorConversationError.badResponse
         }
         guard (200...299).contains(httpResponse.statusCode) else {
-            throw TutorConversationError.server(status: httpResponse.statusCode, message: Self.errorMessage(from: data))
+            let message = Self.errorMessage(from: data)
+            AIConsentSignal.noteIfConsentRequired(status: httpResponse.statusCode, message: message)
+            throw TutorConversationError.server(status: httpResponse.statusCode, message: message)
         }
         do {
             return try JSONDecoder().decode(TutorReply.self, from: data)
