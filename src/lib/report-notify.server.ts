@@ -29,6 +29,7 @@ const KIND_LABEL: Record<ReportPayload["kind"], string> = {
 };
 
 /** Control characters out, length capped: the email is plain text built from user-supplied values. */
+// eslint-disable-next-line no-control-regex -- stripping control characters is the point
 const clean = (v: string, max: number) => v.replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, max);
 
 export function buildReportEmail(p: ReportPayload, to: string): EmailMessage {
