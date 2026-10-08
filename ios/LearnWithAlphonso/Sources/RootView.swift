@@ -301,11 +301,15 @@ struct RootView: View {
         placementTaken = nil
         nameOnboarding = nil
         guard let accessToken = session.accessToken else { return }
+        // Every await below can outlive this account: bail if someone else signed in meanwhile.
+        let checkedUser = session.userID
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
             if let status = try await client.fetchNameStatus() {
+                guard session.userID == checkedUser else { return }
                 if status.needsPrompt {
                     let names = await session.fetchUserNames()
+                    guard session.userID == checkedUser else { return }
                     let prefill = DisplayNameOnboarding.prefill(
                         appleGivenName: session.appleGivenNameForCurrentUser,
                         names: names,
@@ -318,11 +322,15 @@ struct RootView: View {
         } catch {
             // Deliberately silent: no prompt this launch, never a blocked app.
         }
+        guard session.userID == checkedUser else { return }
         do {
-            placementTaken = try await client.fetchPlacementTakenAt(course: "en") != nil
+            let taken = try await client.fetchPlacementTakenAt(course: "en") != nil
+            guard session.userID == checkedUser else { return }
+            placementTaken = taken
         } catch {
             // LessonBrowserView's persistent banner is the fallback.
         }
+        guard session.userID == checkedUser else { return }
         advanceOnboarding()
     }
 

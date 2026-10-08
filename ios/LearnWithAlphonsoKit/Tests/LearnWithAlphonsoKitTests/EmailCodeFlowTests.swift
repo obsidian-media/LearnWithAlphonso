@@ -123,6 +123,16 @@ final class EmailCodeFlowTests: XCTestCase {
         XCTAssertEqual(flow.failure, .tooManyRequests)
     }
 
+    func testClearFailureDropsAStaleErrorAndNotice() {
+        var flow = EmailCodeFlow(email: "ada@example.com")
+        flow.markInvalidEmail()
+        XCTAssertNotNil(flow.failure)
+        flow.clearFailure()
+        XCTAssertNil(flow.failure)
+        XCTAssertNil(flow.notice)
+        XCTAssertEqual(flow.email, "ada@example.com")
+    }
+
     // MARK: - Email step
 
     func testCanSendCodeNeedsARealLookingAddress() {

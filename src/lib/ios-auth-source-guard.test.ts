@@ -82,6 +82,40 @@ describe("iOS session and root wiring", () => {
     expect(root).not.toContain("showPlacementGate");
   });
 
+  it("onboarding bails when the account changed during a check", () => {
+    const root = read("RootView.swift");
+    const start = root.indexOf("private func checkOnboarding()");
+    const body = root.slice(start, root.indexOf("private func advanceOnboarding()", start));
+    expect(body).toContain("let checkedUser = session.userID");
+    expect(
+      body.match(/guard session\.userID == checkedUser else \{ return \}/g)?.length,
+    ).toBeGreaterThanOrEqual(4);
+  });
+
+  it("a failed Skip still closes the name prompt, and never reports an error that blocks", () => {
+    const view = read("NameOnboardingView.swift");
+    const start = view.indexOf("private func skip()");
+    const body = view.slice(start);
+    expect(body).toContain("DisplayNameOnboarding.resolveSkip(outcome)");
+    expect(body).toContain("onFinish()");
+    expect(body).not.toContain("submitFailed");
+    expect(body).not.toContain("return" + String.fromCharCode(10));
+  });
+
+  it("a new Apple or Google attempt clears a stale email error", () => {
+    const session = read("Session.swift");
+    const apple = session.slice(
+      session.indexOf("func prepareAppleRequest"),
+      session.indexOf("func completeAppleSignIn"),
+    );
+    const google = session.slice(
+      session.indexOf("func signInWithGoogle"),
+      session.indexOf("func signOut()"),
+    );
+    expect(apple).toContain("emailFlow.clearFailure()");
+    expect(google).toContain("emailFlow.clearFailure()");
+  });
+
   it("registers the sign-out cleanup after the account cleanup", () => {
     const app = read("LearnWithAlphonsoApp.swift");
     expect(app.indexOf("AccountDataCleanup.register")).toBeGreaterThan(-1);

@@ -245,6 +245,8 @@ final class Session {
     /// exchange once it redirects back to this app's custom URL scheme.
     func signInWithGoogle() async {
         errorMessage = nil
+        notice = nil
+        emailFlow.clearFailure()
         isBusy = true
         defer { isBusy = false }
         await finishPendingCleanup()
@@ -276,6 +278,7 @@ final class Session {
     func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         errorMessage = nil
         notice = nil
+        emailFlow.clearFailure()
         appleSignIn.prepare(request)
     }
 

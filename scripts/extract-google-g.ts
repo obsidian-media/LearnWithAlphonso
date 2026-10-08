@@ -7,7 +7,7 @@
  *
  * The pack files the @1x light icon under "Neutral" (the @2x and @3x ones are under "Light").
  *
- * Usage (Git Bash): bunx tsx scripts/extract-google-g.ts /d/Temp/w6g/x
+ * Usage: bunx tsx scripts/extract-google-g.ts <unzipped-dir>
  */
 import path from "node:path";
 import sharp from "sharp";

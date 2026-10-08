@@ -59,6 +59,13 @@ public struct EmailCodeFlow: Equatable, Sendable {
 
     public var isCodeComplete: Bool { code.count == Self.codeLength }
 
+    /// A new sign-in attempt by another route (Apple, Google) starts clean: a stale email error must never hide
+    /// that attempt's own error.
+    public mutating func clearFailure() {
+        failure = nil
+        notice = nil
+    }
+
     public mutating func markInvalidEmail() {
         failure = .invalidEmail
         notice = nil
