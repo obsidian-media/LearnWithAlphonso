@@ -7,6 +7,16 @@ public enum ProgressSyncError: Error, Equatable {
     case badResponse
     case server(status: Int, message: String?)
     case invalidPayload
+    /// start-lesson-session's 409 at 0 hearts. `refillAt` is nil when the server has no refill timer.
+    case outOfHearts(refillAt: Date?)
+}
+
+/// The outcome of `buy_heart_with_xp(_course)`, the same SECURITY DEFINER RPC the web's buyHeartWithXpRemote
+/// calls (the price is fixed server-side).
+public enum BuyHeartResult: Sendable, Equatable {
+    case ok(hearts: Int, xp: Int)
+    case heartsFull(hearts: Int?)
+    case insufficientXp(xp: Int?)
 }
 
 public struct HeartsResult: Sendable, Equatable {
@@ -287,11 +297,22 @@ public final class ProgressSyncClient: Sendable {
     let accessToken: String
     let requester: Requester
 
+    /// Every request this client sends gives up after 30 s of no progress, instead of URLRequest's default 60 s.
+    /// A lesson completion that hangs is then classified as a timeout and queued, rather than leaving the
+    /// learner on a spinner.
+    public static let defaultTimeout: TimeInterval = 30
+
+    public static func withDefaultTimeout(_ request: URLRequest) -> URLRequest {
+        var request = request
+        if request.timeoutInterval > defaultTimeout { request.timeoutInterval = defaultTimeout }
+        return request
+    }
+
     public init(
         supabaseURL: URL,
         anonKey: String,
         accessToken: String,
-        requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
+        requester: @escaping Requester = { try await URLSession.shared.data(for: ProgressSyncClient.withDefaultTimeout($0)) }
     ) {
         self.supabaseURL = supabaseURL
         self.anonKey = anonKey
@@ -398,6 +419,12 @@ public final class ProgressSyncClient: Sendable {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await requester(request)
+        if let http = response as? HTTPURLResponse, http.statusCode == 409,
+           let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           object["error"] as? String == "out-of-hearts" {
+            throw ProgressSyncError.outOfHearts(
+                refillAt: (object["refillAt"] as? String).flatMap(Self.parsePostgresTimestamp))
+        }
         try Self.requireSuccess(data: data, response: response)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let token = object["token"] as? String else {
@@ -806,6 +833,27 @@ public final class ProgressSyncClient: Sendable {
             return .insufficientXp(streakFreezes: row["streak_freezes"] as? Int)
         }
         return .ok(streakFreezes: row["streak_freezes"] as? Int ?? 0, xp: row["xp"] as? Int ?? 0)
+    }
+
+    /// Spends the fixed heart price in XP of `course` for one heart, through the same RPC as the web. Used by the
+    /// out-of-hearts sheet. Hearts-full and insufficient-XP are outcomes, not errors.
+    public func buyHeartWithXp(course: String) async throws -> BuyHeartResult {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/buy_heart_with_xp"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_course": course])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first, let ok = row["ok"] as? Bool else {
+            throw ProgressSyncError.invalidPayload
+        }
+        if ok { return .ok(hearts: row["hearts"] as? Int ?? 0, xp: row["xp"] as? Int ?? 0) }
+        if row["reason"] as? String == "hearts-full" { return .heartsFull(hearts: row["hearts"] as? Int) }
+        return .insufficientXp(xp: row["xp"] as? Int)
     }
 
     /// Calls the `create_duel` SECURITY DEFINER RPC (V3 package 2) --
