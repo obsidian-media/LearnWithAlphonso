@@ -27,7 +27,7 @@ final class OutOfHeartsModelTests: XCTestCase {
         let m = OutOfHeartsModel(refillAt: nil)
         XCTAssertTrue(m.showsBuy(isOnline: true))
         XCTAssertFalse(m.showsBuy(isOnline: false))
-        XCTAssertEqual(OutOfHeartsModel.practiceInsteadTitle, "Practice or review instead")
+        XCTAssertEqual(OutOfHeartsModel.practiceInsteadTitle, "Review instead")
         XCTAssertEqual(OutOfHeartsModel.buyTitle, "Use 50 XP for a heart")
     }
     func testBuyFailureCopyMatchesTheWeb() {
@@ -35,5 +35,6 @@ final class OutOfHeartsModelTests: XCTestCase {
         XCTAssertEqual(OutOfHeartsModel.buyFailureMessage(.heartsFull(hearts: 5)), "Hearts already full.")
         XCTAssertEqual(OutOfHeartsModel.buyFailureMessage(.insufficientXp(xp: 20)), "Not enough XP for a heart. You have 20 XP in this course.")
         XCTAssertEqual(OutOfHeartsModel.buyFailureMessage(.insufficientXp(xp: nil)), "Not enough XP for a heart.")
+        XCTAssertEqual(OutOfHeartsModel.buyFailureMessage(.signedOut), "You've been signed out. Please sign in again.")
     }
 }

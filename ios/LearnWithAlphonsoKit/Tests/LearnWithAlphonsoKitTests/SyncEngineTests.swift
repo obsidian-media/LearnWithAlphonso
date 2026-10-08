@@ -84,11 +84,49 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(result.rescheduledLessonCompletions, [item.rescheduled(attemptCount: 1, nextAttemptAt: fixedNow.addingTimeInterval(30))])
     }
 
-    func testAnItemAtMaxAttemptsIsDeadLettered() async {
-        let item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow).rescheduled(attemptCount: 7, nextAttemptAt: fixedNow.addingTimeInterval(-1))
-        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 500) }
-        let result = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: fixedNow)
-        XCTAssertEqual(result.deadLetteredLessonCompletions, [DeadLetter(item: item, reason: "max-attempts")])
+    /// A flaky network never loses a lesson: an item failing transiently 20 times is still queued, never
+    /// dead-lettered, and its wait stays capped.
+    func testALessonCompletionFailingTransientlyTwentyTimesIsStillQueued() async {
+        var item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
+        var now = fixedNow
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 503) }
+        for _ in 0..<20 {
+            let result = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: now)
+            XCTAssertTrue(result.deadLetteredLessonCompletions.isEmpty)
+            item = try! XCTUnwrap(result.rescheduledLessonCompletions.first)
+            now = item.nextAttemptAt!
+        }
+        XCTAssertEqual(item.attemptCount, 20)
+        let last = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: now)
+        XCTAssertEqual(last.rescheduledLessonCompletions.first?.nextAttemptAt, now.addingTimeInterval(6 * 60 * 60))
+    }
+
+    func testAReviewGradeFailingTransientlyTwentyTimesIsStillQueued() async {
+        var grade = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow)
+        var now = fixedNow
+        let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 429) }
+        for _ in 0..<20 {
+            let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [grade], client: client, now: now)
+            XCTAssertTrue(result.deadLetteredReviewGrades.isEmpty)
+            grade = try! XCTUnwrap(result.rescheduledReviewGrades.first)
+            now = grade.nextAttemptAt!
+        }
+        XCTAssertEqual(grade.attemptCount, 20)
+    }
+
+    /// A permanent rejection dead-letters whatever its attempt count, and the queue keeps going.
+    func testAGradeWithManyPriorFailuresThatIsNowRejectedIsDeadLetteredAndTheLoopContinues() async {
+        let first = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow.addingTimeInterval(-60))
+            .rescheduled(attemptCount: 7, nextAttemptAt: fixedNow.addingTimeInterval(-1))
+        let second = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
+        let client = makeClient { request in
+            let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+            if (body["itemKey"] as! String) == "u1l1:q1" { return self.jsonResponse(for: request.url!, body: ["error": "not due yet"], status: 400) }
+            return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-10-09"])
+        }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [first, second], client: client, now: fixedNow)
+        XCTAssertEqual(result.deadLetteredReviewGrades, [DeadLetter(item: first, reason: "rejected")])
+        XCTAssertEqual(result.syncedReviewGrades, [second])
     }
 
     func testAnItemInBackoffIsNotSent() async {

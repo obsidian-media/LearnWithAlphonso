@@ -10,7 +10,7 @@ public struct OutOfHeartsModel: Sendable, Equatable, Identifiable {
 
     public static let title = "Out of hearts"
     public static let buyTitle = "Use \(HeartsEconomy.xpHeartCost) XP for a heart"
-    public static let practiceInsteadTitle = "Practice or review instead"
+    public static let practiceInsteadTitle = "Review instead"
 
     public func countdown(now: Date) -> String? {
         guard let refillAt else { return nil }
@@ -39,6 +39,7 @@ public struct OutOfHeartsModel: Sendable, Equatable, Identifiable {
         switch result {
         case .ok: return nil
         case .heartsFull: return "Hearts already full."
+        case .signedOut: return TutorError.signedOut.userMessage()
         case let .insufficientXp(xp):
             guard let xp else { return "Not enough XP for a heart." }
             return "Not enough XP for a heart. You have \(xp) XP in this course."

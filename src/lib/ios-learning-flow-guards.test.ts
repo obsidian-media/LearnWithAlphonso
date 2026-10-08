@@ -48,12 +48,25 @@ describe("Lesson completion", () => {
   it("classifies failures instead of queueing everything", () => {
     const finish = between(src, "private func finish()", /\n {4}\/\/\/ /);
     expect(finish).toContain("LessonCompletionService(");
-    expect(finish).toMatch(/error\.shouldQueue/);
+    expect(finish).toMatch(/error\.finishDisposition/);
     expect(finish).not.toMatch(/catch\s*\{[^}]*queueOffline\(/);
   });
   it("queued completions carry the owner and the held session token", () => {
-    expect(src).toMatch(/ownerUserID: session\.userID/);
-    expect(src).toMatch(/sessionToken: sessionToken/);
+    const queue = between(src, "private func queueOffline", /\n {4}\/\/\/ |\n {4}private func /);
+    expect(queue).toMatch(/ownerUserID: session\.userID/);
+    expect(queue).toMatch(/sessionToken: sessionToken/);
+  });
+  it("a finish refused at 0 hearts is queued through the Kit's disposition, not shown as a failure", () => {
+    const finish = between(src, "private func finish()", /\n {4}\/\/\/ /);
+    expect(finish).toContain("error.finishDisposition");
+    expect(finish).not.toMatch(/error\.shouldQueue/);
+  });
+  it("the out-of-hearts sheet only pops the lesson when no replacement sheet is pending", () => {
+    expect(src).toMatch(/case \.blocked: if outOfHearts == nil \{ dismiss\(\) \}/);
+  });
+  it("a wrong answer starts the cached refill timer through the Kit", () => {
+    const spend = between(src, "private func spendHeartForWrongAnswer", /\n {4}private func /);
+    expect(spend).toContain("HeartsEconomy.afterLosingHeart(");
   });
   it("offers Continue offline, Sign in when signed out, and an out-of-hearts sheet", () => {
     expect(src).toMatch(/OfflineFinishView\([^)]*onContinue:/);
@@ -67,7 +80,23 @@ describe("Lesson completion", () => {
     expect(practice).toMatch(/ForEach\(Array\(q\.choices\.enumerated\(\)\), id: \\\.offset\)/);
   });
   it("has no literal -- in on-screen strings", () => {
-    expect(src).not.toMatch(/Text\("[^"]*--/);
+    for (const f of [
+      "LessonPlayerView.swift",
+      "ReviewQueueView.swift",
+      "OutOfHeartsSheet.swift",
+      "LessonSaveFailureView.swift",
+    ]) {
+      const code = read(`${APP}/${f}`)
+        .split("\n")
+        .filter((l) => !l.trim().startsWith("//"))
+        .join("\n");
+      expect(code, f).not.toMatch(/"[^"\n]*--[^"\n]*"/);
+    }
+  });
+  it("the out-of-hearts sheet fires a refill that is already due when it opens", () => {
+    expect(read(`${APP}/OutOfHeartsSheet.swift`)).toMatch(
+      /isRefillDue\(now: context\.date\), initial: true/,
+    );
   });
 });
 
@@ -145,10 +174,29 @@ describe("Sync store", () => {
       "downloadedAt: Date",
     ]);
   });
-  it("the container opens through the migration plan", () => {
-    expect(read(`${APP}/LearnWithAlphonsoApp.swift`)).toMatch(
-      /migrationPlan: SyncMigrationPlan\.self/,
-    );
+  it("the container opens through a three-step, logged fallback chain", () => {
+    expect(read(`${APP}/LearnWithAlphonsoApp.swift`)).toContain("SyncStoreFactory.makeContainer()");
+    const factory = between(schema, "enum SyncStoreFactory", /\n}\n/);
+    const plan = factory.indexOf("migrationPlan: SyncMigrationPlan.self");
+    const noPlan = factory.indexOf("ModelContainer(for: schema, configurations: [persistent])");
+    const memory = factory.indexOf("isStoredInMemoryOnly: true");
+    expect(plan).toBeGreaterThan(0);
+    expect(noPlan).toBeGreaterThan(plan);
+    expect(memory).toBeGreaterThan(noPlan);
+    expect(factory).toContain('category: "sync"');
+    expect(factory).not.toMatch(/\bprint\(/);
+  });
+  it("runSync is account-isolated and never re-entered", () => {
+    const run = between(store, "func runSync", /\n {4}\/\/\/ /);
+    expect(run.match(/guard isCurrentAccount\(\) else \{ return \}/g)?.length).toBe(3);
+    expect(run).toContain("currentUserID: userID");
+    expect(run).toContain("guard !isSyncing else { return }");
+    expect(run).toContain("defer { isSyncing = false }");
+  });
+  it("the review count shown is the resolved queue, not the server total", () => {
+    const review = read(`${APP}/ReviewQueueView.swift`);
+    expect(review).toContain("total = queue.count");
+    expect(review).not.toContain("total = result.total");
   });
   it("clearAll deletes every record type, including the ones added later", () => {
     const clear = between(store, "func clearAll()", /\n {4}}\n/);

@@ -15,8 +15,8 @@ import Foundation
 /// instead of needing an app-target test target this project doesn't have.
 ///
 /// Failures are classified (LessonCompletionError): transient ones back off
-/// and retry, permanent ones are dead-lettered, so one bad item never blocks
-/// the queue. Rows that belong to another account are dropped, never sent.
+/// and retry forever, only permanent ones are dead-lettered, so one bad item
+/// never blocks the queue and a flaky network never loses one. Rows that belong to another account are dropped, never sent.
 public enum SyncEngine {
     /// Lesson completions drain oldest-first but independently of outcome
     /// -- `complete-lesson` is replay-safe (see the design doc's "Sync
@@ -79,14 +79,11 @@ public enum SyncEngine {
             case .failure(.unauthorized):
                 continue
             case let .failure(error) where error.shouldQueue:
-                let attempts = completion.attemptCount + 1
-                if attempts >= policy.maxAttempts {
-                    dead.append(DeadLetter(item: completion, reason: "max-attempts"))
-                } else {
-                    rescheduled.append(completion.rescheduled(
-                        attemptCount: attempts,
-                        nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: attempts))))
-                }
+                // Transient: back off and keep it, however many times it fails. attemptCount only drives the backoff.
+                let failures = completion.attemptCount + 1
+                rescheduled.append(completion.rescheduled(
+                    attemptCount: failures,
+                    nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: failures))))
             case let .failure(error):
                 dead.append(DeadLetter(item: completion, reason: error.reasonCode))
             }
@@ -115,14 +112,10 @@ public enum SyncEngine {
                 let classified = LessonCompletionError.classify(error)
                 if classified == .unauthorized { break gradeLoop }
                 if classified.shouldQueue {
-                    let attempts = grade.attemptCount + 1
-                    if attempts >= policy.maxAttempts {
-                        deadGrades.append(DeadLetter(item: grade, reason: "max-attempts"))
-                        continue gradeLoop
-                    }
+                    let failures = grade.attemptCount + 1
                     rescheduledGrades.append(grade.rescheduled(
-                        attemptCount: attempts,
-                        nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: attempts))))
+                        attemptCount: failures,
+                        nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: failures))))
                     break gradeLoop
                 }
                 deadGrades.append(DeadLetter(item: grade, reason: classified.reasonCode))

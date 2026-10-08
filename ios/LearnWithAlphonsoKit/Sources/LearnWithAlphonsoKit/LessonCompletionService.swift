@@ -84,7 +84,7 @@ public struct LessonCompletionService: Sendable {
                 case .signedOut: return .failure(.unauthorized)
                 case .unreachable: return .failure(.offline)
                 }
-            } catch let ProgressSyncError.server(status, _) where status == 403 && !reminted && sessionToken != nil {
+            } catch let ProgressSyncError.server(status, _) where status == 403 && !reminted && request.sessionToken != nil {
                 reminted = true
                 sessionToken = nil
             } catch {

@@ -244,6 +244,8 @@ final class SyncQueueStore: AccountScopedQueue {
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
+    /// Launch, foreground and reconnect each trigger a sync; two overlapping passes would send the same grades twice.
+    @ObservationIgnored private var isSyncing = false
     @ObservationIgnored private var lastBadgeCourse = "en"
     @ObservationIgnored private var defaultsObserver: NSObjectProtocol?
 
@@ -365,6 +367,9 @@ final class SyncQueueStore: AccountScopedQueue {
         refreshAccessToken: @escaping @Sendable () async -> String?,
         isCurrentAccount: () -> Bool
     ) async {
+        guard !isSyncing else { return }
+        isSyncing = true
+        defer { isSyncing = false }
         badgeUserID = userID
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let result = await SyncEngine.sync(

@@ -2,7 +2,7 @@ import SwiftUI
 import LearnWithAlphonsoKit
 
 /// Shown when a lesson can't start at 0 hearts, matching the web's HeartsModal. A live countdown to the refill,
-/// "Use 50 XP for a heart" through the same buy_heart_with_xp RPC as the web, and "Practice or review instead",
+/// "Use 50 XP for a heart" through the same buy_heart_with_xp RPC as the web, and "Review instead",
 /// because review and practice never cost hearts. Every path leads somewhere.
 struct OutOfHeartsSheet: View {
     let model: OutOfHeartsModel
@@ -50,7 +50,7 @@ struct OutOfHeartsSheet: View {
                     .buttonStyle(.alphonsoSecondary)
             }
             .padding()
-            .onChange(of: model.isRefillDue(now: context.date)) { _, due in
+            .onChange(of: model.isRefillDue(now: context.date), initial: true) { _, due in
                 if due && !refillHandled {
                     refillHandled = true
                     Task { await refill() }

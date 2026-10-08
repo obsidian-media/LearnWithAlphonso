@@ -26,6 +26,20 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         }
     }
 
+    /// What the lesson player does with a failed finish.
+    public enum FinishDisposition: Sendable, Equatable {
+        /// Keep the attempt in the offline queue and say it is saved.
+        case queue
+        /// The attempt can never be saved: say why.
+        case showFailure
+    }
+
+    /// Everything waiting can fix is queued, and so is out-of-hearts: a finish with no held session token mints
+    /// one then, and at 0 hearts that is refused. The attempt is still good, and sync defers it until a refill.
+    public var finishDisposition: FinishDisposition {
+        shouldQueue || self == .rejected(code: "out-of-hearts") ? .queue : .showFailure
+    }
+
     public static func classify(_ error: Error) -> LessonCompletionError {
         if let classified = error as? LessonCompletionError { return classified }
         if let urlError = error as? URLError {
@@ -69,7 +83,7 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         case .rejected(code: "lesson-version-mismatch"):
             return "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
         case .rejected(code: "out-of-hearts"):
-            return "You're out of hearts, so this lesson can't be saved right now."
+            return "Saved. It will sync when your hearts refill."
         case .rejected, .invalidPayload:
             return "We couldn't save this lesson."
         }

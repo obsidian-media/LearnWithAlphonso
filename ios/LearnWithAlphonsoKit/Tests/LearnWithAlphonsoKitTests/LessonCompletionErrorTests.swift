@@ -69,6 +69,17 @@ final class LessonCompletionErrorTests: XCTestCase {
         XCTAssertEqual(LessonCompletionError.offline.userMessage, "Saved. It will sync when you're back online.")
     }
 
+    /// A finish that is refused at 0 hearts keeps the attempt: it is queued, with copy that says it is saved.
+    func testFinishDispositionQueuesEverythingWaitingCanFixAndOutOfHearts() {
+        for e in [LessonCompletionError.offline, .timeout, .server(status: 503), .server(status: 429), .rejected(code: "out-of-hearts")] {
+            XCTAssertEqual(e.finishDisposition, .queue, "\(e)")
+        }
+        for e in [LessonCompletionError.unauthorized, .rejected(code: "lesson-version-mismatch"), .rejected(code: nil), .invalidPayload] {
+            XCTAssertEqual(e.finishDisposition, .showFailure, "\(e)")
+        }
+        XCTAssertEqual(LessonCompletionError.rejected(code: "out-of-hearts").userMessage, "Saved. It will sync when your hearts refill.")
+    }
+
     func testQueuedFailuresSayTheLessonIsSaved() {
         for e in [LessonCompletionError.offline, .timeout, .server(status: 500)] {
             XCTAssertTrue(e.userMessage.contains("aved"), "\(e)")

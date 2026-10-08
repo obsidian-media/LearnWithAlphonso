@@ -79,7 +79,7 @@ struct ReviewQueueView: View {
                     ContentUnavailableView {
                         Label("Queue cleared", systemImage: "checkmark.circle.fill")
                     } description: {
-                        Text(clearedBonusMessage ?? "Nice work -- check back tomorrow for more.")
+                        Text(clearedBonusMessage ?? "Nice work. Check back tomorrow for more.")
                     }
                 }
             }
@@ -195,10 +195,11 @@ struct ReviewQueueView: View {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
                 let result = try await client.fetchDueReviews(course: course.wireCode)
-                total = result.total
                 notificationScheduler.scheduleDueReviewNudge(due: result.due)
                 syncQueueStore.replaceLastKnownDueReviews(result.due, course: course.wireCode)
                 show(result.due)
+                // The count shown is what can be rendered, not the server's total.
+                total = queue.count
                 isLoading = false
                 return
             } catch {
@@ -432,9 +433,9 @@ private struct CachedQueueBanner: View {
     }
 
     private var label: String {
-        guard let since else { return "Offline -- showing your last synced queue" }
+        guard let since else { return "Offline. Showing your last synced queue" }
         let relative = RelativeDateTimeFormatter().localizedString(for: since, relativeTo: Date())
-        return "Offline -- last synced \(relative)"
+        return "Offline. Last synced \(relative)"
     }
 }
 

@@ -12,12 +12,16 @@ final class ScriptedCompletionAPI: LessonCompletionAPI, @unchecked Sendable {
     init(accessToken: String, starts: [Result<String, Error>] = [], completes: [Result<LessonCompletionResult, Error>] = []) {
         self.accessToken = accessToken; self.starts = starts; self.completes = completes
     }
+    struct ScriptExhausted: Error {}
+
     func startLessonSession(lessonID: String, course: String) async throws -> String {
         startCalls += 1
+        guard !starts.isEmpty else { throw ScriptExhausted() }
         return try starts.removeFirst().get()
     }
     func completeLesson(lessonID: String, total: Int, answers: [LessonAnswer], course: String, sessionToken: String) async throws -> LessonCompletionResult {
         completeTokens.append(sessionToken)
+        guard !completes.isEmpty else { throw ScriptExhausted() }
         return try completes.removeFirst().get()
     }
 }
@@ -31,8 +35,11 @@ final class LessonCompletionServiceTests: XCTestCase {
         let asked = TestCapture<[Bool]>([])
         let queue = TestCapture(tokens)
         let s = LessonCompletionService(
-            token: { force in asked.value.append(force); return queue.value.removeFirst() },
-            makeClient: { apis[$0]! })
+            token: { force in
+                asked.value.append(force)
+                return queue.value.isEmpty ? .unreachable : queue.value.removeFirst()
+            },
+            makeClient: { apis[$0] ?? ScriptedCompletionAPI(accessToken: $0) })
         return (s, asked)
     }
 
@@ -99,6 +106,17 @@ final class LessonCompletionServiceTests: XCTestCase {
         let (unreachable, _) = service([:], tokens: [.unreachable])
         let second = await unreachable.complete(request)
         XCTAssertEqual(second.failure, .offline)
+    }
+
+    /// Only a token the caller passed in can be stale. One the service just minted is not re-minted on a 403.
+    func testA403OnATokenTheServiceJustMintedIsNotRetried() async {
+        let api = ScriptedCompletionAPI(accessToken: "a", starts: [.success("fresh")],
+            completes: [.failure(ProgressSyncError.server(status: 403, message: "Invalid or expired lesson session"))])
+        let (s, _) = service(["a": api], tokens: [.token("a")])
+        let result = await s.complete(request)
+        XCTAssertEqual(result.failure, .rejected(code: nil))
+        XCTAssertEqual(api.startCalls, 1)
+        XCTAssertEqual(api.completeTokens, ["fresh"])
     }
 
     func testVersionMismatchIsRejectedAndNotRetried() async {

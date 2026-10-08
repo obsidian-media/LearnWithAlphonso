@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import os
 
 // The offline store's schema history. Every shipped schema stays here, frozen, so an installed store always has a
 // path to the current models. A store that fails to open used to drop silently to an in-memory container
@@ -104,5 +105,30 @@ enum SyncMigrationPlan: SchemaMigrationPlan {
     /// due list and is refilled per course on the next sync, so nothing durable is lost.
     static var stages: [MigrationStage] {
         [.lightweight(fromVersion: SyncSchemaV1.self, toVersion: SyncSchemaV2.self)]
+    }
+}
+
+/// Opens the offline store. Three steps, in order, and each fallback is logged (never just printed):
+/// 1. the versioned schema with the migration plan (a store written by build 49 or a later one);
+/// 2. the same models with NO plan, so SwiftData's lightweight inference can rescue an older compatible store
+///    that matches neither V1 nor V2 (for example one written before offline podcast downloads existed);
+/// 3. an in-memory store, so the app still opens. The offline queue then does not persist across launches.
+enum SyncStoreFactory {
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "LearnWithAlphonso", category: "sync")
+
+    static func makeContainer() -> ModelContainer {
+        let schema = Schema(versionedSchema: SyncSchemaV2.self)
+        let persistent = ModelConfiguration(schema: schema)
+        do {
+            return try ModelContainer(for: schema, migrationPlan: SyncMigrationPlan.self, configurations: [persistent])
+        } catch {
+            log.error("Migration plan failed, retrying without it: \(String(describing: error), privacy: .public)")
+        }
+        do {
+            return try ModelContainer(for: schema, configurations: [persistent])
+        } catch {
+            log.fault("Persistent store failed to open, using memory (the offline queue will not persist): \(String(describing: error), privacy: .public)")
+        }
+        return try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
     }
 }

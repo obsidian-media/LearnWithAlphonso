@@ -205,7 +205,9 @@ struct LessonPlayerView: View {
         .sheet(item: $outOfHearts, onDismiss: {
             // Closed without a heart: leave the lesson (it can't be saved). "Review instead" opens Review first.
             switch heartsGateState {
-            case .blocked: dismiss()
+            // A sheet already queued to replace this one (a refill or purchase that was refused again) means the
+            // learner is still choosing, so only leave when no sheet is pending.
+            case .blocked: if outOfHearts == nil { dismiss() }
             case .reviewInstead: showingReviewInstead = true
             case .open: break
             }
@@ -404,11 +406,16 @@ struct LessonPlayerView: View {
     /// same posture as this file's other fire-and-forget calls.
     private func spendHeartForWrongAnswer() {
         if let cached = syncQueueStore.lastKnownProgress(), cached.hearts > 0 {
+            // The last heart also starts the refill timer, so the offline gate can show a countdown.
+            let after = HeartsEconomy.afterLosingHeart(
+                hearts: cached.hearts,
+                heartsRefillAt: cached.heartsRefillAt.map { Date(timeIntervalSince1970: $0 / 1000) },
+                now: Date())
             syncQueueStore.updateLastKnownProgress(LessonCompletionProgress(
                 xp: cached.xp, streak: cached.streak, longestStreak: cached.longestStreak,
-                lastActiveDate: cached.lastActiveDate, hearts: cached.hearts - 1,
-                heartsRefillAt: cached.heartsRefillAt, streakFreezes: cached.streakFreezes,
-                leagueTier: cached.leagueTier
+                lastActiveDate: cached.lastActiveDate, hearts: after.hearts,
+                heartsRefillAt: after.heartsRefillAt.map { $0.timeIntervalSince1970 * 1000 },
+                streakFreezes: cached.streakFreezes, leagueTier: cached.leagueTier
             ))
         }
         guard let accessToken = session.accessToken else { return }
@@ -484,12 +491,11 @@ struct LessonPlayerView: View {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
         case let .failure(error):
-            // Queue only what waiting can fix. A rejected attempt is never queued (it would sit in the queue
-            // forever), and is never described as "offline".
-            if error.shouldQueue {
-                queueOffline(reason: error)
-            } else {
-                completionFailure = error
+            // Queue what waiting can fix, and a finish refused at 0 hearts (sync defers it until a refill). A
+            // rejected attempt is never queued (it would sit in the queue forever), and is never "offline".
+            switch error.finishDisposition {
+            case .queue: queueOffline(reason: error)
+            case .showFailure: completionFailure = error
             }
         }
     }

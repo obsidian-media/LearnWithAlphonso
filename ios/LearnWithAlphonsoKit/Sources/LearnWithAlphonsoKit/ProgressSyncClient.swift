@@ -17,6 +17,8 @@ public enum BuyHeartResult: Sendable, Equatable {
     case ok(hearts: Int, xp: Int)
     case heartsFull(hearts: Int?)
     case insufficientXp(xp: Int?)
+    /// The RPC saw no signed-in user.
+    case signedOut
 }
 
 public struct HeartsResult: Sendable, Equatable {
@@ -857,7 +859,9 @@ public final class ProgressSyncClient: Sendable {
             throw ProgressSyncError.invalidPayload
         }
         if ok { return .ok(hearts: row["hearts"] as? Int ?? 0, xp: row["xp"] as? Int ?? 0) }
-        if row["reason"] as? String == "hearts-full" { return .heartsFull(hearts: row["hearts"] as? Int) }
+        let reason = row["reason"] as? String
+        if reason == "hearts-full" { return .heartsFull(hearts: row["hearts"] as? Int) }
+        if reason == "unauthenticated" { return .signedOut }
         return .insufficientXp(xp: row["xp"] as? Int)
     }
 

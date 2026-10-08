@@ -1137,6 +1137,7 @@ final class ProgressSyncClientTests: XCTestCase {
             [["ok": true, "reason": NSNull(), "hearts": 1, "xp": 70]],
             [["ok": false, "reason": "hearts-full", "hearts": 5, "xp": NSNull()]],
             [["ok": false, "reason": "insufficient-xp", "hearts": 0, "xp": 20]],
+            [["ok": false, "reason": "unauthenticated", "hearts": NSNull(), "xp": NSNull()]],
         ]
         let index = TestCapture(0)
         let client = makeClient { request in
@@ -1153,5 +1154,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(second, .heartsFull(hearts: 5))
         let third = try await client.buyHeartWithXp(course: "fr")
         XCTAssertEqual(third, .insufficientXp(xp: 20))
+        let fourth = try await client.buyHeartWithXp(course: "fr")
+        XCTAssertEqual(fourth, .signedOut, "a signed-out answer is not an XP shortage")
     }
 }

@@ -40,17 +40,9 @@ struct LearnWithAlphonsoApp: App {
             Purchases.configure(withAPIKey: revenueCatAPIKey)
         }
 
-        // Versioned schema plus an explicit migration plan (SyncSchema.swift): a store written by an earlier
-        // build migrates to the current models. The in-memory fallback remains only for a genuinely unopenable
-        // store (e.g. disk full), and it is logged; the offline queue then just won't persist across relaunches.
-        let schema = Schema(versionedSchema: SyncSchemaV2.self)
-        let container: ModelContainer
-        do {
-            container = try ModelContainer(for: schema, migrationPlan: SyncMigrationPlan.self, configurations: [ModelConfiguration(schema: schema)])
-        } catch {
-            print("[LearnWithAlphonsoApp] persistent store failed to open, using memory: \(error)")
-            container = try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
-        }
+        // Versioned schema and migration plan, with a logged fallback chain (SyncSchema.swift): migrate, else open
+        // without the plan, else memory. The persistent store is never abandoned silently.
+        let container = SyncStoreFactory.makeContainer()
         let queue = SyncQueueStore(modelContext: ModelContext(container))
         syncQueueStore = queue
         // Same container, its own context: the download manager and the

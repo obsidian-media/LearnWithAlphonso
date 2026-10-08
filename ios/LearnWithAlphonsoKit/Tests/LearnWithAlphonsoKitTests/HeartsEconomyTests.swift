@@ -116,4 +116,17 @@ final class HeartsEconomyTests: XCTestCase {
     func testGateBlocksANegativeCountWithNoTimer() {
         XCTAssertEqual(HeartsEconomy.gate(hearts: -1, heartsRefillAt: nil, now: Date(timeIntervalSince1970: 1)), .outOfHearts(refillAt: nil))
     }
+
+    // MARK: - afterLosingHeart
+    func testLosingTheLastHeartStartsTheRefillTimer() {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let state = HeartsEconomy.afterLosingHeart(hearts: 1, heartsRefillAt: nil, now: now)
+        XCTAssertEqual(state, HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: now.addingTimeInterval(30 * 60)))
+    }
+    func testLosingAHeartKeepsAnExistingTimerAndNeverGoesBelowZero() {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let timer = now.addingTimeInterval(5)
+        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 3, heartsRefillAt: nil, now: now), HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: nil))
+        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 0, heartsRefillAt: timer, now: now), HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: timer))
+    }
 }

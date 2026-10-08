@@ -1,22 +1,22 @@
 import Foundation
 
-/// Exponential backoff for queued items. One flaky item no longer retries on every foreground, and an item
-/// that has failed `maxAttempts` times is moved out of the queue (dead-lettered).
+/// Exponential backoff for queued items that failed for a reason waiting can fix (offline, timeout, server
+/// trouble, rate limit). They retry forever, never faster than `baseDelay` and never slower than `maxDelay`, and
+/// are never dead-lettered: only a permanent rejection (see LessonCompletionError.shouldQueue) leaves the queue.
 public struct SyncRetryPolicy: Sendable, Equatable {
     public let baseDelay: TimeInterval
     public let maxDelay: TimeInterval
-    public let maxAttempts: Int
 
-    public init(baseDelay: TimeInterval, maxDelay: TimeInterval, maxAttempts: Int) {
+    public init(baseDelay: TimeInterval, maxDelay: TimeInterval) {
         self.baseDelay = baseDelay
         self.maxDelay = maxDelay
-        self.maxAttempts = maxAttempts
     }
 
-    public static let standard = SyncRetryPolicy(baseDelay: 30, maxDelay: 6 * 60 * 60, maxAttempts: 8)
+    public static let standard = SyncRetryPolicy(baseDelay: 30, maxDelay: 6 * 60 * 60)
 
+    /// `attempt` is the number of failures so far (1 after the first).
     public func delay(afterAttempt attempt: Int) -> TimeInterval {
-        min(maxDelay, baseDelay * pow(2, Double(max(0, attempt - 1))))
+        min(maxDelay, baseDelay * pow(2, Double(min(max(0, attempt - 1), 30))))
     }
 }
 

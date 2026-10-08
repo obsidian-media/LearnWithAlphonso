@@ -79,4 +79,15 @@ public enum HeartsEconomy {
         let resolved = resolveHeartsRefill(hearts: hearts, heartsRefillAt: heartsRefillAt, now: now)
         return resolved.hearts > 0 ? .open : .outOfHearts(refillAt: resolved.heartsRefillAt)
     }
+
+    /// The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the
+    /// refill is due one interval from now, so the offline gate can show a countdown (the server sets the same
+    /// timer in lose_heart).
+    public static func afterLosingHeart(hearts: Int, heartsRefillAt: Date?, now: Date) -> HeartsState {
+        let remaining = max(0, hearts - 1)
+        if remaining == 0 && heartsRefillAt == nil {
+            return HeartsState(hearts: 0, heartsRefillAt: now.addingTimeInterval(heartRefillSeconds))
+        }
+        return HeartsState(hearts: remaining, heartsRefillAt: heartsRefillAt)
+    }
 }

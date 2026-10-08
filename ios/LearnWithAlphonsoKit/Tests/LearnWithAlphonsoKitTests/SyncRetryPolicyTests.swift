@@ -8,6 +8,6 @@ final class SyncRetryPolicyTests: XCTestCase {
         XCTAssertEqual(p.delay(afterAttempt: 2), 60)
         XCTAssertEqual(p.delay(afterAttempt: 5), 480)
         XCTAssertEqual(p.delay(afterAttempt: 30), 6 * 60 * 60)
-        XCTAssertEqual(p.maxAttempts, 8)
+        XCTAssertEqual(p.delay(afterAttempt: 1_000_000), 6 * 60 * 60, "a huge failure count stays capped and finite")
     }
 }
