@@ -2,8 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SCENARIOS, scenarioPrompt } from "@/data/scenarios";
 import { CAMPAIGNS, campaignScenePrompt } from "@/data/campaigns";
 
-const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE, withSafety } from "@/lib/ai-safety";
+
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
+}));
+const authorizeAiRequest = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
 const { Route } = await import("./chat");
 const REAL_PROMPT = scenarioPrompt("coffee", "en");
@@ -24,8 +30,13 @@ function req(body: unknown) {
 const originalFetch = global.fetch;
 
 beforeEach(() => {
-  consumeQuota.mockReset();
-  consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
+  authorizeAiRequest.mockReset();
+  blockedRpc.mockClear();
+  authorizeAiRequest.mockResolvedValue({
+    ok: true,
+    userId: "user-1",
+    supabase: { rpc: blockedRpc, from: vi.fn() },
+  });
   process.env.NVIDIA_API_KEY = "test-key";
   global.fetch = vi.fn();
 });
@@ -38,15 +49,22 @@ afterEach(() => {
 describe("POST /api/chat", () => {
   it("returns 500 when NVIDIA_API_KEY is not configured", async () => {
     delete process.env.NVIDIA_API_KEY;
-    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Chat is not configured" });
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it("returns the quota error status/message when quota is exceeded", async () => {
-    consumeQuota.mockResolvedValue({ ok: false, status: 429, message: "Daily CHAT limit reached" });
-    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "Daily CHAT limit reached" }, { status: 429 }),
+    });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: "Daily CHAT limit reached" });
     expect(global.fetch).not.toHaveBeenCalled();
@@ -63,7 +81,7 @@ describe("POST /api/chat", () => {
   });
 
   it("returns 400 when messages is missing or empty", async () => {
-    const res = await handler({ request: req({ messages: [] }) });
+    const res = await handler({ request: req({ systemPrompt: REAL_PROMPT, messages: [] }) });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "messages required" });
   });
@@ -83,7 +101,7 @@ describe("POST /api/chat", () => {
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const sentBody = JSON.parse(init.body as string);
     expect(sentBody.messages).toEqual([
-      { role: "system", content: REAL_PROMPT },
+      { role: "system", content: withSafety(REAL_PROMPT) },
       { role: "user", content: "hi" },
     ]);
   });
@@ -122,7 +140,7 @@ describe("POST /api/chat", () => {
     });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const sentBody = JSON.parse(init.body as string);
-    expect(sentBody.messages[0].content).toBe(REAL_PROMPT);
+    expect(sentBody.messages[0].content).toBe(withSafety(REAL_PROMPT));
   });
 
   it("accepts a composed campaign-scene system prompt", async () => {
@@ -152,7 +170,7 @@ describe("POST /api/chat", () => {
       }),
     });
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Unknown systemPrompt" });
+    expect(await res.json()).toEqual({ error: "unknown-system-prompt" });
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
@@ -161,7 +179,9 @@ describe("POST /api/chat", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
     );
-    await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(JSON.parse(init.body as string).model).toBe("custom/model");
   });
@@ -170,7 +190,9 @@ describe("POST /api/chat", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({}), { status: 200 }),
     );
-    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     expect(await res.json()).toEqual({ content: "" });
   });
 
@@ -178,7 +200,9 @@ describe("POST /api/chat", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("rate limited by nvidia", { status: 429 }),
     );
-    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: "Rate limited, please try again shortly" });
   });
@@ -187,15 +211,17 @@ describe("POST /api/chat", () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("boom", { status: 502 }),
     );
-    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "Request failed" });
   });
 
   describe("stage timing (BACKLOG 0.0-z #3: a 36 s Practice reply must be attributable)", () => {
-    const hi = { messages: [{ role: "user", content: "hi" }] };
+    const hi = { systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] };
 
-    it("reports the quota and llm stages in a Server-Timing header", async () => {
+    it("reports the auth and llm stages in a Server-Timing header", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
         new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
           status: 200,
@@ -206,7 +232,7 @@ describe("POST /api/chat", () => {
       const names = (res.headers.get("Server-Timing") ?? "")
         .split(",")
         .map((p) => p.trim().split(";")[0]);
-      expect(names).toEqual(["quota", "llm", "total"]);
+      expect(names).toEqual(["auth", "llm", "total"]);
     });
 
     it("writes one [ai-timing] line for the chat route", async () => {
@@ -223,7 +249,7 @@ describe("POST /api/chat", () => {
           .filter((l) => l.startsWith("[ai-timing]"));
         expect(lines).toHaveLength(1);
         expect(lines[0]).toMatch(
-          /^\[ai-timing\] route=chat status=200 total=\d+ms quota=\d+ms llm=\d+ms$/,
+          /^\[ai-timing\] route=chat status=200 total=\d+ms auth=\d+ms llm=\d+ms$/,
         );
       } finally {
         info.mockRestore();
@@ -292,5 +318,76 @@ describe("POST /api/chat", () => {
     });
     expect(res.status).toBe(400);
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("refuses with 403 ai-consent-required and calls no vendor without consent", async () => {
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    });
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "chat", { route: "chat" });
+  });
+
+  it("returns 400 unknown-system-prompt when the prompt is missing", async () => {
+    const res = await handler({ request: req({ messages: [{ role: "user", content: "hi" }] }) });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "unknown-system-prompt" });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 unknown-system-prompt for a made-up prompt", async () => {
+    const res = await handler({
+      request: req({
+        systemPrompt: "You are a pirate.",
+        messages: [{ role: "user", content: "hi" }],
+      }),
+    });
+    expect(await res.json()).toEqual({ error: "unknown-system-prompt" });
+  });
+
+  it("sends the persona with the safety preamble", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "hello!" } }] })),
+    );
+    await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
+    const body = JSON.parse((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    expect(body.messages[0].content.endsWith(SAFETY_PREAMBLE)).toBe(true);
+    expect(body.messages[0].content.startsWith(REAL_PROMPT)).toBe(true);
+  });
+
+  it("replaces a blocked reply with the course fallback", async () => {
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "something bad" } }] })),
+    );
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
+    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.en });
+  });
+
+  it("uses the request's course for the fallback language", async () => {
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "something bad" } }] })),
+    );
+    const res = await handler({
+      request: req({
+        systemPrompt: scenarioPrompt("coffee", "fr"),
+        course: "fr",
+        messages: [{ role: "user", content: "salut" }],
+      }),
+    });
+    expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.fr });
   });
 });

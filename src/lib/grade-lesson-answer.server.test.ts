@@ -28,6 +28,8 @@ const translate: Question = {
   explanation: "",
 };
 
+const CONSENTED = { allowed: async () => true };
+
 describe("gradeLessonAnswer", () => {
   const originalKey = process.env.NVIDIA_API_KEY;
   const originalFetch = global.fetch;
@@ -75,7 +77,7 @@ describe("gradeLessonAnswer", () => {
       ),
     ) as typeof fetch;
 
-    expect(await gradeLessonAnswer(translate, "Buen día", "en")).toBe(true);
+    expect(await gradeLessonAnswer(translate, "Buen día", "en", CONSENTED)).toBe(true);
     expect(global.fetch).toHaveBeenCalledOnce();
   });
 
@@ -83,7 +85,7 @@ describe("gradeLessonAnswer", () => {
     process.env.NVIDIA_API_KEY = "test-key";
     global.fetch = vi.fn().mockRejectedValue(new Error("network down")) as typeof fetch;
 
-    await expect(gradeLessonAnswer(translate, "Buen día", "en")).resolves.toBe(false);
+    await expect(gradeLessonAnswer(translate, "Buen día", "en", CONSENTED)).resolves.toBe(false);
   });
 
   // 2026-09-30 audit (Codex/Fable): lesson-completion translate grading had
@@ -97,7 +99,10 @@ describe("gradeLessonAnswer", () => {
       global.fetch = vi.fn() as typeof fetch;
       const checkQuota = vi.fn().mockResolvedValue(false);
 
-      const result = await gradeLessonAnswer(translate, "Buen día", "en", checkQuota);
+      const result = await gradeLessonAnswer(translate, "Buen día", "en", {
+        allowed: async () => true,
+        checkQuota,
+      });
 
       expect(result).toBe(false);
       expect(checkQuota).toHaveBeenCalledOnce();
@@ -115,11 +120,16 @@ describe("gradeLessonAnswer", () => {
       ) as typeof fetch;
       const checkQuota = vi.fn().mockResolvedValue(true);
 
-      await expect(gradeLessonAnswer(translate, "Buen día", "en", checkQuota)).resolves.toBe(true);
+      await expect(
+        gradeLessonAnswer(translate, "Buen día", "en", {
+          allowed: async () => true,
+          checkQuota,
+        }),
+      ).resolves.toBe(true);
       expect(global.fetch).toHaveBeenCalledOnce();
     });
 
-    it("omitting checkQuota preserves the old unlimited behavior", async () => {
+    it("omitting checkQuota (with consent) leaves the AI grader unlimited", async () => {
       global.fetch = vi.fn().mockResolvedValue(
         new Response(
           JSON.stringify({
@@ -129,8 +139,39 @@ describe("gradeLessonAnswer", () => {
         ),
       ) as typeof fetch;
 
-      await expect(gradeLessonAnswer(translate, "Buen día", "en")).resolves.toBe(true);
+      await expect(gradeLessonAnswer(translate, "Buen día", "en", CONSENTED)).resolves.toBe(true);
       expect(global.fetch).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("consent", () => {
+    beforeEach(() => {
+      process.env.NVIDIA_API_KEY = "test-key";
+    });
+
+    it("without consent makes no model call and never touches quota", async () => {
+      global.fetch = vi.fn() as typeof fetch;
+      const checkQuota = vi.fn(async () => true);
+      expect(
+        await gradeLessonAnswer(translate, "Buen día", "en", {
+          allowed: async () => false,
+          checkQuota,
+        }),
+      ).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(checkQuota).not.toHaveBeenCalled();
+    });
+
+    it("omitting the AI options means no AI (safe default)", async () => {
+      global.fetch = vi.fn() as typeof fetch;
+      expect(await gradeLessonAnswer(translate, "Buen día", "en")).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("does not ask for consent when the curated list already accepts", async () => {
+      const allowed = vi.fn(async () => true);
+      expect(await gradeLessonAnswer(translate, "Buenos días", "en", { allowed })).toBe(true);
+      expect(allowed).not.toHaveBeenCalled();
     });
   });
 });

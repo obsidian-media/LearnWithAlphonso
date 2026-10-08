@@ -1,9 +1,18 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
+import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE } from "@/lib/ai-safety";
+
 const getUser = vi.fn();
-vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { auth: { getUser } },
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
 }));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { auth: { getUser }, rpc: blockedRpc },
+}));
+
+const requireAiConsent = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
 
 const revenueCatConfigFromEnv = vi.fn();
 const isProSubscriber = vi.fn();
@@ -37,6 +46,9 @@ beforeEach(() => {
   revenueCatConfigFromEnv.mockReset();
   isProSubscriber.mockReset();
   consumeQuota.mockReset();
+  requireAiConsent.mockReset();
+  requireAiConsent.mockResolvedValue(null);
+  blockedRpc.mockClear();
   process.env.NVIDIA_API_KEY = "nv_test";
   process.env.DEEPGRAM_API_KEY = "dg_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
@@ -191,5 +203,56 @@ describe("POST /api/hector-respond", () => {
       expect(Object.keys(body)).not.toContain("auth");
       expect(Object.keys(body)).not.toContain("server_timing");
     });
+  });
+
+  it("refuses with 403 ai-consent-required before entitlement and quota, and calls no vendor", async () => {
+    requireAiConsent.mockResolvedValue(
+      Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    );
+    globalThis.fetch = vi.fn() as never;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(requireAiConsent).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ route: "hector-respond" }),
+    );
+    expect(isProSubscriber).not.toHaveBeenCalled();
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("sends the persona with the safety preamble", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [{ message: { content: "Hello!" } }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    await handler({ request: req() });
+    const sent = JSON.parse((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    expect(sent.messages[0].content.endsWith(SAFETY_PREAMBLE)).toBe(true);
+  });
+
+  it("never speaks or returns a blocked reply: the fallback replaces it before TTS", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [{ message: { content: "something bad" } }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    const res = await handler({ request: req() });
+    const body = (await res.json()) as { reply: string };
+    expect(body.reply).toBe(AI_OUTPUT_FALLBACK.en);
+    const ttsBody = JSON.parse(
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].body,
+    );
+    expect(ttsBody).toEqual({ text: AI_OUTPUT_FALLBACK.en });
   });
 });

@@ -31,11 +31,14 @@ describe("NVIDIA call sites", () => {
       .map(rel)
       .sort();
     expect(callers).toEqual([...CHOKEPOINTS].sort());
-  });
+    // Walks three source trees: allow for a slow disk or a loaded CI runner.
+  }, 30_000);
 
   it("each chokepoint applies the safety preamble to the messages it sends", () => {
     for (const f of CHOKEPOINTS) {
-      expect(fs.readFileSync(path.join(ROOT, f), "utf8"), f).toMatch(/messages:\s*applySafety\(body\.messages\)/);
+      expect(fs.readFileSync(path.join(ROOT, f), "utf8"), f).toMatch(
+        /messages:\s*applySafety\(body\.messages\)/,
+      );
     }
   });
 });

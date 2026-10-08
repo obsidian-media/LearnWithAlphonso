@@ -3,9 +3,16 @@ import { chainable } from "@/lib/__testutils__/supabase-mock";
 
 const getUser = vi.fn();
 const from = vi.fn();
-vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { auth: { getUser }, from },
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
 }));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { auth: { getUser }, from, rpc: blockedRpc },
+}));
+
+const requireAiConsent = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
 
 const consumeQuota = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
@@ -59,6 +66,9 @@ const INSERT_OK = { error: null };
 beforeEach(() => {
   getUser.mockReset();
   consumeQuota.mockReset();
+  requireAiConsent.mockReset();
+  requireAiConsent.mockResolvedValue(null);
+  blockedRpc.mockClear();
   process.env.NVIDIA_API_KEY = "nv_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
   consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 40 });
@@ -293,5 +303,33 @@ describe("POST /api/define-word", () => {
     modelFetch(new Response(JSON.stringify(modelOk), { status: 200 }));
     const res = await handler({ request: req() });
     expect(res.headers.get("Server-Timing")).toContain("total;dur=");
+  });
+
+  it("refuses with 403 ai-consent-required before any lookup, quota or model call", async () => {
+    requireAiConsent.mockResolvedValue(
+      Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    );
+    const fetchSpy = modelFetch(new Response("{}"));
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(requireAiConsent).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ route: "define-word" }),
+    );
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("writes no row when the blocked-term check rejects the definition", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    modelFetch(new Response(JSON.stringify(modelOk), { status: 200 }));
+    queue(NO_ROW, COUNT(0));
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "Could not look that word up. Try again." });
+    expect(from).toHaveBeenCalledTimes(2); // lookup and count only, no insert
   });
 });

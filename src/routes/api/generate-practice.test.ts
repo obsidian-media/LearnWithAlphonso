@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+import { SAFETY_PREAMBLE } from "@/lib/ai-safety";
+
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
+}));
+const authorizeAiRequest = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
 const { Route } = await import("./generate-practice");
 const handler = (
@@ -30,8 +36,13 @@ const QUESTION_JSON = JSON.stringify([
 const originalFetch = global.fetch;
 
 beforeEach(() => {
-  consumeQuota.mockReset();
-  consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
+  authorizeAiRequest.mockReset();
+  blockedRpc.mockClear();
+  authorizeAiRequest.mockResolvedValue({
+    ok: true,
+    userId: "user-1",
+    supabase: { rpc: blockedRpc, from: vi.fn() },
+  });
   process.env.NVIDIA_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
     new Response(JSON.stringify({ choices: [{ message: { content: QUESTION_JSON } }] }), {
@@ -53,7 +64,10 @@ describe("POST /api/generate-practice", () => {
   });
 
   it("rejects when the quota check fails", async () => {
-    consumeQuota.mockResolvedValue({ ok: false, status: 429, message: "slow down" });
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "slow down" }, { status: 429 }),
+    });
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
     expect(res.status).toBe(429);
     expect(global.fetch).not.toHaveBeenCalled();
@@ -88,7 +102,7 @@ describe("POST /api/generate-practice", () => {
       { body: string },
     ];
     const sentBody = JSON.parse(options.body) as { messages: { content: string }[] };
-    expect(sentBody.messages[0].content).toContain("Saying Hello"); // u1l1's title
+    expect(sentBody.messages[1].content).toContain("Saying Hello"); // u1l1's title
   });
 
   it("defaults to the English course when none is given", async () => {
@@ -102,6 +116,31 @@ describe("POST /api/generate-practice", () => {
         status: 200,
       }),
     );
+    const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
+    expect(await res.json()).toEqual({ questions: [] });
+  });
+
+  it("is not consent-gated (it sends only the lesson's own wording), but still authenticated and metered", async () => {
+    await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
+    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "chat", {
+      route: "generate-practice",
+      requireConsent: false,
+    });
+  });
+
+  it("sends the safety preamble with the prompt", async () => {
+    await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
+    const [, options] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
+      string,
+      { body: string },
+    ];
+    const sent = JSON.parse(options.body) as { messages: { role: string; content: string }[] };
+    expect(sent.messages[0]).toEqual({ role: "system", content: SAFETY_PREAMBLE });
+  });
+
+  it("drops a question the blocked-term check rejects", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
     expect(await res.json()).toEqual({ questions: [] });
   });
