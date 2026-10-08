@@ -7,6 +7,7 @@ import { AnswerOption } from "../../components/AnswerOption";
 import { AnswerFeedback } from "../../components/AnswerFeedback";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { MascotBanner } from "../../components/MascotBanner";
+import { VocabImage } from "../../components/VocabImage";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
@@ -278,14 +279,10 @@ function ReviewPage() {
           Spaced review
         </p>
         {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
-          <img
-            src={VOCAB_IMAGES[q.imageKey].url}
-            alt={VOCAB_IMAGES[q.imageKey].alt}
-            loading="lazy"
-            className="mb-4 h-40 w-full rounded-2xl object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
+          <VocabImage
+            url={VOCAB_IMAGES[q.imageKey].url}
+            alt=""
+            className="mb-4 h-40 w-full rounded-2xl"
           />
         )}
         {q.type === "listening" && (

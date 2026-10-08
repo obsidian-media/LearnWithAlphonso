@@ -1,0 +1,224 @@
+{
+ "batch": "r1-2nd-b004",
+ "pass": "second",
+ "reviewer": "agent:review2-r1-2nd-b004",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "refrigerador": {
+   "verdict": "approve",
+   "alt": "A woman seen from behind reaches into an open stainless steel refrigerator.",
+   "peopleVisible": true
+  },
+  "ride": {
+   "verdict": "approve",
+   "alt": "Two children wearing helmets ride bicycles along a tree-lined path in low sunlight.",
+   "peopleVisible": true
+  },
+  "running": {
+   "verdict": "approve",
+   "alt": "A woman in a black top and shorts jogs along a wooden boardwalk, seen from above.",
+   "peopleVisible": true
+  },
+  "scarf": {
+   "verdict": "approve",
+   "alt": "A thick orange knitted scarf worn over a brown top.",
+   "peopleVisible": true
+  },
+  "school": {
+   "verdict": "approve",
+   "alt": "Smiling people in white tops sit at wooden desks in a classroom decorated with balloons.",
+   "peopleVisible": true
+  },
+  "seatbelt": {
+   "verdict": "approve",
+   "alt": "A young boy sits on an aircraft seat with a lap belt fastened across him.",
+   "peopleVisible": true
+  },
+  "shelves": {
+   "verdict": "approve",
+   "alt": "Crowded shelves and stacks of books in a bookshop.",
+   "peopleVisible": false
+  },
+  "shirt": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "portrait of a man, shirt not clearly the subject"
+  },
+  "singing": {
+   "verdict": "approve",
+   "alt": "A woman sings into a microphone on a stand on a dimly lit stage.",
+   "peopleVisible": true
+  },
+  "skateboarding": {
+   "verdict": "approve",
+   "alt": "A person in khaki trousers rides a skateboard on paving stones.",
+   "peopleVisible": true
+  },
+  "skiing": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "parked skis and snowboards, nobody skiing"
+  },
+  "sleep": {
+   "verdict": "approve",
+   "alt": "A newborn baby in a striped outfit sleeps on a soft white blanket.",
+   "peopleVisible": true
+  },
+  "sleeping": {
+   "verdict": "approve",
+   "alt": "A newborn baby in a striped outfit sleeps on a soft white blanket.",
+   "peopleVisible": true
+  },
+  "snacks": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "only pecan nuts, not clearly snacks"
+  },
+  "soap": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "handwashing foam, no soap visible"
+  },
+  "sock": {
+   "verdict": "approve",
+   "alt": "A row of striped and plain coloured ankle socks hanging on legs.",
+   "peopleVisible": true
+  },
+  "student": {
+   "verdict": "approve",
+   "alt": "A boy reads an open book in warm low light.",
+   "peopleVisible": true
+  },
+  "study": {
+   "verdict": "approve",
+   "alt": "A boy reads an open book in warm low light.",
+   "peopleVisible": true
+  },
+  "studying": {
+   "verdict": "approve",
+   "alt": "A boy reads an open book in warm low light.",
+   "peopleVisible": true
+  },
+  "sugar": {
+   "verdict": "approve",
+   "alt": "A rock sugar crystal stick rests across a cup of hot red tea.",
+   "peopleVisible": false
+  },
+  "suit": {
+   "verdict": "approve",
+   "alt": "Business colleagues in dark suits meet around a table and shake hands.",
+   "peopleVisible": true
+  },
+  "sunglasses": {
+   "verdict": "approve",
+   "alt": "Three pairs of sunglasses with wooden frames and tinted lenses on a white background.",
+   "peopleVisible": false
+  },
+  "supermercado": {
+   "verdict": "approve",
+   "alt": "Overhead view of a supermarket with aisles of colourful fruit and vegetables and a few shoppers.",
+   "peopleVisible": true
+  },
+  "suéter": {
+   "verdict": "approve",
+   "alt": "A woman with a hair bun pulls the neck of a cream knitted sweater up over her nose.",
+   "peopleVisible": true
+  },
+  "sweater": {
+   "verdict": "approve",
+   "alt": "A woman with a hair bun pulls the neck of a cream knitted sweater up over her nose.",
+   "peopleVisible": true
+  },
+  "talking": {
+   "verdict": "approve",
+   "alt": "Three smiling friends talk together outdoors in warm light.",
+   "peopleVisible": true
+  },
+  "taxi": {
+   "verdict": "approve",
+   "alt": "A red London-style taxi with a roof sign drives along a city street.",
+   "peopleVisible": true
+  },
+  "ticket": {
+   "verdict": "approve",
+   "alt": "Hands hold several paper tickets and a ticket punch.",
+   "peopleVisible": true
+  },
+  "tomato": {
+   "verdict": "approve",
+   "alt": "Fresh red tomatoes on the vine with spring onions and pasta behind.",
+   "peopleVisible": false
+  },
+  "trainers": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "canvas sneakers of recognisable brand design plus bike brand marks"
+  },
+  "umbrella": {
+   "verdict": "approve",
+   "alt": "A person holding a black umbrella walks along a rainy city street at night.",
+   "peopleVisible": true
+  },
+  "valle": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "badlands ridges, not clearly a valley"
+  },
+  "vegetables": {
+   "verdict": "approve",
+   "alt": "Two fresh green broccoli heads on a white background.",
+   "peopleVisible": false
+  },
+  "vestido": {
+   "verdict": "approve",
+   "alt": "A young girl in a pink striped dress and pink hat stands in a sunny meadow, seen from behind.",
+   "peopleVisible": true
+  },
+  "video games": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "console controllers with recognisable brand button symbols"
+  },
+  "waitress": {
+   "verdict": "approve",
+   "alt": "A smiling waitress in a white shirt and black vest works at a cafe counter.",
+   "peopleVisible": true
+  },
+  "walk": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "tiny distant figures in forest, walking not clear"
+  },
+  "walking": {
+   "verdict": "approve",
+   "alt": "A person in a blue jacket and hat walks down a tree-lined road in autumn.",
+   "peopleVisible": true
+  },
+  "wash": {
+   "verdict": "approve",
+   "alt": "Hands wash a metal bowl under running water.",
+   "peopleVisible": true
+  },
+  "woman": {
+   "verdict": "approve",
+   "alt": "A woman in a white dress and straw hat holds a bunch of white flowers in a field.",
+   "peopleVisible": true
+  }
+ }
+}

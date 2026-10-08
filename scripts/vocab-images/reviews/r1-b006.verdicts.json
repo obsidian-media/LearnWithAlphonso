@@ -1,0 +1,229 @@
+{
+ "batch": "r1-b006",
+ "pass": "first",
+ "reviewer": "agent:review-r1-b006",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "geese": {
+   "verdict": "approve",
+   "alt": "Two Canada geese on a green lawn dotted with small yellow flowers.",
+   "peopleVisible": false
+  },
+  "gimnasio": {
+   "verdict": "approve",
+   "alt": "A bright gym room with treadmills, weight machines and white lockers.",
+   "peopleVisible": false
+  },
+  "giraffe": {
+   "verdict": "approve",
+   "alt": "Several giraffes standing on grass among palm trees in a zoo.",
+   "peopleVisible": false
+  },
+  "girl": {
+   "verdict": "approve",
+   "alt": "A smiling young girl in a pink striped top standing in front of green leaves.",
+   "peopleVisible": true
+  },
+  "glaciar": {
+   "verdict": "approve",
+   "alt": "Rugged glacier ice with deep crevasses and dark streaks of rock.",
+   "peopleVisible": false
+  },
+  "glass": {
+   "verdict": "reject",
+   "reasons": [
+    "alcohol-tobacco-drugs-gambling",
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "bar counter with liquor bottle bearing a logo"
+  },
+  "goma": {
+   "verdict": "approve",
+   "alt": "Several erasers, one rainbow-striped, beside a blank card on a pink envelope.",
+   "peopleVisible": false
+  },
+  "granjero": {
+   "verdict": "approve",
+   "alt": "A bearded man in a straw hat and blue shirt sitting on a red tractor.",
+   "peopleVisible": true
+  },
+  "grifo": {
+   "verdict": "approve",
+   "alt": "A chrome faucet above a white oval bathroom sink.",
+   "peopleVisible": false
+  },
+  "guantes": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "shows a hawk perched on a falconry glove; bird is the subject"
+  },
+  "guesthouse": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text",
+    "alcohol-tobacco-drugs-gambling"
+   ],
+   "note": "pub interior with visible beer brand bib and other text"
+  },
+  "gym": {
+   "verdict": "approve",
+   "alt": "Racks of black dumbbells and kettlebells in a gym, in black and white.",
+   "peopleVisible": false
+  },
+  "hair": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "woman in a bathrobe with open neckline, face hidden by hair; doubtful framing"
+  },
+  "hairdresser": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "shows only scissors in a pouch, no hairdresser at work"
+  },
+  "hallway": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "curving paved ramp inside a tower, not clearly a hallway"
+  },
+  "hands": {
+   "verdict": "approve",
+   "alt": "A small child's hand held inside an adult's hand.",
+   "peopleVisible": true
+  },
+  "hat": {
+   "verdict": "approve",
+   "alt": "A straw hat with a black band resting among ears of wheat.",
+   "peopleVisible": false
+  },
+  "hen": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "shows a rooster, not a hen"
+  },
+  "hierba": {
+   "verdict": "approve",
+   "alt": "Close view of bright green grass filling the whole frame.",
+   "peopleVisible": false
+  },
+  "hiking": {
+   "verdict": "approve",
+   "alt": "A gravel path running between rows of tall trees and green grass.",
+   "peopleVisible": false
+  },
+  "hoja": {
+   "verdict": "approve",
+   "alt": "Close-up of a green leaf showing its fine veins.",
+   "peopleVisible": false
+  },
+  "horno": {
+   "verdict": "approve",
+   "alt": "A pizza baking inside a wood-fired oven with flames behind it.",
+   "peopleVisible": false
+  },
+  "isla": {
+   "verdict": "approve",
+   "alt": "A small island with palm trees surrounded by clear turquoise sea.",
+   "peopleVisible": false
+  },
+  "jacket": {
+   "verdict": "reject",
+   "reasons": [
+    "stereotype-demeaning-poverty-distress",
+    "off-term"
+   ],
+   "note": "sad lonely woman in a crowd; depression theme"
+  },
+  "jeans": {
+   "verdict": "approve",
+   "alt": "Blue denim jeans with a leather belt and metal buckle.",
+   "peopleVisible": false
+  },
+  "jet": {
+   "verdict": "approve",
+   "alt": "Two jet engines under the wing of an airplane, in black and white.",
+   "peopleVisible": false
+  },
+  "jogging": {
+   "verdict": "approve",
+   "alt": "A runner's legs in running shoes on an empty road with a yellow center line.",
+   "peopleVisible": true
+  },
+  "kangaroo": {
+   "verdict": "approve",
+   "alt": "A kangaroo with large ears looking straight at the camera.",
+   "peopleVisible": false
+  },
+  "ketchup": {
+   "verdict": "approve",
+   "alt": "A hot dog in a bun topped with ketchup, mustard and sesame seeds.",
+   "peopleVisible": true
+  },
+  "keys": {
+   "verdict": "approve",
+   "alt": "A hand holding a black car key fob with a purple car behind it.",
+   "peopleVisible": true
+  },
+  "kitchen": {
+   "verdict": "approve",
+   "alt": "A bright kitchen with a wooden table, white cabinets and a window.",
+   "peopleVisible": false
+  },
+  "kiwi": {
+   "verdict": "approve",
+   "alt": "A backlit slice of green kiwi fruit with small black seeds.",
+   "peopleVisible": false
+  },
+  "knitting": {
+   "verdict": "approve",
+   "alt": "Hands knitting with needles and cream-colored wool yarn.",
+   "peopleVisible": true
+  },
+  "l'eau": {
+   "verdict": "approve",
+   "alt": "Blue water splashing with droplets flying in the air.",
+   "peopleVisible": false
+  },
+  "l'orange": {
+   "verdict": "approve",
+   "alt": "An orange hanging on a tree branch among green leaves.",
+   "peopleVisible": false
+  },
+  "l'écharpe": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "glamour portrait with bare shoulders, red lips and posed framing"
+  },
+  "l'étudiant": {
+   "verdict": "approve",
+   "alt": "A boy reading an open book in warm, dim light.",
+   "peopleVisible": true
+  },
+  "l'œuf": {
+   "verdict": "approve",
+   "alt": "A fried egg in a small black pan beside two eggshell halves.",
+   "peopleVisible": false
+  },
+  "la robe": {
+   "verdict": "approve",
+   "alt": "A child in a pink striped dress and hat standing in a sunny flower meadow.",
+   "peopleVisible": true
+  },
+  "lago": {
+   "verdict": "approve",
+   "alt": "A lake at sunset with bare trees and a wooden bench on snowy ground.",
+   "peopleVisible": false
+  }
+ }
+}

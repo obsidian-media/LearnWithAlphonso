@@ -548,7 +548,7 @@ private struct QuestionCard: View {
             case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
-                    VocabImageView(image: image, cardHeight: 160)
+                    VocabImageView(image: image, cardHeight: 160, decorative: true)
                 }
                 if let audioText = q.audioText {
                     Button {
@@ -884,40 +884,50 @@ private struct VocabScreen: View {
     }
 }
 
-/// Mirrors the web's `<img src=... onError=...>` handling: a loading
-/// spinner while the Pexels CDN fetch is in flight, and -- on failure --
-/// a plain neutral panel rather than a broken-image icon. Shared by
-/// VocabScreen's full-width card image and OverviewScreen's small preview
-/// thumbnails (pass `thumbnailSize` for the latter) so the AsyncImage
-/// phase-handling exists once rather than twice. No caching beyond what
-/// URLSession/AsyncImage already do by default; see
-/// docs/v2-kickoffs/07-vocab-images-and-content-polish.md's "Deepened
-/// feature 1" for why that's an accepted tradeoff for V2, not an oversight.
-/// Not private (V3 pkg 4a): ReviewQueueView's image-matching mc rendering
-/// reuses this rather than duplicating the AsyncImage phase-handling.
+/// The one way the iOS app shows a vocab image (App Store review fix, 2026-10).
+/// A neutral placeholder only while loading. On failure, or for any URL outside
+/// the self-hosted bucket, the slot collapses entirely: no blank box. Shared by
+/// VocabScreen's card image, OverviewScreen's thumbnails (`thumbnailSize`) and
+/// ReviewQueueView's image-matching questions. The decision lives in the Kit's
+/// VocabImagePolicy (tested); this view only maps AsyncImage phases onto it.
 struct VocabImageView: View {
     let image: VocabImageRef
     /// A fixed square size for a small teaser thumbnail, or nil for a
     /// full-width card image at `cardHeight`.
     var thumbnailSize: CGFloat?
     var cardHeight: CGFloat = 120
+    /// True for an image shown alongside a question whose answer is the term: its
+    /// description would give the answer away to VoiceOver, so it is hidden from it.
+    var decorative = false
+    @State private var failedURL: String?
 
     var body: some View {
-        AsyncImage(url: URL(string: image.url)) { phase in
-            switch phase {
-            case .success(let loadedImage):
-                loadedImage.resizable().aspectRatio(contentMode: .fill)
-            case .empty:
-                ProgressView().tint(AlphonsoColor.moss)
-            default:
-                AlphonsoColor.parchment
+        switch VocabImagePolicy.slot(url: image.url, failedURL: failedURL) {
+        case .collapsed:
+            EmptyView()
+        case .visible:
+            AsyncImage(url: URL(string: image.url)) { phase in
+                switch phase {
+                case .success(let loadedImage):
+                    loadedImage.resizable().aspectRatio(contentMode: .fill)
+                case .empty:
+                    ZStack {
+                        AlphonsoColor.parchment
+                        ProgressView().tint(AlphonsoColor.moss)
+                    }
+                case .failure:
+                    Color.clear.onAppear { failedURL = image.url }
+                @unknown default:
+                    Color.clear.onAppear { failedURL = image.url }
+                }
             }
+            .frame(width: thumbnailSize, height: thumbnailSize ?? cardHeight)
+            .frame(maxWidth: thumbnailSize == nil ? .infinity : nil)
+            .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
+            .clipped()
+            .accessibilityLabel(image.alt)
+            .accessibilityHidden(decorative)
         }
-        .frame(width: thumbnailSize, height: thumbnailSize ?? cardHeight)
-        .frame(maxWidth: thumbnailSize == nil ? .infinity : nil)
-        .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
-        .clipped()
-        .accessibilityLabel(image.alt)
     }
 }
 

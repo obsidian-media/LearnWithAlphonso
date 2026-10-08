@@ -1,0 +1,79 @@
+{
+ "batch": "r2-2nd-b001",
+ "pass": "second",
+ "reviewer": "agent:review2-r2-2nd-b001",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "bagages": {
+   "verdict": "approve",
+   "alt": "Two grey hard-shell suitcases stand on a snowy pavement beside two people, shown from the waist down.",
+   "peopleVisible": true
+  },
+  "brush": {
+   "verdict": "approve",
+   "alt": "A woman brushes her teeth in a bathroom, with her reflection in the mirror.",
+   "peopleVisible": true
+  },
+  "ceiling": {
+   "verdict": "approve",
+   "alt": "A glass and steel roof structure seen from below against a blue sky.",
+   "peopleVisible": false
+  },
+  "cena": {
+   "verdict": "approve",
+   "alt": "A restaurant table set with salads, bread, glasses and cutlery for dinner.",
+   "peopleVisible": true
+  },
+  "chatting": {
+   "verdict": "approve",
+   "alt": "A smiling woman in a green checked shirt chats with a friend outdoors.",
+   "peopleVisible": true
+  },
+  "estanque": {
+   "verdict": "approve",
+   "alt": "A calm pond reflecting green trees along its edge.",
+   "peopleVisible": false
+  },
+  "finger": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "shows a whole hand, not a single finger"
+  },
+  "jogging": {
+   "verdict": "approve",
+   "alt": "A man and a woman in sportswear jog along a street.",
+   "peopleVisible": true
+  },
+  "snacks": {
+   "verdict": "approve",
+   "alt": "A bowl of potato chips and a plate of chocolate chip cookies on a wooden table.",
+   "peopleVisible": false
+  },
+  "soap": {
+   "verdict": "approve",
+   "alt": "Hands lather a bar of soap under a running tap at a sink.",
+   "peopleVisible": true
+  },
+  "video games": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "console controller of recognisable brand design"
+  },
+  "walk": {
+   "verdict": "approve",
+   "alt": "Two people walk along a winding path through a grassy park.",
+   "peopleVisible": true
+  },
+  "write": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "blank paper and pen on a table, nobody writing"
+  }
+ }
+}

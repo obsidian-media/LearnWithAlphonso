@@ -1,0 +1,6 @@
+{"batch":"r2-b005","pass":"first","reviewer":"agent:review-r2-b005","reviewedAt":"2026-10-07",
+"verdicts":{
+"worksheet":{"verdict":"reject","reasons":["brand-logo-or-foreign-text","off-term"],"note":"readable Afrikaans word, paper roll not a worksheet"},
+"yoga":{"verdict":"reject","reasons":["off-term"],"note":"bare feet and limbs dominate the frame, mat barely visible"},
+"zapatos":{"verdict":"approve","alt":"A pair of glittery gold ankle-strap high-heeled sandals on a weathered wooden deck.","peopleVisible":false}
+}}

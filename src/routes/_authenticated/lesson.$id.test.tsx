@@ -548,7 +548,10 @@ describe("Lesson page -- new V3 pkg 4a question formats (u1l2)", () => {
     await skipToQuestion(user, 8); // land on q9
 
     expect(await screen.findByText("What is shown in the picture?")).toBeInTheDocument();
-    expect(screen.getByRole("img")).toHaveAttribute("alt", expect.stringContaining("doctor"));
+    // Decorative on purpose: a descriptive alt ("a doctor ...") would give the answer away.
+    const img = screen.getByTestId("vocab-image").querySelector("img");
+    expect(img).toHaveAttribute("alt", "");
+    expect(img?.getAttribute("src")).toContain("/vocab-images/en/doctor.jpg");
 
     await user.click(screen.getByRole("button", { name: "Doctor" }));
     await user.click(screen.getByRole("button", { name: "Check" }));

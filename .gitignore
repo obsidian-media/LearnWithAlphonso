@@ -140,3 +140,8 @@ android/LearnWithAlphonso/app/google-services.json
 
 # The gstack browser's working folder.
 .gstack/
+
+# Vocab image pipeline scratch (manifest, staged images, review sheets).
+# The audit trail that matters is committed: scripts/vocab-images/reviews/,
+# rejected-sources.json, signoff.json.
+/scripts/vocab-images/work/

@@ -1,0 +1,232 @@
+{
+ "batch": "r1-b003",
+ "pass": "first",
+ "reviewer": "agent:review-r1-b003",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "car": {
+   "verdict": "approve",
+   "alt": "Dashboard and steering wheel inside a classic car seen through the window.",
+   "peopleVisible": false
+  },
+  "cargador": {
+   "verdict": "approve",
+   "alt": "Two smartphones lying side by side on a desk, each plugged into a charging cable.",
+   "peopleVisible": false
+  },
+  "carry": {
+   "verdict": "approve",
+   "alt": "A smiling woman holds a large cardboard box in a bright room with a plant.",
+   "peopleVisible": true
+  },
+  "cascada": {
+   "verdict": "approve",
+   "alt": "A waterfall flows over dark rocks into a pool in a mossy green forest.",
+   "peopleVisible": false
+  },
+  "cash machine": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term",
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "transit ticket vending machines with payment-network text, not clearly a cash machine"
+  },
+  "cashier": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term",
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "man seated at a shop counter, not clearly a cashier; readable signs and product packaging"
+  },
+  "cat": {
+   "verdict": "approve",
+   "alt": "A gray tabby cat lies on a windowsill with green trees outside.",
+   "peopleVisible": false
+  },
+  "cañón": {
+   "verdict": "approve",
+   "alt": "Looking up through narrow, layered red rock walls of a canyon toward a patch of sky.",
+   "peopleVisible": false
+  },
+  "cebolla": {
+   "verdict": "approve",
+   "alt": "A whole onion with garlic cloves and green onions on a wooden board.",
+   "peopleVisible": false
+  },
+  "ceiling": {
+   "verdict": "reject",
+   "reasons": [
+    "politics-protest-religion",
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "religious building dome with calligraphy"
+  },
+  "cena": {
+   "verdict": "approve",
+   "alt": "A person lifts a forkful of pasta with green sauce from a dark bowl at a table.",
+   "peopleVisible": true
+  },
+  "centre-ville": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "visible brand signs and logos on buildings"
+  },
+  "cerdo": {
+   "verdict": "approve",
+   "alt": "Three young piglets stand on a patch of grass on a farm.",
+   "peopleVisible": false
+  },
+  "cereza": {
+   "verdict": "approve",
+   "alt": "Branches of a cherry tree with small red cherries among green leaves.",
+   "peopleVisible": false
+  },
+  "chaqueta": {
+   "verdict": "approve",
+   "alt": "A person seen from behind wears a beige puffy jacket with a hood in a forest.",
+   "peopleVisible": true
+  },
+  "chatting": {
+   "verdict": "approve",
+   "alt": "Two women sit by a sunny window holding white mugs and talking.",
+   "peopleVisible": true
+  },
+  "checkout": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "woman weighing fruit on a scale, not a checkout"
+  },
+  "cheese": {
+   "verdict": "approve",
+   "alt": "People's hands reach for sliced cheese and olives on wooden boards on a picnic blanket.",
+   "peopleVisible": true
+  },
+  "chef": {
+   "verdict": "approve",
+   "alt": "Chefs in white jackets and aprons cook at a stove in a restaurant kitchen, in black and white.",
+   "peopleVisible": true
+  },
+  "chess": {
+   "verdict": "approve",
+   "alt": "A black chess king stands on a chessboard with other pieces behind it.",
+   "peopleVisible": false
+  },
+  "children": {
+   "verdict": "approve",
+   "alt": "Three children run and cheer on an outdoor playground court.",
+   "peopleVisible": true
+  },
+  "chop": {
+   "verdict": "approve",
+   "alt": "Hands use a knife to slice red onion on a wooden cutting board next to a red cabbage.",
+   "peopleVisible": true
+  },
+  "cielo": {
+   "verdict": "approve",
+   "alt": "A single white cloud in a bright blue sky.",
+   "peopleVisible": false
+  },
+  "científico": {
+   "verdict": "approve",
+   "alt": "A person in protective white suit, goggles and mask holds up two test tubes of green liquid.",
+   "peopleVisible": true
+  },
+  "cinturón": {
+   "verdict": "approve",
+   "alt": "Four rolled leather belts in black, green, brown and tan with metal buckles on dark fabric.",
+   "peopleVisible": false
+  },
+  "cities": {
+   "verdict": "approve",
+   "alt": "Black and white view of tall city buildings under a cloudy sky.",
+   "peopleVisible": false
+  },
+  "ciudad": {
+   "verdict": "approve",
+   "alt": "Aerial view of a city at dusk with a busy road, apartment blocks and glass skyscrapers.",
+   "peopleVisible": false
+  },
+  "cleaner": {
+   "verdict": "approve",
+   "alt": "A person in a hairnet sweeps the pavement with a broom beside a building wall.",
+   "peopleVisible": true
+  },
+  "climbing": {
+   "verdict": "approve",
+   "alt": "Two climbers wearing helmets ascend a steep rock cliff.",
+   "peopleVisible": true
+  },
+  "cloud": {
+   "verdict": "approve",
+   "alt": "A single white cloud in a bright blue sky.",
+   "peopleVisible": false
+  },
+  "coat": {
+   "verdict": "approve",
+   "alt": "Two people stand side by side outdoors wearing a camel coat and a black coat.",
+   "peopleVisible": true
+  },
+  "cocinero": {
+   "verdict": "approve",
+   "alt": "Chefs in white jackets and aprons cook at a stove in a restaurant kitchen, in black and white.",
+   "peopleVisible": true
+  },
+  "coco": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term",
+    "stereotype-demeaning-poverty-distress"
+   ],
+   "note": "cluttered street vendor scene, coconuts not the clear focus"
+  },
+  "coffee": {
+   "verdict": "approve",
+   "alt": "A blue cup of latte with heart-shaped foam art on a saucer on a wooden table.",
+   "peopleVisible": false
+  },
+  "coins": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "foreign coins with readable text"
+  },
+  "cojín": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "cat sleeping on a chair; cushion not clearly the subject"
+  },
+  "colchón": {
+   "verdict": "approve",
+   "alt": "A white mattress on a bed in a modern bedroom with a window and cabinets.",
+   "peopleVisible": false
+  },
+  "colina": {
+   "verdict": "approve",
+   "alt": "Green grassy hills with a pine forest and a small hut under a cloudy sky.",
+   "peopleVisible": false
+  },
+  "comisaría": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "sign with readable Icelandic text"
+  },
+  "computadora": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "visible Apple logo and text on vintage computer"
+  }
+ }
+}

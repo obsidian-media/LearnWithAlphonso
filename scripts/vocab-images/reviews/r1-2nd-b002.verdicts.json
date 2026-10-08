@@ -1,0 +1,214 @@
+{
+ "batch": "r1-2nd-b002",
+ "pass": "second",
+ "reviewer": "agent:review2-r1-2nd-b002",
+ "reviewedAt": "2026-10-07",
+ "verdicts": {
+  "científico": {
+   "verdict": "approve",
+   "alt": "A person in a white protective suit, mask and goggles holds two test tubes with green liquid.",
+   "peopleVisible": true
+  },
+  "cleaner": {
+   "verdict": "approve",
+   "alt": "A worker in a hairnet sweeps the ground with a broom outside a building.",
+   "peopleVisible": true
+  },
+  "climbing": {
+   "verdict": "approve",
+   "alt": "Two people in helmets and harnesses climb a rock face outdoors.",
+   "peopleVisible": true
+  },
+  "coat": {
+   "verdict": "approve",
+   "alt": "Two people stand side by side in a tan coat and a black coat on a path with fallen leaves.",
+   "peopleVisible": true
+  },
+  "cocinero": {
+   "verdict": "approve",
+   "alt": "Chefs in white jackets and aprons cook with pots on a stove in a restaurant kitchen.",
+   "peopleVisible": true
+  },
+  "cooking": {
+   "verdict": "approve",
+   "alt": "A person stirs food in a metal pan on a portable stove in a kitchen.",
+   "peopleVisible": true
+  },
+  "cuaderno": {
+   "verdict": "approve",
+   "alt": "Close-up of a spiral-bound lined notebook in black and white.",
+   "peopleVisible": false
+  },
+  "cut": {
+   "verdict": "approve",
+   "alt": "A knife cuts a tomato into small pieces on a patterned cutting board.",
+   "peopleVisible": true
+  },
+  "cycling": {
+   "verdict": "approve",
+   "alt": "Two cyclists ride along a dirt path through a sunlit forest.",
+   "peopleVisible": true
+  },
+  "dentist": {
+   "verdict": "approve",
+   "alt": "A dentist wearing a mask and gloves examines a patient's teeth under a bright light.",
+   "peopleVisible": true
+  },
+  "detergente": {
+   "verdict": "approve",
+   "alt": "A woman pours green liquid laundry detergent next to a stacked washer and dryer.",
+   "peopleVisible": true
+  },
+  "dinner": {
+   "verdict": "approve",
+   "alt": "A white plate with meat, mashed potato and vegetables on a wooden table.",
+   "peopleVisible": false
+  },
+  "doctor": {
+   "verdict": "approve",
+   "alt": "A smiling doctor in a white coat and scrubs holds out a stethoscope.",
+   "peopleVisible": true
+  },
+  "dress": {
+   "verdict": "reject",
+   "reasons": [
+    "nudity-or-suggestive"
+   ],
+   "note": "editorial fashion framing with bare shoulders and corset bodice"
+  },
+  "driving": {
+   "verdict": "approve",
+   "alt": "A woman drives a car with both hands on the steering wheel.",
+   "peopleVisible": true
+  },
+  "eat": {
+   "verdict": "approve",
+   "alt": "A man eats from a spoon at a table.",
+   "peopleVisible": true
+  },
+  "enfermero": {
+   "verdict": "approve",
+   "alt": "A nurse in blue scrubs and a mask tends to a patient lying in a hospital bed.",
+   "peopleVisible": true
+  },
+  "estanque": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "murky marsh, not clearly a pond"
+  },
+  "estante": {
+   "verdict": "approve",
+   "alt": "A hand reaches for a cup on a kitchen shelf holding bowls and plates.",
+   "peopleVisible": true
+  },
+  "estudiante": {
+   "verdict": "approve",
+   "alt": "A boy writes on a worksheet at a school desk in a classroom.",
+   "peopleVisible": true
+  },
+  "estufa": {
+   "verdict": "approve",
+   "alt": "A freestanding stove with an oven in a bare room, photographed in black and white.",
+   "peopleVisible": false
+  },
+  "eyebrow": {
+   "verdict": "approve",
+   "alt": "Close-up of an eyebrow decorated with small pink and blue flowers above an eye.",
+   "peopleVisible": true
+  },
+  "eyes": {
+   "verdict": "approve",
+   "alt": "Close-up of a human eye looking to the side in warm light.",
+   "peopleVisible": true
+  },
+  "falda": {
+   "verdict": "approve",
+   "alt": "A person in a black top and a long tan skirt stands in a grassy field holding a small flower.",
+   "peopleVisible": true
+  },
+  "familia": {
+   "verdict": "approve",
+   "alt": "A woman, a second woman and two boys pose together outdoors in a garden.",
+   "peopleVisible": true
+  },
+  "farmer": {
+   "verdict": "approve",
+   "alt": "A bearded farmer in a straw hat sits on a red tractor.",
+   "peopleVisible": true
+  },
+  "farming": {
+   "verdict": "approve",
+   "alt": "Aerial view of neat rows of crops in farm fields with a few workers.",
+   "peopleVisible": true
+  },
+  "feet": {
+   "verdict": "approve",
+   "alt": "Bare feet jump into a puddle and splash water.",
+   "peopleVisible": true
+  },
+  "finger": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "shows a whole hand with several fingers, not a single finger; duplicate of fingers image"
+  },
+  "fingers": {
+   "verdict": "approve",
+   "alt": "Close-up of a hand with its fingers spread in warm light.",
+   "peopleVisible": true
+  },
+  "flor": {
+   "verdict": "approve",
+   "alt": "A cluster of small white and pink flowers on a branch.",
+   "peopleVisible": false
+  },
+  "food": {
+   "verdict": "approve",
+   "alt": "Hands hold a plate of fried snacks with dipping sauce.",
+   "peopleVisible": true
+  },
+  "garage": {
+   "verdict": "approve",
+   "alt": "Three small garages with white doors beside a street.",
+   "peopleVisible": false
+  },
+  "gardening": {
+   "verdict": "approve",
+   "alt": "Two older people water plants in a garden with green watering cans.",
+   "peopleVisible": true
+  },
+  "gato": {
+   "verdict": "approve",
+   "alt": "A grey striped cat lies on a windowsill and looks at the camera.",
+   "peopleVisible": false
+  },
+  "girl": {
+   "verdict": "approve",
+   "alt": "A smiling young girl in a striped top raises her hands in front of green leaves.",
+   "peopleVisible": true
+  },
+  "granjero": {
+   "verdict": "approve",
+   "alt": "A bearded farmer in a straw hat sits on a red tractor.",
+   "peopleVisible": true
+  },
+  "guantes": {
+   "verdict": "approve",
+   "alt": "A person pulls on a thin disposable glove.",
+   "peopleVisible": true
+  },
+  "gym": {
+   "verdict": "approve",
+   "alt": "Racks of dumbbells and kettlebells in a gym, in black and white.",
+   "peopleVisible": false
+  },
+  "hair": {
+   "verdict": "approve",
+   "alt": "Long blonde hair blowing across a person's face against a dark background.",
+   "peopleVisible": true
+  }
+ }
+}

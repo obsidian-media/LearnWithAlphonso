@@ -1,5 +1,10 @@
 # Design: iOS Vocab Stock Photos
 
+> **Superseded in part (2026-10-07, App Store review fix).** Images are no
+> longer loaded from the Pexels/Pixabay CDNs. They are self-hosted in the
+> `vocab-images` bucket, and `VocabImageView` collapses on failure instead of
+> showing a panel. See LESSON_ASSETS.md and `VocabImagePolicy.swift`.
+
 > Written 2026-09-19. V2, parallel-safe (touches the content-export
 > script + `ContentStore`/`VocabDerivation.swift`, which no other V2 doc
 > touches). Small — the deliberately-deferred half of
@@ -30,11 +35,11 @@ runtime via `AsyncImage`, same as the web's `<img src=...>` with
   `src/lib/ios-content-export.ts`): add `buildIOSVocabImagesBundle()`
   returning `VOCAB_IMAGES` as-is (it's already a plain serializable
   object, no transform needed) and a `writeJSON("vocab-images.json",
-  buildIOSVocabImagesBundle())` call, same pattern as the existing three
+buildIOSVocabImagesBundle())` call, same pattern as the existing three
   `writeJSON` calls.
 - **Kit**: extend `VocabItem` (`VocabDerivation.swift`) with an optional
   `image: VocabImageRef?` field (`VocabImageRef`: `url: String, alt:
-  String, credit: String` — mirrors the web's `VocabImage` type).
+String, credit: String` — mirrors the web's `VocabImage` type).
   `ContentStore` loads `vocab-images.json` into a `[String: VocabImageRef]`
   dictionary (lowercased-term keyed, matching the web's `titleCaseKey`
   despite its name just being `.lowercased()`) at init, same lazy-once

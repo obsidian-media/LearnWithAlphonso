@@ -466,7 +466,7 @@ private struct ReviewQuestionCard: View {
             case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
-                    VocabImageView(image: image, cardHeight: 160)
+                    VocabImageView(image: image, cardHeight: 160, decorative: true)
                 }
                 if let audioText = q.audioText {
                     Button {
