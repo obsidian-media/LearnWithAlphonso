@@ -24,11 +24,17 @@ export function Modal({
 }) {
   const portalRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  // Read through a ref so a new callback identity on every render does not re-run the effect (and steal focus).
+  const onEscapeRef = useRef(onEscape);
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  });
 
   useEffect(() => {
     const portal = portalRef.current;
-    const dialog = dialogRef.current;
-    if (!portal || !dialog) return;
+    const found = dialogRef.current;
+    if (!portal || !found) return;
+    const dialog: HTMLDivElement = found;
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
     // Everything else in <body> becomes inert (and hidden from screen readers) until this closes.
@@ -46,7 +52,34 @@ export function Modal({
     const focusables = () => Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
     (focusables()[0] ?? dialog).focus();
 
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && onEscape) {
+        event.preventDefault();
+        onEscapeRef.current?.();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
+      // Handled here, so a surrounding page's own Tab handling must stand down (it checks defaultPrevented).
+      event.preventDefault();
+      if (items.length === 0) {
+        dialog.focus();
+        return;
+      }
+      const index = items.indexOf(document.activeElement as HTMLElement);
+      const next = event.shiftKey
+        ? index <= 0
+          ? items.length - 1
+          : index - 1
+        : index === -1 || index === items.length - 1
+          ? 0
+          : index + 1;
+      items[next].focus();
+    }
+    portal.addEventListener("keydown", onKeyDown);
+
     return () => {
+      portal.removeEventListener("keydown", onKeyDown);
       for (const { el, inert, ariaHidden } of saved) {
         if (!inert) el.removeAttribute("inert");
         if (ariaHidden === null) el.removeAttribute("aria-hidden");
@@ -56,38 +89,10 @@ export function Modal({
     };
   }, []);
 
-  function onKeyDown(event: React.KeyboardEvent) {
-    if (event.key === "Escape" && onEscape) {
-      event.preventDefault();
-      onEscape();
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE));
-    // Handled here, so a surrounding page's own Tab handling must stand down (it checks defaultPrevented).
-    event.preventDefault();
-    if (items.length === 0) {
-      dialog.focus();
-      return;
-    }
-    const index = items.indexOf(document.activeElement as HTMLElement);
-    const next = event.shiftKey
-      ? index <= 0
-        ? items.length - 1
-        : index - 1
-      : index === -1 || index === items.length - 1
-        ? 0
-        : index + 1;
-    items[next].focus();
-  }
-
   return createPortal(
     <div
       ref={portalRef}
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
-      onKeyDown={onKeyDown}
     >
       <div role="presentation" className="absolute inset-0 bg-ink/40" />
       <div
