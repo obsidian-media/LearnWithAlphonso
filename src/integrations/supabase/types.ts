@@ -1907,6 +1907,10 @@ export type Database = {
           status: string;
         }[];
       };
+      claim_device_token: {
+        Args: { _platform: string; _token: string };
+        Returns: undefined;
+      };
       claim_review_clear_bonus: {
         Args: { _course: string };
         Returns: {
