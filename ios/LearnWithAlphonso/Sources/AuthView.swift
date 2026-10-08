@@ -1,10 +1,10 @@
 import SwiftUI
+import AuthenticationServices
+import LearnWithAlphonsoKit
 
 struct AuthView: View {
-    let session: Session
-
-    @State private var email = ""
-    @State private var code = ""
+    @Bindable var session: Session
+    @FocusState private var codeFieldFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -38,7 +38,13 @@ struct AuthView: View {
                             }
                         }
 
-                        if let message = session.errorMessage {
+                        if let notice = session.notice ?? session.emailFlow.notice {
+                            Text(notice)
+                                .font(AlphonsoFont.sans(13))
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                                .multilineTextAlignment(.center)
+                        }
+                        if let message = session.emailFlow.failure?.message ?? session.errorMessage {
                             Text(message)
                                 .font(AlphonsoFont.sans(13))
                                 .foregroundStyle(AlphonsoColor.destructive)
@@ -51,6 +57,13 @@ struct AuthView: View {
                         RoundedRectangle(cornerRadius: AlphonsoRadius.xl, style: .continuous)
                             .strokeBorder(AlphonsoColor.hairline, lineWidth: 1)
                     )
+
+                    // What continuing means, with both documents one tap away.
+                    Text(Self.footer)
+                        .font(AlphonsoFont.sans(12))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .tint(AlphonsoColor.moss)
+                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: 400)
                 .padding(AlphonsoSpacing.lg)
@@ -62,43 +75,27 @@ struct AuthView: View {
         }
     }
 
+    // MARK: - Email step: Apple, Google, then email
+
     private var emailStep: some View {
         VStack(spacing: AlphonsoSpacing.sm) {
-            // App Store Guideline 4.8: an app offering a third-party social
-            // login (Google, below) must also offer an equivalent
-            // privacy-preserving option -- Apple first, per the sign-in
-            // audit's ordering.
-            Button {
-                Task { await session.signInWithApple() }
-            } label: {
-                if session.isBusy {
-                    ProgressView()
-                } else {
-                    Label("Continue with Apple", systemImage: "apple.logo")
-                }
+            // Apple's own button (HIG), "Continue" title, black on light and white on dark, 50 pt, first.
+            // The style is read once when the button is created, so .id rebuilds it after a theme switch.
+            SignInWithAppleButton(.continue) { request in
+                session.prepareAppleRequest(request)
+            } onCompletion: { result in
+                Task { await session.completeAppleSignIn(result) }
             }
-            .buttonStyle(.alphonsoSecondary)
+            .signInWithAppleButtonStyle(appleButtonStyle)
+            .id(AlphonsoThemeManager.shared.palette.colorScheme)
+            .frame(height: AuthButtonMetrics.height)
+            .clipShape(RoundedRectangle(cornerRadius: AuthButtonMetrics.cornerRadius, style: .continuous))
             .disabled(session.isBusy)
-            // Every busy-state button on this screen swaps its label for a
-            // bare ProgressView with no text -- fine for a sighted user
-            // (the spinner itself communicates "working"), but VoiceOver
-            // then has no accessible name for the button at all. Setting
-            // the label explicitly, in both branches, means it's always
-            // correct regardless of which one renders.
-            .accessibilityLabel(session.isBusy ? "Signing in" : "Continue with Apple")
+            .opacity(session.isBusy ? 0.5 : 1)
 
-            Button {
+            GoogleSignInButton(isBusy: session.isBusy) {
                 Task { await session.signInWithGoogle() }
-            } label: {
-                if session.isBusy {
-                    ProgressView()
-                } else {
-                    Text("Continue with Google")
-                }
             }
-            .buttonStyle(.alphonsoSecondary)
-            .disabled(session.isBusy)
-            .accessibilityLabel(session.isBusy ? "Signing in" : "Continue with Google")
 
             HStack(spacing: AlphonsoSpacing.sm) {
                 // A plain Divider() in an HStack wants to stretch to fill
@@ -113,7 +110,7 @@ struct AuthView: View {
                 Divider().frame(height: 1)
             }
 
-            TextField("Email", text: $email)
+            TextField("Email", text: $session.emailFlow.email)
                 .textFieldStyle(.plain)
                 .padding(AlphonsoSpacing.sm + 2)
                 .alphonsoInputBackground()
@@ -121,9 +118,11 @@ struct AuthView: View {
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .submitLabel(.send)
+                .onSubmit { Task { await session.requestCode() } }
 
             Button {
-                Task { await session.requestCode(email: email) }
+                Task { await session.requestCode() }
             } label: {
                 if session.isBusy {
                     ProgressView().tint(AlphonsoColor.surface)
@@ -132,26 +131,39 @@ struct AuthView: View {
                 }
             }
             .buttonStyle(.alphonsoPrimary)
-            .disabled(session.isBusy || !email.contains("@"))
+            .disabled(session.isBusy || !session.emailFlow.canSendCode)
             .accessibilityLabel(session.isBusy ? "Sending code" : "Send code")
         }
     }
 
+    private var appleButtonStyle: SignInWithAppleButton.Style {
+        AlphonsoThemeManager.shared.palette.colorScheme == .dark ? .white : .black
+    }
+
+    // MARK: - Code step (never a dead end)
+
     private func codeStep(email: String) -> some View {
         VStack(spacing: AlphonsoSpacing.sm) {
-            Text("Enter the code sent to \(email)")
+            Text(AuthCopy.codeSentTo(email))
                 .font(AlphonsoFont.sans(13))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-
-            TextField("6-digit code", text: $code)
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm + 2)
-                .alphonsoInputBackground()
-                .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
 
+            TextField(AuthCopy.codeFieldLabel, text: Binding(
+                get: { session.emailFlow.code },
+                set: { session.enterCode($0) }
+            ))
+            .textFieldStyle(.plain)
+            .padding(AlphonsoSpacing.sm + 2)
+            .alphonsoInputBackground()
+            .textContentType(.oneTimeCode)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.center)
+            .focused($codeFieldFocused)
+            .accessibilityLabel(AuthCopy.codeFieldLabel)
+
             Button {
-                Task { await session.verifyCode(code) }
+                Task { await session.verifyCode() }
             } label: {
                 if session.isBusy {
                     ProgressView().tint(AlphonsoColor.surface)
@@ -160,8 +172,43 @@ struct AuthView: View {
                 }
             }
             .buttonStyle(.alphonsoPrimary)
-            .disabled(session.isBusy || code.isEmpty)
+            .disabled(session.isBusy || !session.emailFlow.isCodeComplete)
             .accessibilityLabel(session.isBusy ? "Verifying" : "Verify")
+
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let remaining = session.emailFlow.resendSecondsRemaining(now: context.date)
+                Button(remaining > 0 ? AuthCopy.resendIn(remaining) : AuthCopy.resendCode) {
+                    Task { await session.resendCode() }
+                }
+                .buttonStyle(.alphonsoSecondary)
+                .disabled(session.isBusy || remaining > 0)
+            }
+
+            Button(AuthCopy.useDifferentEmail) {
+                session.useDifferentEmail()
+            }
+            .font(AlphonsoFont.sans(14, weight: .medium))
+            .foregroundStyle(AlphonsoColor.moss)
+            .frame(minHeight: 44)
+            .disabled(session.isBusy)
         }
+        .onAppear { codeFieldFocused = true }
+    }
+
+    // MARK: - Footer
+
+    static var footer: AttributedString {
+        var text = AttributedString(AuthCopy.footerPrefix)
+        var terms = AttributedString(AuthCopy.termsOfUse)
+        terms.link = AppConfig.apiBaseURL.appendingPathComponent("terms")
+        terms.underlineStyle = .single
+        var privacy = AttributedString(AuthCopy.privacyPolicy)
+        privacy.link = AppConfig.apiBaseURL.appendingPathComponent("privacy")
+        privacy.underlineStyle = .single
+        text += terms
+        text += AttributedString(AuthCopy.footerMiddle)
+        text += privacy
+        text += AttributedString(AuthCopy.footerSuffix)
+        return text
     }
 }
