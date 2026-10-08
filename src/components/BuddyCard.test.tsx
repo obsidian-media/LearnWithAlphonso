@@ -52,6 +52,7 @@ const buddy = {
   streakWeeks: 4,
   graceAvailable: true,
   lastOutcome: "hit",
+  matchingEnabled: true,
 };
 
 beforeEach(() => {
@@ -495,6 +496,26 @@ describe("BuddyCard messages", () => {
 });
 
 describe("BuddyCard matching (opt-in)", () => {
+  it("a matched buddy while matching is off: no presets, the paused line, progress still shown", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: true, matchingEnabled: false });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(
+      await screen.findByText(
+        "Messages with matched learners are paused right now. Your progress is kept.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("group", { name: "Send Bo a message" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Nice work!" })).toBeNull();
+    expect(screen.getByText("You 2/3 · Buddy 3/3 this week")).toBeTruthy();
+  });
+  it("a friend buddy keeps the presets while matching is off", async () => {
+    getMyBuddy.mockResolvedValue({ ...buddy, isMatch: false, matchingEnabled: false });
+    getBuddyRequests.mockResolvedValue([]);
+    renderWithClient(<BuddyCard />);
+    expect(await screen.findByRole("button", { name: "Nice work!" })).toBeTruthy();
+    expect(screen.queryByText(/paused right now/)).toBeNull();
+  });
   const intro =
     "Or let us find one: we'll pair you with another learner of the same course at a similar level. You'll see each other's name and weekly progress, and can only send the preset messages. You can end it, block or report at any time.";
 

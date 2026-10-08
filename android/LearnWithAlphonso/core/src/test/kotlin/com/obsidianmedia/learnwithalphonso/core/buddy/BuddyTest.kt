@@ -24,6 +24,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -225,6 +226,21 @@ class BuddyTest {
         assertEquals(find["expected"]!!.jsonPrimitive.content, BuddyCopy.findButton(find["course"]!!.jsonPrimitive.content))
         val waiting = copy["waitingLine"]!!.jsonObject
         assertEquals(waiting["expected"]!!.jsonPrimitive.content, BuddyCopy.waitingLine(waiting["course"]!!.jsonPrimitive.content))
+    }
+
+    @Test
+    fun `a matched pair is muted only while matching is off`() {
+        val base = MyBuddy("p", "u2", "Bo", "cd", "t", "w", 0, 0, 3, 0, true, null, isMatch = true, matchingEnabled = false)
+        assertFalse(base.canSendPresets)
+        assertTrue(base.copy(matchingEnabled = true).canSendPresets)
+        assertTrue(base.copy(isMatch = false).canSendPresets)
+    }
+
+    @Test
+    fun `matching_enabled is read, and missing means on`() = runTest {
+        val off = buddyRow.replace("\"last_outcome\":null", "\"last_outcome\":null,\"is_match\":true,\"matching_enabled\":false")
+        assertEquals(false, client(FakeSupabase { json("[$off]") }).getMyBuddy()!!.matchingEnabled)
+        assertEquals(true, client(FakeSupabase { json("[$buddyRow]") }).getMyBuddy()!!.matchingEnabled)
     }
 
     @Test

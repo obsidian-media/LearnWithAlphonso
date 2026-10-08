@@ -10,6 +10,7 @@ import {
   buddyGraceLine,
   buddyIncomingLine,
   buddyOutgoingLine,
+  buddyCanSendPresets,
   buddyStatusMessage,
   buddyStreakLine,
   buddyWeekLine,
@@ -192,22 +193,28 @@ export function BuddyCard() {
         </p>
         <p className="mt-1 text-xs text-ink-soft">{buddyStreakLine(mine.streakWeeks)}</p>
         <p className="text-xs text-ink-soft">{buddyGraceLine(mine.graceAvailable)}</p>
-        <div role="group" aria-label={`Send ${mine.buddyName} a message`} className="mt-3">
-          <p className="text-xs font-semibold text-ink-soft/80">Send {mine.buddyName} a message</p>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {BUDDY_PRESETS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                disabled={busy}
-                onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
-                className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
-              >
-                {p.text}
-              </button>
-            ))}
+        {buddyCanSendPresets(mine) ? (
+          <div role="group" aria-label={`Send ${mine.buddyName} a message`} className="mt-3">
+            <p className="text-xs font-semibold text-ink-soft/80">
+              Send {mine.buddyName} a message
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {BUDDY_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => run(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
+                  className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
+                >
+                  {p.text}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <p className="mt-3 text-xs text-ink-soft">{buddyStatusMessage("matching_paused")}</p>
+        )}
         {(messages.data ?? []).length > 0 && (
           <ul className="mt-3 space-y-0.5" aria-label="Recent messages">
             {(messages.data ?? [])

@@ -173,6 +173,10 @@ public struct MyBuddy: Equatable, Sendable {
     /// Paired through opt-in matching (not a friend): the section offers block and report. A server without matching
     /// sends no `is_match`, which means a friend pair.
     public let isMatch: Bool
+    /// The live matching switch. A server without the column sends nothing, which means on.
+    public let matchingEnabled: Bool
+    /// A matched-stranger pair cannot send presets while matching is switched off; a friend pair always can.
+    public var canSendPresets: Bool { !isMatch || matchingEnabled }
 
     /// nil for a row with a missing or mistyped field (the client treats that as a broken contract and throws).
     public init?(row: [String: Any]) {
@@ -205,6 +209,7 @@ public struct MyBuddy: Equatable, Sendable {
         self.graceAvailable = graceAvailable
         self.lastOutcome = rawOutcome as? String
         self.isMatch = (row["is_match"] as? Bool) ?? false
+        self.matchingEnabled = (row["matching_enabled"] as? Bool) ?? true
     }
 }
 

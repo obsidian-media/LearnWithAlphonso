@@ -127,15 +127,22 @@ struct BuddySection: View {
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
-        Menu("Send \(buddy.buddyName) a message") {
-            ForEach(BuddyCopy.presets, id: \.id) { preset in
-                Button(preset.text) {
-                    Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
+        if buddy.canSendPresets {
+            Menu("Send \(buddy.buddyName) a message") {
+                ForEach(BuddyCopy.presets, id: \.id) { preset in
+                    Button(preset.text) {
+                        Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
+                    }
                 }
             }
+            .tint(AlphonsoColor.moss)
+            .disabled(busy)
+        } else {
+            // Matching is switched off; the server refuses this pair's presets (matching_paused).
+            Text(BuddyCopy.statusMessage("matching_paused"))
+                .font(AlphonsoFont.sans(12))
+                .foregroundStyle(AlphonsoColor.inkSoft)
         }
-        .tint(AlphonsoColor.moss)
-        .disabled(busy)
         ForEach(historyLines(buddy)) { item in
             Text(item.line)
                 .font(AlphonsoFont.sans(12))

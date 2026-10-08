@@ -143,6 +143,22 @@ final class BuddyTests: XCTestCase {
         ]
     }
 
+    func testMyBuddyReadsMatchingEnabledAndDecidesPresets() throws {
+        var row = buddyRow()
+        row["is_match"] = true
+        row["matching_enabled"] = false
+        let muted = try XCTUnwrap(MyBuddy(row: row))
+        XCTAssertFalse(muted.matchingEnabled)
+        XCTAssertFalse(muted.canSendPresets)
+        row["is_match"] = false
+        XCTAssertTrue(try XCTUnwrap(MyBuddy(row: row)).canSendPresets, "a friend pair is never muted")
+        row["is_match"] = true
+        row.removeValue(forKey: "matching_enabled")
+        XCTAssertTrue(try XCTUnwrap(MyBuddy(row: row)).matchingEnabled, "an older server sends no column: assume on")
+        XCTAssertEqual(BuddyCopy.statusMessage("matching_paused"),
+                       "Messages with matched learners are paused right now. Your progress is kept.")
+    }
+
     func testMyBuddyDecodesTheRow() throws {
         let buddy = try XCTUnwrap(MyBuddy(row: buddyRow()))
         XCTAssertEqual(buddy.pairID, "p1")

@@ -88,6 +88,11 @@ export function buddyStatusMessage(status: string): string {
     : MESSAGES.unknown;
 }
 
+/** While matching is switched off, a matched-stranger pair cannot send presets; friend pairs always can. */
+export function buddyCanSendPresets(b: { isMatch: boolean; matchingEnabled: boolean }): boolean {
+  return !b.isMatch || b.matchingEnabled;
+}
+
 /** "You 2/3 · Buddy 3/3 this week"; counts above the goal show as the goal. */
 export function buddyWeekLine(myCount: number, buddyCount: number, goal: number): string {
   const cap = (n: number) => Math.min(n, goal);

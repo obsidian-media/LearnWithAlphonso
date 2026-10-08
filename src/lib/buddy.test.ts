@@ -15,6 +15,7 @@ import {
   buddyIncomingLine,
   buddyOutgoingLine,
   buddyStatusMessage,
+  buddyCanSendPresets,
   buddyStreakLine,
   buddyWeekLine,
   resolveBuddyWeek,
@@ -90,5 +91,16 @@ describe("matching wording (shared with iOS and Android)", () => {
       expect(buddyCourseName(code)).toBe(name);
     expect(buddyFindButton(c.findButton.course)).toBe(c.findButton.expected);
     expect(buddyWaitingLine(c.waitingLine.course)).toBe(c.waitingLine.expected);
+  });
+});
+
+describe("kill switch", () => {
+  it("only a matched pair loses the presets while matching is off", () => {
+    expect(buddyCanSendPresets({ isMatch: true, matchingEnabled: false })).toBe(false);
+    expect(buddyCanSendPresets({ isMatch: true, matchingEnabled: true })).toBe(true);
+    expect(buddyCanSendPresets({ isMatch: false, matchingEnabled: false })).toBe(true);
+  });
+  it("the paused line is the shared fixture wording", () => {
+    expect(buddyStatusMessage("matching_paused")).toBe(fixtures.messages.matching_paused);
   });
 });

@@ -123,7 +123,12 @@ data class MyBuddy(
     val lastOutcome: String?,
     /** Paired through opt-in matching (not a friend): the section offers block and report. */
     val isMatch: Boolean = false,
+    /** The live matching switch. A server without the column means on. */
+    val matchingEnabled: Boolean = true,
 )
+
+/** While matching is switched off, a matched-stranger pair cannot send presets; a friend pair always can. */
+val MyBuddy.canSendPresets: Boolean get() = !isMatch || matchingEnabled
 
 /** The `get_buddy_pool` row: whether matching is switched on, whether the caller is waiting, and their courses. */
 data class BuddyPool(val matchingEnabled: Boolean, val waiting: Boolean, val course: String?, val courses: List<String>)

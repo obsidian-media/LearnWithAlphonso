@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyCopy
+import com.obsidianmedia.learnwithalphonso.core.buddy.canSendPresets
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyMessage
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyPool
 import com.obsidianmedia.learnwithalphonso.core.buddy.BuddyRequest
@@ -212,15 +213,20 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, onReport: (S
                     Text(BuddyCopy.streakLine(buddy.streakWeeks), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                     Text(BuddyCopy.graceLine(buddy.graceAvailable), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                 }
-                Box {
-                    TextButton(onClick = { choosingPreset = true }, enabled = !state.busy) {
-                        Text("Send ${buddy.buddyName} a message", color = palette.moss)
-                    }
-                    DropdownMenu(expanded = choosingPreset, onDismissRequest = { choosingPreset = false }) {
-                        BuddyCopy.PRESETS.forEach { preset ->
-                            DropdownMenuItem(text = { Text(preset.text) }, onClick = { choosingPreset = false; vm.send(preset.id) })
+                if (buddy.canSendPresets) {
+                    Box {
+                        TextButton(onClick = { choosingPreset = true }, enabled = !state.busy) {
+                            Text("Send ${buddy.buddyName} a message", color = palette.moss)
+                        }
+                        DropdownMenu(expanded = choosingPreset, onDismissRequest = { choosingPreset = false }) {
+                            BuddyCopy.PRESETS.forEach { preset ->
+                                DropdownMenuItem(text = { Text(preset.text) }, onClick = { choosingPreset = false; vm.send(preset.id) })
+                            }
                         }
                     }
+                } else {
+                    // Matching is switched off; the server refuses this pair's presets (matching_paused).
+                    Text(BuddyCopy.statusMessage("matching_paused"), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                 }
                 state.messages.takeLast(10).forEach { m ->
                     BuddyCopy.messageLine(m.isMine, buddy.buddyName, m.presetId)?.let { line ->
