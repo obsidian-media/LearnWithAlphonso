@@ -10,6 +10,7 @@ import {
 } from "react";
 import { AiConsentSheet } from "@/components/AiConsentSheet";
 import { AI_CONSENT_COPY } from "./ai-consent-copy";
+import { useNamePromptBlocking } from "./name-prompt-gate";
 
 export type AiConsentApi = {
   get: () => Promise<string | null>;
@@ -80,6 +81,8 @@ export function AiConsentProvider({
   );
   const [grantedAt, setGrantedAt] = useState<string | null>(initialGrantedAt ?? null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The one-time name prompt has priority: a requested sheet waits (its caller stays pending) until it closes.
+  const nameBlocking = useNamePromptBlocking();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // The one outstanding request for the sheet. A second request while it is open shares it, so no caller is orphaned.
@@ -170,7 +173,7 @@ export function AiConsentProvider({
     <AiConsentContext.Provider value={value}>
       {children}
       <AiConsentSheet
-        open={sheetOpen}
+        open={sheetOpen && !nameBlocking}
         saving={saving}
         error={error}
         onAllow={() => void allow()}

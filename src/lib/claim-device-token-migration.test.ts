@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const DIR = path.resolve(import.meta.dirname, "../../supabase/migrations");
-const FILE = "20261012200000_claim_device_token.sql";
+const FILE = "20261012400000_claim_device_token.sql";
 const DEPENDS_ON = "20260930170000_device_tokens_android.sql";
 const sql = () => fs.readFileSync(path.join(DIR, FILE), "utf8");
 

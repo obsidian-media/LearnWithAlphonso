@@ -1144,7 +1144,7 @@ public final class ProgressSyncClient: Sendable {
     }
 
     /// Claims this device's APNs token for the signed-in account through `claim_device_token`
-    /// (supabase/migrations/20261012200000_claim_device_token.sql). A token belongs to one physical device, so
+    /// (supabase/migrations/20261012400000_claim_device_token.sql). A token belongs to one physical device, so
     /// the function also removes the same token from any other account: a shared phone whose previous account
     /// never got to clean up (offline, expired session) stops receiving that account's nudges. Re-registering
     /// the same token (app relaunch) just refreshes `updated_at`.

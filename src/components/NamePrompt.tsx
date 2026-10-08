@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Modal } from "./Modal";
 import { TextField } from "./TextField";
 import {
   checkDisplayName,
@@ -13,6 +14,7 @@ import {
   normalizeName,
   skipNote,
 } from "../lib/name-onboarding";
+import { setNamePromptBlocking } from "../lib/name-prompt-gate";
 import { SOCIAL_COPY, socialReasonMessage } from "../lib/social-reason-copy";
 
 type Check =
@@ -29,7 +31,7 @@ type Check =
  */
 export function NamePrompt() {
   const qc = useQueryClient();
-  const { data: status } = useQuery({
+  const { data: status, isLoading } = useQuery({
     queryKey: ["name-status"],
     queryFn: () => getNameStatus(),
     staleTime: Infinity,
@@ -40,7 +42,6 @@ export function NamePrompt() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [closed, setClosed] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const titleId = useId();
   const noteId = useId();
   const messageId = useId();
@@ -48,9 +49,12 @@ export function NamePrompt() {
   const open = Boolean(status?.needsPrompt) && !closed;
   const value = edited ?? status?.prefill ?? "";
 
+  // Tell the AI consent sheet to wait while this prompt is, or is about to be, showing.
+  const blocking = open || isLoading;
   useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
+    setNamePromptBlocking(blocking);
+    return () => setNamePromptBlocking(false);
+  }, [blocking]);
 
   // Live check, debounced. The cleanup marks an older request stale, so its late answer is dropped.
   useEffect(() => {
@@ -134,91 +138,61 @@ export function NamePrompt() {
     }
   }
 
-  /** Keeps Tab and Shift+Tab inside the dialog while it is open. */
-  function trapTab(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab") return;
-    const focusable = Array.from(
-      e.currentTarget.querySelectorAll<HTMLElement>(
-        "input:not([disabled]), button:not([disabled])",
-      ),
-    );
-    if (focusable.length === 0) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (e.shiftKey && (active === first || !e.currentTarget.contains(active))) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && (active === last || !e.currentTarget.contains(active))) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-50 grid place-items-center bg-ink/40 px-4"
-      onKeyDown={trapTab}
+    <Modal
+      labelledBy={titleId}
+      describedBy={noteId}
+      className="relative w-full max-w-[400px] rounded-3xl border border-hairline bg-surface p-6 text-ink shadow-xl outline-none"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={noteId}
-        className="w-full max-w-[400px] rounded-3xl border border-hairline bg-surface p-6 text-ink shadow-xl"
-      >
-        <h2 id={titleId} className="font-display text-2xl font-semibold leading-tight">
-          {COPY.title}
-        </h2>
-        <p id={noteId} className="mt-2 text-sm text-ink-soft">
-          {COPY.publicNote}
-        </p>
-        <form onSubmit={save} className="mt-5 space-y-3">
-          <label htmlFor={`${titleId}-name`} className="sr-only">
-            {COPY.fieldLabel}
-          </label>
-          <TextField
-            id={`${titleId}-name`}
-            ref={inputRef}
-            type="text"
-            autoComplete="nickname"
-            value={value}
-            onChange={(e) => {
-              setEdited(e.target.value);
-              setError(null);
-            }}
-            aria-invalid={isProblem}
-            aria-describedby={message ? messageId : undefined}
-            maxLength={80}
-          />
-          {message && (
-            <p
-              id={messageId}
-              role={isProblem ? "alert" : "status"}
-              className={isProblem ? "text-sm text-ember" : "text-sm text-ink-soft"}
-            >
-              {message}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={!canSave}
-            className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
+      <h2 id={titleId} className="font-display text-2xl font-semibold leading-tight">
+        {COPY.title}
+      </h2>
+      <p id={noteId} className="mt-2 text-sm text-ink-soft">
+        {COPY.publicNote}
+      </p>
+      <form onSubmit={save} className="mt-5 space-y-3">
+        <label htmlFor={`${titleId}-name`} className="sr-only">
+          {COPY.fieldLabel}
+        </label>
+        <TextField
+          id={`${titleId}-name`}
+          type="text"
+          autoComplete="nickname"
+          value={value}
+          onChange={(e) => {
+            setEdited(e.target.value);
+            setError(null);
+          }}
+          aria-invalid={isProblem}
+          aria-describedby={message ? messageId : undefined}
+          maxLength={80}
+        />
+        {message && (
+          <p
+            id={messageId}
+            role={isProblem ? "alert" : "status"}
+            className={isProblem ? "text-sm text-ember" : "text-sm text-ink-soft"}
           >
-            {COPY.save}
-          </button>
-          <button
-            type="button"
-            onClick={skip}
-            disabled={busy}
-            className="w-full rounded-full border border-hairline px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
-          >
-            {COPY.skip}
-          </button>
-          <p className="text-center text-xs text-ink-soft/80">{skipNote(status.displayName)}</p>
-        </form>
-      </div>
-    </div>
+            {message}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={!canSave}
+          className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
+        >
+          {COPY.save}
+        </button>
+        <button
+          type="button"
+          onClick={skip}
+          disabled={busy}
+          className="w-full rounded-full border border-hairline px-4 py-3 text-sm font-medium text-ink transition hover:bg-parchment disabled:opacity-50"
+        >
+          {COPY.skip}
+        </button>
+        <p className="text-center text-xs text-ink-soft/80">{skipNote(status.displayName)}</p>
+      </form>
+    </Modal>
   );
 }

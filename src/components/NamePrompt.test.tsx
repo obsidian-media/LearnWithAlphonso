@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AiConsentProvider, useAiConsent } from "../lib/ai-consent-context";
+import { AI_CONSENT_COPY } from "../lib/ai-consent-copy";
 
 const getNameStatus = vi.fn();
 const checkDisplayName = vi.fn();
@@ -59,22 +61,23 @@ describe("NamePrompt", () => {
 
   it("renders nothing for a confirmed learner", async () => {
     getNameStatus.mockResolvedValue({ displayName: "Ana", needsPrompt: false, prefill: "Ana" });
-    const { container } = renderPrompt();
+    renderPrompt();
     await settled(1);
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("renders nothing when there is no profile row or the status cannot be read", async () => {
     getNameStatus.mockResolvedValueOnce(null);
     const first = renderPrompt();
     await settled(1);
-    expect(first.container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     first.unmount();
 
     getNameStatus.mockRejectedValueOnce(new Error("boom"));
     const second = renderPrompt();
     await settled(2);
-    expect(second.container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    second.unmount();
   });
 
   it("checks live and blocks saving a refused name with the shared copy", async () => {
@@ -179,5 +182,35 @@ describe("NamePrompt", () => {
       await user.tab({ shift: true });
       expect(dialog.contains(document.activeElement), `backward ${i}`).toBe(true);
     }
+  });
+
+  it("the AI consent sheet never opens over the name prompt, and appears once the prompt closes", async () => {
+    function AskForConsent() {
+      const { requestConsent } = useAiConsent();
+      return <button onClick={() => void requestConsent()}>use AI</button>;
+    }
+    skipName.mockResolvedValue({ ok: true, name: "Learner-9C0D" });
+    const api = { get: async () => null, set: async () => "2026-10-08T10:00:00Z" };
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const user = userEvent.setup();
+    render(
+      <QueryClientProvider client={client}>
+        <AiConsentProvider api={api} initialGrantedAt={null} subscribeAuth={null}>
+          <AskForConsent />
+          <NamePrompt />
+        </AiConsentProvider>
+      </QueryClientProvider>,
+    );
+    await screen.findByRole("dialog", { name: "What should other learners call you?" });
+    // The page behind a modal is inert, so ask the way the app does: through the context, not a click.
+    await act(async () => {
+      screen.getByText("use AI").closest("button")?.click();
+    });
+    expect(screen.queryByText(AI_CONSENT_COPY.sheetTitle)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: "Skip for now" }));
+    expect(await screen.findByText(AI_CONSENT_COPY.sheetTitle)).toBeInTheDocument();
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
   });
 });
