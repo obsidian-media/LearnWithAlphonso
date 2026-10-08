@@ -118,7 +118,10 @@ export async function detectAndRecordWeaknesses(params: {
       body: {
         model: params.nvidiaModel,
         messages: [
-          ...params.transcriptMessages,
+          ...params.transcriptMessages.map((m) => ({
+            role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+            content: m.content,
+          })),
           { role: "user", content: analysisPrompt(params.sourceDescription) },
         ],
       },

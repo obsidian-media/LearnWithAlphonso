@@ -20,6 +20,8 @@ const PATTERNS: RegExp[] = [
   /http\.rest\([^)]*?"profiles"/g, // Android core PostgREST
 ];
 const EXPECTED_SITES: Record<string, number> = {
+  "src/lib/ai-consent.server.ts": 1, // ai_consent_at, own row only (user client) or by id (service role)
+  "supabase/functions/_shared/ai-consent.ts": 1, // ai_consent_at by id (service role)
   "src/lib/leaderboard.functions.ts": 2, // updateProfile (own), getMyProfile (own)
   "src/lib/account.functions.ts": 1, // GDPR export (own, user client)
   "src/lib/admin.functions.ts": 1, // admin reports (service role)

@@ -26,7 +26,9 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
-const { blockUser, reportUser } = asTestFns(await import("./social-safety.functions"));
+const { blockUser, reportUser, reportAiResponse } = asTestFns(
+  await import("./social-safety.functions"),
+);
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const TARGET_ID = "11111111-1111-4111-8111-111111111111";
@@ -90,5 +92,55 @@ describe("reportUser", () => {
     });
 
     expect(result).toEqual({ ok: false });
+  });
+});
+
+describe("reportAiResponse", () => {
+  const base = {
+    reason: "ai_harmful",
+    context: {
+      message: "bad reply",
+      surface: "conversation",
+      course: "en",
+      scenario_id: "coffee",
+    },
+  };
+
+  it("inserts an ai_response report with the message in context and no reported user", async () => {
+    const supabase = createSupabaseMock();
+    const insertChain = chainable({ error: null });
+    supabase.from.mockReturnValueOnce(insertChain);
+    const result = await reportAiResponse({ context: ctx(supabase), data: base });
+    expect(result).toEqual({ ok: true });
+    expect(supabase.from).toHaveBeenCalledWith("content_reports");
+    const row = insertChain.calls.find((c) => c.method === "insert")!.args[0] as Record<
+      string,
+      unknown
+    >;
+    expect(row).toEqual({
+      kind: "ai_response",
+      reason: "ai_harmful",
+      context: { ...base.context, platform: "web" },
+    });
+    expect("reported" in row).toBe(false);
+  });
+
+  it("returns ok: false when the insert fails", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ error: { message: "nope" } }));
+    expect(await reportAiResponse({ context: ctx(supabase), data: base })).toEqual({ ok: false });
+  });
+
+  it("refuses a message over the cap and an unknown reason", async () => {
+    const supabase = createSupabaseMock();
+    await expect(
+      reportAiResponse({
+        context: ctx(supabase),
+        data: { ...base, context: { ...base.context, message: "x".repeat(2501) } },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      reportAiResponse({ context: ctx(supabase), data: { ...base, reason: "spam" } }),
+    ).rejects.toThrow();
   });
 });

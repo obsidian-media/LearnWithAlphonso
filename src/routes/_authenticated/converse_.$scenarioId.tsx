@@ -1,5 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AiConsentGate } from "../../components/AiConsentGate";
+import { AiMessageReport } from "../../components/AiMessageReport";
+import { isAiConsentRequired, useAiConsent } from "../../lib/ai-consent-context";
 import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
@@ -42,7 +45,9 @@ function ConverseChatPageWithSave() {
     <SaveWordProvider>
       {/* Keyed by course, so switching course mid-chat starts a fresh
           conversation in the new language instead of mixing two. */}
-      <ConverseChatPage key={`${raw.id}:${course}`} scenario={scenario} course={course} />
+      <AiConsentGate backTo="/converse">
+        <ConverseChatPage key={`${raw.id}:${course}`} scenario={scenario} course={course} />
+      </AiConsentGate>
     </SaveWordProvider>
   );
 }
@@ -69,6 +74,7 @@ type Msg = {
 };
 
 function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; course: Course }) {
+  const consent = useAiConsent();
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: scenario.opener },
   ]);
@@ -150,6 +156,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify({
             systemPrompt: scenario.systemPrompt,
+            course,
             cefrLevel,
             // Only role/content -- confidence is this app's own UI
             // metadata, not part of the chat wire format.
@@ -157,6 +164,13 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           }),
         });
         if (!resp.ok) {
+          if (await isAiConsentRequired(resp)) {
+            // Consent was withdrawn elsewhere: back to the gate, with the learner's words kept.
+            consent.markWithdrawn();
+            setMessages(messages);
+            setInput(trimmed);
+            return;
+          }
           const t = await readApiError(resp);
           throw new Error(
             resp.status === 429
@@ -176,7 +190,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         setSending(false);
       }
     },
-    [messages, scenario.systemPrompt, cefrLevel, sending, speak],
+    [messages, scenario.systemPrompt, course, cefrLevel, sending, speak, consent],
   );
 
   // The capture flow lives in useSpeechCapture so the speaking question type
@@ -296,8 +310,16 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
-                <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                  <TappableText text={m.content} course={course} />
+                <div className="flex max-w-[85%] flex-col items-start">
+                  <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                    <TappableText text={m.content} course={course} />
+                  </div>
+                  <AiMessageReport
+                    message={m.content}
+                    surface="conversation"
+                    course={course}
+                    scenarioId={scenario.id}
+                  />
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">
