@@ -15,9 +15,14 @@ const REASONS = fixtures.reasons as Record<string, string>;
  */
 export function socialReasonCodes(): Map<string, Set<string>> {
   const latest = new Map<string, string>();
-  for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort()) {
+  for (const file of fs
+    .readdirSync(DIR)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()) {
     const sql = fs.readFileSync(path.join(DIR, file), "utf8");
-    for (const m of sql.matchAll(/CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]+)\s*\(([\s\S]*?)\$\$([\s\S]*?)\$\$/gi)) {
+    for (const m of sql.matchAll(
+      /CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+public\.([a-z_0-9]+)\s*\(([\s\S]*?)\$\$([\s\S]*?)\$\$/gi,
+    )) {
       latest.set(m[1], m[2] + m[3]);
     }
   }
@@ -25,7 +30,8 @@ export function socialReasonCodes(): Map<string, Set<string>> {
   for (const [name, text] of latest) {
     if (!/team|duel|quest/.test(name)) continue;
     const codes = new Set<string>();
-    for (const m of text.matchAll(/SELECT\s+(?:false|true)\s*,\s*'([a-z][a-z-]*)'/g)) codes.add(m[1]);
+    for (const m of text.matchAll(/SELECT\s+(?:false|true)\s*,\s*'([a-z][a-z-]*)'/g))
+      codes.add(m[1]);
     for (const m of text.matchAll(/RETURN\s+'([a-z][a-z-]*)'\s*;/g)) codes.add(m[1]);
     if (codes.size) out.set(name, codes);
   }
@@ -33,12 +39,22 @@ export function socialReasonCodes(): Map<string, Set<string>> {
 }
 
 const unmapped = (codes: Map<string, Set<string>>, reasons: Record<string, string>) =>
-  [...codes].flatMap(([fn, set]) => [...set].filter((c) => !(c in reasons)).map((c) => `${fn}: ${c}`));
+  [...codes].flatMap(([fn, set]) =>
+    [...set].filter((c) => !(c in reasons)).map((c) => `${fn}: ${c}`),
+  );
 
 describe("social reason copy", () => {
   it("maps every code a team, duel or quest RPC can return", () => {
     const codes = socialReasonCodes();
-    for (const fn of ["create_team", "leave_team", "kick_team_member", "create_duel", "respond_to_duel", "claim_weekly_quest", "admin_rename_team"]) {
+    for (const fn of [
+      "create_team",
+      "leave_team",
+      "kick_team_member",
+      "create_duel",
+      "respond_to_duel",
+      "claim_weekly_quest",
+      "admin_rename_team",
+    ]) {
       expect(codes.has(fn), fn).toBe(true);
     }
     expect(unmapped(codes, REASONS)).toEqual([]);
@@ -51,9 +67,23 @@ describe("social reason copy", () => {
 
   it("covers every code observed in production", () => {
     for (const code of [
-      "unauthenticated", "invalid-name", "blocked-content", "invalid-visibility", "invalid-member-cap", "switch-locked",
-      "team-not-found", "team-full", "invalid-code", "not-on-a-team", "cannot-kick-yourself", "not-team-owner",
-      "member-not-found", "invalid-week", "unknown-quest", "not-yet-completed", "already-claimed",
+      "unauthenticated",
+      "invalid-name",
+      "blocked-content",
+      "invalid-visibility",
+      "invalid-member-cap",
+      "switch-locked",
+      "team-not-found",
+      "team-full",
+      "invalid-code",
+      "not-on-a-team",
+      "cannot-kick-yourself",
+      "not-team-owner",
+      "member-not-found",
+      "invalid-week",
+      "unknown-quest",
+      "not-yet-completed",
+      "already-claimed",
     ]) {
       expect(REASONS, code).toHaveProperty(code);
     }
@@ -69,13 +99,23 @@ describe("social reason copy", () => {
   it("shares its strings with the master copy constants and has no literal --", () => {
     expect(fixtures.connection).toBe(COPY.connectionFailure);
     expect(REASONS["blocked-content"]).toBe(COPY.nameNotAllowed);
-    for (const text of [fixtures.connection, fixtures.generic, fixtures.nameSaveFailed, ...Object.values(REASONS)]) {
+    for (const text of [
+      fixtures.connection,
+      fixtures.generic,
+      fixtures.nameSaveFailed,
+      ...Object.values(REASONS),
+    ]) {
       expect(text).not.toContain("--");
     }
   });
 
   it("the iOS copy is byte-for-byte the web file", () => {
-    const ios = path.resolve(import.meta.dirname, "../../ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures/social-reason.fixtures.json");
-    expect(fs.readFileSync(ios, "utf8")).toBe(fs.readFileSync(path.resolve(import.meta.dirname, "social-reason.fixtures.json"), "utf8"));
+    const ios = path.resolve(
+      import.meta.dirname,
+      "../../ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures/social-reason.fixtures.json",
+    );
+    expect(fs.readFileSync(ios, "utf8")).toBe(
+      fs.readFileSync(path.resolve(import.meta.dirname, "social-reason.fixtures.json"), "utf8"),
+    );
   });
 });

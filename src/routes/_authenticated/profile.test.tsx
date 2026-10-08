@@ -124,6 +124,20 @@ describe("Profile page", () => {
     );
   });
 
+  it("says a refused name in words instead of pretending it saved", async () => {
+    const user = userEvent.setup();
+    updateProfile.mockResolvedValueOnce({ ok: false, error: "blocked-content" });
+    renderPage();
+    const nameInput = await screen.findByLabelText("Display name");
+    await waitFor(() => expect(nameInput).toHaveValue("Ada"));
+    await user.clear(nameInput);
+    await user.type(nameInput, "Some Name");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "That name isn't allowed. Try another.",
+    );
+  });
+
   it("sends undefined for an empty display name and null for an empty country", async () => {
     getMyProfile.mockResolvedValue({ display_name: "Ada", country: "US", avatar_seed: "a" });
     const user = userEvent.setup();

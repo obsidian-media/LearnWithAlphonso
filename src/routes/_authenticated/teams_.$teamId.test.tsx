@@ -120,6 +120,65 @@ describe("Team detail page", () => {
     await waitFor(() => expect(navigateMock).toHaveBeenCalledWith({ to: "/teams" }));
   });
 
+  it("says the team was handed on when the owner leaves, with a way back", async () => {
+    getMyTeam.mockResolvedValue({
+      teamId: "t1",
+      name: "Swift Falcons",
+      joinCode: "ABC123",
+      joinedAt: "2020-01-01T00:00:00Z",
+      switchLockedUntil: "2020-01-08T00:00:00Z",
+      thisWeekXp: 0,
+    });
+    leaveTeam.mockResolvedValue({ ok: true, reason: "ownership-transferred" });
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Leave team" }));
+    expect(
+      await screen.findByText("You left the team. The member who joined earliest now runs it."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Back to teams")).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps the notice when the refetch after leaving finds no team", async () => {
+    getMyTeam
+      .mockResolvedValueOnce({
+        teamId: "t1",
+        name: "Swift Falcons",
+        joinCode: "ABC123",
+        joinedAt: "2020-01-01T00:00:00Z",
+        switchLockedUntil: "2020-01-08T00:00:00Z",
+        thisWeekXp: 0,
+      })
+      .mockResolvedValue(null);
+    leaveTeam.mockResolvedValue({ ok: true, reason: "team-disbanded" });
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Leave team" }));
+    expect(
+      await screen.findByText("You left the team. It was closed because no one else was in it."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("You're not on a team yet.")).not.toBeInTheDocument();
+  });
+
+  it("says why leaving was refused", async () => {
+    getMyTeam.mockResolvedValue({
+      teamId: "t1",
+      name: "Swift Falcons",
+      joinCode: "ABC123",
+      joinedAt: "2020-01-01T00:00:00Z",
+      switchLockedUntil: "2020-01-08T00:00:00Z",
+      thisWeekXp: 0,
+    });
+    leaveTeam.mockResolvedValue({ ok: false, reason: "switch-locked" });
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Leave team" }));
+    expect(
+      await screen.findByText("You can't join or leave a team for a few days. Try again later."),
+    ).toBeInTheDocument();
+  });
+
   it("says it could not load the team, not 'not on a team', when the request fails", async () => {
     getMyTeam.mockRejectedValue(new Error("boom"));
     renderPage();

@@ -9,6 +9,7 @@ import { ACHIEVEMENTS } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 import { getMyProfile, updateProfile } from "../../lib/leaderboard.functions";
+import { SOCIAL_COPY, socialReasonMessage } from "../../lib/social-reason-copy";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,7 @@ function ProfilePage() {
   const [name, setName] = useState("");
   const [country, setCountry] = useState("");
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("");
 
   useEffect(() => {
@@ -57,14 +59,27 @@ function ProfilePage() {
 
   async function save() {
     setSaving(true);
-    await updateProfile({
-      data: {
-        display_name: name || undefined,
-        country: country ? country.toUpperCase().slice(0, 2) : null,
-      },
-    });
-    await qc.invalidateQueries({ queryKey: ["me"] });
-    setSaving(false);
+    setNameError(null);
+    try {
+      const result = await updateProfile({
+        data: {
+          display_name: name || undefined,
+          country: country ? country.toUpperCase().slice(0, 2) : null,
+        },
+      });
+      if (!result.ok) {
+        setNameError(
+          result.error === "server-error"
+            ? SOCIAL_COPY.nameSaveFailed
+            : socialReasonMessage(result.error),
+        );
+      }
+      await qc.invalidateQueries({ queryKey: ["me"] });
+    } catch {
+      setNameError(socialReasonMessage(null));
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function shuffleAvatar() {
@@ -228,6 +243,11 @@ function ProfilePage() {
                 : "w-full rounded-xl border border-hairline bg-parchment px-3 py-2 text-sm outline-none focus:border-moss"
             }
           />
+          {nameError && (
+            <p role="alert" className="mt-2 text-sm text-ember">
+              {nameError}
+            </p>
+          )}
           <label
             htmlFor="profile-country"
             className="mt-2 block text-[11px] uppercase tracking-wider text-ink-soft"

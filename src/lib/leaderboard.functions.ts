@@ -37,6 +37,18 @@ export const getLeaderboard = createServerFn({ method: "POST" })
     return entries;
   });
 
+export type UpdateProfileResult =
+  { ok: true } | { ok: false; error: "blocked-content" | "invalid-name" | "server-error" };
+
+/** confirm_display_name raises P0001 with the code as the message; anything else is a server failure. */
+export function profileErrorCode(
+  error: { message?: string } | null,
+): "blocked-content" | "invalid-name" | "server-error" {
+  if (error?.message === "blocked-content") return "blocked-content";
+  if (error?.message === "invalid-name") return "invalid-name";
+  return "server-error";
+}
+
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -49,9 +61,18 @@ export const updateProfile = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<UpdateProfileResult> => {
     const { supabase, userId } = context;
-    await supabase.from("profiles").update(data).eq("id", userId);
+    const { display_name, ...rest } = data;
+    if (display_name !== undefined) {
+      // The validated path: 2 to 40 characters, the name filter, and the confirmation stamp.
+      const { error } = await supabase.rpc("confirm_display_name", { _name: display_name });
+      if (error) return { ok: false, error: profileErrorCode(error) };
+    }
+    if (Object.keys(rest).length > 0) {
+      const { error } = await supabase.from("profiles").update(rest).eq("id", userId);
+      if (error) return { ok: false, error: "server-error" };
+    }
     return { ok: true };
   });
 
