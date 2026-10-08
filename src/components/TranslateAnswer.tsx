@@ -1,4 +1,6 @@
 import type { Question } from "../data/curriculum";
+import { AI_CONSENT_COPY } from "../lib/ai-consent-copy";
+import { useOptionalAiConsent } from "../lib/ai-consent-context";
 import type { TranslationVerdict } from "../routes/api/grade-translation";
 
 /**
@@ -18,6 +20,7 @@ export function TranslateAnswer({
   onChange,
   checked,
   verdict,
+  showAiGradingOption,
 }: {
   question: Extract<Question, { type: "translate" }>;
   value: string | null;
@@ -26,7 +29,10 @@ export function TranslateAnswer({
   /** The settled verdict once checked: local, or the server's second opinion.
    *  `null` before checking, and while that opinion is still in flight. */
   verdict: TranslationVerdict | null;
+  /** Offer to turn AI grading on when the learner has not allowed it (lessons and review, not placement). */
+  showAiGradingOption?: boolean;
 }) {
+  const consent = useOptionalAiConsent();
   return (
     <div>
       {/* The prompt itself is rendered by the player, as the question heading,
@@ -40,6 +46,23 @@ export function TranslateAnswer({
         aria-label="Your answer"
         className="w-full resize-none rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss disabled:opacity-70"
       />
+
+      {showAiGradingOption &&
+        consent &&
+        consent.status !== "loading" &&
+        !consent.granted &&
+        !checked && (
+          <p className="mt-2 text-xs text-ink-soft">
+            {AI_CONSENT_COPY.localGradingNote}{" "}
+            <button
+              type="button"
+              onClick={() => void consent.requestConsent()}
+              className="font-semibold text-moss underline"
+            >
+              {AI_CONSENT_COPY.turnOnAiGrading}
+            </button>
+          </p>
+        )}
 
       {checked && verdict && !verdict.correct && (
         <div className="mt-3 rounded-2xl border border-hairline bg-surface px-4 py-3">

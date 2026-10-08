@@ -14,6 +14,7 @@ import {
   socialFailureMessage,
   socialReasonMessage,
 } from "../../lib/social-reason-copy";
+import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -226,6 +227,8 @@ function ProfilePage() {
             ]}
           />
         </div>
+
+        <AiFeaturesSetting />
 
         <h2 className="mt-8 font-display text-[18px] font-semibold text-ink">Account</h2>
         <div

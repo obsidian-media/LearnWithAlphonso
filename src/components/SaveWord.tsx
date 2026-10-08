@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useOptionalAiConsent } from "../lib/ai-consent-context";
 import type { SavedWordInput } from "../lib/saved-word";
 import {
   SavedWordError,
@@ -132,7 +133,14 @@ function SaveWordDialog({
     };
   }, [onClose]);
 
+  const consent = useOptionalAiConsent();
   const run = useCallback(async () => {
+    // Saving a word sends it and its sentence to the AI, so ask for the account's consent first. With no provider
+    // the injected `save` decides (tests, and any page outside the signed-in app).
+    if (consent && !consent.granted) {
+      const ok = await consent.requestConsent();
+      if (!ok) return;
+    }
     // A second press cannot send a second request: the button is disabled while this one is out.
     setPhase({ kind: "saving" });
     try {
@@ -140,9 +148,11 @@ function SaveWordDialog({
       if (mounted.current) setPhase({ kind: "saved", result });
     } catch (error) {
       const kind = error instanceof SavedWordError ? error.kind : "unavailable";
+      // Consent was withdrawn elsewhere: the next attempt asks again.
+      if (kind === "aiConsentRequired") consent?.markWithdrawn();
       if (mounted.current) setPhase({ kind: "error", error: kind });
     }
-  }, [request, save]);
+  }, [request, save, consent]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-6 sm:items-center">

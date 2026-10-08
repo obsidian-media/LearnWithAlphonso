@@ -1,3 +1,5 @@
+import { AI_CONSENT_COPY } from "../lib/ai-consent-copy";
+import { useOptionalAiConsent } from "../lib/ai-consent-context";
 import { canSpeak, speak } from "../lib/speech";
 import { useSpeechCapture } from "../lib/use-speech-capture";
 import type { Course } from "../data/courses";
@@ -45,6 +47,10 @@ export function SpeakAnswer({
     onTranscript: (text) => onChange(text),
     course,
   });
+  // Speech recognition sends the recording to Deepgram, so it needs the account's AI consent. Without it the
+  // control is the typed fallback, and nothing is recorded or sent.
+  const consent = useOptionalAiConsent();
+  const needsConsent = !consent?.granted;
   const recording = state === "recording";
   const transcribing = state === "transcribing";
   // Typing appears when speech cannot be captured -- which is NOT only "this
@@ -52,7 +58,7 @@ export function SpeakAnswer({
   // failing /api/stt all leave a learner who can see a mic button that will
   // never produce an answer, and Check stays disabled because `picked` is
   // still null. There is no skip: the lesson would be unfinishable.
-  const showTyping = !canRecord || failed;
+  const showTyping = needsConsent || !canRecord || failed;
 
   return (
     <div>
@@ -136,10 +142,21 @@ export function SpeakAnswer({
       ) : (
         <div>
           <p className="mb-2 text-xs text-ink-soft">
-            {canRecord
-              ? "Speech couldn't be checked just now — type the phrase instead."
-              : "Recording isn't available on this device — type the phrase instead."}
+            {needsConsent
+              ? AI_CONSENT_COPY.speakFallbackNoConsent
+              : canRecord
+                ? "Speech couldn't be checked just now — type the phrase instead."
+                : "Recording isn't available on this device — type the phrase instead."}
           </p>
+          {needsConsent && consent && canRecord && (
+            <button
+              type="button"
+              onClick={() => void consent.requestConsent()}
+              className="mb-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink"
+            >
+              {AI_CONSENT_COPY.useVoiceInstead}
+            </button>
+          )}
           {error && (
             <p
               role="alert"

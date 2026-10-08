@@ -34,6 +34,7 @@ vi.mock("../../lib/weakness-trend.functions", () => ({ getWeaknessTrend }));
 const signOut = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { signOut } } }));
 
+const { withAiConsent } = await import("../../lib/__testutils__/ai-consent");
 const { Route } = await import("./profile");
 const { useProgress } = await import("../../lib/progress");
 const { useTheme } = await import("../../lib/theme");
@@ -43,9 +44,11 @@ function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const ProfilePage = Route.options.component!;
   return render(
-    <QueryClientProvider client={client}>
-      <ProfilePage />
-    </QueryClientProvider>,
+    withAiConsent(
+      <QueryClientProvider client={client}>
+        <ProfilePage />
+      </QueryClientProvider>,
+    ),
   );
 }
 
@@ -92,6 +95,11 @@ describe("Profile page", () => {
     // the visible "XP" label.
     expect(screen.getByText("XP").previousElementSibling).toHaveTextContent("500");
     expect(screen.getByText(`2 of ${ACHIEVEMENTS.length} unlocked`)).toBeInTheDocument();
+  });
+
+  it("offers the AI features switch", async () => {
+    renderPage();
+    expect(await screen.findByRole("switch", { name: "AI features" })).toBeInTheDocument();
   });
 
   it("falls back to 'Learner' when there is no display name", async () => {

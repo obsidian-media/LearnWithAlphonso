@@ -14,7 +14,13 @@ export type SavedWordResult = {
 };
 
 export type SavedWordErrorKind =
-  "invalid" | "limitReached" | "quotaExceeded" | "notSignedIn" | "unavailable" | "offline";
+  | "invalid"
+  | "limitReached"
+  | "quotaExceeded"
+  | "notSignedIn"
+  | "aiConsentRequired"
+  | "unavailable"
+  | "offline";
 
 export class SavedWordError extends Error {
   constructor(readonly kind: SavedWordErrorKind) {
@@ -34,6 +40,8 @@ export function saveErrorFor(kind: SavedWordErrorKind): string {
       return "You've saved a lot of words for now. Try again in a bit.";
     case "notSignedIn":
       return "Sign in again to save words.";
+    case "aiConsentRequired":
+      return "AI features are turned off. Allow them to save words.";
     case "unavailable":
       return "Couldn't look that word up. Try again.";
     case "offline":
@@ -54,6 +62,15 @@ function kindForStatus(status: number): SavedWordErrorKind {
       return "quotaExceeded";
     default:
       return "unavailable";
+  }
+}
+
+async function isConsentRefusal(response: Response): Promise<boolean> {
+  try {
+    const body = (await response.clone().json()) as { error?: unknown };
+    return body.error === "ai-consent-required";
+  } catch {
+    return false;
   }
 }
 
@@ -92,7 +109,14 @@ export async function saveWord(
   } catch {
     throw new SavedWordError("offline");
   }
-  if (!response.ok) throw new SavedWordError(kindForStatus(response.status));
+  if (!response.ok) {
+    // A 403 can mean the session or the AI consent; only the body tells them apart, and "sign in again" would be
+    // the wrong advice to a signed-in learner who simply has not allowed AI.
+    if (response.status === 403 && (await isConsentRefusal(response))) {
+      throw new SavedWordError("aiConsentRequired");
+    }
+    throw new SavedWordError(kindForStatus(response.status));
+  }
 
   let body: unknown;
   try {
