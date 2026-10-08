@@ -10,8 +10,18 @@ public struct GoalCache {
         self.defaults = defaults
     }
 
+    public static let keyPrefix = "lwa.learning-goal.v1."
+
     public static func key(userID: String, course: String) -> String {
-        "lwa.learning-goal.v1.\(userID).\(course)"
+        "\(keyPrefix)\(userID).\(course)"
+    }
+
+    /// Every account's cached goal. Run on sign-out and account deletion, so a deleted
+    /// account leaves no goal behind on the device.
+    public func clearAll() {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.keyPrefix) {
+            defaults.removeObject(forKey: key)
+        }
     }
 
     /// A state is only worth keeping with BOTH a goal and a plan; anything else clears the entry.

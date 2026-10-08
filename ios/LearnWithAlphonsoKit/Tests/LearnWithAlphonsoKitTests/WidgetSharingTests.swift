@@ -4,6 +4,19 @@ import XCTest
 final class WidgetSharingTests: XCTestCase {
     private let fixedNow = Date(timeIntervalSince1970: 1_700_000_000) // 2023-11-14T22:13:20Z
 
+    func testClearSnapshotRemovesOnlyTheWidgetSnapshot() {
+        let suite = "WidgetSharingTests-" + UUID().uuidString
+        let store = UserDefaults(suiteName: suite)!
+        store.removePersistentDomain(forName: suite)
+        store.set(Data([1]), forKey: WidgetSharing.streakSnapshotDefaultsKey)
+        store.set("keep", forKey: "other")
+
+        WidgetSharing.clearSnapshot(in: store)
+
+        XCTAssertNil(store.data(forKey: WidgetSharing.streakSnapshotDefaultsKey))
+        XCTAssertEqual(store.string(forKey: "other"), "keep")
+    }
+
     func testStudiedTodayTrueWhenLastActiveDateMatchesToday() {
         let today = utcDateString(fixedNow)
         let snapshot = makeStreakWidgetSnapshot(streak: 5, longestStreak: 9, lastActiveDate: today, now: fixedNow)
