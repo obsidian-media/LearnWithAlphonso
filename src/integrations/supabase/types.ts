@@ -2062,6 +2062,13 @@ export type Database = {
           winner_id: string;
         }[];
       };
+      get_my_name_status: {
+        Args: never;
+        Returns: {
+          display_name: string;
+          name_confirmed_at: string;
+        }[];
+      };
       get_my_team: {
         Args: never;
         Returns: {
@@ -2245,6 +2252,7 @@ export type Database = {
         Args: { _language: string; _level: string };
         Returns: undefined;
       };
+      skip_display_name_prompt: { Args: never; Returns: string };
       team_name_problem: { Args: { _name: string }; Returns: string };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
