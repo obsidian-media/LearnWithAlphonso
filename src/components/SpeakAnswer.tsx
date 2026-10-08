@@ -51,6 +51,8 @@ export function SpeakAnswer({
   // control is the typed fallback, and nothing is recorded or sent.
   const consent = useOptionalAiConsent();
   const needsConsent = !consent?.granted;
+  // While the setting is still loading (or could not be read) there is nothing true to say about it: no "AI is off".
+  const consentKnown = !consent || (consent.status !== "loading" && consent.status !== "unknown");
   const recording = state === "recording";
   const transcribing = state === "transcribing";
   // Typing appears when speech cannot be captured -- which is NOT only "this
@@ -143,12 +145,25 @@ export function SpeakAnswer({
         <div>
           <p className="mb-2 text-xs text-ink-soft">
             {needsConsent
-              ? AI_CONSENT_COPY.speakFallbackNoConsent
+              ? consentKnown
+                ? AI_CONSENT_COPY.speakFallbackNoConsent
+                : consent?.status === "unknown"
+                  ? AI_CONSENT_COPY.checkFailedTitle
+                  : "Type the phrase while we check your settings."
               : canRecord
                 ? "Speech couldn't be checked just now — type the phrase instead."
                 : "Recording isn't available on this device — type the phrase instead."}
           </p>
-          {needsConsent && consent && canRecord && (
+          {consent?.status === "unknown" && (
+            <button
+              type="button"
+              onClick={() => void consent.refresh()}
+              className="mb-2 rounded-full border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink"
+            >
+              {AI_CONSENT_COPY.retry}
+            </button>
+          )}
+          {needsConsent && consentKnown && consent && canRecord && (
             <button
               type="button"
               onClick={() => void consent.requestConsent()}

@@ -98,6 +98,8 @@ function SaveWordDialog({
   useEffect(() => {
     mounted.current = true;
     const onKey = (event: KeyboardEvent) => {
+      // A modal opened on top of this dialog (the AI consent sheet) handles its own keys.
+      if (event.defaultPrevented) return;
       if (event.key === "Escape") onClose();
       // aria-modal hides the page from screen readers, so focus must not leave the dialog.
       if (event.key === "Tab" && dialogRef.current) {
@@ -137,6 +139,12 @@ function SaveWordDialog({
   const run = useCallback(async () => {
     // Saving a word sends it and its sentence to the AI, so ask for the account's consent first. With no provider
     // the injected `save` decides (tests, and any page outside the signed-in app).
+    if (consent?.status === "unknown") {
+      // The setting could not be read: retry the read and say so, rather than asking for a choice that may already exist.
+      void consent.refresh();
+      setPhase({ kind: "error", error: "unavailable" });
+      return;
+    }
     if (consent && !consent.granted) {
       const ok = await consent.requestConsent();
       if (!ok) return;

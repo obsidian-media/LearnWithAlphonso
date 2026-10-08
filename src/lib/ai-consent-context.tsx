@@ -24,6 +24,25 @@ const serverApi: AiConsentApi = {
     (await (await import("./ai-consent.functions")).setAiConsent({ data: { granted } })).grantedAt,
 };
 
+// Loaded on first use for the same reason as serverApi, and failures (no browser client in a test) are quiet.
+function subscribeToAuthChanges(onChange: () => void): () => void {
+  let unsubscribe: (() => void) | undefined;
+  let cancelled = false;
+  void import("@/integrations/supabase/client")
+    .then(({ supabase }) => {
+      if (cancelled) return;
+      const { data } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") onChange();
+      });
+      unsubscribe = () => data.subscription.unsubscribe();
+    })
+    .catch(() => {});
+  return () => {
+    cancelled = true;
+    unsubscribe?.();
+  };
+}
+
 export type AiConsentStatus = "loading" | "granted" | "denied" | "unknown";
 export type AiConsent = {
   status: AiConsentStatus;
@@ -47,11 +66,14 @@ export function AiConsentProvider({
   children,
   api = serverApi,
   initialGrantedAt,
+  subscribeAuth = subscribeToAuthChanges,
 }: {
   children: ReactNode;
   api?: AiConsentApi;
   /** Tests only: start from a known state instead of "loading". The first read still replaces it. */
   initialGrantedAt?: string | null;
+  /** Calls back when the signed-in account changes. Returns the unsubscribe. */
+  subscribeAuth?: ((onChange: () => void) => () => void) | null;
 }) {
   const [status, setStatus] = useState<AiConsentStatus>(
     initialGrantedAt === undefined ? "loading" : initialGrantedAt ? "granted" : "denied",
@@ -60,7 +82,10 @@ export function AiConsentProvider({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pending = useRef<((ok: boolean) => void) | null>(null);
+  // The one outstanding request for the sheet. A second request while it is open shares it, so no caller is orphaned.
+  const pending = useRef<{ promise: Promise<boolean>; resolve: (ok: boolean) => void } | null>(
+    null,
+  );
 
   const apply = useCallback((stamp: string | null) => {
     setGrantedAt(stamp);
@@ -84,19 +109,29 @@ export function AiConsentProvider({
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [refresh]);
 
+  // A different account on the same browser has its own consent: read it again on every sign-in or sign-out.
+  useEffect(() => {
+    if (!subscribeAuth) return;
+    return subscribeAuth(() => void refresh());
+  }, [subscribeAuth, refresh]);
+
   const settle = useCallback((ok: boolean) => {
-    pending.current?.(ok);
+    pending.current?.resolve(ok);
     pending.current = null;
     setSheetOpen(false);
   }, []);
 
   const requestConsent = useCallback(() => {
     if (status === "granted") return Promise.resolve(true);
+    if (pending.current) return pending.current.promise;
     setError(null);
     setSheetOpen(true);
-    return new Promise<boolean>((resolve) => {
-      pending.current = resolve;
+    let resolve!: (ok: boolean) => void;
+    const promise = new Promise<boolean>((r) => {
+      resolve = r;
     });
+    pending.current = { promise, resolve };
+    return promise;
   }, [status]);
 
   const allow = useCallback(async () => {

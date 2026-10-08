@@ -5,6 +5,7 @@ import {
   AI_REPORT_REASONS,
   type AiReportReason,
 } from "@/lib/ai-consent-copy";
+import { Modal } from "./Modal";
 import { reportAiResponse } from "@/lib/social-safety.functions";
 
 type ReportInput = {
@@ -41,13 +42,19 @@ export function AiMessageReport({
   const [reason, setReason] = useState<AiReportReason>("ai_inappropriate");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
+  function close() {
+    setOpen(false);
+    setStatus("idle");
+  }
+
   async function submit() {
     setStatus("sending");
     try {
       const { ok } = await send({
         reason,
         context: {
-          message: message.slice(0, AI_REPORT_MESSAGE_MAX),
+          // By code point, so an emoji or other surrogate pair is never cut in half.
+          message: Array.from(message).slice(0, AI_REPORT_MESSAGE_MAX).join(""),
           surface,
           course,
           ...(scenarioId ? { scenario_id: scenarioId } : {}),
@@ -72,13 +79,13 @@ export function AiMessageReport({
         Report
       </button>
       {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ai-report-title"
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center"
+        <Modal
+          labelledBy="ai-report-title"
+          describedBy="ai-report-note"
+          onEscape={close}
+          className="relative w-full max-w-md rounded-t-3xl bg-surface p-6 outline-none sm:rounded-3xl"
         >
-          <div className="w-full max-w-md rounded-t-3xl bg-surface p-6 sm:rounded-3xl">
+          <div>
             <h2 id="ai-report-title" className="font-display text-[18px] font-semibold text-ink">
               {AI_CONSENT_COPY.reportAction}
             </h2>
@@ -88,7 +95,9 @@ export function AiMessageReport({
               </p>
             ) : (
               <>
-                <p className="mt-2 text-xs text-ink-soft">{AI_CONSENT_COPY.reportReviewNote}</p>
+                <p id="ai-report-note" className="mt-2 text-xs text-ink-soft">
+                  {AI_CONSENT_COPY.reportReviewNote}
+                </p>
                 <fieldset className="mt-3 space-y-2">
                   {AI_REPORT_REASONS.map((r) => (
                     <label key={r.value} className="flex items-center gap-2 text-sm text-ink">
@@ -120,16 +129,13 @@ export function AiMessageReport({
             )}
             <button
               type="button"
-              onClick={() => {
-                setOpen(false);
-                setStatus("idle");
-              }}
+              onClick={close}
               className="mt-2 w-full px-4 py-2 text-sm text-ink-soft"
             >
               {status === "sent" ? "Done" : "Cancel"}
             </button>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );

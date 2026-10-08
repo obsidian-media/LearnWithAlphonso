@@ -43,4 +43,26 @@ describe("AiFeaturesSetting", () => {
     await user.click(screen.getByRole("button", { name: "Allow" }));
     await waitFor(() => expect(api.setCalls).toEqual([true]));
   });
+
+  it("offers a retry, not an Off switch, when the setting cannot be read", async () => {
+    let fail = true;
+    const api = fakeConsentApi("2026-10-09T10:00:00Z");
+    api.get = async () => {
+      if (fail) throw new Error("offline");
+      return "2026-10-09T10:00:00Z";
+    };
+    const user = userEvent.setup();
+    render(withAiConsent(<AiFeaturesSetting />, { ...api, initial: undefined }));
+    expect(await screen.findByText("Couldn't check your AI setting")).toBeInTheDocument();
+    expect(screen.queryByRole("switch", { name: "AI features" })).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fail = false;
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() =>
+      expect(screen.getByRole("switch", { name: "AI features" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      ),
+    );
+  });
 });

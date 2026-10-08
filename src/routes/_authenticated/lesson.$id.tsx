@@ -62,7 +62,8 @@ function LessonPage() {
   const course = useProgress((s) => s.course);
   // The written-translation second opinion sends the learner's answer to the AI grader, so it needs the account's
   // AI consent. Without it (or without a provider) the curated answer list alone decides.
-  const aiGranted = useOptionalAiConsent()?.granted ?? false;
+  const aiConsent = useOptionalAiConsent();
+  const aiGranted = aiConsent?.granted ?? false;
   const curriculum = useMemo(() => getCourse(course).curriculum, [course]);
   const maybeLesson = useMemo(() => {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
@@ -196,12 +197,15 @@ function LessonPage() {
       setTranslationVerdict({ correct: false, reason: null, source: "local" });
     } else if (!isCorrect && q.type === "translate") {
       setChecking(true);
-      const verdict = await requestTranslationVerdict({
-        lessonId: lesson.id,
-        questionId: q.id,
-        submission: submittedAnswer,
-        course,
-      });
+      const verdict = await requestTranslationVerdict(
+        {
+          lessonId: lesson.id,
+          questionId: q.id,
+          submission: submittedAnswer,
+          course,
+        },
+        () => aiConsent?.markWithdrawn(),
+      );
       setChecking(false);
       if (verdict) {
         setTranslationVerdict(verdict);

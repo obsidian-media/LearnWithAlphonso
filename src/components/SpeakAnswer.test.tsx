@@ -250,4 +250,22 @@ describe("SpeakAnswer", () => {
     );
     expect(screen.getByRole("button", { name: "Use your voice instead" })).toBeInTheDocument();
   });
+
+  it("says nothing about AI being off while the setting is still loading", () => {
+    render(
+      withAiConsent(
+        <SpeakAnswer
+          target="Hello"
+          locale="en-US"
+          course="en"
+          value={null}
+          onChange={() => {}}
+          checked={false}
+        />,
+        { ...fakeConsentApi(null), initial: undefined },
+      ),
+    );
+    expect(screen.queryByText(/turned off/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Use your voice instead" })).toBeNull();
+  });
 });

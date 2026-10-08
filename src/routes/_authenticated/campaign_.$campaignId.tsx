@@ -71,6 +71,8 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
   confidence?: number | null;
+  /** A scene's fixed opening line: written by us, not the model, so there is nothing to report. */
+  opener?: boolean;
 };
 
 function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; course: Course }) {
@@ -83,7 +85,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   // rather than inventing new resume behavior for campaigns alone.
   const [sceneIndex, setSceneIndex] = useState(0);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: firstScene.opener },
+    { role: "assistant", content: firstScene.opener, opener: true },
   ]);
   // Message index where the *current* scene's opener lives -- lets
   // "Restart this scene" truncate back to a known point, and lets the
@@ -227,7 +229,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     }
     const nextScene = campaign.scenes[sceneIndex + 1];
     setMessages((m) => {
-      const updated: Msg[] = [...m, { role: "assistant", content: nextScene.opener }];
+      const updated: Msg[] = [...m, { role: "assistant", content: nextScene.opener, opener: true }];
       setSceneAnchor(updated.length - 1);
       return updated;
     });
@@ -430,13 +432,15 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
                   <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
                     <TappableText text={m.content} course={course} />
                   </div>
-                  <AiMessageReport
-                    message={m.content}
-                    surface="campaign"
-                    course={course}
-                    campaignId={campaign.id}
-                    sceneIndex={sceneIndex}
-                  />
+                  {!m.opener && (
+                    <AiMessageReport
+                      message={m.content}
+                      surface="campaign"
+                      course={course}
+                      campaignId={campaign.id}
+                      sceneIndex={sceneIndex}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">

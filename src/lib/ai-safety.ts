@@ -71,11 +71,18 @@ export type FilterOptions = { check: BlockedTermCheck; course: Course; route: Ai
 const CALL_CAP = 20; // ai_output_blocked's per-call cap
 export const TEXT_CAP = 8000; // ai_output_blocked truncates longer strings, so callers split instead
 
+/** Consecutive pieces share this many characters, so a term cut by a boundary is whole in one of them. */
+export const CHUNK_OVERLAP = 64;
+
 /** Split into pieces of at most TEXT_CAP characters. Nothing is dropped: every piece is checked. */
 export function splitForCheck(text: string): string[] {
   if (text.length <= TEXT_CAP) return [text];
   const pieces: string[] = [];
-  for (let i = 0; i < text.length; i += TEXT_CAP) pieces.push(text.slice(i, i + TEXT_CAP));
+  const step = TEXT_CAP - CHUNK_OVERLAP;
+  for (let i = 0; i < text.length; i += step) {
+    pieces.push(text.slice(i, i + TEXT_CAP));
+    if (i + TEXT_CAP >= text.length) break;
+  }
   return pieces;
 }
 

@@ -71,12 +71,14 @@ type Msg = {
    * voice-transcribed user message, used as a lightweight pronunciation-
    * clarity heuristic. Undefined for typed messages and assistant replies. */
   confidence?: number | null;
+  /** The scene's fixed opening line: written by us, not the model, so there is nothing to report. */
+  opener?: boolean;
 };
 
 function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; course: Course }) {
   const consent = useAiConsent();
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: scenario.opener },
+    { role: "assistant", content: scenario.opener, opener: true },
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -313,12 +315,14 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
                   <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
                     <TappableText text={m.content} course={course} />
                   </div>
-                  <AiMessageReport
-                    message={m.content}
-                    surface="conversation"
-                    course={course}
-                    scenarioId={scenario.id}
-                  />
+                  {!m.opener && (
+                    <AiMessageReport
+                      message={m.content}
+                      surface="conversation"
+                      course={course}
+                      scenarioId={scenario.id}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">

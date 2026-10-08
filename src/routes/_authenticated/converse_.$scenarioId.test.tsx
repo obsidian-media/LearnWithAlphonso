@@ -418,10 +418,41 @@ describe("Converse chat page", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("shows a Report this response button on the tutor's message", async () => {
+  it("withdrawing mid-chat and allowing again keeps the transcript and the unsent text", async () => {
+    let chatCalls = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) {
+        chatCalls += 1;
+        if (chatCalls === 1) return jsonResponse({ content: "First reply" });
+        return new Response(JSON.stringify({ error: "ai-consent-required" }), { status: 403 });
+      }
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
     await renderPage();
-    expect(screen.getAllByRole("button", { name: "Report this response" }).length).toBeGreaterThan(
-      0,
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hello there");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("First reply"));
+
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "second line{Enter}");
+    await user.click(await screen.findByRole("button", { name: "Review and allow" }));
+    await user.click(await screen.findByRole("button", { name: "Allow" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("log")).toHaveTextContent("hello there");
+    expect(screen.getByRole("log")).toHaveTextContent("First reply");
+    expect(screen.getByPlaceholderText("Type or tap the mic")).toHaveValue("second line");
+  });
+
+  it("has no Report button on the fixed opening line, but has one on a model reply", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    expect(screen.queryByRole("button", { name: "Report this response" })).toBeNull();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() =>
+      expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
     );
   });
 });

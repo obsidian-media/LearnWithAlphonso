@@ -11,6 +11,9 @@ export const AI_CONSENT_COPY = {
   gateBody:
     "This feature sends your voice or answers to our speech and AI providers. Allow it to continue.",
   gateAction: "Review and allow",
+  checkFailedTitle: "Couldn't check your AI setting",
+  checkFailedBody: "Check your connection and try again.",
+  retry: "Try again",
   settingsTitle: "AI features",
   settingsFooter:
     "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to NVIDIA so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working.",

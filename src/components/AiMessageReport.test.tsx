@@ -55,4 +55,52 @@ describe("AiMessageReport", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't send your report");
     expect(screen.getByRole("button", { name: "Send report" })).toBeInTheDocument();
   });
+
+  it("never splits an emoji when it shortens a long message", async () => {
+    const send = vi.fn(async () => ({ ok: true }));
+    const user = userEvent.setup();
+    // 2600 emoji: each is two UTF-16 units, so cutting by UTF-16 units could leave half of one.
+    render(
+      <AiMessageReport
+        message={"😀".repeat(2600)}
+        surface="conversation"
+        course="en"
+        send={send}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "Report this response" }));
+    await user.click(screen.getByRole("button", { name: "Send report" }));
+    const sent = (send.mock.calls[0] as unknown as [{ context: { message: string } }])[0].context
+      .message;
+    expect(Array.from(sent)).toHaveLength(2500);
+    expect(sent).toBe("😀".repeat(2500));
+  });
+
+  it("is a real modal: focus moves in and stays in, the page is inert, Escape closes it", async () => {
+    const user = userEvent.setup();
+    render(
+      <div>
+        <p>page behind</p>
+        <AiMessageReport
+          message="hi"
+          surface="conversation"
+          course="en"
+          send={async () => ({ ok: true })}
+        />
+      </div>,
+    );
+    const opener = screen.getByRole("button", { name: "Report this response" });
+    await user.click(opener);
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-describedby", "ai-report-note");
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(opener.closest("[inert]")).not.toBeNull();
+    for (let i = 0; i < 8; i++) {
+      await user.tab();
+      expect(dialog.contains(document.activeElement)).toBe(true);
+    }
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(opener.closest("[inert]")).toBeNull();
+  });
 });

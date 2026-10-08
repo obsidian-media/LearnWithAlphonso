@@ -138,7 +138,18 @@ describe("filterModelOutput", () => {
     const result = await filterModelOutputs([long], opts(check));
     const sentPieces = check.mock.calls.flatMap((c) => c[0]);
     expect(sentPieces.every((p) => p.length <= 8000)).toBe(true);
-    expect(sentPieces.join("")).toBe(long);
+    // Every character is covered by some piece (the pieces overlap, so they are not a plain partition).
+    expect(sentPieces[0]).toBe(long.slice(0, 8000));
+    expect(sentPieces[sentPieces.length - 1].endsWith("BAD")).toBe(true);
+    expect(result).toEqual([true]);
+  });
+
+  it("overlaps pieces so a blocked term straddling a boundary is still seen whole", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const check = vi.fn(async (t: string[]) => t.map((x) => x.includes("forbiddenword")));
+    // The term starts 6 characters before the 8000 mark, so it is cut in two by a plain split.
+    const text = `${"a".repeat(7994)}forbiddenword${"b".repeat(100)}`;
+    const result = await filterModelOutputs([text], opts(check));
     expect(result).toEqual([true]);
   });
 
