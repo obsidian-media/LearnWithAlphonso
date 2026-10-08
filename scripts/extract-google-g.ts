@@ -17,7 +17,10 @@ if (!root) {
   console.error("Usage: bunx tsx scripts/extract-google-g.ts <unzipped signin-assets dir>");
   process.exit(1);
 }
-const out = path.resolve(import.meta.dirname, "../ios/LearnWithAlphonso/Sources/Assets.xcassets/GoogleG.imageset");
+const out = path.resolve(
+  import.meta.dirname,
+  "../ios/LearnWithAlphonso/Sources/Assets.xcassets/GoogleG.imageset",
+);
 const scales: Array<[number, string, string, string]> = [
   [1, "PNG @1x", "Neutral", "Theme=Light, Show text=No, Shape=Square, Platform=iOS.png"],
   [2, "PNG @2x", "Light", "Theme=Light, Show text=No, Shape=Square, Platform=iOS@2x.png"],

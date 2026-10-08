@@ -55,7 +55,9 @@ describe("iOS sign-in screen", () => {
 
 describe("iOS session and root wiring", () => {
   it("checks the Apple credential at launch, on foreground and on Apple's revocation notice", () => {
-    expect(read("Session.swift")).toContain("ASAuthorizationAppleIDProvider.credentialRevokedNotification");
+    expect(read("Session.swift")).toContain(
+      "ASAuthorizationAppleIDProvider.credentialRevokedNotification",
+    );
     expect(read("RootView.swift").match(/session\.checkAppleCredential\(\)/g)?.length).toBe(2);
   });
 
@@ -83,7 +85,9 @@ describe("iOS session and root wiring", () => {
   it("registers the sign-out cleanup after the account cleanup", () => {
     const app = read("LearnWithAlphonsoApp.swift");
     expect(app.indexOf("AccountDataCleanup.register")).toBeGreaterThan(-1);
-    expect(app.indexOf("AuthAccountCleanup.register")).toBeGreaterThan(app.indexOf("AccountDataCleanup.register"));
+    expect(app.indexOf("AuthAccountCleanup.register")).toBeGreaterThan(
+      app.indexOf("AccountDataCleanup.register"),
+    );
     expect(app).toContain("scheduler.cancelAll()");
   });
 });
