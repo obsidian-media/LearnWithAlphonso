@@ -32,8 +32,10 @@ vi.mock("@tanstack/react-start", () => ({
 // -- sync.functions.ts writes those via supabaseAdmin now, same pattern
 // account.functions.test.ts already established for deleteMyAccount.
 const supabaseAdminFrom = vi.fn();
+// The model-written question passes the blocked-term check (ai_output_blocked, service role) before it is stored.
+const adminRpc = vi.fn(async () => ({ data: [false], error: null }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom },
+  supabaseAdmin: { from: supabaseAdminFrom, rpc: adminRpc },
 }));
 
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.

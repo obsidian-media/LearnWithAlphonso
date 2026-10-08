@@ -586,7 +586,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             nvidiaApiKey: process.env.NVIDIA_API_KEY,
             nvidiaModel: resolveNvidiaChatModel(),
             course,
-            outputCheck: makeBlockedTermCheck(supabase),
+            outputCheck: makeBlockedTermCheck(supabaseAdmin),
             dedupCheck: async (label) => {
               const { data: existing } = await supabase
                 .from("review_items")

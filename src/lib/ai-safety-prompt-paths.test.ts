@@ -5,6 +5,9 @@ type Sent = { messages: { role: string; content: string }[] };
 let sent: Sent[] = [];
 const realFetch = global.fetch;
 
+// Cold module loads (the NLP library, the route graph) can pass the 5 s default on a loaded machine.
+vi.setConfig({ testTimeout: 30_000 });
+
 beforeEach(() => {
   sent = [];
   global.fetch = vi.fn(async (_url: unknown, init?: RequestInit) => {

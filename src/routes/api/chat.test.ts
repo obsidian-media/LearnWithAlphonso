@@ -8,6 +8,7 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
   error: null,
 }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: blockedRpc } }));
 const authorizeAiRequest = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
@@ -375,7 +376,7 @@ describe("POST /api/chat", () => {
     expect(await res.json()).toEqual({ content: AI_OUTPUT_FALLBACK.en });
   });
 
-  it("uses the request's course for the fallback language", async () => {
+  it("takes the fallback language from the matched persona, not from a client field", async () => {
     blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
     vi.spyOn(console, "warn").mockImplementation(() => {});
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
@@ -384,7 +385,7 @@ describe("POST /api/chat", () => {
     const res = await handler({
       request: req({
         systemPrompt: scenarioPrompt("coffee", "fr"),
-        course: "fr",
+        course: "en",
         messages: [{ role: "user", content: "salut" }],
       }),
     });

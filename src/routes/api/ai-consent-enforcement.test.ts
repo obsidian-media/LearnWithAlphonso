@@ -104,6 +104,9 @@ const GATED: [string, () => Request][] = [
 
 const vendorCalls: string[] = [];
 const realFetch = global.fetch;
+// Cold module loads (the NLP library, the route graph) can pass the 5 s default on a loaded machine.
+vi.setConfig({ testTimeout: 30_000 });
+
 beforeEach(() => {
   h.state.consentAt = null;
   h.state.rpcCalls = [];

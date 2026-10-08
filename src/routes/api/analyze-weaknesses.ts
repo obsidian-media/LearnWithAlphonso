@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
+import { isCourse } from "@/data/courses";
 import { makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         if (!access.ok) return access.response;
         const { supabase, userId } = access;
 
-        let body: { messages?: ChatMessage[] };
+        let body: { messages?: ChatMessage[]; course?: string };
         try {
           body = await request.json();
         } catch {
@@ -48,8 +49,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           transcriptMessages: messages,
           nvidiaApiKey: key,
           nvidiaModel: resolveNvidiaChatModel(),
-          course: "en",
-          outputCheck: makeBlockedTermCheck(supabase),
+          course: typeof body.course === "string" && isCourse(body.course) ? body.course : "en",
+          outputCheck: makeBlockedTermCheck(supabaseAdmin),
           dedupCheck: async (label) => {
             const { data: existing } = await supabase
               .from("review_items")

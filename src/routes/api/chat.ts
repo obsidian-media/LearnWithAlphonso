@@ -3,7 +3,7 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import { ALL_SYSTEM_PROMPTS } from "@/data/scenarios";
-import { isCourse } from "@/data/courses";
+import { courseOfSystemPrompt } from "@/lib/system-prompt-course";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { nvidiaChatCompletion } from "@/lib/nvidia-chat.server";
 
@@ -63,7 +63,6 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     messages?: ChatMessage[];
     systemPrompt?: string;
     cefrLevel?: string;
-    course?: string;
   };
   try {
     body = await request.json();
@@ -111,9 +110,11 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
     return { ok: true as const, content: data.choices?.[0]?.message?.content ?? "" };
   });
   if (!llm.ok) return llm.failure;
-  const course = typeof body.course === "string" && isCourse(body.course) ? body.course : "en";
+  // The fallback language and the output mask follow the persona the server matched, never a client field.
+  const course = courseOfSystemPrompt(body.systemPrompt) ?? "en";
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const safe = await filterModelOutput(llm.content, {
-    check: makeBlockedTermCheck(access.supabase),
+    check: makeBlockedTermCheck(supabaseAdmin),
     course,
     route: "chat",
   });

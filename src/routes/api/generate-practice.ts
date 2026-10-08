@@ -85,9 +85,10 @@ export const Route = createFileRoute("/api/generate-practice")({
           nvidiaModel: resolveNvidiaChatModel(),
         });
 
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const blocked = await filterModelOutputs(
           questions.map((q) => [q.prompt, ...q.choices, q.explanation].join("\n")),
-          { check: makeBlockedTermCheck(access.supabase), course, route: "generate-practice" },
+          { check: makeBlockedTermCheck(supabaseAdmin), course, route: "generate-practice" },
         );
         return Response.json({ questions: questions.filter((_, i) => !blocked[i]) });
       },

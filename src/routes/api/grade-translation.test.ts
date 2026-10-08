@@ -5,6 +5,8 @@ const verifyAuth = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuotaFor: consumeQuota, verifyAuth }));
 
 const requireAiConsent = vi.fn();
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: blockedRpc } }));
+
 vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
 
 const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({

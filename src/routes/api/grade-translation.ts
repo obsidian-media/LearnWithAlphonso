@@ -136,10 +136,11 @@ export const Route = createFileRoute("/api/grade-translation")({
         if (!verdict) return Response.json(localVerdict);
 
         // The reason is model-written text the learner reads: drop it if the blocked-term check rejects it.
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const reasonBlocked = verdict.reason
           ? (
               await filterModelOutputs([verdict.reason], {
-                check: makeBlockedTermCheck(auth.supabase),
+                check: makeBlockedTermCheck(supabaseAdmin),
                 course,
                 route: "grade-translation",
               })

@@ -156,7 +156,6 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify({
             systemPrompt: scenario.systemPrompt,
-            course,
             cefrLevel,
             // Only role/content -- confidence is this app's own UI
             // metadata, not part of the chat wire format.
@@ -190,7 +189,7 @@ function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; c
         setSending(false);
       }
     },
-    [messages, scenario.systemPrompt, course, cefrLevel, sending, speak, consent],
+    [messages, scenario.systemPrompt, cefrLevel, sending, speak, consent],
   );
 
   // The capture flow lives in useSpeechCapture so the speaking question type

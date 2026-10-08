@@ -6,6 +6,7 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
   error: null,
 }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: blockedRpc } }));
 const authorizeAiRequest = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 

@@ -186,7 +186,6 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify({
             systemPrompt: systemPromptForScene(scene),
-            course,
             cefrLevel,
             messages: next.map(({ role, content }) => ({ role, content })),
           }),
@@ -218,7 +217,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         setSending(false);
       }
     },
-    [messages, scene, systemPromptForScene, course, cefrLevel, sending, finished, speak, consent],
+    [messages, scene, systemPromptForScene, cefrLevel, sending, finished, speak, consent],
   );
 
   const continueToNextScene = useCallback(() => {
