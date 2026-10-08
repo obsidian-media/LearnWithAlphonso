@@ -72,6 +72,8 @@ public enum SocialReasonCopy {
             }
             if message.contains("profiles_display_name_length_chk") { return self.message(for: "invalid-name") }
         }
+        // An expired or missing session: retrying cannot help, signing in again can.
+        if case .server(let status, _)? = error as? ProgressSyncError, status == 401 { return self.message(for: "unauthenticated") }
         if case .badResponse? = error as? ProgressSyncError { return Copy.connectionFailure }
         return nameSaveFailed
     }

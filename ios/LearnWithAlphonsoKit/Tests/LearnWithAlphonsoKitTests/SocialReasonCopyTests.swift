@@ -63,4 +63,10 @@ final class SocialReasonCopyTests: XCTestCase {
         XCTAssertEqual(SocialReasonCopy.nameSaveMessage(for: ProgressSyncError.server(status: 500, message: nil)),
                        SocialReasonCopy.nameSaveFailed)
     }
+
+    func testNameSaveMessageSendsAnExpiredSessionToSignIn() {
+        let signIn = SocialReasonCopy.message(for: "unauthenticated")
+        XCTAssertEqual(SocialReasonCopy.nameSaveMessage(for: ProgressSyncError.server(status: 401, message: nil)), signIn)
+        XCTAssertEqual(SocialReasonCopy.nameSaveMessage(for: ProgressSyncError.server(status: 401, message: "JWT expired")), signIn)
+    }
 }
