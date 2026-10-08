@@ -1271,3 +1271,58 @@ private struct OfflineFinishView: View {
         .background(AlphonsoColor.surface)
     }
 }
+
+// SpringEntrance/`.springEntrance(...)` moved to
+// DesignSystem/AlphonsoComponents.swift so other screens can share it.
+
+/// A distinct, bigger celebration for a league promotion -- rarer and more
+/// significant than a typical achievement unlock, so it gets a full-screen
+/// takeover rather than another card in the achievement grid above.
+private struct LeaguePromotionOverlay: View {
+    let tier: String
+    let onContinue: () -> Void
+
+    var body: some View {
+        ZStack {
+            LeagueTierPalette.color(for: tier).opacity(0.15).ignoresSafeArea()
+            VStack(spacing: 20) {
+                Spacer()
+                Image(systemName: "shield.fill")
+                    .font(.system(size: 96))
+                    .foregroundStyle(LeagueTierPalette.color(for: tier))
+                    .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
+                Text("League up!")
+                    .font(AlphonsoFont.display(34, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                AlphonsoMascotBanner(mascot: .alphonso, message: "You've been promoted to \(LeagueTierPalette.label(for: tier))!")
+                    .padding(.horizontal)
+                Spacer()
+                Button("Continue", action: onContinue)
+                    .buttonStyle(.alphonsoPrimary)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+}
+
+/// Ports src/data/achievements.ts's LEAGUE_TIER_META hex values exactly --
+/// a different, 5-tier palette (bronze/silver/sapphire/ruby/diamond) from
+/// AchievementBadgeView's 4-tier achievement-tier palette, so kept separate
+/// rather than merged.
+enum LeagueTierPalette {
+    static func color(for tier: String) -> Color {
+        switch tier {
+        case "bronze": return Color(hex: 0xB07242)
+        case "silver": return Color(hex: 0x8A9099)
+        case "sapphire": return Color(hex: 0x4A6B8A)
+        case "ruby": return Color(hex: 0x9A4A4A)
+        case "diamond": return Color(hex: 0x4A7F7A)
+        default: return Color(white: 0.53)
+        }
+    }
+
+    static func label(for tier: String) -> String {
+        tier.prefix(1).uppercased() + tier.dropFirst()
+    }
+}
