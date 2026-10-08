@@ -83,7 +83,9 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin + (next ?? "/placement"),
-            data: { display_name: displayName || email.split("@")[0] },
+            // Never derive a public name from the email. An empty field means the account gets a
+            // Learner-XXXX handle and the one-time name prompt asks after sign-in.
+            data: displayName.trim() ? { display_name: displayName.trim() } : {},
           },
         });
         if (error) throw error;
@@ -301,15 +303,15 @@ function AuthPage() {
           </button>
 
           <p className="pt-2 text-center text-[11px] leading-relaxed text-ink-soft/60">
-            By continuing you agree to our{" "}
+            By continuing, you agree to the{" "}
             <Link to="/terms" className="underline hover:text-ink">
-              Terms
-            </Link>
-            ,{" "}
+              Terms of Use
+            </Link>{" "}
+            and acknowledge the{" "}
             <Link to="/privacy" className="underline hover:text-ink">
               Privacy Policy
-            </Link>{" "}
-            and{" "}
+            </Link>
+            . See also our{" "}
             <Link to="/cookies" className="underline hover:text-ink">
               Cookie Policy
             </Link>

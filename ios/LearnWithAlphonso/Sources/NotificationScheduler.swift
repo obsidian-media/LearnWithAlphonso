@@ -57,6 +57,14 @@ final class NotificationScheduler {
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 
+    /// Sign-out and account deletion (AuthAccountCleanup): the previous account's streak, review, recap and
+    /// weakness reminders must not fire for whoever signs in next; delivered banners and the badge go too.
+    func cancelAll() async {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+        try? await center.setBadgeCount(0)
+    }
+
     // MARK: - The two base notification kinds
 
     private static let streakReminderIdentifier = "streak-reminder"

@@ -129,7 +129,7 @@ describe("Auth page", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("signs up, defaulting the display name to the email's local part, and confirms to /placement", async () => {
+  it("signs up without inventing a display name from the email, and confirms to /placement", async () => {
     signUp.mockResolvedValue({ data: { session: null }, error: null });
     const user = userEvent.setup();
     renderPage();
@@ -147,12 +147,30 @@ describe("Auth page", () => {
           // New signups confirm into the placement test, not a cold
           // /learn -- see auth.tsx's signup branch (V4 pkg 3 onboarding).
           emailRedirectTo: `${window.location.origin}/placement`,
-          data: { display_name: "ada" },
+          data: {},
         },
       }),
     );
     expect(await screen.findByText(/check your email/)).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("shows the Terms of Use and Privacy Policy footer with links", () => {
+    renderPage();
+    expect(
+      screen.getByText(
+        (_, el) =>
+          el?.tagName === "P" &&
+          (el.textContent ?? "").startsWith(
+            "By continuing, you agree to the Terms of Use and acknowledge the Privacy Policy.",
+          ),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Terms of Use" })).toHaveAttribute("href", "/terms");
+    expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute(
+      "href",
+      "/privacy",
+    );
   });
 
   it("signs up and redirects to placement immediately when a session is returned right away", async () => {

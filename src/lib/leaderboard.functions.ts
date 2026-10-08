@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { profileErrorCode } from "./profile-error";
 
 export type LeaderboardEntry = {
   user_id: string;
@@ -45,15 +46,6 @@ export type UpdateProfileResult =
       /** Which write failed: the name (nothing saved), or the other fields (the name, if sent, was saved). */
       part: "name" | "details";
     };
-
-/** confirm_display_name raises P0001 with the code as the message; anything else is a server failure. */
-function profileErrorCode(
-  error: { message?: string } | null,
-): "blocked-content" | "invalid-name" | "server-error" {
-  if (error?.message === "blocked-content") return "blocked-content";
-  if (error?.message === "invalid-name") return "invalid-name";
-  return "server-error";
-}
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

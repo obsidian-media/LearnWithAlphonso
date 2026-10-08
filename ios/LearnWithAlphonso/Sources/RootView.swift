@@ -19,14 +19,15 @@ struct RootView: View {
     /// makes playback survive navigation for free on iOS -- the web app had
     /// to be restructured to get the same property.
     @State private var podcastPlayer = PodcastAudioPlayer()
-    /// Presents PlacementView once, right after a fresh sign-in, when this
-    /// account's English placement has genuinely never been taken -- see
-    /// PlacementView.swift's own doc comment for why this is keyed on that
-    /// durable signal rather than a one-time "just signed up" event. Not a
-    /// hard gate: PlacementView's own exit button dismisses it the same as
-    /// this, and LessonBrowserView's persistent banner is the fallback for
-    /// anyone who skips it here.
-    @State private var showPlacementGate = false
+    /// Onboarding after a sign-in: the public-name prompt first (while name_confirmed_at is NULL), then
+    /// English placement (while it has never been taken; see PlacementView's doc comment). Each step shows at
+    /// most once per sign-in, and a failed check skips its step this launch instead of blocking the app
+    /// (Kit OnboardingSequence). LessonBrowserView's banner still catches anyone who skips placement.
+    @State private var onboardingStep: OnboardingStep?
+    @State private var onboardingDone: Set<OnboardingStep> = []
+    @State private var nameConfirmed: Bool?
+    @State private var placementTaken: Bool?
+    @State private var nameOnboarding: DisplayNameOnboarding?
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -104,9 +105,18 @@ struct RootView: View {
                     .tint(AlphonsoColor.moss)
                     .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                     .toolbarBackground(.visible, for: .tabBar)
-                    .fullScreenCover(isPresented: $showPlacementGate) {
-                        PlacementView(contentStore: contentStore, session: session, course: .english) {
-                            showPlacementGate = false
+                    .fullScreenCover(item: $onboardingStep, onDismiss: advanceOnboarding) { step in
+                        switch step {
+                        case .displayName:
+                            if let nameOnboarding {
+                                NameOnboardingView(session: session, state: nameOnboarding) {
+                                    finishOnboardingStep(.displayName)
+                                }
+                            }
+                        case .placement:
+                            PlacementView(contentStore: contentStore, session: session, course: .english) {
+                                finishOnboardingStep(.placement)
+                            }
                         }
                     }
                     .task {
@@ -125,7 +135,13 @@ struct RootView: View {
                         await hydrateThemeFromServer()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
-                        await checkPlacementGate()
+                        // The same device token after a sign-out and sign-in never fires onChange, so the new
+                        // account would never get a device_tokens row. Upload whatever is already known.
+                        if let token = remotePushRegistrar.deviceTokenHex {
+                            await uploadDeviceToken(token)
+                        }
+                        await session.checkAppleCredential()
+                        await checkOnboarding()
                     }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
@@ -146,6 +162,7 @@ struct RootView: View {
                             // expired, and every call below would 401.
                             Task {
                                 await session.refreshIfNeeded()
+                                await session.checkAppleCredential()
                                 await triggerSync()
                             }
                         } else if newPhase == .background {
@@ -273,25 +290,58 @@ struct RootView: View {
         }
     }
 
-    /// Whether English placement has genuinely never been taken for this
-    /// account -- see PlacementView.swift's doc comment for why this
-    /// checks `fetchPlacementTakenAt` rather than `fetchCefrLevel`
-    /// returning nil (a `language_progress` row from ordinary lesson
-    /// activity, `cefr_level` defaulted to 'A1', is not the same as
-    /// placement having run). Best-effort by design: a failed check just
-    /// means no prompt this launch, same posture as hydrateThemeFromServer
-    /// below -- LessonBrowserView's persistent banner is the fallback
-    /// that still catches this on its own next successful check.
-    private func checkPlacementGate() async {
+    /// Reads what onboarding still needs for this account and shows the first step. Best-effort: a failed read
+    /// leaves that input nil, which skips the step this launch (Kit OnboardingSequence). An empty name status
+    /// (no profile row) also counts as "skip the prompt this launch". Placement is keyed on
+    /// `fetchPlacementTakenAt` rather than `fetchCefrLevel` returning nil: a `language_progress` row from
+    /// ordinary lesson activity (cefr_level defaulted to 'A1') is not the same as placement having run.
+    private func checkOnboarding() async {
+        onboardingDone = []
+        nameConfirmed = nil
+        placementTaken = nil
+        nameOnboarding = nil
         guard let accessToken = session.accessToken else { return }
+        // Every await below can outlive this account: bail if someone else signed in meanwhile.
+        let checkedUser = session.userID
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
-            if try await client.fetchPlacementTakenAt(course: "en") == nil {
-                showPlacementGate = true
+            if let status = try await client.fetchNameStatus() {
+                guard session.userID == checkedUser else { return }
+                if status.needsPrompt {
+                    let names = await session.fetchUserNames()
+                    guard session.userID == checkedUser else { return }
+                    let prefill = DisplayNameOnboarding.prefill(
+                        appleGivenName: session.appleGivenNameForCurrentUser,
+                        names: names,
+                        currentName: status.displayName
+                    )
+                    nameOnboarding = DisplayNameOnboarding(prefill: prefill, currentName: status.displayName)
+                }
+                nameConfirmed = !status.needsPrompt
             }
         } catch {
-            // See doc comment above -- deliberately silent.
+            // Deliberately silent: no prompt this launch, never a blocked app.
         }
+        guard session.userID == checkedUser else { return }
+        do {
+            let taken = try await client.fetchPlacementTakenAt(course: "en") != nil
+            guard session.userID == checkedUser else { return }
+            placementTaken = taken
+        } catch {
+            // LessonBrowserView's persistent banner is the fallback.
+        }
+        guard session.userID == checkedUser else { return }
+        advanceOnboarding()
+    }
+
+    private func advanceOnboarding() {
+        onboardingStep = OnboardingSequence.next(nameConfirmed: nameConfirmed, placementTaken: placementTaken, done: onboardingDone)
+    }
+
+    private func finishOnboardingStep(_ step: OnboardingStep) {
+        onboardingDone.insert(step)
+        // Dismissing runs onDismiss (advanceOnboarding), which presents the next step, if any.
+        onboardingStep = nil
     }
 
     /// Resolves the server's saved theme (mirrors the web's `theme.ts`

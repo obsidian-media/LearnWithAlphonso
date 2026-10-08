@@ -185,6 +185,40 @@ public final class SupabaseAuthClient: Sendable {
         return SupabaseSession(accessToken: accessToken, refreshToken: refreshToken, expiresAt: expiresAt, userID: userID)
     }
 
+    /// The signed-in user's name fields from GoTrue's user_metadata, used only to prefill the public-name
+    /// prompt. Google sets full_name and name (given_name is not guaranteed); Apple sets nothing unless this app
+    /// saved given_name on the first authorization (updateUserMetadata below).
+    public func fetchUserNames(accessToken: String) async throws -> AuthUserNames {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("auth/v1/user"))
+        request.httpMethod = "GET"
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw SupabaseAuthError.invalidPayload
+        }
+        let metadata = object["user_metadata"] as? [String: Any] ?? [:]
+        return AuthUserNames(
+            givenName: metadata["given_name"] as? String,
+            fullName: metadata["full_name"] as? String,
+            name: metadata["name"] as? String
+        )
+    }
+
+    /// Merges `data` into the user's user_metadata (GoTrue PUT /auth/v1/user). Apple's given name is saved here,
+    /// because Apple sends it only on the very first authorization.
+    public func updateUserMetadata(accessToken: String, _ data: [String: String]) async throws {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("auth/v1/user"))
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(publishableKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["data": data])
+        let (responseData, response) = try await requester(request)
+        try Self.requireSuccess(data: responseData, response: response)
+    }
+
     private static func errorMessage(from data: Data) -> String? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil

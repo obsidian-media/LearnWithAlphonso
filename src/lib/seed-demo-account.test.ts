@@ -23,4 +23,10 @@ describe("seed-demo-account", () => {
   it("does not write the frozen user_progress.cefr_level", () => {
     expect(userBlock).not.toContain("cefr_level");
   });
+
+  it("gives the demo account a chosen public name, so the reviewer lands on Learn and not the name prompt", () => {
+    expect(source).toMatch(
+      /from\("profiles"\)\s*\.update\(\{ display_name: "Alex", name_confirmed_at: new Date\(\)\.toISOString\(\) \}\)/,
+    );
+  });
 });

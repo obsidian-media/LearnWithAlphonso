@@ -1,0 +1,39 @@
+{
+  "copy": {
+    "title": "What should other learners call you?",
+    "publicNote": "This name is public. Other learners see it on leaderboards, teams and buddy cards. You can change it later in Settings.",
+    "fieldLabel": "Display name",
+    "save": "Save name",
+    "skip": "Skip for now",
+    "checking": "Checking…",
+    "looksGood": "Looks good.",
+    "skipNoteHandle": "If you skip, you'll appear as {name}.",
+    "skipNoteGeneric": "If you skip, you'll appear as a learner name like Learner-4F2A."
+  },
+  "localProblem": [
+    { "id": "L1", "input": "A", "expect": "invalid-name" },
+    { "id": "L2", "input": "Al", "expect": null },
+    { "id": "L3", "input": "  Al  ", "expect": null },
+    { "id": "L4", "input": "   ", "expect": "invalid-name" },
+    { "id": "L5", "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "expect": null },
+    { "id": "L6", "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "expect": "invalid-name" },
+    { "id": "L7", "input": "李雷", "expect": null },
+    { "id": "L8", "input": "Zoë", "expect": null },
+    { "id": "L9", "input": "Ana    Lima", "expect": null }
+  ],
+  "normalized": [
+    { "id": "N1", "input": "  Ana    Lima ", "expect": "Ana Lima" },
+    { "id": "N2", "input": "Zoë", "expect": "Zoë" }
+  ],
+  "prefill": [
+    { "id": "P1", "appleGivenName": "Zoë", "givenName": "Ignored", "fullName": null, "name": null, "currentName": "Learner-4F2A", "expect": "Zoë" },
+    { "id": "P2", "appleGivenName": null, "givenName": "Ana", "fullName": "Ana Lima", "name": null, "currentName": "Ana Lima", "expect": "Ana" },
+    { "id": "P3", "appleGivenName": null, "givenName": null, "fullName": "  Jenny   Coon ", "name": null, "currentName": "Jenny Coon", "expect": "Jenny" },
+    { "id": "P4", "appleGivenName": null, "givenName": null, "fullName": null, "name": "李雷", "currentName": "Learner-0B1C", "expect": "李雷" },
+    { "id": "P5", "appleGivenName": null, "givenName": "A", "fullName": "Bartholomew Smith", "name": null, "currentName": "Learner-77AA", "expect": "Bartholomew" },
+    { "id": "P6", "appleGivenName": null, "givenName": null, "fullName": null, "name": null, "currentName": "Learner-4F2A", "expect": "Learner-4F2A" },
+    { "id": "P7", "appleGivenName": null, "givenName": "ada@example.com", "fullName": null, "name": null, "currentName": "Learner-4F2A", "expect": "Learner-4F2A" },
+    { "id": "P8", "appleGivenName": "   ", "givenName": "Ana", "fullName": null, "name": null, "currentName": "Learner-4F2A", "expect": "Ana" },
+    { "id": "P9", "appleGivenName": null, "givenName": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "fullName": null, "name": null, "currentName": "Learner-4F2A", "expect": "Learner-4F2A" }
+  ]
+}

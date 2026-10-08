@@ -11,8 +11,8 @@ struct LearnWithAlphonsoApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var session: Session
     @State private var entitlementStore: EntitlementStore
-    @State private var notificationScheduler = NotificationScheduler()
-    @State private var remotePushRegistrar = RemotePushRegistrar()
+    @State private var notificationScheduler: NotificationScheduler
+    @State private var remotePushRegistrar: RemotePushRegistrar
     @State private var networkMonitor = NetworkMonitor()
     private let contentStore: ContentStore?
     private let syncQueueStore: SyncQueueStore
@@ -71,7 +71,28 @@ struct LearnWithAlphonsoApp: App {
             entitlements: entitlements
         )
         sessionLifecycle = lifecycle
-        _session = State(initialValue: Session(lifecycle: lifecycle))
+        let session = Session(lifecycle: lifecycle)
+        let scheduler = NotificationScheduler()
+        let pushRegistrar = RemotePushRegistrar()
+        // After the handlers above, so the queue and caches are already gone when these run.
+        AuthAccountCleanup.register(
+            on: lifecycle,
+            deviceToken: { pushRegistrar.deviceTokenHex },
+            retiringAccessToken: { session.retiringAccessToken },
+            unregisterDeviceToken: { token, accessToken in
+                try await ProgressSyncClient(
+                    supabaseURL: AppConfig.supabaseURL,
+                    anonKey: AppConfig.supabasePublishableKey,
+                    accessToken: accessToken
+                ).unregisterDeviceToken(token)
+            },
+            clearLocalNotifications: { await scheduler.cancelAll() },
+            appleCredentials: AppleCredentialStore(),
+            appleGivenNames: AppleGivenNameStore()
+        )
+        _session = State(initialValue: session)
+        _notificationScheduler = State(initialValue: scheduler)
+        _remotePushRegistrar = State(initialValue: pushRegistrar)
         _entitlementStore = State(initialValue: entitlements)
     }
 
