@@ -70,7 +70,7 @@ struct LearnWithAlphonsoApp: App {
                     syncQueueStore: syncQueueStore,
                     podcastDownloadManager: podcastDownloadManager
                 )
-                .task { await entitlementStore.refresh() }
+                .task { await entitlementStore.start() }
             } else {
                 ContentUnavailableView(
                     "Couldn't load lesson content",
