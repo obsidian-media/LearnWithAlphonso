@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -86,9 +87,15 @@ function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status });
 }
 
-function renderPage() {
+/**
+ * Renders the page inside the consent provider. A consenting learner (the default) gets the chat; the helper waits
+ * for the consent read so every test starts from an open page. Pass fakeConsentApi(null) for the gate instead.
+ */
+async function renderPage(consentApi = fakeConsentApi(), { waitForChat = true } = {}) {
   const Page = Route.options.component!;
-  return render(<Page />);
+  const result = render(withAiConsent(<Page />, consentApi));
+  if (waitForChat) await screen.findByRole("log");
+  return result;
 }
 
 beforeEach(() => {
@@ -126,7 +133,7 @@ beforeEach(() => {
 
 describe("Converse chat page", () => {
   it("renders the scenario header and opener message", async () => {
-    renderPage();
+    await renderPage();
     expect(screen.getByRole("heading", { name: scenario.title })).toBeInTheDocument();
     expect(screen.getByText(scenario.blurb)).toBeInTheDocument();
     expect(screen.getByRole("log")).toHaveTextContent(scenario.opener);
@@ -134,7 +141,7 @@ describe("Converse chat page", () => {
 
   it("lets the learner tap the tutor's words to save them, but not their own", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     const firstWord = scenario.opener.match(/\p{L}+/u)![0];
     await user.click(screen.getAllByRole("button", { name: firstWord })[0]);
     expect(screen.getByRole("dialog", { name: /save this word/i })).toHaveTextContent(firstWord);
@@ -142,7 +149,7 @@ describe("Converse chat page", () => {
 
   it("leaves the learner's own message as plain text", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
     await user.click(screen.getByRole("button", { name: "Send" }));
     const mine = await screen.findByText("A latte please");
@@ -156,7 +163,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
     await user.click(screen.getByRole("button", { name: "Send" }));
@@ -180,7 +187,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     const textarea = screen.getByPlaceholderText("Type or tap the mic");
     await user.type(textarea, "Hello{Enter}");
     await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Got it."));
@@ -192,11 +199,25 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi{Enter}");
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Daily limit reached — try again tomorrow.",
     );
+  });
+
+  it("a 403 ai-consent-required (withdrawn on another device) returns the page to the gate", async () => {
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input).includes("/api/chat")) {
+        return new Response(JSON.stringify({ error: "ai-consent-required" }), { status: 403 });
+      }
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi{Enter}");
+    expect(await screen.findByRole("button", { name: "Review and allow" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("maps a 402 response to an AI-credits message", async () => {
@@ -205,7 +226,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi{Enter}");
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "AI credits exhausted. Add credits to keep chatting.",
@@ -220,14 +241,14 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi{Enter}");
     expect(await screen.findByRole("alert")).toHaveTextContent("Model unavailable");
   });
 
   it("toggles the mute button", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     const muteButton = screen.getByRole("button", { name: "Mute voice" });
     expect(muteButton).toHaveAttribute("aria-pressed", "true");
     await user.click(muteButton);
@@ -245,7 +266,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(getUserMedia).toHaveBeenCalledWith({ audio: true }));
@@ -267,7 +288,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
@@ -280,7 +301,7 @@ describe("Converse chat page", () => {
 
   it("rejects a recording that's too short without calling the STT endpoint", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
 
@@ -301,7 +322,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
     lastRecorder!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
@@ -316,7 +337,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
     lastRecorder!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
@@ -328,7 +349,7 @@ describe("Converse chat page", () => {
   it("shows a permission message when the microphone is denied", async () => {
     getUserMedia.mockRejectedValue(new Error("Permission denied"));
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -346,7 +367,7 @@ describe("Converse chat page", () => {
     }) as typeof fetch;
     const fr = localizeScenario(rawScenario, "fr");
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     expect(screen.getByRole("heading", { name: "Au café" })).toBeInTheDocument();
     expect(screen.getByRole("log")).toHaveTextContent(fr.opener);
@@ -375,7 +396,7 @@ describe("Converse chat page", () => {
       return new Response(new Blob(["audio"]), { status: 200 });
     }) as typeof fetch;
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await user.type(screen.getByPlaceholderText("Type or tap the mic"), "A latte please");
     await user.click(screen.getByRole("button", { name: "Send" }));
     await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Sure, what size?"));
@@ -386,5 +407,52 @@ describe("Converse chat page", () => {
     expect(log).toHaveTextContent(localizeScenario(rawScenario, "es").opener);
     expect(log).not.toHaveTextContent("A latte please");
     expect(log).not.toHaveTextContent(scenario.opener);
+  });
+
+  it("shows the AI gate instead of the chat without consent, and sends nothing", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    await renderPage(fakeConsentApi(null), { waitForChat: false });
+    expect(await screen.findByRole("button", { name: "Review and allow" })).toBeInTheDocument();
+    expect(screen.queryByRole("log")).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("withdrawing mid-chat and allowing again keeps the transcript and the unsent text", async () => {
+    let chatCalls = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) {
+        chatCalls += 1;
+        if (chatCalls === 1) return jsonResponse({ content: "First reply" });
+        return new Response(JSON.stringify({ error: "ai-consent-required" }), { status: 403 });
+      }
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hello there");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("First reply"));
+
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "second line{Enter}");
+    await user.click(await screen.findByRole("button", { name: "Review and allow" }));
+    await user.click(await screen.findByRole("button", { name: "Allow" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("log")).toHaveTextContent("hello there");
+    expect(screen.getByRole("log")).toHaveTextContent("First reply");
+    expect(screen.getByPlaceholderText("Type or tap the mic")).toHaveValue("second line");
+  });
+
+  it("has no Report button on the fixed opening line, but has one on a model reply", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    expect(screen.queryByRole("button", { name: "Report this response" })).toBeNull();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() =>
+      expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
+    );
   });
 });

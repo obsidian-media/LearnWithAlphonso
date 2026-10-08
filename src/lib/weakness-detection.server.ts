@@ -1,4 +1,7 @@
 import { z } from "zod";
+import type { Course } from "../data/courses";
+import { filterModelOutputs, type BlockedTermCheck } from "./ai-safety";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * V3 package 3b: extracted from src/routes/api/analyze-weaknesses.ts so
@@ -98,6 +101,10 @@ export async function detectAndRecordWeaknesses(params: {
   transcriptMessages: { role: string; content: string }[];
   nvidiaApiKey: string;
   nvidiaModel: string;
+  /** The learner's course, for the language of the fallback and the output mask. */
+  course: Course;
+  /** Blocked-term verdicts for model-written questions (ai_output_blocked). */
+  outputCheck: BlockedTermCheck;
   dedupCheck: (label: string) => Promise<boolean>;
   adminInsertReviewItem: (weakness: Weakness) => Promise<boolean>;
   adminInsertEvent: (category: string) => Promise<void>;
@@ -106,19 +113,18 @@ export async function detectAndRecordWeaknesses(params: {
 
   let content: string;
   try {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${params.nvidiaApiKey}`,
-      },
-      body: JSON.stringify({
+    const resp = await nvidiaChatCompletion({
+      apiKey: params.nvidiaApiKey,
+      body: {
         model: params.nvidiaModel,
         messages: [
-          ...params.transcriptMessages,
+          ...params.transcriptMessages.map((m) => ({
+            role: m.role === "assistant" ? ("assistant" as const) : ("user" as const),
+            content: m.content,
+          })),
           { role: "user", content: analysisPrompt(params.sourceDescription) },
         ],
-      }),
+      },
     });
     if (!resp.ok) {
       console.error(
@@ -134,8 +140,14 @@ export async function detectAndRecordWeaknesses(params: {
   }
 
   const weaknesses = parseWeaknesses(content);
+  // The questions are model-written and shown to the learner later, so they pass the same blocked-term check as chat.
+  const verdicts = await filterModelOutputs(
+    weaknesses.map((w) => [w.display, w.prompt, ...w.choices, w.explanation].join("\n")),
+    { check: params.outputCheck, course: params.course, route: "analyze-weaknesses" },
+  );
+  const safeWeaknesses = weaknesses.filter((_, i) => !verdicts[i]);
   let inserted = 0;
-  for (const weakness of weaknesses) {
+  for (const weakness of safeWeaknesses) {
     const exists = await params.dedupCheck(weakness.label);
     if (exists) continue;
     const ok = await params.adminInsertReviewItem(weakness);

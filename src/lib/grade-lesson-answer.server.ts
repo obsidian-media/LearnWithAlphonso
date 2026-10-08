@@ -33,20 +33,29 @@ import { matchesAcceptableAnswer } from "./translation-answer";
 import { gradeTranslationWithAi } from "./translation-grader.server";
 import { resolveNvidiaChatModel } from "./nvidia-chat-model.server";
 
+export type AiGrading = {
+  /** True only when the learner allowed AI processing (profiles.ai_consent_at). Asked lazily. */
+  allowed: () => Promise<boolean>;
+  checkQuota?: () => Promise<boolean>;
+};
+
 export async function gradeLessonAnswer(
   question: Question,
   answer: string,
   course: Course,
-  checkQuota?: () => Promise<boolean>,
+  ai?: AiGrading,
 ): Promise<boolean> {
   if (question.type !== "translate") {
     return deriveAnswerCorrectness(question, answer, course);
   }
   if (matchesAcceptableAnswer(answer, question.acceptableAnswers)) return true;
   if (!answer.trim()) return false;
+  // No consent, no vendor call; the curated verdict stands. Omitting `ai` means no AI at all, so a new caller that
+  // forgets consent fails safe. Consent is asked before quota so a refusal spends nothing.
+  if (!ai || !(await ai.allowed())) return false;
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) return false;
-  if (checkQuota && !(await checkQuota())) return false;
+  if (ai.checkQuota && !(await ai.checkQuota())) return false;
   const verdict = await gradeTranslationWithAi({
     prompt: question.prompt,
     acceptableAnswers: question.acceptableAnswers,

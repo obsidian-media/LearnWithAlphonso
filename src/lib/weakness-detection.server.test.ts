@@ -53,6 +53,8 @@ describe("detectAndRecordWeaknesses", () => {
       transcriptMessages: [{ role: "user", content: "I go to the park yesterday." }],
       nvidiaApiKey: "test-key",
       nvidiaModel: "test-model",
+      course: "en" as const,
+      outputCheck: vi.fn(async (t: string[]) => t.map(() => false)),
       dedupCheck: vi.fn().mockResolvedValue(false),
       adminInsertReviewItem: vi.fn().mockResolvedValue(true),
       adminInsertEvent: vi.fn().mockResolvedValue(undefined),
@@ -89,6 +91,35 @@ describe("detectAndRecordWeaknesses", () => {
     const count = await detectAndRecordWeaknesses(params);
     expect(count).toBe(0);
     expect(params.adminInsertEvent).not.toHaveBeenCalled();
+  });
+
+  it("drops a model-written question the blocked-term check rejects, and keeps the rest", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const second = { ...WEAKNESS, label: "articles", display: "Articles" };
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify([WEAKNESS, second]) } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const params = callbacks({ outputCheck: vi.fn(async () => [true, false]) });
+    const count = await detectAndRecordWeaknesses(params);
+    expect(count).toBe(1);
+    expect(params.adminInsertReviewItem).toHaveBeenCalledTimes(1);
+    expect(params.adminInsertReviewItem).toHaveBeenCalledWith(second);
+  });
+
+  it("inserts nothing when the blocked-term check is unavailable (fails closed)", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const params = callbacks({
+      outputCheck: vi.fn(async () => {
+        throw new Error("db down");
+      }),
+    });
+    expect(await detectAndRecordWeaknesses(params)).toBe(0);
+    expect(params.adminInsertReviewItem).not.toHaveBeenCalled();
   });
 
   it("returns 0 when the upstream NVIDIA call fails", async () => {

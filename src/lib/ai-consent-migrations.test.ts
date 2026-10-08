@@ -10,6 +10,7 @@ const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations"
 const FILES = {
   consent: "20261011100000_ai_consent.sql",
   output: "20261011100100_ai_output_check.sql",
+  serviceOnly: "20261012300000_ai_output_blocked_service_only.sql",
 } as const;
 const read = (f: string) => fs.readFileSync(path.join(MIGRATIONS, f), "utf8");
 const code = (f: string) => read(f).replace(/--[^\n]*/g, "");
@@ -20,16 +21,17 @@ const fnBody = (sql: string, name: string) => {
 };
 
 describe("AI consent migrations", () => {
-  it("sort after every other migration on disk, so a database that already has later ones still applies them", () => {
-    const others = fs
-      .readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith(".sql") && !Object.values(FILES).includes(f as never));
-    expect(others.length).toBeGreaterThan(0);
-    for (const f of others) {
+  it("sort after every migration that existed when they were written, so a database that already has those still applies them", () => {
+    // The newest file on main when these were authored. Later migrations legitimately sort after them.
+    const NEWEST_WHEN_AUTHORED = "20261010160000_name_onboarding_status_and_skip.sql";
+    const all = fs.readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql"));
+    expect(all).toContain(NEWEST_WHEN_AUTHORED);
+    for (const f of all.filter((f) => f <= NEWEST_WHEN_AUTHORED)) {
       expect(FILES.consent > f, `${FILES.consent} must sort after ${f}`).toBe(true);
     }
+    expect(FILES.consent > NEWEST_WHEN_AUTHORED).toBe(true);
     expect(FILES.output > FILES.consent).toBe(true);
-    expect(others.some((f) => f.endsWith("_moderation_filter_v2.sql"))).toBe(true);
+    expect(all.some((f) => f.endsWith("_moderation_filter_v2.sql"))).toBe(true);
   });
 
   describe("ai_consent", () => {
@@ -113,6 +115,24 @@ describe("AI consent migrations", () => {
       expect(sql()).toContain(
         "GRANT EXECUTE ON FUNCTION public.ai_output_blocked(text[]) TO authenticated, service_role;",
       );
+    });
+  });
+
+  describe("ai_output_blocked_service_only", () => {
+    const sql = () => code(FILES.serviceOnly);
+
+    it("sorts after the migration it tightens", () => {
+      expect(FILES.serviceOnly > FILES.output).toBe(true);
+    });
+
+    it("takes EXECUTE away from signed-in users and keeps it for the server only", () => {
+      expect(sql()).toContain(
+        "REVOKE ALL ON FUNCTION public.ai_output_blocked(text[]) FROM PUBLIC, anon, authenticated;",
+      );
+      expect(sql()).toContain(
+        "GRANT EXECUTE ON FUNCTION public.ai_output_blocked(text[]) TO service_role;",
+      );
+      expect(sql()).not.toMatch(/GRANT[^;]*authenticated/);
     });
   });
 });

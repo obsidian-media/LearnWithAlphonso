@@ -2,6 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
+import { useAiConsent } from "@/lib/ai-consent-context";
 import type { Question } from "../../data/curriculum";
 
 const navigate = vi.fn();
@@ -80,9 +82,9 @@ const ANSWERS = [
   { correct: "You're welcome.", wrong: "Please." },
 ];
 
-function renderPage() {
+function renderPage(consentApi = fakeConsentApi()) {
   const LessonPage = Route.options.component!;
-  return render(<LessonPage />);
+  return render(withAiConsent(<LessonPage />, consentApi));
 }
 
 async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
@@ -248,6 +250,58 @@ describe("Lesson page", () => {
     await user.type(screen.getByLabelText("Your answer"), "morning to you all");
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Nice.")).toBeInTheDocument();
+  });
+
+  it("without consent grades a translation locally and never asks the grader", async () => {
+    const fetchSpy = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ correct: true, reason: "Same meaning.", source: "ai" }),
+    }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    renderPage(fakeConsentApi(null));
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(await screen.findByText("Turn on AI grading")).toBeInTheDocument();
+    await user.type(screen.getByLabelText("Your answer"), "morning to you all");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalledWith("/api/grade-translation", expect.anything());
+  });
+
+  it("a 403 ai-consent-required from the grader (withdrawn elsewhere) turns AI off in this tab too", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        status: 403,
+        clone() {
+          return this;
+        },
+        json: async () => ({ error: "ai-consent-required" }),
+      })),
+    );
+    function Probe() {
+      return <p data-testid="consent-status">{useAiConsent().status}</p>;
+    }
+    const user = userEvent.setup();
+    currentLessonId = "a1p25l1";
+    const LessonPage = Route.options.component!;
+    render(
+      withAiConsent(
+        <>
+          <LessonPage />
+          <Probe />
+        </>,
+        fakeConsentApi("2026-10-09T10:00:00Z"),
+      ),
+    );
+    await user.click(await screen.findByRole("button", { name: "Begin lesson" }));
+    expect(screen.getByTestId("consent-status")).toHaveTextContent("granted");
+    await user.type(screen.getByLabelText("Your answer"), "morning to you all");
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText("Not quite.")).toBeInTheDocument();
+    expect(screen.getByTestId("consent-status")).toHaveTextContent("denied");
   });
 
   it("shows one accepted phrasing after a wrong translation", async () => {

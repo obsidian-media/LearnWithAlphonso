@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { getCourse, isCourse, type Course } from "@/data/courses";
 import { matchesAcceptableAnswer } from "@/lib/translation-answer";
 import { gradeTranslationWithAi } from "@/lib/translation-grader.server";
@@ -46,9 +47,15 @@ export const Route = createFileRoute("/api/grade-translation")({
         // acceptable answers." verifyAuth is the auth half of
         // consumeQuota with no quota consumed, so a free local-match
         // request still costs nothing.
-        const { verifyAuth } = await import("@/lib/ai-quota.server");
+        const { verifyAuth, consumeQuotaFor } = await import("@/lib/ai-quota.server");
         const auth = await verifyAuth(request);
         if (!auth.ok) return Response.json({ error: auth.message }, { status: auth.status });
+        const { requireAiConsent } = await import("@/lib/ai-consent.server");
+        const denied = await requireAiConsent(auth.userId, {
+          db: auth.supabase,
+          route: "grade-translation",
+        });
+        if (denied) return denied;
 
         let body: {
           lessonId?: string;
@@ -116,8 +123,7 @@ export const Route = createFileRoute("/api/grade-translation")({
         // Quota is spent only now -- after the local list has already failed to
         // settle it, so the budget tracks real vendor calls rather than
         // answers.
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "translate");
+        const quota = await consumeQuotaFor(auth.supabase, "translate");
         if (!quota.ok) return Response.json(localVerdict);
 
         const verdict = await gradeTranslationWithAi({
@@ -129,9 +135,20 @@ export const Route = createFileRoute("/api/grade-translation")({
         });
         if (!verdict) return Response.json(localVerdict);
 
+        // The reason is model-written text the learner reads: drop it if the blocked-term check rejects it.
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const reasonBlocked = verdict.reason
+          ? (
+              await filterModelOutputs([verdict.reason], {
+                check: makeBlockedTermCheck(supabaseAdmin),
+                course,
+                route: "grade-translation",
+              })
+            )[0]
+          : false;
         return Response.json({
           correct: verdict.correct,
-          reason: verdict.reason,
+          reason: reasonBlocked ? null : verdict.reason,
           source: "ai",
         } satisfies TranslationVerdict);
       },

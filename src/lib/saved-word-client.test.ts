@@ -61,6 +61,12 @@ describe("saveWord", () => {
     await expect(saveWord(input, respond(status, { error: "x" }))).rejects.toMatchObject({ kind });
   });
 
+  it("reads a 403 ai-consent-required as the consent problem, not as a sign-in problem", async () => {
+    await expect(
+      saveWord(input, respond(403, { error: "ai-consent-required" })),
+    ).rejects.toMatchObject({ kind: "aiConsentRequired" });
+  });
+
   it("maps a network failure to offline", async () => {
     const failing = vi.fn(async () => {
       throw new TypeError("Failed to fetch");

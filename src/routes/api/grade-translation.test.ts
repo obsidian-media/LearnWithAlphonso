@@ -2,7 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const consumeQuota = vi.fn();
 const verifyAuth = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota, verifyAuth }));
+vi.mock("@/lib/ai-quota.server", () => ({ consumeQuotaFor: consumeQuota, verifyAuth }));
+
+const requireAiConsent = vi.fn();
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: blockedRpc } }));
+
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
+
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
+}));
 
 const { Route } = await import("./grade-translation");
 const handler = (
@@ -42,7 +52,10 @@ beforeEach(() => {
   consumeQuota.mockReset();
   consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
   verifyAuth.mockReset();
-  verifyAuth.mockResolvedValue({ ok: true, supabase: {} });
+  verifyAuth.mockResolvedValue({ ok: true, userId: "user-1", supabase: { rpc: blockedRpc } });
+  requireAiConsent.mockReset();
+  requireAiConsent.mockResolvedValue(null);
+  blockedRpc.mockClear();
   process.env.NVIDIA_API_KEY = "test-key";
   global.fetch = vi.fn().mockResolvedValue(
     new Response(
@@ -185,5 +198,27 @@ describe("POST /api/grade-translation, placement questions", () => {
       request: req({ placementId: "nope", submission: "good morning", course: "en" }),
     });
     expect(res.status).toBe(400);
+  });
+
+  it("refuses with 403 ai-consent-required, even for a curated match, and calls nothing", async () => {
+    requireAiConsent.mockResolvedValue(
+      Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    );
+    const res = await post({ submission: "morning to you all" });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(requireAiConsent).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ route: "grade-translation" }),
+    );
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("keeps the verdict but drops the reason when the blocked-term check rejects it", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+    const res = await post({ submission: "morning to you all" });
+    expect(await res.json()).toEqual({ correct: true, reason: null, source: "ai" });
   });
 });

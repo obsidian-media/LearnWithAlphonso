@@ -22,6 +22,8 @@ export async function requestTranslationVerdict(
   args:
     | { lessonId: string; questionId: string; submission: string; course: string }
     | { placementId: string; submission: string; course: string },
+  /** Called when the server says the learner has not allowed AI (consent withdrawn elsewhere). */
+  onConsentRequired?: () => void,
 ): Promise<TranslationVerdict | null> {
   try {
     const resp = await fetch("/api/grade-translation", {
@@ -33,7 +35,16 @@ export async function requestTranslationVerdict(
       // verdict -- the same outcome as being offline.
       signal: AbortSignal.timeout(15_000),
     });
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      if (resp.status === 403) {
+        const body = (await resp
+          .clone()
+          .json()
+          .catch(() => null)) as { error?: unknown } | null;
+        if (body?.error === "ai-consent-required") onConsentRequired?.();
+      }
+      return null;
+    }
     const data = (await resp.json()) as Partial<TranslationVerdict>;
     if (typeof data.correct !== "boolean") return null;
     return {

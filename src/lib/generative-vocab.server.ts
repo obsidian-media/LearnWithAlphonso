@@ -3,6 +3,7 @@ import nlp from "compromise";
 import type { Level } from "../data/levels";
 import type { VocabEntry } from "../data/generative/vocab";
 import { mergeVocabEntries } from "./generative-vocab-authoring";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * Generative sentence-content pilot -- LLM proposes vocab candidates
@@ -58,16 +59,12 @@ export async function proposeVocabCandidates(params: {
   nvidiaModel: string;
 }): Promise<VocabCandidate[]> {
   try {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${params.nvidiaApiKey}`,
-      },
-      body: JSON.stringify({
+    const resp = await nvidiaChatCompletion({
+      apiKey: params.nvidiaApiKey,
+      body: {
         model: params.nvidiaModel,
         messages: [{ role: "user", content: vocabProposalPrompt(params.topic, params.posTypes) }],
-      }),
+      },
     });
     if (!resp.ok) return [];
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };

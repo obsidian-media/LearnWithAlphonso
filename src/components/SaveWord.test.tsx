@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fakeConsentApi, withAiConsent } from "../lib/__testutils__/ai-consent";
 import { SavedWordError, type SavedWordResult } from "../lib/saved-word-client";
 import { SaveWordHint, SaveWordProvider } from "./SaveWord";
 import { TappableText } from "./TappableText";
@@ -62,6 +63,70 @@ describe("TappableText", () => {
 
 describe("save dialog", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("asks for AI consent before sending anything, and sends after Allow", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn(async () => saved);
+    render(
+      withAiConsent(
+        <SaveWordProvider save={save}>
+          <p>
+            <TappableText text="I want tea." course="en" />
+          </p>
+        </SaveWordProvider>,
+        fakeConsentApi(null),
+      ),
+    );
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    expect(save).not.toHaveBeenCalled();
+    await user.click(await screen.findByRole("button", { name: "Allow" }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+  });
+
+  it("does not ask for a choice that may already exist when the setting cannot be read", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn(async () => saved);
+    const api = fakeConsentApi("2026-10-09T10:00:00Z");
+    api.get = async () => {
+      throw new Error("offline");
+    };
+    render(
+      withAiConsent(
+        <SaveWordProvider save={save}>
+          <p>
+            <TappableText text="I want tea." course="en" />
+          </p>
+        </SaveWordProvider>,
+        { ...api, initial: undefined },
+      ),
+    );
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    // Wait for the failed read to settle, then try to save.
+    await new Promise((r) => setTimeout(r, 0));
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    expect(save).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Allow" })).toBeNull();
+  });
+
+  it("sends nothing when the learner answers Not now", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn(async () => saved);
+    render(
+      withAiConsent(
+        <SaveWordProvider save={save}>
+          <p>
+            <TappableText text="I want tea." course="en" />
+          </p>
+        </SaveWordProvider>,
+        fakeConsentApi(null),
+      ),
+    );
+    await user.click(screen.getAllByRole("button", { name: "tea" })[0]);
+    await user.click(screen.getByRole("button", { name: /^save word$/i }));
+    await user.click(await screen.findByRole("button", { name: "Not now" }));
+    expect(save).not.toHaveBeenCalled();
+  });
 
   it("opens on a tapped word showing the word and the sentence it was tapped in", async () => {
     const user = userEvent.setup();

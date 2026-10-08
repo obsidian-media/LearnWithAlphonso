@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 import {
   parseDefinition,
   type SavedWordCourse,
@@ -70,11 +71,11 @@ export async function defineWord(args: {
   const { input, apiKey, model, fetchImpl = fetch } = args;
   const startedAt = Date.now();
   try {
-    const resp = await fetchImpl("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, messages: buildDefineMessages(input), max_tokens: 600 }),
+    const resp = await nvidiaChatCompletion({
+      apiKey,
+      fetchImpl,
       signal: AbortSignal.timeout(20_000),
+      body: { model, messages: buildDefineMessages(input), max_tokens: 600 },
     });
     if (!resp.ok) {
       console.error(

@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
+}));
+const authorizeAiRequest = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
 const { Route } = await import("./tts");
 const handler = (
@@ -14,11 +18,18 @@ function req(body: unknown) {
   return new Request("https://example.com/api/tts", { method: "POST", body: JSON.stringify(body) });
 }
 
+const CONSENT_REQUEST = () => req({ text: "hi" });
+
 const originalFetch = global.fetch;
 
 beforeEach(() => {
-  consumeQuota.mockReset();
-  consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
+  authorizeAiRequest.mockReset();
+  blockedRpc.mockClear();
+  authorizeAiRequest.mockResolvedValue({
+    ok: true,
+    userId: "user-1",
+    supabase: { rpc: blockedRpc, from: vi.fn() },
+  });
   process.env.DEEPGRAM_API_KEY = "test-key";
   global.fetch = vi.fn();
 });
@@ -36,7 +47,10 @@ describe("POST /api/tts", () => {
   });
 
   it("returns the quota error when quota is exceeded", async () => {
-    consumeQuota.mockResolvedValue({ ok: false, status: 429, message: "Daily TTS limit reached" });
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "Daily TTS limit reached" }, { status: 429 }),
+    });
     const res = await handler({ request: req({ text: "hi" }) });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: "Daily TTS limit reached" });
@@ -64,6 +78,7 @@ describe("POST /api/tts", () => {
     await handler({ request: req({ text: "hello" }) });
     const [url] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain(encodeURIComponent("aura-2-thalia-en"));
+    expect(url).toContain("mip_opt_out=true");
   });
 
   it("uses a caller-provided voice model", async () => {
@@ -115,5 +130,17 @@ describe("POST /api/tts", () => {
     const res = await handler({ request: req({ text: "hello" }) });
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Request failed" });
+  });
+
+  it("refuses with 403 ai-consent-required and calls no vendor without consent", async () => {
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    });
+    const res = await handler({ request: CONSENT_REQUEST() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "tts", { route: "tts" });
   });
 });

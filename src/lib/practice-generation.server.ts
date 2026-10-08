@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * V3 pkg 4b: "generative sentence content" -- on-demand extra practice
@@ -91,18 +92,14 @@ export async function generatePracticeQuestions(params: {
   if (params.sampleQuestions.length === 0) return [];
   const startedAt = Date.now();
   try {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${params.nvidiaApiKey}`,
-      },
-      body: JSON.stringify({
+    const resp = await nvidiaChatCompletion({
+      apiKey: params.nvidiaApiKey,
+      signal: AbortSignal.timeout(20_000),
+      body: {
         model: params.nvidiaModel,
         messages: [{ role: "user", content: practicePrompt(params.topic, params.sampleQuestions) }],
         max_tokens: 2048,
-      }),
-      signal: AbortSignal.timeout(20_000),
+      },
     });
     if (!resp.ok) {
       console.error(

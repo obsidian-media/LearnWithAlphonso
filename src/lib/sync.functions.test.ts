@@ -32,9 +32,15 @@ vi.mock("@tanstack/react-start", () => ({
 // -- sync.functions.ts writes those via supabaseAdmin now, same pattern
 // account.functions.test.ts already established for deleteMyAccount.
 const supabaseAdminFrom = vi.fn();
+// The model-written question passes the blocked-term check (ai_output_blocked, service role) before it is stored.
+const adminRpc = vi.fn(async () => ({ data: [false], error: null }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom },
+  supabaseAdmin: { from: supabaseAdminFrom, rpc: adminRpc },
 }));
+
+// Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
+const hasAiConsent = vi.fn(async () => true);
+vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
 
 const {
   fetchProgress,
@@ -561,6 +567,8 @@ describe("completeLessonRemote", () => {
 
     try {
       const supabase = createSupabaseMock();
+      // The model-written question passes the blocked-term check (ai_output_blocked) before it is stored.
+      supabase.rpc.mockResolvedValue({ data: [false], error: null });
       supabase.from
         .mockReturnValueOnce(
           chainable({
@@ -601,6 +609,54 @@ describe("completeLessonRemote", () => {
       global.fetch = originalFetch;
       if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
       else process.env.NVIDIA_API_KEY = originalKey;
+    }
+  });
+
+  it("a lesson with a miss sends nothing to the AI and still completes", async () => {
+    hasAiConsent.mockResolvedValue(false);
+    const originalFetch = global.fetch;
+    const originalKey = process.env.NVIDIA_API_KEY;
+    process.env.NVIDIA_API_KEY = "test-key";
+    global.fetch = vi.fn() as typeof fetch;
+    try {
+      const supabase = createSupabaseMock();
+      supabase.from
+        .mockReturnValueOnce(
+          chainable({
+            data: {
+              streak: 0,
+              longest_streak: 0,
+              last_active_date: null,
+              hearts: 5,
+              hearts_refill_at: null,
+              streak_freezes: 0,
+            },
+          }),
+        )
+        .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+        .mockReturnValueOnce(chainable({ data: null }))
+        .mockReturnValueOnce(chainable({ data: null }))
+        .mockReturnValueOnce(chainable({ data: [{ correct: 7, total: 8 }] }))
+        .mockReturnValueOnce(chainable({ data: [] }));
+      const result = await completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          answers: answers({ q1: "Hey!" }),
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(result.xpGain).toBeGreaterThan(0);
+      expect(hasAiConsent).toHaveBeenCalledWith(supabase, USER_ID);
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(supabaseAdminFrom.mock.calls.map((c) => c[0])).not.toContain("weakness_events");
+    } finally {
+      global.fetch = originalFetch;
+      if (originalKey === undefined) delete process.env.NVIDIA_API_KEY;
+      else process.env.NVIDIA_API_KEY = originalKey;
+      hasAiConsent.mockResolvedValue(true);
     }
   });
 });

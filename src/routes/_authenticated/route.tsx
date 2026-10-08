@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PodcastAudio } from "@/components/PodcastAudio";
+import { AiConsentProvider } from "@/lib/ai-consent-context";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -14,9 +15,9 @@ export const Route = createFileRoute("/_authenticated")({
   // those unmounts on navigation. The audio element has to outlive the
   // page for playback to survive walking into a subfolder.
   component: () => (
-    <>
+    <AiConsentProvider>
       <PodcastAudio />
       <Outlet />
-    </>
+    </AiConsentProvider>
   ),
 });

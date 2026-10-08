@@ -480,16 +480,11 @@ describe("Adaptive band sequencing", () => {
     expect(await screen.findByText("A2")).toBeInTheDocument();
   });
 
-  it("keeps the exam moving when the grader cannot be reached", async () => {
-    // There is no skip in this exam. A translation that never resolves is an
-    // exam that cannot finish, which leaves the learner unplaced entirely --
-    // worse than being placed a band low.
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => {
-        throw new Error("offline");
-      }),
-    );
+  it("never sends a rejected translation to the AI grader (placement is graded on the device)", async () => {
+    // There is no skip in this exam and no consent to ask for: a rejected translation is settled against the curated
+    // wordings, so the exam finishes without the network and without sending the learner's words anywhere.
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
     pickPlacement.mockReturnValue([...TRANSLATE_QUESTIONS]);
     const user = userEvent.setup();
     renderPage();
@@ -501,8 +496,7 @@ describe("Adaptive band sequencing", () => {
       await user.click(screen.getByRole("button", { name: /See my level|Continue/ }));
     }
 
-    // The exam finished and placed them, which is the point: an unresolvable
-    // question would leave them with no level at all.
+    expect(fetchSpy).not.toHaveBeenCalled();
     expect(await screen.findByText("A1")).toBeInTheDocument();
   });
 

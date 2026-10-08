@@ -37,6 +37,7 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
 // instead of trusting a client-claimed missedQuestionIds list. The same
 // function grade-review already used to re-derive review-item correctness.
+import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
@@ -182,14 +183,24 @@ export async function handleRequest(req: Request): Promise<Response> {
   // Promise.all -- at most a handful of "translate" questions can reach the
   // AI grader, and each one already reuses the exact local-first check the
   // player showed the learner live (deriveAnswerCorrectness).
+  // The AI step runs only with account consent. Read lazily, once, and only if a translate answer needs it.
+  let consent: Promise<boolean> | undefined;
+  const ai = {
+    allowed: () => (consent ??= hasAiConsent(admin, userId)),
+    checkQuota,
+  };
+
   const questionById = new Map(lesson.questions.map((q) => [q.id, q]));
   const missedQuestionIds: string[] = [];
   for (const { questionId, answer } of answers) {
     // Safe: validateLessonAnswerCoverage already proved questionId is a
     // real id in this lesson.
     const question = questionById.get(questionId)!;
-    const isCorrect = await deriveAnswerCorrectness(question, answer, course, checkQuota);
+    const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);
     if (!isCorrect) missedQuestionIds.push(questionId);
+  }
+  if (consent && !(await consent)) {
+    console.log(JSON.stringify({ event: "ai_grading_skipped", fn: "complete-lesson", reason: "no-ai-consent" }));
   }
   const correct = answers.length - missedQuestionIds.length;
 

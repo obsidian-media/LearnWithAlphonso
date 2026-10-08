@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
+  data: args._texts.map(() => false),
+  error: null,
+}));
+const authorizeAiRequest = vi.fn();
+vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
 const { Route } = await import("./stt");
 const handler = (
@@ -17,11 +21,18 @@ function reqWithFile(file: Blob | null, course?: string) {
   return new Request("https://example.com/api/stt", { method: "POST", body: form });
 }
 
+const CONSENT_REQUEST = () => reqWithFile(new Blob(["x".repeat(600)]));
+
 const originalFetch = global.fetch;
 
 beforeEach(() => {
-  consumeQuota.mockReset();
-  consumeQuota.mockResolvedValue({ ok: true, used: 1, limit: 60 });
+  authorizeAiRequest.mockReset();
+  blockedRpc.mockClear();
+  authorizeAiRequest.mockResolvedValue({
+    ok: true,
+    userId: "user-1",
+    supabase: { rpc: blockedRpc, from: vi.fn() },
+  });
   process.env.DEEPGRAM_API_KEY = "test-key";
   global.fetch = vi.fn();
 });
@@ -39,7 +50,10 @@ describe("POST /api/stt", () => {
   });
 
   it("returns the quota error when quota is exceeded", async () => {
-    consumeQuota.mockResolvedValue({ ok: false, status: 429, message: "Daily STT limit reached" });
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "Daily STT limit reached" }, { status: 429 }),
+    });
     const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: "Daily STT limit reached" });
@@ -85,6 +99,8 @@ describe("POST /api/stt", () => {
 
     const [url, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain("api.deepgram.com/v1/listen");
+    // Deepgram must not keep the recording or use it to improve its models (the privacy policy says so).
+    expect(url).toContain("mip_opt_out=true");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("audio/mp4");
   });
 
@@ -183,5 +199,17 @@ describe("POST /api/stt", () => {
     const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Request failed" });
+  });
+
+  it("refuses with 403 ai-consent-required and calls no vendor without consent", async () => {
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    });
+    const res = await handler({ request: CONSENT_REQUEST() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "ai-consent-required" });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "stt", { route: "stt" });
   });
 });

@@ -24,6 +24,7 @@ import {
 } from "../../lib/sync.functions";
 import { recordMisses } from "../../lib/review.functions";
 import { deriveAnswerCorrectness } from "../../lib/srs";
+import { useOptionalAiConsent } from "../../lib/ai-consent-context";
 import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import type { TranslationVerdict } from "../api/grade-translation";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
@@ -59,6 +60,10 @@ function LessonPage() {
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
   const course = useProgress((s) => s.course);
+  // The written-translation second opinion sends the learner's answer to the AI grader, so it needs the account's
+  // AI consent. Without it (or without a provider) the curated answer list alone decides.
+  const aiConsent = useOptionalAiConsent();
+  const aiGranted = aiConsent?.granted ?? false;
   const curriculum = useMemo(() => getCourse(course).curriculum, [course]);
   const maybeLesson = useMemo(() => {
     for (const u of curriculum) for (const l of u.lessons) if (l.id === id) return l;
@@ -187,14 +192,20 @@ function LessonPage() {
     // than any list anticipates. A null verdict (offline, vendor down, quota
     // spent) leaves the local answer standing rather than failing the learner
     // for something that is not about their English.
-    if (!isCorrect && q.type === "translate") {
+    if (!isCorrect && q.type === "translate" && !aiGranted) {
+      // No AI consent: the curated answer list is the whole verdict, and nothing is sent anywhere.
+      setTranslationVerdict({ correct: false, reason: null, source: "local" });
+    } else if (!isCorrect && q.type === "translate") {
       setChecking(true);
-      const verdict = await requestTranslationVerdict({
-        lessonId: lesson.id,
-        questionId: q.id,
-        submission: submittedAnswer,
-        course,
-      });
+      const verdict = await requestTranslationVerdict(
+        {
+          lessonId: lesson.id,
+          questionId: q.id,
+          submission: submittedAnswer,
+          course,
+        },
+        () => aiConsent?.markWithdrawn(),
+      );
       setChecking(false);
       if (verdict) {
         setTranslationVerdict(verdict);
@@ -512,6 +523,7 @@ function LessonPage() {
                 onChange={setPicked}
                 checked={checked}
                 verdict={translationVerdict}
+                showAiGradingOption
               />
             ) : q.type === "fill" ? (
               <div>

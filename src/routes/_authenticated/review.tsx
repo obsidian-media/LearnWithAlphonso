@@ -393,6 +393,7 @@ function ReviewPage() {
               onChange={setPicked}
               checked={checked}
               verdict={translationVerdict}
+              showAiGradingOption
             />
           ) : q.type === "fill" ? (
             <div>

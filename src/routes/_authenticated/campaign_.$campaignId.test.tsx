@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -37,9 +38,15 @@ function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status });
 }
 
-function renderPage() {
+/**
+ * Renders the page inside the consent provider. A consenting learner (the default) gets the chat; the helper waits
+ * for the consent read so every test starts from an open page. Pass fakeConsentApi(null) for the gate instead.
+ */
+async function renderPage(consentApi = fakeConsentApi(), { waitForChat = true } = {}) {
   const Page = Route.options.component!;
-  return render(<Page />);
+  const result = render(withAiConsent(<Page />, consentApi));
+  if (waitForChat) await screen.findByRole("log");
+  return result;
 }
 
 /** Types and sends `text`, then waits for `reply` to appear as an assistant bubble. */
@@ -91,7 +98,7 @@ beforeEach(() => {
 
 describe("Campaign chat page", () => {
   it("renders the campaign header, first scene's progress label, and opener", async () => {
-    renderPage();
+    await renderPage();
     expect(screen.getByRole("heading", { name: campaign.title })).toBeInTheDocument();
     expect(
       screen.getByText(`Scene 1 of ${campaign.scenes.length} — ${campaign.scenes[0].title}`),
@@ -101,7 +108,7 @@ describe("Campaign chat page", () => {
 
   it("sends the composed premise+scene systemPrompt and the full transcript so far", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await sendAndAwaitReply(user, "One latte please", "Reply 1");
 
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(([u]) =>
@@ -117,7 +124,7 @@ describe("Campaign chat page", () => {
 
   it("does not show Continue until the scene's minTurns is reached, then advances and carries the transcript forward", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     const scene = campaign.scenes[0];
 
     expect(screen.queryByRole("button", { name: /Continue:/ })).not.toBeInTheDocument();
@@ -149,7 +156,7 @@ describe("Campaign chat page", () => {
 
   it("restarting the current scene truncates the transcript back to that scene's opener", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await sendAndAwaitReply(user, "hello there", "Reply 1");
     expect(screen.getByText("hello there")).toBeInTheDocument();
 
@@ -161,7 +168,7 @@ describe("Campaign chat page", () => {
 
   it("shows a completion state after finishing the last scene", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     for (const scene of campaign.scenes) {
       for (let i = 0; i < scene.minTurns; i++) {
@@ -235,7 +242,7 @@ describe("Campaign chat page", () => {
   it("explains that the mic is needed when permission is refused", async () => {
     const user = userEvent.setup();
     stubMicrophone(false);
-    renderPage();
+    await renderPage();
 
     await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
 
@@ -251,7 +258,7 @@ describe("Campaign chat page", () => {
     const user = userEvent.setup();
     stubMicrophone(true);
     const recorders = stubMediaRecorder();
-    renderPage();
+    await renderPage();
 
     await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(recorders.length).toBe(1));
@@ -270,7 +277,7 @@ describe("Campaign chat page", () => {
       if (String(input).includes("/api/stt")) return jsonResponse({ text: "   " });
       return realFetch(input, init);
     }) as typeof fetch;
-    renderPage();
+    await renderPage();
 
     await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(recorders.length).toBe(1));
@@ -291,7 +298,7 @@ describe("Campaign chat page", () => {
       }
       return realFetch(input, init);
     }) as typeof fetch;
-    renderPage();
+    await renderPage();
 
     await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
     await waitFor(() => expect(recorders.length).toBe(1));
@@ -303,7 +310,7 @@ describe("Campaign chat page", () => {
 
   it("stops requesting speech audio once voice is muted", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     // The opener is spoken on a timer after mount; wait for that first so
     // the assertion below is about the mute, not about timing.
     await waitFor(() =>
@@ -338,7 +345,7 @@ describe("Campaign chat page", () => {
       }
       return realFetch(input, init);
     }) as typeof fetch;
-    renderPage();
+    await renderPage();
 
     await user.type(await screen.findByPlaceholderText("Type or tap the mic"), "bonjour");
     await user.click(screen.getByRole("button", { name: "Send" }));
@@ -353,7 +360,7 @@ describe("Campaign chat page", () => {
     useProgress.setState({ course: "es" });
     const es = localizeCampaign(rawCampaign, "es");
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
 
     expect(screen.getByRole("heading", { name: es.title })).toBeInTheDocument();
     expect(
@@ -372,7 +379,7 @@ describe("Campaign chat page", () => {
 
   it("starts a fresh campaign in the new language when the course changes mid-chat", async () => {
     const user = userEvent.setup();
-    renderPage();
+    await renderPage();
     await sendAndAwaitReply(user, "One latte please", "Reply 1");
 
     act(() => useProgress.setState({ course: "fr" }));
@@ -383,5 +390,52 @@ describe("Campaign chat page", () => {
     expect(
       screen.getByText(`Scene 1 of 3 — ${localizeCampaign(rawCampaign, "fr").scenes[0].title}`),
     ).toBeInTheDocument();
+  });
+
+  it("shows the AI gate instead of the chat without consent, and sends nothing", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    await renderPage(fakeConsentApi(null), { waitForChat: false });
+    expect(await screen.findByRole("button", { name: "Review and allow" })).toBeInTheDocument();
+    expect(screen.queryByRole("log")).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("withdrawing mid-chat and allowing again keeps the transcript and the unsent text", async () => {
+    let chatCalls = 0;
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) {
+        chatCalls += 1;
+        if (chatCalls === 1) return jsonResponse({ content: "First reply" });
+        return new Response(JSON.stringify({ error: "ai-consent-required" }), { status: 403 });
+      }
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hello there");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("First reply"));
+
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "second line{Enter}");
+    await user.click(await screen.findByRole("button", { name: "Review and allow" }));
+    await user.click(await screen.findByRole("button", { name: "Allow" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("log")).toHaveTextContent("hello there");
+    expect(screen.getByRole("log")).toHaveTextContent("First reply");
+    expect(screen.getByPlaceholderText("Type or tap the mic")).toHaveValue("second line");
+  });
+
+  it("has no Report button on the fixed opening line, but has one on a model reply", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    expect(screen.queryByRole("button", { name: "Report this response" })).toBeNull();
+    await user.type(screen.getByPlaceholderText("Type or tap the mic"), "hi");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() =>
+      expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
+import { isCourse } from "@/data/courses";
+import { makeBlockedTermCheck } from "@/lib/ai-safety";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -20,47 +21,25 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           return Response.json({ error: "Analysis is not configured" }, { status: 500 });
         }
 
-        const { consumeQuota } = await import("@/lib/ai-quota.server");
-        const quota = await consumeQuota(request, "chat");
-        if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+        const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+        const access = await authorizeAiRequest(request, "chat", { route: "analyze-weaknesses" });
+        if (!access.ok) return access.response;
+        const { supabase, userId } = access;
 
-        let body: { messages?: ChatMessage[] };
+        let body: { messages?: ChatMessage[]; course?: string };
         try {
           body = await request.json();
         } catch {
           return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
-        const messages = Array.isArray(body.messages) ? body.messages : [];
+        // A client could send role "system" here and it went to the model verbatim. Only the learner's and
+        // partner's turns are transcript; the analysis instructions are this server's.
+        const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
+          (m): m is { role: "user" | "assistant"; content: string } =>
+            !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+        );
         if (messages.length === 0) {
           return Response.json({ weaknessesDetected: 0 });
-        }
-
-        const authHeader = request.headers.get("authorization")!; // consumeQuota already required this
-        const token = authHeader.replace(/^Bearer\s+/i, "");
-        const url = process.env.SUPABASE_URL;
-        const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
-        if (!url || !anonKey)
-          return Response.json({ error: "Server not configured." }, { status: 500 });
-
-        const supabase = createClient(url, anonKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-          global: { headers: { Authorization: authHeader } },
-        });
-        // Bug fix (found during V3 package 3b work): this handler never
-        // resolved the caller's own user id, so every insert below was
-        // missing review_items.user_id (NOT NULL, no default/trigger) and
-        // silently failed -- weaknessesDetected always returned 0 actually
-        // inserted regardless of how many the model found. Also:
-        // review_items no longer grants direct INSERT to `authenticated`
-        // (supabase/migrations/20260920050000_revoke_direct_gamification_writes.sql),
-        // so the insert itself needs supabaseAdmin now, same pattern as
-        // review.functions.ts's recordMisses/gradeReview.
-        const { data: claims, error: claimsError } = await supabase.auth.getClaims(token);
-        const userId = claims?.claims?.sub as string | undefined;
-        if (claimsError || !userId) {
-          const reason = claimsError?.message ?? "no user id in claims";
-          console.error(`[analyze-weaknesses] Token claims resolution failed: ${reason}`);
-          return Response.json({ error: "Unauthorized: invalid token" }, { status: 401 });
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -70,6 +49,8 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           transcriptMessages: messages,
           nvidiaApiKey: key,
           nvidiaModel: resolveNvidiaChatModel(),
+          course: typeof body.course === "string" && isCourse(body.course) ? body.course : "en",
+          outputCheck: makeBlockedTermCheck(supabaseAdmin),
           dedupCheck: async (label) => {
             const { data: existing } = await supabase
               .from("review_items")

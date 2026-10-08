@@ -1,3 +1,4 @@
+import { AI_REPORT_MESSAGE_MAX } from "./ai-consent-copy";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -56,5 +57,34 @@ export const reportUser = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("content_reports")
       .insert({ reported: data.userId, reason: data.reason });
+    return { ok: !error };
+  });
+
+const aiReportReasonSchema = z.enum(["ai_inappropriate", "ai_harmful", "ai_incorrect", "ai_other"]);
+const aiReportContextSchema = z.object({
+  message: z.string().min(1).max(AI_REPORT_MESSAGE_MAX),
+  surface: z.enum(["hector", "conversation", "campaign"]),
+  course: z.enum(["en", "fr", "es"]),
+  scenario_id: z.string().max(100).optional(),
+  campaign_id: z.string().max(100).optional(),
+  scene_index: z.number().int().min(0).max(100).optional(),
+});
+
+/**
+ * A report on an AI message. The moderation queue (content_reports, kind 'ai_response', reported NULL) and its
+ * notify trigger take it from here. The message text lives in context.message. Insert-only, own reports, as for
+ * reportUser.
+ */
+export const reportAiResponse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ reason: aiReportReasonSchema, context: aiReportContextSchema }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
+    const { error } = await context.supabase.from("content_reports").insert({
+      kind: "ai_response",
+      reason: data.reason,
+      context: { ...data.context, platform: "web" },
+    });
     return { ok: !error };
   });

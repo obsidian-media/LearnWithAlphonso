@@ -19,6 +19,7 @@ import { computeReviewOutcome } from "./srs.ts";
 import { gradeSelfContained, isSelfContainedSource } from "./self-contained.ts";
 // Moved to _shared/ so complete-lesson can reuse the identical grading
 // logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
+import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
@@ -138,7 +139,16 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!question) {
       return jsonResponse({ error: "Unknown review item" }, 400);
     }
-    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, checkQuota);
+    // The AI step runs only with account consent; without it the curated verdict stands.
+    let consent: Promise<boolean> | undefined;
+    const ai = {
+      allowed: () => (consent ??= hasAiConsent(admin, userId)),
+      checkQuota,
+    };
+    correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, ai);
+    if (consent && !(await consent)) {
+      console.log(JSON.stringify({ event: "ai_grading_skipped", fn: "grade-review", reason: "no-ai-consent" }));
+    }
   }
 
   // Same overdue-growth-bonus reasoning as review.functions.ts's gradeReview.

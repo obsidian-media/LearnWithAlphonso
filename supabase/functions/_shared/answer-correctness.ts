@@ -34,6 +34,12 @@ export type QuestionRow = {
   answer_text: string | null;
 };
 
+export type AiGrading = {
+  /** True only when the learner allowed AI processing. Asked lazily, after the curated list rejects. */
+  allowed: () => Promise<boolean>;
+  checkQuota?: () => Promise<boolean>;
+};
+
 /**
  * Mirrors deriveAnswerCorrectness (src/lib/srs.ts) against the DB row shape.
  *
@@ -44,7 +50,7 @@ export async function deriveAnswerCorrectness(
   question: QuestionRow,
   answer: string,
   course: "en" | "fr" | "es" = "en",
-  checkQuota?: () => Promise<boolean>,
+  ai?: AiGrading,
 ): Promise<boolean> {
   if (question.type === "mc") {
     return (question.choices ?? [])[question.answer_index ?? -1] === answer;
@@ -77,22 +83,24 @@ export async function deriveAnswerCorrectness(
   // was wrong for exactly the case that matters: a WRONG translate answer
   // sets due_on to TODAY (see grade-review/srs.ts's computeReviewOutcome),
   // so the same item stays due immediately and can be resubmitted any
-  // number of times in a row, each one a real NVIDIA call. `checkQuota` (an
+  // number of times in a row, each one a real NVIDIA call. `ai.checkQuota` (an
   // injected async predicate, since this module has no Supabase client of
   // its own) closes that gap -- both callers build it from consume_ai_quota
   // /consume_ai_rate_limit RPCs against the same DB-backed counters
-  // src/lib/ai-quota.server.ts uses on the web side. Omitting it (tests, or
-  // a future caller with a structurally different limit) preserves the old
-  // unlimited behavior rather than breaking silently.
+  // src/lib/ai-quota.server.ts uses on the web side. Omitting `ai` entirely
+  // disables AI grading.
   if (question.type === "translate") {
     const acceptable = question.bank ?? [];
     if (matchesAcceptableAnswer(answer, acceptable)) return true;
     // An empty or whitespace answer is not worth a vendor call: it cannot be
     // right, and paying to be told so is pure waste.
     if (!answer.trim()) return false;
+    // No consent, no vendor call. Omitting `ai` means no AI at all (the safe default for a new caller).
+    // Consent is asked before quota, so a refusal spends nothing.
+    if (!ai || !(await ai.allowed())) return false;
     const apiKey = Deno.env.get("NVIDIA_API_KEY");
     if (!apiKey) return false;
-    if (checkQuota && !(await checkQuota())) return false;
+    if (ai.checkQuota && !(await ai.checkQuota())) return false;
     const verdict = await gradeTranslationWithAi({
       prompt: question.prompt ?? "",
       acceptableAnswers: acceptable,

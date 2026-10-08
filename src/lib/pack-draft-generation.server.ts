@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * V4 #5 "content authoring tooling": AI-assisted first-draft generation for
@@ -75,16 +76,12 @@ export async function draftPack(params: {
   nvidiaApiKey: string;
   nvidiaModel: string;
 }): Promise<DraftPackResult> {
-  const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${params.nvidiaApiKey}`,
-    },
-    body: JSON.stringify({
+  const resp = await nvidiaChatCompletion({
+    apiKey: params.nvidiaApiKey,
+    body: {
       model: params.nvidiaModel,
       messages: [{ role: "user", content: draftPackPrompt(params) }],
-    }),
+    },
   });
   if (!resp.ok) {
     throw new Error(`NVIDIA NIM request failed: ${resp.status} ${resp.statusText}`);

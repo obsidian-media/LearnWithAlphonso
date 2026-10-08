@@ -1,5 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AiConsentGate } from "../../components/AiConsentGate";
+import { AiMessageReport } from "../../components/AiMessageReport";
+import { isAiConsentRequired, useAiConsent } from "../../lib/ai-consent-context";
 import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
@@ -50,7 +53,9 @@ function CampaignChatPageWithSave() {
     <SaveWordProvider>
       {/* Keyed by course: a course switch restarts the campaign in the new
           language rather than mixing two in one transcript. */}
-      <CampaignChatPage key={`${raw.id}:${course}`} campaign={campaign} course={course} />
+      <AiConsentGate backTo="/converse">
+        <CampaignChatPage key={`${raw.id}:${course}`} campaign={campaign} course={course} />
+      </AiConsentGate>
     </SaveWordProvider>
   );
 }
@@ -66,9 +71,12 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
   confidence?: number | null;
+  /** A scene's fixed opening line: written by us, not the model, so there is nothing to report. */
+  opener?: boolean;
 };
 
 function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; course: Course }) {
+  const consent = useAiConsent();
   const firstScene = campaign.scenes[0];
 
   // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
@@ -77,7 +85,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
   // rather than inventing new resume behavior for campaigns alone.
   const [sceneIndex, setSceneIndex] = useState(0);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: firstScene.opener },
+    { role: "assistant", content: firstScene.opener, opener: true },
   ]);
   // Message index where the *current* scene's opener lives -- lets
   // "Restart this scene" truncate back to a known point, and lets the
@@ -185,6 +193,13 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           }),
         });
         if (!resp.ok) {
+          if (await isAiConsentRequired(resp)) {
+            // Consent was withdrawn elsewhere: back to the gate, with the learner's words kept.
+            consent.markWithdrawn();
+            setMessages(messages);
+            setInput(trimmed);
+            return;
+          }
           const t = await readApiError(resp);
           throw new Error(
             resp.status === 429
@@ -204,7 +219,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         setSending(false);
       }
     },
-    [messages, scene, systemPromptForScene, cefrLevel, sending, finished, speak],
+    [messages, scene, systemPromptForScene, cefrLevel, sending, finished, speak, consent],
   );
 
   const continueToNextScene = useCallback(() => {
@@ -214,7 +229,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
     }
     const nextScene = campaign.scenes[sceneIndex + 1];
     setMessages((m) => {
-      const updated: Msg[] = [...m, { role: "assistant", content: nextScene.opener }];
+      const updated: Msg[] = [...m, { role: "assistant", content: nextScene.opener, opener: true }];
       setSceneAnchor(updated.length - 1);
       return updated;
     });
@@ -413,8 +428,19 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
-                <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                  <TappableText text={m.content} course={course} />
+                <div className="flex max-w-[85%] flex-col items-start">
+                  <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                    <TappableText text={m.content} course={course} />
+                  </div>
+                  {!m.opener && (
+                    <AiMessageReport
+                      message={m.content}
+                      surface="campaign"
+                      course={course}
+                      campaignId={campaign.id}
+                      sceneIndex={sceneIndex}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">

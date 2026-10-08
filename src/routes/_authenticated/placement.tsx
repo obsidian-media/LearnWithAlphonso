@@ -13,7 +13,6 @@ import {
 } from "../../data/placement";
 import { getCourse, localeForCourse } from "../../data/courses";
 import { canSpeak, speak } from "../../lib/speech";
-import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
@@ -82,26 +81,14 @@ function PlacementPage() {
   const [picked, setPicked] = useState<string | null>(null);
   // Only true while a translation's second opinion is in flight, so the
   // advance button can say so rather than looking frozen.
-  const [checking, setChecking] = useState(false);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [done, setDone] = useState(false);
   const [skippedLevels, setSkippedLevels] = useState<Level[]>([]);
   // Imperative tally across band transitions, not itself rendered --
   // see submit()'s band-complete branch and nextAdaptiveBand in placement.ts.
   const correctByLevelRef = useRef<Record<Level, number>>({ ...EMPTY_CORRECT });
-  // Which attempt is live. submit() is the one place in this flow that awaits
-  // (a translation's second opinion, up to 15s), so it is the one place where
-  // work can outlive the attempt that started it: switch course mid-request and
-  // the old call resumes afterwards holding the old session, but writing
-  // through correctByLevelRef and savePlacement, which are NOT per-attempt. It
-  // could file an abandoned band's score against the new attempt, or finish it
-  // outright. Comparing generations after the await is cheaper than plumbing an
-  // AbortController through the grader for a request whose result we simply no
-  // longer want.
-  const attemptRef = useRef(0);
 
   function resetSession() {
-    attemptRef.current += 1;
     correctByLevelRef.current = { ...EMPTY_CORRECT };
     setSession(startSession(getCourse(course).pickPlacement(canSpeak())));
     setAnswers([]);
@@ -137,28 +124,11 @@ function PlacementPage() {
     void savePlacement({ data: { level, score, course } }).catch(() => {});
   }
 
-  async function submit() {
+  function submit() {
     if (picked === null || !q) return;
-    const attempt = attemptRef.current;
-    let correct = isPlacementAnswerCorrect(q, picked);
-    // A translation gets the same second opinion it would get in a lesson: the
-    // curated wordings are a floor, and marking a valid-but-unlisted answer
-    // wrong here does not cost a heart, it places the learner a band lower.
-    // A null verdict (offline, vendor down, quota spent) leaves the local
-    // answer standing rather than stalling an exam that has no skip.
-    if (!correct && q.type === "translate") {
-      setChecking(true);
-      const verdict = await requestTranslationVerdict({
-        placementId: q.id,
-        submission: picked,
-        course,
-      });
-      // Nothing below this line may run for an attempt that is gone: the
-      // writes it makes are global, not scoped to this closure's session.
-      if (attemptRef.current !== attempt) return;
-      setChecking(false);
-      if (verdict?.correct) correct = true;
-    }
+    // Placement is graded on the device against the curated wordings and never sends an answer to an AI grader, so
+    // it works for a learner who has not allowed AI and never waits on a network.
+    const correct = isPlacementAnswerCorrect(q, picked);
     const next = [...answers, correct];
     setPicked(null);
     setAnswers(next);
@@ -391,11 +361,11 @@ function PlacementPage() {
         <div className="mt-auto pt-8">
           <button
             type="button"
-            disabled={checking || !picked?.trim()}
-            onClick={() => void submit()}
+            disabled={!picked?.trim()}
+            onClick={submit}
             className="w-full rounded-full bg-moss px-6 py-3.5 text-sm font-semibold text-surface transition disabled:cursor-not-allowed disabled:bg-hairline disabled:text-ink-soft/50"
           >
-            {checking ? "Checking…" : isFinalQuestion ? "See my level" : "Continue"}
+            {isFinalQuestion ? "See my level" : "Continue"}
           </button>
           <p className="mt-3 text-center text-[11px] text-ink-soft/60">
             No hearts lost — this just finds your starting point.

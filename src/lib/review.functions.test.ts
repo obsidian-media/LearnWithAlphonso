@@ -36,6 +36,12 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: supabaseAdminFrom },
 }));
 
+const hasAiConsent = vi.fn(async () => true);
+vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
+const consumeQuota = vi.fn(async () => ({ ok: true as const, used: 1, limit: 60 }));
+vi.mock("./ai-quota.server", () => ({ consumeQuota }));
+vi.mock("@tanstack/react-start/server", () => ({ getRequest: () => new Request("https://x/") }));
+
 const { recordMisses, fetchDueReviews, gradeReview, claimReviewClearBonusRemote } = asTestFns(
   await import("./review.functions"),
 );
@@ -49,6 +55,7 @@ function ctx(supabase: ReturnType<typeof createSupabaseMock>) {
 }
 
 beforeEach(() => {
+  consumeQuota.mockClear();
   process.env.LESSON_SESSION_SECRET = "test-secret";
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
@@ -218,6 +225,32 @@ describe("gradeReview", () => {
       data: { itemKey: "u1l1:q1", answer: "anything", course: "en" },
     });
     expect(result.retired).toBe(false);
+  });
+
+  it("a translate answer is not sent to the AI, and no quota is spent, without consent", async () => {
+    hasAiConsent.mockResolvedValue(false);
+    const { getCourse } = await import("@/data/courses");
+    const [itemKey] = Object.entries(getCourse("en").questionIndex).find(
+      ([, r]) => r.question.type === "translate",
+    )!;
+    const originalFetch = global.fetch;
+    process.env.NVIDIA_API_KEY = "test-key";
+    global.fetch = vi.fn() as typeof fetch;
+    try {
+      const supabase = createSupabaseMock();
+      supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));
+      await gradeReview({
+        context: ctx(supabase),
+        data: { itemKey, answer: "zzqx unlisted wording", course: "en" },
+      });
+      expect(hasAiConsent).toHaveBeenCalledWith(supabase, USER_ID);
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(consumeQuota).not.toHaveBeenCalled();
+    } finally {
+      global.fetch = originalFetch;
+      delete process.env.NVIDIA_API_KEY;
+      hasAiConsent.mockResolvedValue(true);
+    }
   });
 
   it("rejects grading an item before its due date", async () => {
