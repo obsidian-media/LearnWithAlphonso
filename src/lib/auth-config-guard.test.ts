@@ -13,7 +13,8 @@ const GOOD: AuthConfig = {
   mailer_otp_length: 6,
   mailer_templates_magic_link_content: "<p>{{ .Token }}</p>",
   mailer_templates_confirmation_content: "<p>{{ .Token }}</p>",
-  uri_allow_list: "https://learn.alphonsoecosystem.app/**,com.obsidianmedia.learnwithalphonso://login-callback",
+  uri_allow_list:
+    "https://learn.alphonsoecosystem.app/**,com.obsidianmedia.learnwithalphonso://login-callback",
   external_google_enabled: true,
 };
 
@@ -102,7 +103,10 @@ describe("OAuth redirect allowlist and Google provider", () => {
   // Without the app's callback on the list, GoTrue silently falls back to site_url and the iOS Google
   // sheet ends on the website instead of returning to the app.
   it("catches an allowlist without the iOS callback", () => {
-    const problems = findAuthConfigProblems({ ...GOOD, uri_allow_list: "https://learn.alphonsoecosystem.app/**" });
+    const problems = findAuthConfigProblems({
+      ...GOOD,
+      uri_allow_list: "https://learn.alphonsoecosystem.app/**",
+    });
     expect(problems).toEqual([expect.stringContaining(IOS_OAUTH_CALLBACK)]);
   });
 
@@ -116,7 +120,8 @@ describe("OAuth redirect allowlist and Google provider", () => {
     expect(
       findAuthConfigProblems({
         ...GOOD,
-        uri_allow_list: " https://learn.alphonsoecosystem.app/** , com.obsidianmedia.learnwithalphonso://** ",
+        uri_allow_list:
+          " https://learn.alphonsoecosystem.app/** , com.obsidianmedia.learnwithalphonso://** ",
       }),
     ).toEqual([]);
   });
@@ -128,7 +133,10 @@ describe("OAuth redirect allowlist and Google provider", () => {
   });
 
   it.each(["**", "*", "https://**", "http://*"])("catches the catch-all entry %s", (entry) => {
-    const problems = findAuthConfigProblems({ ...GOOD, uri_allow_list: `${GOOD.uri_allow_list},${entry}` });
+    const problems = findAuthConfigProblems({
+      ...GOOD,
+      uri_allow_list: `${GOOD.uri_allow_list},${entry}`,
+    });
     expect(problems).toEqual([expect.stringContaining("catch-all")]);
   });
 
@@ -143,8 +151,12 @@ describe("OAuth redirect allowlist and Google provider", () => {
       path.resolve(import.meta.dirname, "../../ios/LearnWithAlphonso/Sources/AppConfig.swift"),
       "utf8",
     );
-    expect(swift).toContain('static let googleSignInURLScheme = "com.obsidianmedia.learnwithalphonso"');
-    expect(swift).toContain('static let googleSignInRedirectURL = "\\(googleSignInURLScheme)://login-callback"');
+    expect(swift).toContain(
+      'static let googleSignInURLScheme = "com.obsidianmedia.learnwithalphonso"',
+    );
+    expect(swift).toContain(
+      'static let googleSignInRedirectURL = "\\(googleSignInURLScheme)://login-callback"',
+    );
     expect(IOS_OAUTH_CALLBACK).toBe("com.obsidianmedia.learnwithalphonso://login-callback");
   });
 });

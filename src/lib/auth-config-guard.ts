@@ -64,10 +64,14 @@ function oauthProblems(cfg: AuthConfig): string[] {
     );
   }
   for (const entry of entries.filter((e) => CATCH_ALL.test(e))) {
-    problems.push(`uri_allow_list contains the catch-all "${entry}": any site could receive a sign-in redirect`);
+    problems.push(
+      `uri_allow_list contains the catch-all "${entry}": any site could receive a sign-in redirect`,
+    );
   }
   if (cfg.external_google_enabled !== true) {
-    problems.push(`external_google_enabled is ${cfg.external_google_enabled}: "Continue with Google" fails on iOS and the web`);
+    problems.push(
+      `external_google_enabled is ${cfg.external_google_enabled}: "Continue with Google" fails on iOS and the web`,
+    );
   }
   return problems;
 }

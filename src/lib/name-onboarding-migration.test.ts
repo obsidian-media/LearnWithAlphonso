@@ -27,24 +27,36 @@ describe("name onboarding migration", () => {
     expect(stmt).toMatch(/RETURNS TABLE \(display_name text, name_confirmed_at timestamptz\)/);
     expect(stmt).toMatch(/SECURITY DEFINER\s+SET search_path = public/);
     expect(stmt).toContain("WHERE p.id = auth.uid()");
-    expect(sql()).toContain("REVOKE ALL ON FUNCTION public.get_my_name_status() FROM PUBLIC, anon;");
-    expect(sql()).toContain("GRANT EXECUTE ON FUNCTION public.get_my_name_status() TO authenticated;");
+    expect(sql()).toContain(
+      "REVOKE ALL ON FUNCTION public.get_my_name_status() FROM PUBLIC, anon;",
+    );
+    expect(sql()).toContain(
+      "GRANT EXECUTE ON FUNCTION public.get_my_name_status() TO authenticated;",
+    );
   });
 
   it("skip_display_name_prompt keeps a clean handle or stores a fresh one, and stamps the confirmation", () => {
     const stmt = fnStatement("skip_display_name_prompt");
-    expect(stmt).toMatch(/RETURNS text\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = public/);
+    expect(stmt).toMatch(
+      /RETURNS text\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = public/,
+    );
     expect(stmt).toContain("current_name ~ '^Learner-[0-9A-F]{4}$'");
     expect(stmt).toContain("public.generate_learner_handle()");
     expect(stmt).toContain("public.display_name_problem(candidate) IS NULL");
     expect(stmt).toContain("name_confirmed_at = now()");
     expect(stmt).toContain("RAISE EXCEPTION 'unauthenticated' USING ERRCODE = 'P0001'");
-    expect(sql()).toContain("REVOKE ALL ON FUNCTION public.skip_display_name_prompt() FROM PUBLIC, anon;");
-    expect(sql()).toContain("GRANT EXECUTE ON FUNCTION public.skip_display_name_prompt() TO authenticated;");
+    expect(sql()).toContain(
+      "REVOKE ALL ON FUNCTION public.skip_display_name_prompt() FROM PUBLIC, anon;",
+    );
+    expect(sql()).toContain(
+      "GRANT EXECUTE ON FUNCTION public.skip_display_name_prompt() TO authenticated;",
+    );
   });
 
   it("never writes anyone else's profile", () => {
     const stmt = fnStatement("skip_display_name_prompt");
-    expect(stmt).toMatch(/UPDATE public\.profiles p\s+SET display_name = candidate, name_confirmed_at = now\(\)\s+WHERE p\.id = me/);
+    expect(stmt).toMatch(
+      /UPDATE public\.profiles p\s+SET display_name = candidate, name_confirmed_at = now\(\)\s+WHERE p\.id = me/,
+    );
   });
 });

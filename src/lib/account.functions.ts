@@ -180,7 +180,10 @@ async function appleIdentityOf(
     const providers = Array.isArray(data.user.app_metadata?.providers)
       ? (data.user.app_metadata.providers as unknown[])
       : [];
-    return providers.includes("apple") || (data.user.identities ?? []).some((i) => i.provider === "apple");
+    return (
+      providers.includes("apple") ||
+      (data.user.identities ?? []).some((i) => i.provider === "apple")
+    );
   } catch {
     return "unknown";
   }

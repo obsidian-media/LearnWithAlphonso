@@ -65,7 +65,13 @@ beforeEach(() => {
   getUserById.mockReset();
   // An email-only learner unless a test says otherwise.
   getUserById.mockResolvedValue({
-    data: { user: { id: USER_ID, app_metadata: { providers: ["email"] }, identities: [{ provider: "email" }] } },
+    data: {
+      user: {
+        id: USER_ID,
+        app_metadata: { providers: ["email"] },
+        identities: [{ provider: "email" }],
+      },
+    },
     error: null,
   });
 });
@@ -480,7 +486,16 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
   it("reports not_configured and logs when the user signed in with Apple", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const status = await accountModule.revokeAppleGrantForUser(
-      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["apple"] }, identities: [{ provider: "apple" }] } }, error: null }),
+      admin({
+        data: {
+          user: {
+            id: USER_ID,
+            app_metadata: { providers: ["apple"] },
+            identities: [{ provider: "apple" }],
+          },
+        },
+        error: null,
+      }),
       USER_ID,
     );
     expect(status).toBe("not_configured");
@@ -492,7 +507,16 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
   it("finds an Apple identity linked to an email account too", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const status = await accountModule.revokeAppleGrantForUser(
-      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["email"] }, identities: [{ provider: "email" }, { provider: "apple" }] } }, error: null }),
+      admin({
+        data: {
+          user: {
+            id: USER_ID,
+            app_metadata: { providers: ["email"] },
+            identities: [{ provider: "email" }, { provider: "apple" }],
+          },
+        },
+        error: null,
+      }),
       USER_ID,
     );
     expect(status).toBe("not_configured");
@@ -501,7 +525,16 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
   it("stays not_applicable and silent for a learner without Apple", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     const status = await accountModule.revokeAppleGrantForUser(
-      admin({ data: { user: { id: USER_ID, app_metadata: { providers: ["google"] }, identities: [{ provider: "google" }] } }, error: null }),
+      admin({
+        data: {
+          user: {
+            id: USER_ID,
+            app_metadata: { providers: ["google"] },
+            identities: [{ provider: "google" }],
+          },
+        },
+        error: null,
+      }),
       USER_ID,
     );
     expect(status).toBe("not_applicable");
@@ -510,7 +543,10 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
 
   it("reports not_configured and logs when the identity lookup itself fails", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const status = await accountModule.revokeAppleGrantForUser(admin({ data: { user: null }, error: { message: "boom" } }), USER_ID);
+    const status = await accountModule.revokeAppleGrantForUser(
+      admin({ data: { user: null }, error: { message: "boom" } }),
+      USER_ID,
+    );
     expect(status).toBe("not_configured");
     expect(String(log.mock.calls[0][0])).toContain("NOT CONFIGURED");
   });

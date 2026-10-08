@@ -164,7 +164,10 @@ describe("adminDeleteReportedUser", () => {
       auth: {
         admin: {
           deleteUser,
-          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+          getUserById: vi.fn().mockResolvedValue({
+            data: { user: { identities: [{ provider: "email" }] } },
+            error: null,
+          }),
         },
       },
     };
@@ -193,7 +196,10 @@ describe("adminDeleteReportedUser", () => {
       auth: {
         admin: {
           deleteUser,
-          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+          getUserById: vi.fn().mockResolvedValue({
+            data: { user: { identities: [{ provider: "email" }] } },
+            error: null,
+          }),
         },
       },
     };
@@ -232,7 +238,10 @@ describe("adminDeleteReportedUser", () => {
       auth: {
         admin: {
           deleteUser,
-          getUserById: vi.fn().mockResolvedValue({ data: { user: { identities: [{ provider: "email" }] } }, error: null }),
+          getUserById: vi.fn().mockResolvedValue({
+            data: { user: { identities: [{ provider: "email" }] } },
+            error: null,
+          }),
         },
       },
     };
