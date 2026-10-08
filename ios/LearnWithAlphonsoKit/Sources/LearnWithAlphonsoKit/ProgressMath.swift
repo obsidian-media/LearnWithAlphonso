@@ -114,10 +114,6 @@ public struct LessonCompletion: Sendable, Equatable {
     public let correct: Int
 }
 
-public enum LessonCompletionError: Error, Equatable {
-    case invalidPayload
-}
-
 /// The trust-boundary check for lesson completion, extracted so it's
 /// testable without a database: `total` must match the lesson's real
 /// question count, and every claimed-missed question id must actually

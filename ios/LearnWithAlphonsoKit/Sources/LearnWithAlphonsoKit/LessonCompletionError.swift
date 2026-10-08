@@ -14,13 +14,15 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
     /// Every other 4xx. `code` is the server's stable `{error}` code, or nil when it sent prose.
     case rejected(code: String?)
     case timeout
+    /// A completion payload that fails the local trust-boundary check (see `validateLessonCompletion`).
+    case invalidPayload
 
     /// True for offline, server and timeout. Rejected payloads are never queued (no retry can fix them);
     /// unauthorized is resolved by a token refresh, not by waiting.
     public var shouldQueue: Bool {
         switch self {
         case .offline, .server, .timeout: return true
-        case .unauthorized, .rejected: return false
+        case .unauthorized, .rejected, .invalidPayload: return false
         }
     }
 
@@ -68,14 +70,17 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
             return "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
         case .rejected(code: "out-of-hearts"):
             return "You're out of hearts, so this lesson can't be saved right now."
-        case .rejected:
+        case .rejected, .invalidPayload:
             return "We couldn't save this lesson."
         }
     }
 
     /// The support path for failures the learner cannot fix by waiting.
     public var supportLine: String? {
-        guard case .rejected = self else { return nil }
+        switch self {
+        case .rejected, .invalidPayload: break
+        default: return nil
+        }
         return "If this keeps happening, email support@alphonsoecosystem.app."
     }
 
@@ -87,6 +92,7 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         case let .server(status): return "server-\(status)"
         case let .rejected(code): return code ?? "rejected"
         case .timeout: return "timeout"
+        case .invalidPayload: return "invalid-payload"
         }
     }
 }
