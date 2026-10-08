@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
-import { getScenario } from "../../data/scenarios";
+import type { Course } from "../../data/courses";
+import { getScenario, localizeScenario, type LocalizedScenario } from "../../data/scenarios";
+import { useProgress } from "../../lib/progress";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { useSpeechCapture } from "../../lib/use-speech-capture";
@@ -18,12 +20,12 @@ export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.scenario.title ?? "Chat"} — Alphonso` },
+      { title: `${loaderData?.scenario.title.en ?? "Chat"} — Alphonso` },
       {
         name: "description",
-        content: `Roleplay ${loaderData?.scenario.title?.toLowerCase() ?? "a scene"} with an AI English tutor.`,
+        content: `Roleplay ${loaderData?.scenario.title.en.toLowerCase() ?? "a scene"} with an AI English tutor.`,
       },
-      { property: "og:title", content: `${loaderData?.scenario.title ?? "Chat"} — Alphonso` },
+      { property: "og:title", content: `${loaderData?.scenario.title.en ?? "Chat"} — Alphonso` },
       { property: "og:description", content: "Practice real English out loud with an AI tutor." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -33,9 +35,14 @@ export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
 
 /** Tapping a word in this page's text opens the save dialog (phase 4 of save-any-word). */
 function ConverseChatPageWithSave() {
+  const { scenario: raw } = Route.useLoaderData();
+  const course = useProgress((s) => s.course);
+  const scenario = useMemo(() => localizeScenario(raw, course), [raw, course]);
   return (
     <SaveWordProvider>
-      <ConverseChatPage />
+      {/* Keyed by course, so switching course mid-chat starts a fresh
+          conversation in the new language instead of mixing two. */}
+      <ConverseChatPage key={`${raw.id}:${course}`} scenario={scenario} course={course} />
     </SaveWordProvider>
   );
 }
@@ -61,8 +68,7 @@ type Msg = {
   confidence?: number | null;
 };
 
-function ConverseChatPage() {
-  const { scenario } = Route.useLoaderData();
+function ConverseChatPage({ scenario, course }: { scenario: LocalizedScenario; course: Course }) {
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: scenario.opener },
   ]);
@@ -70,14 +76,14 @@ function ConverseChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ttsOn, setTtsOn] = useState(true);
-  // Adaptive difficulty (V3 package 3a): scenarios are English-only, so
-  // this always reads the "en" course's level. Best-effort -- if the
+  // Adaptive difficulty (V3 package 3a), per course: the level comes from
+  // the course this conversation is in. Best-effort -- if the
   // fetch fails, /api/chat just falls back to no difficulty hint at all
   // (see chat.ts's withDifficultyHint), same as before this feature.
   const [cefrLevel, setCefrLevel] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
-    void fetchProgress({ data: { course: "en" } })
+    void fetchProgress({ data: { course } })
       .then((p) => {
         if (!cancelled) setCefrLevel(p.cefrLevel);
       })
@@ -85,7 +91,7 @@ function ConverseChatPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [course]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -183,6 +189,7 @@ function ConverseChatPage() {
     start: beginCapture,
     stop: stopRecording,
   } = useSpeechCapture({
+    course,
     onTranscript: (text, confidence) => send(text, confidence ?? undefined),
   });
   // Before the hook existed, startRecording began with setError(null). The hook
@@ -290,8 +297,7 @@ function ConverseChatPage() {
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
                 <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                  {/* Scenarios and campaigns are English-only. */}
-                  <TappableText text={m.content} course="en" />
+                  <TappableText text={m.content} course={course} />
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">

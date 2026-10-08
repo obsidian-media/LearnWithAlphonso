@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MobileFrame } from "../../components/AppShell";
-import { CAMPAIGNS } from "../../data/campaigns";
-import { SCENARIOS } from "../../data/scenarios";
+import { useMemo } from "react";
+import { campaignsFor } from "../../data/campaigns";
+import { scenariosFor } from "../../data/scenarios";
+import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
 
 export const Route = createFileRoute("/_authenticated/converse")({
@@ -27,6 +29,10 @@ export const Route = createFileRoute("/_authenticated/converse")({
 
 function ConversePage() {
   const isStudioInk = useTheme((s) => s.theme === "studio-ink");
+  // Titles, blurbs and the linked conversation follow the active course.
+  const course = useProgress((s) => s.course);
+  const scenarios = useMemo(() => scenariosFor(course), [course]);
+  const campaigns = useMemo(() => campaignsFor(course), [course]);
   return (
     <MobileFrame>
       <div className="px-6 pb-10 pt-6">
@@ -44,13 +50,13 @@ function ConversePage() {
         {/* V4 candidate #4: connected multi-scene campaigns, additive
             alongside the one-shot scenarios below -- see
             docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md */}
-        {CAMPAIGNS.length > 0 && (
+        {campaigns.length > 0 && (
           <div className="mt-7">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft/60">
               Campaigns
             </p>
             <div className={isStudioInk ? "divide-y divide-hairline" : "grid grid-cols-1 gap-3"}>
-              {CAMPAIGNS.map((c, i) => (
+              {campaigns.map((c, i) => (
                 <motion.div
                   key={c.id}
                   initial={{ opacity: 0, y: 8 }}
@@ -116,11 +122,11 @@ function ConversePage() {
         <div
           className={
             isStudioInk
-              ? `${CAMPAIGNS.length > 0 ? "" : "mt-7 "}divide-y divide-hairline`
-              : `${CAMPAIGNS.length > 0 ? "" : "mt-7 "}grid grid-cols-1 gap-3`
+              ? `${campaigns.length > 0 ? "" : "mt-7 "}divide-y divide-hairline`
+              : `${campaigns.length > 0 ? "" : "mt-7 "}grid grid-cols-1 gap-3`
           }
         >
-          {SCENARIOS.map((s, i) => (
+          {scenarios.map((s, i) => (
             <motion.div
               key={s.id}
               initial={{ opacity: 0, y: 8 }}

@@ -27,14 +27,15 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 });
 
 const { Route } = await import("./converse");
-const { SCENARIOS } = await import("../../data/scenarios");
-const { CAMPAIGNS } = await import("../../data/campaigns");
+const { scenariosFor } = await import("../../data/scenarios");
+const { campaignsFor } = await import("../../data/campaigns");
+const { useProgress } = await import("../../lib/progress");
 
 describe("Converse route", () => {
   it("lists every scenario with a link to its conversation", () => {
     const ConversePage = Route.options.component!;
     render(<ConversePage />);
-    for (const s of SCENARIOS) {
+    for (const s of scenariosFor("en")) {
       expect(screen.getByRole("heading", { name: s.title })).toBeInTheDocument();
       const link = screen.getByRole("link", { name: new RegExp(s.title) });
       expect(link).toHaveAttribute("href", `/converse/${s.id}`);
@@ -46,10 +47,24 @@ describe("Converse route", () => {
   it("lists every campaign with a link to its campaign chat", () => {
     const ConversePage = Route.options.component!;
     render(<ConversePage />);
-    for (const c of CAMPAIGNS) {
+    for (const c of campaignsFor("en")) {
       expect(screen.getByRole("heading", { name: c.title })).toBeInTheDocument();
       const link = screen.getByRole("link", { name: new RegExp(c.title) });
       expect(link).toHaveAttribute("href", `/campaign/${c.id}`);
     }
+  });
+
+  it("lists the active course's titles", () => {
+    useProgress.setState({ course: "es" });
+    const ConversePage = Route.options.component!;
+    render(<ConversePage />);
+    for (const s of scenariosFor("es")) {
+      expect(screen.getByRole("heading", { name: s.title })).toBeInTheDocument();
+    }
+    for (const c of campaignsFor("es")) {
+      expect(screen.getByRole("heading", { name: c.title })).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("heading", { name: "Order coffee" })).toBeNull();
+    useProgress.setState({ course: "en" });
   });
 });

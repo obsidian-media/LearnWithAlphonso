@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -24,11 +24,14 @@ const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 
 const { Route } = await import("./campaign_.$campaignId");
-const { getCampaign } = await import("../../data/campaigns");
+const { getCampaign, localizeCampaign, campaignScenePrompt } = await import("../../data/campaigns");
+const { useProgress } = await import("../../lib/progress");
 
-const campaign = getCampaign("city-day")!;
+const rawCampaign = getCampaign("city-day")!;
+// Existing assertions read the flat English view; the loader returns the raw record.
+const campaign = localizeCampaign(rawCampaign, "en");
 // @ts-expect-error -- same override pattern as converse_.$scenarioId.test.tsx.
-Route.useLoaderData = () => ({ campaign });
+Route.useLoaderData = () => ({ campaign: rawCampaign });
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status });
@@ -51,6 +54,7 @@ async function sendAndAwaitReply(
 }
 
 beforeEach(() => {
+  useProgress.setState({ course: "en" });
   Element.prototype.scrollTo = vi.fn();
   getSession.mockReset();
   getSession.mockResolvedValue({ data: { session: null } });
@@ -343,5 +347,41 @@ describe("Campaign chat page", () => {
     // The user's own turn stays on screen -- losing it would make the
     // failure look like the message was never sent.
     expect(screen.getByText("bonjour")).toBeInTheDocument();
+  });
+
+  it("runs the Spanish story with the Spanish composed prompt when the course is Spanish", async () => {
+    useProgress.setState({ course: "es" });
+    const es = localizeCampaign(rawCampaign, "es");
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByRole("heading", { name: es.title })).toBeInTheDocument();
+    expect(
+      screen.getByText(`Scene 1 of ${es.scenes.length} — ${es.scenes[0].title}`),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(es.scenes[0].opener);
+    await waitFor(() => expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "es" } }));
+
+    await sendAndAwaitReply(user, "Un café de olla, por favor", "Reply 1");
+    const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(([u]) =>
+      String(u).includes("/api/chat"),
+    )!;
+    const body = JSON.parse(init.body as string);
+    expect(body.systemPrompt).toBe(campaignScenePrompt("city-day", "coffee-stop", "es"));
+  });
+
+  it("starts a fresh campaign in the new language when the course changes mid-chat", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await sendAndAwaitReply(user, "One latte please", "Reply 1");
+
+    act(() => useProgress.setState({ course: "fr" }));
+
+    const log = screen.getByRole("log");
+    expect(log).toHaveTextContent(localizeCampaign(rawCampaign, "fr").scenes[0].opener);
+    expect(log).not.toHaveTextContent("One latte please");
+    expect(
+      screen.getByText(`Scene 1 of 3 — ${localizeCampaign(rawCampaign, "fr").scenes[0].title}`),
+    ).toBeInTheDocument();
   });
 });

@@ -3,7 +3,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
-import { getCampaign, type CampaignScene } from "../../data/campaigns";
+import type { Course } from "../../data/courses";
+import {
+  campaignPrompt,
+  getCampaign,
+  localizeCampaign,
+  type LocalizedCampaign,
+  type LocalizedCampaignScene,
+} from "../../data/campaigns";
+import { useProgress } from "../../lib/progress";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
@@ -17,12 +25,15 @@ export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.campaign.title ?? "Campaign"} — Alphonso` },
+      { title: `${loaderData?.campaign.title.en ?? "Campaign"} — Alphonso` },
       {
         name: "description",
-        content: `A multi-scene roleplay campaign: ${loaderData?.campaign.blurb ?? "practice with an AI tutor."}`,
+        content: `A multi-scene roleplay campaign: ${loaderData?.campaign.blurb.en ?? "practice with an AI tutor."}`,
       },
-      { property: "og:title", content: `${loaderData?.campaign.title ?? "Campaign"} — Alphonso` },
+      {
+        property: "og:title",
+        content: `${loaderData?.campaign.title.en ?? "Campaign"} — Alphonso`,
+      },
       { property: "og:description", content: "Practice a connected story with an AI tutor." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -32,9 +43,14 @@ export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
 
 /** Tapping a word in this page's text opens the save dialog (phase 4 of save-any-word). */
 function CampaignChatPageWithSave() {
+  const { campaign: raw } = Route.useLoaderData();
+  const course = useProgress((s) => s.course);
+  const campaign = useMemo(() => localizeCampaign(raw, course), [raw, course]);
   return (
     <SaveWordProvider>
-      <CampaignChatPage />
+      {/* Keyed by course: a course switch restarts the campaign in the new
+          language rather than mixing two in one transcript. */}
+      <CampaignChatPage key={`${raw.id}:${course}`} campaign={campaign} course={course} />
     </SaveWordProvider>
   );
 }
@@ -52,8 +68,7 @@ type Msg = {
   confidence?: number | null;
 };
 
-function CampaignChatPage() {
-  const { campaign } = Route.useLoaderData();
+function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; course: Course }) {
   const firstScene = campaign.scenes[0];
 
   // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
@@ -79,7 +94,7 @@ function CampaignChatPage() {
   const [cefrLevel, setCefrLevel] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
-    void fetchProgress({ data: { course: "en" } })
+    void fetchProgress({ data: { course } })
       .then((p) => {
         if (!cancelled) setCefrLevel(p.cefrLevel);
       })
@@ -87,7 +102,7 @@ function CampaignChatPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [course]);
 
   const scene = campaign.scenes[sceneIndex];
   const isLastScene = sceneIndex === campaign.scenes.length - 1;
@@ -101,7 +116,7 @@ function CampaignChatPage() {
   // /api/chat needing any new concept of "session" or "campaign."
   const premise = campaign.premise;
   const systemPromptForScene = useCallback(
-    (s: CampaignScene) => `${premise}\n\n${s.systemPrompt}`,
+    (s: LocalizedCampaignScene) => campaignPrompt(premise, s.systemPrompt),
     [premise],
   );
 
@@ -247,6 +262,7 @@ function CampaignChatPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, `recording.${ext}`);
+          fd.append("course", course);
           const resp = await fetch("/api/stt", {
             method: "POST",
             headers: await authHeaders(),
@@ -273,7 +289,7 @@ function CampaignChatPage() {
       setError("Microphone access is needed to speak.");
       setRecording(false);
     }
-  }, [send]);
+  }, [send, course]);
 
   const stopRecording = useCallback(() => {
     stopRequestedRef.current = true;
@@ -398,8 +414,7 @@ function CampaignChatPage() {
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               {m.role === "assistant" ? (
                 <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
-                  {/* Scenarios and campaigns are English-only. */}
-                  <TappableText text={m.content} course="en" />
+                  <TappableText text={m.content} course={course} />
                 </div>
               ) : (
                 <div className="flex max-w-[85%] flex-col items-end gap-1">
