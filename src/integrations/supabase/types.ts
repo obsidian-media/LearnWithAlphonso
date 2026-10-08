@@ -1119,6 +1119,7 @@ export type Database = {
       profiles: {
         Row: {
           active_language: string;
+          ai_consent_at: string | null;
           avatar_seed: string;
           country: string | null;
           created_at: string;
@@ -1130,6 +1131,7 @@ export type Database = {
         };
         Insert: {
           active_language?: string;
+          ai_consent_at?: string | null;
           avatar_seed?: string;
           country?: string | null;
           created_at?: string;
@@ -1141,6 +1143,7 @@ export type Database = {
         };
         Update: {
           active_language?: string;
+          ai_consent_at?: string | null;
           avatar_seed?: string;
           country?: string | null;
           created_at?: string;
@@ -1863,6 +1866,7 @@ export type Database = {
         Returns: string;
       };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
+      ai_output_blocked: { Args: { _texts: string[] }; Returns: boolean[] };
       auto_join_team: {
         Args: never;
         Returns: {
@@ -1961,6 +1965,7 @@ export type Database = {
         }[];
       };
       generate_learner_handle: { Args: never; Returns: string };
+      get_ai_consent: { Args: never; Returns: string };
       get_buddy_messages: {
         Args: { _since?: string };
         Returns: {
@@ -2248,6 +2253,7 @@ export type Database = {
           status: string;
         }[];
       };
+      set_ai_consent: { Args: { _granted: boolean }; Returns: string };
       set_cefr_level: {
         Args: { _language: string; _level: string };
         Returns: undefined;
