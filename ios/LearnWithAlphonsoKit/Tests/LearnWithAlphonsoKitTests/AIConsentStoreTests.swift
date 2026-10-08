@@ -329,6 +329,33 @@ final class AIConsentStoreTests: XCTestCase {
         XCTAssertEqual(store.status, .denied)
     }
 
+    /// A write that fails decided nothing, so it must not throw away the read that was in flight.
+    @MainActor
+    func testAFailedWriteDuringTheFirstReadDoesNotDiscardIt() async {
+        let backend = FakeConsentBackend()
+        backend.serverValue = backend.stamp
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.setError = Offline()
+        backend.duringFetch = { try? await store.set(false) }
+
+        await store.refresh()
+
+        XCTAssertEqual(store.status, .granted, "not left on .loading with no retry")
+    }
+
+    @MainActor
+    func testAFailedWriteDuringAFailedReadStillOffersARetry() async {
+        let backend = FakeConsentBackend()
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.fetchError = Offline()
+        backend.setError = Offline()
+        backend.duringFetch = { try? await store.set(false) }
+
+        await store.refresh()
+
+        XCTAssertEqual(store.status, .unavailable)
+    }
+
     @MainActor
     func testARefusalSignalDuringAReadIsNotUndoneByThatRead() async {
         let backend = FakeConsentBackend()

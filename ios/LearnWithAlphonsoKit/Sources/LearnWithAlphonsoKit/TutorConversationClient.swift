@@ -117,9 +117,12 @@ public final class TutorConversationClient: Sendable {
             throw TutorConversationError.badResponse
         }
         guard (200...299).contains(httpResponse.statusCode) else {
-            let message = Self.errorMessage(from: data)
-            AIConsentSignal.noteIfConsentRequired(status: httpResponse.statusCode, message: message)
-            throw TutorConversationError.server(status: httpResponse.statusCode, message: message)
+            // The "error" field is a machine code (e.g. ai-consent-required): it only drives the consent signal and
+            // is never shown. The thrown message stays the human-readable "detail".
+            AIConsentSignal.noteIfConsentRequired(
+                status: httpResponse.statusCode, message: Self.string(in: data, key: "error"))
+            throw TutorConversationError.server(
+                status: httpResponse.statusCode, message: Self.string(in: data, key: "detail"))
         }
         do {
             return try JSONDecoder().decode(TutorReply.self, from: data)
@@ -128,15 +131,12 @@ public final class TutorConversationClient: Sendable {
         }
     }
 
-    private static func errorMessage(from data: Data) -> String? {
-        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
-        // The cloud voice service answers with "detail"; the edge function with "error" (e.g. ai-consent-required).
-        for key in ["error", "detail"] {
-            if let text = object[key] as? String,
-               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return text
-            }
+    private static func string(in data: Data, key: String) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let text = object[key] as? String,
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
         }
-        return nil
+        return text
     }
 }

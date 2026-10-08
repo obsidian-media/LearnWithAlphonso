@@ -143,9 +143,8 @@ public final class AIConsentStore {
 
     public func set(_ granted: Bool) async throws {
         guard let userID = backend.currentUserID() else { throw AIConsentError.signedOut }
-        // Bumped before and after the write: a read already in flight, and one that started during the write, both
-        // predate this decision.
-        writeGeneration += 1
+        // Bumped only once the write succeeded: any read that began before it finished is out of date, while a write
+        // that fails (offline) must not discard a read that is still in flight.
         let stamp = try await backend.setConsent(granted)
         writeGeneration += 1
         if granted && stamp == nil { throw AIConsentError.unexpectedResponse }

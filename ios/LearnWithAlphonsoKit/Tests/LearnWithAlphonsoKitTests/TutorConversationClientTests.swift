@@ -129,7 +129,7 @@ final class TutorConversationClientTests: XCTestCase {
         makeClient { _ in self.jsonResponse(["error": error], status: status) }
     }
 
-    func testAConsentRefusalFromTheEdgeFunctionIsReadFromTheErrorKeyAndAnnounced() async {
+    func testAConsentRefusalCodeIsAnnouncedButNeverShown() async {
         let announced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
         do {
             _ = try await refusal(status: 403, error: "ai-consent-required")
@@ -137,9 +137,26 @@ final class TutorConversationClientTests: XCTestCase {
             XCTFail("Expected an error to be thrown")
         } catch {
             XCTAssertEqual(
-                error as? TutorConversationError, .server(status: 403, message: "ai-consent-required"))
+                error as? TutorConversationError, .server(status: 403, message: nil), "the code is never the shown message")
         }
         await fulfillment(of: [announced], timeout: 2)
+    }
+
+    /// Machine codes in "error" are never the message a learner reads.
+    func testMachineCodesInTheErrorFieldAreNotThrownAsMessages() async {
+        let cases: [(Int, String)] = [
+            (403, "not-entitled"), (401, "unauthorized"), (500, "Hector is not configured"),
+            (400, "text required"), (502, "empty reply from model"),
+        ]
+        for (status, code) in cases {
+            do {
+                _ = try await refusal(status: status, error: code)
+                    .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+                XCTFail("Expected an error to be thrown")
+            } catch {
+                XCTAssertEqual(error as? TutorConversationError, .server(status: status, message: nil), code)
+            }
+        }
     }
 
     func testAConsentCheckFailureIsNotAConsentRefusal() async {
@@ -151,7 +168,7 @@ final class TutorConversationClientTests: XCTestCase {
             XCTFail("Expected an error to be thrown")
         } catch {
             XCTAssertEqual(
-                error as? TutorConversationError, .server(status: 503, message: "consent-check-failed"))
+                error as? TutorConversationError, .server(status: 503, message: nil))
         }
         await fulfillment(of: [notAnnounced], timeout: 0.3)
     }
