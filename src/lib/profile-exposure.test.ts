@@ -140,7 +140,7 @@ describe("profile exposure through SQL", () => {
     for (const [name, rule] of Object.entries(ALLOWED)) {
       const body = fns.get(name);
       if (!body || !rule.ownRowOnly) continue; // planned in a later WS, or service-only
-      expect(body, name).toMatch(/\.id\s*=\s*(auth\.uid\(\)|me)\b/);
+      expect(body, name).toMatch(/\.id\s*=\s*(auth\.uid\(\)|me\b)/);
     }
   });
   it("no migration creates a view over public.profiles (a default view bypasses RLS)", () => {
