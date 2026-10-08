@@ -72,7 +72,8 @@ struct SpeakQuestionCard: View {
                 typingFallback
             }
 
-            if let errorMessage = voice.failure?.userMessage() ?? errorMessage {
+            if let errorMessage = voice.failure?.cardMessage()
+                ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage {
                 Text(errorMessage)
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.destructive)

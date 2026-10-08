@@ -129,6 +129,10 @@ struct RootView: View {
                         // holding one, because PodcastClient cannot refresh the
                         // token it was given.
                         podcastPlayer.makeClient = { makePodcastClient(session: session) }
+                        // The voice engine silences the podcast through this hook. It is registered here, with the
+                        // player this view actually keeps, because RootView's state initializer can build throwaway
+                        // players that would otherwise claim the hook and then disappear.
+                        VoiceAudioHooks.pauseOtherAudio = { [weak podcastPlayer] in podcastPlayer?.pauseForVoice() }
                         // Identity first: RevenueCat can still hold a previous account
                         // (an upgrade, an interrupted sign-out), and nothing here should
                         // run, or show Pro, before it is aliased to this account. See
@@ -191,9 +195,14 @@ struct RootView: View {
                 await entitlementStore.reconcileSignedOut()
             }
         }
-        // The next account on this device must not see the previous account's conversations.
+        // The next account on this device must not see the previous account's conversations, nor start in its course.
+        // The store is replaced, not emptied: a turn still in flight for the previous account holds the old store,
+        // so its late reply lands in a store nobody reads.
         .onChange(of: session.userID) {
-            conversationStore.removeAll()
+            conversationStore = ConversationStore()
+        }
+        .onChange(of: session.userID, initial: true) {
+            activeCourse.accountChanged(to: session.userID)
         }
         .onAppear {
             // See updateRealSystemColorScheme's doc comment. Runs once,

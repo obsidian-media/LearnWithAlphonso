@@ -31,10 +31,25 @@ final class CourseWireTests: XCTestCase {
     }
 
     func testActiveCourseDefaultsToEnglishAndPersists() {
-        XCTAssertEqual(ActiveCoursePreference.load(from: defaults), .english)
-        ActiveCoursePreference.save(.spanish, to: defaults)
-        XCTAssertEqual(ActiveCoursePreference.load(from: defaults), .spanish)
-        defaults.set("klingon", forKey: ActiveCoursePreference.defaultsKey)
-        XCTAssertEqual(ActiveCoursePreference.load(from: defaults), .english)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "a", from: defaults), .english)
+        ActiveCoursePreference.save(.spanish, for: "a", to: defaults)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "a", from: defaults), .spanish)
+        defaults.set("klingon", forKey: ActiveCoursePreference.defaultsKey(for: "a"))
+        XCTAssertEqual(ActiveCoursePreference.load(for: "a", from: defaults), .english)
+    }
+
+    /// The next account on a device must not start in the previous account's course.
+    func testActiveCourseIsPerAccount() {
+        ActiveCoursePreference.save(.french, for: "account-a", to: defaults)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "account-b", from: defaults), .english)
+        ActiveCoursePreference.save(.spanish, for: "account-b", to: defaults)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "account-a", from: defaults), .french)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "account-b", from: defaults), .spanish)
+    }
+
+    func testNothingIsRememberedWhileSignedOut() {
+        ActiveCoursePreference.save(.french, for: nil, to: defaults)
+        XCTAssertEqual(ActiveCoursePreference.load(for: nil, from: defaults), .english)
+        XCTAssertEqual(ActiveCoursePreference.load(for: "a", from: defaults), .english)
     }
 }

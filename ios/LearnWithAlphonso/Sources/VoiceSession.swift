@@ -49,10 +49,13 @@ final class VoiceSessionController {
     @ObservationIgnored private var playbackDelegate: PlaybackDelegate?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var pressBeganAt: Date?
+    /// Identifies the recording the current press started, so a finish that outlives its recording cannot stop a newer one.
+    @ObservationIgnored private var activeRecordingToken: Int?
 
     var phase: VoicePhase { state.phase }
     var isBusy: Bool { state.isBusy }
     var microphoneUnavailable: Bool { state.microphoneUnavailable }
+    var recorderStartFailed: Bool { state.recorderStartFailed }
     var isRecording: Bool {
         if case .recording = state.phase { return true }
         return false
@@ -140,15 +143,17 @@ final class VoiceSessionController {
             }
         case let .startRecorder(generation):
             do {
-                try recorder.start(configureSession: Self.configureForVoice)
+                activeRecordingToken = try recorder.start(configureSession: Self.configureForVoice)
                 send(.recorderStarted(generation: generation))
             } catch {
                 send(.recorderFailed(generation: generation))
             }
         case let .stopRecorderAndSubmit(generation):
             let pressElapsed = pressBeganAt.map { Date().timeIntervalSince($0) }
-            Task { await self.finishCapture(generation: generation, pressElapsed: pressElapsed) }
+            let token = activeRecordingToken
+            Task { await self.finishCapture(generation: generation, token: token, pressElapsed: pressElapsed) }
         case .cancelRecorder:
+            activeRecordingToken = nil
             recorder.cancelIfRecording()
         case .stopPlayback:
             player?.stop()
@@ -161,7 +166,7 @@ final class VoiceSessionController {
         }
     }
 
-    private func finishCapture(generation: Int, pressElapsed: TimeInterval?) async {
+    private func finishCapture(generation: Int, token: Int?, pressElapsed: TimeInterval?) async {
         // Whatever onCapture does or throws, the busy phase ends here.
         defer { send(.turnFinished(generation: generation)) }
         // A quick tap or the hardware warm-up can finalize before anything was
@@ -169,8 +174,10 @@ final class VoiceSessionController {
         if let remaining = recorder.remainingTimeToMinimumDuration() {
             try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
         }
+        // The recording this finish belongs to may have been cancelled, or replaced by a newer press, while it slept.
+        guard let token, recorder.isCurrent(token) else { return }
         let captureElapsed = recorder.elapsedSinceStart()
-        let audio = await recorder.stop()
+        let audio = await recorder.stop(token: token)
         guard state.accepts(generation: generation) else { return }
         guard let audio, audio.count >= VoiceRecorder.minimumAudioBytes else {
             await onCapture?(.tooShort(generation: generation))
@@ -239,6 +246,7 @@ private enum VoiceRecorderError: Error {
 /// - treat record() == false as a failure;
 /// - keep RecordingState balanced on every path, so a real phone call still
 ///   resumes the podcast later.
+@MainActor
 final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
     /// Well above api/stt.ts's `file.size < 512` floor.
     static let minimumAudioBytes = 4_096
@@ -248,8 +256,15 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
     private var fileURL: URL?
     private var startedAt: Date?
     private var finishContinuation: CheckedContinuation<Void, Never>?
+    /// The recorder whose stop the continuation above is waiting for.
+    private var stoppingRecorder: ObjectIdentifier?
+    private var nextToken = 0
+    private(set) var activeToken: Int?
 
-    func start(configureSession: () throws -> Void) throws {
+    /// Starts a recording and returns its token. Only `stop(token:)` with that token can finish it.
+    func start(configureSession: () throws -> Void) throws -> Int {
+        // A leftover recording never leaks RecordingState's counter.
+        cancelIfRecording()
         // Before touching the session, so the podcast player's interruption
         // handler sees an in-app mic takeover. See RecordingState.
         RecordingState.shared.began()
@@ -268,11 +283,16 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
             recorder = newRecorder
             fileURL = url
             startedAt = Date()
+            nextToken += 1
+            activeToken = nextToken
+            return nextToken
         } catch {
             RecordingState.shared.ended()
             throw error
         }
     }
+
+    func isCurrent(_ token: Int) -> Bool { activeToken == token }
 
     func remainingTimeToMinimumDuration() -> TimeInterval? {
         guard let startedAt else { return nil }
@@ -286,16 +306,21 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
         return Date().timeIntervalSince(startedAt)
     }
 
-    func stop() async -> Data? {
-        guard let recorder, let fileURL else { return nil }
+    /// Finishes the recording `token` started and returns its bytes. A token that is no longer current (cancelled,
+    /// or replaced by a newer press) returns nil and touches nothing.
+    func stop(token: Int) async -> Data? {
+        guard token == activeToken, let recorder, let fileURL else { return nil }
         RecordingState.shared.ended()
+        // Detach before waiting, so a new press that starts meanwhile is never clobbered.
+        activeToken = nil
+        self.recorder = nil
+        self.fileURL = nil
+        startedAt = nil
         await withCheckedContinuation { continuation in
             finishContinuation = continuation
+            stoppingRecorder = ObjectIdentifier(recorder)
             recorder.stop()
         }
-        self.recorder = nil
-        startedAt = nil
-        defer { self.fileURL = nil }
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         try? FileManager.default.removeItem(at: fileURL)
         return data
@@ -305,6 +330,7 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
     /// No-op when nothing is recording.
     func cancelIfRecording() {
         guard let recorder else { return }
+        activeToken = nil
         recorder.stop()
         self.recorder = nil
         if let fileURL { try? FileManager.default.removeItem(at: fileURL) }
@@ -314,7 +340,11 @@ final class VoiceRecorder: NSObject, AVAudioRecorderDelegate {
     }
 
     nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        let finished = ObjectIdentifier(recorder)
         Task { @MainActor in
+            // Only the recorder a stop is waiting for finishes it; a cancelled one's callback is ignored.
+            guard self.stoppingRecorder == finished else { return }
+            self.stoppingRecorder = nil
             self.finishContinuation?.resume()
             self.finishContinuation = nil
         }

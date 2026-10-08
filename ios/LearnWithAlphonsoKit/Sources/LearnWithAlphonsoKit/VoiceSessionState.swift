@@ -67,9 +67,11 @@ public struct VoiceSessionState: Equatable, Sendable {
     public private(set) var isVisible = false
     /// The finger lifted while permission was still being requested.
     public private(set) var stopRequested = false
-    /// Permission denied, or the recorder could not start. Sticky: screens
-    /// offer typing instead for the rest of their lifetime.
+    /// Permission denied. Screens offer typing instead. Cleared if a later attempt is granted.
     public private(set) var microphoneUnavailable = false
+    /// The recorder could not start this time (for example while a call holds the audio session). Transient: it
+    /// clears on the next press and on a successful start, and never turns typing on by itself.
+    public private(set) var recorderStartFailed = false
 
     public init() {}
 
@@ -121,6 +123,7 @@ public struct VoiceSessionState: Equatable, Sendable {
             if case .speaking = phase { wasSpeaking = true } else { wasSpeaking = false }
             phase = .requestingPermission(generation: generation)
             stopRequested = false
+            recorderStartFailed = false
             let start: [VoiceEffect] = [.pauseOtherAudio, .requestPermission(generation: generation)]
             return wasSpeaking ? [.stopPlayback] + start : start
 
@@ -144,6 +147,7 @@ public struct VoiceSessionState: Equatable, Sendable {
                 microphoneUnavailable = true
                 return []
             }
+            microphoneUnavailable = false
             return [.startRecorder(generation: g)]
 
         case let .recorderStarted(g):
@@ -151,6 +155,7 @@ public struct VoiceSessionState: Equatable, Sendable {
                 // Started for a screen that has since left: release it.
                 return [.cancelRecorder]
             }
+            recorderStartFailed = false
             if stopRequested {
                 stopRequested = false
                 phase = .transcribing(generation: g)
@@ -163,7 +168,7 @@ public struct VoiceSessionState: Equatable, Sendable {
             guard accepts(generation: g), phase == .requestingPermission(generation: g) else { return [] }
             phase = .idle
             stopRequested = false
-            microphoneUnavailable = true
+            recorderStartFailed = true
             return [.deactivateAudioSession]
 
         case let .transcribed(g):
@@ -196,9 +201,14 @@ public struct VoiceSessionState: Equatable, Sendable {
             }
 
         case let .turnFinished(g):
-            guard phase == .transcribing(generation: g) || phase == .thinking(generation: g) else { return [] }
-            phase = .idle
-            return [.deactivateAudioSession]
+            if phase == .transcribing(generation: g) || phase == .thinking(generation: g) {
+                phase = .idle
+                return [.deactivateAudioSession]
+            }
+            // The screen left mid-turn: the turn that finishes now is stale. Hand the audio session back unless a
+            // newer recording or reply is using it, so other apps' audio can resume.
+            if g != generation, phase.generation == nil { return [.deactivateAudioSession] }
+            return []
 
         case .interrupted:
             switch phase {
@@ -223,4 +233,10 @@ public struct VoiceSessionState: Equatable, Sendable {
             return [.stopPlayback, .deactivateAudioSession]
         }
     }
+}
+
+/// Learner-facing copy for the microphone states of a voice screen.
+public enum VoiceCopy {
+    public static let microphoneOff = "Microphone access is off. Turn it on in Settings > Privacy > Microphone."
+    public static let microphoneCouldNotStart = "Couldn't start the microphone. Try again."
 }

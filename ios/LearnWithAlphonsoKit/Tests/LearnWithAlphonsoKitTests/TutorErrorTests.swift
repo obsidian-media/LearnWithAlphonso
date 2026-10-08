@@ -101,6 +101,13 @@ final class TutorErrorTests: XCTestCase {
 
     // MARK: - userMessage
 
+    func testALessonCardNeverTalksAboutPractisingWithATutor() {
+        let message = TutorError.aiConsentRequired.cardMessage()
+        XCTAssertFalse(message.lowercased().contains("tutor"))
+        XCTAssertTrue(message.hasSuffix("."))
+        XCTAssertEqual(TutorError.network.cardMessage(), TutorError.network.userMessage())
+    }
+
     func testQuotaCopyNamesTheResetTime() {
         let message = TutorError.quotaExceeded(resetsAt: midnight)
             .userMessage(now: sixPM, timeZone: TimeZone(identifier: "UTC")!)

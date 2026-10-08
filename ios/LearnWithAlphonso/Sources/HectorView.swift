@@ -188,8 +188,8 @@ private struct HectorConversationView: View {
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
-                if voice.microphoneUnavailable {
-                    Text("Microphone access is off. Turn it on in Settings > Privacy > Microphone.")
+                if voice.microphoneUnavailable || voice.recorderStartFailed {
+                    Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.destructive)
                         .multilineTextAlignment(.center)
@@ -236,7 +236,7 @@ private struct HectorConversationView: View {
 
             // The current utterance goes only in `text`; the
             // history is every turn BEFORE it. The server appends `text` itself.
-            let priorTurns = snapshot.turns.dropLast().map { TutorConversationMessage(role: $0.role, content: $0.content) }
+            let priorTurns = snapshot.recentTurns.dropLast().map { TutorConversationMessage(role: $0.role, content: $0.content) }
             let reply = try await tutorClient.respond(
                 sessionID: sessionID,
                 text: text,
@@ -267,7 +267,7 @@ private struct HectorConversationView: View {
               let accessToken = session.accessToken else { return }
         conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-        let transcript = snapshot.turns
+        let transcript = snapshot.recentTurns
         let courseCode = course.wireCode
         Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
     }

@@ -37,6 +37,9 @@ const VALID_SYSTEM_PROMPTS: ReadonlySet<string> = ALL_SYSTEM_PROMPTS;
  * course's target language; for "en" every string is byte-identical to the
  * earlier hint, so legacy clients see no change.
  */
+/** The most recent turns forwarded to the model, matching the tutor route's cap. */
+const MAX_TURNS_SENT = 40;
+
 const CEFR_DIFFICULTY_HINTS: Record<string, (language: string) => string> = {
   A1: () =>
     "The learner's level is CEFR A1 (beginner). Use very simple, common vocabulary and short sentences (roughly 5-10 words). Avoid idioms, phrasal verbs, and complex tenses.",
@@ -99,17 +102,19 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // (below, from body.systemPrompt) gets prepended to -- a second,
   // client-controlled system message the model would see, not just
   // the one this route intends to send.
-  const messages = (Array.isArray(body.messages) ? body.messages : []).filter(
-    (m): m is ChatMessage =>
-      !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
-  );
+  const messages = (Array.isArray(body.messages) ? body.messages : [])
+    .filter(
+      (m): m is ChatMessage =>
+        !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
+    )
+    // A conversation can run long; the model only needs the recent turns.
+    .slice(-MAX_TURNS_SENT);
   if (messages.length === 0) return Response.json({ error: "messages required" }, { status: 400 });
   // The conversation's course. Clients that send none (earlier builds) get the course the matched persona belongs
   // to, which is English for every earlier persona.
   const course: Course =
-    typeof body.course === "string" && isCourse(body.course)
-      ? body.course
-      : (courseOfSystemPrompt(body.systemPrompt) ?? "en");
+    courseOfSystemPrompt(body.systemPrompt) ??
+    (typeof body.course === "string" && isCourse(body.course) ? body.course : "en");
   const finalMessages: ChatMessage[] = [
     { role: "system", content: withDifficultyHint(body.systemPrompt, body.cefrLevel, course) },
     ...messages,

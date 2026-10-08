@@ -25,17 +25,24 @@ extension Course {
 }
 
 /// The learner's active course, shared by Learn, Practice and Hector, and
-/// remembered across launches. It used to live only in LessonBrowserView's own
+/// remembered across launches, per account: the next person to sign in on this device starts in their own course,
+/// not the previous account's. It used to live only in LessonBrowserView's own
 /// @State and reset to English on every launch, so the conversation screens
 /// had no course to follow.
 public enum ActiveCoursePreference {
-    public static let defaultsKey = "activeCourse"
+    public static let defaultsKeyPrefix = "activeCourse."
 
-    public static func load(from defaults: UserDefaults = .standard) -> Course {
-        defaults.string(forKey: defaultsKey).flatMap(Course.init(wireCode:)) ?? .english
+    public static func defaultsKey(for userID: String) -> String { defaultsKeyPrefix + userID }
+
+    /// English when signed out or when this account has never chosen.
+    public static func load(for userID: String?, from defaults: UserDefaults = .standard) -> Course {
+        guard let userID else { return .english }
+        return defaults.string(forKey: defaultsKey(for: userID)).flatMap(Course.init(wireCode:)) ?? .english
     }
 
-    public static func save(_ course: Course, to defaults: UserDefaults = .standard) {
-        defaults.set(course.wireCode, forKey: defaultsKey)
+    /// Nothing is remembered while signed out.
+    public static func save(_ course: Course, for userID: String?, to defaults: UserDefaults = .standard) {
+        guard let userID else { return }
+        defaults.set(course.wireCode, forKey: defaultsKey(for: userID))
     }
 }

@@ -462,6 +462,36 @@ describe("POST /api/chat", () => {
       expect(sentSystemPrompt()).toContain("a competent English speaker");
     });
 
+    it("follows the persona's own course even when the client claims another", async () => {
+      okReply();
+      await handler({
+        request: req({
+          systemPrompt: scenarioPrompt("coffee", "fr"),
+          cefrLevel: "C1",
+          course: "en",
+          messages: [{ role: "user", content: "Bonjour" }],
+        }),
+      });
+      const prompt = sentSystemPrompt();
+      expect(prompt).toContain("idiomatic French");
+      expect(prompt).not.toContain("English");
+    });
+
+    it("sends the model at most the last 40 turns", async () => {
+      okReply();
+      const messages = Array.from({ length: 100 }, (_, i) => ({
+        role: i % 2 === 0 ? "user" : "assistant",
+        content: `turn ${i}`,
+      }));
+      await handler({ request: req({ systemPrompt: REAL_PROMPT, messages }) });
+      const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const sent = JSON.parse(init.body as string).messages as { role: string; content: string }[];
+      const turns = sent.filter((m) => m.role !== "system");
+      expect(turns).toHaveLength(40);
+      expect(turns[0]!.content).toBe("turn 60");
+      expect(turns[39]!.content).toBe("turn 99");
+    });
+
     it("follows the persona's own course when the client sends none", async () => {
       okReply();
       await handler({

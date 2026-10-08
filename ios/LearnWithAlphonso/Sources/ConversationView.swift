@@ -141,7 +141,7 @@ private struct ConversationSessionView: View {
         if turn.role == "assistant" {
             // The scene's fixed opening line is ours, not the model's.
             AssistantReply(
-                turn: turn, isOpener: index == 0, course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
+                turn: turn, isOpener: conversation.openerIndices.contains(index), course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
         }
@@ -199,8 +199,8 @@ private struct ConversationSessionView: View {
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
-                if voice.microphoneUnavailable {
-                    Text("Microphone access is off. Turn it on in Settings > Privacy > Microphone.")
+                if voice.microphoneUnavailable || voice.recorderStartFailed {
+                    Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.destructive)
                         .multilineTextAlignment(.center)
@@ -253,7 +253,7 @@ private struct ConversationSessionView: View {
             voice.transcribed(generation)
 
             let reply = try await client.chat(
-                messages: snapshot.turns, systemPrompt: scenario.systemPrompt, cefrLevel: cefrLevel, course: courseCode)
+                messages: snapshot.recentTurns, systemPrompt: scenario.systemPrompt, cefrLevel: cefrLevel, course: courseCode)
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
             conversation = snapshot
 
@@ -291,7 +291,7 @@ private struct ConversationSessionView: View {
               let accessToken = session.accessToken else { return }
         conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-        let transcript = snapshot.turns
+        let transcript = snapshot.recentTurns
         let courseCode = course.wireCode
         Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
     }

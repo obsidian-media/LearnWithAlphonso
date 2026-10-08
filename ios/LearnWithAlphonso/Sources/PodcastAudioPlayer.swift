@@ -73,14 +73,11 @@ final class PodcastAudioPlayer {
     init() {
         observeSessionNotifications()
         configureRemoteCommands()
-        // A voice turn silences the podcast explicitly. The app changing its own
-        // session category does not reliably interrupt its own AVPlayer, so the
-        // episode could keep playing under the learner's recording. Weak,
-        // because RootView owns this player.
-        VoiceAudioHooks.pauseOtherAudio = { [weak self] in self?.pauseForVoice() }
     }
 
-    /// The learner started speaking. Never auto-resumes: resuming a podcast
+    /// The learner started speaking. RootView registers this as the voice engine's pause hook for the one player it
+    /// keeps (not here: RootView's state initializer can build throwaway players that must not claim the hook).
+    /// Never auto-resumes: resuming a podcast
     /// over a speaking exercise is exactly what RecordingState exists to
     /// prevent. The learner resumes from the mini bar.
     func pauseForVoice() {

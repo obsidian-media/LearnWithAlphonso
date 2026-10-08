@@ -63,6 +63,42 @@ final class ConversationStoreTests: XCTestCase {
         XCTAssertEqual(store.snapshot(for: key), after)
     }
 
+    func testOpenersAreTrackedByPositionNotByWords() {
+        let store = ConversationStore()
+        let key = ConversationKey.campaign("city-day", course: .english)
+        _ = store.snapshot(for: key, seededWith: "Welcome!")
+        // The model repeats the opener's exact words: still a model reply.
+        let after = store.update(key) {
+            $0.turns.append(ChatMessage(role: "user", content: "Hi"))
+            $0.turns.append(ChatMessage(role: "assistant", content: "Welcome!"))
+            $0.appendOpener("Scene 2")
+        }
+        XCTAssertEqual(after.openerIndices, [0, 3])
+        XCTAssertFalse(after.openerIndices.contains(2))
+    }
+
+    func testRestartingASceneKeepsOnlyItsOpenerAndEarlierOnes() {
+        var snapshot = ConversationSnapshot(turns: [ChatMessage(role: "assistant", content: "S1")], openerIndices: [0])
+        snapshot.turns.append(ChatMessage(role: "user", content: "a"))
+        snapshot.appendOpener("S2")
+        snapshot.sceneAnchor = 2
+        snapshot.turns.append(ChatMessage(role: "user", content: "b"))
+        snapshot.confidenceByTurnIndex[3] = 0.9
+        snapshot.restartScene()
+        XCTAssertEqual(snapshot.turns.map(\.content), ["S1", "a", "S2"])
+        XCTAssertEqual(snapshot.openerIndices, [0, 2])
+        XCTAssertTrue(snapshot.confidenceByTurnIndex.isEmpty)
+    }
+
+    func testOnlyTheLatestTurnsAreSentToTheModel() {
+        var snapshot = ConversationSnapshot()
+        for index in 0..<100 { snapshot.turns.append(ChatMessage(role: "user", content: "turn \(index)")) }
+        XCTAssertEqual(snapshot.recentTurns.count, ConversationSnapshot.maxTurnsSent)
+        XCTAssertEqual(snapshot.recentTurns.first?.content, "turn 60")
+        XCTAssertEqual(snapshot.recentTurns.last?.content, "turn 99")
+        XCTAssertEqual(ConversationSnapshot(turns: [ChatMessage(role: "user", content: "x")]).recentTurns.count, 1)
+    }
+
     func testResetAndRemoveAll() {
         let store = ConversationStore()
         let a = ConversationKey.scenario("coffee", course: .english)

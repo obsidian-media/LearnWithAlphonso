@@ -76,7 +76,7 @@ private struct CampaignSessionView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
-                            bubble(for: turn).id(index)
+                            bubble(for: turn, index: index).id(index)
                         }
                         if canContinue && !conversation.finished {
                             continueButton
@@ -126,6 +126,7 @@ private struct CampaignSessionView: View {
                     Button("Restart scene", systemImage: "arrow.counterclockwise") {
                         restartScene()
                     }
+                    .disabled(voice.isBusy)
                 }
             }
         }
@@ -149,6 +150,7 @@ private struct CampaignSessionView: View {
             Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) →")
         }
         .buttonStyle(.alphonsoPrimary)
+        .disabled(voice.isBusy)
         .padding(.top, 4)
     }
 
@@ -165,21 +167,21 @@ private struct CampaignSessionView: View {
     }
 
     @ViewBuilder
-    private func bubbleText(for turn: ChatMessage) -> some View {
+    private func bubbleText(for turn: ChatMessage, index: Int) -> some View {
         if turn.role == "assistant" {
-            // A scene's fixed opening line is ours, not the model's.
+            // A scene's fixed opening line is ours, not the model's. Tracked by position, not by its words.
             AssistantReply(
-                turn: turn, isOpener: campaign.scenes.contains { $0.opener == turn.content },
+                turn: turn, isOpener: conversation.openerIndices.contains(index),
                 course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
         }
     }
 
-    private func bubble(for turn: ChatMessage) -> some View {
+    private func bubble(for turn: ChatMessage, index: Int) -> some View {
         HStack {
             if turn.role == "assistant" { Spacer(minLength: 40) }
-            bubbleText(for: turn)
+            bubbleText(for: turn, index: index)
                 .font(AlphonsoFont.sans(15))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
@@ -208,8 +210,8 @@ private struct CampaignSessionView: View {
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
-                if voice.microphoneUnavailable {
-                    Text("Microphone access is off. Turn it on in Settings > Privacy > Microphone.")
+                if voice.microphoneUnavailable || voice.recorderStartFailed {
+                    Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                         .font(AlphonsoFont.sans(12))
                         .foregroundStyle(AlphonsoColor.destructive)
                         .multilineTextAlignment(.center)
@@ -253,7 +255,7 @@ private struct CampaignSessionView: View {
             voice.transcribed(generation)
 
             let reply = try await client.chat(
-                messages: snapshot.turns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode)
+                messages: snapshot.recentTurns, systemPrompt: prompt, cefrLevel: cefrLevel, course: courseCode)
             snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply), to: key)
             conversation = snapshot
 
@@ -279,7 +281,7 @@ private struct CampaignSessionView: View {
         }
         let nextScene = campaign.scenes[sceneIndex + 1]
         conversation = conversationStore.update(key) {
-            $0.turns.append(ChatMessage(role: "assistant", content: nextScene.opener))
+            $0.appendOpener(nextScene.opener)
             $0.sceneAnchor = $0.turns.count - 1
             $0.sceneIndex += 1
         }
@@ -287,11 +289,7 @@ private struct CampaignSessionView: View {
 
     private func restartScene() {
         notice = nil
-        conversation = conversationStore.update(key) { snapshot in
-            let anchor = snapshot.sceneAnchor
-            snapshot.turns = Array(snapshot.turns[0...anchor])
-            snapshot.confidenceByTurnIndex = snapshot.confidenceByTurnIndex.filter { $0.key <= anchor }
-        }
+        conversation = conversationStore.update(key) { $0.restartScene() }
     }
 
     private func loadCefrLevel() async -> String? {
@@ -307,7 +305,7 @@ private struct CampaignSessionView: View {
               let accessToken = session.accessToken else { return }
         conversationStore.update(key) { $0.analyzedTurnCount = snapshot.turns.count }
         let client = AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { accessToken })
-        let transcript = snapshot.turns
+        let transcript = snapshot.recentTurns
         let courseCode = course.wireCode
         Task { _ = try? await client.analyzeWeaknesses(transcript: transcript, course: courseCode) }
     }

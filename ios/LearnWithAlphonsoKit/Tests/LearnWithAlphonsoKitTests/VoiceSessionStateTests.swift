@@ -166,14 +166,34 @@ final class VoiceSessionStateTests: XCTestCase {
         XCTAssertTrue(state.microphoneUnavailable)
     }
 
-    func testRecorderFailureMarksTheMicrophoneUnavailable() {
+    func testRecorderFailureIsTransientAndNotAPermissionProblem() {
         var state = appeared()
         _ = state.handle(.pressBegan)
         let generation = state.generation
         _ = state.handle(.permissionResolved(generation: generation, granted: true))
         XCTAssertEqual(state.handle(.recorderFailed(generation: generation)), [.deactivateAudioSession])
         XCTAssertEqual(state.phase, .idle)
+        XCTAssertTrue(state.recorderStartFailed)
+        XCTAssertFalse(state.microphoneUnavailable)
+        // The next press clears it, and a successful start keeps it clear.
+        _ = state.handle(.pressBegan)
+        XCTAssertFalse(state.recorderStartFailed)
+        let next = state.generation
+        _ = state.handle(.permissionResolved(generation: next, granted: true))
+        _ = state.handle(.recorderStarted(generation: next))
+        XCTAssertFalse(state.recorderStartFailed)
+        XCTAssertEqual(state.phase, .recording(generation: next))
+    }
+
+    func testAGrantedPressClearsAnEarlierDenial() {
+        var state = appeared()
+        _ = state.handle(.pressBegan)
+        _ = state.handle(.permissionResolved(generation: state.generation, granted: false))
         XCTAssertTrue(state.microphoneUnavailable)
+        // The learner turned the microphone on in Settings and came back.
+        _ = state.handle(.pressBegan)
+        _ = state.handle(.permissionResolved(generation: state.generation, granted: true))
+        XCTAssertFalse(state.microphoneUnavailable)
     }
 
     // MARK: - Interruptions and route changes
@@ -246,6 +266,28 @@ final class VoiceSessionStateTests: XCTestCase {
             XCTAssertFalse(state.isBusy, stopAt)
             XCTAssertEqual(state.phase, .idle, stopAt)
         }
+    }
+
+    /// Leaving mid-turn must still hand the audio session back, or other apps' audio never resumes.
+    func testAStaleTurnFinishingAfterLeavingDeactivatesTheSession() {
+        var state = appeared()
+        let generation = startRecording(&state)
+        _ = state.handle(.pressEnded)
+        _ = state.handle(.disappeared)
+        _ = state.handle(.appeared)
+        XCTAssertEqual(state.handle(.turnFinished(generation: generation)), [.deactivateAudioSession])
+    }
+
+    func testAStaleTurnFinishingDuringANewRecordingLeavesTheSessionAlone() {
+        var state = appeared()
+        let stale = startRecording(&state)
+        _ = state.handle(.pressEnded)
+        _ = state.handle(.disappeared)
+        _ = state.handle(.appeared)
+        let fresh = startRecording(&state)
+        XCTAssertNotEqual(stale, fresh)
+        XCTAssertEqual(state.handle(.turnFinished(generation: stale)), [])
+        XCTAssertEqual(state.phase, .recording(generation: fresh))
     }
 
     func testTurnFinishedLeavesPlaybackAndFailuresAlone() {
