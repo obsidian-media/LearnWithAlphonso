@@ -301,22 +301,33 @@ struct BuddySection: View {
     private func block(_ target: SocialTarget) async {
         busy = true
         defer { busy = false }
-        var blocked = false
-        if let client = await makeClient(), let result = try? await client.blockUser(target.id) {
-            blocked = result.ok
+        var failure: String?
+        if let client = await makeClient() {
+            do {
+                if try await client.blockUser(target.id).ok == false { failure = BuddyCopy.statusMessage("unknown") }
+            } catch {
+                failure = SocialReasonCopy.failureMessage(for: error)
+            }
+        } else {
+            failure = Copy.connectionFailure
         }
         await load()
-        if !blocked { message = BuddyCopy.statusMessage("unknown") }
+        if let failure { message = failure }
     }
 
-    /// Runs a buddy action, shows the server's answer in fixed wording, then reloads (busy until the reload lands, so
-    /// a second tap cannot act on a request that is already gone).
+    /// Runs a buddy action, shows the server's answer in fixed wording (or what actually failed), then reloads.
     private func run(_ action: @escaping (ProgressSyncClient) async throws -> String) async {
         busy = true
         message = nil
-        var text = BuddyCopy.statusMessage("unknown")
-        if let client = await makeClient(), let status = try? await action(client) {
-            text = BuddyCopy.statusMessage(status)
+        var text: String
+        if let client = await makeClient() {
+            do {
+                text = BuddyCopy.statusMessage(try await action(client))
+            } catch {
+                text = SocialReasonCopy.failureMessage(for: error)
+            }
+        } else {
+            text = Copy.connectionFailure
         }
         // The answer is shown only with the state its own reload produced; a superseded reload drops it.
         if await load() { message = text }
