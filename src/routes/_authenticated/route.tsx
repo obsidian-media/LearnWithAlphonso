@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PodcastAudio } from "@/components/PodcastAudio";
+import { NamePrompt } from "@/components/NamePrompt";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: () => (
     <AiConsentProvider>
       <PodcastAudio />
+      <NamePrompt />
       <Outlet />
     </AiConsentProvider>
   ),

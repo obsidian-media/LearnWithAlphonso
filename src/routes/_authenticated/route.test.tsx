@@ -60,4 +60,14 @@ describe("_authenticated route guard", () => {
     );
     expect(types).toContain("PodcastAudio");
   });
+
+  it("mounts the one-time name prompt beside the Outlet", () => {
+    const element = Route.options.component!({} as never) as React.ReactElement<{
+      children: React.ReactElement[];
+    }>;
+    const types = element.props.children.map((child) =>
+      typeof child.type === "function" ? child.type.name : child.type,
+    );
+    expect(types).toContain("NamePrompt");
+  });
 });
