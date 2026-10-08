@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chunkScript } from "./podcast-tts";
+import { chunkScript, DEFAULT_VOICE_FOR_COURSE, deepgramSpeakUrl, voiceLanguage, voiceMatchesCourse } from "./podcast-tts";
 
 describe("chunkScript", () => {
   it("returns a single chunk when the script fits", () => {
@@ -44,5 +44,43 @@ describe("chunkScript", () => {
 
   it("returns no chunks for an empty or whitespace-only script", () => {
     expect(chunkScript("   \n  ")).toEqual([]);
+  });
+});
+
+describe("deepgramSpeakUrl", () => {
+  it("always opts out of Deepgram's model improvement programme", () => {
+    const url = new URL(deepgramSpeakUrl("aura-2-thalia-en"));
+    expect(url.origin + url.pathname).toBe("https://api.deepgram.com/v1/speak");
+    expect(url.searchParams.get("mip_opt_out")).toBe("true");
+    expect(url.searchParams.get("model")).toBe("aura-2-thalia-en");
+    expect(url.searchParams.get("encoding")).toBe("mp3");
+  });
+
+  it("keeps the opt-out literal in the URL text, where the call-site scan looks for it", () => {
+    expect(deepgramSpeakUrl("aura-2-agathe-fr")).toContain("mip_opt_out=true");
+  });
+});
+
+describe("voice and course", () => {
+  it("uses the app's native voice per course", () => {
+    expect(DEFAULT_VOICE_FOR_COURSE).toEqual({
+      en: "aura-2-thalia-en",
+      fr: "aura-2-agathe-fr",
+      es: "aura-2-selena-es",
+    });
+  });
+
+  it("reads the language from an Aura-2 voice id", () => {
+    expect(voiceLanguage("aura-2-selena-es")).toBe("es");
+    expect(voiceLanguage("aura-2-agathe-fr")).toBe("fr");
+    expect(voiceLanguage("aura-asteria-en")).toBeNull();
+    expect(voiceLanguage("aura-2-thalia-de")).toBeNull();
+  });
+
+  it("refuses an English voice on a French or Spanish episode", () => {
+    expect(voiceMatchesCourse("aura-2-thalia-en", "fr")).toBe(false);
+    expect(voiceMatchesCourse("aura-2-thalia-en", "es")).toBe(false);
+    expect(voiceMatchesCourse("aura-2-agathe-fr", "fr")).toBe(true);
+    expect(voiceMatchesCourse("aura-2-selena-es", "es")).toBe(true);
   });
 });
