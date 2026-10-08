@@ -181,19 +181,85 @@ describe("fetchProgress", () => {
 });
 
 describe("startLessonSession", () => {
-  it("issues a token for a real lesson", async () => {
+  function heartsRow(hearts: number, refillAt: string | null) {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: { hearts, hearts_refill_at: refillAt }, error: null }),
+    );
+    return supabase;
+  }
+  afterEach(() => {
+    delete process.env.ENFORCE_HEARTS_GATE;
+  });
+
+  it("issues a token for a real lesson with hearts left", async () => {
     const result = await startLessonSession({
-      context: { userId: USER_ID },
+      context: ctx(heartsRow(3, null)),
       data: { lessonId: LESSON_ID, course: "en" },
     });
-    expect(typeof result.token).toBe("string");
-    expect(result.token.split(".")).toHaveLength(2);
+    expect("token" in result && result.token.split(".")).toHaveLength(2);
+  });
+
+  it("fails open when the hearts read errors: a token is still issued", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: null, error: { message: "x" } }));
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
+  });
+
+  it("reads hearts for the caller only", async () => {
+    const chain = chainable({ data: { hearts: 3, hearts_refill_at: null }, error: null });
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chain);
+    await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect(supabase.from).toHaveBeenCalledWith("user_progress");
+    expect(chain.calls.find((c) => c.method === "eq")?.args).toEqual(["user_id", USER_ID]);
+  });
+
+  it("issues a token when the learner has no progress row yet (full hearts)", async () => {
+    const result = await startLessonSession({
+      context: ctx(createSupabaseMock()),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
+  });
+
+  it("returns out-of-hearts with refillAt (epoch ms) at 0 hearts, and no token", async () => {
+    const refill = new Date(Date.now() + 10 * 60_000).toISOString();
+    const result = await startLessonSession({
+      context: ctx(heartsRow(0, refill)),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect(result).toEqual({ error: "out-of-hearts", refillAt: new Date(refill).getTime() });
+  });
+
+  it("lets a learner through once the refill time has passed", async () => {
+    const result = await startLessonSession({
+      context: ctx(heartsRow(0, new Date(Date.now() - 1_000).toISOString())),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
+  });
+
+  it("ENFORCE_HEARTS_GATE=false issues a token at 0 hearts", async () => {
+    process.env.ENFORCE_HEARTS_GATE = "false";
+    const result = await startLessonSession({
+      context: ctx(heartsRow(0, new Date(Date.now() + 60_000).toISOString())),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
   });
 
   it("throws for a lesson that doesn't exist", async () => {
     await expect(
       startLessonSession({
-        context: { userId: USER_ID },
+        context: ctx(createSupabaseMock()),
         data: { lessonId: "nope999", course: "en" },
       }),
     ).rejects.toThrow("Lesson not found");

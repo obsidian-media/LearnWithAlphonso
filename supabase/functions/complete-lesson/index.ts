@@ -21,18 +21,18 @@ import {
   computeLeaguePromotion,
   computeLessonReplayXp,
   computeStreakUpdate,
-  validateLessonAnswerCoverage,
   LEAGUES,
   type LeagueTier,
 } from "./progress-math.ts";
 import { verifyLessonSessionToken } from "./lesson-session.ts";
+import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
   gainHearts,
   MAX_HEARTS,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
   streakHeartMilestoneReached,
-} from "./hearts.ts";
+} from "../_shared/hearts.ts";
 import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
 // instead of trusting a client-claimed missedQuestionIds list. The same
@@ -164,15 +164,18 @@ export async function handleRequest(req: Request): Promise<Response> {
     { auth: { persistSession: false } },
   );
 
-  const lesson = await findLesson(admin, course, lessonId);
-  if (!lesson || total !== lesson.questions.length) {
-    return jsonResponse({ error: "Invalid lesson completion payload" }, 400);
+  const found = await findLesson(admin, course, lessonId);
+  if (!lessonPayloadMatches(found, total, answers)) {
+    console.log(JSON.stringify({
+      event: "lesson_version_mismatch",
+      lessonId,
+      course,
+      total,
+      serverTotal: found?.questions.length ?? null,
+    }));
+    return jsonResponse({ error: "lesson-version-mismatch" }, 409);
   }
-  try {
-    validateLessonAnswerCoverage(lesson, answers);
-  } catch {
-    return jsonResponse({ error: "Invalid lesson completion payload" }, 400);
-  }
+  const lesson = found!;
 
   if (!verifyLessonSessionToken(sessionToken, { userId, lessonId, course })) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);

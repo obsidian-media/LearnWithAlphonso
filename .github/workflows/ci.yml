@@ -218,8 +218,11 @@ jobs:
       - name: Test the shared NVIDIA chokepoint adds the safety preamble
         run: deno test supabase/functions/_shared/nvidia-chat.test.ts
 
-      - name: Test complete-lesson's hearts.ts port
-        run: deno test supabase/functions/complete-lesson/hearts.test.ts
+      - name: Test the shared hearts module
+        run: deno test supabase/functions/_shared/hearts.test.ts
+
+      - name: Test complete-lesson's lesson-version rule
+        run: deno test supabase/functions/complete-lesson/lesson-version.test.ts
 
       - name: Test the shared FCM sender (Android push)
         # No network and no key material: the test generates its own RSA key

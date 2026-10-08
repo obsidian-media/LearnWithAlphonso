@@ -1,3 +1,4 @@
+import { postChat } from "../../lib/chat-request";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
@@ -184,16 +185,15 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
       setInput("");
       setSending(true);
       try {
-        const resp = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({
+        const resp = await postChat(
+          {
             systemPrompt: systemPromptForScene(scene),
             cefrLevel,
             course,
             messages: next.map(({ role, content }) => ({ role, content })),
-          }),
-        });
+          },
+          await authHeaders(),
+        );
         if (!resp.ok) {
           if (await isAiConsentRequired(resp)) {
             // Consent was withdrawn elsewhere: back to the gate, with the learner's words kept.
@@ -208,7 +208,9 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
               ? t || "Daily limit reached — try again tomorrow."
               : resp.status === 402
                 ? "AI credits exhausted. Add credits to keep chatting."
-                : t || "Something went wrong.",
+                : resp.status === 502
+                  ? "Your partner didn't answer. Try saying it again."
+                  : t || "Something went wrong.",
           );
         }
         const data = (await resp.json()) as { content?: string };

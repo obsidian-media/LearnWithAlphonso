@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -14,7 +15,30 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   };
 });
 
+vi.mock("../../lib/auth-headers", () => ({ authHeaders: vi.fn().mockResolvedValue({}) }));
+
 const { FinishScreen } = await import("./lesson.$id");
+
+const originalFetch = global.fetch;
+afterEach(() => {
+  global.fetch = originalFetch;
+});
+
+function renderFinish() {
+  return render(
+    <FinishScreen
+      xp={10}
+      unlocked={[]}
+      heartsBonus={null}
+      lessonTitle="Test lesson"
+      correct={5}
+      total={5}
+      missedQs={[]}
+      lessonId="l1"
+      course="en"
+    />,
+  );
+}
 
 describe("FinishScreen", () => {
   it("shows Alphonso celebrating", () => {
@@ -32,5 +56,56 @@ describe("FinishScreen", () => {
       />,
     );
     expect(screen.getByRole("img", { name: /alphonso/i })).toBeInTheDocument();
+  });
+
+  it("practice choices are keyed by position, so duplicate texts do not both light up", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          questions: [
+            { prompt: "p", choices: ["same", "same", "x"], answerIndex: 1, explanation: "e" },
+          ],
+          source: "ai",
+        }),
+        { status: 200 },
+      ),
+    );
+    renderFinish();
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    const rows = await screen.findAllByRole("button", { name: "same" });
+    await user.click(rows[0]);
+    expect(rows[0].className).toContain("bg-parchment");
+    expect(rows[1].className).not.toContain("bg-parchment");
+  });
+
+  it("a practice 429 shows the server's own message, not a generic failure", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Daily limit reached. Try again tomorrow." }), {
+        status: 429,
+      }),
+    );
+    renderFinish();
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(await screen.findByText("Daily limit reached. Try again tomorrow.")).toBeInTheDocument();
+  });
+
+  it("a practice 429 with the real quota body shows the quota copy, never the code", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: "quota-exceeded",
+          resetsAt: "2099-01-01T12:00:00.000Z",
+          message: "Daily CHAT limit reached (50/day). Try again tomorrow.",
+        }),
+        { status: 429 },
+      ),
+    );
+    renderFinish();
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(await screen.findByText(/You've reached today's AI practice limit/)).toBeInTheDocument();
+    expect(screen.queryByText(/quota-exceeded/)).not.toBeInTheDocument();
   });
 });

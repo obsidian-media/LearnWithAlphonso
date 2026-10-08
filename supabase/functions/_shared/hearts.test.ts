@@ -11,6 +11,9 @@ import { assertEquals } from "jsr:@std/assert@1";
 import {
   MAX_HEARTS,
   gainHearts,
+  heartsGate,
+  heartsGateEnforced,
+  outOfHeartsBody,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
   streakHeartMilestoneReached,
@@ -74,4 +77,36 @@ Deno.test("streakHeartMilestoneReached does not fire on non-multiples", () => {
 Deno.test("streakHeartMilestoneReached fires at 14, 21, etc.", () => {
   assertEquals(streakHeartMilestoneReached(13, 14), true);
   assertEquals(streakHeartMilestoneReached(20, 21), true);
+});
+
+// The server-side lesson gate. Vectors mirror src/lib/hearts.test.ts's heartsGate block exactly.
+Deno.test("heartsGate is open with hearts left", () => {
+  assertEquals(heartsGate(1, null, 1_000), { blocked: false });
+});
+
+Deno.test("heartsGate blocks at 0 hearts before the refill time and reports it", () => {
+  assertEquals(heartsGate(0, 5_000, 1_000), { blocked: true, refillAt: 5_000 });
+});
+
+Deno.test("heartsGate opens once the refill time has passed (resolveHeartsRefill first)", () => {
+  assertEquals(heartsGate(0, 5_000, 5_000), { blocked: false });
+});
+
+Deno.test("heartsGate blocks a negative count and a missing timer with refillAt null", () => {
+  assertEquals(heartsGate(-1, null, 1_000), { blocked: true, refillAt: null });
+});
+
+Deno.test("outOfHeartsBody is the contract shape with an ISO refillAt", () => {
+  assertEquals(outOfHeartsBody(Date.UTC(2026, 9, 8, 12, 30)), {
+    error: "out-of-hearts",
+    refillAt: "2026-10-08T12:30:00.000Z",
+  });
+  assertEquals(outOfHeartsBody(null), { error: "out-of-hearts", refillAt: null });
+});
+
+Deno.test("heartsGateEnforced defaults on and only the literal 'false' turns it off", () => {
+  assertEquals(heartsGateEnforced(() => undefined), true);
+  assertEquals(heartsGateEnforced(() => "true"), true);
+  assertEquals(heartsGateEnforced(() => "0"), true);
+  assertEquals(heartsGateEnforced(() => "false"), false);
 });

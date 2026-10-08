@@ -4,6 +4,7 @@ import {
   XP_HEART_COST,
   buyHeartWithXp,
   gainHearts,
+  heartsGate,
   perfectLessonBonusEarned,
   resolveHeartsRefill,
   streakHeartMilestoneReached,
@@ -101,5 +102,20 @@ describe("buyHeartWithXp", () => {
 
   it("succeeds exactly at the cost boundary", () => {
     expect(buyHeartWithXp(2, XP_HEART_COST)).toEqual({ ok: true, hearts: 3, xp: 0 });
+  });
+});
+
+describe("heartsGate", () => {
+  it("is open with hearts left", () => {
+    expect(heartsGate(1, null, 1_000)).toEqual({ blocked: false });
+  });
+  it("blocks at 0 hearts before the refill time and reports it", () => {
+    expect(heartsGate(0, 5_000, 1_000)).toEqual({ blocked: true, refillAt: 5_000 });
+  });
+  it("opens once the refill time has passed", () => {
+    expect(heartsGate(0, 5_000, 5_000)).toEqual({ blocked: false });
+  });
+  it("blocks a negative count and a missing timer with refillAt null", () => {
+    expect(heartsGate(-1, null, 1_000)).toEqual({ blocked: true, refillAt: null });
   });
 });

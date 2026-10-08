@@ -187,16 +187,6 @@ describe("POST /api/chat", () => {
     expect(JSON.parse(init.body as string).model).toBe("custom/model");
   });
 
-  it("returns empty content when the upstream response has no choices", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(JSON.stringify({}), { status: 200 }),
-    );
-    const res = await handler({
-      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
-    });
-    expect(await res.json()).toEqual({ content: "" });
-  });
-
   it("maps a 429 upstream failure to a rate-limited message", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("rate limited by nvidia", { status: 429 }),
@@ -505,5 +495,29 @@ describe("POST /api/chat", () => {
       expect(prompt).toContain("a competent French speaker");
       expect(prompt).not.toContain("English speaker");
     });
+  });
+});
+
+describe("empty model reply", () => {
+  for (const content of ["", "   \n  "]) {
+    it(`returns 502 empty-reply for ${JSON.stringify(content)} instead of a blank 200`, async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 }),
+      );
+      const res = await handler({
+        request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+      });
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: "empty-reply" });
+    });
+  }
+  it("a missing choices array is also empty-reply", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({}), { status: 200 }),
+    );
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
+    expect(res.status).toBe(502);
   });
 });

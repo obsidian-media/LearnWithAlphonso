@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   generatePracticeQuestions,
   parsePracticeQuestions,
+  PRACTICE_ATTEMPT_TIMEOUT_MS,
+  PRACTICE_MAX_ATTEMPTS,
   practicePrompt,
 } from "./practice-generation.server";
 
@@ -109,7 +111,7 @@ describe("generatePracticeQuestions", () => {
     await generatePracticeQuestions(params());
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     const body = JSON.parse(init.body as string);
-    expect(body.max_tokens).toBe(2048);
+    expect(body.max_tokens).toBe(1200);
   });
 
   it("returns an empty array (not a throw) when the request times out", async () => {
@@ -118,5 +120,43 @@ describe("generatePracticeQuestions", () => {
       .mockRejectedValue(new DOMException("The operation timed out.", "TimeoutError"));
     const result = await generatePracticeQuestions(params());
     expect(result).toEqual([]);
+  });
+
+  it("retries once after a failed attempt and returns the second attempt's questions", async () => {
+    global.fetch = vi
+      .fn()
+      .mockRejectedValueOnce(new DOMException("timed out", "TimeoutError"))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: JSON.stringify([QUESTION]) } }] }),
+          { status: 200 },
+        ),
+      );
+    const out = await generatePracticeQuestions(params());
+    expect(out).toHaveLength(1);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("makes at most PRACTICE_MAX_ATTEMPTS calls, each with the short timeout", async () => {
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
+    global.fetch = vi.fn().mockResolvedValue(new Response("", { status: 500 }));
+    expect(await generatePracticeQuestions(params())).toEqual([]);
+    expect(global.fetch).toHaveBeenCalledTimes(PRACTICE_MAX_ATTEMPTS);
+    expect(timeoutSpy).toHaveBeenCalledWith(PRACTICE_ATTEMPT_TIMEOUT_MS);
+    timeoutSpy.mockRestore();
+  });
+
+  it("drops duplicate choices from the model output", async () => {
+    const dup = JSON.stringify([
+      { prompt: "p", choices: ["go", "Go", "went", "gone"], answerIndex: 2, explanation: "e" },
+    ]);
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: dup } }] }), { status: 200 }),
+      );
+    expect(await generatePracticeQuestions(params())).toEqual([
+      { prompt: "p", choices: ["go", "went", "gone"], answerIndex: 1, explanation: "e" },
+    ]);
   });
 });

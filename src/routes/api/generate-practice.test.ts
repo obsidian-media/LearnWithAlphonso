@@ -97,6 +97,7 @@ describe("POST /api/generate-practice", () => {
           explanation: "Third-person singular present takes 'drives'.",
         },
       ],
+      source: "ai",
     });
     const [, options] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
       string,
@@ -111,14 +112,35 @@ describe("POST /api/generate-practice", () => {
     expect(res.status).toBe(200);
   });
 
-  it("returns an empty questions array when the model's response isn't valid JSON", async () => {
+  it("falls back to the lesson's own questions when the model's response isn't valid JSON", async () => {
     global.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "not json" } }] }), {
         status: 200,
       }),
     );
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
-    expect(await res.json()).toEqual({ questions: [] });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.source).toBe("fallback");
+    expect(body.questions.length).toBeGreaterThan(0);
+  });
+
+  it("falls back to the lesson's own questions when the model returns nothing", async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "[]" } }] }), {
+        status: 200,
+      }),
+    );
+    const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.source).toBe("fallback");
+    expect(body.questions.length).toBeGreaterThan(0);
+  });
+
+  it("labels model output as source ai", async () => {
+    const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
+    expect((await res.json()).source).toBe("ai");
   });
 
   it("is not consent-gated (it sends only the lesson's own wording), but still authenticated and metered", async () => {
@@ -143,6 +165,11 @@ describe("POST /api/generate-practice", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
     const res = await handler({ request: req({ lessonId: "u1l1", course: "en" }) });
-    expect(await res.json()).toEqual({ questions: [] });
+    const body = await res.json();
+    // The blocked model question is never returned; the curated fallback set is.
+    expect(body.source).toBe("fallback");
+    expect(body.questions.map((q: { prompt: string }) => q.prompt)).not.toContain(
+      "He ___ to work every day.",
+    );
   });
 });

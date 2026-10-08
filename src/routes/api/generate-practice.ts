@@ -3,6 +3,7 @@ import { getCourse, isCourse, type Course } from "@/data/courses";
 import type { Question } from "@/data/curriculum";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { generatePracticeQuestions } from "@/lib/practice-generation.server";
+import { buildFallbackPractice } from "@/lib/practice-fallback";
 import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 
 /**
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/api/generate-practice")({
         // publicly bundled course data, so running them before the auth check
         // in consumeQuota leaks nothing new.
         if (!hasUsableSamples(found.lesson.questions)) {
-          return Response.json({ questions: [] });
+          return Response.json({ questions: [], source: "fallback" });
         }
 
         // Not consent-gated: the model sees only the lesson's own public wording, never anything the learner
@@ -90,7 +91,15 @@ export const Route = createFileRoute("/api/generate-practice")({
           questions.map((q) => [q.prompt, ...q.choices, q.explanation].join("\n")),
           { check: makeBlockedTermCheck(supabaseAdmin), course, route: "generate-practice" },
         );
-        return Response.json({ questions: questions.filter((_, i) => !blocked[i]) });
+        const safe = questions.filter((_, i) => !blocked[i]);
+        // Never an empty answer for a lesson that has practiceable questions.
+        if (safe.length === 0) {
+          return Response.json({
+            questions: buildFallbackPractice(found.lesson, found.lesson.id),
+            source: "fallback",
+          });
+        }
+        return Response.json({ questions: safe, source: "ai" });
       },
     },
   },

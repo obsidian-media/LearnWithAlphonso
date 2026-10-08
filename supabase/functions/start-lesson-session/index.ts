@@ -17,6 +17,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { issueLessonSessionToken } from "./lesson-session.ts";
+import { heartsGate, heartsGateEnforced, MAX_HEARTS, outOfHeartsBody } from "../_shared/hearts.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
 // which verifies the token this issues and must agree on what a valid
@@ -66,13 +68,16 @@ async function authenticate(
   return { userId: data.claims.sub as string };
 }
 
-/** Scoped to the claimed course, matching complete-lesson's own findLesson. */
-async function lessonExists(course: string, lessonId: string): Promise<boolean> {
-  const admin = createClient(
+function adminClient(): SupabaseClient {
+  return createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
+}
+
+/** Scoped to the claimed course, matching complete-lesson's own findLesson. */
+async function lessonExists(admin: SupabaseClient, course: string, lessonId: string): Promise<boolean> {
   const { data, error } = await admin
     .from("lessons")
     .select("id, units!inner(course)")
@@ -80,6 +85,31 @@ async function lessonExists(course: string, lessonId: string): Promise<boolean> 
     .eq("units.course", course)
     .maybeSingle();
   return !error && !!data;
+}
+
+/**
+ * A missing row means a new learner with a full set (the column defaults to 5). A failed read FAILS OPEN:
+ * the gate is an economy rule, not a security boundary, and a learner must never be locked out of lessons
+ * because a read failed. The failure is logged so it shows in the function logs.
+ */
+async function readHearts(
+  admin: SupabaseClient,
+  userId: string,
+): Promise<{ hearts: number; heartsRefillAt: number | null } | null> {
+  const { data, error } = await admin
+    .from("user_progress")
+    .select("hearts, hearts_refill_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    console.error(JSON.stringify({ event: "hearts_gate_read_failed", fn: "start-lesson-session", message: error.message }));
+    return null;
+  }
+  if (!data) return { hearts: MAX_HEARTS, heartsRefillAt: null };
+  return {
+    hearts: typeof data.hearts === "number" ? data.hearts : MAX_HEARTS,
+    heartsRefillAt: data.hearts_refill_at ? new Date(data.hearts_refill_at).getTime() : null,
+  };
 }
 
 export async function handleRequest(req: Request): Promise<Response> {
@@ -102,8 +132,19 @@ export async function handleRequest(req: Request): Promise<Response> {
   }
   const { lessonId, course } = parsed;
 
-  if (!(await lessonExists(course, lessonId))) {
+  const admin = adminClient();
+  if (!(await lessonExists(admin, course, lessonId))) {
     return jsonResponse({ error: "Lesson not found" }, 404);
+  }
+
+  // No lesson starts at 0 hearts, on any client. The web's startLessonSession server function runs the same
+  // heartsGate. Review and practice never come through here, so they never cost or need hearts.
+  if (heartsGateEnforced()) {
+    const state = await readHearts(admin, userId);
+    if (state) {
+      const gate = heartsGate(state.hearts, state.heartsRefillAt, Date.now());
+      if (gate.blocked) return jsonResponse(outOfHeartsBody(gate.refillAt), 409);
+    }
   }
 
   const token = issueLessonSessionToken({ userId, lessonId, course });
