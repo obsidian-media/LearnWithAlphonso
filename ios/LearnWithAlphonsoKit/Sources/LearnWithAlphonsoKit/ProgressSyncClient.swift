@@ -117,6 +117,11 @@ public struct ReviewItem: Sendable, Equatable {
 public struct DueReviews: Sendable, Equatable {
     public let due: [ReviewItem]
     public let total: Int
+
+    public init(due: [ReviewItem], total: Int) {
+        self.due = due
+        self.total = total
+    }
 }
 
 public struct ReviewGradeOutcome: Sendable, Equatable {
