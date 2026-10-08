@@ -94,11 +94,11 @@ final class VocabDerivationTests: XCTestCase {
     // MARK: - provenance fields (App Store review fix, 2026-10)
 
     func testDecodesAVocabImageWithProvenanceFields() throws {
-        let json = #"{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:w1-review-r1-b001","reviewedAt":"2026-10-08"}"#
+        let json = #"{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:review-r1-b001","reviewedAt":"2026-10-08"}"#
         let ref = try JSONDecoder().decode(VocabImageRef.self, from: Data(json.utf8))
         XCTAssertEqual(ref.source, "pexels")
         XCTAssertEqual(ref.sourcePageUrl, "https://www.pexels.com/photo/x-1/")
-        XCTAssertEqual(ref.reviewedBy, "agent:w1-review-r1-b001")
+        XCTAssertEqual(ref.reviewedBy, "agent:review-r1-b001")
         XCTAssertEqual(ref.reviewedAt, "2026-10-08")
     }
 

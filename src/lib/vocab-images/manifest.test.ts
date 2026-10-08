@@ -92,11 +92,11 @@ describe("fetch and review transitions", () => {
   });
 
   it("approval records the review", () => {
-    const r = applyFirstVerdict(fetched(), approve, "agent:w1-review-r1-b001", "2026-10-08");
+    const r = applyFirstVerdict(fetched(), approve, "agent:review-r1-b001", "2026-10-08");
     expect(r.entry).toMatchObject({
       status: "approved",
       review: {
-        reviewedBy: "agent:w1-review-r1-b001",
+        reviewedBy: "agent:review-r1-b001",
         reviewedAt: "2026-10-08",
         alt: "A red apple on a table.",
       },

@@ -398,7 +398,7 @@ function LessonPage() {
           {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
             <VocabImage
               url={VOCAB_IMAGES[q.imageKey].url}
-              alt={VOCAB_IMAGES[q.imageKey].alt}
+              alt=""
               className="mb-4 h-40 w-full rounded-2xl"
             />
           )}

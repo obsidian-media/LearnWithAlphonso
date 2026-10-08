@@ -19,7 +19,7 @@ const good = (key: string, lang: "en" | "fr" | "es" = "en"): VocabImageRecord =>
   source: "pexels",
   sourcePageUrl: "https://www.pexels.com/photo/red-apple-590472/",
   license: LICENSE_FOR_SOURCE.pexels,
-  reviewedBy: "agent:w1-review-r1-b001",
+  reviewedBy: "agent:review-r1-b001",
   reviewedAt: "2026-10-08",
 });
 
@@ -27,6 +27,28 @@ describe("denylistHits", () => {
   it("matches whole words case-insensitively, not substrings", () => {
     expect(denylistHits("Woman in a BIKINI at the beach")).toEqual(["bikini"]);
     expect(denylistHits("A warm begun scrubbed drugstore shelf")).toEqual([]);
+  });
+});
+
+describe("denylistHits inflections", () => {
+  it("catches plurals of denylisted words", () => {
+    expect(denylistHits("Glasses of wines, beers and cocktails")).toEqual([
+      "wine",
+      "beer",
+      "cocktail",
+    ]);
+    expect(denylistHits("Bombs, wars, riots, protests and politicians")).toEqual([
+      "bomb",
+      "war",
+      "riot",
+      "protest",
+      "politician",
+    ]);
+    expect(denylistHits("Injuries and wounds")).toEqual(["injury", "wound"]);
+  });
+
+  it("does not flag innocent words that merely contain or resemble a denylisted one", () => {
+    expect(denylistHits("A twine ball, Gundula and a swarm of bees")).toEqual([]);
   });
 });
 
@@ -62,7 +84,7 @@ describe("reviewStampViolations", () => {
       reviewStampViolations(
         {
           a: good("a"),
-          b: { ...good("b"), reviewedBy: "agent:w1-review-r1-b001+agent:w1-review2-r1-b001" },
+          b: { ...good("b"), reviewedBy: "agent:review-r1-b001+agent:review2-r1-b001" },
         },
         "2026-10-09",
       ),

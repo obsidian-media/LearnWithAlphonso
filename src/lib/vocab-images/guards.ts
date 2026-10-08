@@ -82,12 +82,30 @@ export const ALT_CREDIT_DENYLIST: readonly string[] = [
 ];
 const DENY = new Set(ALT_CREDIT_DENYLIST);
 
+/** The word itself plus simple plural stems, so "wines" and "injuries" are caught. */
+function baseForms(token: string): string[] {
+  const forms = [token];
+  if (token.endsWith("ies")) forms.push(`${token.slice(0, -3)}y`);
+  if (token.endsWith("es")) forms.push(token.slice(0, -2));
+  if (token.endsWith("s")) forms.push(token.slice(0, -1));
+  return forms;
+}
+
 export function denylistHits(text: string): string[] {
   const tokens = text
     .normalize("NFC")
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u);
-  return [...new Set(tokens.filter((t) => DENY.has(t)))];
+  const hits = new Set<string>();
+  for (const t of tokens) {
+    for (const form of baseForms(t)) {
+      if (DENY.has(form)) {
+        hits.add(form);
+        break;
+      }
+    }
+  }
+  return [...hits];
 }
 
 export function hostViolations(images: Images): string[] {

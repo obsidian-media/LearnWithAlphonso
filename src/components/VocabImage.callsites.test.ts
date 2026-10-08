@@ -13,4 +13,13 @@ describe("vocab image call sites", () => {
       expect(src).toMatch(/<VocabImage\b/);
     },
   );
+
+  it.each(["src/routes/_authenticated/lesson.$id.tsx", "src/routes/_authenticated/review.tsx"])(
+    "%s gives question images an empty alt, so the alt cannot reveal the answer",
+    (rel) => {
+      const src = fs.readFileSync(path.join(ROOT, rel), "utf8");
+      expect(src).not.toMatch(/alt=\{VOCAB_IMAGES\[/);
+      expect(src).toMatch(/VOCAB_IMAGES\[q\.imageKey\]\.url\}\s*alt=""/);
+    },
+  );
 });

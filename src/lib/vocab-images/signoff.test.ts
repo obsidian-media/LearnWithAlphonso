@@ -15,11 +15,22 @@ const img = (url: string, alt = "An apple."): VocabImageRecord => ({
 const SET = { apple: img("u1"), pear: img("u2", "A pear.") };
 
 describe("vocabImagesDigest", () => {
-  it("ignores key order but changes with any url or alt", () => {
+  it("ignores key order but changes with any url, alt, credit, source, page or license", () => {
     const d = vocabImagesDigest(SET);
     expect(vocabImagesDigest({ pear: SET.pear, apple: SET.apple })).toBe(d);
     expect(vocabImagesDigest({ ...SET, apple: img("u1b") })).not.toBe(d);
     expect(vocabImagesDigest({ ...SET, apple: img("u1", "Another apple.") })).not.toBe(d);
+    expect(vocabImagesDigest({ ...SET, apple: { ...SET.apple, credit: "Someone Else" } })).not.toBe(
+      d,
+    );
+    expect(vocabImagesDigest({ ...SET, apple: { ...SET.apple, source: "pixabay" } })).not.toBe(d);
+    expect(
+      vocabImagesDigest({
+        ...SET,
+        apple: { ...SET.apple, sourcePageUrl: "https://www.pexels.com/photo/y-2/" },
+      }),
+    ).not.toBe(d);
+    expect(vocabImagesDigest({ ...SET, apple: { ...SET.apple, license: "other" } })).not.toBe(d);
   });
 });
 

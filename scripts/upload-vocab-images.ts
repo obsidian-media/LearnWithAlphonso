@@ -5,7 +5,8 @@
  *   read -rs SUPABASE_SERVICE_ROLE_KEY && export SUPABASE_SERVICE_ROLE_KEY   # silent prompt, stays out of history
  *   bun scripts/upload-vocab-images.ts --dry-run
  *   bun scripts/upload-vocab-images.ts            # upload every approved image, verify the served bytes
- *   bun scripts/upload-vocab-images.ts --prune    # also delete bucket objects that no entry references
+ *   bun scripts/upload-vocab-images.ts --prune            # list bucket objects no committed image references (dry run)
+ *   bun scripts/upload-vocab-images.ts --prune --apply    # delete them (refuses a tiny keep-set; >10% needs --force-large)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -41,6 +42,8 @@ if (url !== SUPABASE_PROJECT_ORIGIN) {
 }
 const DRY = process.argv.includes("--dry-run");
 const PRUNE = process.argv.includes("--prune");
+const PRUNE_APPLY = process.argv.includes("--apply");
+const FORCE_LARGE = process.argv.includes("--force-large");
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 const bucket = db.storage.from(VOCAB_IMAGE_BUCKET);
 
@@ -116,11 +119,19 @@ async function main() {
   if (!DRY) writeManifest(manifest);
 
   if (PRUNE) {
-    const referenced = referencedObjectPaths(manifest);
+    // The keep-set is the committed data plus the manifest, so a missing or
+    // empty manifest alone can never make every object look stale.
+    const keep = new Set([
+      ...keepPathsFromImages(VOCAB_IMAGES),
+      ...referencedObjectPaths(manifest),
+    ]);
     const listed = (await Promise.all(IMAGE_LANGS.map(listAll))).flat();
-    const stale = listed.filter((p) => !referenced.has(p));
-    console.log(`prune: ${stale.length} unreferenced object(s)${DRY ? " (dry run)" : ""}`);
-    if (!DRY) {
+    const stale = planPrune(listed, keep, { forceLarge: FORCE_LARGE });
+    const apply = PRUNE_APPLY && !DRY;
+    console.log(
+      `prune: ${stale.length} unreferenced object(s)${apply ? "" : " (dry run; pass --apply to delete)"}`,
+    );
+    if (apply) {
       for (let i = 0; i < stale.length; i += 100) {
         const { error } = await bucket.remove(stale.slice(i, i + 100));
         if (error) throw new Error(`remove: ${error.message}`);

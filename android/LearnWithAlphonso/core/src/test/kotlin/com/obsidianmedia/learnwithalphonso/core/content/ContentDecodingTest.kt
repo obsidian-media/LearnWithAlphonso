@@ -86,10 +86,10 @@ class ContentDecodingTest {
     fun `vocab image provenance decodes when present and is null when absent`() {
         val full = ContentJson.json.decodeFromString(
             VocabImageRef.serializer(),
-            """{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:w1-review-r1-b001","reviewedAt":"2026-10-08"}""",
+            """{"url":"u","alt":"a","credit":"c","source":"pexels","sourcePageUrl":"https://www.pexels.com/photo/x-1/","license":"Pexels License (https://www.pexels.com/license/)","reviewedBy":"agent:review-r1-b001","reviewedAt":"2026-10-08"}""",
         )
         assertEquals("pexels", full.source)
-        assertEquals("agent:w1-review-r1-b001", full.reviewedBy)
+        assertEquals("agent:review-r1-b001", full.reviewedBy)
         assertEquals("2026-10-08", full.reviewedAt)
 
         val legacy = ContentJson.json.decodeFromString(VocabImageRef.serializer(), """{"url":"u","alt":"a","credit":"c"}""")

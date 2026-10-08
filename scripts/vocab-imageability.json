@@ -1,5 +1,5 @@
 {
-  "$comment": "Imageability data for vocab images (App Store remediation W1). A term gets an image ONLY if its lookup form (lowercased, leading article stripped) is in imageable[lang][category]. deny beats everything. fr/es imageable terms need an English search query. Edit via scripts/merge-vocab-imageability.ts, never by hand without re-running bun run test.",
+  "$comment": "Imageability data for vocab images. A term gets an image ONLY if its lookup form (lowercased, leading article stripped) is in imageable[lang][category]. deny beats everything. fr/es imageable terms need an English search query. Edit via scripts/merge-vocab-imageability.ts, never by hand without re-running bun run test.",
   "version": 1,
   "imageable": {
     "en": {

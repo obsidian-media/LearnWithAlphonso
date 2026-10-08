@@ -9,13 +9,20 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import { buildVocabImageRows } from "../src/lib/curriculum-seed";
+import { SUPABASE_PROJECT_ORIGIN } from "../src/lib/vocab-images/url-policy";
 import { PAGE_SIZE, planVocabImageSync } from "../src/lib/vocab-images/db-sync";
 
-const url = process.env.SUPABASE_URL;
+const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
   console.error(
     "Missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY (values are never printed).",
+  );
+  process.exit(1);
+}
+if (url !== SUPABASE_PROJECT_ORIGIN) {
+  console.error(
+    `SUPABASE_URL must be ${SUPABASE_PROJECT_ORIGIN}: the recorded image URLs point there.`,
   );
   process.exit(1);
 }

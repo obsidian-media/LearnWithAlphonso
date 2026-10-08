@@ -56,7 +56,7 @@ const firstBatch = () =>
 const file = (over: Partial<VerdictFile> = {}): VerdictFile => ({
   batch: "r1-b001",
   pass: "first",
-  reviewer: "agent:w1-review-r1-b001",
+  reviewer: "agent:review-r1-b001",
   reviewedAt: "2026-10-08",
   verdicts: { apple: approveV, bread: { verdict: "reject", reasons: ["off-term"] } },
   ...over,

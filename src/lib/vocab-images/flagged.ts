@@ -1,4 +1,4 @@
-/** Terms whose images the 2026-10-07 App Store audit flagged (B1). None may ever have an image again. */
+/** Terms whose images the 2026-10-07 App Store audit flagged. None may ever have an image again. */
 export const FLAGGED_TERMS_2026_10_07: readonly string[] = [
   "couldn't",
   "thick",

@@ -17,7 +17,7 @@ const ROOT = path.resolve(import.meta.dirname, "../..");
 const SIGNOFF = path.join(ROOT, "scripts/vocab-images/signoff.json");
 const show = (v: string[]) => v.slice(0, 20).join("\n");
 
-describe("VOCAB_IMAGES guards (B1, B2 image guards)", () => {
+describe("VOCAB_IMAGES guards", () => {
   it("is not empty (a guard over zero entries proves nothing)", () => {
     expect(Object.keys(VOCAB_IMAGES).length).toBeGreaterThan(100);
   });

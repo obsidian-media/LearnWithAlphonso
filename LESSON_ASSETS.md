@@ -17,7 +17,7 @@
 > → `scripts/fetch-vocab-images.ts` (Pexels/Pixabay, resized to 700px, staged
 > locally) → `scripts/vocab-image-review.ts` (agent visual review and second
 > pass, verdicts in `scripts/vocab-images/reviews/`) →
-> `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`)
+> `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`; `--prune` is a dry run unless `--apply`, and refuses a tiny keep-set or more than 10% deletions without `--force-large`)
 > → `scripts/write-vocab-images.ts` → owner sheet and
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
 > `scripts/seed-vocab-images-db.ts`. `src/data/vocab-images.guard.test.ts`

@@ -548,7 +548,7 @@ private struct QuestionCard: View {
             case .multipleChoice(let q):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
-                    VocabImageView(image: image, cardHeight: 160)
+                    VocabImageView(image: image, cardHeight: 160, decorative: true)
                 }
                 if let audioText = q.audioText {
                     Button {
@@ -896,6 +896,9 @@ struct VocabImageView: View {
     /// full-width card image at `cardHeight`.
     var thumbnailSize: CGFloat?
     var cardHeight: CGFloat = 120
+    /// True for an image shown alongside a question whose answer is the term: its
+    /// description would give the answer away to VoiceOver, so it is hidden from it.
+    var decorative = false
     @State private var failedURL: String?
 
     var body: some View {
@@ -923,6 +926,7 @@ struct VocabImageView: View {
             .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
             .clipped()
             .accessibilityLabel(image.alt)
+            .accessibilityHidden(decorative)
         }
     }
 }

@@ -10,11 +10,12 @@ export type Signoff = {
   digest: string;
 };
 
-/** sha256 over every key, URL and alt, in key order: any change after sign-off is visible. */
+/** sha256 over every key and its URL, alt, credit, source, source page and license, in key order: any change after sign-off is visible. */
 export function vocabImagesDigest(images: Record<string, VocabImageRecord>): string {
   const h = createHash("sha256");
   for (const key of Object.keys(images).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
-    h.update(`${key}\t${images[key].url}\t${images[key].alt}\n`);
+    const i = images[key];
+    h.update([key, i.url, i.alt, i.credit, i.source, i.sourcePageUrl, i.license].join("\t") + "\n");
   }
   return h.digest("hex");
 }
