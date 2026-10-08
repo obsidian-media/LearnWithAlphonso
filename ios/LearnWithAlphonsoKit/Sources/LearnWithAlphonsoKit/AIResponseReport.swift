@@ -26,9 +26,12 @@ public enum AIResponseReportReason: String, CaseIterable, Sendable {
 public struct AIResponseReport: Sendable, Equatable {
     /// The same cap as the web (AI_REPORT_MESSAGE_MAX), counted in code points, never in the middle of an emoji.
     public static let maxMessageLength = 2500
-    /// `content_reports.context` is limited to 8192 BYTES. 2500 four-byte emoji alone would exceed it, so the text is
-    /// also kept under this many UTF-8 bytes, always on a code point boundary.
-    static let maxMessageBytes = 6000
+    /// `content_reports.context` is checked as `octet_length(context::text) <= 8192`: the size of the JSON text, where
+    /// a quote, backslash or newline costs 2 bytes, another control character 6 and an emoji 4. The message is cut so
+    /// the whole context stays inside that limit, always on a code point boundary.
+    static let contextByteLimit = 8192
+    /// Room for the keys, braces, quotes and the spaces the database adds after colons and commas.
+    static let contextStructureBytes = 400
 
     public let message: String
     public let surface: AIResponseSurface
@@ -42,7 +45,11 @@ public struct AIResponseReport: Sendable, Equatable {
         message: String, surface: AIResponseSurface, course: String, reason: AIResponseReportReason,
         scenarioID: String? = nil, campaignID: String? = nil, sceneIndex: Int? = nil
     ) {
-        self.message = Self.capped(message)
+        self.message = Self.capped(
+            message,
+            byteBudget: Self.contextByteLimit - Self.contextStructureBytes
+                - Self.jsonBytes(of: course) - Self.jsonBytes(of: scenarioID ?? "")
+                - Self.jsonBytes(of: campaignID ?? ""))
         self.surface = surface
         self.course = course
         self.reason = reason
@@ -51,12 +58,25 @@ public struct AIResponseReport: Sendable, Equatable {
         self.sceneIndex = sceneIndex
     }
 
-    static func capped(_ text: String) -> String {
+    /// Bytes `text` takes inside a JSON string, which is what the database counts.
+    static func jsonBytes(of text: String) -> Int {
+        text.unicodeScalars.reduce(0) { $0 + jsonBytes(of: $1) }
+    }
+
+    static func jsonBytes(of scalar: Unicode.Scalar) -> Int {
+        switch scalar.value {
+        case 0x22, 0x5C, 0x0A, 0x0D, 0x09, 0x08, 0x0C: return 2
+        case 0x00...0x1F: return 6
+        default: return String(scalar).utf8.count
+        }
+    }
+
+    static func capped(_ text: String, byteBudget: Int) -> String {
         var scalars = String.UnicodeScalarView()
         var bytes = 0
         for scalar in text.unicodeScalars {
-            let width = String(scalar).utf8.count
-            if scalars.count >= maxMessageLength || bytes + width > maxMessageBytes { break }
+            let width = jsonBytes(of: scalar)
+            if scalars.count >= maxMessageLength || bytes + width > byteBudget { break }
             scalars.append(scalar)
             bytes += width
         }

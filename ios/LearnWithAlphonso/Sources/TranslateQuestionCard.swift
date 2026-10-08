@@ -54,9 +54,8 @@ struct TranslateQuestionCard: View {
 
             // Without the account's AI consent the written answer is checked against our list only, and the learner is
             // told so with a way to turn AI grading on (AIConsentPolicy). Never a wall: the lesson goes on.
-            if !checked
-                && AIConsentPolicy.translateMode(on: surface, consentGranted: aiConsent.isGranted) == .localWithOptIn
-            {
+            // Only when the account itself said no: a setting still loading or unreadable offers nothing here.
+            if !checked && AIConsentPolicy.offersAIGradingOptIn(on: surface, status: aiConsent.status) {
                 HStack(spacing: AlphonsoSpacing.xs) {
                     Text(AIConsentCopy.localGradingNote)
                         .font(AlphonsoFont.sans(12))

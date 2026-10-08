@@ -48,4 +48,20 @@ final class AIConsentPolicyTests: XCTestCase {
                 .contains("offline"))
         XCTAssertFalse(AIConsentCopy.speakFallbackNoConsent.contains("--"))
     }
+
+    /// A setting that is loading or could not be read must not look like "AI is off".
+    func testTheAIGradingOptInShowsOnlyWhenTheAccountSaidNo() {
+        for surface in [AIConsentSurface.lesson, .review] {
+            XCTAssertTrue(AIConsentPolicy.offersAIGradingOptIn(on: surface, status: .denied))
+            XCTAssertFalse(AIConsentPolicy.offersAIGradingOptIn(on: surface, status: .unavailable))
+            XCTAssertFalse(AIConsentPolicy.offersAIGradingOptIn(on: surface, status: .loading))
+            XCTAssertFalse(AIConsentPolicy.offersAIGradingOptIn(on: surface, status: .granted))
+        }
+    }
+
+    func testNoOptInOnSurfacesThatNeverOfferIt() {
+        for surface in AIConsentSurface.allCases where surface != .lesson && surface != .review {
+            XCTAssertFalse(AIConsentPolicy.offersAIGradingOptIn(on: surface, status: .denied), "\(surface)")
+        }
+    }
 }

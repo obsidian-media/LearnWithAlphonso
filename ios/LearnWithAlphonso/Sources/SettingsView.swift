@@ -261,6 +261,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task { await loadIdentity() }
             .task { await aiConsent.refresh() }
+            .onChange(of: aiConsent.isGranted) { _, _ in aiConsentErrorMessage = nil }
             .aiDisclosureSheet(isPresented: $showAIDisclosure) {}
             .fileExporter(
                 isPresented: $isPresentingExporter,

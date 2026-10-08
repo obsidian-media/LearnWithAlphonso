@@ -44,9 +44,10 @@ describe("iOS AI consent wiring", () => {
     expect(readers).toEqual(LEGACY_MIRROR_READERS);
   });
 
-  it("translation grading asks the account consent through the policy", () => {
+  it("translation grading offers the opt-in only when the account said no, never for a failed read", () => {
     const s = code("TranslateQuestionCard.swift");
-    expect(s).toContain("AIConsentPolicy.translateMode(");
+    expect(s).toContain("AIConsentPolicy.offersAIGradingOptIn(on: surface, status: aiConsent.status)");
+    expect(s).not.toContain("aiConsent.isGranted");
     expect(s).toContain("hasAIConsent: Bool");
     expect(s).not.toContain("AIDisclosureGate");
   });
@@ -60,22 +61,33 @@ describe("iOS AI consent wiring", () => {
     expect(s).toContain("AIConsentCopy.settingsTitle");
     expect(s).toContain("aiConsent.set(false)");
     expect(s).toContain("AIConsentCopy.checkFailedTitle");
+    // A stale error must not outlive a later success.
+    expect(s).toMatch(/\.onChange\(of: aiConsent\.isGranted\)[^\n]*aiConsentErrorMessage = nil/);
   });
 
-  it("the gate never unmounts a screen that has been shown, and never calls an unreadable setting 'off'", () => {
+  it("the gate view only draws AIConsentGate.presentation (the tested decision), with no rule of its own", () => {
     const s = code("AIDisclosureSheet.swift");
-    // Mounted once granted, then kept mounted; the prompt is an overlay.
-    expect(s).toContain("hasBeenGranted");
+    // The mount / spinner / prompt / cover decision is the Kit function (AIConsentGateTests).
+    expect(s).toContain("AIConsentGate.presentation(");
+    expect(s).toContain("hasBeenShown: hasBeenGranted");
+    expect(s).toContain("didRefresh: didRefresh");
+    expect(s).toContain("case .content(let covered):");
     expect(s).toContain(".overlay {");
+    // No second source of truth about mounting.
+    expect(s).not.toMatch(/isMounted|isCovered/);
     expect(s).not.toMatch(/if aiConsent\.isGranted \{\s*content\s*\}/);
-    // A failed read is its own state with a retry.
+    // A failed read is its own prompt with a retry.
     expect(s).toContain("AIConsentCopy.checkFailedTitle");
-    expect(s).toContain("aiConsent.status == .unavailable");
+    expect(s).toContain("kind == .retry");
   });
 
   it("save word reads the account store and handles a consent refusal", () => {
     const s = code("SaveWordSheet.swift");
     expect(s).toContain("aiConsent.isGranted");
     expect(s).toContain(".aiConsentRequired");
+    // Busy before the consent read, so a second tap cannot send a second request.
+    const body = s.slice(s.indexOf("private func save()"));
+    expect(body.indexOf("phase = .saving")).toBeGreaterThan(-1);
+    expect(body.indexOf("phase = .saving")).toBeLessThan(body.indexOf("aiConsent.refresh()"));
   });
 });

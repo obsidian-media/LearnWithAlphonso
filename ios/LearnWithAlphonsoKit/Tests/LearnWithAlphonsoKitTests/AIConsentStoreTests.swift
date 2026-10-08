@@ -8,6 +8,10 @@ private final class FakeConsentBackend: AIConsentBackend {
     var fetchError: Error?
     var setError: Error?
     var onFetch: (() -> Void)?
+    /// Runs after the server's value was read and before it is returned: a decision made here makes that value stale.
+    var duringFetch: (() async -> Void)?
+    /// Runs inside the write, before it answers.
+    var duringSet: (() -> Void)?
     private(set) var setCalls: [Bool] = []
     private(set) var fetchCount = 0
     let stamp = Date(timeIntervalSince1970: 1_800_000_000)
@@ -16,11 +20,14 @@ private final class FakeConsentBackend: AIConsentBackend {
     func fetchConsent() async throws -> Date? {
         fetchCount += 1
         onFetch?()
+        let value = serverValue
+        await duringFetch?()
         if let fetchError { throw fetchError }
-        return serverValue
+        return value
     }
     func setConsent(_ granted: Bool) async throws -> Date? {
         setCalls.append(granted)
+        duringSet?()
         if let setError { throw setError }
         serverValue = granted ? stamp : nil
         return serverValue
@@ -277,5 +284,128 @@ final class AIConsentStoreTests: XCTestCase {
 
         XCTAssertTrue(store.isGranted)
         XCTAssertEqual(backend.fetchCount, fetchesBefore)
+    }
+
+    // MARK: ordering of reads and decisions
+
+    /// A slow read that began before the learner withdrew must not switch consent back on.
+    @MainActor
+    func testAStaleReadCannotUndoAWithdrawal() async {
+        let backend = FakeConsentBackend()
+        backend.serverValue = backend.stamp
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.duringFetch = { try? await store.set(false) }
+
+        await store.refresh()
+
+        XCTAssertFalse(store.isGranted)
+        XCTAssertEqual(store.status, .denied)
+        XCTAssertFalse(AIDisclosureGate.isAcknowledged(in: defaults), "the device mirror stays off too")
+    }
+
+    @MainActor
+    func testAStaleReadCannotUndoAGrant() async {
+        let backend = FakeConsentBackend()
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.duringFetch = { try? await store.set(true) }
+
+        await store.refresh()
+
+        XCTAssertTrue(store.isGranted)
+        XCTAssertEqual(store.status, .granted)
+    }
+
+    @MainActor
+    func testAStaleFailedReadDoesNotMarkTheDecisionUnavailable() async {
+        let backend = FakeConsentBackend()
+        backend.serverValue = backend.stamp
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.fetchError = Offline()
+        backend.duringFetch = { try? await store.set(false) }
+
+        await store.refresh()
+
+        XCTAssertFalse(store.lastRefreshFailed)
+        XCTAssertEqual(store.status, .denied)
+    }
+
+    @MainActor
+    func testARefusalSignalDuringAReadIsNotUndoneByThatRead() async {
+        let backend = FakeConsentBackend()
+        backend.serverValue = backend.stamp
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        await store.refresh()
+        XCTAssertTrue(store.isGranted)
+        backend.duringFetch = {
+            backend.duringFetch = nil
+            backend.serverValue = nil
+            AIConsentSignal.noteIfConsentRequired(status: 403, message: "ai-consent-required")
+            for _ in 0..<50 { await Task.yield() }
+        }
+        await store.refresh()
+        for _ in 0..<50 where store.isGranted { await Task.yield() }
+        XCTAssertFalse(store.isGranted)
+    }
+
+    // MARK: cancellation and account changes
+
+    @MainActor
+    func testACancelledReadIsNotAFailure() async {
+        let backend = FakeConsentBackend()
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.fetchError = CancellationError()
+        await store.refresh()
+        XCTAssertFalse(store.lastRefreshFailed)
+        XCTAssertEqual(store.status, .loading)
+
+        backend.fetchError = URLError(.cancelled)
+        await store.refresh()
+        XCTAssertFalse(store.lastRefreshFailed)
+        XCTAssertEqual(store.status, .loading)
+    }
+
+    @MainActor
+    func testAFailureAfterTheAccountChangedIsNotRecorded() async {
+        let backend = FakeConsentBackend()
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        backend.fetchError = Offline()
+        backend.onFetch = { backend.userID = "user-b" }
+        await store.refresh()
+        XCTAssertFalse(store.lastRefreshFailed)
+    }
+
+    @MainActor
+    func testAnotherAccountIsNeverGrantedFromTheLastOnesState() async {
+        let backend = FakeConsentBackend()
+        backend.serverValue = backend.stamp
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        await store.refresh()
+        XCTAssertTrue(store.isGranted)
+
+        backend.userID = "user-b"  // switched, nothing read yet
+        XCTAssertFalse(store.isGranted)
+        XCTAssertEqual(store.status, .loading)
+
+        backend.userID = nil  // signed out
+        XCTAssertFalse(store.isGranted)
+    }
+
+    @MainActor
+    func testADecisionFinishingAfterAnAccountSwitchDoesNotTouchTheNewAccount() async throws {
+        let backend = FakeConsentBackend()
+        let store = AIConsentStore(backend: backend, defaults: defaults)
+        await store.refresh()
+        XCTAssertEqual(store.status, .denied)
+
+        // user-a's write is in flight when user-b signs in.
+        backend.duringSet = { backend.userID = "user-b" }
+        try await store.set(true)
+
+        XCTAssertFalse(store.isGranted, "user-b never consented")
+        XCTAssertEqual(store.status, .loading, "user-b has not been read yet")
+        XCTAssertFalse(AIDisclosureGate.isAcknowledged(in: defaults), "the device mirror follows the signed-in account")
+        let cached = defaults.string(forKey: AIConsentStore.cachePrefix + "user-a")
+        XCTAssertNotNil(cached)
+        XCTAssertNotEqual(cached, AIConsentStore.deniedMarker, "user-a's answer is kept for user-a")
     }
 }

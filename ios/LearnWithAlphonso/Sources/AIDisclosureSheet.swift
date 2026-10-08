@@ -24,40 +24,39 @@ private struct AIDisclosureGateModifier: ViewModifier {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var aiConsent: AIConsentStore
     @State private var hasBeenGranted = false
+    @State private var didRefresh = false
     @State private var showDisclosure = false
     @State private var isSaving = false
     @State private var saveError: String?
 
-    private var isMounted: Bool { aiConsent.isGranted || hasBeenGranted }
-    /// Covers a mounted screen while consent is not (or may not be) there. A setting still loading never covers.
-    private var isCovered: Bool {
-        guard isMounted else { return false }
-        return aiConsent.status == .denied || aiConsent.status == .unavailable
+    /// Every decision about what is on screen is `AIConsentGate.presentation` (Kit, tested): mounted or not, spinner,
+    /// prompt or cover. This view only draws it.
+    private var presentation: AIConsentGatePresentation {
+        AIConsentGate.presentation(
+            status: aiConsent.status, hasBeenShown: hasBeenGranted, didRefresh: didRefresh)
     }
 
     func body(content: Content) -> some View {
         Group {
-            if isMounted {
+            switch presentation {
+            case .content(let covered):
                 content
-                    .disabled(isCovered)
-                    .accessibilityHidden(isCovered)
+                    .disabled(covered != nil)
+                    .accessibilityHidden(covered != nil)
                     .overlay {
-                        if isCovered {
-                            prompt
+                        if let covered {
+                            prompt(covered)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .background(AlphonsoColor.surface.opacity(0.96))
                         }
                     }
-            } else {
-                switch aiConsent.status {
-                case .loading, .granted:
-                    // Unknown yet (fresh install, first read in flight): never prompt someone who may have consented
-                    // on another device.
-                    ProgressView().tint(AlphonsoColor.moss)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                case .denied, .unavailable:
-                    prompt
-                }
+            case .prompt(let kind):
+                prompt(kind)
+            case .spinner:
+                // Unknown yet (fresh install, first read in flight): never prompt someone who may have consented
+                // on another device.
+                ProgressView().tint(AlphonsoColor.moss)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onChange(of: aiConsent.isGranted, initial: true) { _, granted in
@@ -65,6 +64,7 @@ private struct AIDisclosureGateModifier: ViewModifier {
         }
         .task {
             await aiConsent.refresh()
+            didRefresh = true
             // First visit with a definite "no": ask straight away. Mid-session, the learner chooses.
             if !hasBeenGranted && aiConsent.status == .denied { showDisclosure = true }
         }
@@ -76,15 +76,15 @@ private struct AIDisclosureGateModifier: ViewModifier {
                 onDecline: {
                     showDisclosure = false
                     // Only a screen that was never shown has somewhere to back out to; a live conversation stays.
-                    if !isMounted { dismiss() }
+                    if !hasBeenGranted { dismiss() }
                 })
             .interactiveDismissDisabled()
         }
     }
 
     @ViewBuilder
-    private var prompt: some View {
-        if aiConsent.status == .unavailable {
+    private func prompt(_ kind: AIConsentGatePrompt) -> some View {
+        if kind == .retry {
             ContentUnavailableView {
                 Label(AIConsentCopy.checkFailedTitle, systemImage: "wifi.exclamationmark")
             } description: {

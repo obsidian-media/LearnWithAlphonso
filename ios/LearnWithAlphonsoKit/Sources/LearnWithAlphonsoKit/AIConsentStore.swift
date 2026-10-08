@@ -60,11 +60,13 @@ public final class AIConsentStore {
     public private(set) var grantedAt: Date? { willSet { notifyWillChange() } }
     public private(set) var isResolved = false { willSet { notifyWillChange() } }
     public private(set) var lastRefreshFailed = false { willSet { notifyWillChange() } }
-    public var isGranted: Bool { grantedAt != nil }
+    /// False whenever what is held belongs to another account (or to nobody), even before the next read lands.
+    public var isGranted: Bool { grantedAt != nil && isCurrentAccountLoaded }
 
     /// `.granted` (also from the per-account cache while offline), `.unavailable` after a failed read of an account
     /// that is not known to be granted, `.denied` only after the server itself said no consent, else `.loading`.
     public var status: AIConsentStatus {
+        guard isCurrentAccountLoaded else { return .loading }
         if isGranted { return .granted }
         if lastRefreshFailed { return .unavailable }
         return isResolved ? .denied : .loading
@@ -73,6 +75,11 @@ public final class AIConsentStore {
     private let backend: any AIConsentBackend
     private let defaults: UserDefaults
     private var loadedUserID: String?
+    /// Bumped by every local decision (a `set`, a server refusal). A read that began before one is out of date and
+    /// must not overwrite it, neither with its value nor with its failure.
+    private var writeGeneration = 0
+
+    private var isCurrentAccountLoaded: Bool { loadedUserID == backend.currentUserID() }
 
     public init(backend: any AIConsentBackend, defaults: UserDefaults = .standard) {
         self.backend = backend
@@ -110,32 +117,50 @@ public final class AIConsentStore {
             isResolved = cached.known
             lastRefreshFailed = false
         }
+        let generation = writeGeneration
         do {
             var server = try await backend.fetchConsent()
-            guard backend.currentUserID() == userID else { return }
+            guard backend.currentUserID() == userID, generation == writeGeneration else { return }
             if server == nil && hasUnsyncedLegacyAcknowledgement {
                 server = try await backend.setConsent(true)
                 guard server != nil else { throw AIConsentError.unexpectedResponse }
             }
-            guard backend.currentUserID() == userID else { return }
+            guard backend.currentUserID() == userID, generation == writeGeneration else { return }
             defaults.set(true, forKey: Self.legacySyncedKey)
             apply(server, for: userID)
             lastRefreshFailed = false
+        } catch is CancellationError {
+            return
+        } catch let error as URLError where error.code == .cancelled {
+            return
         } catch {
+            // A failure of a read that is out of date (the learner decided meanwhile, or the account changed) says
+            // nothing about the current state.
+            guard backend.currentUserID() == userID, generation == writeGeneration else { return }
             lastRefreshFailed = true
         }
     }
 
     public func set(_ granted: Bool) async throws {
         guard let userID = backend.currentUserID() else { throw AIConsentError.signedOut }
+        // Bumped before and after the write: a read already in flight, and one that started during the write, both
+        // predate this decision.
+        writeGeneration += 1
         let stamp = try await backend.setConsent(granted)
+        writeGeneration += 1
         if granted && stamp == nil { throw AIConsentError.unexpectedResponse }
         defaults.set(true, forKey: Self.legacySyncedKey)
+        guard backend.currentUserID() == userID else {
+            // Another account is signed in now: keep the answer for the account it was made for, show nothing.
+            cache(granted ? stamp : nil, for: userID)
+            return
+        }
         apply(granted ? stamp : nil, for: userID)
         lastRefreshFailed = false
     }
 
     private func serverRefusedForLackOfConsent() async {
+        writeGeneration += 1
         if let userID = backend.currentUserID() {
             defaults.set(true, forKey: Self.legacySyncedKey)
             apply(nil, for: userID)
@@ -152,9 +177,13 @@ public final class AIConsentStore {
         loadedUserID = userID
         grantedAt = date
         isResolved = true
+        cache(date, for: userID)
+        writeMirror(date != nil)
+    }
+
+    private func cache(_ date: Date?, for userID: String) {
         defaults.set(
             date.map { String($0.timeIntervalSince1970) } ?? Self.deniedMarker, forKey: Self.cachePrefix + userID)
-        writeMirror(date != nil)
     }
 
     /// Before the one-time sync this key still holds a pre-update acknowledgement; never overwrite it then.

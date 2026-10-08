@@ -129,11 +129,14 @@ public final class TutorConversationClient: Sendable {
     }
 
     private static func errorMessage(from data: Data) -> String? {
-        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let detail = object["detail"] as? String,
-              !detail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return nil
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        // The cloud voice service answers with "detail"; the edge function with "error" (e.g. ai-consent-required).
+        for key in ["error", "detail"] {
+            if let text = object[key] as? String,
+               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return text
+            }
         }
-        return detail
+        return nil
     }
 }

@@ -124,4 +124,35 @@ final class TutorConversationClientTests: XCTestCase {
             XCTAssertEqual(error as? TutorConversationError, .server(status: 401, message: nil))
         }
     }
+
+    private func refusal(status: Int, error: String) -> TutorConversationClient {
+        makeClient { _ in self.jsonResponse(["error": error], status: status) }
+    }
+
+    func testAConsentRefusalFromTheEdgeFunctionIsReadFromTheErrorKeyAndAnnounced() async {
+        let announced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        do {
+            _ = try await refusal(status: 403, error: "ai-consent-required")
+                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            XCTFail("Expected an error to be thrown")
+        } catch {
+            XCTAssertEqual(
+                error as? TutorConversationError, .server(status: 403, message: "ai-consent-required"))
+        }
+        await fulfillment(of: [announced], timeout: 2)
+    }
+
+    func testAConsentCheckFailureIsNotAConsentRefusal() async {
+        let notAnnounced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        notAnnounced.isInverted = true
+        do {
+            _ = try await refusal(status: 503, error: "consent-check-failed")
+                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            XCTFail("Expected an error to be thrown")
+        } catch {
+            XCTAssertEqual(
+                error as? TutorConversationError, .server(status: 503, message: "consent-check-failed"))
+        }
+        await fulfillment(of: [notAnnounced], timeout: 0.3)
+    }
 }

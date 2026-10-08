@@ -15,11 +15,14 @@ describe("AI consent copy parity (web vs Kit)", () => {
     expect(copySwift).toContain(`public static let ${key} = ${JSON.stringify(value)}`);
   });
 
+  // Pairing, not presence: swapping two labels (or two codes) must fail. The Swift case name is the code without
+  // its "ai_" prefix.
   it.each(AI_REPORT_REASONS.map((r) => [r.value, r.label]))(
-    "reason %s has the same code and label",
+    "reason %s has the same code and label, on the same case",
     (value, label) => {
-      expect(reportSwift).toContain(`"${value}"`);
-      expect(reportSwift).toContain(JSON.stringify(label));
+      const name = value.replace(/^ai_/, "");
+      expect(reportSwift).toContain(`case ${name} = ${JSON.stringify(value)}`);
+      expect(reportSwift).toContain(`case .${name}: return ${JSON.stringify(label)}`);
     },
   );
 

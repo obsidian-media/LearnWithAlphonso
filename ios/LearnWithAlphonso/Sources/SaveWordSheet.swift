@@ -124,23 +124,26 @@ struct SaveWordSheet: View {
         // `define` quota twice (the server survives the race, but the second
         // call is still billed); only one save may be in flight.
         guard phase != .saving else { return }
-        // The word and sentence go to NVIDIA, so the account's AI consent applies. A setting that is still loading or
-        // could not be read is read again first: it must never be treated as "off". Declining just closes the sheet.
-        if aiConsent.status == .loading || aiConsent.status == .unavailable { await aiConsent.refresh() }
-        guard aiConsent.status != .unavailable else {
-            phase = .failed(.unavailable)
-            return
-        }
-        guard aiConsent.isGranted else {
+        // `.saving` BEFORE any await, so a second tap during the consent read is blocked too.
+        phase = .saving
+        // The word and sentence go to NVIDIA, so the account's AI consent applies. Anything but a known "yes" is read
+        // again first (a remembered "no" may be out of date), and a setting still unknown or unreadable is never
+        // treated as "off". Declining just closes the sheet.
+        if !aiConsent.isGranted { await aiConsent.refresh() }
+        switch aiConsent.status {
+        case .granted: break
+        case .denied:
+            phase = .idle
             showDisclosure = true
+            return
+        case .loading, .unavailable:
+            phase = .failed(.unavailable)
             return
         }
         guard session.accessToken != nil else {
             phase = .failed(.notSignedIn)
             return
         }
-        // `.saving` BEFORE the refresh await, so a second tap during it is blocked.
-        phase = .saving
         // freshAccessToken + a refresh backstop, like every other AI screen (see
         // HectorView.sendTurn): the raw stored token goes stale after about an
         // hour, and Hector sessions are long-lived, so reading it directly

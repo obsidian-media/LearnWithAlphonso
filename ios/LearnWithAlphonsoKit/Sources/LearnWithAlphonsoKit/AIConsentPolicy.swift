@@ -31,6 +31,12 @@ public enum AIConsentPolicy {
         }
     }
 
+    /// Whether a lesson or review translate card offers "Turn on AI grading". Only when the account itself said no: a
+    /// setting that is loading or could not be read must not look like "AI is off" or offer the sheet.
+    public static func offersAIGradingOptIn(on surface: AIConsentSurface, status: AIConsentStatus) -> Bool {
+        status == .denied && translateMode(on: surface, consentGranted: false) == .localWithOptIn
+    }
+
     public static func speakMode(on surface: AIConsentSurface, consentGranted: Bool) -> AIItemMode {
         translateMode(on: surface, consentGranted: consentGranted)
     }
