@@ -111,7 +111,7 @@ describe("updateProfile", () => {
     });
     expect(supabase.rpc).toHaveBeenCalledWith("confirm_display_name", { _name: "Bad Name" });
     expect(supabase.from).not.toHaveBeenCalled();
-    expect(result).toEqual({ ok: false, error: "blocked-content" });
+    expect(result).toEqual({ ok: false, error: "blocked-content", part: "name" });
   });
 
   it("an accepted name is ok", async () => {
@@ -132,7 +132,22 @@ describe("updateProfile", () => {
     expect(await updateProfile({ context: ctx(supabase), data: { country: "FR" } })).toEqual({
       ok: false,
       error: "server-error",
+      part: "details",
     });
+  });
+
+  it("says the name was saved when only the other fields failed", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValueOnce({ data: "New Name", error: null });
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: null, error: { code: "42501", message: "denied" } }),
+    );
+    expect(
+      await updateProfile({
+        context: ctx(supabase),
+        data: { display_name: "New Name", country: "FR" },
+      }),
+    ).toEqual({ ok: false, error: "server-error", part: "details" });
   });
 
   it("rejects a display name over the length limit", async () => {

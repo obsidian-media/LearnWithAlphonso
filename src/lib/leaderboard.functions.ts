@@ -38,7 +38,13 @@ export const getLeaderboard = createServerFn({ method: "POST" })
   });
 
 export type UpdateProfileResult =
-  { ok: true } | { ok: false; error: "blocked-content" | "invalid-name" | "server-error" };
+  | { ok: true }
+  | {
+      ok: false;
+      error: "blocked-content" | "invalid-name" | "server-error";
+      /** Which write failed: the name (nothing saved), or the other fields (the name, if sent, was saved). */
+      part: "name" | "details";
+    };
 
 /** confirm_display_name raises P0001 with the code as the message; anything else is a server failure. */
 function profileErrorCode(
@@ -67,11 +73,11 @@ export const updateProfile = createServerFn({ method: "POST" })
     if (display_name !== undefined) {
       // The validated path: 2 to 40 characters, the name filter, and the confirmation stamp.
       const { error } = await supabase.rpc("confirm_display_name", { _name: display_name });
-      if (error) return { ok: false, error: profileErrorCode(error) };
+      if (error) return { ok: false, error: profileErrorCode(error), part: "name" };
     }
     if (Object.keys(rest).length > 0) {
       const { error } = await supabase.from("profiles").update(rest).eq("id", userId);
-      if (error) return { ok: false, error: "server-error" };
+      if (error) return { ok: false, error: "server-error", part: "details" };
     }
     return { ok: true };
   });

@@ -18,6 +18,9 @@ import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getWeaknessTrend } from "../../lib/weakness-trend.functions";
 import { supabase } from "@/integrations/supabase/client";
 
+/** The name went through confirm_display_name first; only the country write after it failed. */
+const DETAILS_SAVE_FAILED = "Your name was saved, but your country wasn't. Try again.";
+
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
   head: () => ({
@@ -73,9 +76,11 @@ function ProfilePage() {
       });
       if (!result.ok) {
         setNameError(
-          result.error === "server-error"
-            ? SOCIAL_COPY.nameSaveFailed
-            : socialReasonMessage(result.error),
+          result.part === "details"
+            ? DETAILS_SAVE_FAILED
+            : result.error === "server-error"
+              ? SOCIAL_COPY.nameSaveFailed
+              : socialReasonMessage(result.error),
         );
       }
       await qc.invalidateQueries({ queryKey: ["me"] });
@@ -239,7 +244,10 @@ function ProfilePage() {
           <input
             id="profile-display-name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setNameError(null);
+            }}
             maxLength={40}
             className={
               isStudioInk

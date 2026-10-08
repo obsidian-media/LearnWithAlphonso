@@ -126,7 +126,7 @@ describe("Profile page", () => {
 
   it("says a refused name in words instead of pretending it saved", async () => {
     const user = userEvent.setup();
-    updateProfile.mockResolvedValueOnce({ ok: false, error: "blocked-content" });
+    updateProfile.mockResolvedValueOnce({ ok: false, error: "blocked-content", part: "name" });
     renderPage();
     const nameInput = await screen.findByLabelText("Display name");
     await waitFor(() => expect(nameInput).toHaveValue("Ada"));
@@ -135,6 +135,21 @@ describe("Profile page", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "That name isn't allowed. Try another.",
+    );
+    // Editing the name clears the old refusal.
+    await user.type(nameInput, "x");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("says the name saved but the country did not, when only the country failed", async () => {
+    const user = userEvent.setup();
+    updateProfile.mockResolvedValueOnce({ ok: false, error: "server-error", part: "details" });
+    renderPage();
+    const nameInput = await screen.findByLabelText("Display name");
+    await waitFor(() => expect(nameInput).toHaveValue("Ada"));
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Your name was saved, but your country wasn't. Try again.",
     );
   });
 
