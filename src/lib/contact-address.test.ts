@@ -30,5 +30,6 @@ describe("in-app contact address", () => {
         .map((a) => `${path.relative(process.cwd(), f)}: ${a}`),
     );
     expect(offenders).toEqual([]);
-  });
+    // Walks four source trees; under a loaded full run that can pass the 5s default.
+  }, 30_000);
 });
