@@ -1,161 +1,185 @@
 import SwiftUI
 import StoreKit
-import RevenueCat
 import LearnWithAlphonsoKit
 
-/// Shown wherever a feature is gated behind Pro (currently just Hector).
-/// Loads the current RevenueCat offering on appear -- with a Test Store
-/// key and no offering configured yet, `packages` stays empty and this
-/// shows a clear "not available yet" state rather than a broken purchase
-/// button or a silent blank screen.
+/// The Pro paywall (reached from the Hector tab). Every string, state and text role comes
+/// from the Kit's `PaywallPresentation`. This view only lays it out, and it states no
+/// price, period, trial or product name of its own.
 ///
-/// StoreKit (via `package.storeProduct`) is the only source of price and
-/// billing-period truth here -- there used to also be a hardcoded
-/// "$9.99/month" line above the button, which meant every non-US
-/// storefront showed a price in the blurb that disagreed with the price
-/// on the button it sat next to. Nothing on this screen states a price
-/// or period without reading it from the product.
+/// Prominence rule (App Store 3.1.2): the price line and the trial line use
+/// `presentation.priceStyle` / `trialStyle` through `font(_:)` and nothing else. The Kit
+/// test `PaywallPresentationTests.testInvariantsHoldInEveryState` pins that the price
+/// style is at least the trial style.
 struct PaywallView: View {
     let entitlementStore: EntitlementStore
 
-    // Apple's own recommendation is a direct in-app path to subscription
-    // management, not just instructions to go find Settings yourself
-    // (found missing in a 2026-09-28 audit). manageSubscriptionsSheet is
-    // the StoreKit 2 modifier for exactly this -- no navigation, no
-    // Settings.
+    // Apple's own recommendation is a direct in-app path to subscription management, not
+    // just instructions to go find Settings yourself. manageSubscriptionsSheet is the
+    // StoreKit 2 modifier for exactly this: no navigation, no Settings.
     @State private var isPresentingManageSubscriptions = false
 
     var body: some View {
-        VStack(spacing: AlphonsoSpacing.lg) {
-            Text("Alphonso Pro")
-                .font(AlphonsoFont.display(28, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
+        let presentation = entitlementStore.presentation
+        let state = entitlementStore.state
+        ScrollView {
+            VStack(spacing: AlphonsoSpacing.lg) {
+                Text(presentation.titleText)
+                    .font(AlphonsoFont.display(28, weight: .bold))
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
 
-            // This is the exact screen the account owner pointed at
-            // during brainstorming as "everything wrong with how it
-            // looks" -- an SF Symbol and plain text, despite Hector's
-            // real bundled portrait existing. This banner is that fix.
-            AlphonsoMascotBanner(mascot: .hector, message: "Meet Hector, your AI tutor")
+                AlphonsoMascotBanner(mascot: .hector, message: PaywallCopy.mascotMessage)
 
-            // What's included -- describes the feature itself, not price
-            // or billing, so it carries no per-storefront accuracy risk.
-            Text("Hector, your personal AI tutor for voice conversation practice, with memory of your level and weak spots between sessions.")
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .multilineTextAlignment(.center)
-
-            if entitlementStore.isLoading {
-                ProgressView().tint(AlphonsoColor.ember)
-            } else if entitlementStore.packages.isEmpty {
-                Text("Subscriptions aren't available yet -- check back soon.")
-                    .font(AlphonsoFont.sans(13))
+                Text(PaywallCopy.featureBlurb)
+                    .font(AlphonsoFont.sans(14))
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
-            } else {
-                ForEach(entitlementStore.packages, id: \.identifier) { package in
-                    let price = package.storeProduct.localizedPriceString
-                    let trial = freeTrialText(for: package)
-                    VStack(spacing: 2) {
-                        Button {
-                            Task { await entitlementStore.purchase(package) }
-                        } label: {
-                            Text(trial.map { "Start \($0)" } ?? "Subscribe -- \(price)")
-                        }
-                        .buttonStyle(.alphonsoEmber)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                        // Trial length, price and billing period, all read
-                        // from the same StoreKit product -- never a second,
-                        // independently worded copy of what StoreKit states.
-                        // With a trial, the price after it is spelled out
-                        // right under the button that starts it.
-                        if let trial {
-                            Text("\(trial), then \(price). \(billingPeriodText(for: package) ?? "")")
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                                .multilineTextAlignment(.center)
-                        } else if let billingPeriod = billingPeriodText(for: package) {
-                            Text(billingPeriod)
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        }
-                    }
+                offer(presentation, state: state)
+
+                if let notice = state.notice {
+                    noticeText(notice)
                 }
-            }
 
-            HStack(spacing: AlphonsoSpacing.md) {
-                Button("Restore Purchases") {
-                    Task { await entitlementStore.restorePurchases() }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: AlphonsoSpacing.md) { restoreButton(state); manageButton }
+                    VStack(spacing: AlphonsoSpacing.sm) { restoreButton(state); manageButton }
                 }
-                Button("Manage Subscription") {
-                    isPresentingManageSubscriptions = true
-                }
-            }
-            .font(AlphonsoFont.sans(13))
-            .tint(AlphonsoColor.moss)
+                .font(AlphonsoFont.sans(13, weight: .medium))
+                .tint(AlphonsoColor.moss)
 
-            // Renews-automatically disclosure stays -- required regardless
-            // of the button above -- but the manual "go find Settings
-            // yourself" instruction is gone now that there's a direct path.
-            Text("Subscriptions renew automatically unless canceled at least 24 hours before the end of the current period.")
-                .font(AlphonsoFont.sans(11))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .multilineTextAlignment(.center)
-
-            // Apple requires a subscription screen to link to both
-            // directly, not just have them reachable from Settings
-            // elsewhere in the app (found in a 2026-09-28 audit: this
-            // screen had neither). Same domain PaywallView already trusts
-            // for everything else (AppConfig.apiBaseURL), not a hardcoded
-            // second copy of it.
-            HStack(spacing: AlphonsoSpacing.md) {
-                Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
-                Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
-            }
-            .font(AlphonsoFont.sans(11))
-            .tint(AlphonsoColor.inkSoft)
-
-            if let errorMessage = entitlementStore.errorMessage {
-                Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
+                Text(presentation.renewalDisclosure)
+                    .font(font(presentation.disclosureStyle))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                legalLinks
             }
+            .padding(AlphonsoSpacing.md)
+            .frame(maxWidth: 480)
+            .frame(maxWidth: .infinity)
         }
-        .padding()
-        .frame(maxWidth: 360)
         .background(AlphonsoColor.surface)
         .task { await entitlementStore.loadOffering() }
         .manageSubscriptionsSheet(isPresented: $isPresentingManageSubscriptions)
     }
 
-    /// Maps RevenueCat's `SubscriptionPeriod` onto Kit's
-    /// `billingPeriodDescription` -- nil for a non-subscription product
-    /// (no period to state), never a guessed default.
-    private func billingPeriodText(for package: Package) -> String? {
-        guard let period = package.storeProduct.subscriptionPeriod,
-              let unit = billingUnit(period.unit) else { return nil }
-        return billingPeriodDescription(unit: unit, value: period.value)
-    }
+    @ViewBuilder
+    private func offer(_ presentation: PaywallPresentation, state: EntitlementState) -> some View {
+        switch presentation.state {
+        case .loading:
+            // Skeleton: same shapes as the loaded offer, redacted. Placeholder text only,
+            // never a price.
+            VStack(spacing: AlphonsoSpacing.sm) {
+                Text("Loading the price").font(font(presentation.priceStyle))
+                Text("Loading the free trial details").font(font(presentation.trialStyle))
+                Text("Loading").font(AlphonsoFont.sans(17, weight: .semiBold))
+                    .padding(.vertical, AlphonsoSpacing.sm)
+            }
+            .redacted(reason: .placeholder)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(PaywallCopy.loadingAccessibilityLabel)
 
-    /// "2-week free trial" when this product has an introductory free
-    /// trial AND StoreKit says this user is still eligible for it; nil
-    /// otherwise, so the paywall never advertises a trial the purchase
-    /// won't actually give.
-    private func freeTrialText(for package: Package) -> String? {
-        guard entitlementStore.trialEligibleProductIDs.contains(package.storeProduct.productIdentifier),
-              let intro = package.storeProduct.introductoryDiscount,
-              intro.paymentMode == .freeTrial,
-              let unit = billingUnit(intro.subscriptionPeriod.unit) else { return nil }
-        return freeTrialDescription(unit: unit, value: intro.subscriptionPeriod.value)
-    }
+        case .failed(let message):
+            VStack(spacing: AlphonsoSpacing.sm) {
+                Text(message)
+                    .font(AlphonsoFont.sans(14))
+                    .foregroundStyle(AlphonsoColor.ink)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(presentation.retryTitle ?? PaywallCopy.tryAgain) {
+                    Task { await entitlementStore.loadOffering() }
+                }
+                .buttonStyle(.alphonsoSecondary)
+            }
 
-    private func billingUnit(_ unit: RevenueCat.SubscriptionPeriod.Unit) -> BillingPeriodUnit? {
-        switch unit {
-        case .day: return .day
-        case .week: return .week
-        case .month: return .month
-        case .year: return .year
-        @unknown default: return nil
+        case .loaded:
+            VStack(spacing: AlphonsoSpacing.sm) {
+                if let priceLine = presentation.priceLine {
+                    Text(priceLine)
+                        .font(font(presentation.priceStyle))
+                        .foregroundStyle(AlphonsoColor.ink)
+                        .multilineTextAlignment(.center)
+                }
+                if let trialLine = presentation.trialLine {
+                    Text(trialLine)
+                        .font(font(presentation.trialStyle))
+                        .foregroundStyle(AlphonsoColor.ink)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if let ctaTitle = presentation.ctaTitle {
+                    Button {
+                        Task { await entitlementStore.purchase() }
+                    } label: {
+                        if state.isPurchasing {
+                            ProgressView().tint(AlphonsoColor.onAccent)
+                        } else {
+                            Text(ctaTitle)
+                        }
+                    }
+                    .buttonStyle(.alphonsoEmber)
+                    .disabled(state.isPurchasing || state.isRestoring)
+                    .accessibilityLabel(ctaTitle)
+                }
+            }
         }
+    }
+
+    private func restoreButton(_ state: EntitlementState) -> some View {
+        Button(PaywallCopy.restore) {
+            Task { await entitlementStore.restorePurchases() }
+        }
+        .disabled(state.isPurchasing || state.isRestoring)
+    }
+
+    private var manageButton: some View {
+        Button(PaywallCopy.manage) { isPresentingManageSubscriptions = true }
+    }
+
+    private var legalLinks: some View {
+        VStack(spacing: AlphonsoSpacing.xs) {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: AlphonsoSpacing.md) { termsLink; privacyLink }
+                VStack(spacing: AlphonsoSpacing.xs) { termsLink; privacyLink }
+            }
+            Link(PaywallCopy.appleEULA, destination: PaywallLinks.appleStandardEULA)
+        }
+        .font(AlphonsoFont.sans(12))
+        .tint(AlphonsoColor.inkSoft)
+    }
+
+    // Same domain the rest of the app trusts for these pages (AppConfig.apiBaseURL).
+    private var termsLink: some View {
+        Link(PaywallCopy.termsOfUse, destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
+    }
+
+    private var privacyLink: some View {
+        Link(PaywallCopy.privacyPolicy, destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
+    }
+
+    private func noticeText(_ notice: EntitlementState.Notice) -> some View {
+        let (text, color): (String, Color) = {
+            switch notice {
+            case .info(let text): return (text, AlphonsoColor.inkSoft)
+            case .error(let text): return (text, AlphonsoColor.destructive)
+            }
+        }()
+        return Text(text)
+            .font(AlphonsoFont.sans(13))
+            .foregroundStyle(color)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.updatesFrequently)
+    }
+
+    /// The ONLY place a `PaywallTextStyle` becomes a font. AlphonsoFont scales every size
+    /// with Dynamic Type by the same factor, so the Kit's prominence order holds at every
+    /// text size.
+    private func font(_ style: PaywallTextStyle) -> Font {
+        AlphonsoFont.sans(CGFloat(style.pointSize), weight: AlphonsoFont.Weight(rawValue: CGFloat(style.weight)) ?? .regular)
     }
 }
