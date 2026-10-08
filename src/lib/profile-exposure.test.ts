@@ -123,9 +123,10 @@ export function hasUnaliasedProfileRef(body: string): boolean {
  */
 export function filtersOnCaller(body: string): boolean {
   if (/\.id\s*=\s*auth\.uid\(\)/.test(body)) return true;
-  for (const m of body.matchAll(/\.id\s*=\s*([a-z_][a-z0-9_]*)/gi)) {
+  for (const m of body.matchAll(/\.id\s*=\s*([a-z_][a-z0-9_]*)/gi)) {
     const v = m[1];
-    if (new RegExp(`\b${v}\s+(?:uuid\s*)?:=\s*auth\.uid\(\)`, "i").test(body)) return true;
+    if (new RegExp(String.raw`\b${v}\s+(?:uuid\s*)?:=\s*auth\.uid\(\)`, "i").test(body))
+      return true;
   }
   return false;
 }

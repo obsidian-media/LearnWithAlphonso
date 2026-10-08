@@ -6,10 +6,13 @@
 -- functions skip the AI grader and grade locally. Nobody is backfilled: a learner who never chose has not consented.
 --
 -- Writes go through set_ai_consent() only. profiles keeps its own-row UPDATE grant (display name, theme), so a
--- trigger refuses a direct change to this column unless set_ai_consent opened the transaction-local switch
--- app.ai_consent_write, or the session is a server role (service_role, postgres, supabase_admin: the review-account
--- re-seed resets consent to NULL this way). Every client-written value is therefore an explicit choice stamped by
--- the server clock.
+-- trigger refuses any change to this column made by a client role (authenticated, anon). set_ai_consent is owned by
+-- postgres and SECURITY DEFINER, so its UPDATE runs as postgres and passes; service_role and supabase_admin pass
+-- too (the review-account re-seed resets consent to NULL that way). Every client-written value is therefore an
+-- explicit choice stamped by the server clock.
+--
+-- Maintainers: any future postgres-owned SECURITY DEFINER function that writes profiles from client input must
+-- never write ai_consent_at, because the trigger waves its role through.
 --
 -- Other learners cannot read this column: profiles is own-row only (20261008130800_profiles_own_row_read.sql).
 -- Clients read their own value through get_ai_consent().
@@ -40,12 +43,10 @@ BEGIN
     RETURN NEW;
   END IF;
   IF TG_OP = 'INSERT' THEN
-    IF NEW.ai_consent_at IS NOT NULL
-       AND coalesce(current_setting('app.ai_consent_write', true), '') <> 'on' THEN
+    IF NEW.ai_consent_at IS NOT NULL THEN
       RAISE EXCEPTION 'ai-consent-via-rpc-only' USING ERRCODE = '42501';
     END IF;
-  ELSIF NEW.ai_consent_at IS DISTINCT FROM OLD.ai_consent_at
-        AND coalesce(current_setting('app.ai_consent_write', true), '') <> 'on' THEN
+  ELSIF NEW.ai_consent_at IS DISTINCT FROM OLD.ai_consent_at THEN
     RAISE EXCEPTION 'ai-consent-via-rpc-only' USING ERRCODE = '42501';
   END IF;
   RETURN NEW;
@@ -75,13 +76,11 @@ BEGIN
     RAISE EXCEPTION 'invalid-argument' USING ERRCODE = '22023';
   END IF;
 
-  PERFORM set_config('app.ai_consent_write', 'on', true);
   UPDATE public.profiles p
      SET ai_consent_at = CASE WHEN _granted THEN now() ELSE NULL END
    WHERE p.id = _uid
   RETURNING p.ai_consent_at INTO _stamp;
   GET DIAGNOSTICS _rows = ROW_COUNT;
-  PERFORM set_config('app.ai_consent_write', 'off', true);
 
   IF _rows = 0 THEN
     RAISE EXCEPTION 'profile-not-found' USING ERRCODE = 'P0002';

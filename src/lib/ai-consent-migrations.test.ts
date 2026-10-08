@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
  */
 const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations");
 const FILES = {
-  consent: "20261009100000_ai_consent.sql",
-  output: "20261009100100_ai_output_check.sql",
+  consent: "20261011100000_ai_consent.sql",
+  output: "20261011100100_ai_output_check.sql",
 } as const;
 const read = (f: string) => fs.readFileSync(path.join(MIGRATIONS, f), "utf8");
 const code = (f: string) => read(f).replace(/--[^\n]*/g, "");
@@ -20,11 +20,16 @@ const fnBody = (sql: string, name: string) => {
 };
 
 describe("AI consent migrations", () => {
-  it("sort after the moderation filter they call", () => {
-    const filter = fs.readdirSync(MIGRATIONS).find((f) => f.endsWith("_moderation_filter_v2.sql"));
-    expect(filter, "the moderation filter v2 migration must be on main first").toBeDefined();
-    expect(FILES.consent > filter!).toBe(true);
+  it("sort after every other migration on disk, so a database that already has later ones still applies them", () => {
+    const others = fs
+      .readdirSync(MIGRATIONS)
+      .filter((f) => f.endsWith(".sql") && !Object.values(FILES).includes(f as never));
+    expect(others.length).toBeGreaterThan(0);
+    for (const f of others) {
+      expect(FILES.consent > f, `${FILES.consent} must sort after ${f}`).toBe(true);
+    }
     expect(FILES.output > FILES.consent).toBe(true);
+    expect(others.some((f) => f.endsWith("_moderation_filter_v2.sql"))).toBe(true);
   });
 
   describe("ai_consent", () => {
@@ -63,13 +68,10 @@ describe("AI consent migrations", () => {
       );
     });
 
-    it("refuses a direct write to the column unless set_ai_consent opened the switch", () => {
+    it("refuses a direct write to the column from a client role", () => {
       expect(sql()).toContain("BEFORE INSERT OR UPDATE OF ai_consent_at ON public.profiles");
-      expect(sql()).toContain("current_setting('app.ai_consent_write', true)");
       expect(sql()).toContain("RAISE EXCEPTION 'ai-consent-via-rpc-only' USING ERRCODE = '42501';");
-      expect(fnBody(sql(), "set_ai_consent")).toContain(
-        "set_config('app.ai_consent_write', 'off', true)",
-      );
+      expect(sql()).not.toContain("app.ai_consent_write");
     });
 
     it("lets the server roles write the column so a review account can be reset", () => {
@@ -93,8 +95,12 @@ describe("AI consent migrations", () => {
       expect(sql()).not.toMatch(/ARRAY\s*\[\s*'/);
     });
 
-    it("bounds the work of one call", () => {
-      expect(sql()).toContain("unnest(_texts[1:20]) WITH ORDINALITY AS x(t, i)");
+    it("refuses a multi-dimensional or oversized array instead of slicing it", () => {
+      const fn = fnBody(sql(), "ai_output_blocked");
+      expect(fn).toContain("LANGUAGE plpgsql");
+      expect(fn).toContain("array_ndims(_texts) > 1 OR cardinality(_texts) > 20");
+      expect(fn).toContain("RAISE EXCEPTION 'invalid-argument' USING ERRCODE = '22023';");
+      expect(fn).not.toContain("_texts[1:20]");
     });
 
     it("is a definer function callable by signed-in users and the server only", () => {
