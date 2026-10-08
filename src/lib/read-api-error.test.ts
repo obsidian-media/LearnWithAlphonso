@@ -26,4 +26,18 @@ describe("readApiError", () => {
     const resp = { text: () => Promise.reject(new Error("stream error")) } as Response;
     expect(await readApiError(resp)).toBe("");
   });
+
+  it("turns the quota-exceeded code into learner copy, never the raw code", async () => {
+    const resp = new Response(
+      JSON.stringify({
+        error: "quota-exceeded",
+        resetsAt: null,
+        message: "Daily CHAT limit reached",
+      }),
+      { status: 429 },
+    );
+    expect(await readApiError(resp)).toBe(
+      "You've reached today's AI practice limit. Try again tomorrow.",
+    );
+  });
 });

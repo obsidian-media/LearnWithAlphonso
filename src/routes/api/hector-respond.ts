@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { isCourse } from "@/data/courses";
@@ -7,6 +8,7 @@ import { resolveNvidiaChatModel } from "@/lib/nvidia-chat-model.server";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
+  buildHectorSystemPrompt,
   deepgramVoiceForLanguage,
   shapeTutorReply,
   type TutorHistoryMessage,
@@ -56,7 +58,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     const { consumeQuota } = await import("@/lib/ai-quota.server");
     return consumeQuota(request, "chat");
   });
-  if (!quota.ok) return Response.json({ error: quota.message }, { status: quota.status });
+  if (!quota.ok) return quotaFailureResponse(quota);
 
   let body: {
     session_id?: string;
@@ -83,7 +85,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       apiKey: nvidiaKey,
       body: {
         model: resolveNvidiaChatModel(),
-        messages: buildHectorMessages(body.history ?? [], text),
+        messages: buildHectorMessages(body.history ?? [], text, buildHectorSystemPrompt("en", "")),
       },
     });
     if (!llmResp.ok) {

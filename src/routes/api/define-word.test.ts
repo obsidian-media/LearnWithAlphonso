@@ -227,7 +227,11 @@ describe("POST /api/define-word", () => {
     });
     const res = await handler({ request: req() });
     expect(res.status).toBe(429);
-    expect(await res.json()).toEqual({ error: "Daily DEFINE limit reached (40/day)." });
+    expect(await res.json()).toEqual({
+      error: "quota-exceeded",
+      resetsAt: null,
+      message: "Daily DEFINE limit reached (40/day).",
+    });
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
