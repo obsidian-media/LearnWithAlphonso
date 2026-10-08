@@ -455,4 +455,30 @@ describe("Converse chat page", () => {
       expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
     );
   });
+
+  it("asks /api/tts for the course's voice and sends the course to /api/chat", async () => {
+    useProgress.setState({ course: "fr" });
+    global.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/chat")) return jsonResponse({ content: "Très bien." });
+      return new Response(new Blob(["audio"]), { status: 200 });
+    }) as typeof fetch;
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.type(
+      screen.getByPlaceholderText("Type or tap the mic"),
+      "Un crème, s'il vous plaît",
+    );
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent("Très bien."));
+
+    const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const chat = calls.find(([u]) => String(u).includes("/api/chat"))!;
+    expect(JSON.parse(chat[1].body as string).course).toBe("fr");
+    await waitFor(() => expect(calls.some(([u]) => String(u).includes("/api/tts"))).toBe(true));
+    for (const [, init] of calls.filter(([u]) => String(u).includes("/api/tts"))) {
+      expect(JSON.parse(init.body as string).course).toBe("fr");
+    }
+  });
 });

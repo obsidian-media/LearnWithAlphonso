@@ -146,7 +146,8 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         const resp = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ text }),
+          // The server picks this course's native voice.
+          body: JSON.stringify({ text, course }),
         });
         if (!resp.ok) return;
         const blob = await resp.blob();
@@ -162,7 +163,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         /* ignore */
       }
     },
-    [ttsOn],
+    [ttsOn, course],
   );
 
   const openerSpokenRef = useRef(false);
@@ -189,6 +190,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
           body: JSON.stringify({
             systemPrompt: systemPromptForScene(scene),
             cefrLevel,
+            course,
             messages: next.map(({ role, content }) => ({ role, content })),
           }),
         });
@@ -219,7 +221,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
         setSending(false);
       }
     },
-    [messages, scene, systemPromptForScene, cefrLevel, sending, finished, speak, consent],
+    [messages, scene, systemPromptForScene, cefrLevel, course, sending, finished, speak, consent],
   );
 
   const continueToNextScene = useCallback(() => {
