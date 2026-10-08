@@ -1,4 +1,5 @@
 import Foundation
+import LearnWithAlphonsoKit
 
 /// A soft, client-side cooldown on nudging the same friend again -- fast,
 /// no round trip needed to grey out the button. As of
@@ -8,7 +9,7 @@ import Foundation
 /// just an in-app banner) -- this cache is the fast path, not the only
 /// backstop anymore.
 enum NudgeCooldownCache {
-    private static let key = "nudgeCooldowns"
+    private static let key = AccountCacheKeys.nudgeCooldowns
     private static let cooldown: TimeInterval = 24 * 60 * 60
 
     static func canNudge(friendID: String, now: Date = Date()) -> Bool {

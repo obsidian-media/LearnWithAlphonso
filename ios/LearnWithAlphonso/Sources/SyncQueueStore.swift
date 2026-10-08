@@ -169,7 +169,7 @@ final class AppSyncStateRecord {
 /// `ModelContext` directly.
 @MainActor
 @Observable
-final class SyncQueueStore {
+final class SyncQueueStore: AccountScopedQueue {
     @ObservationIgnored private let modelContext: ModelContext
 
     /// Bumped whenever the cached due-review list changes. SwiftUI cannot see
@@ -292,6 +292,32 @@ final class SyncQueueStore {
         modelContext.delete(record)
         try? modelContext.save()
         dueReviewRevision += 1
+    }
+
+    // MARK: - Sign-out / account deletion (SessionLifecycle, AccountDataCleanup)
+
+    /// Everything in this store belongs to the account that was signed in: queued
+    /// completions and grades, the due-review cache and the last-known progress row. The
+    /// next account on this device must start with none of it. The widget is cleared by
+    /// its own lifecycle handler.
+    func clearAll() {
+        deleteAll(PendingLessonCompletionRecord.self)
+        deleteAll(PendingReviewGradeRecord.self)
+        deleteAll(CachedDueReviewRecord.self)
+        deleteAll(AppSyncStateRecord.self)
+        do {
+            try modelContext.save()
+        } catch {
+            print("[SyncQueueStore] clearAll save failed: \(error)")
+        }
+        dueReviewRevision += 1
+    }
+
+    private func deleteAll<Model: PersistentModel>(_ type: Model.Type) {
+        let records = (try? modelContext.fetch(FetchDescriptor<Model>())) ?? []
+        for record in records {
+            modelContext.delete(record)
+        }
     }
 
     private func appSyncState() -> AppSyncStateRecord? {

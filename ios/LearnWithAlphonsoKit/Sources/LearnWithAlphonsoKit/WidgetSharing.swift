@@ -31,6 +31,12 @@ public enum WidgetSharing {
     /// The UserDefaults(suiteName: appGroupID) key the snapshot is stored
     /// under.
     public static let streakSnapshotDefaultsKey = "streakWidgetSnapshot"
+
+    /// Removes the published snapshot, so the widget falls back to its "nothing published
+    /// yet" state. Called on sign-out and account deletion (the app then reloads timelines).
+    public static func clearSnapshot(in defaults: UserDefaults) {
+        defaults.removeObject(forKey: streakSnapshotDefaultsKey)
+    }
 }
 
 /// Read-only progress snapshot published for the home-screen streak

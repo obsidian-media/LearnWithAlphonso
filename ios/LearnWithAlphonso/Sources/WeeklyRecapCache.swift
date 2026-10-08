@@ -1,4 +1,5 @@
 import Foundation
+import LearnWithAlphonsoKit
 
 /// Tracks the league tier as of the last time the weekly recap was viewed,
 /// so the *next* viewing can say whether the user moved up since then --
@@ -8,7 +9,7 @@ import Foundation
 /// small-file cache of 'league tier as of last recap' is sufficient --
 /// don't over-engineer this into a database concern."
 enum WeeklyRecapCache {
-    private static let key = "lastRecapLeagueTier"
+    private static let key = AccountCacheKeys.recapLeagueTier
 
     static var lastRecapLeagueTier: String? {
         get { UserDefaults.standard.string(forKey: key) }

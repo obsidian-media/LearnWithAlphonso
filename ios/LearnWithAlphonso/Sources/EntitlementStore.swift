@@ -1,147 +1,46 @@
 import Foundation
 import Observation
-import RevenueCat
+import LearnWithAlphonsoKit
 
-/// Single source of truth for "does this user have the Pro subscription"
-/// (currently: Hector/Cloud Voice access) -- every Pro-gated view reads
-/// only `isPro`/`packages`, never touches `Purchases` directly, so this is
-/// the only place that would need to change if the entitlement/purchase
-/// backend ever changed. `Purchases.configure` happens once, in
-/// LearnWithAlphonsoApp's init.
+/// The app's observable view of `EntitlementController` (Kit), where every rule lives and
+/// is tested. Pro-gated views read `isPro`; the paywall reads `state` and `presentation`.
+/// Nothing here touches RevenueCat. `RevenueCatPurchases` is the only adapter.
 @Observable
 @MainActor
-final class EntitlementStore {
-    private(set) var isPro = false
-    /// Purchasable packages for the Pro offering, once fetched -- empty
-    /// until `loadOffering()` succeeds. A RevenueCat "Test Store" key has
-    /// no real offering configured yet, so an empty result here is
-    /// expected right now, not an error: the paywall shows a clear
-    /// "not available yet" state instead of crashing or hiding silently.
-    private(set) var packages: [Package] = []
-    /// Product ids whose introductory free trial StoreKit says THIS user
-    /// can still get. The paywall mentions a trial only for these, so it
-    /// never promises a trial to someone who already used it (2026-09-29
-    /// pre-submission audit: the trial wasn't mentioned anywhere before).
-    private(set) var trialEligibleProductIDs: Set<String> = []
-    private(set) var isLoading = false
-    private(set) var errorMessage: String?
+final class EntitlementStore: EntitlementResetting {
+    private(set) var state = EntitlementState()
 
-    /// False when RevenueCat wasn't configured this launch (no API key
-    /// resolved -- see AppConfig.revenueCatAPIKey). Every method below must
-    /// check this before touching `Purchases.shared`, which fatalErrors if
-    /// accessed before `Purchases.configure` ran.
-    private let isConfigured = AppConfig.revenueCatAPIKey != nil
+    var isPro: Bool { state.isPro }
+    var presentation: PaywallPresentation { state.presentation }
 
-    /// Hector re-parenting Phase 1's own prerequisite
-    /// (docs/superpowers/specs/2026-09-26-hector-reparenting-design.md):
-    /// aliases RevenueCat's own subscriber identity to this app's own
-    /// Supabase user id, so a server endpoint can look up "is this user
-    /// Pro" by that same id later (see revenuecat-entitlement.ts). Without
-    /// this, RevenueCat only ever knows this install's own anonymous
-    /// `$RCAnonymousID:...` -- `Purchases.configure` is never given an
-    /// explicit `appUserID`, so nothing before this linked the two.
-    /// Called once per sign-in/restore (RootView), not on every launch
-    /// regardless of session state -- there is no user id to alias
-    /// before one exists.
-    ///
-    /// Updates `isPro` from the result: the identified account's
-    /// purchase history can genuinely differ from whatever the earlier
-    /// anonymous `refresh()` found (e.g. restoring a subscription tied
-    /// to this real account from another device), so this needs its own
-    /// read of `customerInfo`, not just a re-run of `refresh()` after.
-    func login(userID: String) async {
-        guard isConfigured else { return }
-        do {
-            let result = try await Purchases.shared.logIn(userID)
-            isPro = result.customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
-        } catch {
-            // Best-effort -- same posture as every other call in this
-            // file: a failed logIn just leaves whatever isPro value the
-            // earlier anonymous refresh() already found.
-        }
+    @ObservationIgnored private let controller: EntitlementController
+    @ObservationIgnored private var hasStarted = false
+
+    /// `provider` is nil when no RevenueCat key resolved this launch (AppConfig.revenueCatAPIKey):
+    /// the paywall then shows its retryable failure state and Pro stays off.
+    init(provider: (any PurchasesProviding)?) {
+        controller = EntitlementController(provider: provider)
+        controller.onChange = { [weak self] in self?.state = $0 }
     }
 
-    func refresh() async {
-        guard isConfigured else {
-            isPro = false
-            return
-        }
-        do {
-            let customerInfo = try await Purchases.shared.customerInfo()
-            isPro = customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
-        } catch {
-            // Entitlement checks fail closed -- a network hiccup here must
-            // never accidentally grant Pro access.
-            isPro = false
-        }
+    /// Call once, after `Purchases.configure` (LearnWithAlphonsoApp's root `.task`).
+    func start() async {
+        guard !hasStarted else { return }
+        hasStarted = true
+        // Listening only. Pro is set by login(userID:) once a session exists, and the
+        // controller ignores streamed updates until then, so a previous account's cached
+        // Pro never shows for the next one.
+        controller.startListening()
     }
 
-    func loadOffering() async {
-        guard isConfigured else {
-            packages = []
-            errorMessage = "Subscriptions aren't available in this build yet."
-            return
-        }
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-        do {
-            let offerings = try await Purchases.shared.offerings()
-            packages = offerings.current?.availablePackages ?? []
-            var eligible: Set<String> = []
-            for package in packages where package.storeProduct.introductoryDiscount?.paymentMode == .freeTrial {
-                let status = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: package.storeProduct)
-                if status == .eligible { eligible.insert(package.storeProduct.productIdentifier) }
-            }
-            trialEligibleProductIDs = eligible
-        } catch {
-            packages = []
-            // The 2026-09-23 debug instrumentation that dumped the raw
-            // NSError here has served its purpose and is removed. It said
-            // to revert "once the real offerings() failure is diagnosed",
-            // and it is: RevenueCat's current offering is correct and
-            // contains com.obsidianmedia.learnwithalphonso.pro.monthly
-            // (verified against the same endpoint the SDK uses); products
-            // simply cannot be fetched until App Store Connect approves a
-            // FIRST auto-renewable subscription, which only happens
-            // alongside the build's own review.
-            //
-            // So this is the EXPECTED pre-approval state, not a fault --
-            // and a reviewer was being shown a wall of red SDK text with
-            // rev.cat troubleshooting URLs, which reads as broken and
-            // contradicts what our own review notes tell them to expect.
-            // The underlying error still goes to the console for us.
-            print("[EntitlementStore] offerings() failed: \(error)")
-            errorMessage =
-                "Subscription options aren't available yet. This unlocks once the App Store finishes reviewing our subscription."
-        }
-    }
+    func reconcileSignedOut() async { await controller.reconcileSignedOut() }
 
-    func purchase(_ package: Package) async {
-        guard isConfigured else {
-            errorMessage = "Subscriptions aren't available in this build yet."
-            return
-        }
-        errorMessage = nil
-        do {
-            let result = try await Purchases.shared.purchase(package: package)
-            isPro = result.customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
-        } catch {
-            errorMessage = "Purchase couldn't be completed. Please try again."
-        }
-    }
+    func refresh() async { await controller.refresh() }
+    func login(userID: String) async { await controller.login(userID: userID) }
+    func loadOffering() async { await controller.loadOffering() }
+    func purchase() async { await controller.purchase() }
+    func restorePurchases() async { await controller.restore() }
 
-    func restorePurchases() async {
-        guard isConfigured else {
-            errorMessage = "Subscriptions aren't available in this build yet."
-            return
-        }
-        errorMessage = nil
-        do {
-            let customerInfo = try await Purchases.shared.restorePurchases()
-            isPro = customerInfo.entitlements[AppConfig.proEntitlementID]?.isActive == true
-        } catch {
-            errorMessage = "Couldn't restore purchases. Please try again."
-        }
-    }
+    /// SessionLifecycle handler (AccountDataCleanup.HandlerID.entitlements).
+    func reset() async { await controller.reset() }
 }

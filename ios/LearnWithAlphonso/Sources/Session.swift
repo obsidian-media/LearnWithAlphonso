@@ -34,12 +34,25 @@ final class Session {
     private var proactiveRefreshTask: Task<Void, Never>?
     private let googleSignInPresenter = GoogleSignInPresenter()
     private let appleSignInPresenter = AppleSignInPresenter()
+    private let lifecycle: SessionLifecycle
+    /// The cleanup started by the last sign-out or deletion. Every path that can establish a
+    /// new session awaits it first, so a quick re-sign-in never interleaves with the previous
+    /// account's cleanup.
+    private var lifecycleTask: Task<Void, Never>?
+    /// Survives a process kill between a sign-out and its cleanup finishing; the next launch
+    /// finishes it (restoreSession).
+    private let pendingCleanup = PendingCleanupStore()
+    private var cleanupSequence = 0
 
-    init(authClient: SupabaseAuthClient = SupabaseAuthClient(
-        supabaseURL: AppConfig.supabaseURL,
-        publishableKey: AppConfig.supabasePublishableKey
-    )) {
+    init(
+        authClient: SupabaseAuthClient = SupabaseAuthClient(
+            supabaseURL: AppConfig.supabaseURL,
+            publishableKey: AppConfig.supabasePublishableKey
+        ),
+        lifecycle: SessionLifecycle
+    ) {
         self.authClient = authClient
+        self.lifecycle = lifecycle
     }
 
     var accessToken: String? {
@@ -117,10 +130,12 @@ final class Session {
     }
 
     func verifyCode(_ code: String) async {
-        guard case .awaitingCode(let email) = state else { return }
+        // Busy first, so a double tap during the pending cleanup cannot start a second verify.
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
+        await finishPendingCleanup()
+        guard case .awaitingCode(let email) = state else { return }
         do {
             let session = try await authClient.verifyEmailOTP(email: email, code: code)
             establishSession(session)
@@ -138,7 +153,10 @@ final class Session {
     /// (every subsequent API call would 401, with no obvious reason why
     /// to a user who's staring at what looks like a normal signed-in app).
     func restoreSession() async {
+        await finishPendingCleanup()
         defer { isRestoring = false }
+        // A previous run was killed between a sign-out and its cleanup finishing.
+        await lifecycle.resumePending(pendingCleanup)
         if let bootstrapped = Self.uiTestBootstrapSession() {
             establishSession(bootstrapped)
             return
@@ -173,6 +191,7 @@ final class Session {
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
+        await finishPendingCleanup()
         do {
             let challenge = SupabaseOAuthFlow.makePKCEChallenge()
             let authorizeURL = SupabaseOAuthFlow.authorizeURL(
@@ -206,6 +225,7 @@ final class Session {
         errorMessage = nil
         isBusy = true
         defer { isBusy = false }
+        await finishPendingCleanup()
         do {
             let result = try await appleSignInPresenter.authenticate()
             let session = try await authClient.signInWithIDToken(
@@ -228,12 +248,48 @@ final class Session {
         }
     }
 
+    /// Ends the session locally and runs every SessionLifecycle handler for `.signedOut`
+    /// (entitlements, the offline queue, caches, the widget, and whatever other features
+    /// registered).
     func signOut() {
+        endSession(.signedOut)
+    }
+
+    /// Called only after the server has deleted the account (SettingsView.deleteAccount).
+    /// Same local teardown as sign-out, but handlers see `.accountDeleted`, so they can also
+    /// remove what only deletion should.
+    func accountDeleted() {
+        endSession(.accountDeleted)
+    }
+
+    /// Awaited by every sign-in path before it establishes a session.
+    func finishPendingCleanup() async {
+        await lifecycleTask?.value
+    }
+
+    private func endSession(_ event: SessionLifecycle.Event) {
         proactiveRefreshTask?.cancel()
         proactiveRefreshTask = nil
         state = .signedOut
         errorMessage = nil
         KeychainSessionStore.clear()
+        // Durable before anything can suspend: if the process dies now, the next launch
+        // runs the cleanup (restoreSession).
+        pendingCleanup.mark(event)
+        cleanupSequence += 1
+        let sequence = cleanupSequence
+        // Chained, never concurrent: a second sign-out waits for the first one's cleanup.
+        let previous = lifecycleTask
+        let lifecycle = self.lifecycle
+        lifecycleTask = Task { @MainActor [weak self] in
+            await previous?.value
+            await lifecycle.run(event)
+            // Only the newest sign-out clears the marker; an older one finishing must not
+            // hide a newer cleanup that is still owed.
+            if let self, self.cleanupSequence == sequence {
+                self.pendingCleanup.clear()
+            }
+        }
     }
 
     /// Refreshes the session when its access token is expired or within

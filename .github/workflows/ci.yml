@@ -512,6 +512,9 @@ jobs:
         working-directory: ios/LearnWithAlphonso
         run: xcodegen generate
 
+      - name: RevenueCat resolves to the project.yml pin
+        run: bash scripts/check-revenuecat-resolution.sh
+
       - name: Build for iOS Simulator
         working-directory: ios/LearnWithAlphonso
         run: |

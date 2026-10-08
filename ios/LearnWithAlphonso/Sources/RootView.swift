@@ -114,19 +114,18 @@ struct RootView: View {
                         // holding one, because PodcastClient cannot refresh the
                         // token it was given.
                         podcastPlayer.makeClient = { makePodcastClient(session: session) }
+                        // Identity first: RevenueCat can still hold a previous account
+                        // (an upgrade, an interrupted sign-out), and nothing here should
+                        // run, or show Pro, before it is aliased to this account. See
+                        // EntitlementStore.login's doc comment.
+                        if let userID = session.userID {
+                            await entitlementStore.login(userID: userID)
+                        }
                         await triggerSync()
                         await hydrateThemeFromServer()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
                         await checkPlacementGate()
-                        // Hector re-parenting Phase 1's own prerequisite:
-                        // aliases RevenueCat's subscriber identity to this
-                        // account so a server endpoint can verify "is this
-                        // user Pro" later -- see EntitlementStore.login's
-                        // own doc comment.
-                        if let userID = session.userID {
-                            await entitlementStore.login(userID: userID)
-                        }
                     }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
@@ -163,7 +162,13 @@ struct RootView: View {
                 }
             }
         }
-        .task { await session.restoreSession() }
+        .task {
+            await session.restoreSession()
+            // No stored session: RevenueCat must not keep a previous account's identity.
+            if session.userID == nil {
+                await entitlementStore.reconcileSignedOut()
+            }
+        }
         .onAppear {
             // See updateRealSystemColorScheme's doc comment. Runs once,
             // immediately, so the manager has a real system value before
@@ -208,18 +213,23 @@ struct RootView: View {
     /// Safe to call opportunistically: an empty queue is a no-op, and
     /// SyncEngine.sync leaves any failed item queued for the next trigger.
     private func triggerSync() async {
-        guard let accessToken = session.accessToken else { return }
+        guard let accessToken = session.accessToken, let syncingUserID = session.userID else { return }
+        // A sign-out (or a different sign-in) while this was in flight: the result belongs to
+        // the previous account, whose queue and caches the session lifecycle already cleared.
+        // Writing it back would show that account's progress and widget streak to the next one.
+        func stillSameAccount() -> Bool { session.userID == syncingUserID }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let result = await SyncEngine.sync(
             pendingLessonCompletions: syncQueueStore.pendingLessonCompletions(),
             pendingReviewGrades: syncQueueStore.pendingReviewGrades(),
             client: client
         )
+        guard stillSameAccount() else { return }
         syncQueueStore.removeSyncedLessonCompletions(result.syncedLessonCompletions)
         syncQueueStore.removeSyncedReviewGrades(result.syncedReviewGrades)
         if let lastKnownProgress = result.lastKnownProgress {
             syncQueueStore.updateLastKnownProgress(lastKnownProgress)
-        } else if let fetched = try? await client.fetchProgress() {
+        } else if let fetched = try? await client.fetchProgress(), stillSameAccount() {
             // SyncEngine.sync only learns progress as a side effect of
             // *pushing* a queued lesson completion, so with an empty queue
             // -- the normal state after a user has synced and then updated
@@ -234,7 +244,7 @@ struct RootView: View {
             // hydrateThemeFromServer below: a failed fetch leaves the
             // previous cached value alone rather than blanking the header.
             syncQueueStore.updateLastKnownProgress(fetched)
-        } else {
+        } else if stillSameAccount() {
             syncQueueStore.markSyncedNow()
         }
         // 2026-09-30, reported live: the Review badge (here and on
@@ -258,7 +268,7 @@ struct RootView: View {
         // (Swift's `private` is file-scoped), not visible here. Six
         // other files each keep an identical private copy of this same
         // Course -> code mapping; matching that established pattern.
-        if let dueReviews = try? await client.fetchDueReviews(course: "en") {
+        if let dueReviews = try? await client.fetchDueReviews(course: "en"), stillSameAccount() {
             syncQueueStore.replaceLastKnownDueReviews(dueReviews.due)
         }
     }

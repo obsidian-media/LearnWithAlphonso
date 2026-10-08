@@ -91,6 +91,22 @@ final class GoalCacheTests: XCTestCase {
         XCTAssertNil(GoalCache(defaults: d).read(userID: "u1", course: "en"))
     }
 
+    func testClearAllRemovesEveryUsersGoalAndNothingElse() throws {
+        let store = defaults()
+        let cache = GoalCache(defaults: store)
+        let state = try fixtureState()
+        cache.write(state, userID: "u1", course: "en")
+        cache.write(state, userID: "u2", course: "fr")
+        store.set("keep", forKey: "unrelated")
+
+        cache.clearAll()
+
+        XCTAssertNil(cache.read(userID: "u1", course: "en"))
+        XCTAssertNil(cache.read(userID: "u2", course: "fr"))
+        XCTAssertEqual(store.string(forKey: "unrelated"), "keep")
+        XCTAssertTrue(GoalCache.key(userID: "u1", course: "en").hasPrefix(GoalCache.keyPrefix))
+    }
+
     func testTheKeyIncludesTheUser() {
         XCTAssertNotEqual(GoalCache.key(userID: "a", course: "en"), GoalCache.key(userID: "b", course: "en"))
         XCTAssertTrue(GoalCache.key(userID: "user-xyz", course: "en").contains("user-xyz"))
