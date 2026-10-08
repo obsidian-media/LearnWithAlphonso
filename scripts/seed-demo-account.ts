@@ -149,6 +149,13 @@ async function seedProgress(userId: string): Promise<void> {
   const streakDays = 12;
 
   await Promise.all([
+    // The demo account has a chosen public name, so App Review and the screenshot run land on Learn, not on
+    // the one-time name prompt. A service-role write (auth.uid() NULL) is not re-stamped by the profile
+    // trigger, so set both columns explicitly. "Alex" passes the name filter.
+    supabaseAdmin
+      .from("profiles")
+      .update({ display_name: "Alex", name_confirmed_at: new Date().toISOString() })
+      .eq("id", userId),
     supabaseAdmin.from("user_progress").upsert({
       user_id: userId,
       streak: streakDays,
