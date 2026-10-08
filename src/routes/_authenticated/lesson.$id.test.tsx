@@ -799,6 +799,6 @@ describe("Lesson page -- generative practice (V3 pkg 4b)", () => {
     const user = userEvent.setup();
     await finishLesson(user);
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
-    expect(await screen.findByText("Something went wrong — try again.")).toBeInTheDocument();
+    expect(await screen.findByText("Something went wrong. Try again.")).toBeInTheDocument();
   });
 });

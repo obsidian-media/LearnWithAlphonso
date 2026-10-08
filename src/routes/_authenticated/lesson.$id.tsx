@@ -33,6 +33,7 @@ import type { TranslationVerdict } from "../api/grade-translation";
 import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
+import { readApiError } from "../../lib/read-api-error";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPageWithSave,
@@ -953,17 +954,24 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
   const [questions, setQuestions] = useState<GeneratedPracticeQuestion[]>([]);
   const [idx, setIdx] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [errorText, setErrorText] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
   async function generate() {
     setStatus("loading");
+    setErrorText(null);
     try {
       const resp = await fetch("/api/generate-practice", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ lessonId, course }),
       });
+      if (resp.status === 429) {
+        setErrorText((await readApiError(resp)) || null);
+        setStatus("error");
+        return;
+      }
       if (!resp.ok) throw new Error("request failed");
       const data = (await resp.json()) as { questions: GeneratedPracticeQuestion[] };
       if (data.questions.length === 0) {
@@ -997,7 +1005,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
         )}
         {status === "error" && (
           <p className="mt-2 text-center text-xs text-ink-soft">
-            Something went wrong — try again.
+            {errorText ?? "Something went wrong. Try again."}
           </p>
         )}
       </div>
@@ -1013,7 +1021,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
   }
 
   const q = questions[idx];
-  const isCorrect = picked === q.choices[q.answerIndex];
+  const isCorrect = picked === q.answerIndex;
 
   return (
     <div className="mt-8 w-full text-left">
@@ -1022,15 +1030,15 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
       </p>
       <p className="mt-2 text-base font-medium text-ink">{q.prompt}</p>
       <div className="mt-3 space-y-2">
-        {q.choices.map((c) => (
+        {q.choices.map((c, i) => (
           <AnswerOption
-            key={c}
+            key={i}
             label={c}
             checked={checked}
-            isPicked={picked === c}
-            isRight={q.choices[q.answerIndex] === c}
+            isPicked={picked === i}
+            isRight={q.answerIndex === i}
             disabled={checked}
-            onClick={() => setPicked(c)}
+            onClick={() => setPicked(i)}
           />
         ))}
       </div>
@@ -1043,7 +1051,7 @@ function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; cour
         />
       )}
       <button
-        disabled={!checked && !picked}
+        disabled={!checked && picked === null}
         onClick={() => {
           if (!checked) {
             setChecked(true);
