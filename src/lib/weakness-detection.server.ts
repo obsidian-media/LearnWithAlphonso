@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * V3 package 3b: extracted from src/routes/api/analyze-weaknesses.ts so
@@ -106,19 +107,15 @@ export async function detectAndRecordWeaknesses(params: {
 
   let content: string;
   try {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${params.nvidiaApiKey}`,
-      },
-      body: JSON.stringify({
+    const resp = await nvidiaChatCompletion({
+      apiKey: params.nvidiaApiKey,
+      body: {
         model: params.nvidiaModel,
         messages: [
           ...params.transcriptMessages,
           { role: "user", content: analysisPrompt(params.sourceDescription) },
         ],
-      }),
+      },
     });
     if (!resp.ok) {
       console.error(

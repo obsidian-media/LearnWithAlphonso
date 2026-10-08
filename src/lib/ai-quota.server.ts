@@ -32,7 +32,7 @@ export type QuotaResult =
   { ok: true; used: number; limit: number } | { ok: false; status: number; message: string };
 
 export type AuthResult =
-  | { ok: true; supabase: ReturnType<typeof createClient<Database>> }
+  | { ok: true; supabase: ReturnType<typeof createClient<Database>>; userId: string }
   | { ok: false; status: number; message: string };
 
 function bearer(request: Request): string | null {
@@ -73,7 +73,7 @@ export async function verifyAuth(request: Request): Promise<AuthResult> {
   if (userErr || !userData.user) {
     return { ok: false, status: 401, message: "Session expired — sign in again." };
   }
-  return { ok: true, supabase };
+  return { ok: true, supabase, userId: userData.user.id };
 }
 
 /**
@@ -84,8 +84,14 @@ export async function verifyAuth(request: Request): Promise<AuthResult> {
 export async function consumeQuota(request: Request, kind: QuotaKind): Promise<QuotaResult> {
   const auth = await verifyAuth(request);
   if (!auth.ok) return auth;
-  const { supabase } = auth;
+  return consumeQuotaFor(auth.supabase, kind);
+}
 
+/** The rate-limit and daily-cap half of consumeQuota, for a caller that has already verified the session. */
+export async function consumeQuotaFor(
+  supabase: ReturnType<typeof createClient<Database>>,
+  kind: QuotaKind,
+): Promise<QuotaResult> {
   // Per-minute burst limit, on top of the daily cap below — checked first
   // so a rejected burst doesn't also eat into the day's quota.
   const { data: rlData, error: rlError } = await supabase.rpc("consume_ai_rate_limit", {

@@ -122,3 +122,12 @@ describe("every QuotaKind is known to the database functions", () => {
     expect(latestBodyOf("consume_ai_rate_limit")).toContain(`WHEN '${kind}' THEN`);
   });
 });
+
+describe("verifyAuth", () => {
+  it("returns the caller's user id", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+    const { verifyAuth } = await import("./ai-quota.server");
+    const r = await verifyAuth(req({ Authorization: "Bearer tok" }));
+    expect(r.ok && r.userId).toBe("u1");
+  });
+});
