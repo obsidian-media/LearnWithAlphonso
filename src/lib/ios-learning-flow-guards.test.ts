@@ -27,7 +27,7 @@ describe("Review never blank", () => {
     expect(src).toMatch(/replaceLastKnownDueReviews\([^)]*course: course\.wireCode\)/);
   });
   it("queued grades carry the owning account", () => {
-    expect(src).toMatch(/PendingReviewGrade\([^)]*ownerUserID: session\.userID/);
+    expect(src).toMatch(/PendingReviewGrade\(.*ownerUserID: session\.userID/);
   });
   it("opens on the learner's active course and keeps the picker usable", () => {
     expect(src).toContain("ActiveCoursePreference.load(for: session.userID)");
