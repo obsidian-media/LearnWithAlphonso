@@ -64,6 +64,14 @@ struct PaywallView: View {
         }
         .background(AlphonsoColor.surface)
         .task { await entitlementStore.loadOffering() }
+        .onChange(of: state.notice) { _, notice in
+            // Purchase and restore results appear below the buttons; tell VoiceOver.
+            guard let notice else { return }
+            switch notice {
+            case .info(let text), .error(let text):
+                AccessibilityNotification.Announcement(text).post()
+            }
+        }
         .manageSubscriptionsSheet(isPresented: $isPresentingManageSubscriptions)
     }
 

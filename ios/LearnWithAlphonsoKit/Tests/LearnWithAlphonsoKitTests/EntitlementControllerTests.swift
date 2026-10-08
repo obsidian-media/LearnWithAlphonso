@@ -18,6 +18,16 @@ final class EntitlementControllerTests: XCTestCase {
         return controller
     }
 
+    /// A controller that is signed in as user-a and listening, the state every streamed
+    /// update is meant for.
+    @MainActor
+    private func signedInController(_ mock: MockPurchases) async -> EntitlementController {
+        let controller = EntitlementController(provider: mock)
+        await controller.login(userID: "user-a")
+        controller.startListening()
+        return controller
+    }
+
     // MARK: - Offering states
 
     @MainActor
@@ -164,8 +174,7 @@ final class EntitlementControllerTests: XCTestCase {
     @MainActor
     func testAStreamedCustomerInfoUpdateFlipsProWithoutARelaunch() async {
         let mock = MockPurchases()
-        let controller = EntitlementController(provider: mock)
-        controller.startListening()
+        let controller = await signedInController(mock)
         XCTAssertFalse(controller.state.isPro)
 
         mock.emit(pro) // renewal or a purchase on another device
@@ -179,6 +188,7 @@ final class EntitlementControllerTests: XCTestCase {
     func testPendingThenApprovalViaTheStreamUnlocksPro() async {
         let mock = MockPurchases()
         let controller = await loadedController(mock)
+        await controller.login(userID: "user-a")
         controller.startListening()
         mock.purchaseResult = .success(.pending)
         await controller.purchase()
@@ -227,12 +237,13 @@ final class EntitlementControllerTests: XCTestCase {
     @MainActor
     func testLoginFailureWhileRevenueCatHoldsAnotherIdentityFailsClosed() async {
         let mock = MockPurchases()
+        mock.logInResult = .success(pro)
         let controller = EntitlementController(provider: mock)
+        await controller.login(userID: "user-a")
         controller.startListening()
-        mock.emit(pro) // the previous account's cached Pro
-        await waitUntil { controller.state.isPro }
+        XCTAssertTrue(controller.state.isPro) // the previous account's Pro
 
-        mock.appUserID = "user-a" // RevenueCat still holds the previous account
+        // RevenueCat still holds the previous account (user-a)
         mock.logInResult = .failure(MockPurchasesError())
         await controller.login(userID: "user-b")
 
@@ -243,8 +254,7 @@ final class EntitlementControllerTests: XCTestCase {
     @MainActor
     func testARefreshErrorFailsClosed() async {
         let mock = MockPurchases()
-        let controller = EntitlementController(provider: mock)
-        controller.startListening()
+        let controller = await signedInController(mock)
         mock.emit(pro)
         await waitUntil { controller.state.isPro }
         mock.customerInfoResult = .failure(MockPurchasesError())
@@ -273,8 +283,7 @@ final class EntitlementControllerTests: XCTestCase {
     func testResetWhenLogOutThrowsStillLeavesProOff() async {
         let mock = MockPurchases()
         mock.logOutResult = .failure(MockPurchasesError()) // anonymous user or offline
-        let controller = EntitlementController(provider: mock)
-        controller.startListening()
+        let controller = await signedInController(mock)
         mock.emit(pro)
         await waitUntil { controller.state.isPro }
         await controller.reset()
@@ -302,9 +311,8 @@ final class EntitlementControllerTests: XCTestCase {
     func testStreamUpdatesDuringResetAreIgnoredAndListeningResumesAfter() async {
         let mock = MockPurchases()
         let gate = Gate()
+        let controller = await signedInController(mock)
         mock.logOutGate = gate
-        let controller = EntitlementController(provider: mock)
-        controller.startListening()
 
         let reset = Task { await controller.reset() }
         await waitUntil { mock.calls.contains("logOut") }
@@ -314,8 +322,83 @@ final class EntitlementControllerTests: XCTestCase {
 
         gate.open()
         await reset.value
+        await controller.login(userID: "user-b") // the next account signs in
         mock.emit(pro) // the next account's real update
         await waitUntil { controller.state.isPro }
+    }
+
+    // MARK: - Identity leftovers (upgrade, interrupted sign-out)
+
+    @MainActor
+    func testStreamedUpdatesBeforeAnyLoginAreIgnored() async {
+        let mock = MockPurchases()
+        let controller = EntitlementController(provider: mock)
+        controller.startListening()
+        mock.emit(pro)
+        await drainMainActor()
+        XCTAssertFalse(controller.state.isPro)
+    }
+
+    @MainActor
+    func testStreamedUpdatesForAnotherRevenueCatIdentityAreIgnored() async {
+        let mock = MockPurchases()
+        let controller = await signedInController(mock)
+        mock.appUserID = "someone-else"
+        mock.emit(pro)
+        await drainMainActor()
+        XCTAssertFalse(controller.state.isPro)
+    }
+
+    @MainActor
+    func testLaunchWithNoSessionLogsOutALeftoverNamedIdentity() async {
+        let mock = MockPurchases()
+        mock.appUserID = "previous-account"
+        let controller = EntitlementController(provider: mock)
+        await controller.reconcileSignedOut()
+        XCTAssertEqual(mock.calls, ["logOut"])
+        XCTAssertFalse(controller.state.isPro)
+    }
+
+    @MainActor
+    func testLaunchWithNoSessionLeavesAnAnonymousIdentityAlone() async {
+        let mock = MockPurchases()
+        let controller = EntitlementController(provider: mock)
+        await controller.reconcileSignedOut()
+        XCTAssertEqual(mock.calls, [])
+    }
+
+    @MainActor
+    func testASignOutDuringAnInFlightLoginLeavesRevenueCatAnonymous() async {
+        let mock = MockPurchases()
+        let gate = Gate()
+        mock.logInGate = gate
+        mock.logInResult = .success(pro)
+        let controller = EntitlementController(provider: mock)
+
+        let login = Task { await controller.login(userID: "user-a") }
+        await waitUntil { mock.calls.contains("logIn:user-a") }
+        await controller.reset()
+        gate.open()
+        await login.value
+
+        XCTAssertEqual(mock.calls.filter { $0 == "logOut" }.count, 2) // reset, then the stale login's cleanup
+        XCTAssertEqual(mock.currentAppUserID(), "$RCAnonymousID:test")
+        XCTAssertFalse(controller.state.isPro)
+    }
+
+    @MainActor
+    func testResetLogsOutAgainWhenALoginRacedItsLogout() async {
+        let mock = MockPurchases()
+        let gate = Gate()
+        mock.logOutGate = gate
+        let controller = EntitlementController(provider: mock)
+        let reset = Task { await controller.reset() }
+        await waitUntil { mock.calls.contains("logOut") }
+        mock.racedIdentity = "user-a" // a login resolved while the logout was in flight
+        gate.open()
+        await reset.value
+        XCTAssertEqual(mock.calls.filter { $0 == "logOut" }.count, 2)
+        XCTAssertEqual(mock.currentAppUserID(), "$RCAnonymousID:test")
     }
 
     /// The controller registered through the real cleanup function is reset by a lifecycle event.

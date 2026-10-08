@@ -4,8 +4,9 @@ import LearnWithAlphonsoKit
 
 /// The only file that turns RevenueCat into Kit types (`PurchasesProviding`). Nothing here
 /// touches `Purchases.shared` until a method is called. `LearnWithAlphonsoApp.init`
-/// configures Purchases before any call can happen, but the @State initializers that build
-/// this object run BEFORE that init body, so the initializer must stay inert.
+/// configures Purchases and then builds this object, but keeping the initializer inert means
+/// no future reordering of that launch code can touch `Purchases.shared` before it is
+/// configured (it fatalErrors otherwise).
 @MainActor
 final class RevenueCatPurchases: PurchasesProviding {
     private enum AdapterError: Error { case productNotLoaded }

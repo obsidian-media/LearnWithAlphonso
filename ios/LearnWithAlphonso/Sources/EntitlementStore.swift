@@ -27,9 +27,13 @@ final class EntitlementStore: EntitlementResetting {
     func start() async {
         guard !hasStarted else { return }
         hasStarted = true
+        // Listening only. Pro is set by login(userID:) once a session exists, and the
+        // controller ignores streamed updates until then, so a previous account's cached
+        // Pro never shows for the next one.
         controller.startListening()
-        await controller.refresh()
     }
+
+    func reconcileSignedOut() async { await controller.reconcileSignedOut() }
 
     func refresh() async { await controller.refresh() }
     func login(userID: String) async { await controller.login(userID: userID) }

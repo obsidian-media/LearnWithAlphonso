@@ -170,8 +170,8 @@ final class PaywallPresentationTests: XCTestCase {
     func testTheDisclosureIsNoLessReadableThanCaptionAndThePriceOutranksTheCTAButton() {
         let p = PaywallPresentation.make(.loaded([product()]))
         XCTAssertGreaterThanOrEqual(p.disclosureStyle.pointSize, 12)
-        // AlphonsoPrimaryButtonStyle sets the CTA in 17 pt semibold.
-        XCTAssertGreaterThan(p.priceStyle.pointSize, 17)
+        // AlphonsoPrimaryButtonStyle sets the CTA at this size.
+        XCTAssertGreaterThan(p.priceStyle.pointSize, PaywallTextStyle.primaryButtonPointSize)
     }
 
     func testNoStaticCopyContainsADoubleHyphenOrReviewWording() {

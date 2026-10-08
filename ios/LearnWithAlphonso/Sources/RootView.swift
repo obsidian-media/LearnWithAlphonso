@@ -114,19 +114,18 @@ struct RootView: View {
                         // holding one, because PodcastClient cannot refresh the
                         // token it was given.
                         podcastPlayer.makeClient = { makePodcastClient(session: session) }
+                        // Identity first: RevenueCat can still hold a previous account
+                        // (an upgrade, an interrupted sign-out), and nothing here should
+                        // run, or show Pro, before it is aliased to this account. See
+                        // EntitlementStore.login's doc comment.
+                        if let userID = session.userID {
+                            await entitlementStore.login(userID: userID)
+                        }
                         await triggerSync()
                         await hydrateThemeFromServer()
                         notificationScheduler.scheduleWeeklyRecap()
                         await registerRemotePushIfNeeded()
                         await checkPlacementGate()
-                        // Hector re-parenting Phase 1's own prerequisite:
-                        // aliases RevenueCat's subscriber identity to this
-                        // account so a server endpoint can verify "is this
-                        // user Pro" later -- see EntitlementStore.login's
-                        // own doc comment.
-                        if let userID = session.userID {
-                            await entitlementStore.login(userID: userID)
-                        }
                     }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
@@ -163,7 +162,13 @@ struct RootView: View {
                 }
             }
         }
-        .task { await session.restoreSession() }
+        .task {
+            await session.restoreSession()
+            // No stored session: RevenueCat must not keep a previous account's identity.
+            if session.userID == nil {
+                await entitlementStore.reconcileSignedOut()
+            }
+        }
         .onAppear {
             // See updateRealSystemColorScheme's doc comment. Runs once,
             // immediately, so the manager has a real system value before
@@ -239,7 +244,7 @@ struct RootView: View {
             // hydrateThemeFromServer below: a failed fetch leaves the
             // previous cached value alone rather than blanking the header.
             syncQueueStore.updateLastKnownProgress(fetched)
-        } else {
+        } else if stillSameAccount() {
             syncQueueStore.markSyncedNow()
         }
         // 2026-09-30, reported live: the Review badge (here and on

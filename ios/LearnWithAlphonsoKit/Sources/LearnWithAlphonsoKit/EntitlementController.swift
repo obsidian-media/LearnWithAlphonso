@@ -64,6 +64,11 @@ public final class EntitlementController: EntitlementResetting {
     private var generation = 0
     private var resetsInFlight = 0
     private var listenTask: Task<Void, Never>?
+    /// The account this controller is currently identified as. Nil while signed out or
+    /// before the first login. Streamed updates only count for this account.
+    private var expectedUserID: String?
+
+    private static let anonymousPrefix = "$RCAnonymousID:"
 
     public init(provider: (any PurchasesProviding)?) {
         self.provider = provider
@@ -91,6 +96,10 @@ public final class EntitlementController: EntitlementResetting {
         // While a reset is logging RevenueCat out, the stream can still deliver the previous
         // account's info. It must not land.
         guard resetsInFlight == 0 else { return }
+        // No signed-in account, or RevenueCat still holds a different identity than the one
+        // we logged in as: whatever it streams is not this account's entitlement.
+        guard let provider, let expected = expectedUserID,
+              provider.currentAppUserID() == expected else { return }
         state.isPro = snapshot.isProActive
         if snapshot.isProActive { state.notice = nil }
     }
@@ -117,9 +126,14 @@ public final class EntitlementController: EntitlementResetting {
     public func login(userID: String) async {
         guard let provider else { return }
         let started = generation
+        expectedUserID = userID
         do {
             let snapshot = try await provider.logIn(userID)
-            guard started == generation else { return }
+            guard started == generation else {
+                // Signed out while this was in flight: RevenueCat may now hold the old account.
+                await dropIdentityIfSignedOut(provider)
+                return
+            }
             state.isPro = snapshot.isProActive
         } catch {
             guard started == generation else { return }
@@ -129,6 +143,21 @@ public final class EntitlementController: EntitlementResetting {
                 state.isPro = false
             }
         }
+    }
+
+    /// Launch with no stored session: RevenueCat may still hold a previous account's
+    /// identity from before an upgrade or an interrupted sign-out. Clear it, so no stale Pro
+    /// can show for whoever signs in next.
+    public func reconcileSignedOut() async {
+        guard let provider, expectedUserID == nil,
+              !provider.currentAppUserID().hasPrefix(Self.anonymousPrefix) else { return }
+        await reset()
+    }
+
+    private func dropIdentityIfSignedOut(_ provider: any PurchasesProviding) async {
+        guard expectedUserID == nil, resetsInFlight == 0,
+              !provider.currentAppUserID().hasPrefix(Self.anonymousPrefix) else { return }
+        _ = try? await provider.logOut()
     }
 
     public func loadOffering() async {
@@ -194,6 +223,7 @@ public final class EntitlementController: EntitlementResetting {
     /// paywall back to its loading state, and RevenueCat logged out to a fresh anonymous id.
     public func reset() async {
         generation += 1
+        expectedUserID = nil
         resetsInFlight += 1
         defer { resetsInFlight -= 1 }
         state = EntitlementState()
@@ -205,6 +235,10 @@ public final class EntitlementController: EntitlementResetting {
             state.isPro = snapshot.isProActive
         } catch {
             // Anonymous already (logOutAnonymousUserError) or offline: Pro stays off.
+        }
+        // A login that was in flight may have re-identified RevenueCat after the logout.
+        if started == generation, !provider.currentAppUserID().hasPrefix(Self.anonymousPrefix) {
+            _ = try? await provider.logOut()
         }
     }
 }

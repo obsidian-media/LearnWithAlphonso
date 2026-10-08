@@ -19,7 +19,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(AlphonsoFont.sans(17, weight: .semiBold))
+            .font(AlphonsoFont.sans(CGFloat(PaywallTextStyle.primaryButtonPointSize), weight: .semiBold))
             .foregroundStyle(foreground)
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)

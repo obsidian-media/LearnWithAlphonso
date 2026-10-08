@@ -62,4 +62,46 @@ final class SessionLifecycleTests: XCTestCase {
 
         XCTAssertEqual(log.value, ["a", "b"])
     }
+
+    private func store() -> PendingCleanupStore {
+        let suite = "SessionLifecycleTests-" + UUID().uuidString
+        let d = UserDefaults(suiteName: suite)!
+        d.removePersistentDomain(forName: suite)
+        return PendingCleanupStore(defaults: d)
+    }
+
+    func testThePendingMarkerRoundTripsBothEventsAndClears() {
+        let marker = store()
+        XCTAssertNil(marker.pending)
+        marker.mark(.signedOut)
+        XCTAssertEqual(marker.pending, .signedOut)
+        marker.mark(.accountDeleted)
+        XCTAssertEqual(marker.pending, .accountDeleted)
+        marker.clear()
+        XCTAssertNil(marker.pending)
+    }
+
+    /// The process died after sign-out marked the cleanup but before it ran.
+    @MainActor
+    func testALaunchAfterAKilledCleanupFinishesItWithTheOriginalEvent() async {
+        let marker = store()
+        marker.mark(.accountDeleted)
+        let lifecycle = SessionLifecycle()
+        let log = TestCapture<[String]>([])
+        lifecycle.register("a") { event in log.value.append("a:\(event)") }
+
+        await lifecycle.resumePending(marker)
+
+        XCTAssertEqual(log.value, ["a:accountDeleted"])
+        XCTAssertNil(marker.pending)
+    }
+
+    @MainActor
+    func testALaunchWithNothingPendingRunsNothing() async {
+        let lifecycle = SessionLifecycle()
+        let log = TestCapture<[String]>([])
+        lifecycle.register("a") { _ in log.value.append("a") }
+        await lifecycle.resumePending(store())
+        XCTAssertEqual(log.value, [])
+    }
 }

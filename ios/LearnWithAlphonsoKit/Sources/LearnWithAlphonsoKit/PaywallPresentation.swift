@@ -58,6 +58,10 @@ public struct PaywallTextStyle: Sendable, Equatable {
     public static let price = PaywallTextStyle(pointSize: 22, weight: 700)
     public static let trial = PaywallTextStyle(pointSize: 22, weight: 600)
     public static let disclosure = PaywallTextStyle(pointSize: 12, weight: 400)
+
+    /// The point size of every primary button label (AlphonsoPrimaryButtonStyle reads this),
+    /// so the paywall's price can be tested against the real call-to-action size.
+    public static let primaryButtonPointSize: Double = 17
 }
 
 public enum PaywallCopy {
@@ -92,7 +96,7 @@ public enum PaywallCopy {
 }
 
 public enum PaywallLinks {
-    /// App Store Connect keeps Apple's Standard EULA. Same URL as the Terms page.
+    /// Apple's Standard EULA, the license that applies to this app's subscription.
     public static let appleStandardEULA = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
 }
 

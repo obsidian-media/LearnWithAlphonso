@@ -33,6 +33,8 @@ final class MockPurchases: PurchasesProviding {
     var restoreResult: Result<EntitlementSnapshot, Error> = .success(.init(isProActive: false))
     var logInGate: Gate?
     var logOutGate: Gate?
+    /// Simulates a login that resolved while a logout was in flight: the logout leaves this identity.
+    var racedIdentity: String?
     private(set) var calls: [String] = []
 
     let updates: AsyncStream<EntitlementSnapshot>
@@ -58,13 +60,18 @@ final class MockPurchases: PurchasesProviding {
     func logIn(_ userID: String) async throws -> EntitlementSnapshot {
         calls.append("logIn:\(userID)")
         if let logInGate { await logInGate.wait() }
-        return try logInResult.get()
+        let result = try logInResult.get()
+        appUserID = userID
+        return result
     }
 
     func logOut() async throws -> EntitlementSnapshot {
         calls.append("logOut")
         if let logOutGate { await logOutGate.wait() }
-        return try logOutResult.get()
+        let result = try logOutResult.get()
+        appUserID = racedIdentity ?? "$RCAnonymousID:test"
+        racedIdentity = nil
+        return result
     }
 
     func currentOfferingProducts() async throws -> [PaywallProduct] {
