@@ -1165,11 +1165,10 @@ public final class ProgressSyncClient: Sendable {
         try Self.requireSuccess(data: data, response: response)
     }
 
-    /// Not currently called from any UI (see the design doc's "Left out"
-    /// section -- sign-out doesn't wire this up yet), provided so that
-    /// follow-up doesn't need to add this call from scratch. Deletes only
-    /// this device's own row -- RLS's own-row policy would reject deleting
-    /// anyone else's regardless.
+    /// Called on sign-out by AuthAccountCleanup with the ending session's
+    /// access token, so the previous account's nudges stop reaching this
+    /// device. Deletes only this device's own row -- RLS's own-row policy
+    /// would reject deleting anyone else's regardless.
     public func unregisterDeviceToken(_ token: String) async throws {
         var request = restRequest(path: "device_tokens", query: [
             URLQueryItem(name: "token", value: "eq.\(token)"),
