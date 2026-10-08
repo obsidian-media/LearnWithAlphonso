@@ -36,4 +36,12 @@ final class TutorMemoryContextTests: XCTestCase {
         let message = TutorMemoryContext.buildPrimingMessage(cefrLevel: "B1", openWeaknessCategories: [])
         XCTAssertTrue(message!.content.contains("not part of what the learner said"))
     }
+
+    /// Hector runs in French and Spanish too, and the level is already in the server's system prompt, so the
+    /// priming must not claim the level is an English one.
+    func testPrimingNamesNoLanguage() {
+        let message = TutorMemoryContext.buildPrimingMessage(cefrLevel: "B1", openWeaknessCategories: ["articles"])
+        XCTAssertFalse(message!.content.contains("English"))
+        XCTAssertTrue(message!.content.contains("B1"))
+    }
 }

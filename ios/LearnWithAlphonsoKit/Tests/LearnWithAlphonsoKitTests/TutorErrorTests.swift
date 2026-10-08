@@ -51,7 +51,7 @@ final class TutorErrorTests: XCTestCase {
     func testUpstreamRateLimitIsNotTheDailyQuota() {
         XCTAssertEqual(
             TutorError.from(status: 429, body: body(["error": "Rate limited, please try again shortly"])),
-            .server(message: "Rate limited, please try again shortly")
+            .server(message: nil)
         )
     }
 
@@ -59,7 +59,7 @@ final class TutorErrorTests: XCTestCase {
     func testConsentCheckFailureIsAServerErrorNotConsentRequired() {
         XCTAssertEqual(
             TutorError.from(status: 503, body: body(["error": "consent-check-failed"])),
-            .server(message: "consent-check-failed")
+            .server(message: nil)
         )
     }
 
@@ -75,7 +75,7 @@ final class TutorErrorTests: XCTestCase {
         )
         XCTAssertEqual(
             TutorError.from(status: 500, body: body(["error": "Hector is not configured"])),
-            .server(message: "Hector is not configured")
+            .server(message: nil)
         )
     }
 

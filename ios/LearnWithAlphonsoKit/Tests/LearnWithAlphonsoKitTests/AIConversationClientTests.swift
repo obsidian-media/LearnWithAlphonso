@@ -64,7 +64,10 @@ final class AIConversationClientTests: XCTestCase {
 
     func testChatSurfacesAQuotaError() async {
         let client = makeClient { request in
-            let body = try! JSONSerialization.data(withJSONObject: ["error": "Daily CHAT limit reached (60/day). Try again tomorrow."])
+            let body = try! JSONSerialization.data(withJSONObject: [
+                "error": "quota-exceeded", "resetsAt": "2026-10-08T00:00:00.000Z",
+                "message": "Daily CHAT limit reached (60/day). Try again tomorrow.",
+            ])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!)
         }
 
@@ -72,10 +75,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(
-                error as? AIConversationError,
-                .server(status: 429, message: "Daily CHAT limit reached (60/day). Try again tomorrow.")
-            )
+            XCTAssertEqual(error as? TutorError, .quotaExceeded(resetsAt: Date(timeIntervalSince1970: 1_791_417_600)))
         }
     }
 
@@ -110,7 +110,10 @@ final class AIConversationClientTests: XCTestCase {
 
     func testAnalyzeWeaknessesSurfacesAQuotaError() async {
         let client = makeClient { request in
-            let body = try! JSONSerialization.data(withJSONObject: ["error": "Daily CHAT limit reached (60/day). Try again tomorrow."])
+            let body = try! JSONSerialization.data(withJSONObject: [
+                "error": "quota-exceeded", "resetsAt": "2026-10-08T00:00:00.000Z",
+                "message": "Daily CHAT limit reached (60/day). Try again tomorrow.",
+            ])
             return (body, HTTPURLResponse(url: request.url!, statusCode: 429, httpVersion: nil, headerFields: nil)!)
         }
 
@@ -118,10 +121,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.analyzeWeaknesses(transcript: [ChatMessage(role: "user", content: "hi")])
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(
-                error as? AIConversationError,
-                .server(status: 429, message: "Daily CHAT limit reached (60/day). Try again tomorrow.")
-            )
+            XCTAssertEqual(error as? TutorError, .quotaExceeded(resetsAt: Date(timeIntervalSince1970: 1_791_417_600)))
         }
     }
 
@@ -298,7 +298,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.transcribe(audio: Data(), mimeType: "audio/m4a")
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? AIConversationError, .server(status: 400, message: "Empty or missing audio"))
+            XCTAssertEqual(error as? TutorError, .server(message: nil))
         }
     }
 
@@ -347,7 +347,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+            XCTAssertEqual(error as? TutorError, .signedOut)
         }
         XCTAssertEqual(callCount.value, 1)
     }
@@ -368,7 +368,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+            XCTAssertEqual(error as? TutorError, .signedOut)
         }
         // A refresh failure (e.g. the refresh token itself is dead) means
         // Session has already signed out -- retrying with the same stale
@@ -392,7 +392,7 @@ final class AIConversationClientTests: XCTestCase {
             _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
             XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? AIConversationError, .server(status: 401, message: nil))
+            XCTAssertEqual(error as? TutorError, .signedOut)
         }
         XCTAssertEqual(callCount.value, 2)
     }
@@ -516,5 +516,108 @@ final class AIConversationClientTests: XCTestCase {
         }
         let verdict = await client.gradeTranslation(placementId: "p60", submission: "x", course: "en")
         XCTAssertNil(verdict)
+    }
+
+    // MARK: - Course plumbing and error classification
+
+    private func capturingClient(_ captured: TestCapture<URLRequest?>, json: [String: Any]) -> AIConversationClient {
+        makeClient { request in
+            captured.value = request
+            let body = try! JSONSerialization.data(withJSONObject: json)
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+    }
+
+    private func payload(_ captured: TestCapture<URLRequest?>) throws -> [String: Any] {
+        let body = try XCTUnwrap(captured.value?.httpBody)
+        return try JSONSerialization.jsonObject(with: body) as! [String: Any]
+    }
+
+    func testChatSendsTheCourse() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        _ = try await capturingClient(captured, json: ["content": "Salut"]).chat(
+            messages: [ChatMessage(role: "user", content: "Bonjour")], systemPrompt: "p", cefrLevel: "B1", course: "fr")
+        XCTAssertEqual(try payload(captured)["course"] as? String, "fr")
+    }
+
+    func testChatOmitsTheCourseWhenNil() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        _ = try await capturingClient(captured, json: ["content": "Hi"]).chat(
+            messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+        XCTAssertNil(try payload(captured)["course"])
+    }
+
+    func testSynthesizeSpeechSendsTheCourse() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return (Data([0x49, 0x44, 0x33]), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        }
+        _ = try await client.synthesizeSpeech(text: "Hola", course: "es")
+        XCTAssertEqual(try payload(captured)["course"] as? String, "es")
+        XCTAssertNil(try payload(captured)["voice"])
+    }
+
+    func testAnalyzeWeaknessesSendsTheCourse() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        _ = try await capturingClient(captured, json: ["weaknessesDetected": 1]).analyzeWeaknesses(
+            transcript: [ChatMessage(role: "user", content: "Je suis allé")], course: "fr")
+        XCTAssertEqual(try payload(captured)["course"] as? String, "fr")
+    }
+
+    func testAConversationCallMapsATransportFailureToNetwork() async {
+        let client = makeClient { _ in throw URLError(.notConnectedToInternet) }
+        do {
+            _ = try await client.chat(messages: [ChatMessage(role: "user", content: "hi")], systemPrompt: nil)
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? TutorError, .network)
+        }
+    }
+
+    func testTranscribeMapsNotEntitledAndConsent() async {
+        for (code, expected) in [("not-entitled", TutorError.notEntitled), ("ai-consent-required", .aiConsentRequired)] {
+            let client = makeClient { request in
+                let body = try! JSONSerialization.data(withJSONObject: ["error": code])
+                return (body, HTTPURLResponse(url: request.url!, statusCode: 403, httpVersion: nil, headerFields: nil)!)
+            }
+            do {
+                _ = try await client.transcribe(audio: Data([0x01]), mimeType: "audio/m4a", course: "es")
+                XCTFail("Expected an error")
+            } catch {
+                XCTAssertEqual(error as? TutorError, expected)
+            }
+        }
+    }
+
+    /// A consent refusal on a conversation call still announces itself so the consent store follows the
+    /// account; a failed consent check does not.
+    func testAConsentRefusalIsAnnouncedAndACheckFailureIsNot() async {
+        let announced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        let refused = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "ai-consent-required"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 403, httpVersion: nil, headerFields: nil)!)
+        }
+        do {
+            _ = try await refused.synthesizeSpeech(text: "hi", course: "en")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? TutorError, .aiConsentRequired)
+        }
+        await fulfillment(of: [announced], timeout: 2)
+
+        let notAnnounced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
+        notAnnounced.isInverted = true
+        let failed = makeClient { request in
+            let body = try! JSONSerialization.data(withJSONObject: ["error": "consent-check-failed"])
+            return (body, HTTPURLResponse(url: request.url!, statusCode: 503, httpVersion: nil, headerFields: nil)!)
+        }
+        do {
+            _ = try await failed.synthesizeSpeech(text: "hi", course: "en")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? TutorError, .server(message: nil))
+        }
+        await fulfillment(of: [notAnnounced], timeout: 0.3)
     }
 }

@@ -25,7 +25,7 @@ public enum TutorMemoryContext {
     ) -> TutorConversationMessage? {
         var parts: [String] = []
         if let cefrLevel, !cefrLevel.isEmpty {
-            parts.append("their current English level is \(cefrLevel)")
+            parts.append("their current level is \(cefrLevel)")
         }
         let topCategories = openWeaknessCategories.prefix(3)
         if !topCategories.isEmpty {

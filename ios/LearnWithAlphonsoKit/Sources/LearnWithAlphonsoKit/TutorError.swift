@@ -10,7 +10,8 @@ import FoundationNetworking
 /// `.signedOut` only after the 401-retry-with-refresh has also failed (both
 /// clients retry once). `.notEntitled` opens the paywall. `.aiConsentRequired`
 /// is the consent gate. `.server(message)` keeps the server's text for
-/// diagnostics only; it is never shown. A `consent-check-failed` 503 is a
+/// diagnostics only; it is never shown, and it is the response's `detail` text
+/// only, never a machine code from the `error` field. A `consent-check-failed` 503 is a
 /// `.server` error: the consent state could not be read, which is not the same
 /// as consent being missing.
 public enum TutorError: Error, Equatable, Sendable {
@@ -21,9 +22,15 @@ public enum TutorError: Error, Equatable, Sendable {
     case network
     case server(message: String?)
 
+    /// The machine code in a response body's `error` field, if any.
+    public static func errorCode(in body: Data) -> String? {
+        let object = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
+        return nonEmpty(object?["error"] as? String)
+    }
+
     /// Classifies a non-2xx response. Reads the stable `error` code first, then
-    /// `detail` (Cloud Voice's legacy shape, which the old
-    /// TutorConversationClient read), then the status.
+    /// the status. Only `detail` (the legacy human-readable text) is kept as the
+    /// server message; a machine code is never carried as a message.
     public static func from(status: Int, body: Data) -> TutorError {
         let object = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
         let code = nonEmpty(object?["error"] as? String)
@@ -38,7 +45,7 @@ public enum TutorError: Error, Equatable, Sendable {
         if status == 401 { return .signedOut }
         // A 429 without the quota code is an upstream rate limit (NVIDIA or
         // Deepgram), not the learner's daily cap.
-        return .server(message: detail ?? code)
+        return .server(message: detail)
     }
 
     /// Classifies a thrown error: transport failures are `.network`.

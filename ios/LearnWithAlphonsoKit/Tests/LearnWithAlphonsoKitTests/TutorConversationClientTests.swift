@@ -6,122 +6,134 @@ import XCTest
 @testable import LearnWithAlphonsoKit
 
 final class TutorConversationClientTests: XCTestCase {
-    private let endpoint = URL(string: "https://voice.obsidianmedia.online/v1/voice/respond")!
+    private let endpoint = URL(string: "https://learn.alphonsoecosystem.app/api/hector-respond")!
 
     private func makeClient(
+        refresh: (@Sendable () async -> String?)? = nil,
         response: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)
     ) -> TutorConversationClient {
         TutorConversationClient(
-            endpoint: endpoint,
-            accessToken: { "test-access-token" },
-            deviceID: "1d0df3b2-4b9c-4c4c-b7d4-06bc88bde2d8",
-            requester: response
-        )
+            endpoint: endpoint, accessToken: { "test-access-token" }, refreshAccessToken: refresh, requester: response)
     }
 
     private func jsonResponse(_ body: [String: Any], status: Int = 200) -> (Data, URLResponse) {
         let data = try! JSONSerialization.data(withJSONObject: body)
-        let response = HTTPURLResponse(url: endpoint, statusCode: status, httpVersion: nil, headerFields: nil)!
-        return (data, response)
+        return (data, HTTPURLResponse(url: endpoint, statusCode: status, httpVersion: nil, headerFields: nil)!)
     }
 
-    func testSendsATutorRequestWithTheCorrectPayloadAndHeaders() async throws {
-        let capturedRequest = TestCapture<URLRequest?>(nil)
+    private var okReply: [String: Any] {
+        [
+            "request_id": "r1", "session_id": "s1", "agent": "tutor", "reply": "Très bien !",
+            "audio_base64": "AAAA", "tts_model": "aura-2-agathe-fr", "tts_provider": "deepgram",
+            "language": "fr", "state": "ok", "timings_ms": ["llm": 100, "tts": 200, "total": 300],
+        ]
+    }
+
+    private func respond(_ client: TutorConversationClient, course: String = "en") async throws -> TutorReply {
+        try await client.respond(sessionID: "s1", text: "hi", course: course, cefrLevel: nil, history: [])
+    }
+
+    func testSendsCourseLevelAndHistoryAndNoDeviceIdentifier() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in
-            capturedRequest.value = request
-            return self.jsonResponse([
-                "request_id": "r1", "session_id": "s1", "agent": "tutor", "reply": "Great job!",
-                "audio_base64": "AAAA", "tts_model": "magpie", "tts_provider": "nvidia",
-                "language": "en-US", "state": "idle",
-                "timings_ms": ["llm": 100, "tts": 200, "total": 300],
-            ])
+            captured.value = request
+            return self.jsonResponse(self.okReply)
         }
 
-        _ = try await client.respond(sessionID: "s1", text: "I go to store yesterday", language: "en-US", history: [])
+        _ = try await client.respond(
+            sessionID: "s1", text: "Je suis allé au marché", course: "fr", cefrLevel: "B1",
+            history: [TutorConversationMessage(role: "assistant", content: "Salut !")]
+        )
 
-        let request = try XCTUnwrap(capturedRequest.value)
+        let request = try XCTUnwrap(captured.value)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-access-token")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Alphonso-Device-Id"), "1d0df3b2-4b9c-4c4c-b7d4-06bc88bde2d8")
-
-        let body = try XCTUnwrap(request.httpBody)
-        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
+        XCTAssertNil(request.value(forHTTPHeaderField: "X-Alphonso-Device-Id"))
+        let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(payload["course"] as? String, "fr")
+        XCTAssertEqual(payload["language"] as? String, "fr")
+        XCTAssertEqual(payload["cefr_level"] as? String, "B1")
+        XCTAssertEqual(payload["text"] as? String, "Je suis allé au marché")
         XCTAssertEqual(payload["agent_id"] as? String, "tutor")
-        XCTAssertEqual(payload["text"] as? String, "I go to store yesterday")
-        XCTAssertEqual(payload["language"] as? String, "en-US")
-        XCTAssertEqual(payload["session_id"] as? String, "s1")
+        XCTAssertEqual((payload["history"] as? [[String: String]])?.count, 1)
+    }
+
+    /// The client sends exactly the history it is given; the current utterance travels only as `text`.
+    func testHistoryExcludesTheCurrentUtterance() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(self.okReply)
+        }
+        _ = try await client.respond(sessionID: "s1", text: "Hola", course: "es", cefrLevel: nil, history: [])
+        let payload = try JSONSerialization.jsonObject(with: XCTUnwrap(captured.value?.httpBody)) as! [String: Any]
+        XCTAssertEqual((payload["history"] as? [[String: String]])?.count, 0)
+        XCTAssertNil(payload["cefr_level"])
     }
 
     func testDecodesARealSuccessfulResponse() async throws {
-        let client = makeClient { _ in
-            self.jsonResponse([
-                "request_id": "r1", "session_id": "s1", "agent": "tutor", "reply": "Great job!",
-                "audio_base64": "AAAA", "tts_model": "magpie", "tts_provider": "nvidia",
-                "language": "en-US", "state": "idle",
-                "timings_ms": ["llm": 100, "tts": 200, "total": 300],
-            ])
-        }
-
-        let reply = try await client.respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
-
-        XCTAssertEqual(reply.reply, "Great job!")
-        XCTAssertEqual(reply.audioBase64, "AAAA")
+        let client = makeClient { _ in self.jsonResponse(self.okReply) }
+        let reply = try await respond(client, course: "fr")
+        XCTAssertEqual(reply.reply, "Très bien !")
+        XCTAssertEqual(reply.language, "fr")
         XCTAssertEqual(reply.timingsMs.total, 300)
     }
 
-    func testIncludesConversationHistoryInThePayload() async throws {
-        let capturedRequest = TestCapture<URLRequest?>(nil)
-        let client = makeClient { request in
-            capturedRequest.value = request
-            return self.jsonResponse([
-                "request_id": "r1", "session_id": "s1", "agent": "tutor", "reply": "ok",
-                "audio_base64": "", "tts_model": "magpie", "tts_provider": "nvidia",
-                "language": "en-US", "state": "idle",
-                "timings_ms": ["llm": 0, "tts": 0, "total": 0],
-            ])
-        }
-
-        let history = [
-            TutorConversationMessage(role: "user", content: "I go to store yesterday"),
-            TutorConversationMessage(role: "assistant", content: "Try: I went to the store yesterday."),
-        ]
-        _ = try await client.respond(sessionID: "s1", text: "Ok, I went to the store.", language: "en-US", history: history)
-
-        let request = try XCTUnwrap(capturedRequest.value)
-        let body = try XCTUnwrap(request.httpBody)
-        let payload = try JSONSerialization.jsonObject(with: body) as! [String: Any]
-        let sentHistory = try XCTUnwrap(payload["history"] as? [[String: String]])
-        XCTAssertEqual(sentHistory.count, 2)
-        XCTAssertEqual(sentHistory[0]["role"], "user")
-        XCTAssertEqual(sentHistory[1]["content"], "Try: I went to the store yesterday.")
-    }
-
-    func testThrowsAReadableErrorOn503WithADetailMessage() async {
-        let client = makeClient { _ in
-            let body = try! JSONSerialization.data(withJSONObject: ["detail": "Cloud voice service is not configured"])
-            let response = HTTPURLResponse(url: self.endpoint, statusCode: 503, httpVersion: nil, headerFields: nil)!
-            return (body, response)
-        }
-
+    /// hector-respond returns {error:"not-entitled"}; the old client read only `detail`, so this showed as a
+    /// generic failure.
+    func testNotEntitledIsTyped() async {
+        let client = makeClient { _ in self.jsonResponse(["error": "not-entitled"], status: 403) }
         do {
-            _ = try await client.respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
-            XCTFail("Expected an error to be thrown")
+            _ = try await respond(client)
+            XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? TutorConversationError, .server(status: 503, message: "Cloud voice service is not configured"))
+            XCTAssertEqual(error as? TutorError, .notEntitled)
         }
     }
 
-    func testThrowsAReadableErrorOn401WhenTheDeviceIsNotEnrolled() async {
-        let client = makeClient { _ in
-            let response = HTTPURLResponse(url: self.endpoint, statusCode: 401, httpVersion: nil, headerFields: nil)!
-            return (Data(), response)
-        }
-
+    func testDetailIsStillRead() async {
+        let client = makeClient { _ in self.jsonResponse(["detail": "Cloud voice service is not configured"], status: 503) }
         do {
-            _ = try await client.respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
-            XCTFail("Expected an error to be thrown")
+            _ = try await respond(client)
+            XCTFail("Expected an error")
         } catch {
-            XCTAssertEqual(error as? TutorConversationError, .server(status: 401, message: nil))
+            XCTAssertEqual(error as? TutorError, .server(message: "Cloud voice service is not configured"))
+        }
+    }
+
+    func testRetriesOnceAfter401WithARefreshedToken() async throws {
+        let headers = TestCapture<[String?]>([])
+        let client = TutorConversationClient(
+            endpoint: endpoint,
+            accessToken: { "stale" },
+            refreshAccessToken: { "fresh" },
+            requester: { request in
+                headers.value.append(request.value(forHTTPHeaderField: "Authorization"))
+                if headers.value.count == 1 { return self.jsonResponse([:], status: 401) }
+                return self.jsonResponse(self.okReply)
+            }
+        )
+        _ = try await respond(client, course: "fr")
+        XCTAssertEqual(headers.value, ["Bearer stale", "Bearer fresh"])
+    }
+
+    func testA401AfterTheRefreshIsSignedOut() async {
+        let client = makeClient(refresh: { "still-bad" }) { _ in self.jsonResponse([:], status: 401) }
+        do {
+            _ = try await respond(client, course: "fr")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? TutorError, .signedOut)
+        }
+    }
+
+    func testTransportFailureIsNetwork() async {
+        let client = makeClient { _ in throw URLError(.networkConnectionLost) }
+        do {
+            _ = try await respond(client, course: "fr")
+            XCTFail("Expected an error")
+        } catch {
+            XCTAssertEqual(error as? TutorError, .network)
         }
     }
 
@@ -132,12 +144,11 @@ final class TutorConversationClientTests: XCTestCase {
     func testAConsentRefusalCodeIsAnnouncedButNeverShown() async {
         let announced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
         do {
-            _ = try await refusal(status: 403, error: "ai-consent-required")
-                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            _ = try await respond(refusal(status: 403, error: "ai-consent-required"))
             XCTFail("Expected an error to be thrown")
         } catch {
-            XCTAssertEqual(
-                error as? TutorConversationError, .server(status: 403, message: nil), "the code is never the shown message")
+            XCTAssertEqual(error as? TutorError, .aiConsentRequired)
+            XCTAssertFalse((error as? TutorError)?.userMessage().contains("ai-consent-required") ?? true)
         }
         await fulfillment(of: [announced], timeout: 2)
     }
@@ -145,16 +156,17 @@ final class TutorConversationClientTests: XCTestCase {
     /// Machine codes in "error" are never the message a learner reads.
     func testMachineCodesInTheErrorFieldAreNotThrownAsMessages() async {
         let cases: [(Int, String)] = [
-            (403, "not-entitled"), (401, "unauthorized"), (500, "Hector is not configured"),
+            (401, "unauthorized"), (500, "Hector is not configured"),
             (400, "text required"), (502, "empty reply from model"),
         ]
         for (status, code) in cases {
             do {
-                _ = try await refusal(status: status, error: code)
-                    .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+                _ = try await respond(refusal(status: status, error: code))
                 XCTFail("Expected an error to be thrown")
             } catch {
-                XCTAssertEqual(error as? TutorConversationError, .server(status: status, message: nil), code)
+                let tutorError = error as? TutorError
+                XCTAssertNotNil(tutorError, code)
+                if case let .server(message) = tutorError { XCTAssertNil(message, code) }
             }
         }
     }
@@ -163,12 +175,10 @@ final class TutorConversationClientTests: XCTestCase {
         let notAnnounced = expectation(forNotification: AIConsentSignal.requiredNotification, object: nil)
         notAnnounced.isInverted = true
         do {
-            _ = try await refusal(status: 503, error: "consent-check-failed")
-                .respond(sessionID: "s1", text: "hi", language: "en-US", history: [])
+            _ = try await respond(refusal(status: 503, error: "consent-check-failed"))
             XCTFail("Expected an error to be thrown")
         } catch {
-            XCTAssertEqual(
-                error as? TutorConversationError, .server(status: 503, message: nil))
+            XCTAssertEqual(error as? TutorError, .server(message: nil))
         }
         await fulfillment(of: [notAnnounced], timeout: 0.3)
     }

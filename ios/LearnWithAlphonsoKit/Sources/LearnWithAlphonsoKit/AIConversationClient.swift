@@ -111,12 +111,35 @@ public final class AIConversationClient: Sendable {
         return try await requester(retryRequest)
     }
 
+    /// The four conversation calls (chat, stt, tts, analyze-weaknesses) throw
+    /// `TutorError`, so every voice screen classifies failures the same way:
+    /// quota with its reset time, not-entitled, consent, network. A consent
+    /// refusal also announces itself so the consent store can follow. The other
+    /// calls keep their existing error types.
+    private func performConversationCall(_ request: URLRequest) async throws -> Data {
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await perform(request)
+        } catch {
+            throw TutorError.from(error)
+        }
+        guard let http = response as? HTTPURLResponse else { throw TutorError.server(message: nil) }
+        guard (200...299).contains(http.statusCode) else {
+            AIConsentSignal.noteIfConsentRequired(status: http.statusCode, message: TutorError.errorCode(in: data))
+            throw TutorError.from(status: http.statusCode, body: data)
+        }
+        return data
+    }
+
     /// POST /api/chat -- returns the assistant's reply text. `cefrLevel`
     /// (V3 package 3a, e.g. "A1".."C1") lets the server adjust vocabulary/
     /// sentence complexity to the learner's level -- see api/chat.ts's
     /// withDifficultyHint. Not a trust boundary (worst case: a wrong level
     /// just makes the conversation too easy/hard), so no validation here.
-    public func chat(messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil) async throws -> String {
+    public func chat(
+        messages: [ChatMessage], systemPrompt: String?, cefrLevel: String? = nil, course: String? = nil
+    ) async throws -> String {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/chat"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -124,13 +147,13 @@ public final class AIConversationClient: Sendable {
         var payload: [String: Any] = ["messages": messages.map { ["role": $0.role, "content": $0.content] }]
         if let systemPrompt { payload["systemPrompt"] = systemPrompt }
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
+        if let course { payload["course"] = course }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await perform(request)
-        try Self.requireSuccess(data: data, response: response)
+        let data = try await performConversationCall(request)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let content = object["content"] as? String else {
-            throw AIConversationError.invalidPayload
+            throw TutorError.server(message: nil)
         }
         return content
     }
@@ -196,19 +219,19 @@ public final class AIConversationClient: Sendable {
     /// HectorConversationView's onDisappear wiring, which swallows any
     /// error from this call). Returns how many weakness-derived
     /// review_items rows the server actually inserted (post-dedup).
-    public func analyzeWeaknesses(transcript: [ChatMessage]) async throws -> Int {
+    public func analyzeWeaknesses(transcript: [ChatMessage], course: String? = nil) async throws -> Int {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/analyze-weaknesses"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        let payload: [String: Any] = ["messages": transcript.map { ["role": $0.role, "content": $0.content] }]
+        var payload: [String: Any] = ["messages": transcript.map { ["role": $0.role, "content": $0.content] }]
+        if let course { payload["course"] = course }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await requester(request)
-        try Self.requireSuccess(data: data, response: response)
+        let data = try await performConversationCall(request)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let count = object["weaknessesDetected"] as? Int else {
-            throw AIConversationError.invalidPayload
+            throw TutorError.server(message: nil)
         }
         return count
     }
@@ -287,18 +310,17 @@ public final class AIConversationClient: Sendable {
     }
 
     /// POST /api/tts -- returns raw MP3 audio bytes for `text`.
-    public func synthesizeSpeech(text: String, voice: String? = nil) async throws -> Data {
+    public func synthesizeSpeech(text: String, voice: String? = nil, course: String? = nil) async throws -> Data {
         var request = URLRequest(url: baseURL.appendingPathComponent("api/tts"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
         var payload: [String: Any] = ["text": text]
         if let voice { payload["voice"] = voice }
+        if let course { payload["course"] = course }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await perform(request)
-        try Self.requireSuccess(data: data, response: response)
-        return data
+        return try await performConversationCall(request)
     }
 
     /// POST /api/stt -- `audio` is the raw recorded bytes (e.g. m4a/wav).
@@ -326,15 +348,9 @@ public final class AIConversationClient: Sendable {
     /// the web client sends, field name `"file"`, matching exactly.
     /// `course` ("en"/"fr"/"es", matching `isCourse`'s web-side validator
     /// exactly) selects Deepgram's transcription language via
-    /// `api/stt.ts`. Nil (every existing caller's prior behavior) means
-    /// the server's own default of "en" -- correct for Practice, Hector
-    /// and Campaigns, which are English-only features today (their
-    /// content models carry no course/language field at all); real for
-    /// `SpeakQuestionCard`'s lesson speaking questions, which know their
-    /// exact course and, before this parameter existed, always had their
-    /// French/Spanish audio transcribed with the English model regardless
-    /// (found alongside the wire-format fix above, 2026-09-28, while
-    /// re-checking this exact endpoint).
+    /// `api/stt.ts`. Nil means the server's default of "en". Every caller
+    /// passes its course: Practice, Hector and Campaigns pass the active
+    /// course, and `SpeakQuestionCard` passes the lesson's course.
     public func transcribe(
         audio: Data,
         mimeType: String,
@@ -383,11 +399,10 @@ public final class AIConversationClient: Sendable {
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         request.httpBody = body
 
-        let (data, response) = try await perform(request)
-        try Self.requireSuccess(data: data, response: response)
+        let data = try await performConversationCall(request)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let text = object["text"] as? String else {
-            throw AIConversationError.invalidPayload
+            throw TutorError.server(message: nil)
         }
         return (text, object["confidence"] as? Double)
     }

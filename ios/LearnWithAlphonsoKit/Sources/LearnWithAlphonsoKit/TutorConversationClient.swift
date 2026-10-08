@@ -47,96 +47,94 @@ public struct TutorReply: Sendable, Decodable {
     }
 }
 
-public enum TutorConversationError: Error, Equatable {
-    case badResponse
-    case server(status: Int, message: String?)
-    case invalidPayload
-}
-
-/// Calls AlphonsoEcosystem's already-built voice/cloud-backend
-/// (`POST /v1/voice/respond`) rather than reimplementing a third AI-
-/// conversation pipeline -- see
-/// docs/superpowers/specs/2026-09-17-native-ios-app-design.md's
-/// architecture section for why. Defaults `agentID` to "tutor" (the Hector
-/// persona from AlphonsoEcosystem PR #254) since that's this app's only
-/// use of this client for V1; a future Translator-mode use, if ever added
-/// here, would pass a different `agentID` explicitly.
+/// Calls this app's own `/api/hector-respond` (the response still matches
+/// Cloud Voice's `VoiceResponse`). It:
+/// - sends the learner's course and CEFR level, so Hector's prompt and voice
+///   follow the active course (`language` is repeated for servers that predate
+///   the `course` field);
+/// - sends no device identifier;
+/// - retries once on 401 with a refreshed token, like AIConversationClient, so
+///   `.signedOut` really means the refresh failed;
+/// - throws `TutorError` for every failure. A 403 `ai-consent-required` also
+///   announces itself so the consent store can follow; the code is never shown.
 ///
-/// The `requester` closure is injected (default: a real URLSession call)
-/// so tests can substitute canned responses without a network -- same
-/// dependency-injection pattern as the SRS/ProgressMath ports' injected
-/// date functions, just for I/O instead of dates.
+/// The `requester` closure is injected (default: a real URLSession call) so
+/// tests can substitute canned responses without a network.
 public final class TutorConversationClient: Sendable {
     public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
     private let endpoint: URL
     private let accessToken: @Sendable () -> String
-    private let deviceID: String
+    private let refreshAccessToken: (@Sendable () async -> String?)?
     private let requester: Requester
 
     public init(
         endpoint: URL,
         accessToken: @escaping @Sendable () -> String,
-        deviceID: String,
+        refreshAccessToken: (@Sendable () async -> String?)? = nil,
         requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
     ) {
         self.endpoint = endpoint
         self.accessToken = accessToken
-        self.deviceID = deviceID
+        self.refreshAccessToken = refreshAccessToken
         self.requester = requester
     }
 
     public func respond(
         sessionID: String,
         text: String,
-        language: String,
+        course: String,
+        cefrLevel: String?,
         history: [TutorConversationMessage],
-        agentID: String = "tutor",
-        ttsModel: String = "magpie",
-        piperVoice: String = "mana"
+        agentID: String = "tutor"
     ) async throws -> TutorReply {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
-        request.setValue(deviceID, forHTTPHeaderField: "X-Alphonso-Device-Id")
 
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "session_id": sessionID,
             "text": text,
-            "language": language,
+            "course": course,
+            "language": course,
             "agent_id": agentID,
-            "tts_model": ttsModel,
-            "piper_voice": piperVoice,
             "history": history.map { ["role": $0.role, "content": $0.content] },
         ]
+        if let cefrLevel, !cefrLevel.isEmpty { payload["cefr_level"] = cefrLevel }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, response) = try await requester(request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw TutorConversationError.badResponse
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await perform(request)
+        } catch {
+            throw TutorError.from(error)
         }
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // The "error" field is a machine code (e.g. ai-consent-required): it only drives the consent signal and
-            // is never shown. The thrown message stays the human-readable "detail".
-            AIConsentSignal.noteIfConsentRequired(
-                status: httpResponse.statusCode, message: Self.string(in: data, key: "error"))
-            throw TutorConversationError.server(
-                status: httpResponse.statusCode, message: Self.string(in: data, key: "detail"))
+        guard let http = response as? HTTPURLResponse else { throw TutorError.server(message: nil) }
+        guard (200...299).contains(http.statusCode) else {
+            // The "error" field is a machine code: it only drives the consent signal and the classification, and
+            // is never shown.
+            AIConsentSignal.noteIfConsentRequired(status: http.statusCode, message: TutorError.errorCode(in: data))
+            throw TutorError.from(status: http.statusCode, body: data)
         }
         do {
             return try JSONDecoder().decode(TutorReply.self, from: data)
         } catch {
-            throw TutorConversationError.invalidPayload
+            throw TutorError.server(message: nil)
         }
     }
 
-    private static func string(in data: Data, key: String) -> String? {
-        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let text = object[key] as? String,
-              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return nil
+    /// Same one-retry-on-401 contract as AIConversationClient.perform.
+    private func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        let (data, response) = try await requester(request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 401,
+              let refreshAccessToken,
+              let refreshed = await refreshAccessToken() else {
+            return (data, response)
         }
-        return text
+        var retry = request
+        retry.setValue("Bearer \(refreshed)", forHTTPHeaderField: "Authorization")
+        return try await requester(retry)
     }
 }
