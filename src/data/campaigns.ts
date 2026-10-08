@@ -85,7 +85,7 @@ export const CAMPAIGNS: Campaign[] = [
       {
         id: "coffee-stop",
         minTurns: 3,
-        title: { en: "Coffee stop", fr: "Pause café", es: "Una parada para el café" },
+        title: { en: "Coffee stop", fr: "Pause café", es: "Una parada para tomar un café" },
         persona: {
           en: "Nora, barista at Maple & Bean",
           fr: "Inès, barista au Grain de Café",
@@ -127,7 +127,7 @@ export const CAMPAIGNS: Campaign[] = [
         minTurns: 3,
         title: {
           en: "Small talk at the market",
-          fr: "Discussion au marché",
+          fr: "Conversation au marché",
           es: "Plática en el tianguis",
         },
         persona: {
