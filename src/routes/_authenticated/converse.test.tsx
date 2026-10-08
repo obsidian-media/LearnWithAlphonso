@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 const mockPathname = "/converse";
@@ -32,6 +32,9 @@ const { campaignsFor } = await import("../../data/campaigns");
 const { useProgress } = await import("../../lib/progress");
 
 describe("Converse route", () => {
+  beforeEach(() => useProgress.setState({ course: "en" }));
+  afterEach(() => useProgress.setState({ course: "en" }));
+
   it("lists every scenario with a link to its conversation", () => {
     const ConversePage = Route.options.component!;
     render(<ConversePage />);
@@ -65,6 +68,5 @@ describe("Converse route", () => {
       expect(screen.getByRole("heading", { name: c.title })).toBeInTheDocument();
     }
     expect(screen.queryByRole("heading", { name: "Order coffee" })).toBeNull();
-    useProgress.setState({ course: "en" });
   });
 });

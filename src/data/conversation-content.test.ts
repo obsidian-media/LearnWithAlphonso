@@ -205,6 +205,39 @@ describe("campaign parity", () => {
   });
 });
 
+describe("campaign prompt rules", () => {
+  /** Every campaign text that reaches the model: the premise and each scene prompt. */
+  const campaignTexts = (c: Course) =>
+    CAMPAIGNS.flatMap((camp) => [
+      { label: `${camp.id}.premise`, text: camp.premise[c] },
+      ...camp.scenes.map((sc) => ({ label: `${camp.id}/${sc.id}`, text: sc.systemPrompt[c] })),
+    ]);
+
+  it("keeps campaign Spanish in the Latin American variety", () => {
+    for (const { label, text } of campaignTexts("es")) {
+      const cleaned = text.replace("nunca uses «vosotros» ni «vos»", "");
+      expect(cleaned, label).not.toMatch(/\bvosotr|\bvuestr|\bpiso\b|\bcoger\b|\bordenador\b/i);
+    }
+  });
+
+  it("tells every campaign scene persona to answer in the target language", () => {
+    for (const camp of CAMPAIGNS) {
+      for (const sc of camp.scenes) {
+        expect(sc.systemPrompt.fr, sc.id).toContain("Réponds toujours en français");
+        expect(sc.systemPrompt.es, sc.id).toContain("Responde siempre en español latinoamericano");
+      }
+    }
+  });
+
+  it("carries no safety text in campaign premises or scene prompts", () => {
+    for (const c of COURSES) {
+      for (const { label, text } of campaignTexts(c)) {
+        expect(text, `${label}.${c}`).not.toMatch(/safety|sécurité|seguridad/i);
+      }
+    }
+  });
+});
+
 describe("ALL_SYSTEM_PROMPTS", () => {
   it("holds every scenario and campaign-scene prompt of every course, and nothing else", () => {
     const expected = new Set<string>();
