@@ -940,8 +940,7 @@ function logAdminAction(
   console.info(JSON.stringify({ event: "admin_action", action, reportId, targetId, adminId }));
 }
 
-const ACTION_DONE_REPORT_KEPT =
-  "Action done, but the report wasn't dismissed. Refresh the list.";
+const ACTION_DONE_REPORT_KEPT = "Action done, but the report wasn't dismissed. Refresh the list.";
 
 /** After an action that already changed something: a failed resolve must not read as a failed action. */
 async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string): Promise<void> {
