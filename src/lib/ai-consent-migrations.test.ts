@@ -31,7 +31,9 @@ describe("AI consent migrations", () => {
     const sql = () => code(FILES.consent);
 
     it("adds a nullable consent timestamp to profiles", () => {
-      expect(sql()).toMatch(/ALTER TABLE public\.profiles\s+ADD COLUMN IF NOT EXISTS ai_consent_at timestamptz NULL;/);
+      expect(sql()).toMatch(
+        /ALTER TABLE public\.profiles\s+ADD COLUMN IF NOT EXISTS ai_consent_at timestamptz NULL;/,
+      );
     });
 
     it("set_ai_consent is a definer RPC with a pinned search_path that stamps now() or NULL for the caller only", () => {
@@ -52,7 +54,9 @@ describe("AI consent migrations", () => {
     });
 
     it("only signed-in users and the server may call the RPCs", () => {
-      expect(sql()).toContain("REVOKE ALL ON FUNCTION public.set_ai_consent(boolean) FROM PUBLIC, anon;");
+      expect(sql()).toContain(
+        "REVOKE ALL ON FUNCTION public.set_ai_consent(boolean) FROM PUBLIC, anon;",
+      );
       expect(sql()).toContain("REVOKE ALL ON FUNCTION public.get_ai_consent() FROM PUBLIC, anon;");
       expect(sql()).toContain(
         "GRANT EXECUTE ON FUNCTION public.set_ai_consent(boolean), public.get_ai_consent() TO authenticated, service_role;",
@@ -63,7 +67,9 @@ describe("AI consent migrations", () => {
       expect(sql()).toContain("BEFORE INSERT OR UPDATE OF ai_consent_at ON public.profiles");
       expect(sql()).toContain("current_setting('app.ai_consent_write', true)");
       expect(sql()).toContain("RAISE EXCEPTION 'ai-consent-via-rpc-only' USING ERRCODE = '42501';");
-      expect(fnBody(sql(), "set_ai_consent")).toContain("set_config('app.ai_consent_write', 'off', true)");
+      expect(fnBody(sql(), "set_ai_consent")).toContain(
+        "set_config('app.ai_consent_write', 'off', true)",
+      );
     });
 
     it("lets the server roles write the column so a review account can be reset", () => {
@@ -95,8 +101,12 @@ describe("AI consent migrations", () => {
       const fn = fnBody(sql(), "ai_output_blocked");
       expect(fn).toContain("SECURITY DEFINER");
       expect(fn).toContain("SET search_path = public");
-      expect(sql()).toContain("REVOKE ALL ON FUNCTION public.ai_output_blocked(text[]) FROM PUBLIC, anon;");
-      expect(sql()).toContain("GRANT EXECUTE ON FUNCTION public.ai_output_blocked(text[]) TO authenticated, service_role;");
+      expect(sql()).toContain(
+        "REVOKE ALL ON FUNCTION public.ai_output_blocked(text[]) FROM PUBLIC, anon;",
+      );
+      expect(sql()).toContain(
+        "GRANT EXECUTE ON FUNCTION public.ai_output_blocked(text[]) TO authenticated, service_role;",
+      );
     });
   });
 });

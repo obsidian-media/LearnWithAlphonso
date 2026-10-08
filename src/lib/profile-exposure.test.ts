@@ -116,6 +116,20 @@ export function hasUnaliasedProfileRef(body: string): boolean {
   return [...body.matchAll(PROFILES_REF)].some((m) => !m[1] || KEYWORDS.has(m[1].toLowerCase()));
 }
 
+/**
+ * True when the body filters profiles by the caller: `.id = auth.uid()`, or `.id = <var>` where that variable is
+ * assigned from auth.uid() in the same body (`me uuid := auth.uid()`). A parameter that merely shares the name
+ * does not count. (The word boundary sits inside the variable branch: after `auth.uid()` it can never match.)
+ */
+export function filtersOnCaller(body: string): boolean {
+  if (/\.id\s*=\s*auth\.uid\(\)/.test(body)) return true;
+  for (const m of body.matchAll(/\.id\s*=\s*([a-z_][a-z0-9_]*)/gi)) {
+    const v = m[1];
+    if (new RegExp(`\b${v}\s+(?:uuid\s*)?:=\s*auth\.uid\(\)`, "i").test(body)) return true;
+  }
+  return false;
+}
+
 describe("profile exposure through SQL", () => {
   it("no function reads a sensitive profiles column unless allowlisted with a reason", () => {
     const offenders: string[] = [];
@@ -140,7 +154,7 @@ describe("profile exposure through SQL", () => {
     for (const [name, rule] of Object.entries(ALLOWED)) {
       const body = fns.get(name);
       if (!body || !rule.ownRowOnly) continue; // planned in a later WS, or service-only
-      expect(body, name).toMatch(/\.id\s*=\s*(auth\.uid\(\)|me\b)/);
+      expect(filtersOnCaller(body), name).toBe(true);
     }
   });
   it("no migration creates a view over public.profiles (a default view bypasses RLS)", () => {
@@ -150,6 +164,12 @@ describe("profile exposure through SQL", () => {
         expect(m[0], file).not.toMatch(/public\.profiles\b/);
       }
     }
+  });
+  it("the caller filter rejects a parameter that is never assigned from auth.uid() (self-test)", () => {
+    expect(filtersOnCaller("WHERE p.id = _uid")).toBe(false);
+    expect(filtersOnCaller("DECLARE _uid uuid := auth.uid(); WHERE p.id = _uid")).toBe(true);
+    expect(filtersOnCaller("DECLARE me uuid; BEGIN me := auth.uid(); WHERE p.id = me")).toBe(true);
+    expect(filtersOnCaller("WHERE p.id = auth.uid()")).toBe(true);
   });
   it("the alias scanner sees a leak (self-test)", () => {
     expect(
