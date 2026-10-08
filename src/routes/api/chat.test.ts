@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SCENARIOS } from "@/data/scenarios";
-import { CAMPAIGNS } from "@/data/campaigns";
+import { SCENARIOS, scenarioPrompt } from "@/data/scenarios";
+import { CAMPAIGNS, campaignScenePrompt } from "@/data/campaigns";
 
 const consumeQuota = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
 
 const { Route } = await import("./chat");
-const REAL_PROMPT = SCENARIOS[0].systemPrompt;
-const REAL_CAMPAIGN_PROMPT = `${CAMPAIGNS[0].premise}\n\n${CAMPAIGNS[0].scenes[0].systemPrompt}`;
+const REAL_PROMPT = scenarioPrompt("coffee", "en");
+const REAL_CAMPAIGN_PROMPT = campaignScenePrompt("city-day", "coffee-stop", "en");
 const handler = (
   Route.options.server!.handlers as unknown as {
     POST: (opts: { request: Request }) => Promise<Response>;
@@ -256,5 +256,41 @@ describe("POST /api/chat", () => {
       const res = await handler({ request: req(hi) });
       expect(await res.json()).toEqual({ content: "ok" });
     });
+  });
+
+  it.each(["fr", "es"] as const)(
+    "accepts the %s variant of every scenario and campaign scene",
+    async (course) => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+        async () =>
+          new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+            status: 200,
+          }),
+      );
+      const prompts = [
+        ...SCENARIOS.map((s) => scenarioPrompt(s.id, course)),
+        ...CAMPAIGNS.flatMap((c) => c.scenes.map((sc) => campaignScenePrompt(c.id, sc.id, course))),
+      ];
+      expect(prompts).toHaveLength(15);
+      for (const systemPrompt of prompts) {
+        const res = await handler({
+          request: req({ systemPrompt, messages: [{ role: "user", content: "hi" }] }),
+        });
+        expect(res.status, systemPrompt.slice(0, 50)).toBe(200);
+        const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.lastCall!;
+        expect(JSON.parse(init.body as string).messages[0].content).toContain(systemPrompt);
+      }
+    },
+  );
+
+  it("rejects a near miss of a real French variant (trailing space)", async () => {
+    const res = await handler({
+      request: req({
+        systemPrompt: `${scenarioPrompt("coffee", "fr")} `,
+        messages: [{ role: "user", content: "hi" }],
+      }),
+    });
+    expect(res.status).toBe(400);
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
