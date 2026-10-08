@@ -32,7 +32,10 @@ packages:
     path: ../LearnWithAlphonsoKit
   RevenueCat:
     url: https://github.com/RevenueCat/purchases-ios.git
-    from: 5.90.2
+    # Exact pin: the version that is built, device-tested and shipped. A bump is a
+    # deliberate PR that also updates src/lib/ios-subscription-guards.test.ts, and CI
+    # (scripts/check-revenuecat-resolution.sh) proves Xcode resolved exactly this.
+    exactVersion: 5.92.0
 targets:
   LearnWithAlphonso:
     type: application

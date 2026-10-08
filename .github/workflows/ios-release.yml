@@ -115,6 +115,9 @@ jobs:
           # this step grouped with the project-generation step logically.
           sed -i '' "s/test_UzoFLqAlXAHPWSwBgKQuZcqFKrq/$REVENUECAT_API_KEY/" Info.plist
 
+      - name: RevenueCat resolves to the project.yml pin
+        run: bash scripts/check-revenuecat-resolution.sh
+
       - name: Verify RCApiKey is a real production key
         working-directory: ios/LearnWithAlphonso
         run: |
