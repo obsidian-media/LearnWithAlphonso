@@ -200,6 +200,28 @@ describe("startLessonSession", () => {
     expect("token" in result && result.token.split(".")).toHaveLength(2);
   });
 
+  it("fails open when the hearts read errors: a token is still issued", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: null, error: { message: "x" } }));
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
+  });
+
+  it("reads hearts for the caller only", async () => {
+    const chain = chainable({ data: { hearts: 3, hearts_refill_at: null }, error: null });
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chain);
+    await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect(supabase.from).toHaveBeenCalledWith("user_progress");
+    expect(chain.calls.find((c) => c.method === "eq")?.args).toEqual(["user_id", USER_ID]);
+  });
+
   it("issues a token when the learner has no progress row yet (full hearts)", async () => {
     const result = await startLessonSession({
       context: ctx(createSupabaseMock()),

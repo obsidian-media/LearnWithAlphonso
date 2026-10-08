@@ -90,4 +90,22 @@ describe("FinishScreen", () => {
     await user.click(screen.getByRole("button", { name: "Generate more practice" }));
     expect(await screen.findByText("Daily limit reached. Try again tomorrow.")).toBeInTheDocument();
   });
+
+  it("a practice 429 with the real quota body shows the quota copy, never the code", async () => {
+    const user = userEvent.setup();
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: "quota-exceeded",
+          resetsAt: "2099-01-01T12:00:00.000Z",
+          message: "Daily CHAT limit reached (50/day). Try again tomorrow.",
+        }),
+        { status: 429 },
+      ),
+    );
+    renderFinish();
+    await user.click(screen.getByRole("button", { name: "Generate more practice" }));
+    expect(await screen.findByText(/You've reached today's AI practice limit/)).toBeInTheDocument();
+    expect(screen.queryByText(/quota-exceeded/)).not.toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 import { useAiConsent } from "@/lib/ai-consent-context";
@@ -138,6 +138,25 @@ describe("out of hearts", () => {
     await user.click(await screen.findByRole("button", { name: "Use 50 XP for a heart" }));
     expect(await screen.findByRole("button", { name: "Begin lesson" })).toBeInTheDocument();
     expect(startLessonSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("when the countdown ends it restores hearts and asks for a new session", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      startLessonSession
+        .mockResolvedValueOnce({ error: "out-of-hearts", refillAt: Date.now() + 1000 })
+        .mockResolvedValueOnce({ token: "session-tok" });
+      renderPage();
+      await screen.findByRole("dialog", { name: "Out of hearts" });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2500);
+      });
+      await waitFor(() => expect(restoreHeartsRemote).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(startLessonSession).toHaveBeenCalledTimes(2));
+      expect(await screen.findByRole("button", { name: "Begin lesson" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("Practice or review instead goes to review; closing goes back to learn", async () => {
