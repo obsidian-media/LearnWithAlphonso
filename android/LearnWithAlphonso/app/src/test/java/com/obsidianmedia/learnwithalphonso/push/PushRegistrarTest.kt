@@ -19,7 +19,8 @@ class PushRegistrarTest {
     private fun registrar(s: FakeServer, prefs: MemoryPrefs, granted: Boolean, signedIn: Boolean, token: String? = "tok-1") =
         PushRegistrar({ token }, { granted }, { signedIn }, { s.progressClient }, prefs, CoroutineScope(Dispatchers.Main))
 
-    private fun tokenRequests(s: FakeServer) = s.seen.filter { it.path.endsWith("device_tokens") }
+    private fun tokenRequests(s: FakeServer) =
+        s.seen.filter { it.path.endsWith("device_tokens") || it.path.endsWith("claim_device_token") }
 
     @Test
     fun `uploads only with permission and a session, once per token, and deletes on sign out`() = runBlocking {
@@ -34,8 +35,8 @@ class PushRegistrarTest {
         r.registerIfAuthorized()
         assertEquals(1, tokenRequests(s).size)
         assertEquals("POST", tokenRequests(s)[0].method)
-        assertEquals("user_id,token", tokenRequests(s)[0].query["on_conflict"])
-        assertEquals(true, tokenRequests(s)[0].body.contains("\"platform\":\"android\""))
+        assertEquals("/rest/v1/rpc/claim_device_token", tokenRequests(s)[0].path)
+        assertEquals(true, tokenRequests(s)[0].body.contains("\"_platform\":\"android\""))
         assertEquals("tok-1", prefs.getString(PushRegistrar.UPLOADED_KEY, null))
 
         r.onNewToken("tok-2")

@@ -3,25 +3,24 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 
 /**
  * Port of ProgressSyncClient.swift's registerDeviceToken and
  * unregisterDeviceToken. Row per (user, device); the server prunes a dead
  * token when a send fails, and sign-out deletes this device's own row.
+ *
+ * Registering goes through claim_device_token, which also removes the same
+ * token from any other account: a shared phone whose previous account never
+ * got to clean up stops receiving that account's nudges.
  */
 suspend fun ProgressSyncClient.registerDeviceToken(token: String, platform: String = "android") {
     http.requireSuccess(
-        http.rest(
-            HttpMethod.Post, "device_tokens",
-            mapOf("on_conflict" to "user_id,token"),
+        http.rpc(
+            "claim_device_token",
             buildJsonObject {
-                put("token", token)
-                put("platform", platform)
-                put("updated_at", DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(nowMillis())))
+                put("_token", token)
+                put("_platform", platform)
             },
-            mapOf("Prefer" to "resolution=merge-duplicates,return=minimal"),
         ),
     )
 }

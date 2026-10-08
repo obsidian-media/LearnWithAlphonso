@@ -1143,24 +1143,18 @@ public final class ProgressSyncClient: Sendable {
             }
     }
 
-    /// V4 candidate #2 -- upserts this device's APNs token into
-    /// `device_tokens` (supabase/migrations/20260921030000_remote_push_notifications.sql).
-    /// `on_conflict=user_id,token` matches that table's unique constraint
-    /// exactly, so re-registering the same device (app relaunch, a token
-    /// that happens not to have rotated) updates `updated_at` in place
-    /// rather than erroring or duplicating. RLS is own-row-only (`auth.uid()
-    /// = user_id`), same as sendNudge/markNudgesRead above -- no RPC
-    /// needed, this isn't a trust-sensitive write.
+    /// Claims this device's APNs token for the signed-in account through `claim_device_token`
+    /// (supabase/migrations/20261012200000_claim_device_token.sql). A token belongs to one physical device, so
+    /// the function also removes the same token from any other account: a shared phone whose previous account
+    /// never got to clean up (offline, expired session) stops receiving that account's nudges. Re-registering
+    /// the same token (app relaunch) just refreshes `updated_at`.
     public func registerDeviceToken(_ token: String) async throws {
-        var request = restRequest(path: "device_tokens", query: [
-            URLQueryItem(name: "on_conflict", value: "user_id,token"),
-        ])
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/claim_device_token"))
         request.httpMethod = "POST"
-        request.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
-        request.httpBody = try JSONSerialization.data(withJSONObject: [
-            "token": token, "platform": "ios",
-            "updated_at": ISO8601DateFormatter().string(from: Date()),
-        ])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_token": token, "_platform": "ios"])
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
     }
@@ -1175,6 +1169,9 @@ public final class ProgressSyncClient: Sendable {
         ])
         request.httpMethod = "DELETE"
         request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
+        // Short on purpose: sign-out cleanup runs before the next sign-in can start, so an offline request must
+        // not hold it for URLSession's 60 s default. claim_device_token covers a delete that never lands.
+        request.timeoutInterval = 8
         let (data, response) = try await requester(request)
         try Self.requireSuccess(data: data, response: response)
     }
