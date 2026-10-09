@@ -44,6 +44,7 @@ final class LargeTextTests: UICompatTestCase {
         guard hasDemoSession else { return XCTFail("no demo session: the mint step did not run") }
         launch(signedIn: true, arguments: xxxl)
         guard tapTab("Learn") else { return XCTFail("no Learn tab at XXXL (tab bar labels may be the cause)") }
+        save("large-03-learn-state")
         guard requireUsable(app.buttons["firstLessonRow"], "first lesson row") else { return }
         save("large-03a-learn")
         app.buttons["firstLessonRow"].tap()
