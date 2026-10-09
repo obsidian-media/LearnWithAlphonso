@@ -59,6 +59,12 @@ export function buildDefineMessages(
 export const DEFINE_ATTEMPT_TIMEOUT_MS = 9_000;
 export const DEFINE_MAX_ATTEMPTS = 2;
 
+/** A fresh per-attempt timeout, joined with the caller's signal when there is one. */
+function attemptSignal(caller?: AbortSignal): AbortSignal {
+  const timeout = AbortSignal.timeout(DEFINE_ATTEMPT_TIMEOUT_MS);
+  return caller ? AbortSignal.any([caller, timeout]) : timeout;
+}
+
 /**
  * The NVIDIA lookup, with up to two attempts. Returns null for EVERY failure (non-200, timeout, network,
  * unusable output): the caller turns that into a 502 and writes no row.
@@ -72,22 +78,28 @@ export async function defineWord(args: {
   apiKey: string;
   model: string;
   fetchImpl?: typeof fetch;
+  /** The caller's own signal (the request's): a client that has gone away stops the lookup and any retry. */
+  signal?: AbortSignal;
 }): Promise<WordDefinition | null> {
-  const { input, apiKey, model, fetchImpl = fetch } = args;
+  const { input, apiKey, model, fetchImpl = fetch, signal } = args;
   for (let attempt = 1; attempt <= DEFINE_MAX_ATTEMPTS; attempt++) {
+    if (attempt > 1 && signal?.aborted) return null;
     const startedAt = Date.now();
     try {
       const resp = await nvidiaChatCompletion({
         apiKey,
         fetchImpl,
-        signal: AbortSignal.timeout(DEFINE_ATTEMPT_TIMEOUT_MS),
+        signal: attemptSignal(signal),
         body: { model, messages: buildDefineMessages(input), max_tokens: 600 },
       });
       if (!resp.ok) {
         console.error(
           `[define-word] attempt ${attempt}: NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
         );
-        if (resp.status >= 500) continue;
+        if (resp.status >= 500) {
+          await resp.body?.cancel().catch(() => {});
+          continue;
+        }
         return null;
       }
       const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };

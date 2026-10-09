@@ -190,7 +190,52 @@ describe("defineWord", () => {
       expect(fetchImpl).toHaveBeenCalledTimes(2);
     });
 
-    it("keeps the worst case (two attempts) well inside the 25 s the apps wait", () => {
+    it("starts every attempt with its own fresh short timeout", async () => {
+      const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
+      const fetchImpl = sequence([timeoutErr(), timeoutErr()]);
+      await defineWord({ input, apiKey: "k", model: "m", fetchImpl });
+      expect(timeoutSpy).toHaveBeenCalledTimes(DEFINE_MAX_ATTEMPTS);
+      expect(timeoutSpy).toHaveBeenCalledWith(DEFINE_ATTEMPT_TIMEOUT_MS);
+      timeoutSpy.mockRestore();
+    });
+
+    it("does not start a retry once the caller's signal is aborted", async () => {
+      const controller = new AbortController();
+      const fetchImpl = vi.fn(async () => {
+        controller.abort();
+        throw timeoutErr();
+      }) as unknown as typeof fetch;
+      const out = await defineWord({
+        input,
+        apiKey: "k",
+        model: "m",
+        fetchImpl,
+        signal: controller.signal,
+      });
+      expect(out).toBeNull();
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+
+    it("passes a signal that follows the caller's abort", async () => {
+      const controller = new AbortController();
+      const fetchImpl = sequence([good()]);
+      await defineWord({ input, apiKey: "k", model: "m", fetchImpl, signal: controller.signal });
+      const init = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock
+        .calls[0]![1] as RequestInit;
+      expect(init.signal!.aborted).toBe(false);
+      controller.abort();
+      expect(init.signal!.aborted).toBe(true);
+    });
+
+    it("discards a 5xx body before retrying", async () => {
+      const bad = new Response("busy", { status: 503 });
+      const cancel = vi.spyOn(bad.body!, "cancel");
+      const fetchImpl = sequence([bad, good()]);
+      await defineWord({ input, apiKey: "k", model: "m", fetchImpl });
+      expect(cancel).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the worst case (two attempts) well inside the clients' waits", () => {
       expect(DEFINE_ATTEMPT_TIMEOUT_MS * DEFINE_MAX_ATTEMPTS).toBeLessThanOrEqual(20_000);
     });
   });
