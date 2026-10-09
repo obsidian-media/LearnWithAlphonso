@@ -346,6 +346,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      buddy_pool_exclusions: {
+        Row: {
+          created_at: string;
+          reason: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          reason?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          reason?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       buddy_requests: {
         Row: {
           created_at: string;
