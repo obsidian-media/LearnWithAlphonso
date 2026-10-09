@@ -97,7 +97,7 @@ final class IPadCompatibilityTests: UICompatTestCase {
     }
 
     func test4_Paywall() {
-        launch(signedIn: hasDemoSession, arguments: ["-UITestShowPaywall"])
+        launch(signedIn: false, arguments: ["-UITestShowPaywall"])
         for (orientation, name) in orientations {
             XCUIDevice.shared.orientation = orientation
             requireRunning("paywall \(name)")

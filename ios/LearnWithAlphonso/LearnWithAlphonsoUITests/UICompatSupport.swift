@@ -21,7 +21,7 @@ class UICompatTestCase: XCTestCase {
         var env = ProcessInfo.processInfo.environment
         if !signedIn { env = env.filter { !$0.key.hasPrefix("UI_TEST_") } }
         app.launchEnvironment = env
-        app.launchArguments += ["-UITestLayoutProbe"] + arguments
+        app.launchArguments += ["-UITestLayoutProbe"] + (signedIn ? ["-UITestSkipOnboarding"] : []) + arguments
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30), "the app did not reach the foreground")
     }

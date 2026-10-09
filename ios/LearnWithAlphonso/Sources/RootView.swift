@@ -332,6 +332,10 @@ struct RootView: View {
     }
 
     private func advanceOnboarding() {
+        #if DEBUG
+        // UI tests only: the seeded demo account has not confirmed its name, and skipping the prompt would write to it.
+        if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") { onboardingStep = nil; return }
+        #endif
         onboardingStep = OnboardingSequence.next(nameConfirmed: nameConfirmed, placementTaken: placementTaken, done: onboardingDone)
     }
 
