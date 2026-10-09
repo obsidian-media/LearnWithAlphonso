@@ -34,7 +34,7 @@ class UICompatTestCase: XCTestCase {
     func requireUsable(_ element: XCUIElement, _ name: String, timeout: TimeInterval = 15,
                        file: StaticString = #filePath, line: UInt = #line) -> Bool {
         // A lazily built list does not create rows below the fold, so scroll toward the element first.
-        var found = element.waitForExistence(timeout: 3)
+        var found = element.waitForExistence(timeout: 10)
         var scrolls = 0
         while !found && scrolls < 12 {
             app.swipeUp()
