@@ -19,7 +19,16 @@ async function sentBody(body: Parameters<typeof nvidiaChatCompletion>[0]["body"]
 describe("NVIDIA requests", () => {
   it("turn the model's reasoning off on every call", async () => {
     const sent = await sentBody({ model: "m", messages: [{ role: "user", content: "x" }] });
-    expect(sent.chat_template_kwargs).toEqual({ thinking: false });
+    expect(sent.chat_template_kwargs).toEqual({ thinking: false, enable_thinking: false });
+  });
+
+  it("keep reasoning off when a caller sets another template argument", async () => {
+    const sent = await sentBody({
+      model: "m",
+      messages: [{ role: "user", content: "x" }],
+      chat_template_kwargs: { foo: 1 },
+    });
+    expect(sent.chat_template_kwargs).toEqual({ thinking: false, enable_thinking: false, foo: 1 });
   });
 
   it("keep the caller's own fields and the safety preamble", async () => {
@@ -38,10 +47,11 @@ describe("NVIDIA requests", () => {
       path.resolve(__dirname, "../../supabase/functions/_shared/nvidia-chat.ts"),
       "utf8",
     );
-    expect(NVIDIA_NO_THINKING).toEqual({ chat_template_kwargs: { thinking: false } });
+    expect(NVIDIA_NO_THINKING).toEqual({ thinking: false, enable_thinking: false });
     expect(edge).toContain(
-      "export const NVIDIA_NO_THINKING = { chat_template_kwargs: { thinking: false } } as const;",
+      "export const NVIDIA_NO_THINKING = { thinking: false, enable_thinking: false } as const;",
     );
-    expect(edge).toMatch(/JSON\.stringify\(\{ \.\.\.NVIDIA_NO_THINKING, \.\.\.body,/);
+    expect(edge).toContain("chat_template_kwargs: { ...NVIDIA_NO_THINKING, ...callerKwargs }");
+    expect(edge).toMatch(/JSON\.stringify\(\{ \.\.\.withNoThinking\(body\), messages:/);
   });
 });
