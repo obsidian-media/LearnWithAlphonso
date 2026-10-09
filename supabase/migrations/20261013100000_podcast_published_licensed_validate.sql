@@ -2,9 +2,9 @@
 -- NOT VALID. That migration made the database refuse any new or updated
 -- published row whose voice_provider is not licensed, but it deliberately did
 -- not scan the rows that already existed. Every published episode is now
--- voiced by a licensed provider, so the existing rows can be checked too, and
--- an UPDATE of a published row (for example editing its title) is no longer
--- special-cased.
+-- voiced by a licensed provider, so the existing rows can be checked too.
+-- After this, the database vouches for every published row, old ones included,
+-- not only for rows written since the constraint was added.
 --
 -- Safe to run: production has 0 published rows with a provider outside the
 -- list, so the validation scan finds no violation. VALIDATE CONSTRAINT takes a

@@ -14,17 +14,19 @@ const version = (file: string) => file.slice(0, 14);
 const ALL_MIGRATIONS = fs.readdirSync(MIGRATIONS).filter((file) => file.endsWith(".sql"));
 const OURS = [PLAYBACK, PROVENANCE, LICENSED_CHECK, VALIDATE];
 
+// The newest migration on main when each was written. Pinned, not computed, so a migration another
+// branch lands later cannot turn these into false failures; the duplicate-version test covers the rest.
+const MAIN_MAX_BEFORE_PLAYBACK = "20261012400000";
+const MAIN_MAX_AT_AUTHORING = "20261012500200";
+
 describe("podcast migration ordering", () => {
   it("lists the podcast migrations among the real migration files", () => {
     for (const file of OURS) expect(ALL_MIGRATIONS).toContain(file);
   });
 
-  it("sorts after every other migration in the directory (db push refuses an older version)", () => {
-    const others = ALL_MIGRATIONS.filter((file) => !OURS.includes(file));
-    expect(others.length).toBeGreaterThan(0);
-    for (const other of others) {
-      expect(version(PLAYBACK) > version(other), `${PLAYBACK} must sort after ${other}`).toBe(true);
-    }
+  it("sorts after the newest migration on main when it was written (db push refuses an older version)", () => {
+    expect(version(PLAYBACK) > MAIN_MAX_BEFORE_PLAYBACK).toBe(true);
+    expect(version(VALIDATE) > MAIN_MAX_AT_AUTHORING).toBe(true);
   });
 
   it("applies in order: playback, then provenance, then the licensed check, then its validation", () => {
@@ -140,11 +142,9 @@ describe("published-must-be-licensed validation migration", () => {
     ]);
   });
 
-  it("sorts after every other migration, including the one that added the constraint", () => {
-    const others = ALL_MIGRATIONS.filter((file) => file !== VALIDATE);
-    for (const other of others) {
-      expect(version(VALIDATE) > version(other), `${VALIDATE} must sort after ${other}`).toBe(true);
-    }
+  it("sorts after the migration that added the constraint and after main's newest at authoring", () => {
+    expect(version(VALIDATE) > version(LICENSED_CHECK)).toBe(true);
+    expect(version(VALIDATE) > MAIN_MAX_AT_AUTHORING).toBe(true);
   });
 
   it("explains why it is safe and documents the exact rollback", () => {
