@@ -1,0 +1,172 @@
+{
+  "batch": "r1-b009",
+  "pass": "first",
+  "reviewer": "agent:p2-r1-b009",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "lire": {
+      "verdict": "approve",
+      "alt": "An open book lies with a red and white string tied into a heart shape on its pages.",
+      "peopleVisible": false
+    },
+    "livre": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "llave": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "lluvia": {
+      "verdict": "approve",
+      "alt": "Raindrops create circular ripples on dark water.",
+      "peopleVisible": false
+    },
+    "lunettes": {
+      "verdict": "approve",
+      "alt": "A man with shoulder-length blond hair wears dark-framed glasses and looks down.",
+      "peopleVisible": true
+    },
+    "lámpara": {
+      "verdict": "approve",
+      "alt": "A glowing oil lantern stands on a cobblestone path in the dark.",
+      "peopleVisible": false
+    },
+    "maleta": {
+      "verdict": "approve",
+      "alt": "An old brown suitcase stands open on a lawn.",
+      "peopleVisible": false
+    },
+    "manger": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "mano": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "mapa": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "marcher": {
+      "verdict": "approve",
+      "alt": "A person walks along a road lined with trees in autumn colours.",
+      "peopleVisible": true
+    },
+    "market": {
+      "verdict": "approve",
+      "alt": "Baskets of blueberries, plums and grapes are displayed on a market table.",
+      "peopleVisible": false
+    },
+    "medicina": {
+      "verdict": "reject",
+      "reasons": ["alcohol-tobacco-drugs-gambling"]
+    },
+    "mesa": {
+      "verdict": "approve",
+      "alt": "A long table set with glasses, plates and folded napkins stands on a terrace at sunset.",
+      "peopleVisible": false
+    },
+    "microondas": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "moneda": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "médicament": {
+      "verdict": "reject",
+      "reasons": ["alcohol-tobacco-drugs-gambling"]
+    },
+    "nadar": {
+      "verdict": "approve",
+      "alt": "A penguin swims underwater with its flippers spread.",
+      "peopleVisible": false
+    },
+    "nager": {
+      "verdict": "approve",
+      "alt": "A penguin swims underwater with its flippers spread.",
+      "peopleVisible": false
+    },
+    "nariz": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "niebla": {
+      "verdict": "approve",
+      "alt": "Rays of sunlight pass through fog among dark forest trees.",
+      "peopleVisible": false
+    },
+    "nieve": {
+      "verdict": "approve",
+      "alt": "A snowy path runs between trees covered in frost.",
+      "peopleVisible": false
+    },
+    "nose": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "nube": {
+      "verdict": "approve",
+      "alt": "Pink and grey clouds float in a blue sky.",
+      "peopleVisible": false
+    },
+    "océano": {
+      "verdict": "approve",
+      "alt": "A large turquoise ocean wave curls and breaks.",
+      "peopleVisible": false
+    },
+    "ojo": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's blue eye.",
+      "peopleVisible": true
+    },
+    "oreja": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "otoño": {
+      "verdict": "approve",
+      "alt": "A red and orange autumn leaf lies among fallen leaves and red berries.",
+      "peopleVisible": false
+    },
+    "palacio de justicia": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "panadería": {
+      "verdict": "approve",
+      "alt": "A basket of golden bread rolls and croissants sits by a window.",
+      "peopleVisible": false
+    },
+    "papel": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "paquete": {
+      "verdict": "approve",
+      "alt": "A red tape dispenser sits on a cardboard box with more boxes behind it.",
+      "peopleVisible": false
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "peindre": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "pelo": {
+      "verdict": "approve",
+      "alt": "A woman with long hair blowing in the wind stands in front of red leaves.",
+      "peopleVisible": true
+    }
+  }
+}

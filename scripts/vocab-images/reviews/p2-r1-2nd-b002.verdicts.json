@@ -1,0 +1,68 @@
+{
+  "batch": "r1-2nd-b002",
+  "pass": "second",
+  "reviewer": "agent:p2-second-b002",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "l'écran": {
+      "verdict": "approve",
+      "alt": "A woman seen from behind works at a computer monitor, shown in black and white.",
+      "peopleVisible": true
+    },
+    "l'étoile": {
+      "verdict": "approve",
+      "alt": "Many small stars shine in a dark night sky.",
+      "peopleVisible": false
+    },
+    "la chemise": {
+      "verdict": "approve",
+      "alt": "A man in a white dress shirt fastens the cuff of his sleeve.",
+      "peopleVisible": true
+    },
+    "la tablette": {
+      "verdict": "approve",
+      "alt": "A hand taps a tablet computer on a table in front of a laptop.",
+      "peopleVisible": true
+    },
+    "le clavier": {
+      "verdict": "approve",
+      "alt": "Two hands type on the keyboard of a silver laptop.",
+      "peopleVisible": true
+    },
+    "le cyclisme": {
+      "verdict": "approve",
+      "alt": "A person rides a bicycle through a puddle in front of a yellow wall.",
+      "peopleVisible": true
+    },
+    "le garçon": {
+      "verdict": "approve",
+      "alt": "A smiling boy and girl stand side by side outdoors.",
+      "peopleVisible": true
+    },
+    "le manteau": {
+      "verdict": "approve",
+      "alt": "A woman in a dark winter coat with a fur-trimmed hood and a knitted hat looks at the camera.",
+      "peopleVisible": true
+    },
+    "l'architecte": {
+      "verdict": "approve",
+      "alt": "A man draws plans at a desk covered with books, drawings and a lamp.",
+      "peopleVisible": true
+    },
+    "la mère": {
+      "verdict": "approve",
+      "alt": "A woman in a yellow skirt holds a small girl's hand in a sunny park.",
+      "peopleVisible": true
+    },
+    "la réunion": {
+      "verdict": "approve",
+      "alt": "Six people in business clothes meet around a table with a laptop and two of them shake hands.",
+      "peopleVisible": true
+    },
+    "le diplôme": {
+      "verdict": "approve",
+      "alt": "Graduates in black gowns throw their caps into a blue sky.",
+      "peopleVisible": true
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "batch": "r2-b002",
+  "pass": "first",
+  "reviewer": "agent:p2-r2-b002",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "l'écran": {
+      "verdict": "approve",
+      "alt": "A woman seen from behind works at a computer monitor, shown in black and white.",
+      "peopleVisible": true
+    },
+    "l'étoile": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la banque": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la chaise": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la chemise": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la clé": {
+      "verdict": "approve",
+      "alt": "A bunch of metal keys on a ring lies on a grey surface.",
+      "peopleVisible": false
+    },
+    "la lune": {
+      "verdict": "approve",
+      "alt": "A full moon glows in a dark blue night sky.",
+      "peopleVisible": false
+    },
+    "la soupe": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la table": {
+      "verdict": "reject",
+      "reasons": ["alcohol-tobacco-drugs-gambling"]
+    },
+    "la tablette": {
+      "verdict": "approve",
+      "alt": "A hand taps a tablet computer on a table in front of a laptop.",
+      "peopleVisible": true
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le bateau": {
+      "verdict": "approve",
+      "alt": "A white sailing yacht cuts through deep blue sea, seen from above.",
+      "peopleVisible": false
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le camion": {
+      "verdict": "approve",
+      "alt": "A white tanker truck drives along a curving highway through dry hills.",
+      "peopleVisible": false
+    },
+    "le clavier": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le cyclisme": {
+      "verdict": "approve",
+      "alt": "A person rides a bicycle through a puddle in front of a yellow wall.",
+      "peopleVisible": true
+    },
+    "le dictionnaire": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le football": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le garçon": {
+      "verdict": "approve",
+      "alt": "A smiling boy and girl stand side by side outdoors.",
+      "peopleVisible": true
+    },
+    "le livre": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le manteau": {
+      "verdict": "approve",
+      "alt": "A woman in a dark winter coat with a fur-trimmed hood and a knitted hat looks at the camera.",
+      "peopleVisible": true
+    },
+    "le musicien": {
+      "verdict": "approve",
+      "alt": "A person in a black jacket plays an acoustic guitar.",
+      "peopleVisible": true
+    },
+    "le nez": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le papier": {
+      "verdict": "approve",
+      "alt": "A blank white sheet of paper lies on a marble desk with paper clips, scissors and a small plant.",
+      "peopleVisible": false
+    },
+    "le pilote": {
+      "verdict": "approve",
+      "alt": "A pilot's hand rests on the controls in a small plane cockpit above city lights at night.",
+      "peopleVisible": true
+    },
+    "le plombier": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le pull": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le reçu": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le salon": {
+      "verdict": "approve",
+      "alt": "A bright living room has a white sofa, a floor lamp and abstract paintings.",
+      "peopleVisible": false
+    },
+    "le serveur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le tapis": {
+      "verdict": "approve",
+      "alt": "A red carpet with a colourful geometric pattern fills the frame.",
+      "peopleVisible": false
+    },
+    "le taxi": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le tennis": {
+      "verdict": "approve",
+      "alt": "A tennis ball lies on a hard court beside the edge of a racket.",
+      "peopleVisible": false
+    },
+    "le trottoir": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "le verre": {
+      "verdict": "approve",
+      "alt": "Water splashes into a clear drinking glass on a dark reflective surface.",
+      "peopleVisible": false
+    },
+    "les chaussettes": {
+      "verdict": "approve",
+      "alt": "A pair of grey socks with red ladybugs lies on a white background.",
+      "peopleVisible": false
+    }
+  }
+}

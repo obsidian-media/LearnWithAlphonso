@@ -1,0 +1,170 @@
+{
+  "batch": "r1-b010",
+  "pass": "first",
+  "reviewer": "agent:p2-r1-b010",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "pescar": {
+      "verdict": "approve",
+      "alt": "A fishing rod stands on the bow of a boat on a lake at sunset.",
+      "peopleVisible": false
+    },
+    "pincel": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "pintar": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "plane": {
+      "verdict": "approve",
+      "alt": "Two jet engines hang under the wing of an airliner, seen in black and white.",
+      "peopleVisible": false
+    },
+    "plumber": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "police officer": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "postman": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "primavera": {
+      "verdict": "approve",
+      "alt": "White blossoms open on a thin branch in spring.",
+      "peopleVisible": false
+    },
+    "programmer": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "puente": {
+      "verdict": "approve",
+      "alt": "A stone bridge with two tall towers crosses a river at night.",
+      "peopleVisible": false
+    },
+    "puerta": {
+      "verdict": "approve",
+      "alt": "A blue wooden door with metal studs sits in a blue painted wall.",
+      "peopleVisible": false
+    },
+    "pêcher": {
+      "verdict": "approve",
+      "alt": "A fishing rod stands on the bow of a boat on a lake at sunset.",
+      "peopleVisible": false
+    },
+    "recycling": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "reloj": {
+      "verdict": "approve",
+      "alt": "A round clock with a black frame hangs from a ceiling made of metal strips.",
+      "peopleVisible": false
+    },
+    "relámpago": {
+      "verdict": "approve",
+      "alt": "A bright bolt of lightning forks across a purple sky.",
+      "peopleVisible": false
+    },
+    "robe": {
+      "verdict": "approve",
+      "alt": "A girl in a pink striped dress and a pink hat stands in tall grass at sunset.",
+      "peopleVisible": true
+    },
+    "rodilla": {
+      "verdict": "approve",
+      "alt": "A wooden artist's mannequin stands on one leg and holds its knee.",
+      "peopleVisible": false
+    },
+    "rue": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "río": {
+      "verdict": "approve",
+      "alt": "A blue river winds between green hills and a small town.",
+      "peopleVisible": false
+    },
+    "shirt": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "shopkeeper": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "shorts": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "silla": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "skiing": {
+      "verdict": "approve",
+      "alt": "Four skiers in colourful jackets and helmets stand on a snowy slope with ski poles.",
+      "peopleVisible": true
+    },
+    "stamp": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "stir": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "taxi driver": {
+      "verdict": "approve",
+      "alt": "A man drives an orange three-wheeled tuk-tuk taxi down a city street, seen from behind.",
+      "peopleVisible": true
+    },
+    "taza": {
+      "verdict": "approve",
+      "alt": "A white cup of coffee with latte art stands on a wooden board with cinnamon and star anise.",
+      "peopleVisible": false
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "teclado": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "televisor": {
+      "verdict": "approve",
+      "alt": "An old television set with a small screen stands on thin legs against a concrete wall.",
+      "peopleVisible": false
+    },
+    "tenedor": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "toalla": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "tormenta": {
+      "verdict": "approve",
+      "alt": "Lightning flashes under dark purple storm clouds above a city at night.",
+      "peopleVisible": false
+    }
+  }
+}

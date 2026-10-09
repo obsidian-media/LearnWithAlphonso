@@ -1,0 +1,178 @@
+{
+  "batch": "r1-b008",
+  "pass": "first",
+  "reviewer": "agent:p2-r1-b008",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "le rond-point": {
+      "verdict": "approve",
+      "alt": "A roundabout with four roads leads off through dry brown fields, seen from above.",
+      "peopleVisible": false
+    },
+    "le sable": {
+      "verdict": "approve",
+      "alt": "Golden sand dunes with ripples and footprints stretch to a hazy sun.",
+      "peopleVisible": false
+    },
+    "le sac": {
+      "verdict": "approve",
+      "alt": "A brown leather satchel with two buckles rests on a stone block.",
+      "peopleVisible": false
+    },
+    "le salon": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le serpent": {
+      "verdict": "approve",
+      "alt": "A brown snake coils around a branch and looks toward the camera.",
+      "peopleVisible": false
+    },
+    "le serveur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le singe": {
+      "verdict": "approve",
+      "alt": "A chimpanzee sits and holds a long blade of grass in its mouth.",
+      "peopleVisible": false
+    },
+    "le ski": {
+      "verdict": "approve",
+      "alt": "A skier makes tracks down a snowy slope beside a chairlift, seen from above.",
+      "peopleVisible": true
+    },
+    "le smartphone": {
+      "verdict": "approve",
+      "alt": "A light green smartphone lies on its side on a wooden surface.",
+      "peopleVisible": false
+    },
+    "le soleil": {
+      "verdict": "approve",
+      "alt": "A bright sun sets among orange clouds.",
+      "peopleVisible": false
+    },
+    "le stade": {
+      "verdict": "approve",
+      "alt": "The inside of a large stadium with a curved roof opening to the sky and a running track.",
+      "peopleVisible": false
+    },
+    "le stylo": {
+      "verdict": "approve",
+      "alt": "A silver pen lies on a white surface.",
+      "peopleVisible": false
+    },
+    "le supermarché": {
+      "verdict": "approve",
+      "alt": "Shelves and tables of colourful fruit and vegetables fill a supermarket, seen from above.",
+      "peopleVisible": true
+    },
+    "le surf": {
+      "verdict": "approve",
+      "alt": "A surfer rides a wave at sunset.",
+      "peopleVisible": true
+    },
+    "le tapis": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le taxi": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le tennis": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le tigre": {
+      "verdict": "approve",
+      "alt": "A tiger walks through deep snow.",
+      "peopleVisible": false
+    },
+    "le toit": {
+      "verdict": "approve",
+      "alt": "Round domes and tiled roofs of old stone buildings rise under a cloudy sky.",
+      "peopleVisible": false
+    },
+    "le train": {
+      "verdict": "approve",
+      "alt": "A green and red diesel locomotive pulls a train along snowy tracks.",
+      "peopleVisible": false
+    },
+    "le tramway": {
+      "verdict": "approve",
+      "alt": "A yellow tram climbs a narrow cobbled street between tall old buildings.",
+      "peopleVisible": false
+    },
+    "le trottoir": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le téléphone": {
+      "verdict": "approve",
+      "alt": "A black rotary telephone stands on a table, shown in black and white.",
+      "peopleVisible": false
+    },
+    "le verre": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le volleyball": {
+      "verdict": "approve",
+      "alt": "People play volleyball on a beach at sunset, seen in silhouette.",
+      "peopleVisible": true
+    },
+    "le vélo": {
+      "verdict": "approve",
+      "alt": "A bicycle leans against a whitewashed wall below a window.",
+      "peopleVisible": false
+    },
+    "leer": {
+      "verdict": "approve",
+      "alt": "An open book lies with a red and white string tied into a heart shape on its pages.",
+      "peopleVisible": false
+    },
+    "les chaussettes": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "les chaussures": {
+      "verdict": "approve",
+      "alt": "Two people in brown lace-up shoes and white socks stand on a striped crosswalk with small flowers in their socks.",
+      "peopleVisible": true
+    },
+    "les cheveux": {
+      "verdict": "approve",
+      "alt": "A woman with long hair blowing in the wind stands in front of red leaves.",
+      "peopleVisible": true
+    },
+    "les ciseaux": {
+      "verdict": "approve",
+      "alt": "A pair of gold stork-shaped scissors stands beside a folded white towel.",
+      "peopleVisible": false
+    },
+    "les gants": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "les yeux": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's green-brown eye.",
+      "peopleVisible": true
+    },
+    "les échecs": {
+      "verdict": "approve",
+      "alt": "Chess pieces stand on a chessboard, with a king in the centre.",
+      "peopleVisible": false
+    },
+    "librería": {
+      "verdict": "approve",
+      "alt": "A tall dark wooden bookshelf is filled with rows of colourful books.",
+      "peopleVisible": false
+    },
+    "libro": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    }
+  }
+}

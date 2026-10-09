@@ -1,0 +1,90 @@
+{
+  "batch": "r1-b011",
+  "pass": "first",
+  "reviewer": "agent:p2-r1-b011",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "tourist": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "trainers": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "tram": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "tren": {
+      "verdict": "approve",
+      "alt": "A green and red diesel locomotive pulls a train along snowy tracks.",
+      "peopleVisible": false
+    },
+    "tricoter": {
+      "verdict": "approve",
+      "alt": "Hands knit a grey wool piece with two needles.",
+      "peopleVisible": true
+    },
+    "trousers": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "ventana": {
+      "verdict": "approve",
+      "alt": "A small square window in a pink wall holds two potted plants.",
+      "peopleVisible": false
+    },
+    "verano": {
+      "verdict": "approve",
+      "alt": "A seashell rests on a sandy beach as the sun sets over gentle waves.",
+      "peopleVisible": false
+    },
+    "video games": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "voiture": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "waiter": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "walrus": {
+      "verdict": "approve",
+      "alt": "A walrus with long tusks rests on a rocky shore.",
+      "peopleVisible": false
+    },
+    "watching": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "whiteboard": {
+      "verdict": "approve",
+      "alt": "A bright meeting room has a brick wall, two whiteboards and a long table.",
+      "peopleVisible": false
+    },
+    "worksheet": {
+      "verdict": "approve",
+      "alt": "A boy in a green sweater writes with a pencil on a worksheet at a desk.",
+      "peopleVisible": true
+    },
+    "write": {
+      "verdict": "approve",
+      "alt": "A pen lies on a spiral notebook on a wooden desk beside a laptop and a cup of coffee.",
+      "peopleVisible": false
+    },
+    "yoga": {
+      "verdict": "approve",
+      "alt": "A person sits on a yoga mat and folds forward over their legs.",
+      "peopleVisible": true
+    },
+    "écrire": {
+      "verdict": "approve",
+      "alt": "A fountain pen rests on an open notebook with handwritten notes.",
+      "peopleVisible": false
+    }
+  }
+}

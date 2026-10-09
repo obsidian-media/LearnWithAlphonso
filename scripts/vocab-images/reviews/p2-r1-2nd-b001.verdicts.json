@@ -1,0 +1,68 @@
+{
+  "batch": "r1-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p2-second-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "abogado": {
+      "verdict": "approve",
+      "alt": "A woman in a dark blazer reads a clipboard in a law office with a statue of Lady Justice behind her.",
+      "peopleVisible": true
+    },
+    "bailar": {
+      "verdict": "approve",
+      "alt": "A dancer in a purple top and black skirt stretches one leg high in a bright studio.",
+      "peopleVisible": true
+    },
+    "camisa": {
+      "verdict": "approve",
+      "alt": "A person in a plain white T-shirt and jeans stands against a pink and lilac background.",
+      "peopleVisible": true
+    },
+    "cash machine": {
+      "verdict": "approve",
+      "alt": "A hand takes banknotes from a cash machine, shown in a black and white collage.",
+      "peopleVisible": true
+    },
+    "cashier": {
+      "verdict": "approve",
+      "alt": "A woman stands at a shop counter and uses a tablet register.",
+      "peopleVisible": true
+    },
+    "dedo": {
+      "verdict": "approve",
+      "alt": "A raised hand points one finger upward against a plain grey wall.",
+      "peopleVisible": true
+    },
+    "dress": {
+      "verdict": "approve",
+      "alt": "A woman in a short white dress and sunglasses stands on a promenade beside a river.",
+      "peopleVisible": true
+    },
+    "firefighter": {
+      "verdict": "approve",
+      "alt": "Firefighters in dark protective gear with reflective stripes walk beside a red fire truck.",
+      "peopleVisible": true
+    },
+    "aider": {
+      "verdict": "approve",
+      "alt": "A person in a face mask helps an older woman in a mask get out of a car.",
+      "peopleVisible": true
+    },
+    "contento": {
+      "verdict": "approve",
+      "alt": "A smiling woman and man laugh together as they sit in a dry field.",
+      "peopleVisible": true
+    },
+    "heureux": {
+      "verdict": "approve",
+      "alt": "A smiling woman and man laugh together as they sit in a dry field.",
+      "peopleVisible": true
+    },
+    "jouer": {
+      "verdict": "approve",
+      "alt": "A smiling child plays on an orange slide at a playground.",
+      "peopleVisible": true
+    }
+  }
+}

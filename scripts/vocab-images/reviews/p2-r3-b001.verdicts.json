@@ -1,0 +1,214 @@
+{
+  "batch": "r3-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-r3-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "abogado": {
+      "verdict": "approve",
+      "alt": "A woman in a dark blazer reads a clipboard in a law office with a statue of Lady Justice behind her.",
+      "peopleVisible": true
+    },
+    "autobús": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "avión": {
+      "verdict": "approve",
+      "alt": "A small passenger jet flies high in a clear blue sky.",
+      "peopleVisible": false
+    },
+    "bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "cinéma": {
+      "verdict": "approve",
+      "alt": "Rows of light blue cushioned seats fill an auditorium.",
+      "peopleVisible": false
+    },
+    "danser": {
+      "verdict": "reject",
+      "reasons": ["alcohol-tobacco-drugs-gambling"]
+    },
+    "l'architecte": {
+      "verdict": "approve",
+      "alt": "A man draws plans at a desk covered with books, drawings and a lamp.",
+      "peopleVisible": true
+    },
+    "l'artiste": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'ingénieur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "l'étoile": {
+      "verdict": "approve",
+      "alt": "Many small stars shine in a dark night sky.",
+      "peopleVisible": false
+    },
+    "la batterie": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la chaise": {
+      "verdict": "approve",
+      "alt": "Two old wooden chairs stand side by side against a worn wall.",
+      "peopleVisible": false
+    },
+    "la chemise": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la soupe": {
+      "verdict": "approve",
+      "alt": "A white bowl of vegetable soup stands on a saucer beside a spoon.",
+      "peopleVisible": false
+    },
+    "la table": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le cinéma": {
+      "verdict": "approve",
+      "alt": "Rows of red cushioned seats fill a cinema auditorium.",
+      "peopleVisible": false
+    },
+    "le clavier": {
+      "verdict": "approve",
+      "alt": "Two hands type on the keyboard of a silver laptop.",
+      "peopleVisible": true
+    },
+    "le livre": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "le mur": {
+      "verdict": "approve",
+      "alt": "A wall of reddish-brown bricks fills the frame.",
+      "peopleVisible": false
+    },
+    "le plombier": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le pull": {
+      "verdict": "approve",
+      "alt": "A teddy bear toy wears a blue knitted sweater with small flowers.",
+      "peopleVisible": false
+    },
+    "le scientifique": {
+      "verdict": "approve",
+      "alt": "A scientist in a white lab coat checks small plant samples on laboratory shelves.",
+      "peopleVisible": true
+    },
+    "le serveur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le stationnement": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le théâtre": {
+      "verdict": "approve",
+      "alt": "Red velvet stage curtains with cream fringe frame a stage.",
+      "peopleVisible": false
+    },
+    "le trottoir": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "les gants": {
+      "verdict": "approve",
+      "alt": "A black leather glove lies on shiny black fabric.",
+      "peopleVisible": false
+    },
+    "les écouteurs": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "libro": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "livre": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "llave": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "manger": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "microondas": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "moneda": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "plumber": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "rue": {
+      "verdict": "approve",
+      "alt": "Cars speed along a city street past a steel footbridge and glass towers.",
+      "peopleVisible": false
+    },
+    "shopkeeper": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "shorts": {
+      "verdict": "reject",
+      "reasons": ["nudity-or-suggestive"]
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "teclado": {
+      "verdict": "approve",
+      "alt": "A person types on a laptop keyboard at a wooden desk beside a notebook.",
+      "peopleVisible": true
+    },
+    "tenedor": {
+      "verdict": "approve",
+      "alt": "Many silver forks, knives and spoons are lined up on a black background.",
+      "peopleVisible": false
+    },
+    "trainers": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "waiter": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "watching": {
+      "verdict": "approve",
+      "alt": "Two people sit close together on the floor and smile as they watch a laptop screen.",
+      "peopleVisible": true
+    }
+  }
+}

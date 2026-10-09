@@ -1,0 +1,67 @@
+{
+  "batch": "r4-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-r4-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "l'artiste": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'ingénieur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la batterie": {
+      "verdict": "approve",
+      "alt": "Three yellow and silver batteries with plus signs lie together on a white background.",
+      "peopleVisible": false
+    },
+    "la chemise": {
+      "verdict": "approve",
+      "alt": "A man in a white dress shirt fastens the cuff of his sleeve.",
+      "peopleVisible": true
+    },
+    "la table": {
+      "verdict": "approve",
+      "alt": "Three wooden tables with chairs stand on a dark floor, seen from above.",
+      "peopleVisible": false
+    },
+    "le livre": {
+      "verdict": "approve",
+      "alt": "A closed white hardcover book lies on a round wooden table.",
+      "peopleVisible": false
+    },
+    "le stationnement": {
+      "verdict": "approve",
+      "alt": "Cars are parked along the wall of a long underground parking garage.",
+      "peopleVisible": false
+    },
+    "les écouteurs": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "libro": {
+      "verdict": "approve",
+      "alt": "Old leather-bound books with worn spines stand on a dark shelf.",
+      "peopleVisible": false
+    },
+    "livre": {
+      "verdict": "approve",
+      "alt": "Old leather-bound books with worn spines stand on a dark shelf.",
+      "peopleVisible": false
+    },
+    "llave": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "manger": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "microondas": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    }
+  }
+}
