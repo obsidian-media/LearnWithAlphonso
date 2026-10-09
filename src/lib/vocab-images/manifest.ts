@@ -1,4 +1,4 @@
-import { slugForTerm, storagePathFor } from "./paths";
+import { publicUrlFor, slugForTerm, storagePathFor } from "./paths";
 import type { ImageCategory } from "./imageability";
 import type { PlannedTerm } from "./terms";
 import {
@@ -8,7 +8,7 @@ import {
   type VocabImageSource,
 } from "./types";
 
-export const MAX_FETCH_ATTEMPTS = 3;
+export const MAX_FETCH_ATTEMPTS = 5;
 
 /** Spec rejection criteria, one code each, plus the owner's own objection. */
 export const REJECTION_REASONS = [
@@ -192,6 +192,24 @@ export function applyOwnerObjection(entry: ManifestEntry): { entry: ManifestEntr
 export function recordUpload(entry: ManifestEntry, url: string): ManifestEntry {
   expectStatus(entry, "approved", "uploaded");
   return { ...entry, status: "uploaded", url };
+}
+
+/**
+ * The manifest as it will look once the owner's upload has run: every approved
+ * entry carries the URL that upload records (the path and `?v=` are derived from
+ * the key and the staged bytes, so they are known before the upload). Lets the
+ * data change be reviewed before the images are public. The upload still checks
+ * that the bytes served at each URL hash to that version.
+ */
+export function withPlannedUrls(m: Manifest): Manifest {
+  const entries: Record<string, ManifestEntry> = {};
+  for (const [key, e] of Object.entries(m.entries)) {
+    entries[key] =
+      e.status === "approved" && e.candidate
+        ? recordUpload(e, publicUrlFor(storagePathFor(e.key, e.lang), e.candidate.sha8))
+        : e;
+  }
+  return { version: 1, entries };
 }
 
 /** Object paths the data references. Anything else in the bucket is pruned. */

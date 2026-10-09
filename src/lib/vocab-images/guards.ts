@@ -205,3 +205,28 @@ export function imageabilityViolations(
   }
   return out;
 }
+
+/** `pexels:590472` for a Pexels or Pixabay photo page, or null when the page has no trailing numeric id. */
+export function sourceIdOf(source: string, sourcePageUrl: string): string | null {
+  const m = /-(\d+)\/?$/.exec(sourcePageUrl);
+  return m ? `${source}:${m[1]}` : null;
+}
+
+/**
+ * No published image may come from a photo the review banned
+ * (scripts/vocab-images/rejected-sources.json, keyed by `<source>:<id>`).
+ * An entry whose id cannot be read from its page URL is a violation too: a
+ * photo that cannot be checked cannot be shown to be clean.
+ */
+export function rejectedSourceViolations(
+  images: Images,
+  rejected: Record<string, unknown>,
+): string[] {
+  const out: string[] = [];
+  for (const [key, img] of Object.entries(images)) {
+    const id = sourceIdOf(img.source, img.sourcePageUrl);
+    if (!id) out.push(`${key}: cannot read a photo id from ${img.sourcePageUrl}`);
+    else if (id in rejected) out.push(`${key}: ${id} is on the rejected-sources list`);
+  }
+  return out;
+}

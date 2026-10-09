@@ -5,7 +5,9 @@ import {
   hostViolations,
   imageabilityViolations,
   provenanceViolations,
+  rejectedSourceViolations,
   reviewStampViolations,
+  sourceIdOf,
 } from "./guards";
 import type { ImageabilityData } from "./imageability";
 import { publicUrlFor, storagePathFor } from "./paths";
@@ -166,5 +168,45 @@ describe("imageabilityViolations", () => {
       "risk: not imageable in en (denied)",
       "coin: also a fr vocab term, where it is not imageable (not-listed); the en picture would show on fr cards",
     ]);
+  });
+});
+
+describe("rejectedSourceViolations", () => {
+  const banned = { "pexels:590472": { key: "apple", reasons: ["off-term"] } };
+
+  it("reads the provider id from the photo page", () => {
+    expect(sourceIdOf("pexels", "https://www.pexels.com/photo/red-apple-590472/")).toBe(
+      "pexels:590472",
+    );
+    expect(sourceIdOf("pixabay", "https://pixabay.com/photos/guitar-music-1180744/")).toBe(
+      "pixabay:1180744",
+    );
+    expect(sourceIdOf("pexels", "https://www.pexels.com/photo/no-id/")).toBeNull();
+  });
+
+  it("passes an image whose photo is not banned", () => {
+    expect(rejectedSourceViolations({ apple: good("apple") }, { "pexels:1": {} })).toEqual([]);
+  });
+
+  it("flags an image built from a banned photo, whatever term it is used for", () => {
+    expect(rejectedSourceViolations({ pear: good("pear") }, banned)).toEqual([
+      "pear: pexels:590472 is on the rejected-sources list",
+    ]);
+  });
+
+  it("flags a page whose id cannot be read, since it cannot be checked", () => {
+    const img = { ...good("pear"), sourcePageUrl: "https://www.pexels.com/photo/no-id/" };
+    expect(rejectedSourceViolations({ pear: img }, banned)).toEqual([
+      "pear: cannot read a photo id from https://www.pexels.com/photo/no-id/",
+    ]);
+  });
+
+  it("does not confuse the same number from the other provider", () => {
+    const img = {
+      ...good("pear"),
+      source: "pixabay" as const,
+      sourcePageUrl: "https://pixabay.com/photos/apple-590472/",
+    };
+    expect(rejectedSourceViolations({ pear: img }, banned)).toEqual([]);
   });
 });

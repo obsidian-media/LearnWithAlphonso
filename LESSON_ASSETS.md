@@ -24,6 +24,12 @@
 > enforces host, denylist, review stamp, imageability and sign-off on every PR,
 > and `.github/workflows/vocab-image-links.yml` checks every URL on PRs and weekly.
 >
+> **Adding coverage later.** List new terms in `scripts/vocab-imageability.json`, add their keys
+> to `scope-keys.json`, then `bun scripts/vocab-image-terms.ts --new-only` plans only terms that have
+> no photo yet. After review, `bun scripts/vocab-image-review.ts owner-sheet-local --out <dir>` builds the
+> sign-off sheet from the staged files, and `bun scripts/write-vocab-images.ts --planned-urls` writes the
+> data before the upload (published entries are kept as they are). Photos on the rejected-sources list
+> may never be used again (checked by the data guard).>
 > **Audio (§1), Animations (§3), Icons (§4), Textures (§5), and Sound FX
 > (§6) all remain aspirational** — none of these have been built as of
 > this writing (no `public/audio/`, `public/animations/`, or per-topic

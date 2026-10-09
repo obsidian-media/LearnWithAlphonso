@@ -4,12 +4,14 @@
  *   bun scripts/vocab-image-review.ts second-pass [--size 40] [--round r1]
  *   bun scripts/vocab-image-review.ts apply <work/review/<batch>.verdicts.json> [...]
  *   bun scripts/vocab-image-review.ts owner-sheet [--keys k1,k2]
+ *   bun scripts/vocab-image-review.ts owner-sheet-local --out <dir>   # approved, not yet uploaded: copies the staged files next to the sheet
  *   bun scripts/vocab-image-review.ts apply-owner <objections.json>
  *   bun scripts/vocab-image-review.ts status
  */
 import fs from "node:fs";
 import path from "node:path";
 import { VOCAB_IMAGES } from "../src/data/vocab-images";
+import { LICENSE_FOR_SOURCE } from "../src/lib/vocab-images/types";
 import { buildContactSheetHtml } from "../src/lib/vocab-images/contact-sheet";
 import { statusCounts } from "../src/lib/vocab-images/manifest";
 import {
@@ -122,6 +124,41 @@ switch (cmd) {
     const out = path.join(REVIEW_DIR, "owner-sheet.html");
     fs.writeFileSync(out, html);
     console.log(out);
+    break;
+  }
+  case "owner-sheet-local": {
+    const out = opt("out", "");
+    if (!out) throw new Error("--out <dir> is required");
+    const LANG_NAME: Record<string, string> = { en: "English", fr: "French", es: "Spanish" };
+    const approved = Object.values(readManifest().entries)
+      .filter((e) => e.status === "approved" && e.candidate && e.review)
+      .sort((a, b) => (a.lang === b.lang ? (a.key < b.key ? -1 : 1) : a.lang < b.lang ? -1 : 1));
+    fs.mkdirSync(path.join(out, "images"), { recursive: true });
+    const items = approved.map((e) => {
+      const c = e.candidate!;
+      const rel = `images/${e.lang}-${e.slug}.jpg`;
+      fs.copyFileSync(path.join(WORK_DIR, c.stagingPath), path.join(out, rel));
+      return {
+        key: e.key,
+        lang: e.lang,
+        imgSrc: rel,
+        alt: e.review!.alt,
+        credit: c.credit,
+        sourcePageUrl: c.sourcePageUrl,
+        license: LICENSE_FOR_SOURCE[c.source],
+        // The English search phrase is the meaning the photo was chosen for; English terms need none.
+        gloss: e.lang === "en" ? undefined : e.query,
+        section: LANG_NAME[e.lang],
+        note: `reviewed by ${e.review!.reviewedBy}${e.review!.secondPassBy ? ` + ${e.review!.secondPassBy}` : ""}`,
+      };
+    });
+    const html = buildContactSheetHtml({
+      title: `Vocab photos, second batch: owner sign-off (${items.length})`,
+      objections: true,
+      items,
+    });
+    fs.writeFileSync(path.join(out, "owner-sheet.html"), html);
+    console.log(path.join(out, "owner-sheet.html"), items.length);
     break;
   }
   case "apply-owner": {

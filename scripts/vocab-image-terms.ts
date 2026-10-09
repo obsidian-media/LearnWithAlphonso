@@ -1,10 +1,14 @@
 /**
  * Vocab image plan stage: in-scope, imageable vocab terms -> scripts/vocab-images/work/manifest.json.
  * Keeps fetch/review progress for unchanged terms; drops terms no longer imageable.
- *   bun scripts/vocab-image-terms.ts
+ *   bun scripts/vocab-image-terms.ts [--new-only]
+ *
+ * --new-only skips every key that already has a published image, so a later pass plans only
+ * the terms still without a photo (the published entries are never refetched or touched).
  */
 import fs from "node:fs";
 import path from "node:path";
+import { VOCAB_IMAGES } from "../src/data/vocab-images";
 import { planManifest, statusCounts } from "../src/lib/vocab-images/manifest";
 import { planImageableTerms, vocabTermIndex } from "../src/lib/vocab-images/terms";
 import { WORK_DIR, readManifest, writeManifest } from "./vocab-images/workdir";
@@ -14,8 +18,10 @@ const scope = new Set<string>(
     fs.readFileSync(path.resolve(import.meta.dirname, "vocab-images/scope-keys.json"), "utf8"),
   ),
 );
+if (process.argv.includes("--new-only"))
+  for (const key of Object.keys(VOCAB_IMAGES)) scope.delete(key);
 const { planned, skipped } = planImageableTerms(vocabTermIndex(), undefined, scope);
-if (!planned.some((p) => p.key === "doctor")) {
+if (!process.argv.includes("--new-only") && !planned.some((p) => p.key === "doctor")) {
   console.error(
     'curriculum.ts\'s only imageKey "doctor" is not planned; fix the classifier data first.',
   );
