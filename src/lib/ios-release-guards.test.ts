@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildNumberProblem, compareBuildNumbers, projectVersions, versionMismatchProblems } from "./ios-release-guards";
+import {
+  buildNumberProblem,
+  compareBuildNumbers,
+  projectVersions,
+  versionMismatchProblems,
+} from "./ios-release-guards";
 import { yamlSetting, yamlTarget } from "./ios-project-yml";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -19,7 +24,9 @@ describe("build numbers", () => {
   it("accepts only a build above every uploaded build", () => {
     expect(buildNumberProblem("50", ["49", "48", "45"])).toBeNull();
     expect(buildNumberProblem("50", [])).toBeNull();
-    expect(buildNumberProblem("49", ["49"])).toMatch(/not greater than the latest App Store Connect build 49/);
+    expect(buildNumberProblem("49", ["49"])).toMatch(
+      /not greater than the latest App Store Connect build 49/,
+    );
     expect(buildNumberProblem("48", ["49"])).toMatch(/latest App Store Connect build 49/);
     expect(buildNumberProblem("9", ["10"])).toMatch(/latest App Store Connect build 10/);
     expect(buildNumberProblem("49", ["49.1"])).toMatch(/49\.1/);
@@ -45,8 +52,16 @@ describe("app and widget versions", () => {
   it("reports a widget build that differs from the app's", () => {
     const widget = yamlTarget(yml, "LearnWithAlphonsoWidget");
     const build = yamlSetting(widget, "CURRENT_PROJECT_VERSION")!;
-    const mutated = yml.replace(widget, widget.replace(`CURRENT_PROJECT_VERSION: "${build}"`, `CURRENT_PROJECT_VERSION: "${Number(build) - 1}"`));
-    expect(versionMismatchProblems(mutated)).toEqual([`CFBundleVersion differs: app ${build}, widget ${Number(build) - 1}`]);
+    const mutated = yml.replace(
+      widget,
+      widget.replace(
+        `CURRENT_PROJECT_VERSION: "${build}"`,
+        `CURRENT_PROJECT_VERSION: "${Number(build) - 1}"`,
+      ),
+    );
+    expect(versionMismatchProblems(mutated)).toEqual([
+      `CFBundleVersion differs: app ${build}, widget ${Number(build) - 1}`,
+    ]);
   });
 });
 
@@ -60,7 +75,10 @@ describe("ios-release.yml wiring", () => {
   });
   it("checks the exported .ipa's versions, display name and the exact mic string", () => {
     expect(workflow).toContain("for KEY in CFBundleVersion CFBundleShortVersionString; do");
-    const mic = yamlSetting(yamlTarget(yml, "LearnWithAlphonso"), "INFOPLIST_KEY_NSMicrophoneUsageDescription");
+    const mic = yamlSetting(
+      yamlTarget(yml, "LearnWithAlphonso"),
+      "INFOPLIST_KEY_NSMicrophoneUsageDescription",
+    );
     expect(workflow).toContain(`EXPECTED_MIC="${mic}"`);
     expect(workflow).toContain('[ "$DISPLAY_NAME" = "Alphonso" ]');
   });

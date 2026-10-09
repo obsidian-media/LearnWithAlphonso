@@ -80,7 +80,9 @@ const lineAt = (s: string, idx: number) => s.slice(0, idx).split("\n").length;
 describe("Info.plist values the reviewer sees", () => {
   it("the target blocks were found (the guard is reading the real file)", () => {
     expect(appTarget).toContain("PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso\n");
-    expect(widgetTarget).toContain("PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso.widget");
+    expect(widgetTarget).toContain(
+      "PRODUCT_BUNDLE_IDENTIFIER: com.obsidianmedia.learnwithalphonso.widget",
+    );
   });
 
   it("the microphone purpose string is exactly the reviewed text and names no single language", () => {
@@ -102,7 +104,8 @@ describe("Info.plist values the reviewer sees", () => {
 
 describe("device speech locale", () => {
   const kit = read(`${KIT_SOURCES}/Course+Speech.swift`);
-  const kitLocale = (c: string) => new RegExp(`case \\.${c}: return "([^"]+)"`).exec(kit.split("speechLocaleCandidates")[0])?.[1];
+  const kitLocale = (c: string) =>
+    new RegExp(`case \\.${c}: return "([^"]+)"`).exec(kit.split("speechLocaleCandidates")[0])?.[1];
 
   it("web localeForCourse equals the Kit's Course.speechLocale for every course", () => {
     expect(localeForCourse("en")).toBe(kitLocale("english"));
@@ -131,7 +134,10 @@ const NOT_COPY = [/^sb_publishable_/];
 describe("copy rule: no literal -- in user-facing strings", () => {
   it("no string literal in the app or widget contains --", () => {
     const offenders: string[] = [];
-    const files = [...APP_SOURCES, ...swiftFilesIn("ios/LearnWithAlphonso/LearnWithAlphonsoWidget")];
+    const files = [
+      ...APP_SOURCES,
+      ...swiftFilesIn("ios/LearnWithAlphonso/LearnWithAlphonsoWidget"),
+    ];
     for (const f of files) {
       const code = blankSwiftComments(read(f));
       for (const m of code.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)) {
@@ -209,7 +215,8 @@ function unlabeledIconOnlyControls(file: string, raw: string): string[] {
     if (!label) continue;
     const body = raw.slice(label[0], label[1] + 1);
     if (!/\bImage\(\s*(systemName:|")/.test(body) || /\b(Text|Label)\(/.test(body)) continue;
-    const chain = /^(?:[ \t]*\n?[ \t]*(?:\/\/[^\n]*\n[ \t]*)*\.[^\n]*)*/.exec(raw.slice(end + 1))?.[0] ?? "";
+    const chain =
+      /^(?:[ \t]*\n?[ \t]*(?:\/\/[^\n]*\n[ \t]*)*\.[^\n]*)*/.exec(raw.slice(end + 1))?.[0] ?? "";
     if (/\.accessibilityLabel\(/.test(body) || /\.accessibilityLabel\(/.test(chain)) continue;
     found.push(`${file}:${raw.slice(0, m.index).split("\n").length}`);
   }
@@ -231,7 +238,11 @@ describe("accessibility: icon-only controls", () => {
       'Button("Done") { go() }', // titled
       'Button { go() } label: { Label("Share", systemImage: "square.and.arrow.up") }', // has a Label
     ].join("\n");
-    expect(unlabeledIconOnlyControls("fixture.swift", fixture)).toEqual(["fixture.swift:1", "fixture.swift:2", "fixture.swift:3"]);
+    expect(unlabeledIconOnlyControls("fixture.swift", fixture)).toEqual([
+      "fixture.swift:1",
+      "fixture.swift:2",
+      "fixture.swift:3",
+    ]);
   });
 
   it("every block-or-report menu names the person it acts on", () => {
@@ -274,7 +285,9 @@ describe("touch targets", () => {
     for (const style of ["AlphonsoPrimaryButtonStyle", "AlphonsoSecondaryButtonStyle"]) {
       expect(styleBody(style), style).toMatch(/minHeight: AlphonsoSpacing\.minTouchTarget/);
     }
-    expect(styleBody("AlphonsoSecondaryButtonStyle")).toMatch(/minWidth: AlphonsoSpacing\.minTouchTarget/);
+    expect(styleBody("AlphonsoSecondaryButtonStyle")).toMatch(
+      /minWidth: AlphonsoSpacing\.minTouchTarget/,
+    );
   });
 });
 
@@ -297,7 +310,9 @@ describe("live system appearance without the launch-hang loop", () => {
 describe("dead-letter notice", () => {
   const view = read("ios/LearnWithAlphonso/Sources/DeadLetterNoticeView.swift");
   it("is on the Learn tab", () => {
-    expect(read("ios/LearnWithAlphonso/Sources/LessonBrowserView.swift")).toContain("DeadLetterNoticeSection(syncQueueStore: syncQueueStore)");
+    expect(read("ios/LearnWithAlphonso/Sources/LessonBrowserView.swift")).toContain(
+      "DeadLetterNoticeSection(syncQueueStore: syncQueueStore)",
+    );
   });
   it("dismissing never deletes the records support needs", () => {
     const code = blankSwiftComments(view);
@@ -312,15 +327,21 @@ describe("dead-letter notice", () => {
 
 describe("league tier display names", () => {
   const swift = read(`${KIT_SOURCES}/LeagueTierCopy.swift`);
-  const swiftLabels = Object.fromEntries([...swift.matchAll(/"(\w+)": "([^"]+)",/g)].map((m) => [m[1], m[2]]));
+  const swiftLabels = Object.fromEntries(
+    [...swift.matchAll(/"(\w+)": "([^"]+)",/g)].map((m) => [m[1], m[2]]),
+  );
   it("iOS and web show the same name for every tier key", () => {
-    expect(swiftLabels).toEqual(Object.fromEntries(Object.entries(LEAGUE_TIER_COPY).map(([k, v]) => [k, v.label])));
+    expect(swiftLabels).toEqual(
+      Object.fromEntries(Object.entries(LEAGUE_TIER_COPY).map(([k, v]) => [k, v.label])),
+    );
   });
   it("the names are Sprout, Sapling, Grove, Treetop and Summit", () => {
     expect(Object.values(swiftLabels)).toEqual(["Sprout", "Sapling", "Grove", "Treetop", "Summit"]);
   });
   it("no iOS view builds a tier name from the raw key", () => {
-    const offenders = APP_SOURCES.filter((f) => /newTier[^\n]*\.capitalized|tier\.prefix\(1\)\.uppercased\(\)/.test(read(f)));
+    const offenders = APP_SOURCES.filter((f) =>
+      /newTier[^\n]*\.capitalized|tier\.prefix\(1\)\.uppercased\(\)/.test(read(f)),
+    );
     expect(offenders).toEqual([]);
   });
 });
@@ -328,13 +349,17 @@ describe("league tier display names", () => {
 describe("acknowledgements", () => {
   const kit = blankSwiftComments(read(`${KIT_SOURCES}/Acknowledgements.swift`));
   const resources = [...kit.matchAll(/licenseResource: "([^"]+)"/g)].map((m) => m[1]);
-  const fonts = [...read("ios/LearnWithAlphonso/Info.plist").matchAll(/<string>([\w-]+)\.ttf<\/string>/g)].map((m) => m[1]);
+  const fonts = [
+    ...read("ios/LearnWithAlphonso/Info.plist").matchAll(/<string>([\w-]+)\.ttf<\/string>/g),
+  ].map((m) => m[1]);
 
   it("every bundled font is credited with its OFL text, and every licence file exists", () => {
     expect(fonts).toHaveLength(7);
     for (const font of fonts) expect(resources, font).toContain(`${font.split("-")[0]}-OFL`);
     for (const r of resources) {
-      const file = r.endsWith("-OFL") ? `ios/LearnWithAlphonso/Sources/Fonts/${r}.txt` : `ios/LearnWithAlphonso/Sources/Licenses/${r}.txt`;
+      const file = r.endsWith("-OFL")
+        ? `ios/LearnWithAlphonso/Sources/Fonts/${r}.txt`
+        : `ios/LearnWithAlphonso/Sources/Licenses/${r}.txt`;
       expect(fs.existsSync(path.join(root, file)), file).toBe(true);
     }
   });
@@ -345,7 +370,9 @@ describe("acknowledgements", () => {
     expect(text).toContain('THE SOFTWARE IS PROVIDED "AS IS"');
   });
   it("is reachable from Settings", () => {
-    expect(read("ios/LearnWithAlphonso/Sources/SettingsView.swift")).toContain('NavigationLink("Acknowledgements") { AcknowledgementsView() }');
+    expect(read("ios/LearnWithAlphonso/Sources/SettingsView.swift")).toContain(
+      'NavigationLink("Acknowledgements") { AcknowledgementsView() }',
+    );
   });
 });
 
@@ -366,7 +393,12 @@ describe("app icon", () => {
 
   it("is full bleed and not pre-rounded: no near-white pixel in any 16 px corner patch", async () => {
     const { data, info } = await sharp(file).raw().toBuffer({ resolveWithObject: true });
-    const corners: Record<string, [number, number]> = { TL: [0, 0], TR: [1008, 0], BL: [0, 1008], BR: [1008, 1008] };
+    const corners: Record<string, [number, number]> = {
+      TL: [0, 0],
+      TR: [1008, 0],
+      BL: [0, 1008],
+      BR: [1008, 1008],
+    };
     for (const [name, [cx, cy]] of Object.entries(corners)) {
       let white = 0;
       for (let dy = 0; dy < 16; dy++) {
@@ -384,15 +416,29 @@ describe("app icon", () => {
   });
 
   it("the asset catalogue keeps its single-size icon entry and every image set the app uses", () => {
-    const contents = JSON.parse(read("ios/LearnWithAlphonso/Sources/Assets.xcassets/AppIcon.appiconset/Contents.json"));
-    expect(contents.images).toEqual([{ filename: "AppIcon.png", idiom: "universal", platform: "ios", size: "1024x1024" }]);
+    const contents = JSON.parse(
+      read("ios/LearnWithAlphonso/Sources/Assets.xcassets/AppIcon.appiconset/Contents.json"),
+    );
+    expect(contents.images).toEqual([
+      { filename: "AppIcon.png", idiom: "universal", platform: "ios", size: "1024x1024" },
+    ]);
     const sets = fs
       .readdirSync(path.join(root, "ios/LearnWithAlphonso/Sources/Assets.xcassets"))
       .filter((d) => /\.(imageset|appiconset)$/.test(d))
       .sort();
-    expect(sets).toEqual(["Alphonso.imageset", "AppIcon.appiconset", "GoogleG.imageset", "Hector.imageset"]);
+    expect(sets).toEqual([
+      "Alphonso.imageset",
+      "AppIcon.appiconset",
+      "GoogleG.imageset",
+      "Hector.imageset",
+    ]);
     for (const f of ["GoogleG.png", "GoogleG@2x.png", "GoogleG@3x.png"]) {
-      expect(fs.existsSync(path.join(root, "ios/LearnWithAlphonso/Sources/Assets.xcassets/GoogleG.imageset", f)), f).toBe(true);
+      expect(
+        fs.existsSync(
+          path.join(root, "ios/LearnWithAlphonso/Sources/Assets.xcassets/GoogleG.imageset", f),
+        ),
+        f,
+      ).toBe(true);
     }
   });
 });
@@ -402,12 +448,18 @@ describe("orientation keeps the upload validator happy", () => {
     expect(yamlSetting(appTarget, "INFOPLIST_KEY_UISupportedInterfaceOrientations")).toBe(
       "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
     );
-    expect(yamlSetting(appTarget, "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone")).toBe("UIInterfaceOrientationPortrait");
+    expect(yamlSetting(appTarget, "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone")).toBe(
+      "UIInterfaceOrientationPortrait",
+    );
     expect(appTarget).not.toContain("UIRequiresFullScreen");
   });
   it("the app pins itself to portrait in code, and the iPad test asserts it", () => {
     const delegate = blankSwiftComments(read("ios/LearnWithAlphonso/Sources/AppDelegate.swift"));
-    expect(delegate).toMatch(/supportedInterfaceOrientationsFor window: UIWindow\?\)\s*->\s*UIInterfaceOrientationMask\s*\{\s*\.portrait\s*\}/);
-    expect(read("ios/LearnWithAlphonso/LearnWithAlphonsoUITests/IPadCompatibilityTests.swift")).toContain("private let expectPortraitLock = true");
+    expect(delegate).toMatch(
+      /supportedInterfaceOrientationsFor window: UIWindow\?\)\s*->\s*UIInterfaceOrientationMask\s*\{\s*\.portrait\s*\}/,
+    );
+    expect(
+      read("ios/LearnWithAlphonso/LearnWithAlphonsoUITests/IPadCompatibilityTests.swift"),
+    ).toContain("private let expectPortraitLock = true");
   });
 });

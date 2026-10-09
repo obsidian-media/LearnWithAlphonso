@@ -11,7 +11,10 @@ export type TargetVersions = { marketing: string | null; build: string | null };
 export function projectVersions(yml: string): { app: TargetVersions; widget: TargetVersions } {
   const of = (name: string): TargetVersions => {
     const block = yamlTarget(yml, name);
-    return { marketing: yamlSetting(block, "MARKETING_VERSION"), build: yamlSetting(block, "CURRENT_PROJECT_VERSION") };
+    return {
+      marketing: yamlSetting(block, "MARKETING_VERSION"),
+      build: yamlSetting(block, "CURRENT_PROJECT_VERSION"),
+    };
   };
   return { app: of("LearnWithAlphonso"), widget: of("LearnWithAlphonsoWidget") };
 }
@@ -19,10 +22,16 @@ export function projectVersions(yml: string): { app: TargetVersions; widget: Tar
 export function versionMismatchProblems(yml: string): string[] {
   const { app, widget } = projectVersions(yml);
   const problems: string[] = [];
-  if (!app.marketing || !app.build) problems.push("the app target is missing MARKETING_VERSION or CURRENT_PROJECT_VERSION");
-  if (!widget.marketing || !widget.build) problems.push("the widget target is missing MARKETING_VERSION or CURRENT_PROJECT_VERSION");
-  if (app.marketing !== widget.marketing) problems.push(`CFBundleShortVersionString differs: app ${app.marketing}, widget ${widget.marketing}`);
-  if (app.build !== widget.build) problems.push(`CFBundleVersion differs: app ${app.build}, widget ${widget.build}`);
+  if (!app.marketing || !app.build)
+    problems.push("the app target is missing MARKETING_VERSION or CURRENT_PROJECT_VERSION");
+  if (!widget.marketing || !widget.build)
+    problems.push("the widget target is missing MARKETING_VERSION or CURRENT_PROJECT_VERSION");
+  if (app.marketing !== widget.marketing)
+    problems.push(
+      `CFBundleShortVersionString differs: app ${app.marketing}, widget ${widget.marketing}`,
+    );
+  if (app.build !== widget.build)
+    problems.push(`CFBundleVersion differs: app ${app.build}, widget ${widget.build}`);
   return problems;
 }
 
@@ -40,7 +49,8 @@ export function compareBuildNumbers(a: string, b: string): number {
 }
 
 export function buildNumberProblem(local: string, uploaded: string[]): string | null {
-  if (!BUILD_NUMBER.test(local)) return `CURRENT_PROJECT_VERSION "${local}" is not a valid build number`;
+  if (!BUILD_NUMBER.test(local))
+    return `CURRENT_PROJECT_VERSION "${local}" is not a valid build number`;
   const known = uploaded.filter((v) => BUILD_NUMBER.test(v));
   if (known.length === 0) return null;
   const latest = known.reduce((max, v) => (compareBuildNumbers(v, max) > 0 ? v : max));

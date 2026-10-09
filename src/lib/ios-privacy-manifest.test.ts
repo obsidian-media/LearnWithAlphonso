@@ -30,7 +30,10 @@ const codeOf = (dirs: string[]) =>
     .map((f) => stripSwiftComments(read(f)))
     .join("\n");
 
-const APP_DIRS = ["ios/LearnWithAlphonso/Sources", "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit"];
+const APP_DIRS = [
+  "ios/LearnWithAlphonso/Sources",
+  "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit",
+];
 const WIDGET_DIRS = ["ios/LearnWithAlphonso/LearnWithAlphonsoWidget"];
 const appCode = codeOf(APP_DIRS);
 const widgetCode = codeOf(WIDGET_DIRS);
@@ -45,7 +48,8 @@ const CATEGORY_USES: Record<string, RegExp> = {
   NSPrivacyAccessedAPICategoryFileTimestamp:
     /\battributesOfItem\b|\b(creationDate|contentModificationDate|fileModificationDate|modificationDate)(Key)?\b|\bgetattrlist\b|\b[fl]?stat\s*\(/,
   NSPrivacyAccessedAPICategorySystemBootTime: /\bsystemUptime\b|\bmach_absolute_time\b/,
-  NSPrivacyAccessedAPICategoryDiskSpace: /\bvolume(Available|Total)Capacity\w*\b|\bsystemFreeSize\b|\bsystemSize\b|\bstatv?fs\b/,
+  NSPrivacyAccessedAPICategoryDiskSpace:
+    /\bvolume(Available|Total)Capacity\w*\b|\bsystemFreeSize\b|\bsystemSize\b|\bstatv?fs\b/,
   NSPrivacyAccessedAPICategoryActiveKeyboards: /\bactiveInputModes\b/,
 };
 
@@ -54,7 +58,8 @@ function allowedReasons(category: string, code: string): string[] | null {
   if (category === "NSPrivacyAccessedAPICategoryUserDefaults") {
     const reasons: string[] = [];
     // CA92.1: the app's own defaults (standard suite, @AppStorage, a `= .standard` default argument).
-    if (/\bUserDefaults\.standard\b|@AppStorage\b|:\s*UserDefaults\s*=\s*\.standard\b/.test(code)) reasons.push("CA92.1");
+    if (/\bUserDefaults\.standard\b|@AppStorage\b|:\s*UserDefaults\s*=\s*\.standard\b/.test(code))
+      reasons.push("CA92.1");
     // 1C8F.1: the App Group suite shared by the app and the widget.
     if (/\bUserDefaults\(\s*suiteName:/.test(code)) reasons.push("1C8F.1");
     return reasons;
@@ -68,13 +73,20 @@ function accessedApis(xml: string): Map<string, string[]> {
   const out = new Map<string, string[]>();
   const re =
     /<key>NSPrivacyAccessedAPIType<\/key>\s*<string>([^<]+)<\/string>\s*<key>NSPrivacyAccessedAPITypeReasons<\/key>\s*<array>([\s\S]*?)<\/array>/g;
-  for (const m of xml.matchAll(re)) out.set(m[1], [...m[2].matchAll(/<string>([^<]+)<\/string>/g)].map((r) => r[1]));
+  for (const m of xml.matchAll(re))
+    out.set(
+      m[1],
+      [...m[2].matchAll(/<string>([^<]+)<\/string>/g)].map((r) => r[1]),
+    );
   return out;
 }
 
 type Collected = { type: string; linked: boolean; tracking: boolean; purposes: string[] };
 function collectedTypes(xml: string): Collected[] {
-  const block = /<key>NSPrivacyCollectedDataTypes<\/key>\s*<array>([\s\S]*?)<\/array>\s*<key>NSPrivacyAccessedAPITypes/.exec(xml);
+  const block =
+    /<key>NSPrivacyCollectedDataTypes<\/key>\s*<array>([\s\S]*?)<\/array>\s*<key>NSPrivacyAccessedAPITypes/.exec(
+      xml,
+    );
   if (!block) return [];
   const re =
     /<key>NSPrivacyCollectedDataType<\/key>\s*<string>([^<]+)<\/string>\s*<key>NSPrivacyCollectedDataTypeLinked<\/key>\s*<(true|false)\/>\s*<key>NSPrivacyCollectedDataTypeTracking<\/key>\s*<(true|false)\/>\s*<key>NSPrivacyCollectedDataTypePurposes<\/key>\s*<array>([\s\S]*?)<\/array>/g;
@@ -105,7 +117,10 @@ const UNDECLARED_PROBES: [string, RegExp][] = [
   ["Contacts", /\bimport Contacts(UI)?\b|\bCNContactStore\b/],
   ["Photos or Videos", /\bimport Photos(UI)?\b|\bPHPhotoLibrary\b|\bPhotosPicker\b/],
   ["Health and Fitness", /\bimport HealthKit\b|\bimport CoreMotion\b/],
-  ["Tracking / Advertising Data", /\bimport (AdSupport|AppTrackingTransparency)\b|\bASIdentifierManager\b/],
+  [
+    "Tracking / Advertising Data",
+    /\bimport (AdSupport|AppTrackingTransparency)\b|\bASIdentifierManager\b/,
+  ],
   ["Device ID beyond the APNs token", /\bidentifierForVendor\b/],
   ["Diagnostics", /\bimport (Sentry|FirebaseCrashlytics|Bugsnag|MetricKit)\b/],
 ];
@@ -119,17 +134,28 @@ describe("app privacy manifest: required-reason APIs", () => {
     for (const [category, uses] of Object.entries(CATEGORY_USES)) {
       const used = uses.test(appCode);
       if (!used) {
-        expect(declared.has(category), `${category} is declared but no app or Kit code uses it (stale entry)`).toBe(false);
+        expect(
+          declared.has(category),
+          `${category} is declared but no app or Kit code uses it (stale entry)`,
+        ).toBe(false);
         continue;
       }
       const reasons = allowedReasons(category, appCode);
-      expect(reasons, `${category} is used but this app has no approved reason for it yet`).not.toBeNull();
-      expect(declared.get(category)?.slice().sort(), `${category} reasons`).toEqual(reasons!.slice().sort());
+      expect(
+        reasons,
+        `${category} is used but this app has no approved reason for it yet`,
+      ).not.toBeNull();
+      expect(declared.get(category)?.slice().sort(), `${category} reasons`).toEqual(
+        reasons!.slice().sort(),
+      );
     }
   });
 
   it("UserDefaults declares both the app's own defaults and the App Group", () => {
-    expect(declared.get("NSPrivacyAccessedAPICategoryUserDefaults")?.slice().sort()).toEqual(["1C8F.1", "CA92.1"]);
+    expect(declared.get("NSPrivacyAccessedAPICategoryUserDefaults")?.slice().sort()).toEqual([
+      "1C8F.1",
+      "CA92.1",
+    ]);
   });
 
   it("never uses the user-picked-file timestamp reason", () => {
@@ -144,7 +170,10 @@ describe("widget privacy manifest", () => {
     for (const [category, uses] of Object.entries(CATEGORY_USES)) {
       const used = uses.test(widgetCode);
       expect(declared.has(category), `${category} widget declared vs used`).toBe(used);
-      if (used) expect(declared.get(category)?.slice().sort()).toEqual(allowedReasons(category, widgetCode)!.slice().sort());
+      if (used)
+        expect(declared.get(category)?.slice().sort()).toEqual(
+          allowedReasons(category, widgetCode)!.slice().sort(),
+        );
     }
   });
   it("collects nothing and does not track", () => {
@@ -179,9 +208,10 @@ describe("app privacy manifest: collected data types (match the App Store Connec
 
   it("no code collects an undeclared category", () => {
     for (const [category, probe] of UNDECLARED_PROBES) {
-      expect(probe.test(appCode) || probe.test(widgetCode), `${category}: code found; declare it (manifest + App Store Connect) first`).toBe(
-        false,
-      );
+      expect(
+        probe.test(appCode) || probe.test(widgetCode),
+        `${category}: code found; declare it (manifest + App Store Connect) first`,
+      ).toBe(false);
     }
   });
 });
