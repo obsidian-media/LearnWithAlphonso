@@ -1409,7 +1409,7 @@ picturable terms get an image (a closed-default classifier,
 sensitive get a text-only card. **415 images are live** (English 212, Spanish
 176, French 27), each visually reviewed (every image showing a person, plus a
 10% sample, twice) and signed off by the owner (`signoff.json` digest). A
-second pass of 315 more photos (730 in total) exists as a draft PR and will
+second pass of 315 more photos (730 in total) is open as #268 (not merged, not live) and will
 ship in build 51; it is not live. The renderers (web `VocabImage`, iOS
 `VocabImageView`, Kit `VocabImagePolicy`) accept only bucket URLs, show a
 placeholder while loading and collapse the whole slot on failure. The iOS

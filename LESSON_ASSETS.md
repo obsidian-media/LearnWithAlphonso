@@ -20,8 +20,8 @@
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
 > `scripts/seed-vocab-images-db.ts`. **Live today: 415 images** (English 212,
 > Spanish 176, French 27, all owner-signed-off, uploaded and reseeded on
-> 2026-10-08). A second pass of 315 more photos (730 in total) is a draft PR
-> and ships in build 51, because the iOS app bundles `vocab-images.json`;
+> 2026-10-08). A second pass of 315 more photos (730 in total) is open as #268
+> (not merged) and ships in build 51, because the iOS app bundles `vocab-images.json`;
 > it is not live yet. Run the upload and reseed from Git Bash with the
 > service-role key; `--prune` is a dry run first. `src/data/vocab-images.guard.test.ts`
 > enforces host, denylist, review stamp, imageability and sign-off on every PR,
