@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { planScreenshotReplacement } from "./screenshot-plan";
 
-const existing = Array.from({ length: 7 }, (_, n) => ({ id: `old${n}`, fileName: `0${n + 1}-old.png` }));
+const existing = Array.from({ length: 7 }, (_, n) => ({
+  id: `old${n}`,
+  fileName: `0${n + 1}-old.png`,
+}));
 const files = [
   "01-learn.png",
   "02-lesson.png",
@@ -26,9 +29,14 @@ describe("planScreenshotReplacement", () => {
 
   it("refuses more than 10, fewer than 3, or unnumbered files", () => {
     expect(() =>
-      planScreenshotReplacement([], Array.from({ length: 11 }, (_, n) => `${String(n).padStart(2, "0")}-x.png`)),
+      planScreenshotReplacement(
+        [],
+        Array.from({ length: 11 }, (_, n) => `${String(n).padStart(2, "0")}-x.png`),
+      ),
     ).toThrow(/10/);
     expect(() => planScreenshotReplacement([], ["01-a.png", "02-b.png"])).toThrow(/at least 3/);
-    expect(() => planScreenshotReplacement([], ["learn.png", "02-b.png", "03-c.png"])).toThrow(/numbered/);
+    expect(() => planScreenshotReplacement([], ["learn.png", "02-b.png", "03-c.png"])).toThrow(
+      /numbered/,
+    );
   });
 });

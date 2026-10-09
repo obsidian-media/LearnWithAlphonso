@@ -6,7 +6,11 @@ import {
   pickEditableVersion,
 } from "./editable-version";
 
-const v = (versionString: string, appVersionState: string, id = `${versionString}-${appVersionState}`) => ({
+const v = (
+  versionString: string,
+  appVersionState: string,
+  id = `${versionString}-${appVersionState}`,
+) => ({
   id,
   attributes: { versionString, appVersionState },
 });
@@ -23,7 +27,12 @@ describe("pickEditableVersion", () => {
   });
 
   it("refuses versions that are in review or live", () => {
-    for (const s of ["WAITING_FOR_REVIEW", "IN_REVIEW", "READY_FOR_SALE", "PENDING_DEVELOPER_RELEASE"]) {
+    for (const s of [
+      "WAITING_FOR_REVIEW",
+      "IN_REVIEW",
+      "READY_FOR_SALE",
+      "PENDING_DEVELOPER_RELEASE",
+    ]) {
       expect(() => pickEditableVersion([v("1.0", s)])).toThrow(/no editable/i);
     }
   });
@@ -36,11 +45,15 @@ describe("pickEditableVersion", () => {
   });
 
   it("names what it saw when nothing is editable", () => {
-    expect(() => pickEditableVersion([v("1.0", "WAITING_FOR_REVIEW")])).toThrow(/1\.0:WAITING_FOR_REVIEW/);
+    expect(() => pickEditableVersion([v("1.0", "WAITING_FOR_REVIEW")])).toThrow(
+      /1\.0:WAITING_FOR_REVIEW/,
+    );
   });
 
   it("builds the comma-separated ASC filter", () => {
-    expect(editableVersionQuery()).toBe(`filter[appVersionState]=${EDITABLE_VERSION_STATES.join(",")}`);
+    expect(editableVersionQuery()).toBe(
+      `filter[appVersionState]=${EDITABLE_VERSION_STATES.join(",")}`,
+    );
   });
 });
 
@@ -56,16 +69,25 @@ describe("pickEditableAppInfo", () => {
 
   it("takes the editable one when a live one exists beside it, under either attribute name", () => {
     expect(
-      pickEditableAppInfo([info("live", "READY_FOR_DISTRIBUTION"), info("draft", "PREPARE_FOR_SUBMISSION")]).id,
+      pickEditableAppInfo([
+        info("live", "READY_FOR_DISTRIBUTION"),
+        info("draft", "PREPARE_FOR_SUBMISSION"),
+      ]).id,
     ).toBe("draft");
     expect(
-      pickEditableAppInfo([info("live", undefined, "READY_FOR_SALE"), info("draft", undefined, "DEVELOPER_REJECTED")]).id,
+      pickEditableAppInfo([
+        info("live", undefined, "READY_FOR_SALE"),
+        info("draft", undefined, "DEVELOPER_REJECTED"),
+      ]).id,
     ).toBe("draft");
   });
 
   it("refuses to guess between two live ones or when none is editable", () => {
     expect(() =>
-      pickEditableAppInfo([info("a", "READY_FOR_DISTRIBUTION"), info("b", "READY_FOR_DISTRIBUTION")]),
+      pickEditableAppInfo([
+        info("a", "READY_FOR_DISTRIBUTION"),
+        info("b", "READY_FOR_DISTRIBUTION"),
+      ]),
     ).toThrow(/no editable/i);
     expect(() => pickEditableAppInfo([])).toThrow(/no editable/i);
   });

@@ -12,7 +12,12 @@ export type Listing = {
   marketingUrl: string;
 };
 
-export const LISTING_LIMITS = { subtitle: 30, promotionalText: 170, keywords: 100, description: 4000 } as const;
+export const LISTING_LIMITS = {
+  subtitle: 30,
+  promotionalText: 170,
+  keywords: 100,
+  description: 4000,
+} as const;
 
 const TERMS = "https://learn.alphonsoecosystem.app/terms";
 const PRIVACY = "https://learn.alphonsoecosystem.app/privacy";
@@ -57,7 +62,8 @@ export const LISTING: Listing = {
   subtitle: "English, French and Spanish",
   promotionalText:
     "Short lessons, speaking practice and podcasts in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
-  keywords: "speaking,vocabulary,grammar,listening,podcast,tutor,fluency,cefr,conversation,practice,review,ai",
+  keywords:
+    "speaking,vocabulary,grammar,listening,podcast,tutor,fluency,cefr,conversation,practice,review,ai",
   supportUrl: "https://learn.alphonsoecosystem.app/support",
   marketingUrl: "https://discover.alphonsoecosystem.app",
   description: DESCRIPTION,
@@ -91,7 +97,10 @@ export function listingProblems(l: Listing, appName = "Learn With Alphonso"): st
   if (!l.description.includes(TERMS)) p.push("description: missing Terms of Use URL");
   if (!l.description.includes(PRIVACY)) p.push("description: missing Privacy Policy URL");
   if (!l.description.includes(EULA)) p.push("description: missing Apple Standard EULA URL");
-  if (!/auto-renewable/.test(l.description) || !l.description.includes("at least 24 hours before the end of the current period"))
+  if (
+    !/auto-renewable/.test(l.description) ||
+    !l.description.includes("at least 24 hours before the end of the current period")
+  )
     p.push("description: missing auto-renewal disclosure");
   for (const [field, text] of Object.entries(l)) {
     for (const re of FORBIDDEN) if (re.test(text)) p.push(`${field}: forbidden ${re}`);
@@ -99,7 +108,13 @@ export function listingProblems(l: Listing, appName = "Learn With Alphonso"): st
   const words = l.keywords.split(",");
   if (words.some((w) => w !== w.trim())) p.push("keywords: space after comma wastes characters");
   if (new Set(words).size !== words.length) p.push("keywords: duplicate keyword");
-  const taken = new Set(`${appName} ${l.subtitle}`.toLowerCase().split(/[^a-z]+/).filter(Boolean));
-  for (const w of words) if (taken.has(w.trim().toLowerCase())) p.push(`keywords: "${w}" already in name or subtitle`);
+  const taken = new Set(
+    `${appName} ${l.subtitle}`
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter(Boolean),
+  );
+  for (const w of words)
+    if (taken.has(w.trim().toLowerCase())) p.push(`keywords: "${w}" already in name or subtitle`);
   return p;
 }

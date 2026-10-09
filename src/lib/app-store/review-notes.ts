@@ -88,7 +88,9 @@ OTHER 2.1 ANSWERS
 - No ads, analytics, tracking or crash SDKs. Background audio is used only by Listen.`;
 }
 
-export function buildBetaReviewNotes(i: Pick<ReviewNotesInput, "demoCodeURL" | "reviewContactEmail">): string {
+export function buildBetaReviewNotes(
+  i: Pick<ReviewNotesInput, "demoCodeURL" | "reviewContactEmail">,
+): string {
   return `No password. Tap "Send code", then open ${i.demoCodeURL} (no login) for the current 6-digit code and enter it. Opening the page issues a new code, so tap "Send code" first. The account has progress and Pro. Contact: ${i.reviewContactEmail}`;
 }
 
@@ -113,18 +115,21 @@ function withoutInputs(notes: string, i: ReviewNotesInput): string {
 
 export function reviewNotesProblems(notes: string, i: ReviewNotesInput): string[] {
   const p: string[] = [];
-  if (notes.length > NOTES_LIMIT) p.push(`notes are ${notes.length} chars; the limit is ${NOTES_LIMIT}`);
+  if (notes.length > NOTES_LIMIT)
+    p.push(`notes are ${notes.length} chars; the limit is ${NOTES_LIMIT}`);
   for (const m of REQUIRED_NOTE_MARKERS) if (!notes.includes(m)) p.push(`missing "${m}"`);
-  if (!notes.includes(`"${i.productTitle}"`)) p.push(`product title "${i.productTitle}" is not quoted exactly`);
+  if (!notes.includes(`"${i.productTitle}"`))
+    p.push(`product title "${i.productTitle}" is not quoted exactly`);
   if (/Alphonso Pro Monthly/.test(notes) && i.productTitle !== "Alphonso Pro Monthly")
     p.push("product title: notes say Alphonso Pro Monthly but StoreKit says otherwise");
   if (/Amazon SES|\bSES\b/.test(notes)) p.push("provider: the sign-in email is sent by Resend");
   for (const re of HUMAN_NARRATION)
-    if (re.test(notes)) p.push(`podcast audio must be described as AI-narrated, never human-made (${re})`);
+    if (re.test(notes))
+      p.push(`podcast audio must be described as AI-narrated, never human-made (${re})`);
   if (!/^https:\/\//.test(i.recordingURL)) p.push("recording URL must be https");
   if (!/^https:\/\//.test(i.demoCodeURL)) p.push("demo code URL must be https");
   const text = withoutInputs(notes, i);
   if (/--/.test(text)) p.push('literal "--" in notes');
-  if (/[^\x00-\x7F]/.test(text)) p.push("notes must be plain ASCII");
+  if (/[^\n\r\t -~]/.test(text)) p.push("notes must be plain ASCII");
   return p;
 }

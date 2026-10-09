@@ -21,6 +21,11 @@
  * 2026-09-28 -- not guessed from documentation, which would not render
  * for automated fetching at the time this was written.
  *
+ * The answers live in src/lib/app-store/age-rating.ts. "check" prints the
+ * live declaration, then every difference from those answers (and a computed
+ * rating below 13+), and exits 1 on any problem. "apply" PATCHes only the
+ * fields the live declaration actually has.
+ *
  * Usage:
  *   node_modules/.bin/tsx scripts/update-age-rating.ts check
  *   node_modules/.bin/tsx scripts/update-age-rating.ts apply
@@ -31,6 +36,11 @@
  * (defaults to Learn With Alphonso's known declaration id).
  */
 import { createSign } from "node:crypto";
+import {
+  AGE_RATING_ANSWERS,
+  ageRatingPatch,
+  ageRatingProblems,
+} from "../src/lib/app-store/age-rating";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -92,27 +102,6 @@ async function api(
   return { ok: res.ok, status: res.status, json };
 }
 
-// The specific, honest answers per docs/BACKLOG.md sec 0.0y's reasoning,
-// corrected 2026-09-28 after the first PATCH (userGeneratedContent +
-// messagingAndChat + contests only) left appStoreAgeRating at FOUR_PLUS.
-// Per Apple's own current age-rating tier table, userGeneratedContent
-// and messagingAndChat both sit at 4+ on their own -- they don't cross
-// a threshold by themselves. socialMedia is the field that starts at
-// 13+, and it's the honest answer here: the live privacy policy itself
-// says "Leaderboards, leagues, teams, duels and friend lists show your
-// display name, country and XP to other signed-in learners" -- that is
-// exactly a social-media-shaped feature (public identity + activity
-// visible to other users), not just user-generated content or 1:1 chat.
-// "contests" covers the competitive features (leaderboards, leagues,
-// teams, duels) -- present and real, but not high-stakes/intense, so
-// INFREQUENT_OR_MILD rather than FREQUENT_OR_INTENSE.
-const HONEST_ANSWERS = {
-  userGeneratedContent: true,
-  messagingAndChat: true,
-  socialMedia: true,
-  contests: "INFREQUENT_OR_MILD",
-};
-
 async function main() {
   const cmd = process.argv[2];
   console.log(`Age rating declaration id: ${DECLARATION_ID}`);
@@ -121,16 +110,36 @@ async function main() {
     const result = await api(`/ageRatingDeclarations/${DECLARATION_ID}`);
     console.log(`Status: ${result.status}`);
     console.log(JSON.stringify(result.json, null, 2));
+    if (!result.ok) process.exit(1);
+    const attributes = (result.json as { data: { attributes: Record<string, unknown> } }).data
+      .attributes;
+    const problems = ageRatingProblems(attributes);
+    for (const problem of problems) console.log(`  PROBLEM: ${problem}`);
+    console.log(
+      problems.length === 0 ? "AGE RATING OK" : `AGE RATING PROBLEMS: ${problems.length}`,
+    );
+    if (problems.length > 0) process.exit(1);
     return;
   }
 
   if (cmd === "apply") {
-    console.log("Applying:", JSON.stringify(HONEST_ANSWERS, null, 2));
+    const live = await api(`/ageRatingDeclarations/${DECLARATION_ID}`);
+    if (!live.ok) {
+      console.log(`Could not read the live declaration: ${live.status}`);
+      process.exit(1);
+    }
+    const answers = ageRatingPatch(
+      (live.json as { data: { attributes: Record<string, unknown> } }).data.attributes,
+    );
+    const skipped = Object.keys(AGE_RATING_ANSWERS).filter((k) => !(k in answers));
+    if (skipped.length > 0)
+      console.log(`Not in the live declaration, skipped: ${skipped.join(", ")}`);
+    console.log("Applying:", JSON.stringify(answers, null, 2));
     const result = await api(`/ageRatingDeclarations/${DECLARATION_ID}`, "PATCH", {
       data: {
         type: "ageRatingDeclarations",
         id: DECLARATION_ID,
-        attributes: HONEST_ANSWERS,
+        attributes: answers,
       },
     });
     console.log(`Status: ${result.status}`);

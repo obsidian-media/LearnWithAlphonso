@@ -4,6 +4,9 @@
  * .github/scratch/review-screenshot.png (checked into a throwaway branch
  * just for this one CI run, removed afterward).
  *
+ * A subscription has exactly one review screenshot: any existing one is
+ * deleted first, so running this again replaces it.
+ *
  * Apple's asset-upload pattern (same shape as build/screenshot uploads
  * elsewhere in App Store Connect): reserve the resource (get back one or
  * more signed upload URLs + byte ranges), PUT the file bytes to each
@@ -97,6 +100,21 @@ async function main() {
   const fileSize = statSync(imagePath).size;
   const fileName = imagePath.split("/").pop()!;
   console.log(`File: ${fileName}, ${fileSize} bytes`);
+
+  // A subscription has exactly one review screenshot, so a new one replaces the old one: delete first.
+  const current = await api(`/subscriptions/${subId}/appStoreReviewScreenshot`);
+  const currentId = (current.json as { data?: { id: string } | null } | null)?.data?.id;
+  if (current.ok && currentId) {
+    console.log(`Replacing existing review screenshot ${currentId}...`);
+    const del = await fetch(
+      `https://api.appstoreconnect.apple.com/v1/subscriptionAppStoreReviewScreenshots/${currentId}`,
+      { method: "DELETE", headers: { Authorization: `Bearer ${makeJWT()}` } },
+    );
+    if (del.status !== 204) {
+      console.log(`FAILED to delete the old screenshot: ${del.status}`);
+      process.exit(1);
+    }
+  }
 
   console.log("\n=== Step 1: reserve the appStoreReviewScreenshot resource ===");
   const reserve = await api("/subscriptionAppStoreReviewScreenshots", "POST", {

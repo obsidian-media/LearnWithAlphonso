@@ -20,11 +20,13 @@ describe("demo seed plan", () => {
   });
 
   it("resumes the published, re-voiced Ordering Coffee, never the unlicensed original", () => {
-    expect(pickResumeEpisode([row("ordering-coffee"), row("ordering-coffee-v2")]).slug).toBe("ordering-coffee-v2");
-    expect(() => pickResumeEpisode([row("ordering-coffee-v2", false)])).toThrow(/exactly one/);
-    expect(() => pickResumeEpisode([row("ordering-coffee-v2"), row("ordering-coffee-v2", true, "en")])).toThrow(
-      /exactly one/,
+    expect(pickResumeEpisode([row("ordering-coffee"), row("ordering-coffee-v2")]).slug).toBe(
+      "ordering-coffee-v2",
     );
+    expect(() => pickResumeEpisode([row("ordering-coffee-v2", false)])).toThrow(/exactly one/);
+    expect(() =>
+      pickResumeEpisode([row("ordering-coffee-v2"), row("ordering-coffee-v2", true, "en")]),
+    ).toThrow(/exactly one/);
     expect(() => pickResumeEpisode([row("ordering-coffee-v2", true, "fr")])).toThrow(/exactly one/);
   });
 

@@ -1,7 +1,11 @@
-export type AscBuild = { id: string; attributes: { version: string; processingState: string; expired: boolean } };
+export type AscBuild = {
+  id: string;
+  attributes: { version: string; processingState: string; expired: boolean };
+};
 
 function numeric(b: AscBuild): number {
-  if (!/^\d+$/.test(b.attributes.version)) throw new Error(`non-numeric build version "${b.attributes.version}"`);
+  if (!/^\d+$/.test(b.attributes.version))
+    throw new Error(`non-numeric build version "${b.attributes.version}"`);
   return Number(b.attributes.version);
 }
 
@@ -25,15 +29,19 @@ export function requireNewerValidBuild(builds: AscBuild[], maxVersion: number): 
       b.attributes.processingState === "VALID" &&
       !b.attributes.expired,
   );
-  if (!newer) throw new Error(`No valid build newer than ${maxVersion}; refusing to expire anything.`);
+  if (!newer)
+    throw new Error(`No valid build newer than ${maxVersion}; refusing to expire anything.`);
   return newer;
 }
 
 /** The exact build to attach to the version. Never "the latest". */
 export function findBuild(builds: AscBuild[], version: number): AscBuild {
-  const hit = builds.find((b) => /^\d+$/.test(b.attributes.version) && Number(b.attributes.version) === version);
+  const hit = builds.find(
+    (b) => /^\d+$/.test(b.attributes.version) && Number(b.attributes.version) === version,
+  );
   if (!hit) throw new Error(`build ${version} not found`);
-  if (hit.attributes.processingState !== "VALID") throw new Error(`build ${version} is ${hit.attributes.processingState}`);
+  if (hit.attributes.processingState !== "VALID")
+    throw new Error(`build ${version} is ${hit.attributes.processingState}`);
   if (hit.attributes.expired) throw new Error(`build ${version} is expired`);
   return hit;
 }

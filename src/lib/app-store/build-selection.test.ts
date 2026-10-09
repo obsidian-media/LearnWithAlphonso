@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildsToExpire, findBuild, requireNewerValidBuild, type AscBuild } from "./build-selection";
+import {
+  buildsToExpire,
+  findBuild,
+  requireNewerValidBuild,
+  type AscBuild,
+} from "./build-selection";
 
 const b = (version: string, processingState = "VALID", expired = false): AscBuild => ({
   id: `id-${version}`,
@@ -33,8 +38,12 @@ describe("requireNewerValidBuild", () => {
 
   it("refuses when the newer build is missing, still processing or expired", () => {
     expect(() => requireNewerValidBuild([b("49")], 49)).toThrow(/no valid build newer than 49/i);
-    expect(() => requireNewerValidBuild([b("50", "PROCESSING"), b("49")], 49)).toThrow(/no valid build/i);
-    expect(() => requireNewerValidBuild([b("50", "VALID", true), b("49")], 49)).toThrow(/no valid build/i);
+    expect(() => requireNewerValidBuild([b("50", "PROCESSING"), b("49")], 49)).toThrow(
+      /no valid build/i,
+    );
+    expect(() => requireNewerValidBuild([b("50", "VALID", true), b("49")], 49)).toThrow(
+      /no valid build/i,
+    );
   });
 });
 

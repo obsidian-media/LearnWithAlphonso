@@ -34,12 +34,25 @@
  * Uses the same App Store Connect API key already configured for
  * ios-release.yml -- no new credentials.
  *
- * Usage: bunx tsx scripts/update-app-review-info.ts
+ * Modes: "check" (the default) builds and validates the notes, prints their
+ * length and the live product title, and writes nothing; "apply" also proves
+ * the reviewer sign-in end to end and then saves. The notes text lives in
+ * src/lib/app-store/review-notes.ts and the product title is read live from
+ * the subscription's localization, so the notes always quote the title the
+ * paywall shows.
+ *
+ * Usage: bunx tsx scripts/update-app-review-info.ts [check|apply]
  * (requires DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE,
- * REVIEW_DEMO_CODE_URL
- * in the environment, in addition to the App Store Connect API key trio)
+ * REVIEW_DEMO_CODE_URL, REVIEW_RECORDING_URL in the environment, in addition
+ * to the App Store Connect API key trio)
  */
 import { createSign } from "node:crypto";
+import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
+import {
+  buildReviewNotes,
+  reviewNotesProblems,
+  type ReviewNotesInput,
+} from "../src/lib/app-store/review-notes";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -52,6 +65,10 @@ const REVIEW_CONTACT_PHONE = process.env.REVIEW_CONTACT_PHONE;
 // from a secret, never written here, because this repository is public
 // and anyone holding the URL can sign in to the demo account.
 const REVIEW_DEMO_CODE_URL = process.env.REVIEW_DEMO_CODE_URL;
+// The screen recording of the reviewed flows on a physical device (https link).
+const REVIEW_RECORDING_URL = process.env.REVIEW_RECORDING_URL;
+const SUBSCRIPTION_ID = process.env.SUBSCRIPTION_ID ?? "6815009725";
+const MODE = process.argv[2] === "apply" ? "apply" : "check";
 
 const missing = [
   !KEY_ID && "APP_STORE_CONNECT_KEY_ID",
@@ -61,6 +78,7 @@ const missing = [
   !REVIEW_CONTACT_EMAIL && "REVIEW_CONTACT_EMAIL",
   !REVIEW_CONTACT_PHONE && "REVIEW_CONTACT_PHONE",
   !REVIEW_DEMO_CODE_URL && "REVIEW_DEMO_CODE_URL",
+  !REVIEW_RECORDING_URL && "REVIEW_RECORDING_URL",
 ].filter(Boolean);
 if (missing.length > 0) {
   console.error(`Missing environment variable(s): ${missing.join(", ")}`);
@@ -107,94 +125,16 @@ async function api(path: string, method: "GET" | "PATCH" | "POST" = "GET", body?
 
 const COPYRIGHT = "2026 Shayan Salimi";
 
-const buildReviewNotes = (
-  demoAccountEmail: string,
-  reviewContactEmail: string,
-  demoCodeURL: string,
-) => `Learn with Alphonso is an English, French and Spanish learning app with
-structured lessons, spaced repetition, AI speaking practice, an audio
-library and optional social features.
-
-DEMO ACCOUNT
-  Email:  ${demoAccountEmail}
-  This app has no passwords; it signs in with a 6-digit code. To sign in:
-    1. Enter the email above and tap "Send code".
-    2. Open this page for the current code (no login needed):
-       ${demoCodeURL}
-    3. Enter that code and tap "Verify".
-  Opening the page issues a new code, so please do step 1 before step 2.
-  If anything goes wrong, contact ${reviewContactEmail}.
-
-The account already has lesson progress, a streak and items in the
-review queue, so every feature below can be exercised immediately. It
-also already holds a promotional Pro entitlement, so Hector is unlocked
-without needing to purchase anything.
-
-HOW TO REACH EACH FEATURE
-
-  Lessons and SRS
-    Learn tab -> any unit -> any lesson. The badge on the Learn tab is the
-    count of reviews currently due; tap it for the review queue.
-
-  AI speaking practice  (MICROPHONE REQUIRED, HOLD the mic button to talk)
-    Practice tab -> choose a scenario -> hold the microphone button and
-    speak, then release to send. Before the first AI interaction a sheet
-    asks permission to send audio and text to the named providers
-    (Deepgram, NVIDIA): "Allow" turns it on, "Not now" leaves it off.
-
-  Hector, the AI tutor  (PAID, already unlocked on this account)
-    Hector tab. Same hold-to-talk microphone control as Practice.
-
-  Audio library
-    Listen tab -> English -> A1 -> "Ordering Coffee". Playback continues
-    with the screen locked and appears on the lock screen and in Control
-    Center. Episodes can also be downloaded for offline playback.
-
-  Social
-    Profile -> Friends, League. Teams are reachable from the League
-    screen; a team shows its own join code so another member can share it
-    for a friend to enter under "Join a team." Duels can be started
-    against friends or via open matchmaking. Every place another learner
-    appears (leaderboards, friends, duels, team members) has a "..." menu
-    with Block and Report, and public team names have "Report Team Name".
-
-  Account deletion
-    Profile -> Settings -> Account -> Delete My Account. Deletion is
-    initiated and completed in the app; typing DELETE confirms it.
-    Export My Data is in the same section.
-
-SUBSCRIPTION (to see and test the purchase)
-
-  One auto-renewable subscription, "Alphonso Pro Monthly," unlocks
-  Hector and is submitted together with this version. The demo account
-  already has Pro, so it does not show the paywall. To test the
-  purchase: Profile -> Settings -> Sign out, then "Continue with Apple"
-  to create a fresh account, and open the Hector tab.
-
-  The paywall shows the free trial (for eligible accounts), then the
-  price and billing period read from StoreKit in your storefront's
-  currency, plus Restore Purchases, Manage Subscription, and links to
-  the Terms of Use and Privacy Policy.
-
-THIRD-PARTY PROCESSING
-
-  Voice audio is sent to Deepgram for speech-to-text and text-to-speech.
-  Text from the Practice tab's conversation, from graded written answers,
-  and from Hector's conversation is sent to NVIDIA for AI responses;
-  Hector's spoken replies are synthesized by Deepgram. All of this is
-  disclosed in-app before the first AI interaction and in the privacy
-  policy.
-
-BACKGROUND AUDIO
-
-  The audio background mode is used only for podcast playback in the
-  Listen tab, so an episode keeps playing when the device is locked.
-
-WHAT THE APP DOES NOT DO
-
-  No advertising, no analytics or crash-reporting SDKs, no tracking, and
-  no data shared with data brokers. Location, contacts and photos are
-  never accessed.`;
+/** The StoreKit product title, read live so the notes can never name a product the paywall does not show. */
+async function liveProductTitle(): Promise<string> {
+  const locs = await api(`/subscriptions/${SUBSCRIPTION_ID}/subscriptionLocalizations`);
+  const en = (locs.data as AscResource[]).find((l) => l.attributes?.locale === "en-US");
+  const name = en?.attributes?.name;
+  if (typeof name !== "string" || !name) {
+    throw new Error("No en-US subscription localization name; cannot quote the StoreKit title.");
+  }
+  return name;
+}
 
 // Public client values, the same ones AppConfig.swift ships in the app.
 const SUPABASE_URL = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
@@ -248,19 +188,34 @@ async function verifyReviewerSignIn(email: string, codePageURL: string) {
 }
 
 async function main() {
-  await verifyReviewerSignIn(DEMO_ACCOUNT_EMAIL!, REVIEW_DEMO_CODE_URL!);
+  // Sending a code and opening the code page issue a real code, so the end-to-end sign-in proof
+  // runs only when about to write. A check run stays read-only.
+  if (MODE === "apply") await verifyReviewerSignIn(DEMO_ACCOUNT_EMAIL!, REVIEW_DEMO_CODE_URL!);
 
   console.log(`\nFinding the app's editable App Store version...`);
-  const versions = await api(
-    `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
+  const versions = await api(`/apps/${APP_ID}/appStoreVersions?${editableVersionQuery()}`);
+  const version = pickEditableVersion(versions.data as AscResource[]);
+  console.log(
+    `Version: ${version.attributes?.versionString} (${version.attributes?.appVersionState}, ${version.id})`,
   );
-  const version = (versions.data as AscResource[])[0];
-  if (!version) {
-    throw new Error(
-      "No appStoreVersion in PREPARE_FOR_SUBMISSION found -- nothing editable right now.",
-    );
+
+  const productTitle = await liveProductTitle();
+  const notesInput: ReviewNotesInput = {
+    demoAccountEmail: DEMO_ACCOUNT_EMAIL!,
+    reviewContactEmail: REVIEW_CONTACT_EMAIL!,
+    demoCodeURL: REVIEW_DEMO_CODE_URL!,
+    recordingURL: REVIEW_RECORDING_URL!,
+    productTitle,
+  };
+  const notes = buildReviewNotes(notesInput);
+  const problems = reviewNotesProblems(notes, notesInput);
+  if (problems.length > 0) throw new Error(`Review notes have problems: ${problems.join("; ")}`);
+  console.log(`Product title (live): ${productTitle}`);
+  console.log(`Review notes length: ${notes.length}/4000`);
+  if (MODE !== "apply") {
+    console.log('\nCheck only: nothing written. Run with "apply" to save.');
+    return;
   }
-  console.log(`Version: ${version.attributes?.versionString} (${version.id})`);
 
   console.log(`\nCurrent copyright: ${version.attributes?.copyright ?? "(empty)"}`);
   console.log(`Writing copyright: ${COPYRIGHT}`);
@@ -280,10 +235,9 @@ async function main() {
     contactEmail: REVIEW_CONTACT_EMAIL!,
     contactPhone: REVIEW_CONTACT_PHONE!,
     demoAccountName: DEMO_ACCOUNT_EMAIL!,
-    demoAccountPassword:
-      "No password: tap Send code, then get the code from the page in the notes.",
+    demoAccountPassword: "No password. Tap Send code, then open the code page in the notes.",
     demoAccountRequired: true,
-    notes: buildReviewNotes(DEMO_ACCOUNT_EMAIL!, REVIEW_CONTACT_EMAIL!, REVIEW_DEMO_CODE_URL!),
+    notes,
   };
 
   // App Store Connect caps the demo password field at 100 characters
@@ -297,7 +251,6 @@ async function main() {
   if (reviewAttributes.notes.length > 4000) {
     throw new Error(`Review notes are ${reviewAttributes.notes.length} chars; the limit is 4000.`);
   }
-  console.log(`Review notes length: ${reviewAttributes.notes.length}/4000`);
 
   let updatedDetail: JsonApi;
   if (existing.data) {

@@ -155,6 +155,8 @@ describe("published-must-be-licensed validation migration", () => {
     expect(sql()).toMatch(
       /--\s+ALTER TABLE public\.podcast_episodes\s+--\s+ADD CONSTRAINT podcast_episodes_published_licensed/,
     );
-    expect(sql()).toContain("CHECK (NOT published OR voice_provider IN ('deepgram', 'human')) NOT VALID;");
+    expect(sql()).toContain(
+      "CHECK (NOT published OR voice_provider IN ('deepgram', 'human')) NOT VALID;",
+    );
   });
 });

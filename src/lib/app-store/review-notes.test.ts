@@ -63,9 +63,12 @@ describe("buildReviewNotes", () => {
   });
 
   it("is plain ASCII with no literal double hyphen, whatever the secret values contain", () => {
-    const unlucky = { ...worst, demoCodeURL: "https://learn.alphonsoecosystem.app/api/review-demo-code?key=a--b" };
+    const unlucky = {
+      ...worst,
+      demoCodeURL: "https://learn.alphonsoecosystem.app/api/review-demo-code?key=a--b",
+    };
     const notes = buildReviewNotes(unlucky);
-    expect(notes).not.toMatch(/[^\x00-\x7F]/);
+    expect(notes).not.toMatch(/[^\n\r\t -~]/);
     expect(reviewNotesProblems(notes, unlucky)).toEqual([]);
   });
 
@@ -82,9 +85,9 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
   });
 
   it("flags a product title that differs from the live one", () => {
-    expect(reviewNotesProblems(good(), { ...worst, productTitle: "Alphonso Pro Monthly" }).join("|")).toMatch(
-      /product title/,
-    );
+    expect(
+      reviewNotesProblems(good(), { ...worst, productTitle: "Alphonso Pro Monthly" }).join("|"),
+    ).toMatch(/product title/);
   });
 
   it("flags notes that still say Alphonso Pro Monthly while the live title differs", () => {
@@ -98,16 +101,18 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
   });
 
   it("flags a missing pre-paired buddy description", () => {
-    expect(reviewNotesProblems(good().replace(/Matched learner/g, "Buddy"), worst).join("|")).toMatch(
-      /missing "Matched learner"/,
-    );
+    expect(
+      reviewNotesProblems(good().replace(/Matched learner/g, "Buddy"), worst).join("|"),
+    ).toMatch(/missing "Matched learner"/);
     expect(reviewNotesProblems(good().replace(/End study buddy/g, "End"), worst).join("|")).toMatch(
       /missing "End study buddy"/,
     );
   });
 
   it("flags the provider being named as SES", () => {
-    expect(reviewNotesProblems(good().replace("Resend", "Amazon SES"), worst).join("|")).toMatch(/Resend/);
+    expect(reviewNotesProblems(good().replace("Resend", "Amazon SES"), worst).join("|")).toMatch(
+      /Resend/,
+    );
   });
 
   it("flags notes that imply human narration", () => {
@@ -118,19 +123,30 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
       "voiced by voice actors",
       "human-narrated podcasts",
     ]) {
-      const notes = good().replace("podcast audio is AI-narrated (Deepgram) from scripts we wrote", claim);
+      const notes = good().replace(
+        "podcast audio is AI-narrated (Deepgram) from scripts we wrote",
+        claim,
+      );
       expect(reviewNotesProblems(notes, worst).join("|"), claim).toMatch(/human|AI-narrated/i);
     }
   });
 
   it("flags a non-https recording or code link", () => {
-    expect(reviewNotesProblems(good(), { ...worst, recordingURL: "http://x" }).join("|")).toMatch(/recording/);
-    expect(reviewNotesProblems(good(), { ...worst, demoCodeURL: "http://x" }).join("|")).toMatch(/demo code/);
+    expect(reviewNotesProblems(good(), { ...worst, recordingURL: "http://x" }).join("|")).toMatch(
+      /recording/,
+    );
+    expect(reviewNotesProblems(good(), { ...worst, demoCodeURL: "http://x" }).join("|")).toMatch(
+      /demo code/,
+    );
   });
 
   it("flags a literal double hyphen or a non-ASCII character in the text", () => {
-    expect(reviewNotesProblems(good().replace("SIGN IN", "SIGN -- IN"), worst).join("|")).toMatch(/--/);
-    expect(reviewNotesProblems(good().replace("SIGN IN", "SIGN — IN"), worst).join("|")).toMatch(/ASCII/);
+    expect(reviewNotesProblems(good().replace("SIGN IN", "SIGN -- IN"), worst).join("|")).toMatch(
+      /--/,
+    );
+    expect(reviewNotesProblems(good().replace("SIGN IN", "SIGN — IN"), worst).join("|")).toMatch(
+      /ASCII/,
+    );
   });
 });
 

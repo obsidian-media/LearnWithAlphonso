@@ -8,17 +8,27 @@ describe("age rating (13+, AI chat and stranger matching declared)", () => {
   });
 
   it("accepts a live declaration that matches and rates 13+", () => {
-    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "THIRTEEN_PLUS" })).toEqual([]);
+    expect(
+      ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "THIRTEEN_PLUS" }),
+    ).toEqual([]);
   });
 
   it("accepts a stricter computed rating", () => {
-    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "SIXTEEN_PLUS" })).toEqual([]);
+    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "SIXTEEN_PLUS" })).toEqual(
+      [],
+    );
   });
 
   it("flags a live declaration below 13+ or with chat undeclared", () => {
-    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "FOUR_PLUS" }).join("|")).toMatch(/13\+/);
     expect(
-      ageRatingProblems({ ...AGE_RATING_ANSWERS, messagingAndChat: false, appStoreAgeRating: "THIRTEEN_PLUS" }).join("|"),
+      ageRatingProblems({ ...AGE_RATING_ANSWERS, appStoreAgeRating: "FOUR_PLUS" }).join("|"),
+    ).toMatch(/13\+/);
+    expect(
+      ageRatingProblems({
+        ...AGE_RATING_ANSWERS,
+        messagingAndChat: false,
+        appStoreAgeRating: "THIRTEEN_PLUS",
+      }).join("|"),
     ).toMatch(/messagingAndChat/);
   });
 
@@ -34,12 +44,20 @@ describe("age rating (13+, AI chat and stranger matching declared)", () => {
 
 describe("ageRatingPatch", () => {
   it("patches only the fields the live declaration has", () => {
-    const patch = ageRatingPatch({ userGeneratedContent: false, messagingAndChat: false, somethingNew: 1 });
+    const patch = ageRatingPatch({
+      userGeneratedContent: false,
+      messagingAndChat: false,
+      somethingNew: 1,
+    });
     expect(patch).toEqual({ userGeneratedContent: true, messagingAndChat: true });
   });
 
   it("never patches the computed rating or an override", () => {
-    const patch = ageRatingPatch({ appStoreAgeRating: "FOUR_PLUS", ageRatingOverrideV2: "NONE", messagingAndChat: false });
+    const patch = ageRatingPatch({
+      appStoreAgeRating: "FOUR_PLUS",
+      ageRatingOverrideV2: "NONE",
+      messagingAndChat: false,
+    });
     expect(Object.keys(patch)).toEqual(["messagingAndChat"]);
   });
 });

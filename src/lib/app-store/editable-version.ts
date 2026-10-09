@@ -20,17 +20,23 @@ export function editableVersionQuery(): string {
   return `filter[appVersionState]=${EDITABLE_VERSION_STATES.join(",")}`;
 }
 
-export function pickEditableVersion<T extends AscVersionLike>(versions: T[], versionString = "1.0"): T {
+export function pickEditableVersion<T extends AscVersionLike>(
+  versions: T[],
+  versionString = "1.0",
+): T {
   const editable = versions.filter(
     (v) =>
       v.attributes?.versionString === versionString &&
       (EDITABLE_VERSION_STATES as readonly string[]).includes(v.attributes?.appVersionState ?? ""),
   );
   if (editable.length === 0) {
-    const seen = versions.map((v) => `${v.attributes?.versionString}:${v.attributes?.appVersionState}`).join(", ");
+    const seen = versions
+      .map((v) => `${v.attributes?.versionString}:${v.attributes?.appVersionState}`)
+      .join(", ");
     throw new Error(`No editable ${versionString} version (seen: ${seen || "none"}).`);
   }
-  if (editable.length > 1) throw new Error(`More than one editable ${versionString} version; refusing to guess.`);
+  if (editable.length > 1)
+    throw new Error(`More than one editable ${versionString} version; refusing to guess.`);
   return editable[0];
 }
 
@@ -46,7 +52,9 @@ export type AscAppInfoLike = {
  */
 export function pickEditableAppInfo<T extends AscAppInfoLike>(infos: T[]): T {
   const editable = infos.filter((i) =>
-    (EDITABLE_VERSION_STATES as readonly string[]).includes(i.attributes?.state ?? i.attributes?.appStoreState ?? ""),
+    (EDITABLE_VERSION_STATES as readonly string[]).includes(
+      i.attributes?.state ?? i.attributes?.appStoreState ?? "",
+    ),
   );
   if (editable.length === 0) {
     const seen = infos.map((i) => i.attributes?.state ?? i.attributes?.appStoreState).join(", ");

@@ -10,6 +10,7 @@ export function planScreenshotReplacement(
   if (pngs.length > 10) throw new Error(`${pngs.length} screenshots; Apple allows 10 per set`);
   if (pngs.length < 3) throw new Error("need at least 3 screenshots");
   const bad = pngs.filter((f) => !/^\d{2}[a-z]?-[a-z0-9-]+\.png$/i.test(f));
-  if (bad.length) throw new Error(`screenshots must be numbered like 01-learn.png: ${bad.join(", ")}`);
+  if (bad.length)
+    throw new Error(`screenshots must be numbered like 01-learn.png: ${bad.join(", ")}`);
   return { deleteIds: existing.map((e) => e.id), uploadOrder: [...pngs].sort() };
 }
