@@ -9,7 +9,7 @@ import {
 } from "./review-notes";
 
 const worst: ReviewNotesInput = {
-  demoAccountEmail: `${"d".repeat(48)}@agentmail.to`, // 61 chars
+  demoAccountEmail: `${"d".repeat(49)}@example.com`, // 61 chars
   reviewContactEmail: `${"c".repeat(48)}@gmail.com`, // 58 chars
   demoCodeURL: `https://learn.alphonsoecosystem.app/api/review-demo-code?key=${"k".repeat(80)}`, // 140 chars
   recordingURL: `https://www.youtube.com/watch?v=${"r".repeat(68)}`, // 100 chars
@@ -82,6 +82,15 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
 
   it("flags a notes body over 4,000 characters", () => {
     expect(reviewNotesProblems(good() + "x".repeat(4000), worst).join("|")).toMatch(/4000/);
+  });
+
+  it("draws the length line at exactly 4,000 characters", () => {
+    expect(NOTES_LIMIT).toBe(4000);
+    const base = good();
+    const at = base + "x".repeat(4000 - base.length);
+    expect(at.length).toBe(4000);
+    expect(reviewNotesProblems(at, worst).join("|")).not.toMatch(/4000/);
+    expect(reviewNotesProblems(at + "x", worst).join("|")).toMatch(/4000/);
   });
 
   it("flags a product title that differs from the live one", () => {
