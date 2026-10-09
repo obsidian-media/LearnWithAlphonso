@@ -397,21 +397,11 @@ private func addDaysDateString(_ days: Int) -> String {
 /// -- same instance/reasoning as LessonPlayerView's identical helper.
 private let reviewQuestionSpeechSynthesizer = AVSpeechSynthesizer()
 
-private func speak(_ text: String, languageCode: String) {
+private func speak(_ text: String, course: Course) {
     reviewQuestionSpeechSynthesizer.stopSpeaking(at: .immediate)
     let utterance = AVSpeechUtterance(string: text)
-    utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+    utterance.voice = SpeechVoice.voice(for: course)
     reviewQuestionSpeechSynthesizer.speak(utterance)
-}
-
-private extension Course {
-    var speechLanguageCode: String {
-        switch self {
-        case .english: return "en-US"
-        case .french: return "fr-FR"
-        case .spanish: return "es-ES"
-        }
-    }
 }
 
 /// Shown above the queue when it's SyncQueueStore's cached snapshot rather
@@ -468,7 +458,7 @@ private struct ReviewQuestionCard: View {
                 }
                 if let audioText = q.audioText {
                     Button {
-                        speak(audioText, languageCode: course.speechLanguageCode)
+                        speak(audioText, course: course)
                     } label: {
                         Label("Play audio", systemImage: "speaker.wave.2.fill")
                     }
@@ -526,7 +516,7 @@ private struct ReviewQuestionCard: View {
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                 Button {
-                    speak(q.audioText, languageCode: course.speechLanguageCode)
+                    speak(q.audioText, course: course)
                 } label: {
                     Label("Play audio", systemImage: "speaker.wave.2.fill")
                 }

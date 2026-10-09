@@ -82,7 +82,7 @@ struct AchievementsView: View {
             let unlocked = try await client.fetchUnlockedAchievements()
             unlockedByID = Dictionary(uniqueKeysWithValues: unlocked.map { ($0.achievementID, $0) })
         } catch {
-            errorMessage = "Couldn't load your unlock status -- showing the full catalog."
+            errorMessage = "Couldn't load your unlock status. Showing the full catalog."
         }
         // Best-effort: a weakness-trend failure shouldn't block the
         // achievements catalog itself from showing.

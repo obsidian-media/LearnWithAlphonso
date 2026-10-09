@@ -422,6 +422,8 @@ public enum AlphonsoSpacing {
     public static let lg: CGFloat = 24
     public static let xl: CGFloat = 32
     public static let xxl: CGFloat = 48
+    /// Apple's minimum touch target (HIG). Every button style pads up to it.
+    public static let minTouchTarget: CGFloat = 44
 }
 
 /// Corner-radius scale, mirroring CSS's `--radius: 0.625rem` (10px) base

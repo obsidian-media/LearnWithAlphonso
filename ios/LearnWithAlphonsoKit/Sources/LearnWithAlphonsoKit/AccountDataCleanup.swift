@@ -18,7 +18,7 @@ public protocol EntitlementResetting: AnyObject {
     func reset() async
 }
 
-/// The UserDefaults keys of the app target's four account-scoped caches. They live here so
+/// The UserDefaults keys of the app target's account-scoped caches. They live here so
 /// the cache types and the cleanup read one list. Device preferences (theme, hint counts)
 /// are deliberately not in it.
 public enum AccountCacheKeys {
@@ -26,7 +26,8 @@ public enum AccountCacheKeys {
     public static let recapLeagueTier = "lastRecapLeagueTier"
     public static let leagueTier = "lastKnownLeagueTier"
     public static let nudgeCooldowns = "nudgeCooldowns"
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns]
+    public static let deadLetterDismissals = DeadLetterDismissals.key
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals]
 }
 
 public struct AccountLocalCaches {

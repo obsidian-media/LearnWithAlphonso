@@ -330,8 +330,9 @@ private struct FriendRowView: View {
             }
             .buttonStyle(.alphonsoSecondary(fullWidth: false))
             .disabled(!canNudge)
+            .accessibilityLabel("Nudge \(friend.displayName)")
 
-            SocialSafetyMenu(onBlock: onBlock, onReport: onReport)
+            SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: friend.displayName)
         }
         .padding(.vertical, 4)
         .onAppear { canNudge = NudgeCooldownCache.canNudge(friendID: friend.userID) }
@@ -364,7 +365,7 @@ private struct ActivityEventRow: View {
             let streak = event.streak ?? 0
             return "\(displayName) hit a \(streak)-day streak"
         case "league_promotion":
-            let tier = (event.newTier ?? "a new league").capitalized
+            let tier = event.newTier.map(LeagueTierCopy.label(for:)) ?? "a new league"
             return "\(displayName) moved up to \(tier)"
         default:
             return "\(displayName) made progress"

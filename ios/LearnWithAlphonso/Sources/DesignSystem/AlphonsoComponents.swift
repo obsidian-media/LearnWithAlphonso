@@ -23,7 +23,7 @@ struct AlphonsoPrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(foreground)
             .padding(.vertical, AlphonsoSpacing.sm + 2)
             .padding(.horizontal, AlphonsoSpacing.lg)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .frame(maxWidth: fullWidth ? .infinity : nil, minHeight: AlphonsoSpacing.minTouchTarget)
             // A subtle top-to-bottom gradient instead of a flat fill --
             // one of several small touches (see also PulsingGlow,
             // SpringEntrance's now-broader use) added after direct
@@ -54,7 +54,9 @@ struct AlphonsoSecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(AlphonsoColor.ink)
             .padding(.vertical, AlphonsoSpacing.sm)
             .padding(.horizontal, AlphonsoSpacing.md)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
+            // About 36 pt before (8 pt padding around a 15 pt font). An inline icon button
+            // (the friend nudge) also gets the minimum width.
+            .frame(minWidth: AlphonsoSpacing.minTouchTarget, maxWidth: fullWidth ? .infinity : nil, minHeight: AlphonsoSpacing.minTouchTarget)
             .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous)

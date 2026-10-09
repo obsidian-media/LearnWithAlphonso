@@ -17,6 +17,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     static let deviceTokenNotification = Notification.Name("com.obsidianmedia.learnwithalphonso.remotePushDeviceToken")
     static let registrationFailureNotification = Notification.Name("com.obsidianmedia.learnwithalphonso.remotePushRegistrationFailure")
 
+    /// Portrait everywhere, decided in code. App Review runs this iPhone-only app on iPads in
+    /// compatibility mode, and the app was designed and tested only in portrait (iPhone is portrait-only via
+    /// UISupportedInterfaceOrientations~iphone). The four-orientation base key stays in project.yml because
+    /// App Store Connect's upload validator demanded it (ITMS-90474); this method, not that key, is what
+    /// keeps the app upright.
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        .portrait
+    }
+
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data

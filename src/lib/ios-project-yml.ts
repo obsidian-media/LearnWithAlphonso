@@ -37,7 +37,7 @@ export function yamlTarget(yml: string, name: string): string {
 
 /** Value of `KEY: "value"` in a block (quotes stripped), or null. */
 export function yamlSetting(block: string, key: string): string | null {
-  const m = new RegExp(`^\s+${key}:\s*(.+?)\s*$`, "m").exec(block);
+  const m = new RegExp(`^\\s+${key}:\\s*(.+?)\\s*$`, "m").exec(block);
   if (!m) return null;
   return m[1].replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
 }

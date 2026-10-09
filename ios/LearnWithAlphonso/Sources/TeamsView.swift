@@ -27,6 +27,8 @@ struct TeamsView: View {
     // has them (Guideline 1.2). Same shared controls as Friends/Duels/League.
     @State private var reportTarget: SocialTarget?
     @State private var blockTarget: SocialTarget?
+    /// The member the owner tapped to remove, awaiting confirmation.
+    @State private var kickTarget: TeamMember?
 
     var body: some View {
         List {
@@ -91,7 +93,7 @@ struct TeamsView: View {
                             Spacer()
                             if myTeam.isOwner && !member.isOwner {
                                 Button(role: .destructive) {
-                                    Task { await kick(member) }
+                                    kickTarget = member
                                 } label: {
                                     Image(systemName: "person.fill.xmark")
                                 }
@@ -100,11 +102,13 @@ struct TeamsView: View {
                                 // explicit style, a tap anywhere on the row
                                 // fires both.
                                 .buttonStyle(.borderless)
+                                .accessibilityLabel(TeamKickCopy.buttonLabel(memberName: member.displayName))
                             }
                             if member.userID != session.userID && !member.isBlocked {
                                 SocialSafetyMenu(
                                     onBlock: { blockTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
-                                    onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) }
+                                    onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
+                                    accessibilityName: member.displayName
                                 )
                                 .buttonStyle(.borderless)
                             }
@@ -222,6 +226,24 @@ struct TeamsView: View {
             Button("Cancel", role: .cancel) { blockTarget = nil }
         } message: {
             Text(SocialSafetyCopy.blockConfirmationMessage(blockTarget?.displayName ?? "This person"))
+        }
+        .confirmationDialog(
+            TeamKickCopy.title(memberName: kickTarget?.displayName ?? "this member"),
+            isPresented: Binding(
+                get: { kickTarget != nil },
+                set: { if !$0 { kickTarget = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(TeamKickCopy.confirm, role: .destructive) {
+                if let member = kickTarget {
+                    Task { await kick(member) }
+                }
+                kickTarget = nil
+            }
+            Button("Cancel", role: .cancel) { kickTarget = nil }
+        } message: {
+            Text(TeamKickCopy.message)
         }
         .sheet(item: $reportTarget) { target in
             ReportSheet(target: target, session: session)

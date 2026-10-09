@@ -96,7 +96,9 @@ export function isCourse(value: string): value is Course {
   return value === "en" || value === "fr" || value === "es";
 }
 
-const LOCALES: Record<Course, string> = { en: "en-US", fr: "fr-FR", es: "es-ES" };
+// The Spanish course is Latin American, so device speech uses es-MX. Kept equal to the iOS Kit's
+// Course.speechLocale by src/lib/ios-binary-polish.test.ts.
+const LOCALES: Record<Course, string> = { en: "en-US", fr: "fr-FR", es: "es-MX" };
 
 /** BCP-47 locale for the Web Speech API / AVSpeechSynthesisVoice, per course. */
 export function localeForCourse(course: Course): string {

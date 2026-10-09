@@ -117,9 +117,10 @@ final class AccountDataCleanupTests: XCTestCase {
         XCTAssertEqual(store.integer(forKey: "savedWordHintShownCount"), 2)
     }
 
-    func testAccountCacheKeysAreTheFourAppCaches() {
+    func testAccountCacheKeysAreTheAppCaches() {
         XCTAssertEqual(AccountCacheKeys.all, [
             "lastGlobalWeeklyLeaderboardSnapshot", "lastRecapLeagueTier", "lastKnownLeagueTier", "nudgeCooldowns",
+            "deadLetterNotice.dismissed.v1",
         ])
     }
 }

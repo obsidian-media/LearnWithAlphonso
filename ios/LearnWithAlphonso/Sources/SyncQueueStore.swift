@@ -241,6 +241,9 @@ final class SyncQueueStore: AccountScopedQueue {
     /// the badge track the cache.
     private(set) var dueReviewRevision = 0
 
+    /// Bumps whenever dead letters change, so the Learn-tab notice re-renders.
+    private(set) var deadLetterRevision = 0
+
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
@@ -427,6 +430,20 @@ final class SyncQueueStore: AccountScopedQueue {
 
         trimDeadLetters(keeping: 50)
         do { try modelContext.save() } catch { print("[SyncQueueStore] apply save failed: \(error)") }
+        if !result.deadLetteredLessonCompletions.isEmpty || !result.deadLetteredReviewGrades.isEmpty {
+            deadLetterRevision += 1
+        }
+    }
+
+    /// Lesson completions the server permanently rejected, newest first, for the Learn-tab notice.
+    /// Review-grade dead letters are not shown: a lost grade only reschedules a card.
+    var lessonDeadLetters: [(identity: String, reason: String)] {
+        _ = deadLetterRevision
+        let descriptor = FetchDescriptor<SyncDeadLetterRecord>(
+            predicate: #Predicate { $0.kind == "lesson" },
+            sortBy: [SortDescriptor(\.failedAt, order: .reverse)]
+        )
+        return ((try? modelContext.fetch(descriptor)) ?? []).map { (identity: $0.identity, reason: $0.reason) }
     }
 
     private func trimDeadLetters(keeping limit: Int) {
@@ -453,6 +470,7 @@ final class SyncQueueStore: AccountScopedQueue {
             print("[SyncQueueStore] clearAll save failed: \(error)")
         }
         dueReviewRevision += 1
+        deadLetterRevision += 1
     }
 
     private func deleteAll<Model: PersistentModel>(_ type: Model.Type) {

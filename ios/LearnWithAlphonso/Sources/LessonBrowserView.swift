@@ -114,6 +114,9 @@ struct LessonBrowserView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
+                // Finished lessons the server permanently rejected. Hidden when none.
+                DeadLetterNoticeSection(syncQueueStore: syncQueueStore)
+
                 // The way into the review queue. Before Phase 0 this was a
                 // tab of its own and ReviewQueueView was instantiated in
                 // exactly one place -- the tab bar -- so this row is what
@@ -239,6 +242,7 @@ struct LessonBrowserView: View {
                         Image(systemName: "gearshape.fill")
                     }
                     .tint(AlphonsoColor.moss)
+                    .accessibilityLabel("Settings")
                 }
             }
             .navigationDestination(for: String.self) { lessonId in

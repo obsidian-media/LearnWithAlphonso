@@ -246,6 +246,7 @@ struct SettingsView: View {
                 Section {
                     Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
                     Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
+                    NavigationLink("Acknowledgements") { AcknowledgementsView() }
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 

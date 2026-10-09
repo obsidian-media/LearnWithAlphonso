@@ -24,6 +24,15 @@ struct RootView: View {
     /// Every open conversation keyed by (scenario, course), held above the tabs so a conversation survives tab
     /// switches. Cleared when the signed-in account changes.
     @State private var conversationStore = ConversationStore()
+    /// Follows the system light/dark setting live (see SystemAppearanceObserver).
+    @State private var appearanceObserver = SystemAppearanceObserver()
+    #if DEBUG
+    /// UI tests only (-UITestShowPaywall): the demo account is Pro, and the paywall is otherwise reachable
+    /// only from Hector for non-Pro users, so the compatibility runs open it directly.
+    @State private var uiTestPaywall = ProcessInfo.processInfo.arguments.contains("-UITestShowPaywall")
+    /// UI tests only (-UITestLayoutProbe): exposes whether the app is laid out portrait or landscape.
+    private static let uiTestLayoutProbe = ProcessInfo.processInfo.arguments.contains("-UITestLayoutProbe")
+    #endif
     /// Onboarding after a sign-in: the public-name prompt first (while name_confirmed_at is NULL), then
     /// English placement (while it has never been taken; see PlacementView's doc comment). Each step shows at
     /// most once per sign-in, and a failed check skips its step this launch instead of blocking the app
@@ -216,9 +225,26 @@ struct RootView: View {
             // without it, a fresh launch would render one frame against
             // the `.light` fallback default even on a device already in
             // Dark Mode.
-            updateRealSystemColorScheme()
+            appearanceObserver.start()
         }
         .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
+        #if DEBUG
+        .sheet(isPresented: $uiTestPaywall) {
+            PaywallView(entitlementStore: entitlementStore)
+        }
+        .overlay(alignment: .topLeading) {
+            if Self.uiTestLayoutProbe {
+                GeometryReader { proxy in
+                    Text(proxy.size.width > proxy.size.height ? "landscape" : "portrait")
+                        .font(.system(size: 1))
+                        .opacity(0.01)
+                        .frame(width: 1, height: 1)
+                        .accessibilityIdentifier("uiTest.layout")
+                }
+                .allowsHitTesting(false)
+            }
+        }
+        #endif
     }
 
     /// Build 38's launch hang (2026-09-28, confirmed fixed in build 40):
@@ -236,15 +262,13 @@ struct RootView: View {
     /// windows/view controllers, never to `UIScreen` itself), so reading
     /// it imperatively at controlled points -- launch and returning to
     /// foreground -- detects the real system appearance with no reactive
-    /// SwiftUI environment binding to feed back into. Trade-off: a Dark
-    /// Mode toggle via Control Center while this app is already in the
-    /// foreground won't be picked up live anymore, only on next
-    /// foreground -- a real, accepted regression next to the app not
-    /// launching at all.
+    /// SwiftUI environment binding to feed back into. Live changes while
+    /// the app stays in the foreground now arrive through
+    /// SystemAppearanceObserver (UIScreen trait registration, gated by the
+    /// Kit's AppearanceChangeGate, which stops after 4 flips in 2 s);
+    /// this method re-arms the gate and re-reads on return to the foreground.
     private func updateRealSystemColorScheme() {
-        let style = UIScreen.main.traitCollection.userInterfaceStyle
-        let scheme: ColorScheme = style == .dark ? .dark : .light
-        AlphonsoThemeManager.shared.updateSystemColorScheme(scheme)
+        appearanceObserver.applyCurrent(rearm: true)
     }
 
     /// Drains the offline sync queue (docs/v2-kickoffs/01-offline-first.md)

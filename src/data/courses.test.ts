@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COURSES, getCourse, isCourse } from "./courses";
+import { COURSES, getCourse, isCourse, localeForCourse } from "./courses";
 
 describe("isCourse", () => {
   it("accepts every known course id", () => {
@@ -37,5 +37,15 @@ describe("getCourse", () => {
     const knownId = bundle.allLessonIds[0];
     expect(bundle.findLesson(knownId)?.lesson.id).toBe(knownId);
     expect(bundle.findLesson("does-not-exist")).toBeNull();
+  });
+});
+
+describe("localeForCourse", () => {
+  it("speaks Spanish with a Latin American voice", () => {
+    expect(localeForCourse("es")).toBe("es-MX");
+  });
+  it("keeps English and French", () => {
+    expect(localeForCourse("en")).toBe("en-US");
+    expect(localeForCourse("fr")).toBe("fr-FR");
   });
 });
