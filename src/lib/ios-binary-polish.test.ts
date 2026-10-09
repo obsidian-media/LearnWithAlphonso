@@ -326,7 +326,7 @@ describe("league tier display names", () => {
 });
 
 describe("acknowledgements", () => {
-  const kit = read(`${KIT_SOURCES}/Acknowledgements.swift`);
+  const kit = blankSwiftComments(read(`${KIT_SOURCES}/Acknowledgements.swift`));
   const resources = [...kit.matchAll(/licenseResource: "([^"]+)"/g)].map((m) => m[1]);
   const fonts = [...read("ios/LearnWithAlphonso/Info.plist").matchAll(/<string>([\w-]+)\.ttf<\/string>/g)].map((m) => m[1]);
 
