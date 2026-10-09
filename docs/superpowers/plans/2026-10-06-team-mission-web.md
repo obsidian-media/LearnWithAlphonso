@@ -1,5 +1,7 @@
 # Team Mission (server + web) Implementation Plan
 
+> Status (2026-10-09): implemented (#230, types #231). Native: iOS #233, Android #234.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Every team of 2+ members gets a weekly shared mission (members x 4 lessons); reaching it pays each contributing member +50 XP once, shown as a progress card on the team screen and the Learn page.
@@ -10,7 +12,7 @@
 
 **Scope note (spec: `docs/superpowers/specs/2026-10-06-study-together-design.md`, Part 1):** The "Team player" badge needs the achievements catalog on all three platforms (`src/data/achievements.ts`, iOS content export, Android), so it ships in Phase 2 with iOS/Android. Phase 1 ships the XP reward and a `team_mission_rewards` record the badge can key off.
 
-**Worktree:** `D:\AgentDevWork\repos\LearnWithAlphonso-team`, branch `feat/team-mission` (node_modules is a junction to the main checkout: `rmdir` it before removing the worktree).
+**Worktree:** `<worktree>`, branch `feat/team-mission` (node_modules is a junction to the main checkout: `rmdir` it before removing the worktree).
 
 ---
 
@@ -115,7 +117,7 @@ describe("team missions migration", () => {
 
 - [ ] **Step 2: Run it, expect RED**
 
-Run: `cd D:/AgentDevWork/repos/LearnWithAlphonso-team && bunx prettier --write src/lib/team-mission-migration.test.ts && bun run test src/lib/team-mission-migration.test.ts`
+Run: `cd <worktree> && bunx prettier --write src/lib/team-mission-migration.test.ts && bun run test src/lib/team-mission-migration.test.ts`
 Expected: FAIL (ENOENT: the migration file does not exist).
 
 - [ ] **Step 3: Commit**
@@ -344,12 +346,12 @@ The tests above pin the text; this proves the logic. Run through the Supabase MC
 ```sql
 -- inside BEGIN; ... the migration SQL ... then:
 INSERT INTO auth.users (id, email, instance_id, aud, role) VALUES
-  ('00000000-0000-0000-0000-0000000000a1', 'tm-a@example.test', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
-  ('00000000-0000-0000-0000-0000000000a2', 'tm-b@example.test', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
-  ('00000000-0000-0000-0000-0000000000a3', 'tm-c@example.test', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated');
+  ('00000000-0000-0000-0000-0000000000a1', 'tm-a-probe', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-0000000000a2', 'tm-b-probe', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-0000000000a3', 'tm-c-probe', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated');
 -- profiles are created by the signup trigger; make sure language_progress rows exist for the XP check
 INSERT INTO public.language_progress (user_id, language, xp, league_tier)
-SELECT id, 'en', 0, 'bronze' FROM auth.users WHERE email LIKE 'tm-%@example.test' ON CONFLICT DO NOTHING;
+SELECT id, 'en', 0, 'bronze' FROM auth.users WHERE email LIKE 'tm-%-probe' ON CONFLICT DO NOTHING;
 INSERT INTO public.teams (id, name, created_by) VALUES ('00000000-0000-0000-0000-0000000000b1', 'tm test team', '00000000-0000-0000-0000-0000000000a1');
 INSERT INTO public.team_members (team_id, user_id, joined_at) VALUES
   ('00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-0000000000a1', now() - interval '30 days');

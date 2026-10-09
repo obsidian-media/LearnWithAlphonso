@@ -1,5 +1,7 @@
 # Learning goal planner, part 3 (Android) Implementation Plan
 
+> Status (2026-10-09): implemented (#226); merged code, not released to Google Play.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The Android Learn tab shows the learner's goal card and lets them set, change and remove it, rendering the plan the server already computes (same numbers and wording as web and iOS).
@@ -20,7 +22,7 @@
 - Only `java.io.IOException` means offline. Everything else that throws is `Unavailable`.
 - Free and Pro both get the card. No AI call, no quota. No build is cut and nothing is released to Play.
 - File writes in this environment drop backslashes (Kotlin string templates use `$`, which is safe; avoid `\n`/`\u` escapes or check them after writing).
-- Gradle needs `ANDROID_HOME`, `GRADLE_USER_HOME` (both under `D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds`) and `JAVA_HOME` (`C:\Program Files\Microsoft\jdk-21.0.12.8-hotspot`); run `.\gradlew.bat` from `android\LearnWithAlphonso`; long builds in the background. A cold build can take 20 minutes.
+- Gradle needs `ANDROID_HOME`, `GRADLE_USER_HOME` (both under `<playground>`) and `JAVA_HOME` (`C:\Program Files\Microsoft\jdk-21.0.12.8-hotspot`); run `.\gradlew.bat` from `android\LearnWithAlphonso`; long builds in the background. A cold build can take 20 minutes.
 
 ## Review Focus
 

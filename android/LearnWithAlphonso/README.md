@@ -20,7 +20,7 @@ test resource root, so there is one copy in git.
 ## Building locally
 
 See `TOOLING.md`. Short version: set `ANDROID_HOME`, `GRADLE_USER_HOME` and
-`JAVA_HOME` to the playground paths, then `./gradlew :app:assembleDebug`.
+`JAVA_HOME` to your local toolchain folders (details in `TOOLING.md`), then `./gradlew :app:assembleDebug`.
 There is no emulator on the development machine; anything device-shaped is
 verified by `.github/workflows/android-ci.yml`'s emulator job or by the owner
 on a phone.
@@ -31,12 +31,27 @@ on a phone.
 | --- | --- |
 | 1 (in) | Auth (Google via Supabase PKCE in a Custom Tab, email code, password), Learn tab, lesson player with all six question types, review queue, adaptive placement, hearts and XP and streak, offline queue and sync, four themes, settings with export and account deletion, CI. |
 | 2 (in) | Profile hub: leaderboard with overtake toast and weekly recap, teams, season, friends with opaque invite codes and an App Link, nudges, activity feed, duels, achievements with the weakness trend, block and report, display name and avatar, weekly challenges and streak-freeze purchase on Learn. |
-| 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, AI disclosure gate on every AI path, generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
+| 3 (in) | Recorder and spoken answers (`ConversationTurnEngine` in core, `MediaRecorder` in app), Practice scenarios and Campaigns, Hector with the tutor memory priming turn, a per-device AI disclosure gate on every AI path (see "Not yet ported" below), generated practice on the lesson finish screen, RevenueCat paywall behind `BillingPort`. |
 | 4 (in) | Listen tab: folder tree, search, resume with optimistic-concurrency saves, transcripts, offline downloads with a budget and a `.partial` staging file, one ExoPlayer in a `MediaSessionService` with lock-screen controls, next episode, mini bar on every screen. Local reminders (streak 20:00, due reviews +3 h, weekly recap Monday 09:00, weakness 10:00) over WorkManager. FCM token registration behind the notification permission. Glance streak widget. Backend: PR #192 (`device_tokens.platform` accepts `android`, `_shared/fcm.ts`). |
 | 5 (in) | `android-release.yml` (manual dispatch: signed `bundleRelease`, bundletool validation of the produced `.aab`, optional Play upload, store screenshots as the demo account), upload signing from secrets only, `play/` listing copy, data-safety answers and review notes, `DEVICE-CHECKLIST.md`. |
 
-Every tab is real. What remains is the owner's side of the release
-(`OWNER-SETUP.md`) and the device checklist below.
+Every tab is real, and all five plans are merged to `main` (the app arrived on
+`main` on 2026-10-01). The app is not on Google Play yet: what remains is the
+owner's side of the release (`OWNER-SETUP.md`: Play account, subscription,
+RevenueCat Android key) and the device checklist below.
+
+## Not yet ported from iOS and web (as of 2026-10-09)
+
+The server now enforces an **account-level AI consent** on every AI endpoint
+(403 `ai-consent-required`), and Android has no consent screen or Settings
+switch yet; its disclosure gate is a per-device flag. Until it is ported, AI
+features on Android work only for an account that has already granted consent
+on web or iOS, and a refused call shows a raw error. This is a release gate
+for the first Play upload. Also missing on Android: the one-time public-name
+step, the hearts gate at lesson open ("out-of-hearts" and "empty-reply" copy),
+the report action on AI replies, French and Spanish conversation scenarios
+(learners get the English ones), and the later iOS offline-queue and podcast
+player reliability work. Quota 429s show the raw `quota-exceeded` code.
 
 ## Deviations from the spec worth knowing
 

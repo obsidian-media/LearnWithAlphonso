@@ -1,5 +1,7 @@
 # Canopy for web — design + implementation plan
 
+> Status (2026-10-09): implemented (#91); Canopy is the default theme on the web.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement the Tasks section below task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Status:** Combined spec+plan (not two documents) — scope was already substantially fixed by the account owner's own brief plus verification done while writing this; see "Background" for what was given vs. decided here.
@@ -14,7 +16,7 @@
 - **Default-parity decision, settled with the account owner before writing this**: web's `resolveInitialTheme` fallback changes from `"meadow"` to `"canopy"`, matching iOS's already-shipped default. iOS's decision stands; this is not revisited.
 - Palette source of truth: `ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoTheme.swift:155` (unchanged since PR #83 merged — confirmed by reading it fresh in this worktree, and `docs/BACKLOG.md` §0.7 confirms Canopy's real-device QA pass is still open/pending, so no palette changes have landed from that yet — sync again before deep visual polish if that changes).
 - Already true on `main` (confirmed by reading, not assumed): `leaderboard.functions.ts:47`'s Zod enum accepts `"canopy"`; the Postgres CHECK constraint includes it; `THEME_NAMES` excludes it, asserted by two tests in `theme.test.ts`.
-- `eslint .` is usable again (`.claude/worktrees/**` now ignored, confirmed in `main`'s current `eslint.config.js`).
+- `eslint .` is usable again (the nested worktree directories are now ignored, confirmed in `main`'s current `eslint.config.js`).
 
 ## Derived color tokens
 

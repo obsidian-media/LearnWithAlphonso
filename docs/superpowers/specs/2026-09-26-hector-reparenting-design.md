@@ -1,5 +1,7 @@
 # Hector Re-Parenting: Design Options
 
+> Status (2026-10-09): phases 0 to 2 shipped (#157, #159, #176) and were then superseded: Hector was decoupled onto this repo's own backend and account (#189), so there is no separate Cloud Voice account to link or revoke.
+
 > **Status: approved 2026-09-26.** Phases 0, 1, and 2 below are all
 > go — see this repo's history for the implementation PRs each phase
 > landed as. Written 2026-09-25 as a design/decision doc, not an
@@ -23,7 +25,7 @@ a separate account from your main Learn with Alphonso sign-in."*
 lives in a genuinely different Supabase project
 (`ywavjlmjbxuslbxactsx`), owned and operated by a different codebase
 (`AlphonsoEcosystem`, checked out locally at
-`D:\AgentDevWork\repos\AlphonsoEcosystem`). Deleting the main account
+the AlphonsoEcosystem checkout). Deleting the main account
 today leaves a Cloud Voice account alive in a database the deletion code
 has never heard of, and always will, until this is addressed.
 

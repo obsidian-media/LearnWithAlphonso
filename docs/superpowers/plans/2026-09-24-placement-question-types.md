@@ -1,5 +1,7 @@
 # Placement exam covers the new question types — Implementation Plan
 
+> Status (2026-10-09): implemented (#107; the overlap with lesson content was removed in #128).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stop placing learners with an exam that tests only multiple choice and then dropping them into a course that is one-eighth listening, speaking and translation.

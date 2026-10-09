@@ -1,5 +1,7 @@
 # Design: iOS Achievements Browse Screen
 
+> Status (2026-10-09): implemented. League tiers are shown to learners as Sprout, Sapling, Grove, Treetop and Summit since #264 (display only; database keys unchanged).
+
 > Written 2026-09-19. V2, parallel-safe (new screen, reads existing data
 > only). Leagues themselves already have iOS UI groundwork
 > (`LessonCompletionResult.progress.leagueTier` flows through

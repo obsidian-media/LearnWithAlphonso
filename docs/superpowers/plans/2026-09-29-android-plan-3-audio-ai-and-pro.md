@@ -1,5 +1,7 @@
 # Android Plan 3: Audio, AI Conversation and Pro
 
+> Status (2026-10-09): implemented and merged to `main` in #200. Its per-device AI disclosure gate has not been replaced by the account-level AI consent (#254 to #257) on Android yet.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Everything that listens or talks: the press-and-hold recorder, speak questions graded from real speech, the Practice tab (scenarios and campaigns) with spoken AI replies, Hector the AI tutor behind the Pro paywall (RevenueCat over Google Play Billing), "Generate more practice" after a lesson, the AI disclosure gate before any audio or written answer reaches an AI provider, and weakness analysis after conversations.

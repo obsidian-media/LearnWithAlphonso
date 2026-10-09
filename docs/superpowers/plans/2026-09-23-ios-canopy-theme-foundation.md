@@ -1,5 +1,7 @@
 # iOS Canopy Theme — Foundation Implementation Plan
 
+> Status (2026-10-09): implemented (#83). Canopy was later ported to the web (#91).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a fourth iOS theme, "Canopy" (emerald/coral, mascot-forward), as the new default, with the color/font tokens and shared components every screen in the follow-up screen-rollout plan will build on.

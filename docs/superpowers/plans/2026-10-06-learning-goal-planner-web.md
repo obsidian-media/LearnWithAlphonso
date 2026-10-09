@@ -1,5 +1,7 @@
 # Learning goal planner, part 1 (web, route, migration) Implementation Plan
 
+> Status (2026-10-09): implemented (#223; the default table privileges were revoked in #224).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A learner sets "finish B1 by <date>" on the Learn page and sees lessons per week, status, and a suggested date; the plan is computed once on the server.

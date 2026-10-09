@@ -1,5 +1,7 @@
 # Design: Multi-turn conversation campaigns
 
+> Status (2026-10-09): implemented. Scenarios and campaigns are now course-keyed (English, French, Latin American Spanish) and account-consent-gated (#251, #256).
+
 > Written 2026-09-21, V4 candidate #4
 > (`docs/v4-kickoffs/00-INDEX.md` §4). Parallel-safe: additive files plus
 > one new section on `converse.tsx`/`ConversationView.swift`, no changes

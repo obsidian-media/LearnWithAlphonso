@@ -1,5 +1,7 @@
 # Design: Curriculum data — database schema
 
+> Status (2026-10-09): implemented; seeded by `deploy-supabase` on every push to `main`.
+
 > Written 2026-09-18. Step 1 of a decomposed effort to give the
 > `complete-lesson` Supabase Edge Function (see
 > `docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md`)

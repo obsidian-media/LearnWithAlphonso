@@ -1,5 +1,7 @@
 # Android app: design
 
+> Status (2026-10-09): implemented; merged to `main` in #200 (2026-10-01). Not on Google Play yet. Android has not received the account-level AI consent screen, the public-name step or the hearts gate.
+
 Written 2026-09-29. Status: approved design, awaiting implementation
 plan (`docs/superpowers/plans/2026-09-29-android-app-plan.md`).
 
@@ -40,7 +42,7 @@ Decisions the owner made on 2026-09-29, recorded so nobody re-asks:
   export script, its own workflows. Shared files on `main` are touched
   only for the FCM backend change (section 8), which is additive.
 - Local Android tooling is installed only under
-  `D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds`.
+  `<playground>`.
 
 ## 2. Constraints
 

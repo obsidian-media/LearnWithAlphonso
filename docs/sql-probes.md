@@ -18,7 +18,7 @@ GRANT ALL ON res TO PUBLIC; GRANT ALL ON SEQUENCE res_n_seq TO PUBLIC;   -- the 
 
 -- seed throwaway users (the signup trigger creates profiles / user_progress), then whatever rows the scenario needs
 INSERT INTO auth.users (id, email, instance_id, aud, role) VALUES
- ('00000000-0000-0000-0000-0000000000e1','t-1@example.test','00000000-0000-0000-0000-000000000000','authenticated','authenticated');
+ ('00000000-0000-0000-0000-0000000000e1','t-1-probe','00000000-0000-0000-0000-000000000000','authenticated','authenticated');
 INSERT INTO public.language_progress (user_id, language, xp, league_tier) VALUES ('00000000-0000-0000-0000-0000000000e1','en',0,'bronze');
 
 -- call a function AS a user and capture an error instead of aborting the script
@@ -40,7 +40,7 @@ SELECT n, scenario, detail FROM res ORDER BY n;
 ROLLBACK;
 ```
 
-Afterwards confirm nothing leaked: `SELECT count(*) FROM auth.users WHERE email LIKE 't-%@example.test'` is 0, no `idle in transaction`
+Afterwards confirm nothing leaked: `SELECT count(*) FROM auth.users WHERE email LIKE 't-%-probe'` is 0, no `idle in transaction`
 in `pg_stat_activity`, and the deployed function text is unchanged.
 
 ## Rules that cost us time
@@ -87,13 +87,13 @@ Same harness, each migration installed inside `BEGIN ... ROLLBACK` with the depl
 
 The static guard for the most common mistake is `src/lib/plpgsql-output-column-clash.test.ts`.
 
-## AI consent and AI output check (2026-10-11)
+## AI consent and AI output check (merged 2026-10-08; migration versions 20261011*)
 
 Same harness, both migrations installed inside `BEGIN ... ROLLBACK` after checking the deployed behaviour ("old"): 28 rows, 0 failures, leak check 0 users / 0 functions / 0 columns.
 
 | Function | What the script showed |
 |---|---|
-| `set_ai_consent`, `get_ai_consent`, column guard (`20261011100000`) | missing before install; anon refused; grant stamps a time, withdraw clears it, NULL refused, signed-out refused, no profile row refused; another learner unaffected and unable to read the row; a direct PATCH of `ai_consent_at` refused with `ai-consent-via-rpc-only` while other columns still update; `service_role` and `postgres` may write the column (the review account can be reset); sign-up still works |
+| `set_ai_consent`, `get_ai_consent`, column guard (`20261011100000`) | missing before install; anon refused; grant stamps a time, withdraw clears it, NULL refused, signed-out refused, no profile row refused; another learner unaffected and unable to read the row; a direct PATCH of `ai_consent_at` refused with `ai-consent-via-rpc-only` while other columns still update; `service_role` and `postgres` may write the column (a demo account can be reset); sign-up still works |
 | `ai_output_blocked` (`20261011100100`) | blocked-term verdicts on prose (English profanity and French `retard` blocked; `râpé` and `cono` not blocked by the v2 filter); 20-element cap (exactly 20 passes; 21, a 2-D array and a 4x10 array are refused with `invalid-argument`); empty and NULL inputs; anon refused; service role allowed |
 
 `ai_output_blocked` service-role only (`20261012300000`), same harness, rolled back; leak check 0 users, 0 idle transactions: before the migration a signed-in user can call it (one call with 20 strings of 8000 characters measured about 2 seconds of database time, which made it a load vector); after it, `authenticated` and `anon` get `42501 permission denied`, `service_role` still gets verdicts and still refuses a two-dimensional array.

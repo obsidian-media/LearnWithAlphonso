@@ -1,5 +1,7 @@
 # Learning goal and timeline planner: design
 
+> Status (2026-10-09): implemented on web (#223), iOS (#225) and Android (#226).
+
 **Status:** design approved in conversation 2026-10-05; owner answered the open questions 2026-10-06 (see below); the plan is next.
 **Path:** architectural (new table, new route, three clients).
 **BACKLOG:** section 0.0-ac, item 8 ("Goal and timeline planner").

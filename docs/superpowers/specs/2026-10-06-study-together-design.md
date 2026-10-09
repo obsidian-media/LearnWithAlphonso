@@ -1,5 +1,7 @@
 # Study together: team missions and language buddies
 
+> Status (2026-10-09): complete (#246). Matching was hardened afterwards (#248: rate limits, a durable 13+ record, a pause switch) and a seeded demo account is kept out of the real pool (#265).
+
 Date: 2026-10-06. Status: design approved by the owner on 2026-10-06 (BACKLOG 0.0-ac item 2). Decisions made with the owner: both features in one spec, built in the order below; target scales with team size; reward is XP plus a shared badge; members see the team total plus their own count; buddies pair with an existing friend or through opt-in matching; the buddy goal is a small weekly lesson count with a pair streak; **buddies talk through fixed preset messages only, never free text** (free text would add a new kind of user-generated content and change the App Store submission: App Privacy answers, age rating and moderation scrutiny).
 
 ## Implementation status (kept current)

@@ -1,5 +1,7 @@
 # Free-form translation question type — Implementation Plan
 
+> Status (2026-10-09): implemented (#96).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a sixth question type, `translate`, in which the learner writes a full phrase in English and is graded against a curated list of acceptable phrasings, with an AI fallback for valid wordings the list did not anticipate.

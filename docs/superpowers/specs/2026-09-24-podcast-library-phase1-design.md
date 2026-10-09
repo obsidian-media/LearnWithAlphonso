@@ -1,8 +1,10 @@
 # Podcast / Audio Library — Phase 1 design
 
+> Status (2026-10-09): implemented (#98, hardened in #105). Publishing is now licensed-only: only Deepgram or human audio can be published, enforced by a database CHECK (#262).
+
 **Date:** 2026-09-24
 **Status:** design approved in brainstorming, not yet implemented
-**Worktree/branch:** `.claude/worktrees/podcast-library` / `worktree-podcast-library`
+**Worktree/branch:** a nested worktree on branch `worktree-podcast-library`
 
 ## Purpose
 

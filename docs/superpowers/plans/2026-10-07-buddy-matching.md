@@ -1,5 +1,7 @@
 # Buddy Matching (Phase 3b: opt-in stranger matching) Implementation Plan
 
+> Status (2026-10-09): implemented: server and web #244, iOS and Android #245; hardened in #248 and the demo account is kept out of the real pool by #265.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 
 **Goal:** A learner can opt in to be matched with another learner of the same course and a similar level as a study buddy, on the server and the web (native in a follow-up PR), with guardrails that keep it a learning feature, not "random chat".

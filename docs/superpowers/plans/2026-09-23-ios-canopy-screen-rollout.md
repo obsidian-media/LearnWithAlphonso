@@ -1,5 +1,7 @@
 # iOS Canopy Theme — Screen Rollout Implementation Plan
 
+> Status (2026-10-09): implemented (#83). Canopy was later ported to the web (#91).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Apply the Canopy theme (via the shared components and tokens the foundation plan already built) to every already-styled iOS screen, so the app stops reading as "an empty piece of background with some written knowledge on it."

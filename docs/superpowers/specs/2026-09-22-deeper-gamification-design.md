@@ -1,5 +1,7 @@
 # Design: Deeper Gamification (V4 candidate #7)
 
+> Status (2026-10-09): implemented (#64 to #67). Teams and quests were broken in production until #236; their integrity was reworked in #248; a shared weekly team mission followed (#230).
+
 > Written 2026-09-22. Architectural — four independent systems, each
 > with its own migration/RPC set/UI surface, sharing one SQL building
 > block. Brainstormed interactively; scope deliberately expanded beyond

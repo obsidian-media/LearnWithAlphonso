@@ -1,5 +1,7 @@
 # Team Player Badge (database, catalog, bundles) Implementation Plan
 
+> Status (2026-10-09): implemented (#232).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Members who help their team finish a weekly mission also unlock a "Team player" badge, shown by web, iOS and Android.
@@ -10,7 +12,7 @@
 
 Part of `docs/superpowers/specs/2026-10-06-study-together-design.md` (Part 1, Phase 2). iOS and Android UI follow in their own PRs.
 
-**Worktree:** `D:\AgentDevWork\repos\LearnWithAlphonso-badge`, branch `feat/team-player-badge`.
+**Worktree:** `<worktree>`, branch `feat/team-player-badge`.
 
 ---
 

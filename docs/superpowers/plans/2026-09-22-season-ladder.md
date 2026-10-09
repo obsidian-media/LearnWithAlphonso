@@ -1,5 +1,7 @@
 # Season Ladder Implementation Plan
 
+> Status (2026-10-09): implemented (#67).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A Duolingo-style weekly promotion/demotion ladder — ~30-person cohorts, ranked by weekly XP, top third promotes a division, bottom sixth demotes one, resolved lazily (no cron) — distinct from the existing permanent `league_tier` milestone badge.
@@ -95,7 +97,7 @@ git checkout -b feat/gamification-season-ladder main
 git add supabase/migrations/<timestamp>_season_ladder.sql
 git commit -m "feat: season ladder tables + get_cohort_weekly_xp (V4 #7 pt 1)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 ---
@@ -249,7 +251,7 @@ Run: `deno test supabase/functions/get-season-status/season-math.test.ts` — ex
 git add supabase/functions/get-season-status/season-math.ts supabase/functions/get-season-status/season-math.test.ts
 git commit -m "feat: pure season-ladder ranking/promotion math, unit tested (V4 #7 pt 2)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 ---
@@ -454,7 +456,7 @@ Run: `deno check supabase/functions/get-season-status/index.ts` — expect clean
 git add supabase/functions/get-season-status/index.ts .github/workflows/ci.yml
 git commit -m "feat: get-season-status Edge Function (V4 #7 pt 3)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 ---
@@ -653,7 +655,7 @@ git add src/lib/season.functions.ts src/routes/_authenticated/season.tsx \
   src/routes/_authenticated/season.test.tsx src/routes/_authenticated/league.tsx
 git commit -m "feat: web /season route + entry point from /league (V4 #7 pt 4)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 git push
 ```
 
@@ -793,7 +795,7 @@ git add ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient
   ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/ProgressSyncClient+SeasonTests.swift
 git commit -m "feat: iOS Kit client for get-season-status (V4 #7 pt 5)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 - [ ] **Step 5: Write `SeasonView.swift`**
@@ -855,7 +857,7 @@ NavigationLink("Season") {
 git add ios/LearnWithAlphonso/Sources/SeasonView.swift ios/LearnWithAlphonso/Sources/LeaderboardView.swift
 git commit -m "feat: iOS SeasonView, linked from LeaderboardView (V4 #7 pt 6)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 git push
 gh pr checks <this-branch's-PR-number> --watch
 ```

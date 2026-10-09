@@ -1,5 +1,7 @@
 # Design: iOS Vocab Stock Photos
 
+> Status (2026-10-09): implemented, then replaced. The Pexels/Pixabay lookup was removed in #249: every vocab image is now a reviewed, self-hosted photo (730 live after a second pass, #268), and a card with no picturable term is text-only.
+
 > **Superseded in part (2026-10-07, App Store review fix).** Images are no
 > longer loaded from the Pexels/Pixabay CDNs. They are self-hosted in the
 > `vocab-images` bucket, and `VocabImageView` collapses on failure instead of

@@ -1,5 +1,7 @@
 # Buddy Pairing (Phase 3a: friends only) Implementation Plan
 
+> Status (2026-10-09): implemented (#238), later hardened in #248 (rate limits, pause switch).
+
 > **As built (after review), these differ from the steps below:** a block is recorded as `unfriended`; every pairing, request and ending path first takes per-person advisory locks in a fixed order (`_lock_buddy_users`), `_create_buddy_pair` re-checks friendship and blocks under that lock, a reverse request is marked accepted only after the pair exists, and `_end_buddy_pair_between` resolves the finished weeks before ending (`end_buddy` goes through it). The migration file is the source of truth.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -573,7 +575,7 @@ Note on the clash guard: `request_buddy` and friends return a column called `sta
 
 - [ ] **Step 4: Run the migration test and the clash guard, expect PASS.** If the clash guard flags a function, qualify the reference; do not add `#variable_conflict`.
 
-- [ ] **Step 5: Live proof BEFORE merging** (`docs/sql-probes.md`): one rolled-back transaction through MCP `execute_sql` that installs the whole migration, seeds throwaway users `t-b1..t-b6@example.test` (with mirrored `accepted` friendships where a scenario needs them) and records each result. Expected:
+- [ ] **Step 5: Live proof BEFORE merging** (`docs/sql-probes.md`): one rolled-back transaction through MCP `execute_sql` that installs the whole migration, seeds throwaway users `t-b1..t-b6 (throwaway emails)` (with mirrored `accepted` friendships where a scenario needs them) and records each result. Expected:
   - P1 `request_buddy(non-friend)` -> `not_friends`; self -> `not_friends`.
   - P2 b1 asks b2 -> `requested`; b1 asks again -> `already_requested`; `get_buddy_requests` for b2 shows one `incoming`.
   - P3 b2 asks b1 back -> `paired`; exactly one `buddy_pairs` row, two `buddy_members` rows, the request `accepted`.

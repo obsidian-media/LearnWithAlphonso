@@ -1,5 +1,7 @@
 # Design: Spanish content audit and question-type parity
 
+> Status (2026-10-09): executed: audit steps 1 to 7 (#122, #127, #130, #132) and phase 2 (#134, #137, #138, #139). Spanish has full six-type parity; a native-speaker review is still outstanding.
+
 > **Status:** not started. Authoritative handoff for the session that
 > completed the French audit (PR #97) and French phase 2 (four PRs
 > ending #115). Written 2026-09-25 against `main` at `2de245e`.

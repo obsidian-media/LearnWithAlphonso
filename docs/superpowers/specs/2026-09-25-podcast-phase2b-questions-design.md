@@ -1,5 +1,7 @@
 # Podcast Phase 2b — comprehension questions, XP and SRS
 
+> Status (2026-10-09): not implemented. Transcripts (Phase 2a, #125) shipped; comprehension questions, XP and SRS wiring have not been built.
+
 **Status:** spec, awaiting review. Nothing built.
 
 **Follows:** Phase 1a (`2026-09-24-podcast-library-phase1-design.md`),

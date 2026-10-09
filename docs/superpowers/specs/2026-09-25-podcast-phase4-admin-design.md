@@ -1,5 +1,7 @@
 # Podcast Phase 4 — the admin subsystem
 
+> Status (2026-10-09): implemented (#140 to #143); live at admin.alphonsoecosystem.app.
+
 **Status:** spec, awaiting review. Nothing built.
 
 **Follows:** Phases 1a, 1b, 2a, 3. Independent of Phase 2b

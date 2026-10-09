@@ -1,5 +1,7 @@
 # Podcast library Phase 1b — the iOS Listen client
 
+> Status (2026-10-09): implemented (#110) and shipped to TestFlight; reworked in #262 and #270 (first-listen save, failure states, remembered position).
+
 **Date:** 2026-09-24
 **Status:** implemented; CI green (ios-app-build passes, 272 Kit tests). **Device verification outstanding** — see below.
 **Branch:** `worktree-podcast-phase1b-ios` (from `1b3163f`)

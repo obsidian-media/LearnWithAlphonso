@@ -1,5 +1,7 @@
 # Android Plan 1: Foundation and Learning Loop
 
+> Status (2026-10-09): implemented; the `android` branch was merged to `main` in #200 (2026-10-01). The app is not on Google Play yet.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A CI-built Android app where a learner signs in, takes placement, plays any lesson of any course with all six question types, reviews due items, earns and loses hearts, XP and streak, and keeps working offline, all against the production backend.
@@ -19,13 +21,13 @@
 
 ## Global Constraints
 
-- Everything Android-SDK-related is installed only under `D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds`. `ANDROID_HOME` points there; nothing is written to the user profile.
+- Everything Android-SDK-related is installed only under `<playground>`. `ANDROID_HOME` points there; nothing is written to the user profile.
 - All code lives under `android/LearnWithAlphonso/` plus `scripts/export-android-content.ts` and `.github/workflows/android-ci.yml`. No other shared file is modified in this plan.
 - `minSdk = 26`, `targetSdk = 36`, `compileSdk = 37` with `compileSdkMinor = 2` (found in execution: current AndroidX artifacts refuse compileSdk 36). Package `com.obsidianmedia.learnwithalphonso`.
 - Supabase URL `https://qhcjpfbxfcltjbiuknyt.supabase.co`, publishable key `sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9`, API base `https://learn.alphonsoecosystem.app` (from `AppConfig.swift`). These are public client values.
 - No secret is committed. The repo is public.
 - Every `core` port carries the same test vectors as its TS test file; a vector may not be dropped.
-- Commits on branch `android` in worktree `D:\AgentDevWork\repos\LearnWithAlphonso-android`; run git from that directory.
+- Commits on branch `android` in worktree `<worktree>`; run git from that directory.
 - Content JSON is generated, never hand-edited.
 
 ## Review Focus
@@ -41,11 +43,11 @@
 ### Task 0: Local toolchain under the playground path
 
 **Files:**
-- Create: `D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\setup-android-toolchain.ps1`
+- Create: `<playground>\setup-android-toolchain.ps1`
 - Create: `android/LearnWithAlphonso/TOOLING.md`
 
 **Interfaces:**
-- Produces: `ANDROID_HOME=D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\android-sdk` with `platforms;android-36`, `build-tools;36.0.0`, `platform-tools`, `cmdline-tools;latest`. Gradle is not installed globally; the Gradle wrapper in Task 1 downloads its own distribution into `GRADLE_USER_HOME=D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\gradle-home`.
+- Produces: `ANDROID_HOME=<playground>\android-sdk` with `platforms;android-36`, `build-tools;36.0.0`, `platform-tools`, `cmdline-tools;latest`. Gradle is not installed globally; the Gradle wrapper in Task 1 downloads its own distribution into `GRADLE_USER_HOME=<playground>\gradle-home`.
 
 - [ ] **Step 1: Write the setup script**
 
@@ -53,7 +55,7 @@
 # setup-android-toolchain.ps1 -- installs the Android command-line SDK
 # under this folder only. Idempotent.
 $ErrorActionPreference = "Stop"
-$Root = "D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds"
+$Root = "<playground>"
 $Sdk = Join-Path $Root "android-sdk"
 $Tools = Join-Path $Sdk "cmdline-tools"
 New-Item -ItemType Directory -Force $Tools | Out-Null
@@ -75,8 +77,8 @@ Write-Host "ANDROID_HOME=$Sdk"
 
 - [ ] **Step 2: Run it**
 
-Run (PowerShell): `& "D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\setup-android-toolchain.ps1"`
-Expected: ends with `ANDROID_HOME=D:\...\android-sdk`; `dir android-sdk\platforms\android-36` lists `android.jar`. If the zip URL 404s, read the current filename from https://developer.android.com/studio#command-tools and update the script before retrying.
+Run (PowerShell): `& "<playground>\setup-android-toolchain.ps1"`
+Expected: ends with `ANDROID_HOME=<playground>\android-sdk`; `dir android-sdk\platforms\android-36` lists `android.jar`. If the zip URL 404s, read the current filename from https://developer.android.com/studio#command-tools and update the script before retrying.
 
 - [ ] **Step 3: Write TOOLING.md**
 
@@ -85,12 +87,12 @@ Expected: ends with `ANDROID_HOME=D:\...\android-sdk`; `dir android-sdk\platform
 
 No Android Studio or emulator exists in the development environment. The
 command-line SDK lives at
-`D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\android-sdk`
+`<playground>\android-sdk`
 (installed by `setup-android-toolchain.ps1` in that folder). Before any
 Gradle command in this directory, set:
 
-    $env:ANDROID_HOME = "D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\android-sdk"
-    $env:GRADLE_USER_HOME = "D:\AgentDevWork\repos\test\LearnWithAlphonsoFablePlayGrounds\gradle-home"
+    $env:ANDROID_HOME = "<playground>\android-sdk"
+    $env:GRADLE_USER_HOME = "<playground>\gradle-home"
     $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.12.8-hotspot"
 
 Then `.\gradlew.bat :core:test` (JVM tests) or `.\gradlew.bat :app:assembleDebug`.

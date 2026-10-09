@@ -1,5 +1,7 @@
 # Weekly XP Shared Helper Implementation Plan
 
+> Status (2026-10-09): implemented as part of the V4 gamification batch (#64 to #67).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Extract the weekly-XP computation currently inlined in `get_leaderboard` into a standalone, `week_start`-parameterized SQL function, so Teams and the Season Ladder (both built in separate plans on top of this one) can reuse the exact same logic instead of reimplementing it.
@@ -136,7 +138,7 @@ Teams and the Season Ladder, parameterized by an explicit week_start
 rather than hardcoded to \"now\". Pure refactor -- get_leaderboard's
 behavior is unchanged.
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 git push -u origin feat/weekly-xp-shared-helper
 gh pr create --title "V4 #7 foundation: extract weekly_xp shared helper" --body "$(cat <<'EOF'
 ## Summary

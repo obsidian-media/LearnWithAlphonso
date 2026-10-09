@@ -1,5 +1,7 @@
 # Android Plan 4: Podcasts, Notifications, Push and Widget
 
+> Status (2026-10-09): implemented and merged to `main` in #200 (push: #192). `podcast_playback.user_id` now has a database default (#262), so the Android first-save `user_id` is harmless but no longer required.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The Listen tab (folder tree, search, resume, transcripts, offline downloads with a budget, background playback with lock-screen controls and a next-episode control), the four local notifications, Firebase Cloud Messaging for nudges and overtakes (one additive backend change shipped to `main` as its own PR), and a home-screen streak widget.

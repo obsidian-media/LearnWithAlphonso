@@ -1,5 +1,7 @@
 # Save-any-word -- design
 
+> Status (2026-10-09): implemented: backend (#211), iOS (#212 to #214, #219), web (#216, #220). Saving needs the account's AI consent (#256, #257).
+
 **Date:** 2026-10-05. **Status:** approved by the owner (design in chat, then
 the written spec). **Phases 1-2 are implemented:** backend merged as PR #211 (live
 and verified), iOS on Hector replies as PR #212, Practice and Campaign replies

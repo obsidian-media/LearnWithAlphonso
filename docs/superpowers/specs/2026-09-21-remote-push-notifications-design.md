@@ -1,5 +1,7 @@
 # Design: Remote (APNs) Push Notifications
 
+> Status (2026-10-09): implemented and live (APNs); Android fan-out through FCM was added in #192.
+
 > Written 2026-09-21. V4 candidate #2 (`docs/BACKLOG.md` §2.1,
 > `docs/v4-kickoffs/00-INDEX.md` #2). **Additive** to the already-shipped
 > V2 local-notification system (`NotificationScheduler.swift` +

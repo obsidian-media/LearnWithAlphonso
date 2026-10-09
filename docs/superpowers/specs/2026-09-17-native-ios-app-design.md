@@ -1,5 +1,7 @@
 # Design: Native iOS App for english-buddy-app-33 ("Learn with Alphonso")
 
+> Status (2026-10-09): implemented and extended well beyond this roadmap. The plan to reuse Cloud Voice for all AI conversation was superseded (Hector now runs on this repo's own backend, #189), and iOS auth now offers Apple, Google and the emailed code (#146, #255) rather than OTP only.
+
 > Written 2026-09-17. Shipaton 2026 submission window closes 2026-09-30 —
 > ~13 days from this doc. Every V1 decision below is made against that
 > deadline; V2/V3 are explicitly not deadline-bound.

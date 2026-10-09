@@ -1,5 +1,7 @@
 # Podcast Phase 0 — iOS Tab Consolidation Implementation Plan
 
+> Status (2026-10-09): implemented (#102).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reduce the iOS tab bar from seven tabs to **Learn · Listen · Practice · Hector · Profile**, building the review entry point that folding Review into Learn requires.

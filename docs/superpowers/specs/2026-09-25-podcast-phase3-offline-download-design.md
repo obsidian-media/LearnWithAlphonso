@@ -1,5 +1,7 @@
 # Podcast library Phase 3 — offline download
 
+> Status (2026-10-09): approved and implemented (#131, #133 and the app wiring).
+
 **Date:** 2026-09-25
 **Status:** design proposed, not yet approved
 **Branch:** `worktree-podcast-offline-spec`

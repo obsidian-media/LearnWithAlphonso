@@ -1,5 +1,7 @@
 # Podcast Phase 4 — Admin Subsystem Implementation Plan
 
+> Status (2026-10-09): implemented (#140 to #143); the admin app is live at admin.alphonsoecosystem.app. Its publish switch now refuses audio that is not Deepgram or human (#262).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The account owner publishes and maintains the podcast library from a browser, in a separately-deployed admin app whose write access is gated by a server-only allowlist.
