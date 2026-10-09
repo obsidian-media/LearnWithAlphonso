@@ -143,17 +143,6 @@
 				<string>1C8F.1</string>
 			</array>
 		</dict>
-		<dict>
-			<!-- File timestamp/size. C617.1: files inside this app's own container
-			     (a staged podcast download). Not 3B52.1, which is for files the
-			     user picked. -->
-			<key>NSPrivacyAccessedAPIType</key>
-			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
-			<key>NSPrivacyAccessedAPITypeReasons</key>
-			<array>
-				<string>C617.1</string>
-			</array>
-		</dict>
 	</array>
 </dict>
 </plist>
