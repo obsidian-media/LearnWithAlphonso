@@ -140,11 +140,13 @@ describe("copy rule: no literal -- in user-facing strings", () => {
     ];
     for (const f of files) {
       const code = blankSwiftComments(read(f));
-      for (const m of code.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)) {
-        if (!m[1].includes("--") || NOT_COPY.some((r) => r.test(m[1]))) continue;
+      // Multi-line literals first, then single-line ones.
+      for (const m of code.matchAll(/"""([\s\S]*?)"""|"((?:[^"\\\n]|\\.)*)"/g)) {
+        const text = m[1] ?? m[2];
+        if (!text.includes("--") || NOT_COPY.some((r) => r.test(text))) continue;
         const line = code.split("\n")[lineAt(code, m.index!) - 1];
-        if (/\bprint\(|\bLogger\b|\bos_log\(|\.debug\(|\.error\(/.test(line)) continue;
-        offenders.push(`${f}:${lineAt(code, m.index!)}: "${m[1]}"`);
+        if (/\bprint\(|\bLogger\b|\blog\.|\bos_log\(/.test(line)) continue;
+        offenders.push(`${f}:${lineAt(code, m.index!)}: "${text.slice(0, 60)}"`);
       }
     }
     expect(offenders).toEqual([]);
@@ -171,7 +173,7 @@ function closingIndex(code: string, open: number): number {
 function unlabeledIconOnlyControls(file: string, raw: string): string[] {
   const code = codeSkeleton(raw);
   const found: string[] = [];
-  const re = /\b(Button|Menu|Link)\s*(\(|\{)/g;
+  const re = /\b(Button|Menu|\w*Link)\s*(\(|\{)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(code))) {
     const open = m.index + m[0].length - 1;
@@ -197,7 +199,11 @@ function unlabeledIconOnlyControls(file: string, raw: string): string[] {
             const ls = e + 1 + lab[0].length - 1;
             label = [ls, closingIndex(code, ls)];
             end = label[1];
-          } else if (!titled && m[1] === "Button" && /action:/.test(args)) {
+          } else if (
+            !titled &&
+            ((m[1] === "Button" && /action:/.test(args)) ||
+              (/Link$/.test(m[1]) && args.trim() !== ""))
+          ) {
             label = [s, e];
           }
         }
@@ -235,6 +241,7 @@ describe("accessibility: icon-only controls", () => {
       'Button(action: go) { Image(systemName: "xmark") }', // 2: action form, unlabeled
       'Menu { Button("A") {} } label: { Image(systemName: "ellipsis.circle") }', // 3: menu, unlabeled
       'Button { go() } label: { Image(systemName: "plus") }\n    .accessibilityLabel("Add")', // labelled via chain
+      'ShareLink(item: "x") { Image(systemName: "square.and.arrow.up") }', // 4: share link, unlabeled
       'Button("Done") { go() }', // titled
       'Button { go() } label: { Label("Share", systemImage: "square.and.arrow.up") }', // has a Label
     ].join("\n");
@@ -242,6 +249,7 @@ describe("accessibility: icon-only controls", () => {
       "fixture.swift:1",
       "fixture.swift:2",
       "fixture.swift:3",
+      "fixture.swift:6",
     ]);
   });
 
@@ -302,8 +310,48 @@ describe("live system appearance without the launch-hang loop", () => {
   it("never reads an environment or window colour scheme that .preferredColorScheme can override", () => {
     const code = blankSwiftComments(rootView) + blankSwiftComments(observer);
     expect(code).not.toMatch(/@Environment\(\\\.colorScheme\)/);
-    expect(code).not.toMatch(/window[\w?.]*\.traitCollection/);
+    expect(code).not.toMatch(/window[\w?.]*\.traitCollection/i);
+    expect(code).not.toMatch(/UITraitCollection\.current/);
     expect(rootView).toContain("appearanceObserver.start()");
+  });
+});
+
+describe("debug-only hooks and the theme entry point", () => {
+  it("every -UITest literal sits inside #if DEBUG ... #endif", () => {
+    const offenders: string[] = [];
+    for (const f of APP_SOURCES) {
+      const stack: boolean[] = [];
+      read(f)
+        .split("\n")
+        .forEach((line, i) => {
+          const t = line.trim();
+          if (/^#if\b/.test(t)) stack.push(/^#if DEBUG\s*$/.test(t));
+          else if (/^#endif\b/.test(t)) stack.pop();
+          else if (/^#else\b|^#elseif\b/.test(t)) stack[stack.length - 1] = false;
+          if (t.startsWith("//")) return;
+          if (line.includes("-UITest") && !stack.some(Boolean)) offenders.push(`${f}:${i + 1}`);
+        });
+    }
+    expect(offenders).toEqual([]);
+  });
+  it("the shipped-binary check for -UITest is in ios-release.yml", () => {
+    expect(read(".github/workflows/ios-release.yml")).toContain("grep -q -- '-UITest'");
+  });
+  it("only the observer pushes a system colour scheme into the theme", () => {
+    const users = APP_SOURCES.filter((f) =>
+      blankSwiftComments(read(f)).includes("updateSystemColorScheme("),
+    );
+    expect(users.sort()).toEqual([
+      "ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoTheme.swift",
+      "ios/LearnWithAlphonso/Sources/SystemAppearanceObserver.swift",
+    ]);
+  });
+  it("the UI compatibility workflow is dispatch-only (it mints a session on the review account)", () => {
+    const wf = read(".github/workflows/ios-ui-compat.yml");
+    const on = wf.slice(wf.indexOf("\non:"), wf.indexOf("\nconcurrency:"));
+    expect(on).toContain("workflow_dispatch:");
+    expect(on).not.toMatch(/pull_request|push:|schedule:|workflow_run/);
+    expect(wf).toMatch(/concurrency:\s+group: ios-ui-compat\n/);
   });
 });
 

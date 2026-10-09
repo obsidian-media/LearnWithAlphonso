@@ -41,7 +41,14 @@ final class DeadLetterNoticeTests: XCTestCase {
         d.dismiss(["a", "gone"])
         d.prune(keeping: live)
         XCTAssertEqual(d.dismissed, ["a"])
-        XCTAssertEqual(live, ["a", "b"])
+    }
+
+    /// Two separate dismissals both stay: dismissing adds to the set, it never replaces it.
+    func testSeparateDismissalsAccumulate() {
+        let d = DeadLetterDismissals(defaults: defaults())
+        d.dismiss(["a"])
+        d.dismiss(["b"])
+        XCTAssertEqual(d.dismissed, ["a", "b"])
     }
 
     func testSignOutClearsDismissals() {

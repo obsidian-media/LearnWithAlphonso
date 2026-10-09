@@ -45,6 +45,16 @@ final class AppearanceChangeGateTests: XCTestCase {
         XCTAssertFalse(gate.isTripped)
     }
 
+    /// A tripped gate stays tripped with time alone: only `rearm()` (return to the foreground) clears it.
+    func testATrippedGateStaysTrippedWithoutRearm() {
+        var gate = AppearanceChangeGate()
+        for i in 0..<20 { _ = gate.offer(i % 2 == 0 ? .dark : .light, at: t0.addingTimeInterval(Double(i) * 0.01)) }
+        XCTAssertTrue(gate.isTripped)
+        let next: AppearanceChangeGate.Appearance = gate.current == .dark ? .light : .dark
+        XCTAssertFalse(gate.offer(next, at: t0.addingTimeInterval(3)))
+        XCTAssertTrue(gate.isTripped)
+    }
+
     func testRearmAllowsChangesAgainAfterATrip() {
         var gate = AppearanceChangeGate()
         for i in 0..<20 { _ = gate.offer(i % 2 == 0 ? .dark : .light, at: t0.addingTimeInterval(Double(i) * 0.01)) }

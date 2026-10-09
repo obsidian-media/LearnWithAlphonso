@@ -1,5 +1,5 @@
-"""Checks an App Store icon candidate: 1024x1024, RGB (no alpha channel, no palette), full-bleed (no near-white
-corner pixels), and not pre-rounded (each corner patch matches its neighbouring edge colour).
+"""Checks an App Store icon: 1024x1024, RGB (no alpha channel, no palette), and full-bleed: no near-white pixel
+(weakest channel above 228) in any of the four 16 px corner patches, which is what a pre-rounded icon has.
 Usage: python verify_icon.py <png> [<png> ...]   exit 0 only when every file passes."""
 import sys
 from PIL import Image

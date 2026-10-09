@@ -7,20 +7,15 @@ name: iOS UI compatibility (iPad and largest text)
 # to look at.
 #
 # Signed-in screens use the seeded demo account through Session.uiTestBootstrapSession (DEBUG), the same path
-# capture-app-store-screenshots.yml uses. The tests only read; they never write to the account. Each run still
-# creates an auth session, so to stop these jobs signing in on every pull request, delete the pull_request
-# block below and keep workflow_dispatch.
+# capture-app-store-screenshots.yml uses. The tests only read, but each run mints an auth session on the account
+# App Review signs in with, so this workflow is dispatch-only and must never run automatically. Dispatch it by
+# hand when the demo account is not frozen. One run at a time, across all branches.
 on:
-  pull_request:
-    paths:
-      - "ios/LearnWithAlphonso/**"
-      - "ios/LearnWithAlphonsoKit/Sources/**"
-      - ".github/workflows/ios-ui-compat.yml"
   workflow_dispatch:
 
 concurrency:
-  group: ios-ui-compat-${{ github.ref }}
-  cancel-in-progress: true
+  group: ios-ui-compat
+  cancel-in-progress: false
 
 jobs:
   ui-compat:

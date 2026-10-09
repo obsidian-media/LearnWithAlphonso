@@ -48,6 +48,7 @@ struct TeamsView: View {
                             Image(systemName: "square.and.arrow.up")
                         }
                         .tint(AlphonsoColor.moss)
+                        .accessibilityLabel("Share team invite")
                     }
                     Text("\(myTeam.thisWeekXP) XP this week")
                         .font(AlphonsoFont.display(17, weight: .semiBold))

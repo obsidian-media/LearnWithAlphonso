@@ -394,6 +394,13 @@ jobs:
             console.log("Manifest OK: UserDefaults [" + reasons + "], " + (m.NSPrivacyCollectedDataTypes || []).length + " collected data types.");
           '
 
+          echo "-- No UI-test launch hooks in the shipped binary --"
+          if strings "$APP/LearnWithAlphonso" | grep -q -- '-UITest'; then
+            echo "::error::The shipped binary contains a -UITest launch argument; the debug-only hooks leaked into Release."
+            exit 1
+          fi
+          echo "No UI-test hooks in the binary."
+
           echo "-- Icon and licence texts compiled into the bundle --"
           ICON_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName" "$APP/Info.plist" 2>/dev/null || echo MISSING)
           [ "$ICON_NAME" = "AppIcon" ] || { echo "::error::Shipped CFBundleIcons primary icon is '$ICON_NAME', expected 'AppIcon'."; exit 1; }
