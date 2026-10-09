@@ -15,13 +15,15 @@ import XCTest
 /// set of screenshots from one flaky selector is far more useful than
 /// zero from a hard failure three steps in.
 ///
-/// Not attempted: a real Hector voice exchange (shot #4). There is no
-/// synthetic-microphone-input path in a Simulator, and faking one by
-/// injecting chat state directly would screenshot a state a real
-/// interaction never produces -- the same "impossible state" risk that
-/// ruled out a debug entitlement bypass elsewhere in this pipeline. This
-/// test only opens the Hector tab; a real exchange still needs either a
-/// human or a future, separately-considered effort.
+/// Not automated: the Hector voice shot. There is no synthetic-microphone
+/// input path in a Simulator, and faking one by injecting chat state
+/// directly would screenshot a state a real interaction never produces --
+/// the same "impossible state" risk that ruled out a debug entitlement
+/// bypass elsewhere in this pipeline. That shot is captured on a device.
+///
+/// Also deliberately not captured: League, the leaderboard, or any other
+/// screen that lists other learners' public names. Marketing assets must
+/// not show real people's names.
 final class ScreenshotTests: XCTestCase {
     private var app: XCUIApplication!
     private var outputDir: String!
@@ -52,7 +54,7 @@ final class ScreenshotTests: XCTestCase {
         captureLearnTab()
         captureLessonPlayer()
         captureReviewQueue()
-        captureHector()
+        capturePracticeInFrench()
         captureListenLibrary()
         captureProfileHub()
     }
@@ -109,6 +111,15 @@ final class ScreenshotTests: XCTestCase {
             return
         }
         app.buttons["firstLessonRow"].tap()
+        // The shot must show a loaded vocab image, never the loading
+        // placeholder (VocabImageView exposes "vocab-image-loaded" once the
+        // image has rendered). Soft-fail: capture anyway after the timeout.
+        let loadedImage = app.images
+            .matching(NSPredicate(format: "identifier == 'vocab-image-loaded'"))
+            .firstMatch
+        if !loadedImage.waitForExistence(timeout: 20) {
+            XCTContext.runActivity(named: "02-lesson: no loaded vocab image within 20 s; capturing anyway") { _ in }
+        }
         // Land on a multiple-choice question per the shot list; if the
         // player opens on a different question type, this still captures
         // the lesson player itself, which is most of the value of the shot.
@@ -121,29 +132,25 @@ final class ScreenshotTests: XCTestCase {
         guard tapTab("Learn") else { return }
         guard tapContaining(app.buttons, "Review", timeout: 10) else { return }
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
-        save("03-review")
+        save("07-review")
         dismissSheet()
     }
 
-    private func captureHector() {
-        // Opens the tab only -- see this file's header comment on why a
-        // real exchange isn't attempted here.
-        guard tapTab("Hector") else { return }
-        // 2026-09-29: this never dismissed the first-run AI-disclosure
-        // sheet ("How Alphonso uses your voice") before saving OR before
-        // returning -- the saved shot caught it mid-presentation
-        // animation (a real screenshot bug, visible in the actual PNG:
-        // a dimmed backdrop and a half-slid-up sheet), and worse, the
-        // sheet was still covering the tab bar afterward, silently
-        // failing every capture after this one (captureListenLibrary,
-        // captureProfileHub) since tapTab() could no longer reach it.
-        let gotIt = app.buttons["Got it"]
-        if gotIt.waitForExistence(timeout: 5) {
-            gotIt.tap()
+    /// Switches the course picker on Learn to French, captures Practice,
+    /// then restores English so the remaining shots show the English
+    /// library and profile.
+    private func capturePracticeInFrench() {
+        guard tapTab("Learn") else { return }
+        guard selectCourse("FR") else { return }
+        if tapTab("Practice") {
+            _ = app.buttons["practiceScenarioRow"].firstMatch.waitForExistence(timeout: 15)
+            save("03-practice-fr")
         }
-        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
-        save("04-hector")
-        dismissSheet()
+        if tapTab("Learn") {
+            if !selectCourse("EN") {
+                XCTContext.runActivity(named: "Could not restore the English course") { _ in }
+            }
+        }
     }
 
     private func captureListenLibrary() {
@@ -172,13 +179,16 @@ final class ScreenshotTests: XCTestCase {
         guard tapContaining(app.staticTexts, "English", timeout: 40) else { return }
         guard tapContaining(app.staticTexts, "A1", timeout: 15) else { return }
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
-        save("05b-listen-episodes")
+        guard tapContaining(app.staticTexts, "Ordering Coffee", timeout: 15) else { return }
+        _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
+        save("06-listen-episode")
+        dismissSheet()
     }
 
     private func captureProfileHub() {
         guard tapTab("Profile") else { return }
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
-        save("06-profile")
+        save("09-profile")
     }
 
     // MARK: - Helpers
@@ -209,6 +219,29 @@ final class ScreenshotTests: XCTestCase {
     /// often composes a button's accessibility label from more than just
     /// its visible title (e.g. a row's subtitle folded in too), which an
     /// exact match would miss.
+    /// Opens the course picker (a menu in Learn's navigation bar) and picks
+    /// the option whose label contains `code` ("EN", "FR", "ES").
+    @discardableResult
+    private func selectCourse(_ code: String) -> Bool {
+        let picker = app.navigationBars.buttons
+            .matching(NSPredicate(format: "label CONTAINS 'Course' OR label CONTAINS 'EN' OR label CONTAINS 'FR' OR label CONTAINS 'ES'"))
+            .firstMatch
+        guard picker.waitForExistence(timeout: 10) else {
+            XCTContext.runActivity(named: "Missing course picker") { _ in }
+            return false
+        }
+        picker.tap()
+        let option = app.buttons
+            .matching(NSPredicate(format: "label CONTAINS %@", code))
+            .firstMatch
+        guard option.waitForExistence(timeout: 5) else {
+            XCTContext.runActivity(named: "Course option not found: \(code)") { _ in }
+            return false
+        }
+        option.tap()
+        return true
+    }
+
     @discardableResult
     private func tapContaining(_ query: XCUIElementQuery, _ text: String, timeout: TimeInterval) -> Bool {
         let match = query.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
@@ -230,7 +263,7 @@ final class ScreenshotTests: XCTestCase {
         // content it scrolls the content instead of dismissing, and the
         // old version never checked whether it worked. When it silently
         // failed the sheet stayed up and EVERY later capture photographed
-        // it -- 03-review, 04-hector and 05-listen came back
+        // it -- three earlier shots came back
         // byte-identical, and the run reported success. That is worse
         // than a missing shot: a duplicate labelled "listen" looks
         // uploadable.
