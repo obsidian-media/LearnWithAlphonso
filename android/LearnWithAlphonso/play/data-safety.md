@@ -1,8 +1,8 @@
 # Google Play Data safety answers
 
 Derived from the App Store declaration in `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy`
-and `Hackaton/Shipaton/03-submission-materials/privacy-nutrition-labels.md`
-(the code is the source of truth; those documents were written from it).
+and the App Store privacy-label answers (the code is the source of truth;
+those answers were written from it).
 The Android app talks to the same backend and adds nothing: no analytics,
 advertising or crash SDK; Firebase is used for Cloud Messaging only.
 

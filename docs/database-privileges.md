@@ -87,6 +87,15 @@ Default privileges for `postgres` in `public` before: tables `anon`, `authentica
 - New tables: `display_name_migration_backup`, `buddy_age_confirmations`, `buddy_pool_attempts` (SELECT of the caller's own rows, for the data export; writes server-only); `team_name_migration_backup` (server-only, `-- client-grants: none`). Drop both backup tables after 2026-11-08.
 - Accepted residual: `pg_net` is installed in `public` (advisor `extension_in_public`); it is not relocatable.
 
+## AI consent, onboarding, devices and podcasts (2026-10-08 to 2026-10-09)
+
+- `profiles.ai_consent_at` is writable only through `set_ai_consent` (a guard trigger refuses direct client writes; `service_role`, `postgres` and `supabase_admin` may write it, so a demo account can be reset). `get_ai_consent` and `set_ai_consent` are granted to `authenticated`. `ai_output_blocked` is `service_role` only (`20261012300000`): it was revoked from `authenticated` because a signed-in client could use it to load the database with moderation checks.
+- `get_my_name_status` and `skip_display_name_prompt` (`20261010160000`) are `authenticated`-only (`REVOKE ... FROM PUBLIC, anon`, `SET search_path = public`).
+- `claim_device_token` (`20261012400000`) is how a push token moves to the next account on a shared phone.
+- `podcast_episodes` is still written only by `service_role`; since `20261012500200` a database CHECK also refuses `published = true` unless `voice_provider` is `deepgram` or `human` (validated by `20261013100000`). `podcast_playback.user_id` defaults to `auth.uid()` (`20261012500000`).
+- `buddy_pool_exclusions` (`20261013100100`) is server-only (RLS on, no client grant): `join_buddy_pool` consults it so a seeded demo account cannot enter the real matching pool.
+- The `vocab-images` Storage bucket (`20261008140000`) is public-read, 512 KiB, `image/jpeg` only, with no `storage.objects` policy, so an anonymous or signed-in upload is refused by RLS; only the service role uploads.
+
 ## Follow-ups
 
 1. ~~Trim `authenticated`'s inert DML privileges~~ done (second step). ~~Inert SELECT~~ done (third step) except `content_reports`.

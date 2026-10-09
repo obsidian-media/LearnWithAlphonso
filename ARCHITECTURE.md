@@ -1,6 +1,8 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-09-22 — re-verify
+Written 2026-09-13, last substantially updated 2026-10-09 (a full pass against
+`main` at #270; the 2026-10-07 to 2026-10-09 changes are summarised in the
+sections from "AI integrations" through "Release and QA tooling") — re-verify
 against `supabase/migrations/*.sql` and `src/routes/` before trusting a
 detail here; this codebase's own audit history shows even a careful
 point-in-time doc goes stale within weeks. This doc favors "where to look"
@@ -45,7 +47,7 @@ over "what the answer currently is," since the latter goes stale fast.
 
 | Table                                                            | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `profiles`                                                       | Display name, avatar seed, country — one row per `auth.users` row (see `handle_new_user` trigger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `profiles`                                                       | Display name, avatar seed, country, theme — one row per `auth.users` row (see `handle_new_user` trigger). **Readable by its owner only** since `20261008130800` (cross-user reads go through relationship-scoped definer RPCs). `name_confirmed_at` marks the one-time public-name step (`confirm_display_name`, `get_my_name_status`, `skip_display_name_prompt`; sign-up never fails because of a name, and old email-prefix names were reset to `Learner-XXXX` handles with a backup table). `ai_consent_at` is the account-level AI consent: written only through `set_ai_consent` (a guard trigger refuses direct client writes; service_role can reset it), read through `get_ai_consent`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `user_progress`                                                  | Account-wide state: streak, longest streak, hearts, hearts refill timestamp, streak freezes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `language_progress`                                              | Per-course state: xp, cefr_level, placement result, league tier. PK `(user_id, language)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `lesson_completions`                                             | Best score per lesson per course                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -58,7 +60,7 @@ over "what the answer currently is," since the latter goes stale fast.
 | `ai_usage`                                                       | Daily per-kind (chat/stt/tts/translate/define) request counter, read by `consume_ai_quota`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `ai_rate_limits`                                                 | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `levels` / `units` / `lessons` / `questions`                     | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`.                                                                                                                                                                                     |
-| `vocab_images` / `placement_questions` / `scenarios`             | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `vocab_images` / `placement_questions` / `scenarios`             | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet. The `vocab_images` rows point at the self-hosted public `vocab-images` Storage bucket (see "Vocab images" below)                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `teams` / `team_members` / `team_weekly_rewards`                 | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`. **Broken until 2026-10-06:** `_join_team_impl` and `get_my_team` shipped with an unqualified `team_id` that clashed with their own `RETURNS TABLE(team_id ...)` column (run-time error 42702), so no team could be created or joined and a member could not load their team (`claim_weekly_quest` had the same mistake in a `SELECT xp INTO` and stopped every weekly quest claim); fixed in `20261006170000_fix_team_joins_and_course_aware_payouts.sql`, and `src/lib/plpgsql-output-column-clash.test.ts` now guards the class. The weekly +100 team bonus pays each member on the course they study (their latest completed lesson), not `profiles.active_language`. |
 | `season_cohorts` / `season_cohort_members` / `season_placements` | V4 #7 — Duolingo-style weekly promotion/demotion ladder, ~30-person cohorts ranked by weekly XP, 5 divisions. Resolved by the `get-season-status` Edge Function (below), not raw SQL — the ranking/promotion math (`floor(size/3)` promote, `floor(size/6)` demote) is unit-tested Deno/TS, not PL/pgSQL. No client RLS policy — only the Edge Function (service_role) touches these directly. Added `supabase/migrations/20260922050000_season_ladder.sql`.                                                                                                                                                                                    |
 | `challenge_templates` / `challenge_completions`                  | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -66,11 +68,12 @@ over "what the answer currently is," since the latter goes stale fast.
 | `buddy_pairs` / `buddy_members` / `buddy_requests` / `buddy_weeks` | Study-together Phase 3a (friends only): a pair of accepted friends with a shared weekly goal (3 distinct lessons each, from the pairing) and a streak with one grace week, resolved lazily by `get_my_buddy` (`_resolve_buddy_pair`, `FOR UPDATE` on the pair, one `buddy_weeks` row per judged week). One active buddy per user = `buddy_members.user_id` PRIMARY KEY. Requests: at most one pending per two people (unique partial index on least/greatest). All writes through SECURITY DEFINER RPCs returning a typed `status`; clients only SELECT their own rows (`buddy_members` is server-only). Triggers on `friendships` (delete) and `blocked_users` (insert) end the pair via `_end_buddy_pair_between`. Migration `20261006180000`. |
 | `buddy_messages` | Study-together Phase 5: preset messages between buddies, preset id only (CHECK list of 8), written only by `send_buddy_message` (active pair, `_lock_buddy_users`, 20 per sender per hour), read through `get_buddy_messages` (active pair, newest 50) or RLS (own pairs, history kept after a pair ends). Migration `20261007100000`. |
 | `buddy_pool` / `buddy_settings` | Study-together Phase 3b: opt-in matching. `buddy_pool` = one row per learner waiting (course, CEFR level), owner-readable; `buddy_settings.matching_enabled` (server-only) is the kill switch. `join_buddy_pool` (pool advisory lock; same course, CEFR within one step, no block, no past pair; oldest first) pairs via `_create_buddy_pair(.., 'match')`. Migration `20261007120000`. |
+| `buddy_age_confirmations` / `buddy_pool_attempts` / `buddy_pool_exclusions` | Matching hardening (`20261008130700`, `20261013100100`): a durable record of the 13+ declaration, per-learner attempt counts behind the matching rate limits (20 tries an hour, 3 matches a week), and an exclusions table (RLS on, no client access) that `join_buddy_pool` checks so a seeded demo account can never enter the real matching pool. The first two are in the data export. |
 | `duel_queue`                                                     | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch. |
 
-| `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. |
+| `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. **Since 2026-10-08:** `podcast_playback.user_id` defaults to `auth.uid()` (`20261012500000`; the iOS first save upserts on `(user_id, episode_id)`), `podcast_episodes` records `voice_provider` and `voice_model` (`20261012500100`; rows from before provenance tracking defaulted to `unknown`), and `CHECK (NOT published OR voice_provider IN ('deepgram','human'))` (`20261012500200`, validated by `20261013100000`) makes licensed-only publishing a property of the table rather than of one tool. The episodes live today are AI-narrated with Deepgram Aura-2 voices (10 English, 3 French, 3 Spanish); the unlicensed audio was unpublished and its files deleted. |
 | `podcast_transcripts` | Podcast library Phase 2a. One row per episode (`episode_id` PRIMARY KEY, cascade), plain text with blank-line paragraph breaks. **An accessibility obligation, not a feature**: the players carry no captions, so without text on screen an episode is unavailable to deaf and hard-of-hearing learners. A separate table rather than a column on `podcast_episodes` because the episode row is read by every folder listing and every search, and a transcript is kilobytes nobody needs until they open one episode. Plain text only -- timed cues need forced alignment against the audio, which is the Deepgram path and is gated on the unrun chunk-join probe. Added `supabase/migrations/20260927230000_podcast_transcripts.sql`, versioned deliberately after **both** `20260926030000` and `20260926223031`: wall-clock "now" was 2026-09-25, which sorts below both, because the library migration was itself renumbered forward out of a version collision. **A transcript is not the TTS script** -- `--transcript` rejects markup, since episode 1's script carries ElevenLabs SSML that would otherwise render to the exact readers the feature exists for. |
-| `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. **Block and report are two of the four things Guideline 1.2 actually requires** for an app with user-generated content -- filtering objectionable material *before* it posts, and published contact information, are the other two. A 2026-09-28 audit found the filter was the one genuinely missing piece: `profiles.display_name` and `teams.name` (the only user-authored text shown to other users) had length checks only, nowhere in the codebase. `20260930030000_ugc_content_filter.sql` closes it -- a `BEFORE INSERT OR UPDATE OF display_name` trigger on `profiles` (the one write path with no server function to validate in, since it's a direct PostgREST PATCH from iOS) plus an inline check inside `create_team` itself, both calling one shared `contains_blocked_term`/`normalize_for_moderation` pair so there is exactly one blocklist to review or extend. Deliberately documented as a real, working baseline rather than a claim of completeness -- report/block remain the backstop for anything it misses. |
+| `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. **Block and report are two of the four things Guideline 1.2 actually requires** for an app with user-generated content -- filtering objectionable material *before* it posts, and published contact information, are the other two. A 2026-09-28 audit found the filter was the one genuinely missing piece: `profiles.display_name` and `teams.name` (the only user-authored text shown to other users) had length checks only, nowhere in the codebase. `20260930030000_ugc_content_filter.sql` closes it -- a `BEFORE INSERT OR UPDATE OF display_name` trigger on `profiles` (the one write path with no server function to validate in, since it's a direct PostgREST PATCH from iOS) plus an inline check inside `create_team` itself, both calling one shared `contains_blocked_term`/`normalize_for_moderation` pair so there is exactly one blocklist to review or extend. Deliberately documented as a real, working baseline rather than a claim of completeness -- report/block remain the backstop for anything it misses. **Superseded in detail by the 2026-10-08 moderation work**: the filter is now v2 (Unicode normalisation, bidi overrides refused, punctuation-split words caught, one rule set shared by `display_name_problem` and `team_name_problem`), `content_reports` gained `kind` (`user`, `team_name`, `ai_response`) and `context`, and each new report notifies the owner; see "Moderation, names and reports" below. |
 | `apple_auth_tokens` | Apple refresh tokens, stored **only** so account deletion can revoke the Sign in with Apple grant -- which Apple requires and checks. **RLS enabled with zero policies** plus `REVOKE ALL FROM anon, authenticated`: a refresh token a client can read is a credential it can exfiltrate, and this one authorises Apple identity operations for the whole app. Deliberately no own-row policy -- the app never reads it back, it only ever posts a fresh authorization code to `/api/apple-link`. We store the refresh token rather than the authorization code because the code is single-use, five-minute-lived, and the app's copy does not survive relaunch, so "sign in with Apple, quit, return tomorrow, delete account" would have had nothing to revoke with. Added `supabase/migrations/20260928030000_apple_auth_tokens.sql`. |
 
 **Podcast on iOS (Phase 1b).** `PodcastClient` in `LearnWithAlphonsoKit` is the
@@ -218,16 +221,7 @@ _same_ `deleteMyAccount`/`exportMyData` the web uses, through thin routes
 in `src/routes/api/`. Apple requires deletion to be initiated in the app;
 a link out to a web profile is what gets rejected.
 
-**AI data disclosure** gates all four AI entry points --
-`ConversationView`, `HectorView`, `CampaignView` and `SpeakQuestionCard`
--- through one shared `.aiDisclosureGate()` modifier backed by
-`AIDisclosureGate` in the Kit. One modifier rather than four copies,
-because four copies is how one gets missed and the missed one is the one
-that ships. (Exception, 2026-10-05: lessons are NOT wrapped in the gate --
-declining popped the learner out of every lesson. Consent is enforced where
-the data leaves the device instead: `TranslationGradingPolicy` for written
-translations, and `SpeakQuestionCard` types by default and offers voice as
-an opt-in via `.aiDisclosureSheet`. Screens that are wholly AI keep the gate.)
+**AI consent (rewritten 2026-10-08; the earlier per-device `AIDisclosureGate` flag is gone).** Consent is an account fact (`profiles.ai_consent_at`) enforced by the server on every AI endpoint; see "AI consent, safety and the chat model" below. On iOS the Kit's `AIConsentStore` reads and writes it through `get_ai_consent` / `set_ai_consent` (a choice made on the web counts on iOS and the reverse; a failed read is a retry state, never "AI is off"; a 403 `ai-consent-required` from any AI call closes the gate). Screens that are wholly AI (Hector, Practice, Campaigns) sit behind a gate that is never unmounted once shown, so a transcript survives a withdrawal. Lessons and review are never walled: each item decides (`AIConsentPolicy`). A translate answer is graded on the device without consent and offers "Turn on AI grading", `SpeakQuestionCard` types by default and names the cause when it falls back, and placement is graded on the device only. Settings has the "AI features" switch (off withdraws at once).
 
 **Save-any-word (Hector, Practice and Campaign replies, English-course lesson explanations and podcast transcripts, 2026-10-05).** In `HectorView`, `ConversationView` and `CampaignView`, each assistant reply is a `TappableText` (one shared view; it takes the course and hands back a ready `SaveWordRequest`): one `Text` built from an `AttributedString` whose word runs carry `lwa-word://save?w=...` links (`WordSegmenter` + `WordLink` in the Kit), with an `OpenURLAction` turning a tap into a `SaveWordSheet`. The saved sentence is the one the word was TAPPED in (`WordSegmenter.sentence(containing:in:atOffset:)`; the link carries the word's Character offset), it must match the word as a WHOLE word because `POST /api/define-word` rejects a sentence that does not contain it as one, and its 300 limit is measured in UTF-16 units like the server's JS `.length`. Words the server would reject (over 40 units after NFC) are not linked, and "letter" is Unicode category L, exactly the server's `\p{L}`. `AIConversationClient.defineWord` calls the route, which makes one NVIDIA call and stores a self-contained `saved_word` review item; `ReviewQueueView` renders any `ReviewItem.isSelfContained` item through `question(fromWeaknessItem:)`, and the web review page does the same. Lesson and review explanations reach it through the environment: a screen provides `saveWordHandler` once and the shared `ExplanationView` / `AlphonsoTipCard` read it, but only for a course whose text is wholly in its own language (`SavedWordPolicy`, English today), because French and Spanish explanations are English text with quoted foreign words. Podcast transcripts (`PodcastTranscriptSheet`) use `TappableText` with course `en`. Saving needs the same AI consent as every other AI path (`AIDisclosureGate`, with `.aiDisclosureSheet` presenting it on demand).
 
@@ -830,14 +824,22 @@ session tokens at all — the `due_on <= today` check is what prevents
 grading a never-actually-reviewed item).
 See `docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md`.
 
-**Known gap, found while re-deriving `complete-lesson`'s correctness
-(2026-09-27), not fixed here — separate scope:** `complete-lesson`'s own
-`courseSchema` is `z.enum(["en", "fr"])`, missing `"es"` — unlike every
-other course-aware schema in this file (web's `completeLessonSchema`
-already allows `"es"`). A Spanish-course lesson completion from iOS would
-be rejected at validation before it ever reaches the trust-boundary
-logic. Worth a one-line fix and a regression test; flagged rather than
-folded into an unrelated change.
+**Fixed (found 2026-09-27, closed by 2026-09-28):** `complete-lesson`'s
+`courseSchema` used to be `z.enum(["en", "fr"])`, which rejected every
+Spanish completion from iOS; it is now `["en", "fr", "es"]`, like every other
+course-aware schema here.
+
+**Hearts gate and version mismatch (2026-10-08).** `start-lesson-session`
+refuses to open a lesson at 0 hearts with `409 { error: "out-of-hearts",
+refillAt }` (a due refill is resolved first; review and practice never come
+through this path; a failed hearts read fails open and is logged; switch:
+`ENFORCE_HEARTS_GATE`, off only for the literal `false`). The web
+`startLessonSession` returns the same shape as a value. `complete-lesson`
+answers a lesson whose content no longer matches the server (different
+question count or ids) with `409 { error: "lesson-version-mismatch" }` so a
+client knows the rejection is permanent. Both functions share
+`_shared/hearts.ts`. With consent withheld, `complete-lesson` and
+`grade-review` grade against the curated list only (no AI grader).
 
 ## Hearts economy
 
@@ -855,6 +857,12 @@ concurrent calls (`FOR UPDATE` row lock) — the equivalent logic in
 single server-function invocation is already atomic from the client's
 perspective.
 
+The server also owns the entry rule since 2026-10-08: a lesson cannot start
+at 0 hearts (see "Edge Functions"), the web lesson page and Learn's hearts
+dialog offer "Use 50 XP for a heart" and "Practice or review instead", and
+iOS starts the lesson session when a lesson opens and holds the token to the
+finish, so a heart lost mid-lesson never costs the lesson.
+
 ## Themes
 
 Three user-selectable themes on web (`meadow` default, `studio-ink`,
@@ -870,6 +878,9 @@ Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
 `CHECK` constraint — both need updating together when a theme is added
 (see `supabase/migrations/20260918140000_add_manuscript_theme.sql` for the
 pattern: drop and re-add the constraint, since it isn't named per-value).
+League tiers are shown to learners as Sprout, Sapling, Grove, Treetop and
+Summit (`src/lib/league-tier-copy.ts`, Kit `LeagueTierCopy`); the database
+keys (`bronze` to `diamond`) did not change, so the names are display-only.
 **As of 2026-09-23, iOS has a fourth theme, `canopy`, that is deliberately
 NOT in this rule's scope** — see the "Native iOS app" section's Design
 system paragraph below for why.
@@ -957,11 +968,12 @@ the key cannot live as an `INFOPLIST_KEY_*` build setting). The actual
 remaining blocker is that Apple requires a first auto-renewable
 subscription to be submitted and reviewed alongside a real app version
 before `Purchases.shared.offerings()` can succeed for anyone, including
-sandbox testing -- not a dashboard configuration gap. Until that
-submission happens, `PaywallView` correctly shows "Subscription
-options aren't available yet" rather than a broken purchase button;
-see `docs/BACKLOG.md`'s App Store submission entries for the current
-status. The release workflow now also (2026-09-28 audit): rejects a
+sandbox testing -- not a dashboard configuration gap. (That is the
+2026-09-28 state; the `check-app-store-status.yml` and
+`check-revenuecat-offering.yml` workflows read the current one.) While no
+offering loads, `PaywallView` shows a plain message with "Try again"
+rather than a broken purchase button (see "Paywall and entitlements
+(iOS)"); `docs/BACKLOG.md` tracks the App Store submission entries. The release workflow now also (2026-09-28 audit): rejects a
 misconfigured `test_`-prefixed key before archiving *and* re-checks the
 actually-exported `.ipa`'s `Info.plist` after, asserts `xcodebuild
 -version` meets Apple's current Xcode 26+ floor (mandatory for
@@ -1140,8 +1152,13 @@ decisions rather than trusting that doc's roadmap section as current).
 
 Kotlin + Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk
 37.2, against the same Supabase project, Edge Functions and `/api/*` routes
-the iOS app uses. Started 2026-09-29 on the long-lived `android` branch;
-design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
+the iOS app uses. Started 2026-09-29 on the long-lived `android` branch and merged to `main`
+on 2026-10-01 (#200); the app is not on Google Play yet (owner-gated: Play
+account, subscription, RevenueCat Android key). It has NOT received the
+2026-10-08 iOS and web safety work (account-level AI consent screen, public-name
+step, hearts gate at lesson open, report-an-AI-reply); the server enforces
+consent regardless, so Android AI calls are refused for an account that has
+not granted consent on web or iOS. Design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
 under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 - **Two Gradle modules.** `core` is pure JVM Kotlin: content models with
@@ -1203,9 +1220,9 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `PodcastSessionTracker` (the save-every-10-seconds and listened-seconds
   rules iOS keeps untested in `PodcastAudioPlayer`). `PodcastClient`
   mirrors `PodcastClient.swift` over `SupabaseHttp`; one deliberate
-  difference: a first save POSTs `user_id` because
-  `podcast_playback.user_id` has no default (the web upsert sends it, the
-  iOS client omits it). `app.podcast`: `PodcastDownloadManager` (OkHttp,
+  difference: a first save still POSTs `user_id` (since 2026-10-08
+  `podcast_playback.user_id` defaults to `auth.uid()`, so iOS omits it; the
+  Android client has not been changed and sending it is harmless). `app.podcast`: `PodcastDownloadManager` (OkHttp,
   `filesDir/podcast-audio`, `.partial` staging, atomic rename, reconcile
   on start, Room v2 `podcast_downloads` with a hand-written migration),
   `PodcastPlaybackService` (one ExoPlayer in a `MediaSessionService`,
@@ -1245,12 +1262,38 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 ## AI integrations
 
-- **Chat:** NVIDIA NIM (`integrate.api.nvidia.com`, OpenAI-compatible),
-  model configurable via `NVIDIA_CHAT_MODEL` — `src/routes/api/chat.ts`
+- **Chat:** NVIDIA NIM (`integrate.api.nvidia.com`, OpenAI-compatible).
+  Default model `nvidia/nemotron-3.5-lightning-30b-a3b`
+  (`src/lib/nvidia-chat-model.server.ts` on the web, the same constant in
+  `_shared/answer-correctness.ts` for the edge); `NVIDIA_CHAT_MODEL`
+  overrides it with no redeploy. It is a reasoning model, so since #269
+  (2026-10-09) **both chokepoints send `chat_template_kwargs: { thinking:
+  false, enable_thinking: false }` on every call**, as a default under the
+  caller's own fields. Measured on the app's own prompts: Save word 17.4 s to
+  1.2 s, Practice reply 18.1 s (78.7 s uncapped) to 0.8 s. Before the change
+  Save word hit its 20 s limit on every call and generated practice timed out
+  twice at 8 s. Prompt-level switches (`/no_think`, `reasoning_effort`) do not
+  work on this model. Guards: `src/lib/nvidia-no-thinking.test.ts` and a Deno
+  test. Routes: `src/routes/api/chat.ts`, `hector-respond.ts`.
 - **TTS/STT:** Deepgram directly (Aura-2 / Nova-3) —
-  `src/routes/api/tts.ts`, `src/routes/api/stt.ts`
+  `src/routes/api/tts.ts`, `src/routes/api/stt.ts`. `/api/tts` picks a native
+  Aura-2 voice per course (en `thalia`, fr `agathe`, es `selena`). Every
+  Deepgram URL carries `mip_opt_out=true` (the model-improvement opt-out the
+  privacy policy promises), built by one tested helper. STT takes the
+  course for Deepgram's `language` parameter.
+- **Course-aware tutor (2026-10-08).** The active course (shared with Learn,
+  remembered per account) drives Hector, Practice, Campaigns and speaking
+  questions. Scenarios and campaigns are course-keyed (`en`/`fr`/`es`: 12
+  scenarios and the three-scene `city-day` campaign each). `/api/chat`'s
+  whitelist is `ALL_SYSTEM_PROMPTS` (45 prompts) and it requires a known
+  persona (400 `unknown-system-prompt`). English prompts are byte-identical
+  to the pre-course ones (`legacy-system-prompts.test.ts`), so old builds keep
+  working. French and Spanish prompts tell the model not to assume the
+  learner's gender. Every AI quota 429 is `{ error: "quota-exceeded",
+  resetsAt, message }`; an empty completion is `502 { error: "empty-reply" }`.
+  Latency is logged per stage as `[ai-timing]` with a `Server-Timing` header.
 - **Weakness detection:** `src/routes/api/analyze-weaknesses.ts`
-  (iOS-only caller — see "Native iOS app" below) sends a Hector/free
+  (native-only caller) sends a Hector/free
   conversation transcript to NVIDIA NIM with a prompt constrained to a
   fixed 15-category taxonomy (`past-tense`, `articles`, `prepositions`,
   `subject-verb-agreement`, `plurals`, `question-formation`,
@@ -1260,15 +1303,263 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   mode assumed — strip code fences, `JSON.parse`, zod-validate, empty
   array on any failure), dedupes against the caller's existing
   not-yet-retired weakness items by category, and inserts survivors
-  into `review_items`. No dedicated unit tests exist for this route (7%
-  coverage — see `AGENTS.md`'s Testing section) or the two web routes it
-  parallels (`api/chat.ts`/Edge Functions) — verified via
-  `lint-and-typecheck`/`e2e` CI plus manual smoke-testing, same as
-  those.
-- All three chat/tts/stt endpoints (weakness-detection reuses the
-  `"chat"` quota bucket rather than adding a fourth) are gated by
-  `consumeQuota` (`src/lib/ai-quota.server.ts`): per-minute rate limit
-  checked first, then the daily quota RPC.
+  into `review_items`. It has unit tests (see `AGENTS.md`'s Testing
+  section) and drops client-supplied `system` messages.
+- **Generated practice:** `/api/generate-practice` makes two 8 s attempts
+  instead of one 20 s call, removes duplicate choices (remapping the answer
+  index, dropping a question left with fewer than 3 distinct choices) and
+  falls back to a deterministic set built from the lesson's own questions.
+  The response carries `source: "ai" | "fallback"`.
+- All AI endpoints (weakness-detection reuses the `"chat"` quota bucket)
+  are gated by `consumeQuota` (`src/lib/ai-quota.server.ts`): per-minute
+  rate limit checked first, then the daily quota RPC.
+
+### AI consent, safety and the chat model
+
+- **Consent is enforced on the account, on the server.** The order
+  everywhere is auth (401), consent (403 `ai-consent-required`), quota (429),
+  so a refused request never spends quota. A failed consent read is 503
+  `consent-check-failed`, which clients must not show as a consent problem.
+  Gated: `/api/chat`, `/api/stt`, `/api/tts`, `/api/hector-respond`,
+  `/api/grade-translation`, `/api/define-word`, `/api/analyze-weaknesses`.
+  Not gated: `/api/generate-practice` (it sends only the lesson's own
+  wording; still authenticated and metered). `requireAiConsent` and
+  `authorizeAiRequest` are the helpers; `ENFORCE_AI_CONSENT` defaults on.
+- **Zero AI calls without consent in lessons and review.** The graders take
+  `{ ai: { allowed, checkQuota? } }`; omitting it means no AI, so a new caller
+  that forgets consent fails safe (web server functions and both edge
+  functions). Placement is graded on the device and never calls an AI grader.
+- **One chokepoint per runtime** (web `nvidiaChatCompletion`, edge twin)
+  appends the safety preamble (stay on language learning, suitable for
+  teenagers) and the thinking switch; a registry test fails if anything else
+  contains the NVIDIA URL.
+- **Output filter.** Model text shown to learners (chat, Hector, define-word,
+  practice, translation reasons, weakness questions) goes through
+  `filterModelOutput`, an async RPC-backed check (`ai_output_blocked`, built
+  on the moderation filter; service-role only since `20261012300000`) and is
+  replaced by a short course-language fallback; Hector never speaks a blocked
+  reply. Long replies are split into pieces of at most 8000 characters and
+  every piece is checked, never truncated; the check fails closed. A short
+  excerpt (up to 120 characters) of a blocked reply is written to the request
+  log.
+- **Report this response.** Every assistant reply (web tutor messages; iOS
+  Hector, Practice and Campaign bubbles, except the scripted scene opener) has
+  a report action that writes `content_reports` with `kind = ai_response`, the
+  text in `context.message` (capped at 2500 code points and by the JSON size,
+  because the table caps `context` at 8192 bytes; web and iOS share one budget
+  pinned by the copy parity test), the course, the scenario or campaign and the
+  reply's own scene index.
+
+## Moderation, names and reports
+
+Added 2026-10-08 (#248, #250, #253, #255). The database and app halves are
+separate PRs because the generated types had to be regenerated between them.
+
+- **Names.** `display_name_problem` and `team_name_problem` share one rule set
+  (`20261008130000`): Unicode normalisation, default-ignorable characters and
+  combining marks removed for comparison, bidi overrides refused,
+  punctuation-split words caught, compound and contextual matching with
+  allowlists for real names (`nazi` and `paki` stay whole-word blocked). Every
+  writer stores the cleaned name; team names are 2 to 40 characters. The iOS
+  and web clients save through `confirm_display_name` and show the reason a
+  name was refused from one shared copy table
+  (`social-reason.fixtures.json`, mirrored to iOS and Android; a test requires
+  copy for every reason code the database can return).
+- **Public-name step.** A new account sees "What should other learners call
+  you?" once (iOS full-screen cover, web dialog), prefilled from the Apple or
+  Google first name and checked live. A generated handle is shown as a grey
+  hint in an empty field, never as text to append to (#270). Skip keeps or
+  creates a `Learner-XXXX` handle and never publishes a full Google name. A
+  failed or empty status check skips the prompt for that launch. The iOS cover
+  is driven by an `OnboardingPresentation` item that carries the prompt's data,
+  so it can never render an empty screen (the 2026-10-09 blank-screen bug,
+  #267); `OnboardingSequence.advance` skips a step with nothing to show and
+  everything resets on an account change.
+- **Team and quest integrity** (`20261008130500`, `130600`): an owner who
+  leaves hands the team to the earliest member or the team closes; URL-safe
+  join codes; no zero-XP weekly winner; the quest week is derived server-side
+  and one claim is allowed per quest per week. Blocked users leave each
+  other's team member lists (`130200`); the owner sees members they blocked,
+  marked `blocked` (`131000`).
+- **Reports.** `content_reports` has `kind` and `context`. An insert fires one
+  owner notification through pg_net (throttled, gated by a Vault secret, and
+  never failing the insert) that calls `POST /api/internal/report-notify`,
+  which compares a shared secret in constant time, returns 503 until its
+  environment variables exist, and emails the owner through Resend. The admin
+  app's reports page can reset a reported display name, rename or disband a
+  reported team, or dismiss a report, always keyed by report id with the target
+  read server-side. The legal pages promise action within 24 hours; there is
+  one in-app contact address.
+- **Matching and buddies** (`20261008130700`, `130900`): rate limits, the 13+
+  confirmation record, and `matching_enabled = false` pauses matched pairs
+  (friend pairs keep presets). Three statuses (`too_many_tries`,
+  `match_limit`, `matching_paused`) are in the shared fixtures and every copy
+  map. A block made anywhere removes the person from an open iOS League list
+  at once (`BlockedUserSignal`, #270).
+- **Profile privacy.** `profiles` is own-row readable only (`130800`); the
+  data export includes the new per-user tables.
+
+## Vocab images
+
+Added 2026-10-08 (#249). Every vocab image is self-hosted in the public
+`vocab-images` Supabase bucket (`<lang>/<slug>.jpg`, resized to 700 px,
+metadata stripped, `?v=<hash>` cache key; migration `20261008140000`). Only
+picturable terms get an image (a closed-default classifier,
+`scripts/vocab-imageability.json`); abstract words, phrases and anything
+sensitive get a text-only card. **415 images are live** (English 212, Spanish
+176, French 27), each visually reviewed (every image showing a person, plus a
+10% sample, twice) and signed off by the owner (`signoff.json` digest). A
+second pass of 315 more photos (730 in total) exists as a draft PR and will
+ship in build 51; it is not live. The renderers (web `VocabImage`, iOS
+`VocabImageView`, Kit `VocabImagePolicy`) accept only bucket URLs, show a
+placeholder while loading and collapse the whole slot on failure. The iOS
+state is keyed by the loaded URL and exposes `vocab-image-loaded` /
+`vocab-image-loading` accessibility identifiers so UI tests can wait for real
+images. Guards: `src/data/vocab-images.guard.test.ts` (host and path, alt and
+credit denylist, review stamp, provenance, imageability, flagged terms, no
+provider URL in the source or native exports, sign-off digest) and the
+`vocab-image-links.yml` workflow (PRs touching the data, weekly; nothing
+`needs` it, so it never gates a deploy). Pipeline and commands:
+`LESSON_ASSETS.md`.
+
+## Sign-in and onboarding (iOS)
+
+#252, #253, #255 (2026-10-08). The sign-in screen has Apple's own
+`SignInWithAppleButton(.continue)`, a Google button using Google's unmodified
+"G" (`scripts/extract-google-g.ts`), then email, and a Terms/Privacy footer.
+The emailed-code step offers "Use a different email", "Resend code" with a
+60 s countdown, digits only with one-time-code autofill, auto-submit on the
+sixth digit, and tells an invalid code from an expired one. The Apple user id
+and given name are kept; launch, foreground and Apple's revocation
+notification check the credential state (only for an account that signed in
+with Apple on this device). `SessionLifecycle` runs ordered, non-throwing
+handlers on sign-out and after account deletion (`AccountDataCleanup`: offline
+queue, caches, goals, widget streak, RevenueCat logout, push token deleted with
+the ending session's token, scheduled reminders, Apple data). A shared phone's
+push token moves to the next account through `claim_device_token`
+(`20261012400000`). The auth config guard (`scripts/check-auth-config.ts`,
+run in `deploy-supabase`) also asserts that the OAuth redirect allowlist
+contains the iOS callback with no catch-all and that the Google provider is
+enabled. Apple revocation reports `not_configured` when a learner who signed
+in with Apple is deleted while the Apple secrets are missing.
+
+## Offline queue and lesson saves (iOS)
+
+#261 (2026-10-08). `LessonCompletionService` classifies a failed save by cause:
+offline, timeout, 5xx and 429 are queued and say the lesson is saved; a
+rejected 4xx (including a lesson-version mismatch) is never queued and never
+called offline; a signed-out save offers Sign in; a 401 refreshes once.
+`SyncEngine` backs off per item (30 s doubling, capped at 6 h) and keeps
+retrying transient failures forever; only permanent rejections go to a
+dead-letter table (the Learn tab shows a notice with a support address).
+Grades still stop at a transient failure to keep SM-2 order, an out-of-hearts
+completion waits for a refill without spending an attempt, rows queued by a
+different account are dropped, and rows written before this version are
+adopted by the first account that syncs. The local store is versioned
+(`SyncSchemaV1` is frozen from build 49, `SyncSchemaV2` adds owner, session
+token, retry fields, a per-course due cache and the dead-letter table) and
+opens through a logged three-step chain. Review resolves the whole due queue
+against bundled content before showing anything (`ReviewQueueResolution`), the
+due cache is per course, and the out-of-hearts sheet offers a live countdown,
+"Use 50 XP for a heart" and "Review instead". #270 (2026-10-09) fixed the
+Learn-tab cards (team mission, weekly challenges, placement banner) that never
+loaded because their fetch started inside a `List` section that was empty
+until the fetch finished, made the largest-text layouts scroll as one column,
+made the lesson-finish headline follow the score, and made the podcast player
+remember the last position it stored (`PodcastSavedPositions`, compared by
+version-stamp identity, never by a client clock).
+
+## Voice engine and podcast player (iOS)
+
+#258, #262 (2026-10-08). One shared voice engine (a Kit reducer plus one
+controller) replaces the four hand-copied recorders: every appear and
+disappear starts a new generation, the audio session is a single
+`.playAndRecord` category with `.defaultToSpeaker` and `.allowBluetooth`, the
+podcast is paused before recording and never auto-resumed (RootView registers
+the pause hook with the player it keeps), and the session is handed back after
+each turn. `TutorError` classifies quota, not-entitled, consent, network and
+server failures. The podcast player is a Kit state machine
+(`PodcastPlayerMachine`, `PodcastPlaybackFailure`) with thin app adapters:
+"Playing" only once AVPlayer confirms, a missing, broken or offline episode
+shows an explanation and Retry (a HEAD probe tells Supabase's 400-for-missing
+apart), finishing marks the episode complete and rewinds, downloads must be
+HTTP 200, `audio/*` and the declared length, sign-out stops playback, account
+deletion removes downloads, and Listen follows the active course and removes
+downloads of unpublished episodes. The authoring tool's `unpublish` (dry run
+by default; by path, list or `--unlicensed`; optional `--remove-audio`)
+reports the per-course count it leaves and warns when that is below 3.
+
+## Paywall and entitlements (iOS)
+
+#252 (2026-10-08). The paywall states the price at least as prominently as the
+trial (text styles from the Kit, `PaywallTextStyle`), shows the StoreKit
+`localizedTitle`, never hardcodes a price or period, always shows the
+auto-renew disclosure and Terms/Privacy/EULA links, and has no dead end
+(loading skeleton, a failed offering with "Try again", silent cancel, "Waiting
+for approval" for Ask to Buy, an honest "nothing to restore"). Pro tracks
+RevenueCat live: `EntitlementController` (Kit, tested on a mock provider)
+consumes `customerInfoStream`, a generation counter drops any result that began
+before a sign-out, and a failed login while RevenueCat holds another identity
+fails closed. RevenueCat is pinned to `exactVersion: 5.92.0` (which fixes
+`customerInfoStream` not re-sending an expiry), and `ci.yml`'s `ios-app-build`
+and `ios-release.yml` run `scripts/check-revenuecat-resolution.sh`, which fails
+unless Xcode resolved exactly the pin.
+
+## Binary polish and release guards (iOS)
+
+#264 (2026-10-09). The privacy manifest declares the UserDefaults reasons the
+code uses (own defaults and the App Group), has no file-timestamp entry and
+adds Other Data Types; a source guard ties both manifests to the Swift code in
+both directions. Home-screen name "Alphonso", an exact microphone string,
+es-MX device speech, no literal double dash in app copy (a guard scans every
+Swift string), a VoiceOver label on every icon-only control, 44 pt minimum
+buttons, live dark mode through a gate that cuts off any feedback loop,
+Acknowledgements in Settings, a full-bleed 1024 app icon (`scripts/app-icon`)
+and portrait pinned in code. `ios-ui-compat.yml` runs iPad-compatibility and
+largest-text checks with screenshots and is dispatch-only (it mints a session
+on the demo account; a guard pins that it has no automatic trigger).
+Debug-only UI-test launch arguments are pinned inside `#if DEBUG`, and
+`ios-release.yml` fails an upload if the shipped binary contains one, if the
+build number is not above App Store Connect's latest, if the app and widget
+versions differ, or if the exported .ipa's name, microphone string, manifest
+reasons, icon name or licence files are wrong. The checked-in project is
+version 1.0, build 50.
+
+## Release and QA tooling
+
+Added 2026-10-09 (#265, #266). All manually dispatched, read-only unless an
+explicit apply flag is passed, and every App Store Connect write finds the
+version in any editable state (not only `PREPARE_FOR_SUBMISSION`) through one
+pure tested module.
+
+- `scripts/asc-release-ops.ts` / `asc-release-ops.yml`: list builds, expire old
+  builds (only when a newer VALID build exists), attach an exact build,
+  TestFlight beta review info, content rights, release type, and a read-only
+  `submission-check`.
+- `scripts/update-app-store-metadata.ts` (`check` and `apply`; one reviewed
+  source for subtitle, promotional text, keywords, description and URLs, with
+  length, disclosure, link and forbidden-copy checks),
+  `update-app-review-info.ts` (review notes built from one tested module, under
+  4,000 characters in the worst case; `check` is read-only),
+  `update-age-rating.ts` (`check` exits non-zero on any problem),
+  `upload-app-store-screenshots.ts` and `upload-review-screenshot.ts`
+  (replace, never append), `check-app-store-screenshots.ts`.
+- `capture-app-store-screenshots.yml` runs the UI `ScreenshotTests`
+  (01-learn, 02-lesson, 03-practice-fr, 05-listen, 06-listen-episode,
+  07-review, 09-profile). The Hector shot is not automated because a Simulator
+  has no microphone input, and League, leaderboard and Friends are never
+  captured so no other learner's public name appears in marketing assets.
+- `scripts/seed-demo-account.ts` resumes the published podcast episode looked
+  up by slug, places the account in all three courses, resets AI consent and
+  pre-pairs it with a demo learner as a matched pair (no matching-pool row).
+- `build-simulator-app.yml` builds a Release iphonesimulator `.app` artifact
+  for cloud simulators; `maestro-e2e.yml` runs the Maestro flows.
+- `scripts/verify-ai-consent.ts` proves consent enforcement against
+  production with a throwaway account; `scripts/check-legal-live.ts` checks
+  the public legal pages with one plain GET each (the phrase list in
+  `src/lib/legal-required-phrases.ts` drives it, the server-render test and
+  `e2e/legal-ssr.spec.ts`); `scripts/check-ios-build-number.ts` is the build
+  number guard.
 
 ## Known rough edges
 
@@ -1318,7 +1609,7 @@ note in README.md's Documentation section for why.)
   actually showed a code.** Two compounding issues, found while
   investigating "the app asks for a 6-digit code but the email I get is
   a login link (which doesn't load)": (1) the project was still on
-  Supabase's built-in mailer (`noreply@mail.app.supabase.io`, confirmed
+  Supabase's built-in mailer (confirmed
   via `mail_type:"magic_link"` in the auth logs) — per Supabase's own
   docs, that mailer **refuses to deliver to any address outside the
   project's own organization team**, so no real end user (web or iOS —
@@ -1332,13 +1623,10 @@ note in README.md's Documentation section for why.)
   `scripts/configure-custom-smtp.ts` (Resend) and `scripts/
 update-auth-email-template.ts` fix these via the Supabase Management
   API directly (no CLI/MCP wrapper exists for either setting), runnable
-  via the `configure-auth-emails.yml` workflow. Also surfaced a real
-  scope gap, not a regression: iOS has no Google OAuth at all —
-  `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` scoped
-  iOS auth as "the existing web app's auth pattern, ported," but the web
-  app actually uses password + Google OAuth, never OTP; iOS's OTP-only
-  design was built on that incorrect premise and Google was simply never
-  added.
+  via the `configure-auth-emails.yml` workflow. That scope gap
+  (iOS was OTP-only while the web used password + Google OAuth) was closed
+  later: iOS now offers Apple, Google and the emailed code (see "Sign-in and
+  onboarding (iOS)" below).
 - `src/integrations/supabase/{client.ts,client.server.ts,auth-middleware.ts}`
   carry "auto-generated, do not edit" banners from the Lovable Supabase
   connection tool and duplicate a `createSupabaseFetch` helper 3 ways;
@@ -1402,11 +1690,11 @@ deploy`, both easy to forget (this bit a real session that added several
   _after_ merge, so a missing import map used to break `main` rather than
   the PR that introduced it.
 - **`eslint .` used to lint every other branch's code** (fixed 2026-09-24,
-  PR #85). `.claude/worktrees/` holds full checkouts of other branches
-  physically nested inside this repo, and the root ESLint config never
+  PR #85). the nested local worktree directories hold full checkouts of other branches
+  physically inside this repo, and the root ESLint config never
   ignored them, so `bun run lint` walked into all 15 of them: 3,632
   reported problems, of which 3,630 came from other branches and 2 were
-  real. Fixed by adding `.claude/worktrees/**` to the `ignores` list in
+  real. Fixed by adding the worktree directories to the `ignores` list in
   `eslint.config.js` rather than by deleting worktrees, so a future one
   can't reintroduce it.
   **The more important half of this**: CI never saw that noise (it lints
@@ -1419,7 +1707,13 @@ deploy`, both easy to forget (this bit a real session that added several
   suspecting the PRs. The remaining live-tree finding is a long-standing
   harmless `react-refresh/only-export-components` warning in
   `CookieConsent.tsx`, deliberately left alone.
-- **`src/integrations/supabase/types.ts` is stale** — found 2026-09-23.
+- **`src/integrations/supabase/types.ts` freshness (updated 2026-10-09).**
+  It is now regenerated by the `regenerate-supabase-types.yml` workflow (run
+  it after a deploy that adds a table or function; it commits a types-only
+  change to `main`), and `types-fresh` in `ci.yml` is advisory and does not
+  gate the deploy. The entry below is the original 2026-09-23 finding, kept
+  for history.
+- **`src/integrations/supabase/types.ts` was stale** — found 2026-09-23.
   Seven tables added by the gamification/push batches
   (`challenge_completions`, `device_tokens`, `duel_queue`,
   `season_cohort_members`, `season_placements`, `team_members`, `teams`)
@@ -1462,17 +1756,16 @@ deploy`, both easy to forget (this bit a real session that added several
   and 90474 is an iPad-multitasking rule. Build 49 is genuinely iPhone
   only; the four-orientation base key is kept, with
   `UISupportedInterfaceOrientations~iphone` = portrait doing the real work.
-- **App Review sign-in (`src/routes/api/review-demo-code.ts`).** The app
-  has only code-by-email sign-in, so App Review gets a page that shows a
-  fresh 6-digit code for one dedicated review account. Off (404) unless
-  `REVIEW_DEMO_CODE_KEY` (32+ chars) is set in Vercel; the key is compared
-  as SHA-256 digests in constant time; it can only ever mint a code for
-  `DEMO_ACCOUNT_EMAIL`. The URL (with key) lives only in the
-  `REVIEW_DEMO_CODE_URL` GitHub secret because this repo is public.
-  `scripts/update-app-review-info.ts` walks the reviewer's exact steps
-  (Send code -> page -> Verify -> session) and refuses to write review
-  notes unless they succeed. Switch the page off after approval by
-  removing the Vercel env var (docs/BACKLOG.md §0.0-x).
+- **Demo sign-in helper (`src/routes/api/review-demo-code.ts`).** The app
+  has only code-by-email sign-in, so a store reviewer needs a way to get a
+  code: this route shows a fresh 6-digit code for the one configured demo
+  account. It is off (404) unless its environment key is set in Vercel; the
+  key is compared as SHA-256 digests in constant time; it can only ever mint a
+  code for that demo account; and its URL is kept out of this public repo.
+  `scripts/update-app-review-info.ts` walks the reviewer's exact steps (Send
+  code -> page -> Verify -> session) and refuses to write review notes unless
+  they succeed. Switch the page off after approval by removing the Vercel env
+  var.
 - **Moot as of the 2026-09-27 Hector decouple, kept for history.** Cloud
   Voice's Supabase project (`ywavjlmjbxuslbxactsx`, Hector's old
   separate account system) auto-paused once during this project's
@@ -1482,6 +1775,8 @@ deploy`, both easy to forget (this bit a real session that added several
   affect Hector at all; do not chase this as a cause if Hector breaks
   today.
 - **Offline-first (iOS) has two known, deliberately-unsolved edge cases**
+  (the queue itself was reworked on 2026-10-08, see "Offline queue and lesson
+  saves (iOS)")
   (see `docs/v2-kickoffs/01-offline-first.md` for the full design):
   concurrent-device review grading, and streak continuity across an
   offline gap. If a queued-offline review grade is replayed against
@@ -1513,16 +1808,16 @@ deploy`, both easy to forget (this bit a real session that added several
   is genuinely restored. `.vercelignore` (added the same day, still
   relevant for any future manual CLI deploy as a fallback) scopes what
   gets uploaded — without it, a deploy from this local machine picks
-  up unrelated `.claude/worktrees/` content from other parallel
+  up unrelated nested worktree content from other parallel
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
-- **Test coverage was near-zero before 2026-09-20's PR #46** — now 502
-  tests across 72 files, ~91% line / ~90% statement coverage (`bun run
-test:coverage`, see `AGENTS.md`'s Testing section for the full
-  per-file breakdown and what's still thin: `HeartsModal.tsx` ~70%,
-  `__root.tsx` ~18%, `analyze-weaknesses.ts` ~8% — server routes this
-  codebase doesn't unit-test as a matter of established pattern, not an
-  oversight).
+- **Test coverage was near-zero before 2026-09-20's PR #46.** As of
+  2026-10-09 there are about 277 web test files (3,030 tests in the last full
+  CI run reported on #265) and 1,024 Swift Kit tests (#270); run `bun run
+test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
+  The old note that `HeartsModal.tsx`, `__root.tsx` and
+  `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
+  holds.
 - **Nudge-a-friend (iOS) is deliberately the weaker V2 approach, not the
   finished feature** — a `nudges` table (`supabase/migrations/
 20260920020000_nudges.sql`) the recipient's app polls for on foreground/
@@ -1610,18 +1905,8 @@ test:coverage`, see `AGENTS.md`'s Testing section for the full
   don't assume a real regression: scope to the changed files first, and
   treat a genuinely-needed full-suite confirmation as something to run
   in a fresh session/shell rather than deep into a long one.
-- **Campaign/converse (Hector) speech is still transcribed as English,
-  even after French `speak` content ships (French Phase 2, PR 4).**
-  PR #111 threaded `course` from `SpeakAnswer` through `/api/stt` to
-  Deepgram's `language` param, fixing every lesson/review `speak`
-  question — but conversation scenarios (`src/routes/.../campaign*`,
-  iOS's `AIConversationClient`) carry no `course` field at all, so
-  their STT calls still omit `language` and default to `en`. This was
-  latent and harmless when PR #111 landed (no French `speak` content
-  existed yet to expose it); it is now a live, known boundary rather
-  than a latent one, since French `speak` content exists starting with
-  PR 4. Not fixed here — deliberately out of PR 4's scope, and a
-  product question (should Hector converse in French at all yet, and
-  in which course) rather than a code one. If a future session wires
-  `course` into conversation scenarios, `/api/stt` and Deepgram already
-  support it; only the caller side needs the field threaded through.
+- **Campaign/converse (Hector) speech used to be transcribed as English
+  (fixed 2026-10-08, #258).** Conversation scenarios now carry the course, and
+  `/api/stt` passes it to Deepgram's `language` parameter, so French and
+  Spanish conversations are transcribed in their own language. Builds from
+  before the change (and Android) still omit `course` and get English.

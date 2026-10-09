@@ -1,13 +1,11 @@
 # Learn with Alphonso — Complete Lesson Asset List
 
-> **Status (2026-09-13, counts refreshed 2026-09-22):** this file's
+> **Status (2026-09-13, counts refreshed 2026-10-09):** this file's
 > premise — a uniform 300-lesson curriculum (60/level) — is stale.
-> Actual counts, verified 2026-09-22: **English 534 lessons
-> (122/104/104/102/102), French 500 lessons (100/level), Spanish 508
-> lessons (100/101/104/102/101)** — French and Spanish both grew to full
-> parity with English after this note was first written; the numbers
-> above are current, the rest of this file is not. See `AGENTS.md`'s
-> Content Structure table for the authoritative numbers going forward.
+> Actual counts: **English 609 lessons (137/119/119/117/117), French 575
+> (115 per level), Spanish 583 (115/116/119/117/116)**, 1,767 in all.
+> The rest of this file is not current. See `AGENTS.md`'s Content
+> Structure table for the authoritative numbers going forward.
 >
 > **The IMAGE ASSETS section below (§2) is superseded.** Vocab images are one
 > self-hosted photo **per vocabulary term**, defined in the generated
@@ -20,7 +18,12 @@
 > `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`; `--prune` is a dry run unless `--apply`, and refuses a tiny keep-set or more than 10% deletions without `--force-large`)
 > → `scripts/write-vocab-images.ts` → owner sheet and
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
-> `scripts/seed-vocab-images-db.ts`. `src/data/vocab-images.guard.test.ts`
+> `scripts/seed-vocab-images-db.ts`. **Live today: 415 images** (English 212,
+> Spanish 176, French 27, all owner-signed-off, uploaded and reseeded on
+> 2026-10-08). A second pass of 315 more photos (730 in total) is a draft PR
+> and ships in build 51, because the iOS app bundles `vocab-images.json`;
+> it is not live yet. Run the upload and reseed from Git Bash with the
+> service-role key; `--prune` is a dry run first. `src/data/vocab-images.guard.test.ts`
 > enforces host, denylist, review stamp, imageability and sign-off on every PR,
 > and `.github/workflows/vocab-image-links.yml` checks every URL on PRs and weekly.
 >
@@ -33,8 +36,11 @@
 > **Audio (§1), Animations (§3), Icons (§4), Textures (§5), and Sound FX
 > (§6) all remain aspirational** — none of these have been built as of
 > this writing (no `public/audio/`, `public/animations/`, or per-topic
-> icon files exist in the repo; the app's only audio is live Deepgram TTS
-> for conversation practice, not pre-generated pronunciation files). The
+> icon files exist in the repo; the app's audio is live Deepgram TTS for
+> conversation practice and listening questions, plus the podcast library:
+> AI-narrated Deepgram Aura-2 episodes in the `podcast-audio` bucket, with
+> licensed-only publishing enforced by the database; no pre-generated
+> per-word pronunciation files). The
 > detailed per-lesson word lists below were written against the original
 > 60-lessons-per-level plan and have **not** been reconciled against the
 > real generated lesson content (`src/data/lesson-bank.ts`) — treat them
