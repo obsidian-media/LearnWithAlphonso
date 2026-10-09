@@ -7,7 +7,8 @@
  *   asc-release-ops.ts beta-review-info [--apply]     # TestFlight Beta App Review demo info
  *   asc-release-ops.ts content-rights [--apply]       # apps.contentRightsDeclaration = USES_THIRD_PARTY_CONTENT
  *   asc-release-ops.ts release-type [MANUAL|AFTER_APPROVAL] [--apply]
- *   asc-release-ops.ts submission-check               # read-only pre-submit sweep, exits 1 on any FAIL
+ *   asc-release-ops.ts submission-check [BUILD]       # read-only pre-submit sweep, exits 1 on any FAIL;
+ *                                                     # BUILD, when given, must be the attached build
  *
  * Env: APP_STORE_CONNECT_KEY_ID/ISSUER_ID/KEY_P8_BASE64; for beta-review-info also
  * DEMO_ACCOUNT_EMAIL, REVIEW_CONTACT_EMAIL, REVIEW_CONTACT_PHONE, REVIEW_DEMO_CODE_URL.
@@ -15,15 +16,23 @@
  * Nothing here submits anything for review.
  */
 import { createSign } from "node:crypto";
-import { ageRatingProblems } from "../src/lib/app-store/age-rating";
+import { ageRatingProblems, resolveComputedRating } from "../src/lib/app-store/age-rating";
 import {
+  attachedBuildNumberProblem,
+  attachedBuildProblems,
   buildsToExpire,
   findBuild,
   requireNewerValidBuild,
   type AscBuild,
+  type VersionBuild,
 } from "../src/lib/app-store/build-selection";
-import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
+import {
+  editableVersionQuery,
+  pickEditableAppInfo,
+  pickEditableVersion,
+} from "../src/lib/app-store/editable-version";
 import { LISTING } from "../src/lib/app-store/listing-copy";
+import { parseOpsArgs } from "../src/lib/app-store/ops-args";
 import { buildBetaReviewNotes } from "../src/lib/app-store/review-notes";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
@@ -33,8 +42,9 @@ const APP_ID = process.env.APP_ID ?? "6813969159";
 const SUBSCRIPTION_ID = process.env.SUBSCRIPTION_ID ?? "6815009725";
 const DECLARATION_ID =
   process.env.AGE_RATING_DECLARATION_ID ?? "74c50170-c089-4201-8fb6-2e6155eae246";
-const [cmd, arg] = process.argv.slice(2).filter((a) => a !== "--apply");
-const APPLY = process.argv.includes("--apply");
+// --apply is honoured only in the last argument slot (the workflow's dedicated apply input); the free-text
+// argument can never switch a write on.
+const { cmd, arg, apply: APPLY } = parseOpsArgs(process.argv.slice(2));
 
 const missing = [
   !KEY_ID && "APP_STORE_CONNECT_KEY_ID",
@@ -119,6 +129,41 @@ async function editableVersion(): Promise<Resource> {
   );
 }
 
+/** Every version of the app, whatever its state, with the build it has attached (null when none). */
+async function versionsWithBuilds(): Promise<VersionBuild[]> {
+  const r = await api(`/apps/${APP_ID}/appStoreVersions?limit=50`);
+  if (!r.ok) throw new Error(`list versions failed: ${r.status}`);
+  const out: VersionBuild[] = [];
+  for (const v of dataOf<Resource[]>(r)) {
+    const b = await api(`/appStoreVersions/${v.id}/build`);
+    if (!b.ok)
+      throw new Error(
+        `could not read the build of version ${String(v.attributes?.versionString)}: ${b.status}`,
+      );
+    out.push({
+      versionString: String(v.attributes?.versionString),
+      state: String(v.attributes?.appVersionState),
+      buildId: dataOf<Resource | null>(b)?.id ?? null,
+    });
+  }
+  return out;
+}
+
+/** The computed age rating as the app info reports it, or undefined when there is no editable app info. */
+async function appInfoAgeRating(): Promise<string | undefined> {
+  const r = await api(`/apps/${APP_ID}/appInfos`);
+  if (!r.ok) return undefined;
+  try {
+    const info = pickEditableAppInfo(
+      dataOf<{ id: string; attributes?: { state?: string; appStoreState?: string } }[]>(r),
+    );
+    const rating = (info.attributes as Record<string, unknown> | undefined)?.appStoreAgeRating;
+    return typeof rating === "string" ? rating : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 type Check = { name: string; pass: boolean; detail?: string };
 
 /** Read-only sweep of everything that must be true before the version is submitted. Prints no secret. */
@@ -142,13 +187,23 @@ async function submissionCheck(): Promise<void> {
       true,
       `${String(version.attributes?.versionString)} ${String(version.attributes?.appVersionState)}`,
     );
+    add(
+      "release type is MANUAL",
+      version.attributes?.releaseType === "MANUAL",
+      String(version.attributes?.releaseType ?? "unset"),
+    );
   });
 
   if (versionId) {
     await attempt("attached build", async () => {
       const r = await api(`/appStoreVersions/${versionId}/build`);
       const version = (dataOf<Resource | null>(r)?.attributes?.version as string | undefined) ?? "";
-      add("a build is attached", Boolean(version), version ? `build ${version}` : "none attached");
+      const problem = attachedBuildNumberProblem(version, arg);
+      add(
+        "the attached build is the release build",
+        problem === null,
+        problem ?? `build ${version}`,
+      );
     });
 
     await attempt("listing text", async () => {
@@ -215,8 +270,15 @@ async function submissionCheck(): Promise<void> {
 
   await attempt("age rating", async () => {
     const r = await api(`/ageRatingDeclarations/${DECLARATION_ID}`);
-    const problems = ageRatingProblems(dataOf<Resource>(r).attributes ?? {});
-    add("age rating declaration", problems.length === 0, problems.join("; "));
+    const live = dataOf<Resource>(r).attributes ?? {};
+    const infoRating = await appInfoAgeRating();
+    const { rating, source } = resolveComputedRating(live, infoRating);
+    const problems = ageRatingProblems(live, infoRating);
+    add(
+      "age rating declaration",
+      problems.length === 0,
+      problems.length ? problems.join("; ") : `${rating} (from ${source})`,
+    );
   });
 
   await attempt("content rights", async () => {
@@ -268,6 +330,8 @@ async function main() {
     const builds = await listBuilds();
     const newer = requireNewerValidBuild(builds, max); // never expire anything until a newer build is VALID
     const targets = buildsToExpire(builds, max);
+    const attached = attachedBuildProblems(targets, await versionsWithBuilds());
+    if (attached.length > 0) throw new Error(attached.join("; "));
     console.log(`Newer valid build: ${newer.attributes.version}`);
     console.log(
       `${APPLY ? "Expiring" : "Would expire"}: ${targets.map((b) => b.attributes.version).join(", ") || "(none)"}`,

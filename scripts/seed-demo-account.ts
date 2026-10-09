@@ -39,7 +39,10 @@ import { createClient } from "@supabase/supabase-js";
 import {
   DEMO_SEED,
   assertDemoPaired,
+  assertNoWriteErrors,
+  demoSeedProblems,
   pickResumeEpisode,
+  type DemoSeedState,
   type EpisodeRow,
 } from "../src/lib/app-store/demo-seed-plan";
 import { isProSubscriber, revenueCatConfigFromEnv } from "../src/lib/revenuecat-entitlement";
@@ -155,12 +158,13 @@ async function resetSeededRows(userId: string): Promise<void> {
   // Delete first so re-running this script twice produces the same state,
   // not accumulated duplicate rows -- this runs again on every future
   // build, not once.
-  await Promise.all([
+  const results = await Promise.all([
     supabaseAdmin.from("lesson_completions").delete().eq("user_id", userId),
     supabaseAdmin.from("review_items").delete().eq("user_id", userId),
     supabaseAdmin.from("activity_days").delete().eq("user_id", userId),
     supabaseAdmin.from("podcast_playback").delete().eq("user_id", userId),
   ]);
+  assertNoWriteErrors("reset seeded rows", results);
 }
 
 async function seedProgress(userId: string, episode: EpisodeRow): Promise<void> {
@@ -171,7 +175,7 @@ async function seedProgress(userId: string, episode: EpisodeRow): Promise<void> 
   // streak).
   const streakDays = 12;
 
-  await Promise.all([
+  const results = await Promise.all([
     // The demo account has a chosen public name, so App Review and the screenshot run land on Learn, not on
     // the one-time name prompt. A service-role write (auth.uid() NULL) is not re-stamped by the profile
     // trigger, so set both columns explicitly. The name passes the name filter.
@@ -271,6 +275,7 @@ async function seedProgress(userId: string, episode: EpisodeRow): Promise<void> 
       { onConflict: "user_id,episode_id" },
     ),
   ]);
+  assertNoWriteErrors("seed progress", results);
 }
 
 async function reportProEntitlement(userId: string): Promise<void> {
@@ -321,11 +326,17 @@ async function clearDemoBuddyState(userId: string): Promise<void> {
 // Creates (or refreshes) the second demo learner and pairs the demo account with them as a
 // matched pair, with a couple of preset messages from them. Idempotent: the old pair is removed
 // first, and the buddy's own pool row and pair are cleared too.
-async function seedDemoBuddy(demoUserId: string): Promise<void> {
+async function seedDemoBuddy(demoUserId: string): Promise<string> {
   const buddy = DEMO_SEED.buddy;
   const buddyId = await resolveOrCreateUser(buddy.email, true);
   await clearDemoBuddyState(buddyId);
   await clearDemoBuddyState(demoUserId);
+
+  // The demo account can never be matched with a real learner: it is excluded from the pool for good.
+  const { error: excludeError } = await supabaseAdmin
+    .from("buddy_pool_exclusions")
+    .upsert({ user_id: demoUserId, reason: "App Review demo account" }, { onConflict: "user_id" });
+  if (excludeError) throw excludeError;
 
   const { error: profileError } = await supabaseAdmin
     .from("profiles")
@@ -333,34 +344,31 @@ async function seedDemoBuddy(demoUserId: string): Promise<void> {
     .eq("id", buddyId);
   if (profileError) throw profileError;
 
-  const placedAt = new Date(Date.now() - 10 * 86_400_000).toISOString();
-  const { error: languageError } = await supabaseAdmin.from("language_progress").upsert(
-    {
-      user_id: buddyId,
-      language: buddy.course,
-      xp: 900,
-      placement_taken_at: placedAt,
-      placement_level: buddy.level,
-      cefr_level: buddy.level,
-    },
-    { onConflict: "user_id,language" },
-  );
-  if (languageError) throw languageError;
-  // A little weekly progress, so the matched card shows something on the buddy's side.
-  for (const lessonId of buddy.lessonIds) {
-    const { error } = await supabaseAdmin.from("lesson_completions").upsert(
-      {
-        user_id: buddyId,
-        lesson_id: lessonId,
-        correct: 4,
-        total: 5,
-        xp_earned: 20,
-        language: buddy.course,
-      },
-      { onConflict: "user_id,lesson_id" },
-    );
-    if (error) throw error;
-  }
+  // The demo learner has no XP and no completions, so she never shows on a leaderboard or in a league;
+  // only the pairing needs her. Clear anything an earlier seed may have left.
+  const cleanup = await Promise.all([
+    supabaseAdmin.from("language_progress").delete().eq("user_id", buddyId),
+    supabaseAdmin.from("lesson_completions").delete().eq("user_id", buddyId),
+  ]);
+  assertNoWriteErrors("clear the demo learner's progress", cleanup);
+
+  // A reviewer may have used Block or Report on the demo learner. Remove only what exists between these
+  // two accounts (both directions), or the pairing below would be refused as blocked.
+  const neutralise = await Promise.all([
+    supabaseAdmin.from("blocked_users").delete().eq("blocker", demoUserId).eq("blocked", buddyId),
+    supabaseAdmin.from("blocked_users").delete().eq("blocker", buddyId).eq("blocked", demoUserId),
+    supabaseAdmin
+      .from("content_reports")
+      .delete()
+      .eq("reporter", demoUserId)
+      .eq("reported", buddyId),
+    supabaseAdmin
+      .from("content_reports")
+      .delete()
+      .eq("reporter", buddyId)
+      .eq("reported", demoUserId),
+  ]);
+  assertNoWriteErrors("clear block and report rows between the demo accounts", neutralise);
 
   // The same helper the real matcher calls, so the pair is exactly what a match produces.
   const { data: status, error: pairError } = await supabaseAdmin.rpc("_create_buddy_pair", {
@@ -377,11 +385,68 @@ async function seedDemoBuddy(demoUserId: string): Promise<void> {
     .eq("user_id", demoUserId)
     .single();
   if (memberError) throw memberError;
+  // Seed-only: these inserts deliberately bypass send_buddy_message. That function enforces the rate
+  // limit, the matching switch and the sender's own session, none of which applies to fixture data
+  // written by the service role. Production code must never insert into buddy_messages directly.
   for (const presetId of buddy.presets) {
     const { error } = await supabaseAdmin
       .from("buddy_messages")
       .insert({ pair_id: member.pair_id, sender_id: buddyId, preset_id: presetId });
     if (error) throw error;
+  }
+  return buddyId;
+}
+
+// Reads the seeded state back and fails unless it is what the review notes promise. Nothing is reported
+// as seeded before this passes.
+async function verifyDemoSeed(demoUserId: string, buddyId: string): Promise<void> {
+  const [profile, pool, languages, exclusion, membership] = await Promise.all([
+    supabaseAdmin
+      .from("profiles")
+      .select("display_name, name_confirmed_at, ai_consent_at")
+      .eq("id", demoUserId)
+      .maybeSingle(),
+    supabaseAdmin.from("buddy_pool").select("user_id").eq("user_id", demoUserId),
+    supabaseAdmin.from("language_progress").select("language").eq("user_id", demoUserId),
+    supabaseAdmin.from("buddy_pool_exclusions").select("user_id").eq("user_id", demoUserId),
+    supabaseAdmin.from("buddy_members").select("pair_id").eq("user_id", demoUserId).maybeSingle(),
+  ]);
+  assertNoWriteErrors("read back the demo account", [
+    profile,
+    pool,
+    languages,
+    exclusion,
+    membership,
+  ]);
+
+  let pair: DemoSeedState["pair"] = null;
+  if (membership.data) {
+    const [pairRow, members] = await Promise.all([
+      supabaseAdmin
+        .from("buddy_pairs")
+        .select("source, ended_at")
+        .eq("id", membership.data.pair_id)
+        .single(),
+      supabaseAdmin.from("buddy_members").select("user_id").eq("pair_id", membership.data.pair_id),
+    ]);
+    assertNoWriteErrors("read back the demo pair", [pairRow, members]);
+    pair = {
+      source: pairRow.data!.source as string,
+      endedAt: pairRow.data!.ended_at as string | null,
+      memberIds: (members.data ?? []).map((m) => m.user_id as string),
+    };
+  }
+
+  const state: DemoSeedState = {
+    profile: profile.data,
+    poolRows: pool.data?.length ?? 0,
+    languages: (languages.data ?? []).map((l) => l.language as string),
+    excluded: (exclusion.data?.length ?? 0) === 1,
+    pair,
+  };
+  const problems = demoSeedProblems(state, demoUserId, buddyId);
+  if (problems.length > 0) {
+    throw new Error(`Demo seed read-back failed:\n${problems.join("\n")}`);
   }
 }
 
@@ -390,10 +455,11 @@ async function main(): Promise<void> {
   const episode = await resolveResumeEpisode();
   await resetSeededRows(userId);
   await seedProgress(userId, episode);
-  await seedDemoBuddy(userId);
+  const buddyId = await seedDemoBuddy(userId);
+  await verifyDemoSeed(userId, buddyId);
   await reportProEntitlement(userId);
 
-  console.log(`\nSeeded the demo account (${userId}):`);
+  console.log(`\nSeeded the demo account (${userId}); read-back passed:`);
   console.log(`  - ${SEEDED_LESSONS.length} completed lessons, streak 12`);
   console.log(`  - ${SEEDED_REVIEW_ITEMS.length} review items due today`);
   console.log(
@@ -405,6 +471,7 @@ async function main(): Promise<void> {
   console.log(
     `  - paired with the demo study buddy (${DEMO_SEED.buddy.displayName}) with ${DEMO_SEED.buddy.presets.length} preset message(s); no pool row`,
   );
+  console.log("  - excluded from stranger matching");
   console.log("  - AI consent reset: the reviewer sees the consent sheet");
 }
 

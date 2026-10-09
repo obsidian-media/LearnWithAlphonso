@@ -29,7 +29,10 @@ import { createSign, createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
-import { planScreenshotReplacement } from "../src/lib/app-store/screenshot-plan";
+import {
+  planScreenshotReplacement,
+  screenshotFileProblems,
+} from "../src/lib/app-store/screenshot-plan";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -104,6 +107,17 @@ async function apiDelete(path: string): Promise<void> {
 }
 
 async function main() {
+  // Before any request, and so before anything is deleted: every file must read cleanly and be a PNG of a
+  // size Apple accepts for this display type. A bad file found after the old set is gone would leave the
+  // listing empty.
+  const fileProblems = readdirSync(dir)
+    .filter((f) => f.toLowerCase().endsWith(".png"))
+    .sort()
+    .flatMap((f) => screenshotFileProblems(f, readFileSync(join(dir, f)), DISPLAY_TYPE));
+  if (fileProblems.length > 0) {
+    throw new Error(`Screenshot files are not ready: ${fileProblems.join("; ")}`);
+  }
+
   const versions = await api(`/apps/${APP_ID}/appStoreVersions?${editableVersionQuery()}`);
   const version = pickEditableVersion(versions.data as AscResource[]);
   console.log(
@@ -162,55 +176,60 @@ async function main() {
   }
   console.log(`\n${files.length} screenshot(s) to upload: ${files.join(", ")}`);
 
-  for (const fileName of files) {
-    const filePath = join(dir, fileName);
-    const fileData = readFileSync(filePath);
-    const fileSize = statSync(filePath).size;
-    console.log(`\n--- ${fileName} (${fileSize} bytes) ---`);
+  try {
+    for (const fileName of files) {
+      const filePath = join(dir, fileName);
+      const fileData = readFileSync(filePath);
+      const fileSize = statSync(filePath).size;
+      console.log(`\n--- ${fileName} (${fileSize} bytes) ---`);
 
-    const reserved = await api(`/appScreenshots`, "POST", {
-      data: {
-        type: "appScreenshots",
-        attributes: { fileName, fileSize },
-        relationships: {
-          appScreenshotSet: { data: { type: "appScreenshotSets", id: set!.id } },
+      const reserved = await api(`/appScreenshots`, "POST", {
+        data: {
+          type: "appScreenshots",
+          attributes: { fileName, fileSize },
+          relationships: {
+            appScreenshotSet: { data: { type: "appScreenshotSets", id: set!.id } },
+          },
         },
-      },
-    });
-    const shot = reserved.data as AscResource;
-    const uploadOps = shot.attributes?.uploadOperations as
-      | {
-          method: string;
-          url: string;
-          requestHeaders: { name: string; value: string }[];
-          offset: number;
-          length: number;
-        }[]
-      | undefined;
-    if (!uploadOps) throw new Error(`No uploadOperations returned for ${fileName}`);
+      });
+      const shot = reserved.data as AscResource;
+      const uploadOps = shot.attributes?.uploadOperations as
+        | {
+            method: string;
+            url: string;
+            requestHeaders: { name: string; value: string }[];
+            offset: number;
+            length: number;
+          }[]
+        | undefined;
+      if (!uploadOps) throw new Error(`No uploadOperations returned for ${fileName}`);
 
-    for (const op of uploadOps) {
-      const headers: Record<string, string> = {};
-      for (const h of op.requestHeaders) headers[h.name] = h.value;
-      const chunk = fileData.subarray(op.offset, op.offset + op.length);
-      const putRes = await fetch(op.url, { method: op.method, headers, body: chunk });
-      if (!putRes.ok)
-        throw new Error(`PUT failed for ${fileName}: ${putRes.status} ${await putRes.text()}`);
+      for (const op of uploadOps) {
+        const headers: Record<string, string> = {};
+        for (const h of op.requestHeaders) headers[h.name] = h.value;
+        const chunk = fileData.subarray(op.offset, op.offset + op.length);
+        const putRes = await fetch(op.url, { method: op.method, headers, body: chunk });
+        if (!putRes.ok)
+          throw new Error(`PUT failed for ${fileName}: ${putRes.status} ${await putRes.text()}`);
+      }
+
+      const checksum = createHash("md5").update(fileData).digest("hex");
+      const finalized = await api(`/appScreenshots/${shot.id}`, "PATCH", {
+        data: {
+          type: "appScreenshots",
+          id: shot.id,
+          attributes: { uploaded: true, sourceFileChecksum: checksum },
+        },
+      });
+      const state = (
+        (finalized.data as AscResource).attributes?.assetDeliveryState as
+          { state?: string } | undefined
+      )?.state;
+      console.log(`Finalized: ${state}`);
     }
-
-    const checksum = createHash("md5").update(fileData).digest("hex");
-    const finalized = await api(`/appScreenshots/${shot.id}`, "PATCH", {
-      data: {
-        type: "appScreenshots",
-        id: shot.id,
-        attributes: { uploaded: true, sourceFileChecksum: checksum },
-      },
-    });
-    const state = (
-      (finalized.data as AscResource).attributes?.assetDeliveryState as
-        { state?: string } | undefined
-    )?.state;
-    console.log(`Finalized: ${state}`);
+  } catch (err) {
+    console.error("An upload failed part-way: the set is partial; re-run with --replace.");
+    throw err;
   }
 
   // Processing is asynchronous: re-read the set until every shot is COMPLETE (up to ~100 s).

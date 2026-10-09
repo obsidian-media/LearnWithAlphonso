@@ -40,11 +40,14 @@ import {
   AGE_RATING_ANSWERS,
   ageRatingPatch,
   ageRatingProblems,
+  resolveComputedRating,
 } from "../src/lib/app-store/age-rating";
+import { pickEditableAppInfo } from "../src/lib/app-store/editable-version";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
 const KEY_P8_BASE64 = process.env.APP_STORE_CONNECT_KEY_P8_BASE64;
+const APP_ID = process.env.APP_ID ?? "6813969159";
 const DECLARATION_ID =
   process.env.AGE_RATING_DECLARATION_ID ?? "74c50170-c089-4201-8fb6-2e6155eae246";
 
@@ -102,6 +105,20 @@ async function api(
   return { ok: res.ok, status: res.status, json };
 }
 
+/** The computed rating as the app info reports it; Apple may expose it there rather than on the declaration. */
+async function appInfoRating(): Promise<string | undefined> {
+  const r = await api(`/apps/${APP_ID}/appInfos`);
+  if (!r.ok) return undefined;
+  try {
+    const info = pickEditableAppInfo(
+      (r.json as { data: { id: string; attributes?: Record<string, string> }[] }).data,
+    );
+    return (info.attributes as Record<string, string> | undefined)?.appStoreAgeRating;
+  } catch {
+    return undefined;
+  }
+}
+
 async function main() {
   const cmd = process.argv[2];
   console.log(`Age rating declaration id: ${DECLARATION_ID}`);
@@ -113,7 +130,10 @@ async function main() {
     if (!result.ok) process.exit(1);
     const attributes = (result.json as { data: { attributes: Record<string, unknown> } }).data
       .attributes;
-    const problems = ageRatingProblems(attributes);
+    const infoRating = await appInfoRating();
+    const { rating, source } = resolveComputedRating(attributes, infoRating);
+    console.log(`Computed rating: ${rating || "(none)"} (source: ${source})`);
+    const problems = ageRatingProblems(attributes, infoRating);
     for (const problem of problems) console.log(`  PROBLEM: ${problem}`);
     console.log(
       problems.length === 0 ? "AGE RATING OK" : `AGE RATING PROBLEMS: ${problems.length}`,
