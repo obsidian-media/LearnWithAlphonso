@@ -14,6 +14,22 @@ const between = (src: string, start: string, end: RegExp) => {
   return stop < 0 ? rest : rest.slice(0, start.length + stop);
 };
 
+describe("Learn level load", () => {
+  const src = read(`${APP}/LessonBrowserView.swift`);
+  const fn = between(src, "private func loadLevel()", /\n {4}\/\/\/ Fire-and-forget/);
+  it("drops a fetch that lands after the course changed", () => {
+    expect(fn).toContain("let fetchedCourseCode = course.code");
+    const guards =
+      fn.match(/guard !Task\.isCancelled, course\.code == fetchedCourseCode else \{ return \}/g) ??
+      [];
+    expect(guards.length).toBe(2);
+    // The level must be applied only after the first guard.
+    expect(fn.indexOf("selectedLevel = level")).toBeGreaterThan(
+      fn.indexOf("guard !Task.isCancelled"),
+    );
+  });
+});
+
 describe("Review never blank", () => {
   const src = read(`${APP}/ReviewQueueView.swift`);
   it("resolves the whole queue before showing anything", () => {
