@@ -2,6 +2,8 @@
 // without hitting the DB.
 // "team" is granted by the server only (the team mission payout): no client computes a "team" stat, so
 // stats[a.category] ?? 0 in completeLessonRemote can never unlock it.
+import { LEAGUE_TIER_COPY } from "../lib/league-tier-copy";
+
 export type AchievementCategory =
   "streak" | "xp" | "perfect" | "lessons" | "league" | "freeze" | "team";
 
@@ -257,9 +259,9 @@ export const LEAGUE_TIERS = ["bronze", "silver", "sapphire", "ruby", "diamond"] 
 export type LeagueTier = (typeof LEAGUE_TIERS)[number];
 
 export const LEAGUE_TIER_META: Record<LeagueTier, { label: string; hex: string; sub: string }> = {
-  bronze: { label: "Bronze", hex: "#b07242", sub: "Getting started" },
-  silver: { label: "Silver", hex: "#8a9099", sub: "Warming up" },
-  sapphire: { label: "Sapphire", hex: "#4a6b8a", sub: "Consistent" },
-  ruby: { label: "Ruby", hex: "#9a4a4a", sub: "Serious" },
-  diamond: { label: "Diamond", hex: "#4a7f7a", sub: "Elite" },
+  bronze: { ...LEAGUE_TIER_COPY.bronze, hex: "#b07242" },
+  silver: { ...LEAGUE_TIER_COPY.silver, hex: "#8a9099" },
+  sapphire: { ...LEAGUE_TIER_COPY.sapphire, hex: "#4a6b8a" },
+  ruby: { ...LEAGUE_TIER_COPY.ruby, hex: "#9a4a4a" },
+  diamond: { ...LEAGUE_TIER_COPY.diamond, hex: "#4a7f7a" },
 };

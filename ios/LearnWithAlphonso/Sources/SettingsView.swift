@@ -246,6 +246,7 @@ struct SettingsView: View {
                 Section {
                     Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
                     Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
+                    NavigationLink("Acknowledgements") { AcknowledgementsView() }
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
@@ -310,7 +311,7 @@ struct SettingsView: View {
                 Text("""
                 This permanently deletes your account, progress, streaks, achievements, and review history. It cannot be undone. Type DELETE to confirm.
 
-                This does not cancel an active Alphonso Pro subscription. Apple bills that separately -- cancel it yourself in Settings > Subscriptions on your device.
+                This does not cancel an active Alphonso Pro subscription. Apple bills that separately. Cancel it yourself in Settings > Subscriptions on your device.
 
                 If you signed in with Apple, this also revokes that connection. See our Privacy Policy if you ever need to revoke it yourself.
                 """)

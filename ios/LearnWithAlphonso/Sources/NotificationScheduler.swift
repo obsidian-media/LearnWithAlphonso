@@ -83,7 +83,7 @@ final class NotificationScheduler {
         schedule(ScheduledNotification(
             identifier: Self.streakReminderIdentifier,
             title: "Keep your streak alive",
-            body: "You haven't studied today yet -- a quick lesson keeps it going.",
+            body: "You haven't studied today yet. A quick lesson keeps it going.",
             fireDate: fireDate
         ))
     }

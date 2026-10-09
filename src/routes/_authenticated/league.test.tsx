@@ -44,15 +44,15 @@ describe("League page", () => {
   it("shows the current tier and the next tier to reach", async () => {
     useProgress.setState({ leagueTier: "silver" });
     renderPage();
-    expect(await screen.findByText("Silver")).toBeInTheDocument();
+    expect(await screen.findByText("Sapling")).toBeInTheDocument();
     expect(screen.getByText("Next")).toBeInTheDocument();
-    expect(screen.getByText("Sapphire")).toBeInTheDocument();
+    expect(screen.getByText("Grove")).toBeInTheDocument();
   });
 
   it("hides the 'next tier' callout at the top tier", async () => {
     useProgress.setState({ leagueTier: "diamond" });
     renderPage();
-    expect(await screen.findByText("Diamond")).toBeInTheDocument();
+    expect(await screen.findByText("Summit")).toBeInTheDocument();
     expect(screen.queryByText("Next")).not.toBeInTheDocument();
   });
 

@@ -119,7 +119,7 @@ struct SpeakQuestionCard: View {
             Button {
                 speakCardSynthesizer.stopSpeaking(at: .immediate)
                 let utterance = AVSpeechUtterance(string: question.answer)
-                utterance.voice = AVSpeechSynthesisVoice(language: course.speakLanguageCode)
+                utterance.voice = SpeechVoice.voice(for: course)
                 speakCardSynthesizer.speak(utterance)
             } label: {
                 Label("Hear it first", systemImage: "speaker.wave.2.fill")
@@ -242,19 +242,9 @@ struct SpeakQuestionCard: View {
 }
 
 extension Course {
-    /// Locale for the phrase's model pronunciation, matching the web's
-    /// `localeForCourse`.
-    var speakLanguageCode: String {
-        switch self {
-        case .english: return "en-US"
-        case .french: return "fr-FR"
-        case .spanish: return "es-ES"
-        }
-    }
-
     /// Bare course code for api/stt.ts's `course` field -- matches
     /// `isCourse`'s web-side validator exactly ("en"/"fr"/"es"), a
-    /// different format from `speakLanguageCode`'s locale strings above.
+    /// different format from the speech locales in Course.speechLocale.
     var sttCourseCode: String {
         switch self {
         case .english: return "en"

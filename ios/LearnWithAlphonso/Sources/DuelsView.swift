@@ -99,6 +99,7 @@ struct DuelsView: View {
         SocialSafetyMenu(
             onBlock: { duelBlockTarget = opponentTarget(for: d) },
             onReport: { duelReportTarget = opponentTarget(for: d) },
+            accessibilityName: "your opponent"
         )
     }
 

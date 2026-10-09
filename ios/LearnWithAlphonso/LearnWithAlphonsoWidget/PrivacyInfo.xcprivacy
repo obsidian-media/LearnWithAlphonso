@@ -11,9 +11,9 @@
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
-			<!-- Reads the App Group (group.com.obsidianmedia.learnwithalphonso)
-			     UserDefaults the main app writes progress into. Same reasoning
-			     as the app target's PrivacyInfo.xcprivacy. -->
+			<!-- 1C8F.1: the widget only reads the App Group suite the app writes
+			     (StreakTimelineProvider). Pinned by
+			     src/lib/ios-privacy-manifest.test.ts. -->
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>

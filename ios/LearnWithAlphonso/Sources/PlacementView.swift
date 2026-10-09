@@ -339,7 +339,7 @@ struct PlacementView: View {
     private func speak(_ text: String) {
         placementSpeechSynthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: course.speechLanguageCode)
+        utterance.voice = SpeechVoice.voice(for: course)
         placementSpeechSynthesizer.speak(utterance)
     }
 }
@@ -394,14 +394,6 @@ private extension Course {
         case .english: return "en"
         case .french: return "fr"
         case .spanish: return "es"
-        }
-    }
-
-    var speechLanguageCode: String {
-        switch self {
-        case .english: return "en-US"
-        case .french: return "fr-FR"
-        case .spanish: return "es-ES"
         }
     }
 }

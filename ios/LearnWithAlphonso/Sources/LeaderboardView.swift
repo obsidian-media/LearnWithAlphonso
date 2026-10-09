@@ -259,7 +259,7 @@ private struct LeaderboardRowView: View {
                 .foregroundStyle(AlphonsoColor.ink)
 
             if !isYou {
-                SocialSafetyMenu(onBlock: onBlock, onReport: onReport)
+                SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: row.displayName)
             }
         }
     }
@@ -351,7 +351,7 @@ private struct WeeklyRecapView: View {
                                             .font(AlphonsoFont.display(22, weight: .semiBold))
                                             .foregroundStyle(AlphonsoColor.ink)
                                     }
-                                    Text("Approximate -- this app doesn't keep a historical snapshot of last week's exact standings.")
+                                    Text("Approximate: this app doesn't keep a snapshot of last week's exact standings.")
                                         .font(AlphonsoFont.sans(11))
                                         .foregroundStyle(AlphonsoColor.inkSoft)
                                         .multilineTextAlignment(.center)

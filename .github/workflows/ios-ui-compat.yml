@@ -1,0 +1,128 @@
+name: iOS UI compatibility (iPad and largest text)
+
+# App Review runs this iPhone-only app on an iPad in compatibility mode, and accessibility reviewers use the
+# largest text sizes. These jobs launch the real app (Debug) on simulators, rotate it or set Accessibility
+# XXXL, screenshot auth, a lesson, the recording screen and the paywall, and fail on obvious breakage (crash,
+# a required control missing, not hittable, or running off the side). Screenshots are uploaded for a person
+# to look at.
+#
+# Signed-in screens use the seeded demo account through Session.uiTestBootstrapSession (DEBUG), the same path
+# capture-app-store-screenshots.yml uses. The tests only read, but each run mints an auth session on the account
+# App Review signs in with, so this workflow is dispatch-only and must never run automatically. Dispatch it by
+# hand when the demo account is not frozen. One run at a time, across all branches.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-ui-compat
+  cancel-in-progress: false
+
+jobs:
+  ui-compat:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      # One at a time: each job mints a session for the same demo account, and a second mint invalidates the first.
+      max-parallel: 1
+      matrix:
+        include:
+          - suite: IPadCompatibilityTests
+            label: ipad
+            prefer: "iPad Air 11-inch|iPad Air 13-inch|iPad (A16)|iPad Pro 11-inch|iPad"
+          - suite: LargeTextTests
+            label: large-text
+            prefer: "iPhone 16e|iPhone 17|iPhone"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - run: bun install --frozen-lockfile
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios/LearnWithAlphonso
+        run: xcodegen generate
+
+      - name: Mint a session for the seeded demo account
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+        # Masked before they reach GITHUB_ENV, as in capture-app-store-screenshots.yml.
+        run: |
+          set -o pipefail
+          bun scripts/mint-demo-session.ts --email "$DEMO_ACCOUNT_EMAIL" | bash scripts/export-masked-env.sh
+
+      - name: Pick, erase and boot a simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          prefer = sys.argv[1].split("|")
+          devices = [d for runtime, ds in json.load(sys.stdin)["devices"].items() if "iOS" in runtime for d in ds]
+          for p in prefer:
+              hits = [d for d in devices if d["name"].startswith(p)]
+              if hits:
+                  print(hits[-1]["udid"])
+                  break
+          ' "${{ matrix.prefer }}")
+          if [ -z "$UDID" ]; then
+            echo "::error::No simulator matches '${{ matrix.prefer }}'."
+            xcrun simctl list devices available
+            exit 1
+          fi
+          xcrun simctl list devices | grep "$UDID"
+          xcrun simctl shutdown "$UDID" 2>/dev/null || true
+          # Erased: the signed-out test must find an empty keychain.
+          xcrun simctl erase "$UDID"
+          xcrun simctl boot "$UDID"
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build for testing
+        working-directory: ios/LearnWithAlphonso
+        run: |
+          xcodebuild build-for-testing \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -destination "id=$SIMULATOR_UDID" \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run ${{ matrix.suite }}
+        working-directory: ios/LearnWithAlphonso
+        env:
+          SCREENSHOT_OUTPUT_DIR: ${{ github.workspace }}/ui-compat/${{ matrix.label }}
+        run: |
+          mkdir -p "$SCREENSHOT_OUTPUT_DIR"
+          xcodebuild test-without-building \
+            -project LearnWithAlphonso.xcodeproj \
+            -scheme LearnWithAlphonso \
+            -destination "id=$SIMULATOR_UDID" \
+            -resultBundlePath "${{ github.workspace }}/ui-compat/${{ matrix.label }}.xcresult" \
+            -only-testing:LearnWithAlphonsoUITests/${{ matrix.suite }} \
+            SCREENSHOT_OUTPUT_DIR="$SCREENSHOT_OUTPUT_DIR" \
+            UI_TEST_ACCESS_TOKEN="$UI_TEST_ACCESS_TOKEN" \
+            UI_TEST_REFRESH_TOKEN="$UI_TEST_REFRESH_TOKEN" \
+            UI_TEST_USER_ID="$UI_TEST_USER_ID" \
+            UI_TEST_EXPIRES_AT="$UI_TEST_EXPIRES_AT"
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-compat-${{ matrix.label }}
+          path: ui-compat/${{ matrix.label }}/*.png
+          if-no-files-found: warn
+
+      - name: Upload result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-compat-${{ matrix.label }}-xcresult
+          path: ui-compat/${{ matrix.label }}.xcresult
+          if-no-files-found: warn

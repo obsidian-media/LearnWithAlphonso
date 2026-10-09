@@ -560,21 +560,11 @@ private func questionID(_ question: Question) -> String {
 /// V3 pkg 4a: on-device TTS for "listening comprehension" format questions
 /// (an mc question with `audioText` set) -- same reasoning as the web's
 /// speech.ts (a free platform capability, not a new vendor call).
-private func speak(_ text: String, languageCode: String) {
+private func speak(_ text: String, course: Course) {
     questionCardSpeechSynthesizer.stopSpeaking(at: .immediate)
     let utterance = AVSpeechUtterance(string: text)
-    utterance.voice = AVSpeechSynthesisVoice(language: languageCode)
+    utterance.voice = SpeechVoice.voice(for: course)
     questionCardSpeechSynthesizer.speak(utterance)
-}
-
-private extension Course {
-    var speechLanguageCode: String {
-        switch self {
-        case .english: return "en-US"
-        case .french: return "fr-FR"
-        case .spanish: return "es-ES"
-        }
-    }
 }
 
 private let questionCardSpeechSynthesizer = AVSpeechSynthesizer()
@@ -612,7 +602,7 @@ private struct QuestionCard: View {
                 }
                 if let audioText = q.audioText {
                     Button {
-                        speak(audioText, languageCode: course.speechLanguageCode)
+                        speak(audioText, course: course)
                     } label: {
                         Label("Play audio", systemImage: "speaker.wave.2.fill")
                     }
@@ -675,7 +665,7 @@ private struct QuestionCard: View {
                     .tracking(0.4)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                 Button {
-                    speak(q.audioText, languageCode: course.speechLanguageCode)
+                    speak(q.audioText, course: course)
                 } label: {
                     Label("Play audio", systemImage: "speaker.wave.2.fill")
                 }
@@ -912,7 +902,7 @@ private struct VocabScreen: View {
                                     .font(AlphonsoFont.display(17, weight: .semiBold))
                                     .foregroundStyle(AlphonsoColor.ink)
                                 Button {
-                                    speak(item.term, languageCode: course.speechLanguageCode)
+                                    speak(item.term, course: course)
                                 } label: {
                                     Image(systemName: "speaker.wave.2.fill")
                                         .font(.footnote)
@@ -1329,6 +1319,6 @@ enum LeagueTierPalette {
     }
 
     static func label(for tier: String) -> String {
-        tier.prefix(1).uppercased() + tier.dropFirst()
+        LeagueTierCopy.label(for: tier)
     }
 }
