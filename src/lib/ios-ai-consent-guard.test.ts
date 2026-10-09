@@ -166,7 +166,7 @@ describe("iOS AI consent wiring", () => {
   it("a consent refusal shows no red line (the fallback and the store already say it)", () => {
     const s = code("SpeakQuestionCard.swift");
     const line =
-      s.match(/private var visibleErrorMessage: String\? \{([\s\S]*?)\n    \}/)?.[1] ?? "";
+      s.match(/private var visibleErrorMessage: String\? \{([\s\S]*?)\n {4}\}/)?.[1] ?? "";
     expect(line).toContain("if voice.failure == .aiConsentRequired { return nil }");
     // The red line is drawn only from that property.
     expect(s).toContain("if let errorMessage = visibleErrorMessage {");
