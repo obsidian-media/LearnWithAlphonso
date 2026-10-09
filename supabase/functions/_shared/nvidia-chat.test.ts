@@ -12,3 +12,24 @@ Deno.test("the edge chokepoint adds the safety preamble as the system message", 
   assertEquals(sent?.messages[0], { role: "system", content: SAFETY_PREAMBLE });
   assertEquals(sent?.messages[1], { role: "user", content: "mark this" });
 });
+
+Deno.test("the edge chokepoint turns the model's reasoning off on every call", async () => {
+  let sent: Record<string, unknown> | undefined;
+  const fetchImpl = ((_u: string, init?: RequestInit) => {
+    sent = JSON.parse(String(init?.body));
+    return Promise.resolve(new Response("{}"));
+  }) as typeof fetch;
+  await nvidiaChatCompletion({ apiKey: "k", body: { model: "m", messages: [{ role: "user", content: "x" }], max_tokens: 50 }, fetchImpl });
+  assertEquals(sent?.chat_template_kwargs, { thinking: false, enable_thinking: false });
+  assertEquals(sent?.max_tokens, 50);
+});
+
+Deno.test("the edge chokepoint keeps reasoning off when a caller sets another template argument", async () => {
+  let sent: Record<string, unknown> | undefined;
+  const fetchImpl = ((_u: string, init?: RequestInit) => {
+    sent = JSON.parse(String(init?.body));
+    return Promise.resolve(new Response("{}"));
+  }) as typeof fetch;
+  await nvidiaChatCompletion({ apiKey: "k", body: { model: "m", messages: [{ role: "user", content: "x" }], chat_template_kwargs: { foo: 1 } }, fetchImpl });
+  assertEquals(sent?.chat_template_kwargs, { thinking: false, enable_thinking: false, foo: 1 });
+});
