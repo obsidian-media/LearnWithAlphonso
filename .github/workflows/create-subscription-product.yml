@@ -51,11 +51,15 @@ jobs:
       - name: Run subscription product step
         run: |
           bunx tsx scripts/create-subscription-product.ts \
-            "${{ github.event.inputs.job }}" \
-            "${{ github.event.inputs.subscription_id }}" \
-            "${{ github.event.inputs.price_point_id }}" \
-            "${{ github.event.inputs.extra_arg }}"
+            "$JOB" \
+            "$SUBSCRIPTION_ID" \
+            "$PRICE_POINT_ID" \
+            "$EXTRA_ARG"
         env:
+          JOB: ${{ github.event.inputs.job }}
+          SUBSCRIPTION_ID: ${{ github.event.inputs.subscription_id }}
+          PRICE_POINT_ID: ${{ github.event.inputs.price_point_id }}
+          EXTRA_ARG: ${{ github.event.inputs.extra_arg }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}

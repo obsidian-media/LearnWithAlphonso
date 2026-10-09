@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachedBuildNumberProblem,
+  attachedBuildProblems,
   buildsToExpire,
   findBuild,
   requireNewerValidBuild,
@@ -56,5 +58,64 @@ describe("findBuild", () => {
     expect(() => findBuild([b("51")], 50)).toThrow(/not found/);
     expect(() => findBuild([b("50", "PROCESSING")], 50)).toThrow(/PROCESSING/);
     expect(() => findBuild([b("50", "VALID", true)], 50)).toThrow(/expired/);
+  });
+});
+
+describe("attachedBuildProblems (never expire a build a version points at)", () => {
+  const targets = [b("49"), b("48")];
+  const attach = (state: string, buildId: string | null, versionString = "1.0") => ({
+    versionString,
+    state,
+    buildId,
+  });
+
+  it("refuses a target attached to a version in any editable, in-review or live state", () => {
+    for (const state of [
+      "PREPARE_FOR_SUBMISSION",
+      "WAITING_FOR_REVIEW",
+      "IN_REVIEW",
+      "PENDING_DEVELOPER_RELEASE",
+      "REJECTED",
+      "METADATA_REJECTED",
+      "DEVELOPER_REJECTED",
+      "READY_FOR_SALE",
+    ]) {
+      const problems = attachedBuildProblems(targets, [attach(state, "id-49")]);
+      expect(problems.join("|"), state).toMatch(/build 49 .*1\.0/);
+    }
+  });
+
+  it("allows targets that no version uses, or that only a retired version uses", () => {
+    expect(attachedBuildProblems(targets, [attach("PREPARE_FOR_SUBMISSION", "id-50")])).toEqual([]);
+    expect(attachedBuildProblems(targets, [attach("PREPARE_FOR_SUBMISSION", null)])).toEqual([]);
+    expect(attachedBuildProblems(targets, [attach("REPLACED_WITH_NEW_VERSION", "id-49")])).toEqual(
+      [],
+    );
+  });
+
+  it("reports every attached target", () => {
+    const problems = attachedBuildProblems(targets, [
+      attach("IN_REVIEW", "id-49"),
+      attach("READY_FOR_SALE", "id-48", "0.9"),
+    ]);
+    expect(problems).toHaveLength(2);
+  });
+});
+
+describe("attachedBuildNumberProblem", () => {
+  it("requires the exact build when one is expected", () => {
+    expect(attachedBuildNumberProblem("50", "50")).toBeNull();
+    expect(attachedBuildNumberProblem("51", "50")).toMatch(/expected 50/);
+  });
+
+  it("otherwise requires a build above 49", () => {
+    expect(attachedBuildNumberProblem("50", "")).toBeNull();
+    expect(attachedBuildNumberProblem("49", "")).toMatch(/greater than 49/);
+    expect(attachedBuildNumberProblem("12", "")).toMatch(/greater than 49/);
+  });
+
+  it("refuses nothing attached or a non-numeric build", () => {
+    expect(attachedBuildNumberProblem("", "")).toMatch(/no build/i);
+    expect(attachedBuildNumberProblem("50.1", "")).toMatch(/not a plain number/);
   });
 });

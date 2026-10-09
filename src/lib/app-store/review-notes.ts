@@ -53,7 +53,7 @@ export const REQUIRED_NOTE_MARKERS = [
 ] as const;
 
 export function buildReviewNotes(i: ReviewNotesInput): string {
-  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording of the flows below on a physical iPhone: ${i.recordingURL}
+  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording on a physical iPhone: ${i.recordingURL}
 
 SIGN IN (no password)
 1. Enter ${i.demoAccountEmail} and tap "Send code".
@@ -62,12 +62,12 @@ SIGN IN (no password)
 The account (display name Alex) has lessons done, a streak, due reviews, a placement in all 3 courses and a promotional Pro entitlement. Contact: ${i.reviewContactEmail}
 
 LEARNING
-- Learn tab: course picker (EN, FR, ES) at the top, then any lesson.
+- Learn tab: course picker (EN, FR, ES) top left, the Review row (due reviews) at the top, then any lesson.
 - Hearts: a wrong lesson answer costs a heart. At 0 a lesson cannot start: wait, spend 50 XP on a heart, or review or practice (no hearts needed).
-- Practice tab: pick a scenario, hold the mic to talk; it follows the active course.
+- Practice tab: pick a scenario, hold the mic to talk (active course).
 - Hector tab (Pro, unlocked here): same mic; replies follow the active course and level.
-- Listen tab: English > A1 > "Ordering Coffee". French and Spanish have their own. Plays when locked; downloadable.
-- New since build 49: AI consent saved on the account, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
+- Listen tab follows the Learn course: English > A1 > "Ordering Coffee". FR and ES: switch course. Plays when locked; downloadable.
+- New since build 49: account-level AI consent, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
 
 AI CONSENT
 Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and NVIDIA (text). The choice is saved on the account and enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Press and hold any AI reply, then "Report this response", to report it.

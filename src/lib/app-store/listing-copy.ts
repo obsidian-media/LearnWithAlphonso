@@ -84,6 +84,8 @@ const FORBIDDEN = [
   /#1\b/,
   /\bbronze\b/i,
   /\bsilver\b/i,
+  /\bsapphire\b/i,
+  /\bruby\b/i,
   /\bdiamond\b/i,
 ];
 

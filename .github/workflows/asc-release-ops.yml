@@ -2,7 +2,8 @@ name: ASC Release Ops
 
 # Manual only. Release operations: list builds, expire old builds, attach an exact build,
 # TestFlight Beta App Review info, Content Rights, release type, and a read-only submission
-# check. Every write needs apply=true; the default only reads. Expiring builds is irreversible.
+# check. Every write needs apply=true; the default only reads. Expiring builds is irreversible:
+# run only after the build 49 to 50 upgrade test has passed.
 # Nothing here submits anything for review.
 on:
   workflow_dispatch:
@@ -21,7 +22,7 @@ on:
           - release-type
           - submission-check
       arg:
-        description: "expire-builds: highest build to expire. attach-build: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
+        description: "expire-builds: highest build to expire (run only after the build 49 to 50 upgrade test has passed). attach-build and submission-check: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
         required: false
         type: string
       apply:
@@ -41,7 +42,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: ASC release op
         # The free-text arg goes through an env var, never straight into the shell line.
-        run: bunx tsx scripts/asc-release-ops.ts "$COMMAND" $ARG $APPLY_FLAG
+        run: bunx tsx scripts/asc-release-ops.ts "$COMMAND" "$ARG" "$APPLY_FLAG"
         env:
           COMMAND: ${{ inputs.command }}
           ARG: ${{ inputs.arg }}

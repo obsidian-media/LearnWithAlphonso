@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { AGE_RATING_ANSWERS, ageRatingPatch, ageRatingProblems } from "./age-rating";
+import {
+  AGE_RATING_ANSWERS,
+  REQUIRED_AGE_RATING_FIELDS,
+  ageRatingPatch,
+  ageRatingProblems,
+  resolveComputedRating,
+} from "./age-rating";
 
 describe("age rating (13+, AI chat and stranger matching declared)", () => {
   it("declares messaging/chat and user-generated content (AI conversation, preset messages, names)", () => {
@@ -36,9 +42,43 @@ describe("age rating (13+, AI chat and stranger matching declared)", () => {
     expect(ageRatingProblems({ ...AGE_RATING_ANSWERS }).join("|")).toMatch(/unknown/);
   });
 
-  it("ignores a field the live declaration does not have", () => {
+  it("ignores an optional field the live declaration does not have", () => {
     const { socialMedia: _omit, ...live } = AGE_RATING_ANSWERS;
     expect(ageRatingProblems({ ...live, appStoreAgeRating: "THIRTEEN_PLUS" })).toEqual([]);
+  });
+
+  it("treats the user-generated-content and messaging fields as required", () => {
+    expect([...REQUIRED_AGE_RATING_FIELDS].sort()).toEqual([
+      "messagingAndChat",
+      "userGeneratedContent",
+    ]);
+    for (const field of REQUIRED_AGE_RATING_FIELDS) {
+      const live: Record<string, unknown> = {
+        ...AGE_RATING_ANSWERS,
+        appStoreAgeRating: "THIRTEEN_PLUS",
+      };
+      delete live[field];
+      expect(ageRatingProblems(live).join("|"), field).toMatch(new RegExp(`${field}: missing`));
+    }
+  });
+
+  it("takes the computed rating from the app info when the declaration lacks it", () => {
+    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS }, "THIRTEEN_PLUS")).toEqual([]);
+    expect(ageRatingProblems({ ...AGE_RATING_ANSWERS }, "FOUR_PLUS").join("|")).toMatch(/13\+/);
+  });
+});
+
+describe("resolveComputedRating", () => {
+  it("prefers the declaration, then the app info, and says which it used", () => {
+    expect(resolveComputedRating({ appStoreAgeRating: "THIRTEEN_PLUS" }, "SIXTEEN_PLUS")).toEqual({
+      rating: "THIRTEEN_PLUS",
+      source: "ageRatingDeclaration",
+    });
+    expect(resolveComputedRating({}, "SIXTEEN_PLUS")).toEqual({
+      rating: "SIXTEEN_PLUS",
+      source: "appInfo",
+    });
+    expect(resolveComputedRating({}, undefined)).toEqual({ rating: "", source: "none" });
   });
 });
 

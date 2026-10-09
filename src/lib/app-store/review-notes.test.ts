@@ -73,7 +73,7 @@ describe("buildReviewNotes", () => {
   });
 
   it("never names the old league tiers", () => {
-    expect(buildReviewNotes(worst)).not.toMatch(/Bronze|Silver|Diamond/);
+    expect(buildReviewNotes(worst)).not.toMatch(/Bronze|Silver|Sapphire|Ruby|Diamond/i);
   });
 });
 

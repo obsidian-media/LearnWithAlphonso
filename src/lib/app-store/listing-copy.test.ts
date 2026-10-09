@@ -85,7 +85,7 @@ describe("LISTING", () => {
   });
 
   it("flags the old league tier names, which the app no longer shows", () => {
-    for (const bad of ["Bronze", "Silver", "Diamond"]) {
+    for (const bad of ["Bronze", "Silver", "Sapphire", "Ruby", "Diamond"]) {
       expect(
         listingProblems({ ...LISTING, promotionalText: `Climb to ${bad}` }).join("|"),
         bad,

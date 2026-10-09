@@ -49,8 +49,9 @@ jobs:
           APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
       - name: Revoke certificate
         if: github.event.inputs.job == 'revoke'
-        run: bunx tsx scripts/manage-ios-certificates.ts revoke "${{ github.event.inputs.certificate_id }}"
+        run: bunx tsx scripts/manage-ios-certificates.ts revoke "$CERTIFICATE_ID"
         env:
+          CERTIFICATE_ID: ${{ github.event.inputs.certificate_id }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
