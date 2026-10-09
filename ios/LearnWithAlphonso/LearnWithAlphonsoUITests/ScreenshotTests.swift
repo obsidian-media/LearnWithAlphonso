@@ -114,15 +114,18 @@ final class ScreenshotTests: XCTestCase {
         // The shot must show a loaded vocab image, never the loading
         // placeholder (VocabImageView exposes "vocab-image-loaded" once the
         // image has rendered). Soft-fail: capture anyway after the timeout.
-        let loadedImage = app.images
-            .matching(NSPredicate(format: "identifier == 'vocab-image-loaded'"))
-            .firstMatch
-        if !loadedImage.waitForExistence(timeout: 20) {
-            XCTContext.runActivity(named: "02-lesson: no loaded vocab image within 20 s; capturing anyway") { _ in }
+        // Wait until no image is still loading (and at least one has loaded).
+        let loading = app.images.matching(NSPredicate(format: "identifier == 'vocab-image-loading'"))
+        let loaded = app.images.matching(NSPredicate(format: "identifier == 'vocab-image-loaded'")).firstMatch
+        let deadline = Date().addingTimeInterval(20)
+        while Date() < deadline, loading.count > 0 || !loaded.exists {
+            Thread.sleep(forTimeInterval: 0.5)
         }
-        // Land on a multiple-choice question per the shot list; if the
-        // player opens on a different question type, this still captures
-        // the lesson player itself, which is most of the value of the shot.
+        if loading.count > 0 || !loaded.exists {
+            XCTContext.runActivity(named: "02-lesson: vocab images not all loaded within 20 s; capturing anyway") { _ in }
+        }
+        // The lesson opens on its overview screen (title, counts, image
+        // thumbnails); that overview is what this shot captures.
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 10)
         save("02-lesson")
         goBack()
@@ -215,16 +218,16 @@ final class ScreenshotTests: XCTestCase {
         return false
     }
 
-    /// `label CONTAINS` rather than an exact dictionary lookup -- SwiftUI
-    /// often composes a button's accessibility label from more than just
-    /// its visible title (e.g. a row's subtitle folded in too), which an
-    /// exact match would miss.
     /// Opens the course picker (a menu in Learn's navigation bar) and picks
-    /// the option whose label contains `code` ("EN", "FR", "ES").
+    /// the option whose label contains `flagCode` (the exact CoursePicker
+    /// labels, e.g. "🇫🇷 FR").
     @discardableResult
     private func selectCourse(_ code: String) -> Bool {
+        let labels = ["EN": "🇬🇧 EN", "FR": "🇫🇷 FR", "ES": "🇪🇸 ES"]
+        let target = labels[code] ?? code
         let picker = app.navigationBars.buttons
-            .matching(NSPredicate(format: "label CONTAINS 'Course' OR label CONTAINS 'EN' OR label CONTAINS 'FR' OR label CONTAINS 'ES'"))
+            .matching(NSPredicate(format: "label CONTAINS 'Course' OR label CONTAINS %@ OR label CONTAINS %@ OR label CONTAINS %@",
+                                  labels["EN"]!, labels["FR"]!, labels["ES"]!))
             .firstMatch
         guard picker.waitForExistence(timeout: 10) else {
             XCTContext.runActivity(named: "Missing course picker") { _ in }
@@ -232,7 +235,7 @@ final class ScreenshotTests: XCTestCase {
         }
         picker.tap()
         let option = app.buttons
-            .matching(NSPredicate(format: "label CONTAINS %@", code))
+            .matching(NSPredicate(format: "label CONTAINS %@", target))
             .firstMatch
         guard option.waitForExistence(timeout: 5) else {
             XCTContext.runActivity(named: "Course option not found: \(code)") { _ in }
@@ -242,6 +245,10 @@ final class ScreenshotTests: XCTestCase {
         return true
     }
 
+    /// `label CONTAINS` rather than an exact dictionary lookup -- SwiftUI
+    /// often composes a button's accessibility label from more than just
+    /// its visible title (e.g. a row's subtitle folded in too), which an
+    /// exact match would miss.
     @discardableResult
     private func tapContaining(_ query: XCUIElementQuery, _ text: String, timeout: TimeInterval) -> Bool {
         let match = query.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch

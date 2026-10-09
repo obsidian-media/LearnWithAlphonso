@@ -29,8 +29,8 @@ final class VocabImagePolicyTests: XCTestCase {
         XCTAssertEqual(VocabImagePolicy.slot(url: ok, failedURL: ok), .collapsed)
     }
 
-    /// ReviewQueueView reuses VocabImageView's identity across cards: a failure
-    /// recorded for the previous card's URL must not hide the next card's image.
+    /// A failure recorded for one URL must never hide a different URL's image,
+    /// whichever view instance ends up showing it.
     func testAFailureForAPreviousURLDoesNotCollapseTheNextImage() {
         let next = ok.replacingOccurrences(of: "apple", with: "pear")
         XCTAssertEqual(VocabImagePolicy.slot(url: next, failedURL: ok), .visible)

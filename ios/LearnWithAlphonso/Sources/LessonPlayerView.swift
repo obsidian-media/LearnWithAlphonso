@@ -950,8 +950,8 @@ struct VocabImageView: View {
     /// description would give the answer away to VoiceOver, so it is hidden from it.
     var decorative = false
     @State private var failedURL: String?
-    /// Set once the image has actually rendered; exposed to UI tests through the accessibility identifier.
-    @State private var loaded = false
+    /// The URL that has actually rendered; exposed to UI tests through the accessibility identifier.
+    @State private var loadedURL: String?
 
     var body: some View {
         switch VocabImagePolicy.slot(url: image.url, failedURL: failedURL) {
@@ -962,7 +962,7 @@ struct VocabImageView: View {
                 switch phase {
                 case .success(let loadedImage):
                     loadedImage.resizable().aspectRatio(contentMode: .fill)
-                        .onAppear { loaded = true }
+                        .onAppear { loadedURL = image.url }
                 case .empty:
                     ZStack {
                         AlphonsoColor.parchment
@@ -979,7 +979,7 @@ struct VocabImageView: View {
             .clipShape(RoundedRectangle(cornerRadius: AlphonsoRadius.md, style: .continuous))
             .clipped()
             .accessibilityLabel(image.alt)
-            .accessibilityIdentifier(loaded ? "vocab-image-loaded" : "vocab-image-loading")
+            .accessibilityIdentifier(loadedURL == image.url ? "vocab-image-loaded" : "vocab-image-loading")
             .accessibilityHidden(decorative)
         }
     }

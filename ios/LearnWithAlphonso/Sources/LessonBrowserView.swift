@@ -288,13 +288,20 @@ struct LessonBrowserView: View {
     private func loadLevel() async {
         guard let accessToken = session.accessToken else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        if let level = try? await client.fetchCefrLevel(course: course.code), !level.isEmpty {
+        // The course this fetch is for. A slow fetch landing after the learner
+        // switched course must not apply (or, via saveLevel, persist) its level
+        // to the wrong course.
+        let fetchedCourseCode = course.code
+        let fetchedLevel = try? await client.fetchCefrLevel(course: fetchedCourseCode)
+        guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
+        if let level = fetchedLevel, !level.isEmpty {
             selectedLevel = level
         }
         // Most-recent-first: element 0 is "the last lesson completed,"
         // which is exactly what continueLessonID needs to find where to
         // scroll to next.
-        let ids = (try? await client.fetchCompletedLessonIds(course: course.code)) ?? []
+        let ids = (try? await client.fetchCompletedLessonIds(course: fetchedCourseCode)) ?? []
+        guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
         completedLessonIDs = Set(ids)
         mostRecentlyCompletedLessonID = ids.first
     }
