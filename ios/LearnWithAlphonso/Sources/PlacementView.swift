@@ -33,10 +33,11 @@ struct PlacementView: View {
     let course: Course
     /// Called once the learner reaches "Start learning" on the results
     /// screen, or taps the exit (✕) button -- lets the presenter (a
-    /// fullScreenCover from RootView, or a push from LessonBrowserView)
+    /// fullScreenCover from RootView or from LessonBrowserView)
     /// dismiss itself without this view needing to know which.
     var onFinished: () -> Void = {}
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var attempt: PlacementAttempt
     @State private var step = 0
     /// The submitted TEXT, not an option index -- a listening question
@@ -113,42 +114,60 @@ struct PlacementView: View {
     }
 
     private func questionBody(_ q: PlacementQuestion) -> some View {
-        VStack(spacing: 0) {
-            VStack(spacing: AlphonsoSpacing.sm) {
-                ProgressView(value: total > 0 ? Double(step) / Double(total) : 0)
-                    .tint(AlphonsoColor.moss)
-                Text("\(step + 1) of \(total)")
-                    .font(AlphonsoFont.sans(11, weight: .medium))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+        let header = VStack(spacing: AlphonsoSpacing.sm) {
+            ProgressView(value: total > 0 ? Double(step) / Double(total) : 0)
+                .tint(AlphonsoColor.moss)
+                .accessibilityLabel("Placement progress")
+            Text("\(step + 1) of \(total)")
+                .font(AlphonsoFont.sans(11, weight: .medium))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding()
+
+        let content = VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            Text("Placement test")
+                .font(AlphonsoFont.sans(10, weight: .semiBold))
+                .tracking(0.4)
+                .foregroundStyle(AlphonsoColor.ember)
+
+            questionPromptAndChoices(q)
+        }
+        .padding()
+
+        let footer = VStack(spacing: AlphonsoSpacing.sm) {
+            Button {
+                Task { await submit() }
+            } label: {
+                Text(isFinalQuestion ? "See my level" : "Continue")
             }
-            .padding()
+            .buttonStyle(.alphonsoPrimary)
+            .disabled(picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                    Text("Placement test")
-                        .font(AlphonsoFont.sans(10, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
+            Text("No hearts lost — this just finds your starting point.")
+                .font(AlphonsoFont.sans(11))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+        }
+        .padding()
 
-                    questionPromptAndChoices(q)
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // At the largest text sizes a pinned header and footer leave the options a window barely a row
+                // tall, so everything scrolls together and nothing has a fixed share of the screen.
+                ScrollView {
+                    VStack(spacing: 0) {
+                        header
+                        content
+                        footer
+                    }
                 }
-                .padding()
-            }
-
-            VStack(spacing: AlphonsoSpacing.sm) {
-                Button {
-                    Task { await submit() }
-                } label: {
-                    Text(isFinalQuestion ? "See my level" : "Continue")
+                .scrollDismissesKeyboard(.interactively)
+            } else {
+                VStack(spacing: 0) {
+                    header
+                    ScrollView { content }
+                    footer
                 }
-                .buttonStyle(.alphonsoPrimary)
-                .disabled(picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
-
-                Text("No hearts lost — this just finds your starting point.")
-                    .font(AlphonsoFont.sans(11))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
             }
-            .padding()
         }
     }
 
@@ -227,8 +246,9 @@ struct PlacementView: View {
         let level = scorePlacement(correctByLevel: correctByLevel).level
         let meta = levelMeta[level]
         let correct = answers.filter { $0 }.count
-        return VStack(spacing: AlphonsoSpacing.md) {
+        let content = VStack(spacing: AlphonsoSpacing.md) {
             Image(systemName: "star.fill")
+                .accessibilityHidden(true)
                 .font(.system(size: 40))
                 .foregroundStyle(AlphonsoColor.surface)
                 .frame(width: 64, height: 64)
@@ -265,7 +285,14 @@ struct PlacementView: View {
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
         .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Centred in the available height as before; the largest text sizes scroll instead.
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView { content.frame(maxWidth: .infinity) }
+            } else {
+                content.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
     }
 
     private func restart() {

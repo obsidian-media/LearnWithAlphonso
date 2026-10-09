@@ -238,6 +238,7 @@ struct FriendsView: View {
         do {
             let result = try await client.blockUser(friend.userID)
             if result.ok {
+                BlockedUserSignal.post(userID: friend.userID)
                 friends.removeAll { $0.userID == friend.userID }
                 activityEvents.removeAll { $0.userID == friend.userID }
                 showToast("\(friend.displayName) blocked.", into: $nudgeBannerMessage)
