@@ -37,11 +37,21 @@ public struct PodcastSavedPositions: Equatable, Sendable {
     /// Playback started from this snapshot, so its stamp is part of this device's own history.
     public mutating func noteSeen(_ episode: PodcastEpisode) {
         guard let stamp = episode.playbackUpdatedAt else { return }
-        if entries[episode.id] != nil {
-            entries[episode.id]?.known.insert(stamp)
+        if let entry = entries[episode.id] {
+            // A stamp this device does not already know superseded its history (another device wrote since):
+            // the stored position is older than the snapshot, so forget it rather than let it win later.
+            if !entry.known.contains(stamp) {
+                entries[episode.id] = nil
+                seenBeforeSave[episode.id] = [stamp]
+            }
         } else {
             seenBeforeSave[episode.id, default: []].insert(stamp)
         }
+    }
+
+    /// The `updated_at` this device last stored for the episode, to guard a save made after the player left it.
+    public func lastStoredStamp(for episodeID: String) -> String? {
+        entries[episodeID]?.updatedAt
     }
 
     /// Sign-out or account deletion: another account must never inherit these positions.

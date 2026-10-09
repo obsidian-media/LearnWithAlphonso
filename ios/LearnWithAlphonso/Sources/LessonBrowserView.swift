@@ -355,7 +355,12 @@ struct LessonBrowserView: View {
     private func checkPlacement() async {
         let key = "\(course.code)-\(onboardingSettled)"
         if placementCheckedKey != key { isCheckingPlacement = true }
-        guard let accessToken = await session.freshAccessToken() else { isCheckingPlacement = false; return }
+        guard let accessToken = await session.freshAccessToken() else {
+            // No token: fail hidden, like a failed check.
+            placementTaken = true
+            isCheckingPlacement = false
+            return
+        }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let fetchedCourseCode = course.code
         let taken: Bool

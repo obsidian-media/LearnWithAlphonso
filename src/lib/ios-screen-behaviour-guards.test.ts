@@ -90,6 +90,10 @@ describe("The placement banner waits for onboarding", () => {
       between(root, "private func checkOnboarding() async {", /\n {8}onboarding = nil/),
     ).toContain("onboardingChecked = false");
   });
+  it("a missing token hides the banner instead of leaving it to show", () => {
+    const body = between(browser, "private func checkPlacement()", /\n {4}\}\n/);
+    expect(body).toMatch(/freshAccessToken\(\) else \{[^}]*placementTaken = true/);
+  });
   it("does not flash the banner when the screen re-appears", () => {
     expect(
       between(browser, "private func checkPlacement()", /\n {8}guard let accessToken/),
@@ -118,6 +122,7 @@ describe("Largest accessibility text", () => {
 
   it("normal-size placement and the name prompt keep their keyboard behaviour", () => {
     const body = between(placement, "private func questionBody", /\n {4}@ViewBuilder/);
+    expect(body.indexOf("} else {")).toBeGreaterThan(-1);
     const normal = body.slice(body.indexOf("} else {"));
     expect(normal).not.toContain("scrollDismissesKeyboard");
     expect(name).toContain(
@@ -211,6 +216,8 @@ describe("A block takes effect everywhere at once", () => {
     const between_ = src.slice(call, post);
     expect(between_).toMatch(/\.ok\b/);
     expect(between_).not.toMatch(/catch/);
+    // Never behind a negated ok check.
+    expect(between_).not.toMatch(/!\s*\w*\.?ok\b/);
     // Not the failure arm of the ok check: either the `ok` branch itself, or the else arm of `== false`.
     if (/\.ok\s*==\s*false/.test(between_)) {
       expect(between_).toMatch(/\}\s*else\s*\{\s*$/);
@@ -240,6 +247,13 @@ describe("Podcast resume", () => {
     expect(src).toMatch(
       /if self\.saveGate\.accepts\(epoch\) \{\n\s*self\.savedPositions\.record\(/,
     );
+  });
+  it("a save for an episode the player has left is guarded on a stamp, not an unguarded upsert", () => {
+    const save = functionBody(src, "private func save(position: Double, completed: Bool) {");
+    expect(save).toContain(
+      "self.savedPositions.lastStoredStamp(for: episodeID) ?? observedWhenRequested",
+    );
+    expect(save).not.toMatch(/isCurrentEpisode \? self\.saveGate\.lastSeenUpdatedAt : nil/);
   });
   it("forgets stored positions when the account changes", () => {
     expect(functionBody(src, "func stopForAccountChange() {")).toContain("savedPositions.reset()");

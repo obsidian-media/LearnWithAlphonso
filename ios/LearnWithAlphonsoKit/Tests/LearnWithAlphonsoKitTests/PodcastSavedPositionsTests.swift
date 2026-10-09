@@ -44,6 +44,28 @@ final class PodcastSavedPositionsTests: XCTestCase {
         XCTAssertEqual(saved.applying(to: original).positionSeconds, 45)
     }
 
+    func testASnapshotThatSupersededOurHistoryIsNotOverriddenLater() {
+        var saved = PodcastSavedPositions()
+        saved.record(episodeID: "e1", position: 45, updatedAt: "S_A1")
+        // Another device wrote S_B; this device then starts playback from that snapshot.
+        let snapshot = episode(position: 120, updatedAt: "S_B")
+        saved.noteSeen(snapshot)
+        // Our next save fails, and the learner taps the same row again.
+        let again = saved.applying(to: snapshot)
+        XCTAssertEqual(again.positionSeconds, 120)
+        XCTAssertEqual(again.playbackUpdatedAt, "S_B")
+        XCTAssertNil(saved.lastStoredStamp(for: "e1"))
+    }
+
+    func testTheLastStoredStampIsAvailableForALateSave() {
+        var saved = PodcastSavedPositions()
+        XCTAssertNil(saved.lastStoredStamp(for: "e1"))
+        saved.record(episodeID: "e1", position: 45, updatedAt: "S1")
+        XCTAssertEqual(saved.lastStoredStamp(for: "e1"), "S1")
+        saved.reset()
+        XCTAssertNil(saved.lastStoredStamp(for: "e1"))
+    }
+
     func testASnapshotWithNoRowIsReplacedByWhatWeStored() {
         var saved = PodcastSavedPositions()
         saved.record(episodeID: "e1", position: 45, updatedAt: "2026-10-09T10:00:45Z")

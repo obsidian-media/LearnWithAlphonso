@@ -499,13 +499,18 @@ final class PodcastAudioPlayer {
         let episodeID = episode.id
         let seconds = Int(position.rounded())
         let epoch = saveGate.epoch
+        // What this device had observed when the save was requested, for an episode it has no stored stamp for yet.
+        let observedWhenRequested = saveGate.lastSeenUpdatedAt
         let previous = saveTask
         saveTask = Task { @MainActor [weak self] in
             await previous?.value
             guard let self, !Task.isCancelled, self.saveGate.accepts(epoch), self.saveGate.canSave else { return }
             let isCurrentEpisode = self.episode?.id == episodeID
-            // A save for an episode we have since left has no known observation: upsert it.
-            let seen = isCurrentEpisode ? self.saveGate.lastSeenUpdatedAt : nil
+            // An episode the player has since left is still guarded, on the stamp this device last stored for it
+            // (else the stamp observed at request time), so it cannot overwrite another device's newer row.
+            let seen = isCurrentEpisode
+                ? self.saveGate.lastSeenUpdatedAt
+                : (self.savedPositions.lastStoredStamp(for: episodeID) ?? observedWhenRequested)
             do {
                 let stored = try await client.savePlaybackPosition(
                     episodeID: episodeID,
