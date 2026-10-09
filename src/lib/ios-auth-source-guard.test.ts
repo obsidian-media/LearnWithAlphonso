@@ -78,7 +78,7 @@ describe("iOS session and root wiring", () => {
     const root = read("RootView.swift");
     expect(root).toContain("if let token = remotePushRegistrar.deviceTokenHex");
     expect(root).toContain("OnboardingSequence.advance(");
-    expect(root).toContain("case .displayName:");
+    expect(root).toContain("case .displayName(let nameOnboarding):");
     expect(root).not.toContain("showPlacementGate");
   });
 
