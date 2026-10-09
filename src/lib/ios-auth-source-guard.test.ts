@@ -77,7 +77,7 @@ describe("iOS session and root wiring", () => {
   it("RootView uploads an existing token after every sign-in, and shows the name prompt before placement", () => {
     const root = read("RootView.swift");
     expect(root).toContain("if let token = remotePushRegistrar.deviceTokenHex");
-    expect(root).toContain("OnboardingSequence.next(");
+    expect(root).toContain("OnboardingSequence.advance(");
     expect(root).toContain("case .displayName:");
     expect(root).not.toContain("showPlacementGate");
   });
