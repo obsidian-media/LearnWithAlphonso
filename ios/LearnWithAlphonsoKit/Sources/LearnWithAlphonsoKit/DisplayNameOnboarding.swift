@@ -118,6 +118,11 @@ public struct DisplayNameOnboarding: Equatable, Sendable {
         name = text
         submitError = nil
         generation += 1
+        // An empty (or whitespace-only) field is untouched or cleared, not wrong: no message, nothing to save yet.
+        if Self.normalized(text).isEmpty {
+            check = .idle
+            return nil
+        }
         if let code = Self.localProblem(text) {
             check = .problem(code: code)
             return nil

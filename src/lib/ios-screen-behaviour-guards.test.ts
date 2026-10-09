@@ -21,6 +21,8 @@ const typeBody = (src: string, header: string) =>
     header,
     /\n(?:\/\/\/|private struct|struct|final class|@MainActor|enum|extension)\b/,
   );
+/** A Swift member function, from its header to the next four-space-indented closing brace. */
+const functionBody = (src: string, header: string) => between(src, header, /\n {4}\}\n/);
 
 describe("Learn cards never depend on their own rendering to load", () => {
   const browser = read(`${APP}/LessonBrowserView.swift`);
@@ -48,7 +50,9 @@ describe("Learn cards never depend on their own rendering to load", () => {
     const listTail = between(browser, ".scrollContentBackground(.hidden)", /\.navigationTitle\(/);
     expect(listTail).toContain(".task { await missionModel.load(session: session) }");
     expect(listTail).toContain(".task { await loadChallenges() }");
-    expect(listTail).toContain(".task(id: course.code) { await checkPlacement() }");
+    expect(listTail).toContain(
+      '.task(id: "\\(course.code)-\\(onboardingSettled)") { await checkPlacement() }',
+    );
   });
 
   it("the team screen loads the mission from a task on its List, keyed on the member count", () => {
@@ -66,6 +70,33 @@ describe("Learn cards never depend on their own rendering to load", () => {
   });
 });
 
+describe("The placement banner waits for onboarding", () => {
+  const browser = read(`${APP}/LessonBrowserView.swift`);
+  const root = read(`${APP}/RootView.swift`);
+  it("shows only once onboarding has settled", () => {
+    expect(browser).toContain(
+      "isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken",
+    );
+  });
+  it("RootView settles after checkOnboarding and resets on an account change", () => {
+    expect(root).toContain("onboardingSettled: onboardingChecked && onboarding == nil");
+    expect(root).toMatch(
+      /await checkOnboarding\(\)\n\s*if session\.userID == onboardingUser \{ onboardingChecked = true \}/,
+    );
+    expect(between(root, ".onChange(of: session.userID) {", /\n {8}\}/)).toContain(
+      "onboardingChecked = false",
+    );
+    expect(
+      between(root, "private func checkOnboarding() async {", /\n {8}onboarding = nil/),
+    ).toContain("onboardingChecked = false");
+  });
+  it("does not flash the banner when the screen re-appears", () => {
+    expect(
+      between(browser, "private func checkPlacement()", /\n {8}guard let accessToken/),
+    ).toContain("if placementCheckedKey != key { isCheckingPlacement = true }");
+  });
+});
+
 describe("Largest accessibility text", () => {
   const placement = read(`${APP}/PlacementView.swift`);
   const player = read(`${APP}/LessonPlayerView.swift`);
@@ -79,9 +110,18 @@ describe("Largest accessibility text", () => {
     expect(branch).toMatch(/header\s+content\s+footer/);
   });
 
-  it("placement results scroll", () => {
-    expect(between(placement, "private var resultsBody", /\n {4}private func restart/)).toContain(
-      "ScrollView",
+  it("placement results scroll only at accessibility sizes and stay centred otherwise", () => {
+    const body = between(placement, "private var resultsBody", /\n {4}private func restart/);
+    expect(body).toMatch(/isAccessibilitySize \{\s*ScrollView \{ content/);
+    expect(body).toContain("content.frame(maxWidth: .infinity, maxHeight: .infinity)");
+  });
+
+  it("normal-size placement and the name prompt keep their keyboard behaviour", () => {
+    const body = between(placement, "private func questionBody", /\n {4}@ViewBuilder/);
+    const normal = body.slice(body.indexOf("} else {"));
+    expect(normal).not.toContain("scrollDismissesKeyboard");
+    expect(name).toContain(
+      "scrollDismissesKeyboard(dynamicTypeSize.isAccessibilitySize ? .immediately : .interactively)",
     );
   });
 
@@ -106,6 +146,21 @@ describe("Name prompt prefill", () => {
   it("shows the handle as the placeholder, not as typed text, and can clear a real prefill", () => {
     expect(name).toContain("TextField(state.fieldPlaceholder");
     expect(name).toContain('.accessibilityLabel("Clear name")');
+  });
+  it("puts focus, submit and the label on the TextField itself, not the HStack", () => {
+    const field = between(name, "TextField(state.fieldPlaceholder", /if !state\.name\.isEmpty/);
+    for (const m of [
+      ".focused($fieldFocused)",
+      ".submitLabel(.done)",
+      ".onSubmit",
+      ".accessibilityLabel(NameOnboardingCopy.fieldLabel)",
+    ]) {
+      expect(field, m).toContain(m);
+    }
+  });
+  it("ignores a set to the value already shown, and dims Save while it cannot be used", () => {
+    expect(name).toContain("set: { if $0 != state.name { state.edit($0) } }");
+    expect(name).toContain("state.canSave || state.isSubmitting ? 1 : 0.5");
   });
   it("keeps the skip copy", () => {
     expect(name).toContain("NameOnboardingCopy.skipNote(currentName: state.currentName)");
@@ -134,12 +189,12 @@ describe("Accessibility labels", () => {
     expect(ach).toContain('.accessibilityValue(unlocked ? "Unlocked" : "Locked")');
   });
 
-  it("the League header controls are labelled and expose the selected value", () => {
+  it("the League header controls are labelled and the pickers keep their segments selectable", () => {
     const league = read(`${APP}/LeaderboardView.swift`);
     expect(league).toContain('.accessibilityLabel("Leaderboard scope")');
-    expect(league).toContain(".accessibilityValue(scopeName)");
     expect(league).toContain('.accessibilityLabel("Leaderboard period")');
-    expect(league).toContain(".accessibilityValue(periodName)");
+    // A value override on a segmented Picker can hide its individual segments.
+    expect(league).not.toContain(".accessibilityValue(");
     expect(league).toContain('.accessibilityLabel("Teams")');
     expect(league).toContain('.accessibilityLabel("Season")');
   });
@@ -147,8 +202,21 @@ describe("Accessibility labels", () => {
 
 describe("A block takes effect everywhere at once", () => {
   const files = ["TeamsView", "LeaderboardView", "FriendsView", "DuelsView", "BuddySectionView"];
-  it.each(files)("%s announces a successful block", (f) => {
-    expect(read(`${APP}/${f}.swift`)).toContain("BlockedUserSignal.post(userID:");
+  it.each(files)("%s announces a successful block, after the call and not on failure", (f) => {
+    const src = read(`${APP}/${f}.swift`);
+    const call = src.indexOf(".blockUser(");
+    const post = src.indexOf("BlockedUserSignal.post(userID:");
+    expect(call).toBeGreaterThan(-1);
+    expect(post).toBeGreaterThan(call);
+    const between_ = src.slice(call, post);
+    expect(between_).toMatch(/\.ok\b/);
+    expect(between_).not.toMatch(/catch/);
+    // Not the failure arm of the ok check: either the `ok` branch itself, or the else arm of `== false`.
+    if (/\.ok\s*==\s*false/.test(between_)) {
+      expect(between_).toMatch(/\}\s*else\s*\{\s*$/);
+    } else {
+      expect(between_).not.toMatch(/else/);
+    }
   });
   it("the League list drops the person the moment any screen blocks them", () => {
     const league = read(`${APP}/LeaderboardView.swift`);
@@ -158,16 +226,23 @@ describe("A block takes effect everywhere at once", () => {
 });
 
 describe("Podcast resume", () => {
+  const src = read(`${APP}/PodcastAudioPlayer.swift`);
   it("play() starts from the position this device last stored, not the list snapshot", () => {
-    const src = read(`${APP}/PodcastAudioPlayer.swift`);
     const play = between(
       src,
       "func play(_ episode: PodcastEpisode",
       /\n {4}\/\/\/ The error banner/,
     );
-    expect(play).toContain("let episode = savedPositions.applying(to: episode)");
-    expect(src).toContain("self.savedPositions.record(");
-    expect(src).toContain("savedPositions.reset()");
+    expect(play).toContain("let episode = savedPositions.applying(to: listed)");
+    expect(play).toContain("savedPositions.noteSeen(listed)");
+  });
+  it("records the stored position only for the account that saved it", () => {
+    expect(src).toMatch(
+      /if self\.saveGate\.accepts\(epoch\) \{\n\s*self\.savedPositions\.record\(/,
+    );
+  });
+  it("forgets stored positions when the account changes", () => {
+    expect(functionBody(src, "func stopForAccountChange() {")).toContain("savedPositions.reset()");
   });
   it("the folder list shows Resume from the same source", () => {
     expect(read(`${APP}/ListenView.swift`)).toContain("subtitle(for: player.resumed(episode))");

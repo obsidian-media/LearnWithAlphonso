@@ -64,6 +64,26 @@ final class DisplayNameOnboardingTests: XCTestCase {
         XCTAssertTrue(state.canSkip)
     }
 
+    func testAnEmptyFieldNeverShowsAnErrorAndCannotBeSaved() {
+        var state = DisplayNameOnboarding(prefill: "Learner-3807", currentName: "Learner-3807")
+        // SwiftUI can set a text field to the value it already has, e.g. when it gains focus.
+        XCTAssertNil(state.edit(""))
+        XCTAssertEqual(state.check, .idle)
+        XCTAssertNil(state.message)
+        XCTAssertFalse(state.isProblem)
+        XCTAssertFalse(state.canSave)
+        XCTAssertNil(state.edit("   "))
+        XCTAssertEqual(state.check, .idle)
+    }
+
+    func testClearingARealPrefillGoesBackToIdleNotToAnError() {
+        var state = DisplayNameOnboarding(prefill: "Ana", currentName: "Learner-4F2A")
+        XCTAssertNil(state.edit(""))
+        XCTAssertEqual(state.check, .idle)
+        XCTAssertNil(state.message)
+        XCTAssertFalse(state.canSave)
+    }
+
     func testTypingIntoTheEmptyFieldStartsACheckOfJustWhatWasTyped() throws {
         var state = DisplayNameOnboarding(prefill: "Learner-3807", currentName: "Learner-3807")
         let generation = try XCTUnwrap(state.edit("QA Delta"))

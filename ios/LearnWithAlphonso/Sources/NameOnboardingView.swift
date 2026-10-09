@@ -34,9 +34,17 @@ struct NameOnboardingView: View {
                     HStack(spacing: AlphonsoSpacing.sm) {
                         TextField(state.fieldPlaceholder, text: Binding(
                             get: { state.name },
-                            set: { state.edit($0) }
+                            // Ignore a set to the value already shown (SwiftUI can do this on focus).
+                            set: { if $0 != state.name { state.edit($0) } }
                         ))
                         .textFieldStyle(.plain)
+                        .textContentType(.nickname)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+                        .focused($fieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit { Task { await save() } }
+                        .accessibilityLabel(NameOnboardingCopy.fieldLabel)
                         if !state.name.isEmpty {
                             Button {
                                 state.edit("")
@@ -51,13 +59,6 @@ struct NameOnboardingView: View {
                     }
                     .padding(AlphonsoSpacing.sm + 2)
                     .alphonsoInputBackground()
-                    .textContentType(.nickname)
-                    .textInputAutocapitalization(.words)
-                    .autocorrectionDisabled()
-                    .focused($fieldFocused)
-                    .submitLabel(.done)
-                    .onSubmit { Task { await save() } }
-                    .accessibilityLabel(NameOnboardingCopy.fieldLabel)
 
                     if let message = state.message {
                         Text(message)
@@ -76,6 +77,8 @@ struct NameOnboardingView: View {
                     }
                     .buttonStyle(.alphonsoPrimary)
                     .disabled(!state.canSave)
+                    // The primary style does not dim itself, so show the disabled state here.
+                    .opacity(state.canSave || state.isSubmitting ? 1 : 0.5)
                     .accessibilityLabel(state.isSubmitting ? "Saving" : NameOnboardingCopy.save)
 
                     Button(NameOnboardingCopy.skip) {
@@ -93,7 +96,7 @@ struct NameOnboardingView: View {
                 .frame(maxWidth: .infinity)
             }
             .background(AlphonsoColor.surface)
-            .scrollDismissesKeyboard(.immediately)
+            .scrollDismissesKeyboard(dynamicTypeSize.isAccessibilitySize ? .immediately : .interactively)
             // Save and Skip stay reachable above the keyboard however large the text is.
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {

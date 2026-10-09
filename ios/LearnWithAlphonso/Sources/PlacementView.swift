@@ -33,7 +33,7 @@ struct PlacementView: View {
     let course: Course
     /// Called once the learner reaches "Start learning" on the results
     /// screen, or taps the exit (✕) button -- lets the presenter (a
-    /// fullScreenCover from RootView, or a push from LessonBrowserView)
+    /// fullScreenCover from RootView or from LessonBrowserView)
     /// dismiss itself without this view needing to know which.
     var onFinished: () -> Void = {}
 
@@ -165,7 +165,6 @@ struct PlacementView: View {
                 VStack(spacing: 0) {
                     header
                     ScrollView { content }
-                        .scrollDismissesKeyboard(.interactively)
                     footer
                 }
             }
@@ -247,8 +246,7 @@ struct PlacementView: View {
         let level = scorePlacement(correctByLevel: correctByLevel).level
         let meta = levelMeta[level]
         let correct = answers.filter { $0 }.count
-        return ScrollView {
-          VStack(spacing: AlphonsoSpacing.md) {
+        let content = VStack(spacing: AlphonsoSpacing.md) {
             Image(systemName: "star.fill")
                 .accessibilityHidden(true)
                 .font(.system(size: 40))
@@ -285,9 +283,15 @@ struct PlacementView: View {
             Button("Retake the test") { restart() }
                 .font(AlphonsoFont.sans(12, weight: .medium))
                 .foregroundStyle(AlphonsoColor.inkSoft)
-          }
-          .padding()
-          .frame(maxWidth: .infinity)
+        }
+        .padding()
+        // Centred in the available height as before; the largest text sizes scroll instead.
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                ScrollView { content.frame(maxWidth: .infinity) }
+            } else {
+                content.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
     }
 

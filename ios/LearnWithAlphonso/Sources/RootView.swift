@@ -43,6 +43,8 @@ struct RootView: View {
     @State private var onboardingDone: Set<OnboardingStep> = []
     @State private var nameConfirmed: Bool?
     @State private var placementTaken: Bool?
+    /// True once checkOnboarding has finished for the current account (the Learn tab's placement banner waits for it).
+    @State private var onboardingChecked = false
     @State private var nameOnboarding: DisplayNameOnboarding?
 
     var body: some View {
@@ -93,7 +95,7 @@ struct RootView: View {
                     // the tab bar's own region and the bar overlaps it (device
                     // check #12). See View.podcastMiniBar.
                     TabView {
-                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse)
+                        LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, onboardingSettled: onboardingChecked && onboarding == nil, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))
@@ -164,7 +166,9 @@ struct RootView: View {
                             await uploadDeviceToken(token)
                         }
                         await session.checkAppleCredential()
+                        let onboardingUser = session.userID
                         await checkOnboarding()
+                        if session.userID == onboardingUser { onboardingChecked = true }
                     }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
@@ -221,6 +225,7 @@ struct RootView: View {
             nameConfirmed = nil
             placementTaken = nil
             nameOnboarding = nil
+            onboardingChecked = false
         }
         .onChange(of: session.userID, initial: true) {
             activeCourse.accountChanged(to: session.userID)
@@ -300,6 +305,7 @@ struct RootView: View {
     /// `fetchPlacementTakenAt` rather than `fetchCefrLevel` returning nil: a `language_progress` row from
     /// ordinary lesson activity (cefr_level defaulted to 'A1') is not the same as placement having run.
     private func checkOnboarding() async {
+        onboardingChecked = false
         onboarding = nil
         onboardingDone = []
         nameConfirmed = nil

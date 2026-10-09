@@ -84,7 +84,10 @@ final class PodcastAudioPlayer {
     /// instead of waiting for AVPlayer's own error (which says the same, later).
     func play(_ episode: PodcastEpisode, localURL: URL? = nil, queue: [PodcastEpisode] = [], isOnline: Bool = true) {
         // The list's copy can predate a listen made since it loaded: start from what this device last stored.
-        let episode = savedPositions.applying(to: episode)
+        let listed = episode
+        let episode = savedPositions.applying(to: listed)
+        // Playback starts from this snapshot, so its stamp is part of this device's own history.
+        savedPositions.noteSeen(listed)
         if !queue.isEmpty { self.queue = queue }
         saveGate.userStartedPlayback()
 

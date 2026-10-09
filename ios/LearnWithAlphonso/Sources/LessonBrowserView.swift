@@ -11,6 +11,10 @@ struct LessonBrowserView: View {
     let notificationScheduler: NotificationScheduler
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    /// False until RootView has finished deciding whether to show the name prompt and placement. The placement
+    /// banner stays hidden until then: tapping it earlier would put up a cover that stops RootView's own
+    /// onboarding cover from presenting.
+    let onboardingSettled: Bool
     /// TestFlight feedback (2026-09-29, with a screenshot): a lesson's
     /// "Begin lesson"/"Check"/"Continue" button could land exactly where
     /// the podcast mini-bar sits. `.podcastMiniBar()` on this view's own
@@ -35,6 +39,9 @@ struct LessonBrowserView: View {
     @State private var challenges: [WeeklyChallenge] = []
     @State private var isCheckingPlacement = true
     @State private var placementTaken = false
+    /// What the placement state above was last checked for (course and onboarding state), so re-appearing
+    /// does not flash the banner. Finishing onboarding changes it, which re-checks placement.
+    @State private var placementCheckedKey: String?
     @State private var showingPlacementTest = false
     /// Which CEFR band is currently showing. Defaults to A1 until
     /// `loadLevel()` resolves the real value (or a placement test hasn't
@@ -162,7 +169,7 @@ struct LessonBrowserView: View {
                 // account's default course only) -- mirrors learn.tsx's
                 // own persistent "Take the placement test" banner
                 // exactly. See PlacementView.swift's doc comment.
-                PlacementBannerSection(isVisible: !isCheckingPlacement && !placementTaken) { showingPlacementTest = true }
+                PlacementBannerSection(isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken) { showingPlacementTest = true }
 
                 LevelBandPicker(selectedLevel: $selectedLevel)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
@@ -239,7 +246,7 @@ struct LessonBrowserView: View {
             .task(id: course.code) { await loadLevel() }
             .task { await missionModel.load(session: session) }
             .task { await loadChallenges() }
-            .task(id: course.code) { await checkPlacement() }
+            .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }
             .fullScreenCover(isPresented: $showingPlacementTest) {
                 PlacementView(contentStore: contentStore, session: session, course: course) {
                     showingPlacementTest = false
@@ -346,7 +353,8 @@ struct LessonBrowserView: View {
     /// Placement is per-course, so this re-runs when the course changes. A failed check leaves the banner
     /// hidden rather than showing it on a network hiccup.
     private func checkPlacement() async {
-        isCheckingPlacement = true
+        let key = "\(course.code)-\(onboardingSettled)"
+        if placementCheckedKey != key { isCheckingPlacement = true }
         guard let accessToken = await session.freshAccessToken() else { isCheckingPlacement = false; return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let fetchedCourseCode = course.code
@@ -358,6 +366,7 @@ struct LessonBrowserView: View {
         }
         guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
         placementTaken = taken
+        placementCheckedKey = key
         isCheckingPlacement = false
     }
 }

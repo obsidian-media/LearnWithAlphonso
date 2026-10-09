@@ -38,7 +38,6 @@ struct LeaderboardView: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityLabel("Leaderboard scope")
-                    .accessibilityValue(scopeName)
                     .accessibilityIdentifier("leagueScopePicker")
                     Picker("Period", selection: $period) {
                         Text("Weekly").tag(Period.weekly)
@@ -46,7 +45,6 @@ struct LeaderboardView: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityLabel("Leaderboard period")
-                    .accessibilityValue(periodName)
                     .accessibilityIdentifier("leagueRangePicker")
 
                     Group {
@@ -166,16 +164,6 @@ struct LeaderboardView: View {
             showToast("Couldn't block \(target.displayName). Try again.", into: $overtakeToastMessage)
         }
     }
-
-    private var scopeName: String {
-        switch scope {
-        case .global: return "Global"
-        case .friends: return "Friends"
-        case .country: return "Country"
-        }
-    }
-
-    private var periodName: String { period == .weekly ? "Weekly" : "All-time" }
 
     private var emptyStateTitle: String {
         switch scope {
