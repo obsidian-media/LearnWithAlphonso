@@ -919,6 +919,8 @@ export type Database = {
           sort_order: number;
           source: string;
           title: string;
+          voice_model: string | null;
+          voice_provider: string;
         };
         Insert: {
           audio_path: string;
@@ -935,6 +937,8 @@ export type Database = {
           sort_order?: number;
           source: string;
           title: string;
+          voice_model?: string | null;
+          voice_provider?: string;
         };
         Update: {
           audio_path?: string;
@@ -951,6 +955,8 @@ export type Database = {
           sort_order?: number;
           source?: string;
           title?: string;
+          voice_model?: string | null;
+          voice_provider?: string;
         };
         Relationships: [
           {
@@ -1068,7 +1074,7 @@ export type Database = {
           episode_id: string;
           position_seconds?: number;
           updated_at?: string;
-          user_id: string;
+          user_id?: string;
         };
         Update: {
           completed_at?: string | null;
