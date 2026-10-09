@@ -124,7 +124,7 @@ describe("out of hearts", () => {
     renderPage();
     expect(await screen.findByRole("dialog", { name: "Out of hearts" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Begin lesson" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Practice or review instead" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Review instead" })).toBeInTheDocument();
   });
 
   it("buying a heart with XP retries the session and opens the lesson", async () => {
@@ -159,11 +159,11 @@ describe("out of hearts", () => {
     }
   });
 
-  it("Practice or review instead goes to review; closing goes back to learn", async () => {
+  it("Review instead goes to review; closing goes back to learn", async () => {
     const user = userEvent.setup();
     startLessonSession.mockResolvedValue({ error: "out-of-hearts", refillAt: null });
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "Practice or review instead" }));
+    await user.click(await screen.findByRole("button", { name: "Review instead" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/review" });
     await user.click(screen.getByRole("button", { name: "Got it" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/learn" });

@@ -248,64 +248,14 @@ struct RootView: View {
     /// Safe to call opportunistically: an empty queue is a no-op, and
     /// SyncEngine.sync leaves any failed item queued for the next trigger.
     private func triggerSync() async {
-        guard let accessToken = session.accessToken, let syncingUserID = session.userID else { return }
-        // A sign-out (or a different sign-in) while this was in flight: the result belongs to
-        // the previous account, whose queue and caches the session lifecycle already cleared.
-        // Writing it back would show that account's progress and widget streak to the next one.
-        func stillSameAccount() -> Bool { session.userID == syncingUserID }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        let result = await SyncEngine.sync(
-            pendingLessonCompletions: syncQueueStore.pendingLessonCompletions(),
-            pendingReviewGrades: syncQueueStore.pendingReviewGrades(),
-            client: client
-        )
-        guard stillSameAccount() else { return }
-        syncQueueStore.removeSyncedLessonCompletions(result.syncedLessonCompletions)
-        syncQueueStore.removeSyncedReviewGrades(result.syncedReviewGrades)
-        if let lastKnownProgress = result.lastKnownProgress {
-            syncQueueStore.updateLastKnownProgress(lastKnownProgress)
-        } else if let fetched = try? await client.fetchProgress(), stillSameAccount() {
-            // SyncEngine.sync only learns progress as a side effect of
-            // *pushing* a queued lesson completion, so with an empty queue
-            // -- the normal state after a user has synced and then updated
-            // or reinstalled -- it returns nil and the cache stays empty.
-            // StatusHeaderView renders nothing when the cache is nil, which
-            // is why a real tester reported their streak/hearts/XP/league
-            // had disappeared entirely after updating. Read it directly in
-            // that case so the header reflects the server, not just
-            // whatever this device happens to have written locally.
-            //
-            // Best-effort by design (`try?`), same posture as
-            // hydrateThemeFromServer below: a failed fetch leaves the
-            // previous cached value alone rather than blanking the header.
-            syncQueueStore.updateLastKnownProgress(fetched)
-        } else if stillSameAccount() {
-            syncQueueStore.markSyncedNow()
-        }
-        // 2026-09-30, reported live: the Review badge (here and on
-        // LessonBrowserView's row) showed 0 while the Review screen
-        // itself, opened right after, correctly showed 11 due items.
-        // replaceLastKnownDueReviews was previously only ever called from
-        // inside ReviewQueueView's own load -- so on any session where
-        // that screen hadn't been opened yet, the badge read a stale (or
-        // empty) cache regardless of how many reviews were actually due.
-        // Refreshed here too, same "best-effort, never blank a good
-        // cached value on failure" posture as fetchProgress above.
-        //
-        // English-only for now, matching ReviewQueueView's own default
-        // course -- iOS has no synced notion of the account's active
-        // course yet (that's a web-only concept, profiles.active_language),
-        // so a learner reviewing a non-English course won't see this
-        // badge reflect it correctly. Real limitation, not silently
-        // ignored; a full fix needs that sync built first.
-        // "en" inlined rather than Course.english.code -- that's a
-        // private extension scoped to ReviewQueueView.swift's own file
-        // (Swift's `private` is file-scoped), not visible here. Six
-        // other files each keep an identical private copy of this same
-        // Course -> code mapping; matching that established pattern.
-        if let dueReviews = try? await client.fetchDueReviews(course: "en"), stillSameAccount() {
-            syncQueueStore.replaceLastKnownDueReviews(dueReviews.due)
-        }
+        // The drain, progress and per-course due refresh live in SyncQueueStore.runSync. The same-account guard
+        // is preserved: nothing is written back if the signed-in account changed while this ran.
+        guard let accessToken = await session.freshAccessToken(), let syncingUserID = session.userID else { return }
+        await syncQueueStore.runSync(
+            accessToken: accessToken,
+            userID: syncingUserID,
+            refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
+            isCurrentAccount: { session.userID == syncingUserID })
     }
 
     /// Reads what onboarding still needs for this account and shows the first step. Best-effort: a failed read

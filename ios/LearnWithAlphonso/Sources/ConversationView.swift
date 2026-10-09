@@ -113,6 +113,13 @@ private struct ConversationSessionView: View {
         .background(AlphonsoColor.surface)
         .navigationTitle(scenario.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                // The conversation persists across tab switches until this.
+                Button("New conversation") { startNewConversation() }
+                    .disabled(voice.isBusy || conversation.turns.count <= 1)
+            }
+        }
         .aiDisclosureGate()
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
@@ -280,6 +287,13 @@ private struct ConversationSessionView: View {
         let client = ProgressSyncClient(
             supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         return (try? await client.fetchCefrLevel(course: course.wireCode)) ?? nil
+    }
+
+    private func startNewConversation() {
+        // Analyse what was said before it is cleared (same once-per-stretch rule as leaving the screen).
+        analyzeWeaknessesIfNew()
+        conversation = conversationStore.startNew(key, opener: scenario.opener)
+        notice = nil
     }
 
     /// Once per new stretch of conversation. The conversation now survives

@@ -166,7 +166,7 @@ export function HeartsModal({
                 onClick={onPracticeInstead}
                 className="mt-2.5 w-full rounded-full border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:border-ink/30"
               >
-                Practice or review instead
+                Review instead
               </button>
             )}
             <button

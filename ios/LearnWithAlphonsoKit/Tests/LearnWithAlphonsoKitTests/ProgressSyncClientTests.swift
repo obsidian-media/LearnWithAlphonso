@@ -1082,4 +1082,79 @@ final class ProgressSyncClientTests: XCTestCase {
             XCTAssertEqual(error as? ProgressSyncError, .server(status: 403, message: "new row violates row-level security policy"))
         }
     }
+
+    // MARK: - Learning flow
+
+    func testDefaultTimeoutClampsTo30SecondsAndKeepsShorterOnes() {
+        var long = URLRequest(url: URL(string: "https://x")!)
+        long.timeoutInterval = 60
+        XCTAssertEqual(ProgressSyncClient.withDefaultTimeout(long).timeoutInterval, 30)
+        var short = URLRequest(url: URL(string: "https://x")!)
+        short.timeoutInterval = 10
+        XCTAssertEqual(ProgressSyncClient.withDefaultTimeout(short).timeoutInterval, 10)
+        XCTAssertEqual(ProgressSyncClient.defaultTimeout, 30)
+    }
+
+    func testStartLessonSessionThrowsOutOfHeartsWithTheRefillTime() async {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: ["error": "out-of-hearts", "refillAt": "2026-10-08T12:30:00.000Z"], status: 409)
+        }
+        do {
+            _ = try await client.startLessonSession(lessonID: "u1l1", course: "en")
+            XCTFail("expected outOfHearts")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .outOfHearts(refillAt: Date(timeIntervalSince1970: 1_791_462_600)))
+        }
+    }
+
+    func testStartLessonSessionOutOfHeartsWithoutATimer() async {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: ["error": "out-of-hearts", "refillAt": NSNull()], status: 409)
+        }
+        do {
+            _ = try await client.startLessonSession(lessonID: "u1l1", course: "en")
+            XCTFail("expected outOfHearts")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .outOfHearts(refillAt: nil))
+        }
+    }
+
+    func testAnOther409IsStillAPlainServerError() async {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: ["error": "something-else"], status: 409)
+        }
+        do {
+            _ = try await client.startLessonSession(lessonID: "u1l1", course: "en")
+            XCTFail("expected an error")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .server(status: 409, message: "something-else"))
+        }
+    }
+
+    func testBuyHeartWithXpCallsTheSameRpcAsTheWebAndParsesEachOutcome() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let rows: [[[String: Any]]] = [
+            [["ok": true, "reason": NSNull(), "hearts": 1, "xp": 70]],
+            [["ok": false, "reason": "hearts-full", "hearts": 5, "xp": NSNull()]],
+            [["ok": false, "reason": "insufficient-xp", "hearts": 0, "xp": 20]],
+            [["ok": false, "reason": "unauthenticated", "hearts": NSNull(), "xp": NSNull()]],
+        ]
+        let index = TestCapture(0)
+        let client = makeClient { request in
+            captured.value = request
+            defer { index.value += 1 }
+            return self.jsonResponse(for: request.url!, body: rows[index.value])
+        }
+        let first = try await client.buyHeartWithXp(course: "fr")
+        XCTAssertEqual(first, .ok(hearts: 1, xp: 70))
+        XCTAssertTrue(captured.value!.url!.absoluteString.hasSuffix("rest/v1/rpc/buy_heart_with_xp"))
+        let body = try JSONSerialization.jsonObject(with: captured.value!.httpBody!) as! [String: Any]
+        XCTAssertEqual(body as? [String: String], ["_course": "fr"], "no cost is sent: the RPC fixes the price")
+        let second = try await client.buyHeartWithXp(course: "fr")
+        XCTAssertEqual(second, .heartsFull(hearts: 5))
+        let third = try await client.buyHeartWithXp(course: "fr")
+        XCTAssertEqual(third, .insufficientXp(xp: 20))
+        let fourth = try await client.buyHeartWithXp(course: "fr")
+        XCTAssertEqual(fourth, .signedOut, "a signed-out answer is not an XP shortage")
+    }
 }

@@ -40,23 +40,9 @@ struct LearnWithAlphonsoApp: App {
             Purchases.configure(withAPIKey: revenueCatAPIKey)
         }
 
-        let schema = Schema([
-            PendingLessonCompletionRecord.self,
-            PendingReviewGradeRecord.self,
-            CachedDueReviewRecord.self,
-            AppSyncStateRecord.self,
-            // Offline podcast downloads share this container rather than
-            // opening a second store -- one more thing to migrate, for no
-            // benefit.
-            PodcastDownloadRecord.self,
-        ])
-        // Falls back to an in-memory-only store on failure (e.g. disk full,
-        // a corrupt store from a prior crash) rather than crashing launch --
-        // the offline queue just won't persist across relaunches in that
-        // rare case, which is a much smaller problem than the app not
-        // opening at all.
-        let container = (try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)]))
-            ?? (try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]))
+        // Versioned schema and migration plan, with a logged fallback chain (SyncSchema.swift): migrate, else open
+        // without the plan, else memory. The persistent store is never abandoned silently.
+        let container = SyncStoreFactory.makeContainer()
         let queue = SyncQueueStore(modelContext: ModelContext(container))
         syncQueueStore = queue
         // Same container, its own context: the download manager and the

@@ -17,10 +17,12 @@ struct ReviewQueueView: View {
     // The review sheet had no way out but swiping it down (BACKLOG 0.0-z #4).
     @Environment(\.dismiss) private var dismiss
 
-    @State private var course: Course = .english
+    /// Review opens on the course the learner is studying (their per-account active course).
+    @State private var course: Course
     /// The word the learner tapped in a review explanation, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
-    @State private var queue: [ReviewItem] = []
+    /// Only items the bundled content can render (ReviewQueueResolution), so the screen is never blank.
+    @State private var queue: [ResolvedReviewItem] = []
     @State private var total = 0
     @State private var idx = 0
     @State private var picked: String?
@@ -42,6 +44,16 @@ struct ReviewQueueView: View {
     /// snapshot rather than a fresh fetch -- see loadQueue()'s offline
     /// fallback.
     @State private var showingCachedQueueSince: Date?
+
+    @MainActor init(contentStore: ContentStore, session: Session, notificationScheduler: NotificationScheduler,
+         networkMonitor: NetworkMonitor, syncQueueStore: SyncQueueStore) {
+        self.contentStore = contentStore
+        self.session = session
+        self.notificationScheduler = notificationScheduler
+        self.networkMonitor = networkMonitor
+        self.syncQueueStore = syncQueueStore
+        _course = State(initialValue: ActiveCoursePreference.load(for: session.userID))
+    }
 
     var body: some View {
         NavigationStack {
@@ -67,7 +79,7 @@ struct ReviewQueueView: View {
                     ContentUnavailableView {
                         Label("Queue cleared", systemImage: "checkmark.circle.fill")
                     } description: {
-                        Text(clearedBonusMessage ?? "Nice work -- check back tomorrow for more.")
+                        Text(clearedBonusMessage ?? "Nice work. Check back tomorrow for more.")
                     }
                 }
             }
@@ -76,7 +88,7 @@ struct ReviewQueueView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     CoursePicker(course: $course)
-                        .disabled(!queue.isEmpty && idx < queue.count)
+                        .disabled(isSubmitting || isCheckingTranslation || checked)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -98,16 +110,10 @@ struct ReviewQueueView: View {
         }
     }
 
-    private var currentItem: ReviewItem { queue[idx] }
+    private var currentItem: ReviewItem { queue[idx].item }
 
-    private var currentQuestion: Question? {
-        if currentItem.isSelfContained {
-            return question(fromWeaknessItem: currentItem)
-        }
-        guard let found = contentStore.findLesson(id: currentItem.lessonId, course: course) else { return nil }
-        let questionId = String(currentItem.itemKey.split(separator: ":").last ?? "")
-        return found.lesson.questions.first { questionID($0) == questionId }
-    }
+    /// Non-nil for any index inside the queue: loadQueue keeps only items ReviewQueueResolution resolved.
+    private var currentQuestion: Question? { idx < queue.count ? queue[idx].question : nil }
 
     private var reviewBody: some View {
         Group {
@@ -158,9 +164,10 @@ struct ReviewQueueView: View {
                 }
                 .padding()
             } else {
-                // Bundled content and the server's review_items row disagree --
-                // skip rather than get stuck (content update, stale item, etc).
-                Color.clear.task { advance() }
+                // Unreachable since loadQueue resolves every item up front. Kept as a guard: .task(id:) re-fires
+                // for each index, where a bare .task fired once per view identity and left a blank screen when
+                // two unresolvable items followed each other.
+                Color.clear.task(id: idx) { advance() }
             }
         }
     }
@@ -187,11 +194,12 @@ struct ReviewQueueView: View {
         if networkMonitor.isConnected {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
-                let result = try await client.fetchDueReviews(course: course.code)
-                queue = result.due
-                total = result.total
+                let result = try await client.fetchDueReviews(course: course.wireCode)
                 notificationScheduler.scheduleDueReviewNudge(due: result.due)
-                syncQueueStore.replaceLastKnownDueReviews(result.due)
+                syncQueueStore.replaceLastKnownDueReviews(result.due, course: course.wireCode)
+                show(result.due)
+                // The count shown is what can be rendered, not the server's total.
+                total = queue.count
                 isLoading = false
                 return
             } catch {
@@ -199,11 +207,21 @@ struct ReviewQueueView: View {
             }
         }
 
-        let cached = syncQueueStore.lastKnownDueReviews()
-        queue = cached
-        total = cached.count
+        let cached = syncQueueStore.lastKnownDueReviews(course: course.wireCode)
+        show(cached)
+        total = queue.count
         showingCachedQueueSince = syncQueueStore.lastSyncedAt
         isLoading = false
+    }
+
+    /// Only renderable items reach the screen. Unrenderable ones (content changed since they were scheduled) are
+    /// dropped from this course's cache too, so the badge stops counting what Review cannot show.
+    private func show(_ items: [ReviewItem]) {
+        let resolution = ReviewQueueResolution.resolve(items, course: course, content: contentStore)
+        queue = resolution.resolved
+        for key in resolution.unresolvedItemKeys {
+            syncQueueStore.removeCachedDueReview(itemKey: key, course: course.wireCode)
+        }
     }
 
     /// Grades a translate item through `grade-review` -- the one call that also
@@ -236,7 +254,7 @@ struct ReviewQueueView: View {
             accessToken: accessToken)
         do {
             let outcome = try await client.gradeReview(
-                itemKey: currentItem.itemKey, answer: submission, course: course.code)
+                itemKey: currentItem.itemKey, answer: submission, course: course.wireCode)
             dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
             guard let correct = outcome.correct else {
                 // Server predates the field: nothing was displayed wrongly, it
@@ -274,7 +292,7 @@ struct ReviewQueueView: View {
         if networkMonitor.isConnected, let accessToken = session.accessToken {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
-                let outcome = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.code)
+                let outcome = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.wireCode)
                 // Before advance(): currentItem moves on with idx.
                 dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
@@ -299,7 +317,7 @@ struct ReviewQueueView: View {
     /// A wrong answer stays due today, so `isStillDue` keeps it counted.
     private func dropFromDueCacheIfNoLongerDue(_ outcome: ReviewGradeOutcome, itemKey: String) {
         if !outcome.isStillDue(on: todayDateString()) {
-            syncQueueStore.removeCachedDueReview(itemKey: itemKey)
+            syncQueueStore.removeCachedDueReview(itemKey: itemKey, course: course.wireCode)
         }
     }
 
@@ -325,18 +343,18 @@ struct ReviewQueueView: View {
         let input = ReviewGradeInput(correct: correct, ease: item.ease, intervalDays: item.intervalDays, repetitions: item.repetitions, lapses: 0, elapsedDays: item.intervalDays)
         let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
 
-        syncQueueStore.appendReviewGrade(PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.code, queuedAt: Date()))
+        syncQueueStore.appendReviewGrade(PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(), ownerUserID: session.userID))
 
         switch outcome {
         case .retired:
-            syncQueueStore.removeCachedDueReview(itemKey: item.itemKey)
+            syncQueueStore.removeCachedDueReview(itemKey: item.itemKey, course: course.wireCode)
         case .rescheduled(let scheduled):
             // A wrong answer keeps dueOn == today (real SM-2 behavior, see
             // grade-review's port) -- leave it cached as still-due, same as
             // the online path, which doesn't re-insert a missed item into
             // the current session's queue either.
             if scheduled.dueOn > today {
-                syncQueueStore.removeCachedDueReview(itemKey: item.itemKey)
+                syncQueueStore.removeCachedDueReview(itemKey: item.itemKey, course: course.wireCode)
             }
         }
     }
@@ -354,7 +372,7 @@ struct ReviewQueueView: View {
 
     private func claimBonusIfCleared(client: ProgressSyncClient) async {
         do {
-            let bonus = try await client.claimReviewClearBonus(course: course.code)
+            let bonus = try await client.claimReviewClearBonus(course: course.wireCode)
             if bonus.granted {
                 clearedBonusMessage = "Review queue cleared: +1 heart!"
             }
@@ -375,17 +393,6 @@ private func addDaysDateString(_ days: Int) -> String {
     return String(ISO8601DateFormatter().string(from: date).prefix(10))
 }
 
-private func questionID(_ question: Question) -> String {
-    switch question {
-    case .multipleChoice(let q): return q.id
-    case .fillInBlank(let q): return q.id
-    case .reorder(let q): return q.id
-    case .listening(let q): return q.id
-    case .speak(let q): return q.id
-    case .translate(let q): return q.id
-    }
-}
-
 /// V3 pkg 4a: on-device TTS for "listening comprehension" format questions
 /// -- same instance/reasoning as LessonPlayerView's identical helper.
 private let reviewQuestionSpeechSynthesizer = AVSpeechSynthesizer()
@@ -398,14 +405,6 @@ private func speak(_ text: String, languageCode: String) {
 }
 
 private extension Course {
-    var code: String {
-        switch self {
-        case .english: return "en"
-        case .french: return "fr"
-        case .spanish: return "es"
-        }
-    }
-
     var speechLanguageCode: String {
         switch self {
         case .english: return "en-US"
@@ -434,9 +433,9 @@ private struct CachedQueueBanner: View {
     }
 
     private var label: String {
-        guard let since else { return "Offline -- showing your last synced queue" }
+        guard let since else { return "Offline. Showing your last synced queue" }
         let relative = RelativeDateTimeFormatter().localizedString(for: since, relativeTo: Date())
-        return "Offline -- last synced \(relative)"
+        return "Offline. Last synced \(relative)"
     }
 }
 

@@ -111,4 +111,19 @@ final class ConversationStoreTests: XCTestCase {
         store.removeAll()
         XCTAssertNil(store.snapshot(for: b))
     }
+
+    /// "New conversation" clears only this (scenario, course) and re-opens it with the opener.
+    func testStartNewResetsOnlyThatKeyAndReseedsWithTheOpener() {
+        let store = ConversationStore()
+        let coffee = ConversationKey.scenario("coffee", course: .english)
+        let hotel = ConversationKey.scenario("hotel", course: .english)
+        _ = store.snapshot(for: coffee, seededWith: "Hi!")
+        store.append(ChatMessage(role: "user", content: "A latte"), confidence: 0.9, to: coffee)
+        _ = store.snapshot(for: hotel, seededWith: "Welcome")
+        let fresh = store.startNew(coffee, opener: "Hi!")
+        XCTAssertEqual(fresh.turns, [ChatMessage(role: "assistant", content: "Hi!")])
+        XCTAssertEqual(fresh.confidenceByTurnIndex, [:])
+        XCTAssertEqual(fresh.openerIndices, [0])
+        XCTAssertEqual(store.snapshot(for: hotel)?.turns.count, 1)
+    }
 }

@@ -117,6 +117,14 @@ public final class ConversationStore {
         snapshots[key] = nil
     }
 
+    /// "New conversation": clears this (scenario, course) only and re-opens it with `opener`. A conversation
+    /// otherwise persists across tab switches until this.
+    @discardableResult
+    public func startNew(_ key: ConversationKey, opener: String?) -> ConversationSnapshot {
+        reset(key)
+        return snapshot(for: key, seededWith: opener)
+    }
+
     public func removeAll() {
         snapshots.removeAll()
     }

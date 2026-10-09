@@ -67,4 +67,27 @@ public enum HeartsEconomy {
         if xp < cost { return .insufficientXp }
         return .ok(hearts: hearts + 1, xp: xp - cost)
     }
+
+    /// The same rule as src/lib/hearts.ts's heartsGate and the start-lesson-session edge function. The app uses
+    /// it only OFFLINE, against the cached progress; online the server's 409 is the rule.
+    public enum GateDecision: Sendable, Equatable {
+        case open
+        case outOfHearts(refillAt: Date?)
+    }
+
+    public static func gate(hearts: Int, heartsRefillAt: Date?, now: Date) -> GateDecision {
+        let resolved = resolveHeartsRefill(hearts: hearts, heartsRefillAt: heartsRefillAt, now: now)
+        return resolved.hearts > 0 ? .open : .outOfHearts(refillAt: resolved.heartsRefillAt)
+    }
+
+    /// The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the
+    /// refill is due one interval from now, so the offline gate can show a countdown (the server sets the same
+    /// timer in lose_heart).
+    public static func afterLosingHeart(hearts: Int, heartsRefillAt: Date?, now: Date) -> HeartsState {
+        let remaining = max(0, hearts - 1)
+        if remaining == 0 && heartsRefillAt == nil {
+            return HeartsState(hearts: 0, heartsRefillAt: now.addingTimeInterval(heartRefillSeconds))
+        }
+        return HeartsState(hearts: remaining, heartsRefillAt: heartsRefillAt)
+    }
 }
