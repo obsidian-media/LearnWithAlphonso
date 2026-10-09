@@ -7,14 +7,15 @@ const MIGRATIONS = path.resolve(import.meta.dirname, "../../supabase/migrations"
 const PLAYBACK = "20261012500000_podcast_playback_user_default.sql";
 const PROVENANCE = "20261012500100_podcast_episode_voice_provenance.sql";
 const LICENSED_CHECK = "20261012500200_podcast_published_licensed_check.sql";
+const VALIDATE = "20261013100000_podcast_published_licensed_validate.sql";
 const read = (file: string) => fs.readFileSync(path.join(MIGRATIONS, file), "utf8");
 const version = (file: string) => file.slice(0, 14);
 
 const ALL_MIGRATIONS = fs.readdirSync(MIGRATIONS).filter((file) => file.endsWith(".sql"));
-const OURS = [PLAYBACK, PROVENANCE, LICENSED_CHECK];
+const OURS = [PLAYBACK, PROVENANCE, LICENSED_CHECK, VALIDATE];
 
 describe("podcast migration ordering", () => {
-  it("lists the three podcast migrations among the real migration files", () => {
+  it("lists the podcast migrations among the real migration files", () => {
     for (const file of OURS) expect(ALL_MIGRATIONS).toContain(file);
   });
 
@@ -26,9 +27,10 @@ describe("podcast migration ordering", () => {
     }
   });
 
-  it("applies in order: playback, then provenance, then the licensed check", () => {
+  it("applies in order: playback, then provenance, then the licensed check, then its validation", () => {
     expect(version(PLAYBACK) < version(PROVENANCE)).toBe(true);
     expect(version(PROVENANCE) < version(LICENSED_CHECK)).toBe(true);
+    expect(version(LICENSED_CHECK) < version(VALIDATE)).toBe(true);
   });
 
   it("has no duplicate versions", () => {
@@ -118,5 +120,41 @@ describe("published-must-be-licensed migration", () => {
 
   it("grants nothing and creates no table", () => {
     expect(sql).not.toMatch(/\bGRANT\b|CREATE TABLE/);
+  });
+});
+
+describe("published-must-be-licensed validation migration", () => {
+  const sql = () => read(VALIDATE);
+  const statements = () =>
+    sql()
+      .split(/\r?\n/)
+      .filter((line) => !line.trim().startsWith("--"))
+      .join(" ")
+      .split(";")
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+
+  it("validates exactly the constraint the earlier migration added NOT VALID, and nothing else", () => {
+    expect(statements()).toEqual([
+      "ALTER TABLE public.podcast_episodes VALIDATE CONSTRAINT podcast_episodes_published_licensed",
+    ]);
+  });
+
+  it("sorts after every other migration, including the one that added the constraint", () => {
+    const others = ALL_MIGRATIONS.filter((file) => file !== VALIDATE);
+    for (const other of others) {
+      expect(version(VALIDATE) > version(other), `${VALIDATE} must sort after ${other}`).toBe(true);
+    }
+  });
+
+  it("explains why it is safe and documents the exact rollback", () => {
+    expect(sql()).toMatch(/0 (published )?rows|no published row/i);
+    expect(sql()).toContain(
+      "ALTER TABLE public.podcast_episodes DROP CONSTRAINT podcast_episodes_published_licensed;",
+    );
+    expect(sql()).toMatch(
+      /--\s+ALTER TABLE public\.podcast_episodes\s+--\s+ADD CONSTRAINT podcast_episodes_published_licensed/,
+    );
+    expect(sql()).toContain("CHECK (NOT published OR voice_provider IN ('deepgram', 'human')) NOT VALID;");
   });
 });
