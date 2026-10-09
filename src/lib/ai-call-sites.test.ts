@@ -58,7 +58,7 @@ describe("NVIDIA call sites", () => {
  */
 const DEEPGRAM = /api\.deepgram\.com/;
 const DEEPGRAM_SITES = [
-  "scripts/podcast-tool.ts",
+  "src/lib/podcast-tts.ts",
   "src/routes/api/hector-respond.ts",
   "src/routes/api/stt.ts",
   "src/routes/api/tts.ts",

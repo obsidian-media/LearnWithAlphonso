@@ -83,25 +83,26 @@ struct RootView: View {
                     // check #12). See View.podcastMiniBar.
                     TabView {
                         LessonBrowserView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore, podcastPlayer: podcastPlayer, podcastDownloadManager: podcastDownloadManager, activeCourse: activeCourse)
-                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Learn", systemImage: "book.fill") }
                             .badge(ReviewBadge.text(dueCount: syncQueueStore.dueReviewCount))
                         ListenView(
                             session: session,
                             networkMonitor: networkMonitor,
                             player: podcastPlayer,
-                            downloads: podcastDownloadManager
+                            downloads: podcastDownloadManager,
+                            activeCourse: activeCourse
                         )
-                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Listen", systemImage: "headphones") }
                         ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore)
-                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
                         HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore)
-                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Hector", systemImage: "sparkles") }
                         ProfileHubView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
-                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                            .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
                     }
                     // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
@@ -133,6 +134,10 @@ struct RootView: View {
                         // player this view actually keeps, because RootView's state initializer can build throwaway
                         // players that would otherwise claim the hook and then disappear.
                         VoiceAudioHooks.pauseOtherAudio = { [weak podcastPlayer] in podcastPlayer?.pauseForVoice() }
+                        // Sign-out and account deletion stop the podcast through this hook (the Kit's
+                        // PodcastAccountCleanup handlers, registered in LearnWithAlphonsoApp). Same reason
+                        // as above for registering it here.
+                        PodcastLifecycleHooks.stopPlayback = { [weak podcastPlayer] in podcastPlayer?.stopForAccountChange() }
                         // Identity first: RevenueCat can still hold a previous account
                         // (an upgrade, an interrupted sign-out), and nothing here should
                         // run, or show Pro, before it is aliased to this account. See

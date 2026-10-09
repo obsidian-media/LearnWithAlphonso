@@ -3,24 +3,23 @@ import LearnWithAlphonsoKit
 
 /// Listen: browse the podcast folder tree and play an episode.
 ///
-/// This view owns the `NavigationStack`, and `PodcastFolderView` below
-/// deliberately does **not**. Phase 0 had to make the Profile hub present
-/// rather than push because League, Friends and Achievements each owned a
-/// stack; nesting gives two navigation bars and unreliable inner links,
-/// which compiles cleanly and is wrong on a screen. Here the child is new
-/// code, so the constraint costs nothing.
+/// This view owns the `NavigationStack`, and `PodcastFolderListing` below deliberately
+/// does **not**. Nesting gives two navigation bars and unreliable inner links, which
+/// compiles cleanly and is wrong on a screen.
 ///
-/// Online-only in this phase. Everything else on iOS works on a plane --
-/// lessons, review, completions -- and podcasts will not until Phase 3
-/// adds download. A subway is exactly where people listen, so the offline
-/// state says so plainly instead of blaming the episode.
+/// The library follows the active course (French learners see French episodes), hides
+/// folders with nothing published beneath them, and says so plainly when a course has
+/// nothing yet. A failed load is never shown as an empty library.
 struct ListenView: View {
     let session: Session
     let networkMonitor: NetworkMonitor
     let player: PodcastAudioPlayer
     let downloads: PodcastDownloadManager
+    /// The learner's active course, shared with Learn, Practice and Hector.
+    let activeCourse: ActiveCourseModel
 
     @State private var folders: [PodcastFolder] = []
+    @State private var publishedIndex: [PodcastPublishedEpisodeRef] = []
     /// Every episode seen this session, so an offline listing can name what
     /// was downloaded. Downloads outlive any one folder fetch.
     @State private var knownEpisodes: [PodcastEpisode] = []
@@ -30,6 +29,17 @@ struct ListenView: View {
     @State private var searchQuery = ""
     @State private var searchResults: [PodcastEpisode] = []
     @State private var isSearching = false
+    @State private var searchFailed = false
+
+    private var courseCode: String { activeCourse.course.wireCode }
+
+    private var visibleFolders: [PodcastFolder] {
+        PodcastLibrary.visibleFolders(
+            folders,
+            publishedFolderIDs: Set(publishedIndex.map(\.folderID)),
+            courseCode: courseCode
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,10 +49,12 @@ struct ListenView: View {
                 } else {
                     PodcastSearchResultsView(
                         query: searchQuery,
-                        results: searchResults,
+                        results: PodcastLibrary.episodes(searchResults, inFolders: visibleFolders),
                         isSearching: isSearching,
+                        searchFailed: searchFailed,
                         player: player,
-                        downloads: downloads
+                        downloads: downloads,
+                        networkMonitor: networkMonitor
                     )
                 }
             }
@@ -67,10 +79,19 @@ struct ListenView: View {
         else {
             searchResults = []
             isSearching = false
+            searchFailed = false
             return
         }
         isSearching = true
-        searchResults = (try? await client.searchEpisodes(query: searchQuery)) ?? []
+        searchFailed = false
+        do {
+            searchResults = try await client.searchEpisodes(query: searchQuery)
+        } catch {
+            // A superseded keystroke's request is cancelled; that is not a failure.
+            if Task.isCancelled { return }
+            searchResults = []
+            searchFailed = true
+        }
         isSearching = false
     }
 
@@ -82,10 +103,8 @@ struct ListenView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if !networkMonitor.isConnected && folders.isEmpty {
             // Offline shows the DOWNLOADED set, flat, rather than an error.
-            // That is the difference between "the app works on a plane" and
-            // "the audio happens to still play". Nothing downloaded is its
-            // own state: telling someone who downloaded three episodes that
-            // there are none would be a lie about their own device.
+            // Nothing downloaded is its own state: telling someone who downloaded
+            // three episodes that there are none would be a lie about their own device.
             let offline = PodcastCache.offlineListing(
                 entries: downloads.entries(),
                 episodes: knownEpisodes
@@ -111,13 +130,24 @@ struct ListenView: View {
                 Button("Try again") { Task { await load() } }
                     .tint(AlphonsoColor.moss)
             }
+        } else if visibleFolders.isEmpty {
+            // A course with nothing published is a stated state, not a blank list.
+            ContentUnavailableView {
+                Label(PodcastLibraryCopy.emptyTitle(courseCode: courseCode), systemImage: "headphones")
+            } description: {
+                Text(PodcastLibraryCopy.emptyMessage)
+            } actions: {
+                Button("Refresh") { Task { await load() } }
+                    .tint(AlphonsoColor.moss)
+            }
         } else {
             PodcastFolderListing(
                 folder: nil,
-                folders: folders,
+                folders: visibleFolders,
                 session: session,
                 player: player,
                 downloads: downloads,
+                networkMonitor: networkMonitor,
                 onEpisodesLoaded: rememberEpisodes
             )
         }
@@ -140,12 +170,26 @@ struct ListenView: View {
         isLoading = true
         errorMessage = nil
         do {
-            folders = try await client.fetchFolders()
+            async let folderRows = client.fetchFolders()
+            async let index = client.fetchPublishedIndex()
+            let (loadedFolders, loadedIndex) = try await (folderRows, index)
+            folders = loadedFolders
+            publishedIndex = loadedIndex
+            // Licensing: downloads of unpublished episodes go, but only after a
+            // successful read. A failed read says nothing about what is published.
+            // Skipped when no folders came back: that is a role or RLS problem, not
+            // "everything was unpublished" (PodcastLibrary.canPruneDownloads).
+            if PodcastLibrary.canPruneDownloads(afterLoading: loadedFolders) {
+                downloads.removeDownloads(
+                    notIn: Set(loadedIndex.map(\.episodeID)),
+                    keeping: player.episode?.id
+                )
+            }
         } catch PodcastClientError.unauthorized {
             errorMessage = "Please sign in again to load episodes."
         } catch {
             errorMessage = networkMonitor.isConnected
-                ? "Something went wrong loading the library."
+                ? Copy.connectionFailure
                 : "You're offline."
         }
         isLoading = false
@@ -158,14 +202,17 @@ struct ListenView: View {
 private struct PodcastFolderListing: View {
     /// nil at the root.
     let folder: PodcastFolder?
+    /// Already filtered to the visible set by ListenView.
     let folders: [PodcastFolder]
     let session: Session
     let player: PodcastAudioPlayer
     let downloads: PodcastDownloadManager
+    let networkMonitor: NetworkMonitor
     let onEpisodesLoaded: ([PodcastEpisode]) -> Void
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var isLoadingEpisodes = false
+    @State private var loadFailed = false
 
     private var children: [PodcastFolder] {
         PodcastTree.children(of: folder?.id, in: folders)
@@ -183,6 +230,7 @@ private struct PodcastFolderListing: View {
                                 session: session,
                                 player: player,
                                 downloads: downloads,
+                                networkMonitor: networkMonitor,
                                 onEpisodesLoaded: onEpisodesLoaded
                             )
                         } label: {
@@ -205,7 +253,8 @@ private struct PodcastFolderListing: View {
                                 player.play(
                                     episode,
                                     localURL: downloads.localURL(episodeID: episode.id),
-                                    queue: episodes
+                                    queue: episodes,
+                                    isOnline: networkMonitor.isConnected
                                 )
                                 downloads.markPlayed(episodeID: episode.id)
                             } label: {
@@ -230,9 +279,20 @@ private struct PodcastFolderListing: View {
                 .listRowBackground(Color.clear)
             }
 
-            if children.isEmpty && episodes.isEmpty && !isLoadingEpisodes {
-                // Expected, not an error: the tree gets built before it is
-                // filled.
+            if loadFailed {
+                // A failed fetch is not "Nothing here yet".
+                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                    Text(networkMonitor.isConnected
+                        ? "Couldn't load these episodes."
+                        : "You're offline. Downloaded episodes appear on the Listen screen.")
+                        .font(AlphonsoFont.sans(14))
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    Button("Try again") { Task { await loadEpisodes() } }
+                        .tint(AlphonsoColor.moss)
+                }
+                .listRowBackground(Color.clear)
+            } else if children.isEmpty && episodes.isEmpty && !isLoadingEpisodes {
+                // Expected, not an error: the tree gets built before it is filled.
                 Text("Nothing here yet. New episodes appear as they're published.")
                     .font(AlphonsoFont.sans(14))
                     .foregroundStyle(AlphonsoColor.inkSoft)
@@ -256,8 +316,13 @@ private struct PodcastFolderListing: View {
         // The root has no episodes of its own: episodes belong to a folder.
         guard let folder, let client = makePodcastClient(session: session) else { return }
         isLoadingEpisodes = true
-        episodes = (try? await client.fetchEpisodes(folderID: folder.id)) ?? []
-        onEpisodesLoaded(episodes)
+        loadFailed = false
+        do {
+            episodes = try await client.fetchEpisodes(folderID: folder.id)
+            onEpisodesLoaded(episodes)
+        } catch {
+            if !Task.isCancelled { loadFailed = true }
+        }
         isLoadingEpisodes = false
     }
 }
@@ -278,30 +343,35 @@ func makePodcastClient(session: Session) -> PodcastClient? {
     )
 }
 
-/// Search results, flat across every folder. Mirrors the web app's
-/// `PodcastSearchResults`.
+/// Search results, flat across the active course's visible folders. Mirrors the web
+/// app's `PodcastSearchResults`.
 ///
-/// Owns no `NavigationStack` -- ListenView owns it, and nesting is what
-/// forced Phase 0's Profile hub to present rather than push.
+/// Owns no `NavigationStack` -- ListenView owns it.
 ///
-/// The three empty-ish states are deliberately distinct. Below the minimum
-/// length `PodcastSearch` declines to build a filter and the client never
-/// calls the network, so "no episodes match" would be a lie about a search
-/// that never ran -- and a learner told that stops typing.
+/// The empty-ish states are deliberately distinct. Below the minimum length
+/// `PodcastSearch` declines to build a filter and the client never calls the network,
+/// so "no episodes match" would be a lie about a search that never ran, and a failed
+/// search is not "no episodes match" either.
 private struct PodcastSearchResultsView: View {
     let query: String
     let results: [PodcastEpisode]
     let isSearching: Bool
+    let searchFailed: Bool
     let player: PodcastAudioPlayer
     /// Search results play the downloaded copy too -- a result found while
     /// offline is useless if tapping it reaches for the network.
     let downloads: PodcastDownloadManager
+    let networkMonitor: NetworkMonitor
 
     var body: some View {
         if PodcastSearch.normalizeQuery(query) == nil {
             message("Keep typing to search episodes.")
         } else if isSearching {
             message("Searching…")
+        } else if searchFailed {
+            message(networkMonitor.isConnected
+                ? Copy.connectionFailure
+                : "You're offline. Search needs a connection.")
         } else if results.isEmpty {
             message("No episodes match “\(query)”.")
         } else {
@@ -311,7 +381,8 @@ private struct PodcastSearchResultsView: View {
                         player.play(
                             episode,
                             localURL: downloads.localURL(episodeID: episode.id),
-                            queue: results
+                            queue: results,
+                            isOnline: networkMonitor.isConnected
                         )
                         downloads.markPlayed(episodeID: episode.id)
                     } label: {
@@ -334,6 +405,8 @@ private struct PodcastSearchResultsView: View {
         Text(text)
             .font(AlphonsoFont.sans(14))
             .foregroundStyle(AlphonsoColor.inkSoft)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, AlphonsoSpacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(AlphonsoColor.surface)
     }
@@ -345,17 +418,17 @@ private struct PodcastSearchResultsView: View {
     }
 }
 
-/// Download / delete for one episode.
+/// Download / delete for one episode. A failure is an alert whose title names the cause.
 ///
-/// Refusal is a prompt, never a silent deletion: exceeding the budget
-/// names what could be removed and waits for the learner to choose.
+/// Refusal for lack of budget is a prompt, never a silent deletion: it names what could
+/// be removed and waits for the learner to choose.
 private struct PodcastDownloadButton: View {
     let episode: PodcastEpisode
     let downloads: PodcastDownloadManager
     let player: PodcastAudioPlayer
 
-    @State private var refusal: PodcastDownloadRefusal?
-    @State private var showRefusal = false
+    @State private var failure: PodcastDownloadFailure?
+    @State private var showFailure = false
 
     var body: some View {
         Group {
@@ -364,6 +437,7 @@ private struct PodcastDownloadButton: View {
                 ProgressView(value: progress)
                     .progressViewStyle(.circular)
                     .tint(AlphonsoColor.moss)
+                    .accessibilityLabel("Downloading")
             case .downloaded:
                 Button {
                     deleteRespectingPlayback()
@@ -387,37 +461,27 @@ private struct PodcastDownloadButton: View {
             }
         }
         .buttonStyle(.plain)
-        .alert("Not enough space set aside", isPresented: $showRefusal) {
+        .alert(
+            failure.map(PodcastDownloadCopy.title(for:)) ?? "",
+            isPresented: $showFailure,
+            presenting: failure
+        ) { _ in
             Button("OK", role: .cancel) {}
-        } message: {
-            Text(refusalMessage)
+        } message: { failure in
+            Text(PodcastDownloadCopy.message(for: failure))
         }
-    }
-
-    private var refusalMessage: String {
-        guard case let .budgetExceeded(candidates, _)? = refusal else {
-            return "That download didn't finish. Please try again."
-        }
-        guard !candidates.isEmpty else {
-            return "This episode is larger than the space set aside for downloads."
-        }
-        // Names what to remove; removes nothing. A deliberate download is a
-        // promise, and breaking it silently to make room for another would
-        // be the app deciding which of the learner's choices mattered.
-        return "Remove \(candidates.count) downloaded episode\(candidates.count == 1 ? "" : "s") "
-            + "to make room, starting with the ones you haven't played."
     }
 
     private func start() {
         Task {
             do {
                 try await downloads.download(episode: episode)
-            } catch let error as PodcastDownloadRefusal {
-                refusal = error
-                showRefusal = true
+            } catch let error as PodcastDownloadFailure {
+                failure = error
+                showFailure = true
             } catch {
-                refusal = .transferFailed(error.localizedDescription)
-                showRefusal = true
+                failure = .network
+                showFailure = true
             }
         }
     }
@@ -451,12 +515,15 @@ private struct OfflineEpisodeList: View {
                 ForEach(episodes) { episode in
                     HStack(spacing: AlphonsoSpacing.sm) {
                         Button {
+                            // Only shown offline, and a missing file fails at once
+                            // with "Download this episode to listen offline".
                             player.play(
-                            episode,
-                            localURL: downloads.localURL(episodeID: episode.id),
-                            queue: episodes
-                        )
-                        downloads.markPlayed(episodeID: episode.id)
+                                episode,
+                                localURL: downloads.localURL(episodeID: episode.id),
+                                queue: episodes,
+                                isOnline: false
+                            )
+                            downloads.markPlayed(episodeID: episode.id)
                         } label: {
                             AlphonsoRowCard(
                                 title: episode.title,

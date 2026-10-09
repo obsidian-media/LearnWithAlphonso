@@ -227,3 +227,33 @@ describe("the admin transcript rule is the CLI's rule", () => {
     );
   });
 });
+
+describe("adminSetPublished refuses audio the app may not distribute", () => {
+  const source = readFileSync("src/lib/admin.functions.ts", "utf8");
+  const start = source.indexOf("export const adminSetPublished");
+  const end = source.indexOf("\nexport ", start + 1);
+  const body = source.slice(start, end);
+
+  it("finds the function it is checking", () => {
+    // Guards the guard: an empty slice would make every assertion below vacuous.
+    expect(start).toBeGreaterThan(-1);
+    expect(body).toContain(".update(");
+  });
+
+  it("reads the row's voice_provider and checks it before any write", () => {
+    const check = body.indexOf("isPublishableProvider(");
+    const write = body.indexOf(".update(");
+    expect(body).toContain("voice_provider");
+    expect(check).toBeGreaterThan(-1);
+    expect(check).toBeLessThan(write);
+  });
+
+  it("only checks when publishing, so unpublishing is never blocked", () => {
+    expect(body).toMatch(/if \(data\.published\)/);
+  });
+
+  it("throws the shared admin-facing message", () => {
+    expect(body).toContain("UNPUBLISHABLE_PROVIDER_MESSAGE");
+    expect(body).toMatch(/throw new Error\(UNPUBLISHABLE_PROVIDER_MESSAGE/);
+  });
+});

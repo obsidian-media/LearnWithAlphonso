@@ -15,10 +15,14 @@
  *
  * Usage (run with bun, which executes TS directly -- no build step):
  *   bun run scripts/podcast-tool.ts folder   --parent <path|root> --slug intro-a1 --title "..." [--course en] [--level A1] [--confirm]
- *   bun run scripts/podcast-tool.ts add      --folder en/a1 --file ./ep1.mp3 --slug ordering-coffee --title "..." [--confirm]
- *   bun run scripts/podcast-tool.ts add      --folder en/a1 --script ./ep1.txt --slug ordering-coffee --title "..." [--voice aura-2-thalia-en] [--confirm]
+ *   bun run scripts/podcast-tool.ts add      --folder en/a1 --file ./ep1.mp3 --provider human --slug ordering-coffee --title "..." [--confirm]
+ *   bun run scripts/podcast-tool.ts add      --folder en/a1 --script ./ep1.txt --course en --slug ordering-coffee --title "..." [--voice aura-2-thalia-en] [--confirm]
  *   bun run scripts/podcast-tool.ts validate --folder en/a1 --slug ordering-coffee
  *   bun run scripts/podcast-tool.ts publish  --folder en/a1 --slug ordering-coffee [--confirm]
+ *   bun run scripts/podcast-tool.ts unpublish (--folder en/a1 --slug ordering-coffee | --list ./old.txt | --unlicensed) [--remove-audio] [--confirm]
+ *
+ * Only Deepgram-voiced (`--script`) and human-recorded audio can be published: every episode
+ * records its provider, `add --file` requires `--provider`, and `publish` refuses the rest.
  *
  * Every command that writes is part of a human-gated pipeline: without
  * `--confirm` it prints what it WOULD do and exits without touching
@@ -42,7 +46,31 @@ import {
 } from "../src/lib/podcast-authoring";
 import { findCycle, isValidSlug, resolveFolderPath } from "../src/lib/podcast-tree";
 import { normalizeTranscript } from "../src/lib/podcast-transcript";
-import { chunkScript } from "../src/lib/podcast-tts";
+import {
+  chunkScript,
+  DEFAULT_VOICE_FOR_COURSE,
+  deepgramSpeakUrl,
+  fileProviderProblem,
+  voiceMatchesCourse,
+} from "../src/lib/podcast-tts";
+import {
+  isPublishableProvider,
+  LICENSED_PROVIDERS,
+  VOICE_PROVIDERS,
+} from "../src/lib/podcast-provenance";
+import {
+  coursesLeftEmpty,
+  coursesLow,
+  episodePath,
+  parseUnpublishList,
+  planUnpublishTargets,
+  planUnpublishUnlicensed,
+  removableAudioPaths,
+  MIN_PUBLISHED_PER_COURSE,
+  publishedCountsAfter,
+  type UnpublishEpisode,
+  type UnpublishTarget,
+} from "../src/lib/podcast-unpublish";
 import {
   CliArgError,
   parseCliArgs,
@@ -55,7 +83,6 @@ import { COURSES } from "../src/data/courses";
 import { LEVELS } from "../src/data/levels";
 
 const BUCKET = "podcast-audio";
-const DEFAULT_VOICE = "aura-2-thalia-en";
 
 /**
  * Flags this tool understands. The parser rejects anything else by name
@@ -64,7 +91,7 @@ const DEFAULT_VOICE = "aura-2-thalia-en";
  * silent dry-run that motivated all of this.
  */
 const FLAG_SPEC = {
-  booleans: ["confirm"],
+  booleans: ["confirm", "remove-audio", "unlicensed"],
   values: [
     "transcript",
     "parent",
@@ -78,6 +105,8 @@ const FLAG_SPEC = {
     "file",
     "script",
     "voice",
+    "provider",
+    "list",
   ],
 } as const;
 
@@ -164,14 +193,11 @@ async function synthesise(script: string, voice: string): Promise<Uint8Array> {
 
   const audio: Uint8Array[] = [];
   for (const [index, piece] of pieces.entries()) {
-    const response = await fetch(
-      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(voice)}&encoding=mp3&mip_opt_out=true`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
-        body: JSON.stringify({ text: piece }),
-      },
-    );
+    const response = await fetch(deepgramSpeakUrl(voice), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
+      body: JSON.stringify({ text: piece }),
+    });
     if (!response.ok) {
       fail(`Deepgram returned ${response.status} on chunk ${index + 1}/${pieces.length}.`);
     }
@@ -314,6 +340,56 @@ async function cmdAdd(flags: CliFlags) {
     process.exit(1);
   }
 
+  // Provenance and voice checks, all before any network call that costs money.
+  const course = draft.course;
+  let provider: string;
+  let voiceModel: string | null;
+  let voice = "";
+  if (script) {
+    if (!course)
+      fail("--course is required with --script, so the voice can be checked against it.");
+    voice = (flags.voice as string | undefined) ?? DEFAULT_VOICE_FOR_COURSE[course];
+    if (!voiceMatchesCourse(voice, course)) {
+      fail(
+        `voice "${voice}" does not speak course "${course}". Use ${DEFAULT_VOICE_FOR_COURSE[course]}.`,
+      );
+    }
+    provider = "deepgram";
+    voiceModel = voice;
+  } else {
+    const named = requireOneOf(flags, "provider", VOICE_PROVIDERS);
+    if (!named) {
+      fail(
+        `--provider is required with --file: say who made the audio (${VOICE_PROVIDERS.join(", ")}). ` +
+          "Only deepgram and human audio can be published.",
+      );
+    }
+    const problem = fileProviderProblem({
+      provider: named,
+      voice: flags.voice as string | undefined,
+      course: draft.course,
+    });
+    if (problem) fail(problem);
+    provider = named;
+    voiceModel = (flags.voice as string | undefined) ?? null;
+  }
+
+  if (script && flags.confirm !== true) {
+    if (!existsSync(script)) fail(`script not found: ${script}`);
+    const text = readFileSync(script, "utf-8");
+    console.log(
+      `Dry run. Would synthesise ${chunkScript(text).length} chunk(s), ${text.trim().length} characters, ` +
+        `with ${voice} (Deepgram, mip_opt_out=true),`,
+    );
+    console.log(
+      `  upload to ${BUCKET}/${storagePathFor(draft)} and insert "${slug}" (course=${course}, unpublished).`,
+    );
+    console.log(
+      "Re-run with --confirm to write it. Synthesis is billed, so it runs only with --confirm.",
+    );
+    return;
+  }
+
   let audio: Uint8Array;
   if (file) {
     if (!existsSync(file)) fail(`file not found: ${file}`);
@@ -327,10 +403,7 @@ async function cmdAdd(flags: CliFlags) {
     }
   } else {
     if (!existsSync(script!)) fail(`script not found: ${script}`);
-    audio = await synthesise(
-      readFileSync(script!, "utf-8"),
-      (flags.voice as string | undefined) ?? DEFAULT_VOICE,
-    );
+    audio = await synthesise(readFileSync(script!, "utf-8"), voice);
   }
 
   const duration = await durationSecondsOf(audio);
@@ -364,6 +437,8 @@ async function cmdAdd(flags: CliFlags) {
     course: draft.course,
     level_id: draft.levelId,
     source: draft.source,
+    voice_provider: provider,
+    voice_model: voiceModel,
     published: false,
   });
   if (error) {
@@ -440,7 +515,9 @@ async function cmdValidate(flags: CliFlags) {
 
   const { data, error } = await db
     .from("podcast_episodes")
-    .select("slug, title, duration_seconds, audio_path, published, source")
+    .select(
+      "slug, title, duration_seconds, audio_path, published, source, voice_provider, voice_model",
+    )
     .eq("folder_id", folder.id)
     .eq("slug", slug)
     .maybeSingle();
@@ -454,9 +531,14 @@ async function cmdValidate(flags: CliFlags) {
     audio_path: string;
     published: boolean;
     source: string;
+    voice_provider: string;
+    voice_model: string | null;
   };
   console.log(`${episode.title} (${episode.slug})`);
   console.log(`  source:    ${episode.source}`);
+  console.log(
+    `  voice:     ${episode.voice_provider}${episode.voice_model ? ` (${episode.voice_model})` : ""}`,
+  );
   console.log(`  duration:  ${episode.duration_seconds}s`);
   console.log(`  audio:     ${BUCKET}/${episode.audio_path}`);
   console.log(`  published: ${episode.published ? "yes" : "no"}`);
@@ -499,6 +581,23 @@ async function cmdPublish(flags: CliFlags) {
   const folders = toFolders(await loadFolders(db));
   const folder = resolveFolderPath(folders, splitPath(folderPath));
   if (!folder) fail(`folder path "${folderPath}" does not exist.`);
+
+  const { data: candidate, error: readError } = await db
+    .from("podcast_episodes")
+    .select("voice_provider")
+    .eq("folder_id", folder.id)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (readError) fail(`could not read the episode: ${readError.message}`);
+  if (!candidate) fail(`no episode "${slug}" in ${folderPath}.`);
+  const provider = (candidate as { voice_provider: string }).voice_provider;
+  if (!isPublishableProvider(provider)) {
+    fail(
+      `refusing to publish ${folderPath}/${slug}: its audio provider is "${provider}". ` +
+        `Only ${LICENSED_PROVIDERS.join(", ")} audio may be published. ` +
+        "Re-voice it with `add --script` under a new slug.",
+    );
+  }
 
   if (flags.confirm !== true) {
     console.log(`Dry run. Would publish "${slug}" in ${folderPath}.`);
@@ -570,12 +669,154 @@ async function cmdTranscript(flags: CliFlags) {
   console.log(`Attached a ${words}-word transcript to ${folderPath}/${slug}.`);
 }
 
+/**
+ * Hides episodes from learners. Dry run unless --confirm. Exactly one selector:
+ * --folder + --slug, --list <file> (one folder/path/slug per line, # comments), or
+ * --unlicensed (every episode whose voice_provider is not deepgram or human).
+ *
+ * All-or-nothing on input problems: any bad line and nothing is written. Prints what
+ * stays published per course and warns for a course left empty (Listen then shows its
+ * empty state). --remove-audio also deletes the MP3s of every listed episode, published
+ * or already unpublished: the bucket is public-read, so unpublishing alone leaves the
+ * audio downloadable by URL. Deletion cannot be undone from this tool.
+ */
+async function cmdUnpublish(flags: CliFlags) {
+  const listFile = flags.list as string | undefined;
+  const unlicensed = flags.unlicensed === true;
+  const byPath = flags.folder !== undefined || flags.slug !== undefined;
+  const selectors = [listFile !== undefined, unlicensed, byPath].filter(Boolean).length;
+  if (selectors !== 1) {
+    fail("pass exactly one of: --folder <path> --slug <slug>, --list <file>, or --unlicensed.");
+  }
+
+  let targets: UnpublishTarget[] | null = null;
+  if (listFile !== undefined) {
+    if (!existsSync(listFile)) fail(`list file not found: ${listFile}`);
+    const parsed = parseUnpublishList(readFileSync(listFile, "utf-8"));
+    if (parsed.problems.length > 0) {
+      for (const problem of parsed.problems) console.error(`  [ERROR] ${problem}`);
+      fail("the list has problems. Nothing was changed.");
+    }
+    targets = parsed.targets;
+  } else if (byPath) {
+    const folderPath = requireStringFlag(flags, "folder", "e.g. --folder en/c1");
+    const slug = requireStringFlag(flags, "slug", "e.g. --slug why-we-procrastinate");
+    targets = [{ segments: splitPath(folderPath), slug, line: 0 }];
+  }
+
+  const db = supabase();
+  const folders = toFolders(await loadFolders(db));
+  const { data, error } = await db
+    .from("podcast_episodes")
+    .select("id, folder_id, slug, title, published, audio_path, course, voice_provider");
+  if (error) fail(`could not read podcast_episodes: ${error.message}`);
+  const episodes: UnpublishEpisode[] = (data ?? []).map((row) => {
+    const r = row as {
+      id: string;
+      folder_id: string;
+      slug: string;
+      title: string;
+      published: boolean;
+      audio_path: string;
+      course: "en" | "fr" | "es" | null;
+      voice_provider: string;
+    };
+    return {
+      id: r.id,
+      folderId: r.folder_id,
+      slug: r.slug,
+      title: r.title,
+      published: r.published,
+      audioPath: r.audio_path,
+      course: r.course,
+      voiceProvider: r.voice_provider,
+    };
+  });
+
+  const plan = targets
+    ? planUnpublishTargets(targets, folders, episodes)
+    : planUnpublishUnlicensed(episodes);
+  if (plan.problems.length > 0) {
+    for (const problem of plan.problems) console.error(`  [ERROR] ${problem}`);
+    fail("Nothing was changed.");
+  }
+
+  console.log(`Will unpublish ${plan.toUnpublish.length} episode(s):`);
+  for (const episode of plan.toUnpublish) {
+    console.log(`  ${episodePath(folders, episode)}  (${episode.voiceProvider})`);
+  }
+  if (plan.alreadyUnpublished.length > 0) {
+    console.log(`Already unpublished (${plan.alreadyUnpublished.length}):`);
+    for (const episode of plan.alreadyUnpublished)
+      console.log(`  ${episodePath(folders, episode)}`);
+  }
+  const counts = publishedCountsAfter(
+    episodes,
+    new Set(plan.toUnpublish.map((episode) => episode.id)),
+  );
+  console.log(`Published afterwards: en ${counts.en}, fr ${counts.fr}, es ${counts.es}.`);
+  for (const course of coursesLeftEmpty(counts)) {
+    console.log(
+      `WARNING: nothing would stay published for "${course}". Listen shows its empty state.`,
+    );
+  }
+  for (const { course, count } of coursesLow(counts)) {
+    console.log(
+      `WARNING: only ${count} would stay published for "${course}" (fewer than ${MIN_PUBLISHED_PER_COURSE}). Listen will look nearly empty.`,
+    );
+  }
+
+  const removeAudio = flags["remove-audio"] === true;
+  // Never delete an object that an episode staying published still points at.
+  const removable = removableAudioPaths(plan, episodes);
+  if (removeAudio) {
+    for (const path of removable.keptBecauseShared) {
+      console.log(`Keeping ${path}: an episode that stays published still uses it.`);
+    }
+  }
+  if (flags.confirm !== true) {
+    console.log(
+      removeAudio
+        ? `Dry run. Would also DELETE ${removable.paths.length} audio object(s) from ${BUCKET}.`
+        : "Dry run.",
+    );
+    console.log("Re-run with --confirm to write it.");
+    return;
+  }
+
+  if (plan.toUnpublish.length > 0) {
+    const ids = plan.toUnpublish.map((episode) => episode.id);
+    const { data: updated, error: updateError } = await db
+      .from("podcast_episodes")
+      .update({ published: false })
+      .in("id", ids)
+      .eq("published", true)
+      .select("id");
+    if (updateError) fail(`unpublish failed: ${updateError.message}. Nothing else was attempted.`);
+    console.log(`Unpublished ${updated?.length ?? 0} of ${ids.length}.`);
+  }
+
+  if (removeAudio && removable.paths.length > 0) {
+    const { data: removed, error: removeError } = await db.storage
+      .from(BUCKET)
+      .remove(removable.paths);
+    if (removeError) {
+      fail(
+        `the episodes are unpublished, but deleting their audio failed: ${removeError.message}. ` +
+          "Re-run with --remove-audio.",
+      );
+    }
+    console.log(`Deleted ${removed?.length ?? 0} audio object(s) from ${BUCKET}.`);
+  }
+}
+
 const USAGE = `usage:
   podcast-tool.ts folder     --parent <path|root> --slug <slug> --title <title> [--course en] [--level A1] [--confirm]
-  podcast-tool.ts add        --folder <path> --slug <slug> --title <title> (--file <mp3> | --script <txt>) [--transcript <txt>] [--voice <model>] [--confirm]
+  podcast-tool.ts add        --folder <path> --slug <slug> --title <title> --course <en|fr|es> (--file <mp3> --provider <provider> | --script <txt>) [--transcript <txt>] [--voice <model>] [--confirm]
   podcast-tool.ts transcript --folder <path> --slug <slug> --transcript <txt> [--confirm]
   podcast-tool.ts validate   --folder <path> --slug <slug>
-  podcast-tool.ts publish    --folder <path> --slug <slug> [--confirm]`;
+  podcast-tool.ts publish    --folder <path> --slug <slug> [--confirm]
+  podcast-tool.ts unpublish  (--folder <path> --slug <slug> | --list <file> | --unlicensed) [--remove-audio] [--confirm]`;
 
 async function main() {
   const { command, flags } = parseCliArgs(process.argv.slice(2), FLAG_SPEC);
@@ -594,6 +835,9 @@ async function main() {
       break;
     case "publish":
       await cmdPublish(flags);
+      break;
+    case "unpublish":
+      await cmdUnpublish(flags);
       break;
     default:
       console.log(USAGE);

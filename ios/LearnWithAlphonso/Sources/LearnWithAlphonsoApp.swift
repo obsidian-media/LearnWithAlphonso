@@ -48,7 +48,8 @@ struct LearnWithAlphonsoApp: App {
         // Same container, its own context: the download manager and the
         // sync queue touch different models and should not contend for
         // one context's pending changes.
-        podcastDownloadManager = PodcastDownloadManager(modelContext: ModelContext(container))
+        let podcastDownloads = PodcastDownloadManager(modelContext: ModelContext(container))
+        podcastDownloadManager = podcastDownloads
 
         let lifecycle = SessionLifecycle()
         let entitlements = EntitlementStore(provider: AppConfig.revenueCatAPIKey == nil ? nil : RevenueCatPurchases())
@@ -58,6 +59,13 @@ struct LearnWithAlphonsoApp: App {
             caches: AccountLocalCaches(),
             clearWidget: { WidgetProgressPublisher.clear() },
             entitlements: entitlements
+        )
+        // After the core handlers. The player registers PodcastLifecycleHooks.stopPlayback from RootView with
+        // the one player it keeps; before that exists there is nothing to stop.
+        PodcastAccountCleanup.register(
+            on: lifecycle,
+            stopPlayback: { PodcastLifecycleHooks.stopPlayback?() },
+            removeDownloads: { podcastDownloads.removeAllDownloads() }
         )
         sessionLifecycle = lifecycle
         let session = Session(lifecycle: lifecycle)

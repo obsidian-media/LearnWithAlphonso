@@ -37,6 +37,9 @@ struct PodcastMiniBar: View {
     /// PodcastAudioPlayer's own doc comment on why the player itself
     /// stays ignorant of the download manager.
     let downloads: PodcastDownloadManager
+    /// Retry and Next pass the real connectivity, so an offline tap on an episode that
+    /// is not downloaded fails at once (the machine's fast path) instead of spinning.
+    let networkMonitor: NetworkMonitor
 
     @State private var showTranscript = false
     @State private var transcript: String?
@@ -44,66 +47,115 @@ struct PodcastMiniBar: View {
 
     var body: some View {
         if let episode = player.episode {
-            HStack(spacing: AlphonsoSpacing.sm + 2) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(episode.title)
-                        .font(AlphonsoFont.sans(14, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
-                        .lineLimit(1)
-                    Text(progressLabel(for: episode))
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                        .monospacedDigit()
+            VStack(spacing: 0) {
+                if let message = player.failureMessage {
+                    // A failure is stated, with the one action that can fix it. Never a
+                    // Pause icon over an episode that is not playing.
+                    HStack(spacing: AlphonsoSpacing.sm) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(AlphonsoColor.destructive)
+                            .accessibilityHidden(true)
+                        Text(message)
+                            .font(AlphonsoFont.sans(13))
+                            .foregroundStyle(AlphonsoColor.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        Button(PodcastPlaybackCopy.retryTitle) {
+                            player.retry(
+                                localURL: downloads.localURL(episodeID: episode.id),
+                                isOnline: networkMonitor.isConnected
+                            )
+                        }
+                        .font(AlphonsoFont.sans(13, weight: .semiBold))
+                        .tint(AlphonsoColor.moss)
+                        .frame(minHeight: 44)
+                    }
+                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .padding(.top, AlphonsoSpacing.sm)
+                    .accessibilityElement(children: .combine)
                 }
-                Spacer(minLength: 0)
+                HStack(spacing: AlphonsoSpacing.sm + 2) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(episode.title)
+                            .font(AlphonsoFont.sans(14, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.ink)
+                            .lineLimit(1)
+                        Text(progressLabel(for: episode))
+                            .font(AlphonsoFont.sans(12))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .monospacedDigit()
+                    }
+                    Spacer(minLength: 0)
 
-                Button {
-                    player.toggle()
-                } label: {
-                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                        .foregroundStyle(AlphonsoColor.onPrimary)
-                        .padding(AlphonsoSpacing.sm)
-                        .background(Circle().fill(AlphonsoColor.moss))
-                }
-                .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
+                    switch player.control {
+                    case .play, .pause:
+                        Button {
+                            player.toggle()
+                        } label: {
+                            Image(systemName: player.control == .pause ? "pause.fill" : "play.fill")
+                                .foregroundStyle(AlphonsoColor.onPrimary)
+                                .padding(AlphonsoSpacing.sm)
+                                .background(Circle().fill(AlphonsoColor.moss))
+                        }
+                        .accessibilityLabel(player.control == .pause ? "Pause" : "Play")
+                    case .spinner:
+                        // Tapping while loading or buffering cancels to Paused.
+                        Button {
+                            player.toggle()
+                        } label: {
+                            ProgressView()
+                                .tint(AlphonsoColor.onPrimary)
+                                .padding(AlphonsoSpacing.sm)
+                                .background(Circle().fill(AlphonsoColor.moss))
+                        }
+                        .accessibilityLabel("Loading. Double-tap to pause.")
+                    case .retry, .none:
+                        EmptyView()
+                    }
 
-                // TestFlight feedback (2026-09-29): "when a user finishes a
-                // listen, there is no way to continue to the next lesson."
-                // Hidden entirely (not disabled) when there's nothing next,
-                // matching this bar's own pattern of disappearing rather
-                // than showing an inert control.
-                if let next = player.nextEpisode {
+                    // TestFlight feedback (2026-09-29): "when a user finishes a
+                    // listen, there is no way to continue to the next lesson."
+                    // Hidden entirely (not disabled) when there's nothing next,
+                    // matching this bar's own pattern of disappearing rather
+                    // than showing an inert control.
+                    if let next = player.nextEpisode {
+                        Button {
+                            player.play(
+                                next,
+                                localURL: downloads.localURL(episodeID: next.id),
+                                queue: player.queue,
+                                isOnline: networkMonitor.isConnected
+                            )
+                            downloads.markPlayed(episodeID: next.id)
+                        } label: {
+                            Image(systemName: "forward.end.fill")
+                                .foregroundStyle(AlphonsoColor.inkSoft)
+                        }
+                        .accessibilityLabel("Next episode")
+                    }
+
+                    // The accessibility affordance, always present rather than
+                    // hidden when an episode has no transcript: hiding it would
+                    // make the gap invisible instead of stated.
                     Button {
-                        player.play(next, localURL: downloads.localURL(episodeID: next.id), queue: player.queue)
-                        downloads.markPlayed(episodeID: next.id)
+                        showTranscript = true
                     } label: {
-                        Image(systemName: "forward.end.fill")
+                        Image(systemName: "text.alignleft")
                             .foregroundStyle(AlphonsoColor.inkSoft)
                     }
-                    .accessibilityLabel("Next episode")
-                }
+                    .accessibilityLabel("Show transcript")
 
-                // The accessibility affordance, always present rather than
-                // hidden when an episode has no transcript: hiding it would
-                // make the gap invisible instead of stated.
-                Button {
-                    showTranscript = true
-                } label: {
-                    Image(systemName: "text.alignleft")
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    Button {
+                        player.close()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                    }
+                    .accessibilityLabel("Close player")
                 }
-                .accessibilityLabel("Show transcript")
-
-                Button {
-                    player.close()
-                } label: {
-                    Image(systemName: "xmark")
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
-                .accessibilityLabel("Close player")
+                .padding(.horizontal, AlphonsoSpacing.md)
+                .padding(.vertical, AlphonsoSpacing.sm)
             }
-            .padding(.horizontal, AlphonsoSpacing.md)
-            .padding(.vertical, AlphonsoSpacing.sm)
             .background(AlphonsoColor.parchment)
             .overlay(alignment: .top) {
                 Rectangle()
@@ -143,7 +195,8 @@ struct PodcastMiniBar: View {
     }
 
     private func progressLabel(for episode: PodcastEpisode) -> String {
-        format(player.elapsedSeconds) + " / " + format(Double(episode.durationSeconds))
+        if player.machine.phase == .buffering { return PodcastPlaybackCopy.bufferingLabel }
+        return format(player.elapsedSeconds) + " / " + format(Double(episode.durationSeconds))
     }
 
     private func format(_ seconds: Double) -> String {
@@ -247,9 +300,14 @@ extension View {
     /// so this was not run locally, and no automated check can see layout.
     /// Re-run device check #12 before trusting this comment any further
     /// than the last one.
-    func podcastMiniBar(player: PodcastAudioPlayer, session: Session, downloads: PodcastDownloadManager) -> some View {
+    func podcastMiniBar(
+        player: PodcastAudioPlayer,
+        session: Session,
+        downloads: PodcastDownloadManager,
+        networkMonitor: NetworkMonitor
+    ) -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) {
-            PodcastMiniBar(player: player, session: session, downloads: downloads)
+            PodcastMiniBar(player: player, session: session, downloads: downloads, networkMonitor: networkMonitor)
         }
     }
 }

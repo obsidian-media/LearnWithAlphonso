@@ -244,7 +244,7 @@ struct LessonBrowserView: View {
             .navigationDestination(for: String.self) { lessonId in
                 if let found = contentStore.findLesson(id: lessonId, course: course) {
                     LessonPlayerView(lesson: found.lesson, course: course, session: session, notificationScheduler: notificationScheduler, contentStore: contentStore, networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
-                        .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager)
+                        .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                 } else {
                     Text("Lesson not found")
                 }

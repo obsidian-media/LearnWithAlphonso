@@ -3,197 +3,355 @@ import Foundation
 import MediaPlayer
 import LearnWithAlphonsoKit
 
+/// Lets the SessionLifecycle handler (registered in LearnWithAlphonsoApp) stop the player
+/// without owning it. RootView sets this with the one player it keeps, next to the voice
+/// engine's pause hook, and not from the player's init: RootView's state initializer can
+/// build throwaway players that must not claim a hook and then disappear.
+@MainActor
+enum PodcastLifecycleHooks {
+    static var stopPlayback: (@MainActor () -> Void)?
+}
+
 /// Owns the one `AVPlayer` the podcast library uses.
 ///
-/// Held once by RootView, above the view tree, so playback is unaffected by
-/// any view appearing or disappearing. The web app had to work for this --
-/// an `<audio>` element inside a route component unmounts on navigation --
-/// and it is free here only because this is a reference type living above
-/// the views. Do not move it into one.
+/// Held once by RootView, above the view tree, so playback is unaffected by any view
+/// appearing or disappearing. Do not move it into one.
 ///
-/// **This file has no unit tests and cannot have any.** The app target has
-/// no test coverage anywhere in this repo, there is no macOS or Xcode in
-/// the development environment, and a simulator would not exercise the
-/// interesting cases (a real phone call, real headphones, the lock screen).
-/// CI's `xcodebuild` proves it compiles. Everything else here is verified
-/// on a device or not at all -- see the spec's device checklist.
+/// Every rule about what the learner sees (playing, buffering, failed, finished) lives in
+/// the Kit's `PodcastPlayerMachine`, which is unit-tested. This file only turns AVPlayer's
+/// signals into machine events and performs the effects the machine returns. "Playing" is
+/// shown only after AVPlayer confirms `timeControlStatus == .playing`, so a 404 or an
+/// offline stream can never look like it is playing.
+///
+/// The app target itself has no unit tests; CI's `ios-app-build` proves this compiles and
+/// the device checklist covers the rest (a real call, real headphones, the lock screen).
 @Observable
 @MainActor
 final class PodcastAudioPlayer {
     private(set) var episode: PodcastEpisode?
-    private(set) var isPlaying = false
     private(set) var elapsedSeconds: Double = 0
-    private(set) var failed = false
+    private(set) var machine = PodcastPlayerMachine()
 
-    /// TestFlight feedback (2026-09-29): "when a user finishes a listen,
-    /// there is no way to continue to the next lesson -- there is no
-    /// NEXT BUTTON." The ordered list `play(_:localURL:queue:)` was most
-    /// recently called with -- whatever list the episode was tapped from
-    /// (a folder, search results, downloads). Deliberately just data, no
-    /// download-manager awareness here -- see this type's own doc comment
-    /// on why that stays a UI-layer concern; PodcastMiniBar resolves the
-    /// next episode's local URL and calls play() again itself.
+    /// The ordered list `play(_:localURL:queue:isOnline:)` was most recently called with.
+    /// Deliberately just data: PodcastMiniBar resolves the next episode's local URL.
     private(set) var queue: [PodcastEpisode] = []
 
-    /// The episode right after the current one in `queue`, if any. Nil
-    /// hides the "Next" control entirely rather than showing a disabled
-    /// one -- consistent with how the rest of this bar behaves (e.g. the
-    /// whole bar disappears when there's no episode at all).
+    var isPlaying: Bool { machine.isAudible }
+    var control: PodcastPlayerControl { machine.control }
+    var failureMessage: String? { machine.failure.map(PodcastPlaybackCopy.message(for:)) }
+
     var nextEpisode: PodcastEpisode? {
         guard let episode, let idx = queue.firstIndex(where: { $0.id == episode.id }),
               queue.indices.contains(idx + 1) else { return nil }
         return queue[idx + 1]
     }
 
-    /// Set once a save has been rejected for auth. Further saves are
-    /// pointless until the app gets a fresh token, and pretending they
-    /// landed is how resume silently stops working.
-    private(set) var savesDisabled = false
+    /// Builds a client on demand. Set by RootView once a session exists. Rebuilt per call
+    /// because PodcastClient cannot refresh the token it was given.
+    var makeClient: (@MainActor () -> PodcastClient?)?
+
+    private var saveGate = PodcastSaveGate()
+    /// Saves run one after another, so each one guards on what the previous one stored.
+    private var saveTask: Task<Void, Never>?
 
     private var player: AVPlayer?
+    private var currentItem: AVPlayerItem?
+    private var currentSourceURL: URL?
+    private var currentSourceIsLocal = false
+    private var keyValueObservations: [NSKeyValueObservation] = []
+    private var itemNotificationTokens: [NSObjectProtocol] = []
     private var timeObserver: Any?
     private var lastSavedSeconds: Double = 0
     private var listenedSeconds: Double = 0
     private var lastTick: Double?
-    /// The playback row's `updated_at` as last read or written. Sent back
-    /// with each save for optimistic concurrency.
-    private var lastSeenUpdatedAt: String?
-    /// Decided at interruption-began, not at -ended: a recorder's stop()
-    /// deactivates the session and is what makes iOS send .shouldResume,
-    /// so reading the flag at -ended would race with it.
+    /// Decided at interruption-began: our own mic screens caused it, so never resume.
     private var pausedByRecording = false
-
-    /// Builds a client on demand. Set by RootView once a session exists.
-    ///
-    /// Rebuilt per call rather than held, because `PodcastClient` keeps the
-    /// access token it was given and cannot refresh one -- a player that
-    /// cached a client would keep using a token long after it expired.
-    var makeClient: (@MainActor () -> PodcastClient?)?
 
     init() {
         observeSessionNotifications()
         configureRemoteCommands()
     }
 
-    /// The learner started speaking. RootView registers this as the voice engine's pause hook for the one player it
-    /// keeps (not here: RootView's state initializer can build throwaway players that must not claim the hook).
-    /// Never auto-resumes: resuming a podcast
-    /// over a speaking exercise is exactly what RecordingState exists to
-    /// prevent. The learner resumes from the mini bar.
-    func pauseForVoice() {
-        guard isPlaying else { return }
-        player?.pause()
-        isPlaying = false
-        pausedByRecording = false
-        updateNowPlaying()
-    }
+    // MARK: - Commands
 
-    // MARK: - Playback
-
-    /// Plays an episode, preferring a downloaded copy.
-    ///
-    /// `localURL` is passed in rather than looked up, so the player stays
-    /// ignorant of the download manager -- it is an AVPlayer wrapper, and
-    /// giving it a second responsibility is how this file grows into the
-    /// thing nothing can test.
-    ///
-    /// The resume clamp already measures against what AVPlayerItem
-    /// reports, which for a downloaded episode is the local file. That
-    /// stays correct by construction: the position is applied to whichever
-    /// asset is actually playing.
-    func play(_ episode: PodcastEpisode, localURL: URL? = nil, queue: [PodcastEpisode] = []) {
-        // Only overwrite when a real queue was actually passed -- callers
-        // that don't know about ordering (or a resume-from-notification
-        // path) keep whatever queue was already set instead of wiping it
-        // to a single-element list.
+    /// Plays an episode, preferring a downloaded copy. `isOnline` is a fast path: a stream
+    /// that cannot load fails at once with "Download this episode to listen offline"
+    /// instead of waiting for AVPlayer's own error (which says the same, later).
+    func play(_ episode: PodcastEpisode, localURL: URL? = nil, queue: [PodcastEpisode] = [], isOnline: Bool = true) {
         if !queue.isEmpty { self.queue = queue }
-        if self.episode?.id != episode.id {
-            teardownObserver()
+        saveGate.userStartedPlayback()
+
+        if self.episode?.id == episode.id, player != nil {
+            switch machine.phase {
+            case .paused, .finished:
+                handle(.togglePressed)
+                return
+            case .loading, .playing, .buffering:
+                return
+            case .idle, .failed:
+                break
+            }
+        } else if self.episode?.id != episode.id {
+            flushPlayEvent()
             self.episode = episode
-            lastSeenUpdatedAt = episode.playbackUpdatedAt
+            saveGate.beginEpisode(lastSeenUpdatedAt: episode.playbackUpdatedAt)
             lastSavedSeconds = 0
             listenedSeconds = 0
             lastTick = nil
             elapsedSeconds = Double(episode.positionSeconds)
-            failed = false
-
-            let item = AVPlayerItem(url: localURL ?? episode.audioURL)
-            let player = AVPlayer(playerItem: item)
-            self.player = player
-            observeTime(on: player)
-            seekToStoredPosition(on: player, item: item, stored: Double(episode.positionSeconds))
         }
-        activateSession()
-        player?.play()
-        isPlaying = true
-        updateNowPlaying()
+
+        teardownItem()
+        currentSourceURL = localURL ?? episode.audioURL
+        currentSourceIsLocal = localURL != nil
+        handle(.start(isRemote: localURL == nil, isOnline: isOnline))
+    }
+
+    /// The error banner's Retry. The caller resolves the download again: the learner may
+    /// have downloaded the episode since it failed.
+    func retry(localURL: URL?, isOnline: Bool = true) {
+        guard let episode else { return }
+        play(episode, localURL: localURL, isOnline: isOnline)
     }
 
     func toggle() {
-        guard let player else { return }
-        if isPlaying {
-            player.pause()
-            isPlaying = false
-            save(position: player.currentTime().seconds, completed: false)
-        } else {
-            activateSession()
-            player.play()
-            isPlaying = true
-        }
-        updateNowPlaying()
+        guard episode != nil else { return }
+        if !machine.isActive { saveGate.userStartedPlayback() }
+        handle(.togglePressed)
     }
 
     func close() {
         if let player { save(position: player.currentTime().seconds, completed: false) }
         flushPlayEvent()
-        teardownObserver()
-        player?.pause()
-        player = nil
+        teardownItem()
         episode = nil
-        isPlaying = false
         elapsedSeconds = 0
-        failed = false
+        currentSourceURL = nil
+        _ = machine.send(.closed)
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 
-    /// Called when the app backgrounds, so a position is not lost to a
-    /// process the system may never bring back.
+    /// The learner started speaking. RootView registers this as the voice engine's pause
+    /// hook for the one player it keeps (not here: see PodcastLifecycleHooks). Never
+    /// auto-resumes: resuming a podcast over a speaking exercise is exactly what
+    /// RecordingState exists to prevent. The learner resumes from the mini bar.
+    func pauseForVoice() {
+        guard machine.isActive else { return }
+        pausedByRecording = false
+        handle(.pausedExternally(resumable: false))
+    }
+
+    /// Sign-out or account deletion (SessionLifecycle, via PodcastLifecycleHooks). The next
+    /// account on this device must not hear, see on the lock screen, or resume the previous
+    /// account's episode. No final save: the session's token is already gone, and the
+    /// position is at most 10 seconds behind.
+    func stopForAccountChange() {
+        teardownItem()
+        saveTask?.cancel()
+        saveTask = nil
+        // Not a fresh PodcastSaveGate(): the epoch must keep counting so a save already
+        // chained from the previous account is refused by `accepts`.
+        saveGate.resetForAccountChange()
+        episode = nil
+        queue = []
+        elapsedSeconds = 0
+        listenedSeconds = 0
+        lastSavedSeconds = 0
+        lastTick = nil
+        currentSourceURL = nil
+        pausedByRecording = false
+        _ = machine.send(.closed)
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// Called when the app backgrounds, so a position is not lost to a process the system
+    /// may never bring back.
     func applicationDidBackground() {
         guard let player else { return }
         save(position: player.currentTime().seconds, completed: false)
     }
 
+    // MARK: - Machine
+
+    private func handle(_ event: PodcastPlayerEvent) {
+        apply(machine.send(event))
+    }
+
+    private func apply(_ effects: [PodcastPlayerEffect]) {
+        for effect in effects {
+            switch effect {
+            case .loadItem:
+                createItem()
+            case .play:
+                guard activateSession() else {
+                    apply(machine.send(.itemFailed(.unplayable)))
+                    return
+                }
+                player?.play()
+            case .pause:
+                player?.pause()
+            case .seekToStart:
+                player?.seek(to: .zero) { _ in }
+                elapsedSeconds = 0
+                lastSavedSeconds = 0
+                lastTick = nil
+            case .savePosition:
+                if let player { save(position: player.currentTime().seconds, completed: false) }
+            case .saveCompletion:
+                save(position: 0, completed: true)
+            case .flushPlayEvent:
+                flushPlayEvent()
+            case let .scheduleStallTimeout(generation):
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(nanoseconds: PodcastPlayerMachine.stallTimeoutSeconds * 1_000_000_000)
+                    self?.handle(.stallTimedOut(generation: generation))
+                }
+            case let .scheduleLoadTimeout(generation):
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(nanoseconds: PodcastPlayerMachine.loadTimeoutSeconds * 1_000_000_000)
+                    self?.handle(.loadTimedOut(generation: generation))
+                }
+            }
+        }
+        updateNowPlaying()
+    }
+
+    // MARK: - Item and observation
+
+    private func createItem() {
+        guard let url = currentSourceURL else { return }
+        teardownItem()
+        let item = AVPlayerItem(url: url)
+        let player = AVPlayer(playerItem: item)
+        self.player = player
+        currentItem = item
+        observe(item: item, player: player)
+        observeTime(on: player)
+        seekToStoredPosition(on: player, item: item, stored: elapsedSeconds)
+    }
+
+    private func observe(item: AVPlayerItem, player: AVPlayer) {
+        let itemID = ObjectIdentifier(item)
+        // KVO fires on whichever thread changed the value, so hop to the main actor.
+        // The value is read here and passed on; the item itself never crosses.
+        keyValueObservations = [
+            item.observe(\.status, options: [.new]) { [weak self] observed, _ in
+                guard let self else { return }
+                let status = observed.status
+                Task { @MainActor [weak self] in self?.itemStatusChanged(status, itemID: itemID) }
+            },
+            player.observe(\.timeControlStatus, options: [.new]) { [weak self] observed, _ in
+                guard let self else { return }
+                let status = observed.timeControlStatus
+                Task { @MainActor [weak self] in self?.timeControlChanged(status, itemID: itemID) }
+            },
+        ]
+
+        let center = NotificationCenter.default
+        itemNotificationTokens = [
+            center.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification, object: item, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.handle(.didPlayToEnd) }
+            },
+            center.addObserver(forName: AVPlayerItem.failedToPlayToEndTimeNotification, object: item, queue: .main) { [weak self] notification in
+                let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error
+                MainActor.assumeIsolated { self?.itemFailed(error) }
+            },
+            center.addObserver(forName: AVPlayerItem.playbackStalledNotification, object: item, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.handle(.stalled) }
+            },
+        ]
+    }
+
+    private func isCurrent(_ itemID: ObjectIdentifier) -> Bool {
+        currentItem.map(ObjectIdentifier.init) == itemID
+    }
+
+    private func itemStatusChanged(_ status: AVPlayerItem.Status, itemID: ObjectIdentifier) {
+        guard isCurrent(itemID) else { return }
+        switch status {
+        case .readyToPlay:
+            handle(.itemReady)
+        case .failed:
+            itemFailed(currentItem?.error)
+        default:
+            break
+        }
+    }
+
+    private func timeControlChanged(_ status: AVPlayer.TimeControlStatus, itemID: ObjectIdentifier) {
+        guard isCurrent(itemID) else { return }
+        switch status {
+        case .playing:
+            handle(.timeControlPlaying)
+        case .waitingToPlayAtSpecifiedRate:
+            // The machine only treats this as a stall when it was playing.
+            handle(.stalled)
+        default:
+            break
+        }
+    }
+
+    /// Shows a first classification at once, then refines it with a HEAD request against
+    /// the URL (a stream's own error rarely says 404 plainly; Supabase says 400).
+    private func itemFailed(_ error: Error?) {
+        let chain = PodcastErrorCode.chain(from: error)
+        let isLocal = currentSourceIsLocal
+        handle(.itemFailed(PodcastPlaybackFailure.classify(chain: chain, probe: .notRun, isLocalFile: isLocal)))
+        guard !isLocal, let url = currentSourceURL, let item = currentItem else { return }
+        let itemID = ObjectIdentifier(item)
+        Task { @MainActor [weak self] in
+            let probe = await Self.probe(url)
+            guard let self, self.isCurrent(itemID), self.machine.failure != nil else { return }
+            self.handle(.itemFailed(PodcastPlaybackFailure.classify(chain: chain, probe: probe, isLocalFile: false)))
+        }
+    }
+
+    private nonisolated static func probe(_ url: URL) async -> PodcastProbeResult {
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        request.httpMethod = "HEAD"
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else { return .noResponse }
+            return .status(http.statusCode)
+        } catch {
+            return .noResponse
+        }
+    }
+
+    private func teardownItem() {
+        if let timeObserver, let player { player.removeTimeObserver(timeObserver) }
+        timeObserver = nil
+        keyValueObservations.forEach { $0.invalidate() }
+        keyValueObservations = []
+        itemNotificationTokens.forEach { NotificationCenter.default.removeObserver($0) }
+        itemNotificationTokens = []
+        player?.pause()
+        player = nil
+        currentItem = nil
+    }
+
     // MARK: - Session
 
-    private func activateSession() {
+    @discardableResult
+    private func activateSession() -> Bool {
         let session = AVAudioSession.sharedInstance()
         do {
-            // .playback is what keeps audio going with the screen locked.
-            // The mic screens set .playAndRecord for their own work; this
-            // player does not try to share a session with them.
+            // .playback keeps audio going with the screen locked.
             try session.setCategory(.playback, mode: .spokenAudio)
             try session.setActive(true)
+            return true
         } catch {
-            failed = true
+            return false
         }
     }
 
     private func observeSessionNotifications() {
         let center = NotificationCenter.default
-
-        center.addObserver(
-            forName: AVAudioSession.interruptionNotification,
-            object: AVAudioSession.sharedInstance(),
-            queue: .main
-        ) { [weak self] notification in
+        center.addObserver(forName: AVAudioSession.interruptionNotification, object: AVAudioSession.sharedInstance(), queue: .main) { [weak self] notification in
             MainActor.assumeIsolated { self?.handleInterruption(notification) }
         }
-
-        center.addObserver(
-            forName: AVAudioSession.routeChangeNotification,
-            object: AVAudioSession.sharedInstance(),
-            queue: .main
-        ) { [weak self] notification in
+        center.addObserver(forName: AVAudioSession.routeChangeNotification, object: AVAudioSession.sharedInstance(), queue: .main) { [weak self] notification in
             MainActor.assumeIsolated { self?.handleRouteChange(notification) }
         }
     }
@@ -201,42 +359,29 @@ final class PodcastAudioPlayer {
     private func handleInterruption(_ notification: Notification) {
         guard let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
               let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
-
         switch type {
         case .began:
             // Record *why* now, while RecordingState is reliable.
             pausedByRecording = RecordingState.shared.isRecording
-            player?.pause()
-            isPlaying = false
+            handle(.pausedExternally(resumable: !pausedByRecording))
         case .ended:
             let options = (notification.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt)
                 .map(AVAudioSession.InterruptionOptions.init(rawValue:)) ?? []
-            // Honour .shouldResume for a call, an alarm or Siri -- never
-            // resuming makes a podcast silently die after a phone call.
-            // Suppress it when our own mic screens caused this: resuming
-            // over someone mid-speaking-exercise is the failure to avoid.
-            if options.contains(.shouldResume) && !pausedByRecording {
-                activateSession()
-                player?.play()
-                isPlaying = true
-            }
+            // Honour .shouldResume for a call, an alarm or Siri, but only if the
+            // interruption is what paused us and our own mic did not cause it.
+            handle(.interruptionEnded(shouldResume: options.contains(.shouldResume) && !pausedByRecording))
             pausedByRecording = false
         @unknown default:
             break
         }
-        updateNowPlaying()
     }
 
     private func handleRouteChange(_ notification: Notification) {
         guard let raw = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: raw) else { return }
-        // Headphones pulled: pause rather than continuing out loud from the
-        // speaker, which is the behaviour every other audio app has trained
-        // people to expect.
+        // Headphones pulled: pause rather than continuing out loud from the speaker.
         if reason == .oldDeviceUnavailable {
-            player?.pause()
-            isPlaying = false
-            updateNowPlaying()
+            handle(.pausedExternally(resumable: false))
         }
     }
 
@@ -244,17 +389,16 @@ final class PodcastAudioPlayer {
 
     private func configureRemoteCommands() {
         let center = MPRemoteCommandCenter.shared()
-
         center.playCommand.addTarget { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self, self.episode != nil, !self.isPlaying else { return .commandFailed }
+                guard let self, self.episode != nil, self.machine.control == .play else { return .commandFailed }
                 self.toggle()
                 return .success
             }
         }
         center.pauseCommand.addTarget { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self, self.isPlaying else { return .commandFailed }
+                guard let self, self.machine.isActive else { return .commandFailed }
                 self.toggle()
                 return .success
             }
@@ -279,7 +423,7 @@ final class PodcastAudioPlayer {
     }
 
     private func updateNowPlaying() {
-        guard let episode else {
+        guard let episode, machine.phase != .idle else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
             return
         }
@@ -287,7 +431,7 @@ final class PodcastAudioPlayer {
             MPMediaItemPropertyTitle: episode.title,
             MPMediaItemPropertyPlaybackDuration: Double(episode.durationSeconds),
             MPNowPlayingInfoPropertyElapsedPlaybackTime: elapsedSeconds,
-            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyPlaybackRate: machine.isAudible ? 1.0 : 0.0,
         ]
         if let description = episode.description {
             info[MPMediaItemPropertyArtist] = description
@@ -300,21 +444,14 @@ final class PodcastAudioPlayer {
     private func seekToStoredPosition(on player: AVPlayer, item: AVPlayerItem, stored: Double) {
         guard stored > 0 else { return }
         Task { @MainActor in
-            // Clamp against the MEDIA's duration, not the stored
-            // duration_seconds. The row and the file can disagree -- a
-            // replaced object, or a multi-chunk TTS episode whose measured
-            // duration was wrong, which the chunk-join probe has not yet
-            // ruled out -- and the media is the only length seekable here.
+            // Clamp against the MEDIA's duration, not the stored duration_seconds: the row
+            // and the file can disagree, and the media is the only length seekable here.
             let duration = (try? await item.asset.load(.duration))?.seconds
             let limit = (duration?.isFinite == true && duration! > 0)
                 ? duration!
                 : Double(self.episode?.durationSeconds ?? 0)
             let target = PodcastPlayback.clampPosition(stored, durationSeconds: limit)
             guard target > 0 else { return }
-            // Completion-handler overload on purpose: inside an async
-            // context the bare `seek(to:)` resolves to the async variant and
-            // has to be awaited, which reads as if the seek needs to finish
-            // before anything else can happen. It does not.
             player.seek(to: CMTime(seconds: target, preferredTimescale: 600)) { _ in }
             self.elapsedSeconds = target
         }
@@ -327,69 +464,52 @@ final class PodcastAudioPlayer {
         ) { [weak self] time in
             MainActor.assumeIsolated { self?.tick(at: time.seconds) }
         }
-
-        NotificationCenter.default.addObserver(
-            forName: AVPlayerItem.didPlayToEndTimeNotification,
-            object: player.currentItem,
-            queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.finish() }
-        }
     }
 
     private func tick(at seconds: Double) {
-        guard seconds.isFinite else { return }
+        guard seconds.isFinite, machine.phase != .finished else { return }
         elapsedSeconds = seconds
-
-        // Real listening time, ignoring jumps from seeking.
         if let previous = lastTick {
             let delta = seconds - previous
             if delta > 0 && delta < 2 { listenedSeconds += delta }
         }
         lastTick = seconds
-
-        // abs(), not a bare subtraction: after a backward skip the
-        // difference stays negative until playback climbs past the old
-        // mark, which would silently stop saving for minutes.
+        // abs(): after a backward skip a bare subtraction stays negative for minutes.
         if abs(seconds - lastSavedSeconds) >= 10 {
             lastSavedSeconds = seconds
             save(position: seconds, completed: false)
         }
     }
 
-    private func finish() {
-        isPlaying = false
-        elapsedSeconds = 0
-        save(position: 0, completed: true)
-        flushPlayEvent()
-        updateNowPlaying()
-    }
-
+    /// Chained: each save starts after the previous one finished and reads the gate then,
+    /// so it guards on what the previous save stored.
     private func save(position: Double, completed: Bool) {
-        guard !savesDisabled, position.isFinite, let episode, let client = makeClient?() else { return }
-        let seen = lastSeenUpdatedAt
-        Task { @MainActor in
+        guard saveGate.canSave, position.isFinite, let episode, let client = makeClient?() else { return }
+        let episodeID = episode.id
+        let seconds = Int(position.rounded())
+        let epoch = saveGate.epoch
+        let previous = saveTask
+        saveTask = Task { @MainActor [weak self] in
+            await previous?.value
+            guard let self, !Task.isCancelled, self.saveGate.accepts(epoch), self.saveGate.canSave else { return }
+            let isCurrentEpisode = self.episode?.id == episodeID
+            // A save for an episode we have since left has no known observation: upsert it.
+            let seen = isCurrentEpisode ? self.saveGate.lastSeenUpdatedAt : nil
             do {
-                try await client.savePlaybackPosition(
-                    episodeID: episode.id,
-                    positionSeconds: Int(position.rounded()),
+                let stored = try await client.savePlaybackPosition(
+                    episodeID: episodeID,
+                    positionSeconds: seconds,
                     completed: completed,
                     lastSeenUpdatedAt: seen
                 )
-                // Our write is now the latest observation.
-                self.lastSeenUpdatedAt = ISO8601DateFormatter().string(from: Date())
+                guard !Task.isCancelled, self.saveGate.accepts(epoch), self.episode?.id == episodeID else { return }
+                self.saveGate.recordSaved(updatedAt: stored)
             } catch PodcastClientError.staleWrite {
-                // Another device wrote since we read. Ours is based on a
-                // stale observation, so drop it rather than retrying -- the
-                // next listing re-reads the fresher value.
-                self.lastSeenUpdatedAt = nil
+                if !Task.isCancelled, self.saveGate.accepts(epoch), self.episode?.id == episodeID { self.saveGate.recordStale() }
             } catch PodcastClientError.unauthorized {
-                // Stop firing calls that cannot succeed. A swallowed 401 is
-                // how resume silently stops working for a whole session.
-                self.savesDisabled = true
+                if !Task.isCancelled, self.saveGate.accepts(epoch) { self.saveGate.recordUnauthorized() }
             } catch {
-                // Best-effort, same posture as the app's theme hydration: a
-                // failed save leaves the last known position alone.
+                // Best effort: a failed save leaves the last known position alone.
             }
         }
     }
@@ -399,16 +519,8 @@ final class PodcastAudioPlayer {
         listenedSeconds = 0
         guard listened > 0, let episode, let client = makeClient?() else { return }
         Task {
-            // Through the RPC inside PodcastClient -- the table grants no
-            // direct INSERT to authenticated.
+            // Through the RPC inside PodcastClient: the table grants no direct INSERT.
             try? await client.recordPlayEvent(episodeID: episode.id, secondsListened: listened)
         }
-    }
-
-    private func teardownObserver() {
-        if let timeObserver, let player {
-            player.removeTimeObserver(timeObserver)
-        }
-        timeObserver = nil
     }
 }
