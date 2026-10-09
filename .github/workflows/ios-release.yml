@@ -72,6 +72,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: oven-sh/setup-bun@v2
+        if: ${{ inputs.upload_to_testflight }}
+        with:
+          bun-version: 1.3.10
+
+      # Refuse to spend an archive on a build App Store Connect would reject. Compares project.yml's
+      # CURRENT_PROJECT_VERSION with every build number already uploaded (ASC API, the same key as the
+      # upload step) and checks the app and widget versions match. No dependencies to install: the script
+      # only uses node: built-ins.
+      - name: Build number is greater than the latest ASC build, and app/widget versions match
+        if: ${{ inputs.upload_to_testflight }}
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+        run: bun scripts/check-ios-build-number.ts
+
       - name: Verify Xcode meets Apple's current minimum
         run: |
           # Found in a 2026-09-28 audit: runs-on: macos-latest was never
@@ -346,6 +363,44 @@ jobs:
             cat /tmp/app-entitlements.plist || echo "(file not found or unreadable)"
             exit 1
           fi
+
+          echo "-- App and widget versions match: CFBundleVersion and CFBundleShortVersionString --"
+          for KEY in CFBundleVersion CFBundleShortVersionString; do
+            APP_VALUE=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$APP/Info.plist")
+            WIDGET_VALUE=$(/usr/libexec/PlistBuddy -c "Print :$KEY" "$WIDGET/Info.plist")
+            if [ "$APP_VALUE" != "$WIDGET_VALUE" ]; then
+              echo "::error::$KEY differs: app '$APP_VALUE', widget '$WIDGET_VALUE'. App Store Connect rejects an extension whose version differs from its app."
+              exit 1
+            fi
+            echo "$KEY: $APP_VALUE (app == widget)"
+          done
+
+          echo "-- Home-screen name and microphone purpose string --"
+          DISPLAY_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" "$APP/Info.plist" 2>/dev/null || echo MISSING)
+          [ "$DISPLAY_NAME" = "Alphonso" ] || { echo "::error::Shipped CFBundleDisplayName is '$DISPLAY_NAME', expected 'Alphonso'."; exit 1; }
+          MIC=$(/usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Info.plist" 2>/dev/null || echo MISSING)
+          EXPECTED_MIC="Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations. Recordings are sent for transcription and aren't stored."
+          [ "$MIC" = "$EXPECTED_MIC" ] || { echo "::error::Shipped NSMicrophoneUsageDescription is '$MIC'."; exit 1; }
+          echo "Display name and mic string OK."
+
+          echo "-- Shipped privacy manifest reasons --"
+          plutil -convert json -o /tmp/app-privacy.json "$APP/PrivacyInfo.xcprivacy"
+          node -e '
+            const m = JSON.parse(require("fs").readFileSync("/tmp/app-privacy.json", "utf8"));
+            const ud = (m.NSPrivacyAccessedAPITypes || []).find((t) => t.NSPrivacyAccessedAPIType === "NSPrivacyAccessedAPICategoryUserDefaults");
+            const reasons = ((ud && ud.NSPrivacyAccessedAPITypeReasons) || []).slice().sort().join(",");
+            if (reasons !== "1C8F.1,CA92.1") { console.error("::error::Shipped UserDefaults reasons are [" + reasons + "], expected [1C8F.1,CA92.1]."); process.exit(1); }
+            if (JSON.stringify(m).includes("3B52.1")) { console.error("::error::Shipped manifest still declares 3B52.1."); process.exit(1); }
+            console.log("Manifest OK: UserDefaults [" + reasons + "], " + (m.NSPrivacyCollectedDataTypes || []).length + " collected data types.");
+          '
+
+          echo "-- Icon and licence texts compiled into the bundle --"
+          ICON_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName" "$APP/Info.plist" 2>/dev/null || echo MISSING)
+          [ "$ICON_NAME" = "AppIcon" ] || { echo "::error::Shipped CFBundleIcons primary icon is '$ICON_NAME', expected 'AppIcon'."; exit 1; }
+          for F in RevenueCat-LICENSE.txt Baloo2-OFL.txt Fraunces-OFL.txt Geist-OFL.txt InstrumentSans-OFL.txt InstrumentSerif-OFL.txt Newsreader-OFL.txt SourceSans3-OFL.txt; do
+            [ -f "$APP/$F" ] || { echo "::error::$F is not in the shipped bundle; Acknowledgements would show the fallback line."; exit 1; }
+          done
+          echo "Icon and licence texts OK."
 
           echo "All post-archive checks passed."
 
