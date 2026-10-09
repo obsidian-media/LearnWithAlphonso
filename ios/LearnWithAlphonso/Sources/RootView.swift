@@ -37,7 +37,9 @@ struct RootView: View {
     /// English placement (while it has never been taken; see PlacementView's doc comment). Each step shows at
     /// most once per sign-in, and a failed check skips its step this launch instead of blocking the app
     /// (Kit OnboardingSequence). LessonBrowserView's banner still catches anyone who skips placement.
-    @State private var onboardingStep: OnboardingStep?
+    /// The cover is driven by this item and reads nothing else, so the name prompt's state travels inside it
+    /// (a separate @State read only inside the cover's content closure was captured stale and rendered empty).
+    @State private var onboarding: OnboardingPresentation?
     @State private var onboardingDone: Set<OnboardingStep> = []
     @State private var nameConfirmed: Bool?
     @State private var placementTaken: Bool?
@@ -120,13 +122,11 @@ struct RootView: View {
                     .tint(AlphonsoColor.moss)
                     .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
                     .toolbarBackground(.visible, for: .tabBar)
-                    .fullScreenCover(item: $onboardingStep, onDismiss: advanceOnboarding) { step in
-                        switch step {
-                        case .displayName:
-                            if let nameOnboarding {
-                                NameOnboardingView(session: session, state: nameOnboarding) {
-                                    finishOnboardingStep(.displayName)
-                                }
+                    .fullScreenCover(item: $onboarding, onDismiss: advanceOnboarding) { presentation in
+                        switch presentation {
+                        case .displayName(let nameOnboarding):
+                            NameOnboardingView(session: session, state: nameOnboarding) {
+                                finishOnboardingStep(.displayName)
                             }
                         case .placement:
                             PlacementView(contentStore: contentStore, session: session, course: .english) {
@@ -214,6 +214,13 @@ struct RootView: View {
         // so its late reply lands in a store nobody reads.
         .onChange(of: session.userID) {
             conversationStore = ConversationStore()
+            // A cover left up by the previous account must not carry its name prompt into the next one.
+            // If onDismiss then fires, advance with nil inputs returns nil.
+            onboarding = nil
+            onboardingDone = []
+            nameConfirmed = nil
+            placementTaken = nil
+            nameOnboarding = nil
         }
         .onChange(of: session.userID, initial: true) {
             activeCourse.accountChanged(to: session.userID)
@@ -293,6 +300,7 @@ struct RootView: View {
     /// `fetchPlacementTakenAt` rather than `fetchCefrLevel` returning nil: a `language_progress` row from
     /// ordinary lesson activity (cefr_level defaulted to 'A1') is not the same as placement having run.
     private func checkOnboarding() async {
+        onboarding = nil
         onboardingDone = []
         nameConfirmed = nil
         placementTaken = nil
@@ -334,15 +342,19 @@ struct RootView: View {
     private func advanceOnboarding() {
         #if DEBUG
         // UI tests only: the seeded demo account has not confirmed its name, and skipping the prompt would write to it.
-        if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") { onboardingStep = nil; return }
+        if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") { onboarding = nil; return }
         #endif
-        onboardingStep = OnboardingSequence.next(nameConfirmed: nameConfirmed, placementTaken: placementTaken, done: onboardingDone)
+        // A step without what its screen needs is skipped inside advance (marked done), never shown empty.
+        let result = OnboardingSequence.advance(
+            nameConfirmed: nameConfirmed, placementTaken: placementTaken, done: onboardingDone, nameOnboarding: nameOnboarding)
+        onboardingDone = result.done
+        onboarding = result.presentation
     }
 
     private func finishOnboardingStep(_ step: OnboardingStep) {
         onboardingDone.insert(step)
         // Dismissing runs onDismiss (advanceOnboarding), which presents the next step, if any.
-        onboardingStep = nil
+        onboarding = nil
     }
 
     /// Resolves the server's saved theme (mirrors the web's `theme.ts`

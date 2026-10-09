@@ -252,3 +252,54 @@ describe("Polish", () => {
     expect(c).toContain("conversationStore.startNew(key");
   });
 });
+
+describe("Onboarding cover", () => {
+  const root = read(`${APP}/RootView.swift`);
+  const cover = between(root, ".fullScreenCover(item: $onboarding", /\n {20}\.task \{/);
+  it("is driven by the payload-carrying item", () => {
+    expect(cover).not.toBe("");
+    expect(root).toContain("@State private var onboarding: OnboardingPresentation?");
+    expect(cover).toContain("case .displayName(let nameOnboarding):");
+    expect(root).toContain("OnboardingSequence.advance(");
+    expect(root).not.toContain("onboardingStep");
+  });
+  it("reads no separate state inside the cover and cannot render nothing", () => {
+    // The old shape: `if let nameOnboarding` over a @State set in the same update as the presentation.
+    expect(cover).not.toMatch(/\bif\s+(let|case)\b/);
+    expect(cover).not.toMatch(/\bif\b/);
+    // The only name in the cover is the one bound from the item.
+    expect(
+      cover
+        .replace("case .displayName(let nameOnboarding):", "")
+        .replace("state: nameOnboarding", ""),
+    ).not.toContain("nameOnboarding");
+    // Every case is a real screen.
+    expect(cover).toContain("NameOnboardingView(");
+    expect(cover).toContain("PlacementView(");
+    expect(cover).not.toContain("EmptyView");
+    expect(cover).not.toMatch(/\bdefault:/);
+    expect(cover).not.toMatch(/\bGroup\s*\{/);
+    expect(cover).not.toContain("Color.clear");
+    expect(cover).not.toContain("Spacer()");
+    // One case per presentation, no more, no fewer.
+    const kit = read(
+      "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/OnboardingSequence.swift",
+    );
+    const enumBody = between(kit, "public enum OnboardingPresentation", /\n {4}public var id/);
+    expect(cover.match(/^\s*case \./gm)?.length).toBe(enumBody.match(/^\s*case \w/gm)?.length);
+  });
+  it("clears the cover and staged inputs on an account change and at the start of each check", () => {
+    const change = between(root, ".onChange(of: session.userID) {", /\n {8}\}/);
+    for (const reset of [
+      "onboarding = nil",
+      "onboardingDone = []",
+      "nameConfirmed = nil",
+      "placementTaken = nil",
+      "nameOnboarding = nil",
+    ]) {
+      expect(change).toContain(reset);
+    }
+    const check = between(root, "private func checkOnboarding() async {", /guard let accessToken/);
+    expect(check).toContain("onboarding = nil");
+  });
+});
