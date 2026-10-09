@@ -246,7 +246,21 @@ struct LessonPlayerView: View {
         }
     }
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var quizBody: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            // The question column has no scrolling of its own; at the largest text sizes a long question plus the
+            // Check button would run off the screen, so the whole column scrolls there.
+            ScrollView { quizColumn }
+                .scrollDismissesKeyboard(.interactively)
+                .background(AlphonsoColor.surface)
+        } else {
+            quizColumn
+        }
+    }
+
+    private var quizColumn: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             AlphonsoProgressBar(progress: total == 0 ? 0 : Double(idx) / Double(total))
             Text(isReinforcing ? "Quick practice" : "\(idx + 1)/\(total)")
@@ -876,8 +890,17 @@ private struct VocabScreen: View {
     let items: [VocabItem]
     let course: Course
     let onStart: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            ScrollView { content }
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             Text("Vocabulary · \(lesson.subtitle)".uppercased())
                 .font(AlphonsoFont.sans(12, weight: .semiBold))
@@ -890,47 +913,60 @@ private struct VocabScreen: View {
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
-                    ForEach(items, id: \.term) { item in
-                        VStack(alignment: .leading, spacing: 4) {
-                            if let image = item.image {
-                                VocabImageView(image: image)
-                            }
-                            HStack(spacing: 8) {
-                                Text(item.term)
-                                    .font(AlphonsoFont.display(17, weight: .semiBold))
-                                    .foregroundStyle(AlphonsoColor.ink)
-                                Button {
-                                    speak(item.term, course: course)
-                                } label: {
-                                    Image(systemName: "speaker.wave.2.fill")
-                                        .font(.footnote)
-                                }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                                .accessibilityLabel("Play pronunciation for \(item.term)")
-                            }
-                            Text(item.meaning)
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                            Text(item.example)
-                                .font(AlphonsoFont.sans(12).italic())
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                                .padding(.top, 2)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-                    }
-                }
+            if dynamicTypeSize.isAccessibilitySize {
+                // At the largest text sizes the pinned title and button leave the list a sliver, so the whole
+                // screen scrolls as one instead.
+                wordList
+                startButton
+            } else {
+                ScrollView { wordList }
+                startButton
             }
-
-            Button("Start practice", action: onStart)
-                .buttonStyle(.alphonsoPrimary)
         }
         .padding()
         .background(AlphonsoColor.surface)
+    }
+
+    private var startButton: some View {
+        Button("Start practice", action: onStart)
+            .buttonStyle(.alphonsoPrimary)
+    }
+
+    private var wordList: some View {
+            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
+                ForEach(items, id: \.term) { item in
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let image = item.image {
+                            VocabImageView(image: image)
+                        }
+                        HStack(spacing: 8) {
+                            Text(item.term)
+                                .font(AlphonsoFont.display(17, weight: .semiBold))
+                                .foregroundStyle(AlphonsoColor.ink)
+                            Button {
+                                speak(item.term, course: course)
+                            } label: {
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .font(.footnote)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .accessibilityLabel("Play pronunciation for \(item.term)")
+                        }
+                        Text(item.meaning)
+                            .font(AlphonsoFont.sans(12))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                        Text(item.example)
+                            .font(AlphonsoFont.sans(12).italic())
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .padding(.top, 2)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
+                }
+            }
+
     }
 }
 
@@ -1016,7 +1052,7 @@ private struct FinishView: View {
                 // The exact "no imagery, just text/icon" pattern the
                 // spec's Background section calls out on PaywallView
                 // shows up here too -- same fix.
-                AlphonsoMascotBanner(mascot: .alphonso, message: "Nice work!")
+                AlphonsoMascotBanner(mascot: .alphonso, message: LessonFinishCopy.headline(correct: correct, total: total))
                 Text("+\(result.xpGain) XP")
                     .font(AlphonsoFont.display(32, weight: .bold))
                     .foregroundStyle(AlphonsoColor.moss)

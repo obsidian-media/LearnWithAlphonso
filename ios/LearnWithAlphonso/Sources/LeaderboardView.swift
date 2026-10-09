@@ -37,11 +37,17 @@ struct LeaderboardView: View {
                         Text("Country").tag(Scope.country)
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityLabel("Leaderboard scope")
+                    .accessibilityValue(scopeName)
+                    .accessibilityIdentifier("leagueScopePicker")
                     Picker("Period", selection: $period) {
                         Text("Weekly").tag(Period.weekly)
                         Text("All-time").tag(Period.allTime)
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityLabel("Leaderboard period")
+                    .accessibilityValue(periodName)
+                    .accessibilityIdentifier("leagueRangePicker")
 
                     Group {
                         if isLoading {
@@ -84,11 +90,15 @@ struct LeaderboardView: View {
                     NavigationLink("Teams") {
                         TeamsView(session: session)
                     }
+                    .accessibilityLabel("Teams")
+                    .accessibilityHint("Opens your team and the team leaderboard")
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink("Season") {
                         SeasonView(session: session)
                     }
+                    .accessibilityLabel("Season")
+                    .accessibilityHint("Opens this season's division")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Recap", systemImage: "calendar") { showingWeeklyRecap = true }
@@ -101,6 +111,12 @@ struct LeaderboardView: View {
         .tint(AlphonsoColor.moss)
         .task(id: "\(scope.rawValue)-\(period.rawValue)") { await load() }
         .task { await checkForOvertake() }
+        // A block made on a screen pushed above this one (Teams) must not wait for a reload to take effect.
+        .onReceive(NotificationCenter.default.publisher(for: BlockedUserSignal.name)) { note in
+            if let blocked = BlockedUserSignal.userID(from: note) {
+                rows.removeAll { $0.userID == blocked }
+            }
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 Task { await checkForOvertake() }
@@ -140,6 +156,7 @@ struct LeaderboardView: View {
         do {
             let result = try await client.blockUser(target.id)
             if result.ok {
+                BlockedUserSignal.post(userID: target.id)
                 rows.removeAll { $0.userID == target.id }
                 showToast("\(target.displayName) blocked.", into: $overtakeToastMessage)
             } else {
@@ -149,6 +166,16 @@ struct LeaderboardView: View {
             showToast("Couldn't block \(target.displayName). Try again.", into: $overtakeToastMessage)
         }
     }
+
+    private var scopeName: String {
+        switch scope {
+        case .global: return "Global"
+        case .friends: return "Friends"
+        case .country: return "Country"
+        }
+    }
+
+    private var periodName: String { period == .weekly ? "Weekly" : "All-time" }
 
     private var emptyStateTitle: String {
         switch scope {

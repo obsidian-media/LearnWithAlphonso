@@ -9,6 +9,8 @@ struct TeamsView: View {
     let session: Session
 
     @State private var myTeam: MyTeam?
+    // Owned here, not by the mission section: an empty section in a List produces no row, so it could never load itself.
+    @StateObject private var missionModel = TeamMissionModel()
     @State private var members: [TeamMember] = []
     @State private var leaderboard: [TeamLeaderboardRow] = []
     @State private var code = ""
@@ -69,7 +71,7 @@ struct TeamsView: View {
                 }
                 .listRowBackground(AlphonsoColor.parchment)
 
-                TeamMissionSection(session: session, reloadKey: members.count)
+                TeamMissionSection(mission: missionModel.mission)
 
                 // TestFlight feedback (2026-09-29): "does the team owner
                 // have any authority?" -- previously no, and there wasn't
@@ -210,6 +212,9 @@ struct TeamsView: View {
         .navigationTitle("Teams")
         .tint(AlphonsoColor.moss)
         .task { await loadAll() }
+        // On the always-present List. Reloads when the member count changes: an owner kicking someone turns a
+        // two-person mission into "invite a friend" on the server, and the card must follow.
+        .task(id: "\(myTeam?.joinCode ?? "")-\(members.count)") { await missionModel.load(session: session) }
         .confirmationDialog(
             "Block \(blockTarget?.displayName ?? "this user")?",
             isPresented: Binding(
@@ -258,6 +263,7 @@ struct TeamsView: View {
         do {
             let result = try await client.blockUser(target.id)
             if result.ok {
+                BlockedUserSignal.post(userID: target.id)
                 await loadAll()
                 errorMessage = SocialReasonCopy.teamBlockedLine(target.displayName, viewerIsOwner: myTeam?.isOwner == true)
             } else {

@@ -320,7 +320,11 @@ struct BuddySection: View {
         var failure: String?
         if let client = await makeClient() {
             do {
-                if try await client.blockUser(target.id).ok == false { failure = BuddyCopy.statusMessage("unknown") }
+                if try await client.blockUser(target.id).ok == false {
+                    failure = BuddyCopy.statusMessage("unknown")
+                } else {
+                    BlockedUserSignal.post(userID: target.id)
+                }
             } catch {
                 failure = SocialReasonCopy.failureMessage(for: error)
             }

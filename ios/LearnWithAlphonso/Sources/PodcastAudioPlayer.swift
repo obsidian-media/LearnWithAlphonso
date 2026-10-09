@@ -51,6 +51,11 @@ final class PodcastAudioPlayer {
     var makeClient: (@MainActor () -> PodcastClient?)?
 
     private var saveGate = PodcastSaveGate()
+    /// The last position this device stored per episode, so a stale list row never wins (PodcastSavedPositions).
+    private var savedPositions = PodcastSavedPositions()
+
+    /// The episode as the learner should see it: with the position this device last stored, if newer.
+    func resumed(_ episode: PodcastEpisode) -> PodcastEpisode { savedPositions.applying(to: episode) }
     /// Saves run one after another, so each one guards on what the previous one stored.
     private var saveTask: Task<Void, Never>?
 
@@ -78,6 +83,8 @@ final class PodcastAudioPlayer {
     /// that cannot load fails at once with "Download this episode to listen offline"
     /// instead of waiting for AVPlayer's own error (which says the same, later).
     func play(_ episode: PodcastEpisode, localURL: URL? = nil, queue: [PodcastEpisode] = [], isOnline: Bool = true) {
+        // The list's copy can predate a listen made since it loaded: start from what this device last stored.
+        let episode = savedPositions.applying(to: episode)
         if !queue.isEmpty { self.queue = queue }
         saveGate.userStartedPlayback()
 
@@ -152,6 +159,7 @@ final class PodcastAudioPlayer {
         // Not a fresh PodcastSaveGate(): the epoch must keep counting so a save already
         // chained from the previous account is refused by `accepts`.
         saveGate.resetForAccountChange()
+        savedPositions.reset()
         episode = nil
         queue = []
         elapsedSeconds = 0
@@ -502,6 +510,9 @@ final class PodcastAudioPlayer {
                     completed: completed,
                     lastSeenUpdatedAt: seen
                 )
+                if self.saveGate.accepts(epoch) {
+                    self.savedPositions.record(episodeID: episodeID, position: completed ? 0 : seconds, updatedAt: stored)
+                }
                 guard !Task.isCancelled, self.saveGate.accepts(epoch), self.episode?.id == episodeID else { return }
                 self.saveGate.recordSaved(updatedAt: stored)
             } catch PodcastClientError.staleWrite {

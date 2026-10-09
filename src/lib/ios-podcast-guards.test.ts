@@ -237,7 +237,7 @@ describe("iOS podcast guards", () => {
     expect(stop).not.toMatch(/saveGate = PodcastSaveGate\(\)/);
     const save = functionBody(player, "private func save(position: Double, completed: Bool) {");
     expect(save).toContain("let epoch = saveGate.epoch");
-    // Before the request, after it, and in the stale and unauthorized handlers.
-    expect(save.match(/saveGate\.accepts\(epoch\)/g)?.length).toBe(4);
+    // Before the request, before recording the stored position, after it, and in the stale and unauthorized handlers.
+    expect(save.match(/saveGate\.accepts\(epoch\)/g)?.length).toBe(5);
   });
 });

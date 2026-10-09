@@ -9,6 +9,7 @@ struct NameOnboardingView: View {
     let onFinish: () -> Void
     @State private var state: DisplayNameOnboarding
     @FocusState private var fieldFocused: Bool
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(session: Session, state: DisplayNameOnboarding, onFinish: @escaping () -> Void) {
         self.session = session
@@ -28,11 +29,26 @@ struct NameOnboardingView: View {
                         .font(AlphonsoFont.sans(14))
                         .foregroundStyle(AlphonsoColor.inkSoft)
 
-                    TextField(NameOnboardingCopy.fieldLabel, text: Binding(
-                        get: { state.name },
-                        set: { state.edit($0) }
-                    ))
-                    .textFieldStyle(.plain)
+                    // The generated handle is the placeholder, not text, so typing never appends to it. A real
+                    // prefill (an Apple or Google given name) is text, with a clear button to replace it quickly.
+                    HStack(spacing: AlphonsoSpacing.sm) {
+                        TextField(state.fieldPlaceholder, text: Binding(
+                            get: { state.name },
+                            set: { state.edit($0) }
+                        ))
+                        .textFieldStyle(.plain)
+                        if !state.name.isEmpty {
+                            Button {
+                                state.edit("")
+                                fieldFocused = true
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(AlphonsoColor.inkSoft)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Clear name")
+                        }
+                    }
                     .padding(AlphonsoSpacing.sm + 2)
                     .alphonsoInputBackground()
                     .textContentType(.nickname)
@@ -77,10 +93,21 @@ struct NameOnboardingView: View {
                 .frame(maxWidth: .infinity)
             }
             .background(AlphonsoColor.surface)
-            .scrollDismissesKeyboard(.interactively)
+            .scrollDismissesKeyboard(.immediately)
+            // Save and Skip stay reachable above the keyboard however large the text is.
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button(NameOnboardingCopy.skip) { Task { await skip() } }
+                        .disabled(!state.canSkip)
+                    Spacer()
+                    Button(NameOnboardingCopy.save) { Task { await save() } }
+                        .disabled(!state.canSave)
+                }
+            }
         }
         .interactiveDismissDisabled()
-        .onAppear { fieldFocused = true }
+        // At the largest text sizes the keyboard would cover most of the screen on arrival and hide the heading.
+        .onAppear { fieldFocused = !dynamicTypeSize.isAccessibilitySize }
         // Live check, debounced; a newer edit cancels this task and a stale answer is dropped by generation.
         .task(id: state.pendingCheck) {
             guard let generation = state.pendingCheck else { return }

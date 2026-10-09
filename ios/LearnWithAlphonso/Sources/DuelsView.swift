@@ -111,6 +111,7 @@ struct DuelsView: View {
         guard let client else { return }
         do {
             let result = try await client.blockUser(target.id)
+            if result.ok { BlockedUserSignal.post(userID: target.id) }
             errorMessage = result.ok ? nil : (result.message.isEmpty ? "Couldn't block. Try again." : result.message)
         } catch {
             errorMessage = "Couldn't block. Try again."

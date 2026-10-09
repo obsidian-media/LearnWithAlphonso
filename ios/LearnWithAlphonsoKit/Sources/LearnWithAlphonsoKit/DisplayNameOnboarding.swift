@@ -59,9 +59,20 @@ public struct DisplayNameOnboarding: Equatable, Sendable {
     private var generation = 0
 
     public init(prefill: String, currentName: String) {
-        self.name = prefill
         self.currentName = currentName
-        _ = edit(prefill)
+        if Self.isLearnerHandle(prefill) {
+            // The generated handle is shown as a hint, never as text: typing after it produced names like
+            // "Learner-3807QA Delta". Nothing is checked or saveable until the learner types a name.
+            self.name = ""
+        } else {
+            self.name = prefill
+            _ = edit(prefill)
+        }
+    }
+
+    /// What the empty field shows: the generated handle the learner will get if they skip, else the field label.
+    public var fieldPlaceholder: String {
+        Self.isLearnerHandle(currentName) ? currentName : NameOnboardingCopy.fieldLabel
     }
 
     // MARK: - Rules shared with the web (fixture-pinned)
