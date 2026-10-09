@@ -30,10 +30,10 @@ describe("buildReviewNotes", () => {
 
   it("describes the pre-paired demo study buddy and how to reach the opt-in", () => {
     const notes = buildReviewNotes(worst);
-    expect(REQUIRED_NOTE_MARKERS).toContain("Matched learner");
-    expect(REQUIRED_NOTE_MARKERS).toContain("End study buddy");
-    expect(notes).toContain("Matched learner");
-    expect(notes).toContain("End study buddy");
+    expect(REQUIRED_NOTE_MARKERS).toContain('"Matched learner"');
+    expect(REQUIRED_NOTE_MARKERS).toContain('"End study buddy"');
+    expect(notes).toContain('shown as "Matched learner"');
+    expect(notes).toContain('"End study buddy" ends it');
   });
 
   it("names the seeded display name, the skip example and the report path", () => {
@@ -111,11 +111,11 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
 
   it("flags a missing pre-paired buddy description", () => {
     expect(
-      reviewNotesProblems(good().replace(/Matched learner/g, "Buddy"), worst).join("|"),
-    ).toMatch(/missing "Matched learner"/);
-    expect(reviewNotesProblems(good().replace(/End study buddy/g, "End"), worst).join("|")).toMatch(
-      /missing "End study buddy"/,
-    );
+      reviewNotesProblems(good().replace(/"Matched learner"/g, "Buddy"), worst).join("|"),
+    ).toMatch(/missing ""Matched learner""/);
+    expect(
+      reviewNotesProblems(good().replace(/"End study buddy"/g, "End"), worst).join("|"),
+    ).toMatch(/missing ""End study buddy""/);
   });
 
   it("flags the provider being named as SES", () => {
@@ -132,11 +132,9 @@ describe("reviewNotesProblems (each mutation removes exactly the property its ru
       "voiced by voice actors",
       "human-narrated podcasts",
     ]) {
-      const notes = good().replace(
-        "podcast audio is AI-narrated (Deepgram) from scripts we wrote",
-        claim,
-      );
-      expect(reviewNotesProblems(notes, worst).join("|"), claim).toMatch(/human|AI-narrated/i);
+      // Added beside the AI-narrated sentence, so only the human-narration rule can catch it.
+      const notes = `${good()} The podcast ${claim}.`;
+      expect(reviewNotesProblems(notes, worst).join("|"), claim).toMatch(/never human-made/);
     }
   });
 

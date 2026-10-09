@@ -29,8 +29,8 @@ export const REQUIRED_NOTE_MARKERS = [
   "Report this response", // AI reply report
   "Report", // report paths
   "Block", // block paths
-  "Matched learner", // the pre-paired demo buddy card
-  "End study buddy", // how to reach the opt-in
+  '"Matched learner"', // the pre-paired demo buddy card, quoted as the app shows it
+  '"End study buddy"', // how to reach the opt-in, quoted as the app shows it
   "I'm 13 or older", // stranger matching
   "preset messages", // stranger matching guardrail
   "server switch", // kill switch
