@@ -1,5 +1,7 @@
 # Pair-pack part-of-speech coverage Implementation Plan
 
+> Status (2026-10-09): implemented; see ARCHITECTURE.md, "Known rough edges" (the two sources of part-of-speech tags).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give `ANSWER_POS` coverage of pair-pack answers so the distractor

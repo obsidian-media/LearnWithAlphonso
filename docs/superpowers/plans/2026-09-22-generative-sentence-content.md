@@ -1,5 +1,7 @@
 # Generative Sentence-Template Content (English Pilot) Implementation Plan
 
+> Status (2026-10-09): implemented as the English-only pilot (#76).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a working `generate` command for `scripts/pack-tool.ts` that produces real, grammar-correct-by-construction English sentence packs from hand-authored templates and an LLM-proposed, compiler-validated vocabulary dataset — feeding the existing human-gated `validate`/`preview`/`apply --confirm` pipeline unchanged.

@@ -1,5 +1,7 @@
 # Curriculum Data DB Schema Implementation Plan
 
+> Status (2026-10-09): implemented. The curriculum tables are seeded by the `deploy-supabase` job on every push to `main`; the web app still reads `curriculum.ts` directly.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a Supabase migration that creates the 7 curriculum-data tables (`levels`, `units`, `lessons`, `questions`, `vocab_images`, `placement_questions`, `scenarios`), verify it applies cleanly and its constraints/RLS behave as designed, against a local Supabase instance.

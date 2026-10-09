@@ -1,5 +1,7 @@
 # Podcast Phase 1b — iOS Listen Client Implementation Plan
 
+> Status (2026-10-09): implemented (#110). The player was reworked in #262 (position saved from the first listen, plain failure states, course-aware).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the `ListenView` placeholder with a real client — browse the folder tree, play episodes with background audio and lock-screen controls, and resume where you left off across devices.

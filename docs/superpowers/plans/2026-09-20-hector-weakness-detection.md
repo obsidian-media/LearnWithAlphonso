@@ -1,5 +1,7 @@
 # Hector Weakness-Detection Implementation Plan
 
+> Status (2026-10-09): implemented. `/api/analyze-weaknesses` is now gated by the account-level AI consent (#256), drops client-supplied `system` messages, and runs through the shared NVIDIA chokepoint.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** After a Hector or free-conversation session ends, detect up to 3 grammar/vocabulary weaknesses from the transcript via NVIDIA NIM and insert them as gradable `review_items` rows, so they show up in the existing SRS review queue on both iOS and web.

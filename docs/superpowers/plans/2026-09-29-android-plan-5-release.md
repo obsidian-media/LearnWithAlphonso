@@ -1,5 +1,7 @@
 # Android Plan 5: Release
 
+> Status (2026-10-09): implemented and merged to `main` in #200 (release workflow dry-run proven); the Play account, subscription and RevenueCat Android key are owner-gated and not done.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A signed, validated release bundle from one manual workflow dispatch with an optional Google Play upload, the Play listing material, the device checklist that gates the first upload, App Links verification for invite links, and the store screenshots captured on the CI emulator.

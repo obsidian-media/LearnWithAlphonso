@@ -1,5 +1,7 @@
 # Design: True generative sentence-template content (pilot)
 
+> Status (2026-10-09): implemented as the English-only pilot (#76).
+
 > Written 2026-09-22. Carried-from-V1/V2 backlog item
 > (`docs/BACKLOG.md` §3 "Content & courses" — "True generative
 > sentence-template content"). Pilot scope only: proves the

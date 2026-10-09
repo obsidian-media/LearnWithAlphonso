@@ -1,5 +1,7 @@
 # Buddy Preset Messages (Phase 5: server + web) Implementation Plan
 
+> Status (2026-10-09): implemented: server and web #242, iOS and Android #243.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Study buddies can send each other one of 8 fixed encouragements (no free text), on the server and the web app.

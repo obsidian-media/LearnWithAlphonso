@@ -1,5 +1,7 @@
 # Design: French course content audit — handoff
 
+> Status (2026-10-09): executed: phase 1 (log), phase 1.5 (#97, #101) and phase 2 (#104, #106, #108, #115). A native-speaker review is still outstanding.
+
 > **Status:** not started. This document is the handoff for a session
 > picking up French content quality. Written 2026-09-24 against `main`
 > at `49b77aca`, immediately after the English overhaul's phase 3

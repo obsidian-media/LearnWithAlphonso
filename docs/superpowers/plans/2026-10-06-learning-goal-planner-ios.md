@@ -1,5 +1,7 @@
 # Learning goal planner, part 2 (iOS) Implementation Plan
 
+> Status (2026-10-09): implemented (#225).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** The Learn tab on iOS shows the learner's goal card ("Finish B1 by 1 Mar 2027", lessons a week, status) and lets them set, change and remove it, rendering the plan the server already computes.

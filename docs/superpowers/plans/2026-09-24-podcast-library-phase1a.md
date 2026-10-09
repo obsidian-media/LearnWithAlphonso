@@ -1,5 +1,7 @@
 # Podcast Library Phase 1a Implementation Plan
 
+> Status (2026-10-09): implemented (#98); play events were later moved behind a validating function (#105).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the backend and web half of the Listen feature — storage bucket, schema, authoring CLI, and a browsable folder tree with a persistent audio player on the web app.

@@ -1,5 +1,7 @@
 # Display Identity Editing + Team Creation Implementation Plan
 
+> Status (2026-10-09): implemented (#178). Name rules were replaced by the v2 filter and the public-name step in #248 and #255.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Execution method:** Native (this session implements every task itself), chosen without a

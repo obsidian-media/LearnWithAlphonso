@@ -1,5 +1,7 @@
 # Design: `complete-lesson` Supabase Edge Function
 
+> Status (2026-10-09): implemented. Since then the function re-grades every submitted answer itself, answers a stale lesson with `409 lesson-version-mismatch` (#260), grades without AI when the account has not consented (#256) and accepts `es` as well as `en` and `fr`. `start-lesson-session` refuses a lesson at 0 hearts (#260).
+
 > Written 2026-09-17. This is the trust-boundary piece of the native iOS
 > app's progress sync that a Swift client cannot implement directly -- see
 > `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient.swift`'s

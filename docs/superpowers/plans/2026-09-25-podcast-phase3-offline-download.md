@@ -1,5 +1,7 @@
 # Podcast Phase 3 — Offline Download Implementation Plan
 
+> Status (2026-10-09): implemented (#131, #133 and the app wiring); downloads were hardened in #262 (HTTP 200, `audio/*` and declared length, atomic landing).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a learner download episodes and play *and browse* them with no signal.

@@ -1,5 +1,7 @@
 # French Content Audit (Phase 1 — Structural) Implementation Plan
 
+> Status (2026-10-09): executed; the log is `docs/superpowers/french-content-audit-log.md`. A native-speaker review of French content is still outstanding.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:executing-plans (inline — the
 > exploratory data analysis behind Tasks 4-5 was already done in-session; a fresh
 > subagent would have to re-derive it, so this plan is executed by the same session

@@ -1,5 +1,7 @@
 # Theme Foundation Implementation Plan
 
+> Status (2026-10-09): implemented. Since extended: Canopy was added as a fourth theme (#83 on iOS, #91 on the web, now the default), so the "three themes" below are four.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let users pick between two visual themes ("Meadow", the current

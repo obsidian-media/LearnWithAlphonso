@@ -1,5 +1,7 @@
 # Design: Theme Foundation (Phase 1 of user-selectable themes)
 
+> Status (2026-10-09): implemented. Canopy was added as a fourth web theme (#91), now the default.
+
 > Written 2026-09-18. This is Phase 1 of a two-phase project: this phase
 > builds the theme token system, the theme-switcher mechanism, persistence,
 > and settings UI. Phase 2 (a separate spec/plan per screen) will

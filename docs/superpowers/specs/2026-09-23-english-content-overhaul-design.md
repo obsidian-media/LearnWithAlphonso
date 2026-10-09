@@ -1,5 +1,7 @@
 # Design: English course content overhaul — correctness audit + new lesson types
 
+> Status (2026-10-09): executed (#84).
+
 > Written 2026-09-23, with the account owner, in an isolated worktree
 > (`worktree-english-content-overhaul`) parallel to the UI/UX polish
 > session running the same day. Source kickoff doc:

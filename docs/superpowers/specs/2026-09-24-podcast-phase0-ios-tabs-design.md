@@ -1,5 +1,7 @@
 # Podcast library Phase 0 — iOS tab consolidation
 
+> Status (2026-10-09): implemented (#102).
+
 **Date:** 2026-09-24
 **Status:** design approved in chat, not yet implemented
 **Branch:** `worktree-podcast-phase0-ios` (from `ff4ba57`)

@@ -865,13 +865,13 @@ finish, so a heart lost mid-lesson never costs the lesson.
 
 ## Themes
 
-Three user-selectable themes on web (`meadow` default, `studio-ink`,
-`manuscript`), defined as CSS custom properties per `[data-theme="..."]`
+Four user-selectable themes on web (`canopy` default, `meadow`, `studio-ink`,
+`manuscript`; Canopy was ported from iOS in #91), defined as CSS custom properties per `[data-theme="..."]`
 block in `src/styles.css` plus a design-tokens JSON per theme
 (`src/design-tokens/*.json`, currently informational/export-only — the
 CSS is the real source of truth the app reads). `src/lib/theme.ts` is a
 small Zustand store: resolves server value (from `profiles.theme`) over
-localStorage over the `meadow` default, and an inline `<script>` in
+localStorage over the `canopy` default, and an inline `<script>` in
 `src/routes/__root.tsx` applies the stored theme before first paint to
 avoid a flash of the wrong theme. `profiles.theme` is validated by both a
 Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
@@ -881,9 +881,11 @@ pattern: drop and re-add the constraint, since it isn't named per-value).
 League tiers are shown to learners as Sprout, Sapling, Grove, Treetop and
 Summit (`src/lib/league-tier-copy.ts`, Kit `LeagueTierCopy`); the database
 keys (`bronze` to `diamond`) did not change, so the names are display-only.
-**As of 2026-09-23, iOS has a fourth theme, `canopy`, that is deliberately
-NOT in this rule's scope** — see the "Native iOS app" section's Design
-system paragraph below for why.
+Canopy began as an iOS-only theme (2026-09-23, which is why its migration
+comment still says so) and was ported to the web in #91 (`[data-theme="canopy"]`
+in `src/styles.css`, listed in `THEME_NAMES`, offered in the `/profile`
+picker); today all four names are in the Zod enum, the CHECK constraint, the
+web CSS and the iOS `AlphonsoThemeID`.
 
 ## Native iOS app (`ios/`)
 
@@ -989,17 +991,15 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 
 **Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
 2026-09-22, extended to a full theme system 2026-09-22, extended again
-2026-09-23 with a fourth, iOS-only theme — see below): originally ported
+2026-09-23 with a fourth theme, Canopy, first iOS-only and later ported to the web — see below): originally ported
 all three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
 `[data-theme="studio-ink"]`, `[data-theme="manuscript"]` blocks) rather
 than inventing a separate native-only look, so web and iOS read as one
 product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` — **raw values
-matched the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
-exactly until 2026-09-23; `canopy` is now a real exception, present in
-`AlphonsoThemeID` and the CHECK constraint but deliberately absent from
-`THEME_NAMES`** (web has no CSS for it and never offers it as a picker
-option; `resolveInitialTheme` already falls back safely to `meadow` for
-any value not in `THEME_NAMES`, so this doesn't break web) —
+match the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
+(`canopy` was absent from `THEME_NAMES` between 2026-09-23 and the web port
+in #91; it is there now, and `resolveInitialTheme` falls back safely for any
+value not in `THEME_NAMES`)** —
 `AlphonsoPalette` (colors converted from each theme's oklch
 values to sRGB via a standard OKLab conversion — computed, not
 eyeballed — plus each theme's font base names/optical-size range and a
@@ -1125,7 +1125,7 @@ button — this can't repeat that regardless of portrait size. The
 card's public API (`explanation:` only) didn't change, so no call site
 needed touching.
 
-**Canopy theme (2026-09-23)**: a fourth, iOS-only theme — emerald/coral,
+**Canopy theme (2026-09-23, iOS; ported to the web in #91)**: a fourth theme — emerald/coral,
 mascot-forward — added as the new default for installs/accounts with no
 saved theme preference, following direct feedback ("too much like a
 book and wordish") that the original three themes' serif-display

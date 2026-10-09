@@ -1,5 +1,7 @@
 # iOS "Canopy" theme redesign — design
 
+> Status (2026-10-09): implemented (#83), and later ported to the web (#91). The theme is no longer iOS-only.
+
 **Status:** Approved by account owner via brainstorming (2026-09-23), ready for
 implementation planning.
 

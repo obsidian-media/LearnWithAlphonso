@@ -1,5 +1,7 @@
 # Challenges Implementation Plan
 
+> Status (2026-10-09): implemented in the V4 gamification batch (#64 to #67). `claim_weekly_quest` was broken in production until #236 (ambiguous column) and was hardened in #248 (server-derived week, one claim per quest per week).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fixed weekly solo goals (3 of a pool of 6, rotating deterministically by week) plus an "open to anyone" duel-matchmaking queue extending the existing friend-only `duels`.
@@ -148,7 +150,7 @@ git checkout -b feat/gamification-challenges main
 git add supabase/migrations/<timestamp>_weekly_challenges.sql
 git commit -m "feat: weekly challenge templates + get_weekly_challenges RPC (V4 #7 pt 1)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 ---
@@ -259,7 +261,7 @@ GRANT EXECUTE ON FUNCTION public.leave_duel_queue() TO authenticated;
 git add supabase/migrations/<timestamp>_weekly_challenges.sql
 git commit -m "feat: open duel matchmaking queue (V4 #7 pt 2)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 ---
@@ -486,7 +488,7 @@ git add src/lib/challenges.functions.ts src/components/WeeklyChallengesCard.tsx 
   <the friend-duel UI file>
 git commit -m "feat: web weekly challenges card + open duel entry point (V4 #7 pt 3)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 git push
 ```
 
@@ -651,7 +653,7 @@ git add ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient
   ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/ProgressSyncClient+ChallengesTests.swift
 git commit -m "feat: iOS Kit client for weekly challenges + open duel queue (V4 #7 pt 4)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 ```
 
 - [ ] **Step 5: Add UI to `LessonBrowserView.swift` and the friend-duel view**
@@ -664,7 +666,7 @@ Read both files first (`LessonBrowserView.swift` for where to add a challenges s
 git add ios/LearnWithAlphonso/Sources/LessonBrowserView.swift <the duel view file>
 git commit -m "feat: iOS weekly challenges + open duel UI (V4 #7 pt 5)
 
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5"
 git push
 gh pr checks <this-branch's-PR-number> --watch
 ```

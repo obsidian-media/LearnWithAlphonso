@@ -1,5 +1,7 @@
 # CI guard audit — 2026-09-26
 
+> Status (2026-10-09): executed (#161). Since then the Supabase types freshness check was split into its own non-gating job (#204).
+
 ## Assignment
 
 Enumerate every CI job, every test, and every script that claims to protect a

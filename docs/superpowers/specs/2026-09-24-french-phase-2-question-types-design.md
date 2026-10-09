@@ -1,5 +1,7 @@
 # Design: French phase 2 — port the three new question types
 
+> Status (2026-10-09): done: shared generator (#104), then translate (#106), listening (#108) and speak (#115). French has full six-type parity.
+
 > **Status:** not started. Handoff for the session that completed French
 > phase 1 and 1.5 (merged in PR #97). Written 2026-09-24 against `main`
 > at `6abb5c06`.

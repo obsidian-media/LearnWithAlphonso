@@ -1,5 +1,7 @@
 # Hector decoupling — bring the tutor into our own backend (2026-09-27)
 
+> Status (2026-10-09): implemented (#189).
+
 ## Why
 Hector today calls AlphonsoEcosystem's Cloud Voice backend
 (`POST voice.obsidianmedia.online/v1/voice/respond`) using a SEPARATE

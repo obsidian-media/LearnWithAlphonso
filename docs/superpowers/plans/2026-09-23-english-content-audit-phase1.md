@@ -1,5 +1,7 @@
 # English Content Correctness Audit (Phase 1) Implementation Plan
 
+> Status (2026-10-09): executed; the audit and the distractor fixes landed in #84.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Find and fix every content-quality issue across all shipped English course content (534 lessons / 2,721 questions, plus 45 placement questions), without churning the question ids that users' saved progress is keyed to.
