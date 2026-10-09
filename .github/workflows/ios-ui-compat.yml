@@ -28,6 +28,8 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      # One at a time: each job mints a session for the same demo account, and a second mint invalidates the first.
+      max-parallel: 1
       matrix:
         include:
           - suite: IPadCompatibilityTests
