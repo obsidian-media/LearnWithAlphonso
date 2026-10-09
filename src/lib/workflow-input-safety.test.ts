@@ -68,3 +68,11 @@ describe("asc-release-ops workflow", () => {
     expect(yml).toMatch(/run only after the build 49 to 50 upgrade test has passed/);
   });
 });
+
+describe("upload-app-store-screenshots workflow", () => {
+  const yml = read("upload-app-store-screenshots.yml");
+
+  it("does not delete the existing screenshots unless the operator asks", () => {
+    expect(yml).toMatch(/replace:[\s\S]*?type: boolean\s+default: false/);
+  });
+});

@@ -57,6 +57,12 @@ describe("pngSize", () => {
     expect(pngSize(png(1290, 2796))).toEqual({ width: 1290, height: 2796 });
   });
 
+  it("refuses a valid-looking header behind the wrong signature", () => {
+    const b = png(1290, 2796);
+    b[1] = 0x00;
+    expect(pngSize(b)).toBeNull();
+  });
+
   it("refuses anything that is not a PNG", () => {
     expect(pngSize(Buffer.from("not a png at all, just text........"))).toBeNull();
     expect(pngSize(Buffer.alloc(0))).toBeNull();
