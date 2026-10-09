@@ -218,6 +218,18 @@ describe("POST /api/define-word", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("retries a stalled lookup and still spends the quota once", async () => {
+    let calls = 0;
+    const fetchSpy = (globalThis.fetch = vi.fn(async () => {
+      if (++calls === 1) throw new DOMException("The operation timed out.", "TimeoutError");
+      return new Response(JSON.stringify(modelOk), { status: 200 });
+    }) as never);
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(200);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(consumeQuota).toHaveBeenCalledTimes(1);
+  });
+
   it("relays a quota refusal and does not call the model", async () => {
     const fetchSpy = modelFetch(new Response("{}"));
     consumeQuota.mockResolvedValue({

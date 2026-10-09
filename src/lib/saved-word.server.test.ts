@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildDefineMessages, defineWord, savedWordItemKey } from "./saved-word.server";
+import {
+  DEFINE_ATTEMPT_TIMEOUT_MS,
+  DEFINE_MAX_ATTEMPTS,
+  buildDefineMessages,
+  defineWord,
+  savedWordItemKey,
+} from "./saved-word.server";
 
 const input = { word: "serendipity", sentence: "It was pure serendipity.", course: "en" as const };
 
@@ -131,5 +137,61 @@ describe("defineWord", () => {
         fetchImpl: fetchReturning(timeout as unknown as Error),
       }),
     ).toBeNull();
+  });
+
+  describe("retry", () => {
+    const timeoutErr = () => new DOMException("The operation timed out.", "TimeoutError");
+    const sequence = (steps: (Response | Error)[]) => {
+      let i = 0;
+      return vi.fn(async () => {
+        const step = steps[Math.min(i++, steps.length - 1)]!;
+        if (step instanceof Error) throw step;
+        return step;
+      }) as unknown as typeof fetch;
+    };
+    const good = () => new Response(JSON.stringify(okBody), { status: 200 });
+
+    it("retries once after a timeout and returns the second attempt's definition", async () => {
+      const fetchImpl = sequence([timeoutErr(), good()]);
+      const out = await defineWord({ input, apiKey: "k", model: "m", fetchImpl });
+      expect(out?.meaning).toBe("a happy accident");
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    });
+
+    it("retries once after a network error and after a 5xx", async () => {
+      const a = sequence([new Error("reset"), good()]);
+      expect((await defineWord({ input, apiKey: "k", model: "m", fetchImpl: a }))?.meaning).toBe(
+        "a happy accident",
+      );
+      expect(a).toHaveBeenCalledTimes(2);
+      const b = sequence([new Response("busy", { status: 503 }), good()]);
+      expect((await defineWord({ input, apiKey: "k", model: "m", fetchImpl: b }))?.meaning).toBe(
+        "a happy accident",
+      );
+      expect(b).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not retry a 4xx", async () => {
+      const fetchImpl = sequence([new Response("bad", { status: 400 }), good()]);
+      expect(await defineWord({ input, apiKey: "k", model: "m", fetchImpl })).toBeNull();
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not retry an unusable answer to a successful call", async () => {
+      const bad = { choices: [{ message: { content: "I cannot help with that." } }] };
+      const fetchImpl = sequence([new Response(JSON.stringify(bad), { status: 200 }), good()]);
+      expect(await defineWord({ input, apiKey: "k", model: "m", fetchImpl })).toBeNull();
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    });
+
+    it("gives null after two timeouts, and never makes a third call", async () => {
+      const fetchImpl = sequence([timeoutErr(), timeoutErr(), good()]);
+      expect(await defineWord({ input, apiKey: "k", model: "m", fetchImpl })).toBeNull();
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps the worst case (two attempts) well inside the 25 s the apps wait", () => {
+      expect(DEFINE_ATTEMPT_TIMEOUT_MS * DEFINE_MAX_ATTEMPTS).toBeLessThanOrEqual(20_000);
+    });
   });
 });
