@@ -248,6 +248,7 @@ struct LessonPlayerView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     private var quizBody: some View {
         if dynamicTypeSize.isAccessibilitySize {
             // The question column has no scrolling of its own; at the largest text sizes a long question plus the
