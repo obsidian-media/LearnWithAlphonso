@@ -17,12 +17,22 @@
  * body (which typically lists the accepted enum values) and stops
  * rather than guessing further.
  *
+ * With --replace, every screenshot already in the set is deleted first and
+ * the new files (numbered like 01-learn.png, at most 10) are uploaded in file
+ * name order, so the listing never mixes old and new UI. Without it, files
+ * are appended to the set (and a warning is printed if the set is not empty).
+ *
  * Usage:
- *   bunx tsx scripts/upload-app-store-screenshots.ts <directory-of-pngs>
+ *   bunx tsx scripts/upload-app-store-screenshots.ts <directory-of-pngs> [--replace]
  */
 import { createSign, createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
+import {
+  planScreenshotReplacement,
+  screenshotFileProblems,
+} from "../src/lib/app-store/screenshot-plan";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -41,8 +51,11 @@ if (missing.length > 0) {
 }
 
 const dir = process.argv[2];
+const REPLACE = process.argv.includes("--replace");
 if (!dir) {
-  console.error("Usage: bunx tsx scripts/upload-app-store-screenshots.ts <directory-of-pngs>");
+  console.error(
+    "Usage: bunx tsx scripts/upload-app-store-screenshots.ts <directory-of-pngs> [--replace]",
+  );
   process.exit(1);
 }
 
@@ -85,13 +98,31 @@ async function api(path: string, method: "GET" | "POST" | "PATCH" = "GET", body?
   return json;
 }
 
+async function apiDelete(path: string): Promise<void> {
+  const res = await fetch(`https://api.appstoreconnect.apple.com/v1${path}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${makeJWT()}` },
+  });
+  if (res.status !== 204) throw new Error(`DELETE ${path} -> ${res.status}: ${await res.text()}`);
+}
+
 async function main() {
-  const versions = await api(
-    `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
+  // Before any request, and so before anything is deleted: every file must read cleanly and be a PNG of a
+  // size Apple accepts for this display type. A bad file found after the old set is gone would leave the
+  // listing empty.
+  const fileProblems = readdirSync(dir)
+    .filter((f) => f.toLowerCase().endsWith(".png"))
+    .sort()
+    .flatMap((f) => screenshotFileProblems(f, readFileSync(join(dir, f)), DISPLAY_TYPE));
+  if (fileProblems.length > 0) {
+    throw new Error(`Screenshot files are not ready: ${fileProblems.join("; ")}`);
+  }
+
+  const versions = await api(`/apps/${APP_ID}/appStoreVersions?${editableVersionQuery()}`);
+  const version = pickEditableVersion(versions.data as AscResource[]);
+  console.log(
+    `Version: ${version.attributes?.versionString} (${version.attributes?.appVersionState}, ${version.id})`,
   );
-  const version = (versions.data as AscResource[])[0];
-  if (!version) throw new Error("No editable appStoreVersion found.");
-  console.log(`Version: ${version.attributes?.versionString} (${version.id})`);
 
   const locs = await api(`/appStoreVersions/${version.id}/appStoreVersionLocalizations`);
   const loc = (locs.data as AscResource[]).find((l) => l.attributes?.locale === "en-US");
@@ -121,60 +152,107 @@ async function main() {
     console.log(`Created set ${set.id}.`);
   }
 
-  const files = readdirSync(dir)
-    .filter((f) => f.toLowerCase().endsWith(".png"))
-    .sort();
+  const existingShots = (await api(`/appScreenshotSets/${set!.id}/appScreenshots`))
+    .data as AscResource[];
+  let files: string[];
+  if (REPLACE) {
+    const plan = planScreenshotReplacement(
+      existingShots.map((s) => ({ id: s.id, fileName: String(s.attributes?.fileName ?? "") })),
+      readdirSync(dir),
+    );
+    console.log(`Replacing: deleting ${plan.deleteIds.length} existing screenshot(s) first.`);
+    for (const id of plan.deleteIds) await apiDelete(`/appScreenshots/${id}`);
+    files = plan.uploadOrder;
+  } else {
+    if (existingShots.length > 0) {
+      console.warn(
+        `WARNING: the set already holds ${existingShots.length} screenshot(s); these will be appended. ` +
+          "Use --replace to swap the whole set.",
+      );
+    }
+    files = readdirSync(dir)
+      .filter((f) => f.toLowerCase().endsWith(".png"))
+      .sort();
+  }
   console.log(`\n${files.length} screenshot(s) to upload: ${files.join(", ")}`);
 
-  for (const fileName of files) {
-    const filePath = join(dir, fileName);
-    const fileData = readFileSync(filePath);
-    const fileSize = statSync(filePath).size;
-    console.log(`\n--- ${fileName} (${fileSize} bytes) ---`);
+  try {
+    for (const fileName of files) {
+      const filePath = join(dir, fileName);
+      const fileData = readFileSync(filePath);
+      const fileSize = statSync(filePath).size;
+      console.log(`\n--- ${fileName} (${fileSize} bytes) ---`);
 
-    const reserved = await api(`/appScreenshots`, "POST", {
-      data: {
-        type: "appScreenshots",
-        attributes: { fileName, fileSize },
-        relationships: {
-          appScreenshotSet: { data: { type: "appScreenshotSets", id: set!.id } },
+      const reserved = await api(`/appScreenshots`, "POST", {
+        data: {
+          type: "appScreenshots",
+          attributes: { fileName, fileSize },
+          relationships: {
+            appScreenshotSet: { data: { type: "appScreenshotSets", id: set!.id } },
+          },
         },
-      },
-    });
-    const shot = reserved.data as AscResource;
-    const uploadOps = shot.attributes?.uploadOperations as
-      | {
-          method: string;
-          url: string;
-          requestHeaders: { name: string; value: string }[];
-          offset: number;
-          length: number;
-        }[]
-      | undefined;
-    if (!uploadOps) throw new Error(`No uploadOperations returned for ${fileName}`);
+      });
+      const shot = reserved.data as AscResource;
+      const uploadOps = shot.attributes?.uploadOperations as
+        | {
+            method: string;
+            url: string;
+            requestHeaders: { name: string; value: string }[];
+            offset: number;
+            length: number;
+          }[]
+        | undefined;
+      if (!uploadOps) throw new Error(`No uploadOperations returned for ${fileName}`);
 
-    for (const op of uploadOps) {
-      const headers: Record<string, string> = {};
-      for (const h of op.requestHeaders) headers[h.name] = h.value;
-      const chunk = fileData.subarray(op.offset, op.offset + op.length);
-      const putRes = await fetch(op.url, { method: op.method, headers, body: chunk });
-      if (!putRes.ok)
-        throw new Error(`PUT failed for ${fileName}: ${putRes.status} ${await putRes.text()}`);
+      for (const op of uploadOps) {
+        const headers: Record<string, string> = {};
+        for (const h of op.requestHeaders) headers[h.name] = h.value;
+        const chunk = fileData.subarray(op.offset, op.offset + op.length);
+        const putRes = await fetch(op.url, { method: op.method, headers, body: chunk });
+        if (!putRes.ok)
+          throw new Error(`PUT failed for ${fileName}: ${putRes.status} ${await putRes.text()}`);
+      }
+
+      const checksum = createHash("md5").update(fileData).digest("hex");
+      const finalized = await api(`/appScreenshots/${shot.id}`, "PATCH", {
+        data: {
+          type: "appScreenshots",
+          id: shot.id,
+          attributes: { uploaded: true, sourceFileChecksum: checksum },
+        },
+      });
+      const state = (
+        (finalized.data as AscResource).attributes?.assetDeliveryState as
+          { state?: string } | undefined
+      )?.state;
+      console.log(`Finalized: ${state}`);
     }
+  } catch (err) {
+    console.error("An upload failed part-way: the set is partial; re-run with --replace.");
+    throw err;
+  }
 
-    const checksum = createHash("md5").update(fileData).digest("hex");
-    const finalized = await api(`/appScreenshots/${shot.id}`, "PATCH", {
-      data: {
-        type: "appScreenshots",
-        id: shot.id,
-        attributes: { uploaded: true, sourceFileChecksum: checksum },
-      },
-    });
-    const state = (
-      (finalized.data as AscResource).attributes?.assetDeliveryState as
-        { state?: string } | undefined
-    )?.state;
-    console.log(`Finalized: ${state}`);
+  // Processing is asynchronous: re-read the set until every shot is COMPLETE (up to ~100 s).
+  let finalShots: AscResource[] = [];
+  for (let attempt = 0; attempt < 10; attempt++) {
+    finalShots = (await api(`/appScreenshotSets/${set!.id}/appScreenshots`)).data as AscResource[];
+    const pending = finalShots.filter(
+      (s) =>
+        (s.attributes?.assetDeliveryState as { state?: string } | undefined)?.state !== "COMPLETE",
+    );
+    if (pending.length === 0) break;
+    await new Promise((r) => setTimeout(r, 10_000));
+  }
+  console.log("\nScreenshots now in the set:");
+  let ok = REPLACE ? finalShots.length === files.length : true;
+  for (const s of finalShots) {
+    const state = (s.attributes?.assetDeliveryState as { state?: string } | undefined)?.state;
+    if (state !== "COMPLETE") ok = false;
+    console.log(`  ${s.attributes?.fileName} (${state})`);
+  }
+  if (!ok) {
+    console.error(`\nExpected ${files.length} COMPLETE screenshot(s); see the list above.`);
+    process.exit(1);
   }
 
   console.log("\nDone. Nothing was submitted -- these are still a draft version's assets.");

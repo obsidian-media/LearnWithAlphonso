@@ -1,0 +1,56 @@
+name: ASC Release Ops
+
+# Manual only. Release operations: list builds, expire old builds, attach an exact build,
+# TestFlight Beta App Review info, Content Rights, release type, and a read-only submission
+# check. Every write needs apply=true; the default only reads. Expiring builds is irreversible:
+# run only after the build 49 to 50 upgrade test has passed.
+# Nothing here submits anything for review.
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Operation to run"
+        required: true
+        type: choice
+        default: submission-check
+        options:
+          - builds
+          - expire-builds
+          - attach-build
+          - beta-review-info
+          - content-rights
+          - release-type
+          - submission-check
+      arg:
+        description: "expire-builds: highest build to expire (run only after the build 49 to 50 upgrade test has passed). attach-build and submission-check: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
+        required: false
+        type: string
+      apply:
+        description: "true writes to App Store Connect (owner approval required)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: ASC release op
+        # The free-text arg goes through an env var, never straight into the shell line.
+        run: bunx tsx scripts/asc-release-ops.ts "$COMMAND" "$ARG" "$APPLY_FLAG"
+        env:
+          COMMAND: ${{ inputs.command }}
+          ARG: ${{ inputs.arg }}
+          APPLY_FLAG: ${{ inputs.apply && '--apply' || '' }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+          DEMO_ACCOUNT_EMAIL: ${{ secrets.DEMO_ACCOUNT_EMAIL }}
+          REVIEW_CONTACT_EMAIL: ${{ secrets.REVIEW_CONTACT_EMAIL }}
+          REVIEW_CONTACT_PHONE: ${{ secrets.REVIEW_CONTACT_PHONE }}
+          REVIEW_DEMO_CODE_URL: ${{ secrets.REVIEW_DEMO_CODE_URL }}

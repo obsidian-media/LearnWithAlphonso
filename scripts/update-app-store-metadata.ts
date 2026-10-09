@@ -1,8 +1,10 @@
 /**
  * Writes the App Store Connect Version 1.0 localization fields (description,
- * keywords, promotional text, support/marketing URL, what's new) from the
- * approved copy in D:\AgentDevWork\repos\Hackaton\Shipaton\
- * App-Store-Metadata-ChatGPT-Polished.md.
+ * keywords, promotional text, support/marketing URL) and the app subtitle from
+ * the reviewed copy in src/lib/app-store/listing-copy.ts.
+ *
+ * Modes: "check" (the default) prints current versus new values and writes
+ * nothing; "apply" saves them.
  *
  * SAVE ONLY -- this writes a draft App Store Connect version's fields via
  * PATCH, the same as typing into the web UI and it staying unsubmitted. It
@@ -20,9 +22,18 @@
  * Uses the same App Store Connect API key already configured for
  * ios-release.yml -- no new credentials.
  *
- * Usage: bunx tsx scripts/update-app-store-metadata.ts
+ * Works on any editable version state (see editable-version.ts), including
+ * a version the developer removed from review.
+ *
+ * Usage: bunx tsx scripts/update-app-store-metadata.ts [check|apply]
  */
 import { createSign } from "node:crypto";
+import {
+  editableVersionQuery,
+  pickEditableAppInfo,
+  pickEditableVersion,
+} from "../src/lib/app-store/editable-version";
+import { LISTING, listingProblems } from "../src/lib/app-store/listing-copy";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -77,63 +88,21 @@ async function api(path: string, method: "GET" | "PATCH" = "GET", body?: unknown
   return json;
 }
 
-// The approved copy -- kept inline rather than parsed from the markdown so
-// this script has no dependency on that file's exact formatting.
-const NEW_VALUES = {
-  promotionalText:
-    "Build a language habit with short lessons, speaking practice, podcasts, and Hector\u2014your optional AI voice tutor.",
-  keywords:
-    "english,french,spanish,speaking,vocabulary,grammar,fluency,practice,tutor,podcast,listening,cefr",
-  supportUrl: "https://learn.alphonsoecosystem.app/support",
-  marketingUrl: "https://learn.alphonsoecosystem.app",
-  // whatsNew deliberately omitted: Apple's API rejects it with a 409
-  // STATE_ERROR ("Attribute 'whatsNew' cannot be edited at this time")
-  // for this version -- confirmed live, not a guess. Expected for a
-  // first release (nothing prior to describe changes from); revisit if
-  // the App Store Connect UI itself later shows the field as editable.
-  description: `Learn With Alphonso makes language practice feel possible on a real day.
-
-Build confidence in English, French, and Spanish with focused lessons, speaking practice, listening, and a review routine that helps you return to the words and skills that need another pass.
-
-START WHERE YOU ARE
-Take a placement test, choose your course, and learn through CEFR-graded lessons from beginner to advanced levels.
-
-PRACTICE MORE THAN ONE SKILL
-Work through vocabulary, grammar, translation, listening, and speaking activities. Use short sessions when you have a few minutes, then pick up where you left off.
-
-SPEAK WITH CONFIDENCE
-Practice useful everyday scenarios out loud. Get a transcript and feedback while you build the confidence to use your target language beyond the lesson.
-
-LISTEN ON YOUR SCHEDULE
-Explore level-appropriate audio with transcripts. Keep listening with the screen locked, or download available episodes for offline listening.
-
-MAKE PROGRESS VISIBLE
-Keep up a daily streak, revisit due reviews, and use progress tools that make the next useful practice step clear. Optional teams, friends, leagues, and challenges make it easier to stay motivated together.
-
-MEET HECTOR, YOUR AI VOICE TUTOR
-Alphonso Pro unlocks Hector, an AI voice tutor for guided conversation practice and language help tailored to your learning journey.
-
-PRIVACY
-Learn With Alphonso does not use advertising or tracking. You can manage your account, export your data, or delete your account in the app.
-
-Learn With Alphonso is free to download. Alphonso Pro is an optional auto-renewable subscription that unlocks Hector, the AI voice tutor. New subscribers who are eligible start with a free trial. Payment is charged to your Apple Account at confirmation of purchase, after any free trial ends. The subscription renews automatically unless canceled at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
-
-Terms of Use: https://learn.alphonsoecosystem.app/terms
-Privacy Policy: https://learn.alphonsoecosystem.app/privacy`,
-};
-
 async function main() {
-  console.log(`Finding the app's editable App Store version...`);
-  const versions = await api(
-    `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
-  );
-  const version = (versions.data as AscResource[])[0];
-  if (!version) {
-    throw new Error(
-      "No appStoreVersion in PREPARE_FOR_SUBMISSION found -- nothing editable right now.",
-    );
+  const problems = listingProblems(LISTING);
+  if (problems.length > 0) {
+    console.error(`Listing copy has problems:\n${problems.join("\n")}`);
+    process.exit(1);
   }
-  console.log(`Version: ${version.attributes?.versionString} (${version.id})`);
+  const MODE = process.argv[2] === "apply" ? "apply" : "check";
+  const { subtitle, ...versionFields } = LISTING;
+
+  console.log(`Mode: ${MODE}. Finding the app's editable App Store version...`);
+  const versions = await api(`/apps/${APP_ID}/appStoreVersions?${editableVersionQuery()}`);
+  const version = pickEditableVersion(versions.data as AscResource[]);
+  console.log(
+    `Version: ${version.attributes?.versionString} (${version.attributes?.appVersionState}, ${version.id})`,
+  );
 
   console.log(`Finding its en-US localization...`);
   const locs = await api(`/appStoreVersions/${version.id}/appStoreVersionLocalizations`);
@@ -141,45 +110,60 @@ async function main() {
   if (!loc) throw new Error("No en-US appStoreVersionLocalization found.");
   console.log(`Localization: ${loc.id}`);
 
-  console.log(`\nCurrent live values:`);
-  for (const key of Object.keys(NEW_VALUES) as (keyof typeof NEW_VALUES)[]) {
-    const current = String(loc.attributes?.[key] ?? "(empty)");
-    console.log(`\n--- ${key} (current) ---\n${current}`);
+  const infos = await api(`/apps/${APP_ID}/appInfos`);
+  const info = pickEditableAppInfo(infos.data as AscResource[]);
+  const infoLocs = await api(`/appInfos/${info.id}/appInfoLocalizations`);
+  const infoLoc = (infoLocs.data as AscResource[]).find((l) => l.attributes?.locale === "en-US");
+  if (!infoLoc) throw new Error("No en-US appInfoLocalization found.");
+
+  const changed: string[] = [];
+  for (const [key, value] of Object.entries(versionFields)) {
+    const current = String(loc.attributes?.[key] ?? "");
+    const same = current === value;
+    if (!same) changed.push(key);
+    console.log(`\n--- ${key}: ${same ? "unchanged" : "CHANGES"} ---`);
+    if (!same) console.log(`current: ${current || "(empty)"}\nnew:     ${value}`);
+  }
+  const currentSubtitle = String(infoLoc.attributes?.subtitle ?? "");
+  console.log(`\n--- subtitle: ${currentSubtitle === subtitle ? "unchanged" : "CHANGES"} ---`);
+  if (currentSubtitle !== subtitle) {
+    changed.push("subtitle");
+    console.log(`current: ${currentSubtitle || "(empty)"}\nnew:     ${subtitle}`);
   }
 
-  console.log(`\nNew values to write:`);
-  for (const [key, value] of Object.entries(NEW_VALUES)) {
-    console.log(`\n--- ${key} (new) ---\n${value}`);
+  if (MODE !== "apply") {
+    console.log(
+      `\nCheck only. Fields that would change: ${changed.join(", ") || "none"}. Run with "apply" to save.`,
+    );
+    return;
   }
 
   console.log(`\nWriting (SAVE ONLY -- this is a draft PATCH, not a submission)...`);
   const updated = await api(`/appStoreVersionLocalizations/${loc.id}`, "PATCH", {
-    data: { type: "appStoreVersionLocalizations", id: loc.id, attributes: NEW_VALUES },
+    data: { type: "appStoreVersionLocalizations", id: loc.id, attributes: versionFields },
   });
-  const updatedAttrs = (updated.data as AscResource).attributes ?? {};
+  const updatedAttrs = { ...((updated.data as AscResource).attributes ?? {}) };
+  const updatedInfo = await api(`/appInfoLocalizations/${infoLoc.id}`, "PATCH", {
+    data: { type: "appInfoLocalizations", id: infoLoc.id, attributes: { subtitle } },
+  });
+  updatedAttrs.subtitle = (updatedInfo.data as AscResource).attributes?.subtitle;
 
   console.log(`\nRead back after write, to confirm each field actually stuck:`);
   let allMatch = true;
-  for (const [key, expected] of Object.entries(NEW_VALUES)) {
-    const actual = String(updatedAttrs[key] ?? "");
-    const matches = actual === expected;
+  for (const [key, expected] of Object.entries({ ...versionFields, subtitle })) {
+    const matches = String(updatedAttrs[key] ?? "") === expected;
     allMatch = allMatch && matches;
     console.log(`  ${key}: ${matches ? "OK" : "MISMATCH"}`);
-    if (!matches) {
-      console.log(`    expected: ${expected}`);
-      console.log(`    actual:   ${actual}`);
-    }
   }
-
   console.log(
     allMatch
       ? "\nAll fields confirmed saved. Nothing was submitted -- this is still a draft."
       : "\nSome fields did not match after write -- check the mismatches above.",
   );
+  if (!allMatch) process.exitCode = 1;
   console.log(
-    "\nNOT written: Copyright and Subtitle need manual confirmation first (Subtitle is also a " +
-      "separate appInfoLocalizations resource, not this one). What's New was left as-is -- " +
-      "Apple's API rejects editing it for this version (409 STATE_ERROR), expected for a first release.",
+    "\nNOT written: Copyright (see update-app-review-info.ts) and What's New (Apple's API rejects " +
+      "editing it with a 409 STATE_ERROR for a first release).",
   );
 }
 

@@ -322,6 +322,10 @@ describe("GDPR export table coverage", () => {
     // buddy_members (20261006180000_buddy_pairing.sql) is server-only (no SELECT policy) and holds nothing the
     // export lacks: an active membership is the account's open row in buddy_pairs, which IS exported.
     "buddy_members",
+    // buddy_pool_exclusions (20261013100100_buddy_pool_exclusion.sql) is a server-only operational flag that keeps
+    // the App Review demo account out of stranger matching. It has no client policy and holds nothing the learner
+    // typed or did; it goes with the account through ON DELETE CASCADE.
+    "buddy_pool_exclusions",
     // blocked_users (supabase/migrations/20260928020000_block_and_report.sql):
     // the `blocker` half is genuinely this account's own data and RLS
     // does let the caller read it back, but the generic USER_ID_EXPORT_TABLES

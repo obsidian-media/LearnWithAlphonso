@@ -1,6 +1,7 @@
 name: Update App Review Info
 
-# Manual only. Writes Copyright (appStoreVersions) and the App Review
+# Manual only. "check" validates the notes and prints their length and the
+# live product title, writing nothing. "apply" writes Copyright (appStoreVersions) and the App Review
 # Information block (contact, demo account, notes -- appReviewDetail) to
 # the app's current draft App Store Connect version via PATCH/POST -- the
 # same effect as typing into the web UI and not pressing "Add for
@@ -11,6 +12,15 @@ name: Update App Review Info
 # already configured for ios-release.yml -- no new credentials.
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "check (validates the notes, writes nothing) or apply (save-only, never submits)"
+        required: true
+        type: choice
+        default: check
+        options:
+          - check
+          - apply
 
 jobs:
   update:
@@ -22,8 +32,9 @@ jobs:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
       - name: Write App Review Information (save only, no submission)
-        run: bunx tsx scripts/update-app-review-info.ts
+        run: bunx tsx scripts/update-app-review-info.ts "$MODE"
         env:
+          MODE: ${{ inputs.mode }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
@@ -31,3 +42,4 @@ jobs:
           REVIEW_CONTACT_EMAIL: ${{ secrets.REVIEW_CONTACT_EMAIL }}
           REVIEW_CONTACT_PHONE: ${{ secrets.REVIEW_CONTACT_PHONE }}
           REVIEW_DEMO_CODE_URL: ${{ secrets.REVIEW_DEMO_CODE_URL }}
+          REVIEW_RECORDING_URL: ${{ secrets.REVIEW_RECORDING_URL }}

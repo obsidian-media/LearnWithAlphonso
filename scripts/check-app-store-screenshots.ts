@@ -8,6 +8,7 @@
  * Usage: bunx tsx scripts/check-app-store-screenshots.ts
  */
 import { createSign } from "node:crypto";
+import { editableVersionQuery, pickEditableVersion } from "../src/lib/app-store/editable-version";
 
 const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
@@ -58,12 +59,11 @@ async function api(path: string) {
 }
 
 async function main() {
-  const versions = await api(
-    `/apps/${APP_ID}/appStoreVersions?filter[appVersionState]=PREPARE_FOR_SUBMISSION`,
+  const versions = await api(`/apps/${APP_ID}/appStoreVersions?${editableVersionQuery()}`);
+  const version = pickEditableVersion(versions.data as AscResource[]);
+  console.log(
+    `Version: ${version.attributes?.versionString} (${version.attributes?.appVersionState}, ${version.id})`,
   );
-  const version = (versions.data as AscResource[])[0];
-  if (!version) throw new Error("No editable appStoreVersion found.");
-  console.log(`Version: ${version.attributes?.versionString} (${version.id})`);
 
   const locs = await api(`/appStoreVersions/${version.id}/appStoreVersionLocalizations`);
   for (const loc of locs.data as AscResource[]) {

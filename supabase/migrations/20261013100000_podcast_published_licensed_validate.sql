@@ -1,0 +1,21 @@
+-- Validates the published-must-be-licensed check that 20261012500200 added as
+-- NOT VALID. That migration made the database refuse any new or updated
+-- published row whose voice_provider is not licensed, but it deliberately did
+-- not scan the rows that already existed. Every published episode is now
+-- voiced by a licensed provider, so the existing rows can be checked too.
+-- After this, the database vouches for every published row, old ones included,
+-- not only for rows written since the constraint was added.
+--
+-- Safe to run: production has 0 published rows with a provider outside the
+-- list, so the validation scan finds no violation. VALIDATE CONSTRAINT takes a
+-- SHARE UPDATE EXCLUSIVE lock, which does not block reads or writes. If a
+-- violating row ever exists, this statement fails and nothing changes.
+--
+-- Depends on: 20261012500200 (adds podcast_episodes_published_licensed).
+--
+-- Rollback (drops the constraint, then re-adds it NOT VALID as it was before):
+--   ALTER TABLE public.podcast_episodes DROP CONSTRAINT podcast_episodes_published_licensed;
+--   ALTER TABLE public.podcast_episodes
+--     ADD CONSTRAINT podcast_episodes_published_licensed
+--     CHECK (NOT published OR voice_provider IN ('deepgram', 'human')) NOT VALID;
+ALTER TABLE public.podcast_episodes VALIDATE CONSTRAINT podcast_episodes_published_licensed;
