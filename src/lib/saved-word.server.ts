@@ -55,42 +55,64 @@ export function buildDefineMessages(
   ];
 }
 
+/** Two short attempts instead of one 20 s call: a rare stalled request is retried while it can still finish in time. */
+export const DEFINE_ATTEMPT_TIMEOUT_MS = 9_000;
+export const DEFINE_MAX_ATTEMPTS = 2;
+
+/** A fresh per-attempt timeout, joined with the caller's signal when there is one. */
+function attemptSignal(caller?: AbortSignal): AbortSignal {
+  const timeout = AbortSignal.timeout(DEFINE_ATTEMPT_TIMEOUT_MS);
+  return caller ? AbortSignal.any([caller, timeout]) : timeout;
+}
+
 /**
- * One NVIDIA call. Returns null for EVERY failure (non-200, timeout, network,
+ * The NVIDIA lookup, with up to two attempts. Returns null for EVERY failure (non-200, timeout, network,
  * unusable output): the caller turns that into a 502 and writes no row.
- * Same transport conventions as practice-generation.server.ts: a hard
- * timeout, an explicit token cap sized to the tiny JSON output (its history
- * shows a too-small cap truncating real completions), and the duration logged.
+ * Same transport conventions as practice-generation.server.ts: a hard per-attempt timeout, an explicit token cap
+ * sized to the tiny JSON output (its history shows a too-small cap truncating real completions), and the
+ * duration logged. A retry runs ONLY after a timeout, a network error or a 5xx: a 4xx or an unusable answer
+ * to a successful call would fail the same way again. The caller's quota is spent once, before this runs.
  */
 export async function defineWord(args: {
   input: SavedWordInput;
   apiKey: string;
   model: string;
   fetchImpl?: typeof fetch;
+  /** The caller's own signal (the request's): a client that has gone away stops the lookup and any retry. */
+  signal?: AbortSignal;
 }): Promise<WordDefinition | null> {
-  const { input, apiKey, model, fetchImpl = fetch } = args;
-  const startedAt = Date.now();
-  try {
-    const resp = await nvidiaChatCompletion({
-      apiKey,
-      fetchImpl,
-      signal: AbortSignal.timeout(20_000),
-      body: { model, messages: buildDefineMessages(input), max_tokens: 600 },
-    });
-    if (!resp.ok) {
-      console.error(
-        `[define-word] NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
+  const { input, apiKey, model, fetchImpl = fetch, signal } = args;
+  for (let attempt = 1; attempt <= DEFINE_MAX_ATTEMPTS; attempt++) {
+    if (attempt > 1 && signal?.aborted) return null;
+    const startedAt = Date.now();
+    try {
+      const resp = await nvidiaChatCompletion({
+        apiKey,
+        fetchImpl,
+        signal: attemptSignal(signal),
+        body: { model, messages: buildDefineMessages(input), max_tokens: 600 },
+      });
+      if (!resp.ok) {
+        console.error(
+          `[define-word] attempt ${attempt}: NVIDIA returned ${resp.status} after ${Date.now() - startedAt}ms`,
+        );
+        if (resp.status >= 500) {
+          await resp.body?.cancel().catch(() => {});
+          continue;
+        }
+        return null;
+      }
+      const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
+      const definition = parseDefinition(data.choices?.[0]?.message?.content ?? "");
+      console.info(
+        `[define-word] attempt ${attempt}: ${definition ? "ok" : "unusable output"} in ${Date.now() - startedAt}ms`,
       );
-      return null;
+      return definition;
+    } catch (err) {
+      console.error(
+        `[define-word] attempt ${attempt} failed after ${Date.now() - startedAt}ms: ${String(err)}`,
+      );
     }
-    const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
-    const definition = parseDefinition(data.choices?.[0]?.message?.content ?? "");
-    console.info(
-      `[define-word] ${definition ? "ok" : "unusable output"} in ${Date.now() - startedAt}ms`,
-    );
-    return definition;
-  } catch (err) {
-    console.error(`[define-word] failed after ${Date.now() - startedAt}ms: ${String(err)}`);
-    return null;
   }
+  return null;
 }

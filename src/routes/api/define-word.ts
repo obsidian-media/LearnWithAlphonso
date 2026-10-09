@@ -109,7 +109,12 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   if (!quota.ok) return quotaFailureResponse(quota);
 
   const definition = await timer.time("llm", () =>
-    defineWord({ input, apiKey: nvidiaKey, model: resolveNvidiaChatModel() }),
+    defineWord({
+      input,
+      apiKey: nvidiaKey,
+      model: resolveNvidiaChatModel(),
+      signal: request.signal,
+    }),
   );
   if (!definition) {
     return Response.json({ error: "Could not look that word up. Try again." }, { status: 502 });
