@@ -4,6 +4,11 @@ import { applySafety, type LlmMessage } from "./ai-safety.ts";
 
 export const NVIDIA_CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
+// Same as the web twin: the default model reasons before answering unless the chat template argument turns it off,
+// which made calls slow and let a capped call spend its whole budget on reasoning. Kept identical to
+// src/lib/nvidia-chat.server.ts's NVIDIA_NO_THINKING (src/lib/nvidia-no-thinking.test.ts checks both).
+export const NVIDIA_NO_THINKING = { chat_template_kwargs: { thinking: false } } as const;
+
 export function nvidiaChatCompletion(args: {
   apiKey: string;
   body: { model: string; messages: LlmMessage[] } & Record<string, unknown>;
@@ -14,7 +19,7 @@ export function nvidiaChatCompletion(args: {
   return fetchImpl(NVIDIA_CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ ...body, messages: applySafety(body.messages) }),
+    body: JSON.stringify({ ...NVIDIA_NO_THINKING, ...body, messages: applySafety(body.messages) }),
     ...(signal ? { signal } : {}),
   });
 }
