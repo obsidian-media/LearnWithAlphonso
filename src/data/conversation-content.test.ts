@@ -255,8 +255,10 @@ describe("ALL_SYSTEM_PROMPTS", () => {
 });
 
 describe("French and Spanish personas address the learner without assuming a gender", () => {
-  const FR_RULE = "Ne présume jamais le genre de l'apprenant";
-  const ES_RULE = "No supongas el género del estudiante";
+  const FR_RULE =
+    "Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence.";
+  const ES_RULE =
+    "No supongas el género del estudiante: evita adjetivos, participios y tratamientos que lo marquen (bienvenido o bienvenida, listo o lista, señor o señora) y usa fórmulas neutras (por ejemplo, «le damos la bienvenida» o «¿Empezamos?» en lugar de «¿Está listo?»), salvo que el estudiante indique su género o su preferencia.";
   /** Every line a persona speaks that we wrote: scenario and campaign-scene openers. */
   const openers = (c: Course) => [
     ...SCENARIOS.map((s) => ({ label: `${s.id}.opener`, text: s.opener[c] })),
@@ -300,10 +302,22 @@ describe("French and Spanish personas address the learner without assuming a gen
   it("does not call the learner he or him in the instructions", () => {
     for (const { label, text } of prompts("fr")) {
       // Madame Girard and the like are the persona's own name, not a form of address to the learner.
-      expect(text.replace(/Madame Girard/g, ""), label).not.toMatch(/(?<!-)\b(qu'il|il)\b/i);
+      const outside = text.replace(/Madame Girard/g, "").replace(FR_RULE, "");
+      expect(outside, label).not.toMatch(/(?<!-)\b(qu'il|il)\b/i);
+      expect(outside, label).not.toMatch(/\baide-le\b|\best perdu\b/i);
     }
     for (const { label, text } of prompts("es")) {
-      expect(text, label).not.toMatch(/\bayúdalo\b|\bperdido\b/i);
+      // The rule sentence names the forms to avoid, so it is the one place they may appear.
+      expect(text.replace(ES_RULE, ""), label).not.toMatch(/\bayúdalo\b|\bperdido\b|\blisto\b/i);
     }
+  });
+
+  it("the ban list can fail: it sees a masculine form outside the rule sentence", () => {
+    const bad = "Ayúdalo si está perdido. " + ES_RULE;
+    expect(bad.replace(ES_RULE, "")).toMatch(/\bayúdalo\b|\bperdido\b|\blisto\b/i);
+    expect(ES_RULE).toMatch(/\blisto\b/i); // the rule itself would trip the check if it were not removed first
+    expect("Aide-le à choisir, il est perdu.".replace(FR_RULE, "")).toMatch(
+      /\baide-le\b|\best perdu\b/i,
+    );
   });
 });

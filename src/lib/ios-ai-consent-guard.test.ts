@@ -117,13 +117,25 @@ describe("iOS AI consent wiring", () => {
     }
   });
 
-  it("each reply carries the ids the moderator needs, and the active course", () => {
-    expect(code("ConversationView.swift")).toContain("scenarioID: scenario.id");
-    const campaign = code("CampaignView.swift");
-    expect(campaign).toContain("campaignID: campaign.id");
-    expect(campaign).toContain("sceneIndex: sceneIndex");
+  it("each reply carries the ids the moderator needs, and the active course, inside the call that draws it", () => {
+    // Scoped to the AssistantReply( call (and the .reportableAIMessage( call), not anywhere in the file.
+    const conversationCalls = replyCalls("ConversationView.swift");
+    expect(conversationCalls.length).toBeGreaterThan(0);
+    for (const call of conversationCalls) expect(call).toContain("scenarioID: scenario.id");
+    const campaignCalls = replyCalls("CampaignView.swift");
+    expect(campaignCalls.length).toBeGreaterThan(0);
+    for (const call of campaignCalls) {
+      expect(call).toContain("campaignID: campaign.id");
+      // The reply's own scene, from the opener positions, never the scene the learner is on now.
+      expect(call).toContain("sceneIndex: conversation.sceneIndex(ofTurnAt: index)");
+      expect(call).not.toMatch(/sceneIndex: sceneIndex\b/);
+    }
     const reply = code("AssistantReply.swift");
-    expect(reply).toContain("course: course.wireCode");
+    const reportableCall = reply.match(/\.reportableAIMessage\(([\s\S]*?)\)\s*\n/)?.[1] ?? "";
+    expect(reportableCall).not.toBe("");
+    expect(reportableCall).toContain("course: course.wireCode");
+    expect(reportableCall).toContain("scenarioID: scenarioID");
+    expect(reportableCall).toContain("campaignID: campaignID");
     expect(reply).not.toMatch(/course: "(en|fr|es)"/);
   });
 
@@ -149,5 +161,28 @@ describe("iOS AI consent wiring", () => {
     expect(s).toContain("aiConsent.isGranted");
     expect(s).toContain("@EnvironmentObject private var aiConsent: AIConsentStore");
     expect(s).not.toContain("You're offline");
+  });
+
+  it("a consent refusal shows no red line (the fallback and the store already say it)", () => {
+    const s = code("SpeakQuestionCard.swift");
+    const line =
+      s.match(/private var visibleErrorMessage: String\? \{([\s\S]*?)\n    \}/)?.[1] ?? "";
+    expect(line).toContain("if voice.failure == .aiConsentRequired { return nil }");
+    // The red line is drawn only from that property.
+    expect(s).toContain("if let errorMessage = visibleErrorMessage {");
+    expect(s).not.toMatch(/if let errorMessage = voice\.failure/);
+  });
+
+  it("any non-consent transcription failure opens the typing fallback, so the lesson can be finished", () => {
+    const s = code("SpeakQuestionCard.swift");
+    const body = s.slice(s.indexOf("private func transcribe("));
+    const catchBody = body.slice(body.indexOf("} catch {"));
+    expect(catchBody).toMatch(
+      /if tutorError != \.aiConsentRequired \{ captureFailed = true \}\s*voice\.fail\(generation, tutorError\)/,
+    );
+    // The no-token path is a failure too.
+    expect(body.slice(0, body.indexOf("let client")).replace(/\s+/g, " ")).toContain(
+      "captureFailed = true voice.fail(generation,",
+    );
   });
 });

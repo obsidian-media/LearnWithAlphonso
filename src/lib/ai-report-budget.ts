@@ -51,13 +51,23 @@ export function reportMessageByteBudget(ids: ReportIds): number {
   );
 }
 
-/** The message cut to the code point cap and the byte budget, always on a code point boundary. */
+/** jsonb cannot store U+0000 or a lone surrogate, so a report containing one would be refused whole. */
+function isUnstorable(char: string): boolean {
+  const code = char.codePointAt(0)!;
+  return code === 0 || (code >= 0xd800 && code <= 0xdfff);
+}
+
+/**
+ * The message with U+0000 and lone surrogates removed, cut to the code point cap and the byte budget, always on a
+ * code point boundary.
+ */
 export function capReportMessage(message: string, ids: ReportIds): string {
   const budget = reportMessageByteBudget(ids);
   let out = "";
   let count = 0;
   let bytes = 0;
   for (const char of message) {
+    if (isUnstorable(char)) continue;
     const width = jsonBytesOf(char);
     if (count >= AI_REPORT_MESSAGE_MAX || bytes + width > budget) break;
     out += char;

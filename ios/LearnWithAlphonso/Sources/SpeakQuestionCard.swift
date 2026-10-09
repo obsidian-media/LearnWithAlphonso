@@ -74,8 +74,7 @@ struct SpeakQuestionCard: View {
                 typingFallback
             }
 
-            if let errorMessage = voice.failure?.cardMessage()
-                ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage {
+            if let errorMessage = visibleErrorMessage {
                 Text(errorMessage)
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.destructive)
@@ -98,6 +97,14 @@ struct SpeakQuestionCard: View {
             voice.disappeared()
             voice.onCapture = nil
         }
+    }
+
+    /// The red line under the controls. A consent refusal has none: the typing fallback already says why voice is
+    /// off, the store follows the account, and a line left over from before would outlive the learner opting back in.
+    private var visibleErrorMessage: String? {
+        if voice.failure == .aiConsentRequired { return nil }
+        return voice.failure?.cardMessage()
+            ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage
     }
 
     private var phraseCard: some View {
@@ -201,6 +208,7 @@ struct SpeakQuestionCard: View {
 
     private func transcribe(audio: Data, generation: Int, debugTiming: String) async {
         guard let accessToken = await session.freshAccessToken() else {
+            captureFailed = true
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
             return
         }
@@ -225,6 +233,9 @@ struct SpeakQuestionCard: View {
             let tutorError = TutorError.from(error)
             // A consent refusal is announced by the client, so the store (and with it this card) follows the account:
             // back to typing, with voice offered as an opt-in.
+            // Any other failure (a quota 429, repeated server errors) must not leave the card with no way to answer:
+            // typing opens, so the lesson can still be finished.
+            if tutorError != .aiConsentRequired { captureFailed = true }
             voice.fail(generation, tutorError)
         }
     }

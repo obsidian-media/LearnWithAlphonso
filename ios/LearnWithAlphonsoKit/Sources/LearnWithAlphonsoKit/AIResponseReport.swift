@@ -71,10 +71,13 @@ public struct AIResponseReport: Sendable, Equatable {
         }
     }
 
+    /// The message with U+0000 removed (jsonb cannot store it; a Swift String has no lone surrogates to remove),
+    /// cut to the cap and the byte budget.
     static func capped(_ text: String, byteBudget: Int) -> String {
         var scalars = String.UnicodeScalarView()
         var bytes = 0
         for scalar in text.unicodeScalars {
+            if scalar.value == 0 { continue }
             let width = jsonBytes(of: scalar)
             if scalars.count >= maxMessageLength || bytes + width > byteBudget { break }
             scalars.append(scalar)

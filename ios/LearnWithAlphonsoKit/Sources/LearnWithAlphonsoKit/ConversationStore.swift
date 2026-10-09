@@ -63,6 +63,12 @@ public struct ConversationSnapshot: Equatable, Sendable {
         openerIndices.insert(turns.count - 1)
     }
 
+    /// The scene a turn was made in: scenes start at their opener, so it is the number of openers up to and including
+    /// the turn, minus one. A report records this, not the scene the learner is on now.
+    public func sceneIndex(ofTurnAt index: Int) -> Int {
+        max(0, openerIndices.filter { $0 <= index }.count - 1)
+    }
+
     /// Restarts the current scene: back to its opening line.
     public mutating func restartScene() {
         guard sceneAnchor < turns.count else { return }

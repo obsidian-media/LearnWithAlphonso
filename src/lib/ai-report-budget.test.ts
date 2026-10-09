@@ -9,8 +9,11 @@ import {
 
 const BS = "\\";
 
-/** What Postgres reports for `octet_length(context::text)` of a flat jsonb object (", " and ": " separators). */
-function dbOctetLength(context: Record<string, unknown>): number {
+/**
+ * The text Postgres gives for `context::text` of a flat jsonb object: keys ordered by length then bytewise, ", " and
+ * ": " separators. (Verified against real Postgres below.)
+ */
+function dbJsonText(context: Record<string, unknown>): string {
   const escapes: Record<string, string> = {
     '"': BS + '"',
     [BS]: BS + BS,
@@ -31,10 +34,18 @@ function dbOctetLength(context: Record<string, unknown>): number {
       })
       .join("") +
     '"';
+  const byJsonbOrder = ([a]: [string, unknown], [b]: [string, unknown]) =>
+    a.length - b.length || (a < b ? -1 : a > b ? 1 : 0);
   const body = Object.entries(context)
+    .sort(byJsonbOrder)
     .map(([k, v]) => `${esc(k)}: ${typeof v === "string" ? esc(v) : String(v)}`)
     .join(", ");
-  return new TextEncoder().encode(`{${body}}`).length;
+  return `{${body}}`;
+}
+
+/** What Postgres reports for `octet_length(context::text)`. */
+function dbOctetLength(context: Record<string, unknown>): number {
+  return new TextEncoder().encode(dbJsonText(context)).length;
 }
 
 const LONG_ID = "i".repeat(100);
@@ -59,11 +70,44 @@ describe("jsonBytes", () => {
     expect(jsonBytes("\ud800")).toBe(6);
   });
 
-  it("agrees with the database's own count of the same text", () => {
+  it("matches the jsonb::text format of the model used below (a self-consistency check, not the database)", () => {
     const text = 'x"' + BS + "\n\u0001é€😀";
     const wrapped = dbOctetLength({ m: text });
     // {"m": "<text>"} is 9 bytes of structure around the escaped text.
     expect(wrapped - 9).toBe(jsonBytes(text));
+  });
+
+  // Measured on real Postgres (read-only query, 2026-10-08): jsonb_build_object(...)::text and its octet_length.
+  it("the model reproduces real Postgres: a campaign context with escapes, accents and an emoji", () => {
+    const context = {
+      source: "campaign",
+      course: "es",
+      message: 'He said "hi"' + BS + " \n\tok é 😀",
+      campaign_id: "coffee-run",
+      scene_index: 2,
+    };
+    expect(dbJsonText(context)).toBe(
+      '{"course": "es", "source": "campaign", "message": "He said ' +
+        BS +
+        '"hi' +
+        BS +
+        '"' +
+        BS +
+        BS +
+        " " +
+        BS +
+        "n" +
+        BS +
+        'tok é 😀", ' +
+        '"campaign_id": "coffee-run", "scene_index": 2}',
+    );
+    expect(dbOctetLength(context)).toBe(131);
+  });
+
+  it("the model reproduces real Postgres: a control character is a six-byte escape", () => {
+    const context = { message: "\u0001x" };
+    expect(dbJsonText(context)).toBe('{"message": "' + BS + 'u0001x"}');
+    expect(dbOctetLength(context)).toBe(22);
   });
 });
 
@@ -98,6 +142,13 @@ describe("capReportMessage keeps the report inside the database check", () => {
     const capped = capReportMessage("😀".repeat(6000), ids);
     expect(capped).toBe("😀".repeat(Array.from(capped).length));
     expect(Array.from(capped).length).toBeGreaterThan(1500);
+  });
+
+  it("strips U+0000 and lone surrogates, which jsonb refuses, and keeps real surrogate pairs", () => {
+    expect(capReportMessage("a\u0000b\ud800c\udc00d😀", { course: "en" })).toBe("abcd😀");
+    // The budget is not spent on what was removed.
+    expect(capReportMessage("\u0000".repeat(100) + "ok", { course: "en" })).toBe("ok");
+    expect(reportMessageFits("a\u0000b", { course: "en" })).toBe(false);
   });
 
   it("leaves a normal reply alone", () => {

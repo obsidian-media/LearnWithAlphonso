@@ -21,6 +21,9 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: { auth: { getSession } },
 }));
 
+const reportAiResponse = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/social-safety.functions", () => ({ reportAiResponse }));
+
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 
@@ -61,6 +64,8 @@ async function sendAndAwaitReply(
 }
 
 beforeEach(() => {
+  reportAiResponse.mockReset();
+  reportAiResponse.mockResolvedValue({ ok: true });
   useProgress.setState({ course: "en" });
   Element.prototype.scrollTo = vi.fn();
   getSession.mockReset();
@@ -437,6 +442,33 @@ describe("Campaign chat page", () => {
     await waitFor(() =>
       expect(screen.getAllByRole("button", { name: "Report this response" })).toHaveLength(1),
     );
+  });
+
+  it("a report records the scene the reply was made in, not the scene the learner is on now", async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const scene = campaign.scenes[0];
+    for (let i = 0; i < scene.minTurns; i++) {
+      await sendAndAwaitReply(user, `turn ${i}`, `Reply ${i + 1}`);
+    }
+    await user.click(await screen.findByRole("button", { name: /Continue:/ }));
+    await sendAndAwaitReply(user, "excuse me", `Reply ${scene.minTurns + 1}`);
+
+    const reportButtons = screen.getAllByRole("button", { name: "Report this response" });
+    expect(reportButtons).toHaveLength(scene.minTurns + 1);
+    for (const [button, expectedScene] of [
+      [reportButtons[0], 0],
+      [reportButtons[reportButtons.length - 1], 1],
+    ] as const) {
+      reportAiResponse.mockClear();
+      await user.click(button);
+      await user.click(screen.getByRole("button", { name: "Send report" }));
+      await waitFor(() => expect(reportAiResponse).toHaveBeenCalledTimes(1));
+      const sent = reportAiResponse.mock.calls[0][0].data.context;
+      expect(sent.scene_index).toBe(expectedScene);
+      expect(sent.campaign_id).toBe("city-day");
+      await user.click(await screen.findByRole("button", { name: /close|done/i }));
+    }
   });
 
   it("sends the course to /api/chat and /api/tts", async () => {

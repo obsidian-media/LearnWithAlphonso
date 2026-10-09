@@ -16,6 +16,7 @@ import {
   type LocalizedCampaignScene,
 } from "../../data/campaigns";
 import { useProgress } from "../../lib/progress";
+import { sceneIndexOfMessage } from "../../lib/campaign-scene";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
 import { fetchProgress } from "../../lib/sync.functions";
@@ -442,7 +443,7 @@ function CampaignChatPage({ campaign, course }: { campaign: LocalizedCampaign; c
                       surface="campaign"
                       course={course}
                       campaignId={campaign.id}
-                      sceneIndex={sceneIndex}
+                      sceneIndex={sceneIndexOfMessage(messages, i)}
                     />
                   )}
                 </div>

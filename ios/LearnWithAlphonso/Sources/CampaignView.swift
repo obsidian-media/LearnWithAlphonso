@@ -173,7 +173,7 @@ private struct CampaignSessionView: View {
             AssistantReply(
                 turn: turn, isOpener: conversation.openerIndices.contains(index),
                 course: course, color: AlphonsoColor.ink,
-                surface: .campaign, campaignID: campaign.id, sceneIndex: sceneIndex, session: session,
+                surface: .campaign, campaignID: campaign.id, sceneIndex: conversation.sceneIndex(ofTurnAt: index), session: session,
                 savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
