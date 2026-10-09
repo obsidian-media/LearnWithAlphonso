@@ -46,6 +46,6 @@ describe("seed-demo-account", () => {
     expect(source).toMatch(/rpc\("_create_buddy_pair"/);
     expect(source).toMatch(/_source: "match"/);
     expect(source).toMatch(/from\("buddy_pool"\)\s*\.delete\(\)\s*\.eq\("user_id", userId\)/);
-    expect(source).toContain("assertDemoPaired");
+    expect(source).toContain("assertDemoPaired(status");
   });
 });
