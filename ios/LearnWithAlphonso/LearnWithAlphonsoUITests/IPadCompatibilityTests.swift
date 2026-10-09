@@ -81,6 +81,12 @@ final class IPadCompatibilityTests: UICompatTestCase {
             }
             XCUIDevice.shared.orientation = .portrait
             notNow.tap()
+            // Declining returns to the scenario list. Reaching the recording screen would mean allowing AI, which
+            // writes the consent record to the shared demo account, so the consent sheet is as far as this goes.
+            if app.buttons.matching(identifier: "practiceScenarioRow").firstMatch.waitForExistence(timeout: 10) {
+                note("recording screen not reached: declining AI returns to the scenario list")
+                return
+            }
         }
         for (orientation, name) in orientations {
             XCUIDevice.shared.orientation = orientation
