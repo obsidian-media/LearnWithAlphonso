@@ -252,3 +252,37 @@ describe("Polish", () => {
     expect(c).toContain("conversationStore.startNew(key");
   });
 });
+
+describe("Onboarding cover", () => {
+  const root = read(`${APP}/RootView.swift`);
+  const cover = between(root, ".fullScreenCover(item: $onboarding", /\n {20}\.task \{/);
+  it("is driven by the payload-carrying item", () => {
+    expect(cover).not.toBe("");
+    expect(root).toContain("@State private var onboarding: OnboardingPresentation?");
+    expect(cover).toContain("case .displayName(let nameOnboarding):");
+    expect(root).toContain("OnboardingSequence.advance(");
+    expect(root).not.toContain("onboardingStep");
+  });
+  it("reads no separate state inside the cover and cannot render nothing", () => {
+    // The old shape: `if let nameOnboarding` over a @State set in the same update as the presentation.
+    expect(cover).not.toMatch(/\bif\s+(let|case)\b/);
+    expect(cover).not.toMatch(/\bif\b/);
+    // The only name in the cover is the one bound from the item.
+    expect(
+      cover
+        .replace("case .displayName(let nameOnboarding):", "")
+        .replace("state: nameOnboarding", ""),
+    ).not.toContain("nameOnboarding");
+    // Every case is a real screen.
+    expect(cover).toContain("NameOnboardingView(");
+    expect(cover).toContain("PlacementView(");
+    expect(cover).not.toContain("EmptyView");
+  });
+  it("skips a step with no data instead of presenting it", () => {
+    const seq = read(
+      "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/OnboardingSequence.swift",
+    );
+    expect(seq).toContain("nameOnboarding.map { .displayName($0) }");
+    expect(seq).toContain("done.insert(step)");
+  });
+});

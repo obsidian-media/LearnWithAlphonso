@@ -18,4 +18,39 @@ final class OnboardingSequenceTests: XCTestCase {
         XCTAssertNil(OnboardingSequence.next(nameConfirmed: true, placementTaken: true, done: []))
         XCTAssertEqual(OnboardingSequence.next(nameConfirmed: true, placementTaken: false, done: []), .placement)
     }
+
+    private let nameState = DisplayNameOnboarding(prefill: "Sam", currentName: "Learner-4F2A")
+
+    func testTheNameStepWithItsDataIsAScreenThatCarriesThatData() {
+        XCTAssertEqual(OnboardingSequence.presentation(for: .displayName, nameOnboarding: nameState), .displayName(nameState))
+        XCTAssertEqual(OnboardingSequence.presentation(for: .placement, nameOnboarding: nil), .placement)
+        XCTAssertEqual(OnboardingSequence.presentation(for: .placement, nameOnboarding: nameState), .placement)
+    }
+
+    func testTheNameStepWithoutItsDataIsSkippedNotShownEmpty() {
+        XCTAssertNil(OnboardingSequence.presentation(for: .displayName, nameOnboarding: nil))
+    }
+
+    func testAdvanceShowsTheNamePromptWithItsStateFirst() {
+        let r = OnboardingSequence.advance(nameConfirmed: false, placementTaken: false, done: [], nameOnboarding: nameState)
+        XCTAssertEqual(r.presentation, .displayName(nameState))
+        XCTAssertEqual(r.done, [])
+    }
+
+    func testAdvanceSkipsAnUnshowableNameStepToPlacement() {
+        let r = OnboardingSequence.advance(nameConfirmed: false, placementTaken: false, done: [], nameOnboarding: nil)
+        XCTAssertEqual(r.presentation, .placement)
+        XCTAssertEqual(r.done, [.displayName])
+    }
+
+    func testAdvanceSkipsAnUnshowableNameStepToTheAppWhenNothingElseIsLeft() {
+        let r = OnboardingSequence.advance(nameConfirmed: false, placementTaken: true, done: [], nameOnboarding: nil)
+        XCTAssertNil(r.presentation)
+        XCTAssertEqual(r.done, [.displayName])
+    }
+
+    func testAdvanceNeverRepeatsAFinishedStep() {
+        let r = OnboardingSequence.advance(nameConfirmed: false, placementTaken: false, done: [.displayName], nameOnboarding: nameState)
+        XCTAssertEqual(r.presentation, .placement)
+    }
 }
