@@ -214,6 +214,13 @@ struct RootView: View {
         // so its late reply lands in a store nobody reads.
         .onChange(of: session.userID) {
             conversationStore = ConversationStore()
+            // A cover left up by the previous account must not carry its name prompt into the next one.
+            // If onDismiss then fires, advance with nil inputs returns nil.
+            onboarding = nil
+            onboardingDone = []
+            nameConfirmed = nil
+            placementTaken = nil
+            nameOnboarding = nil
         }
         .onChange(of: session.userID, initial: true) {
             activeCourse.accountChanged(to: session.userID)
@@ -293,6 +300,7 @@ struct RootView: View {
     /// `fetchPlacementTakenAt` rather than `fetchCefrLevel` returning nil: a `language_progress` row from
     /// ordinary lesson activity (cefr_level defaulted to 'A1') is not the same as placement having run.
     private func checkOnboarding() async {
+        onboarding = nil
         onboardingDone = []
         nameConfirmed = nil
         placementTaken = nil

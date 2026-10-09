@@ -277,12 +277,29 @@ describe("Onboarding cover", () => {
     expect(cover).toContain("NameOnboardingView(");
     expect(cover).toContain("PlacementView(");
     expect(cover).not.toContain("EmptyView");
-  });
-  it("skips a step with no data instead of presenting it", () => {
-    const seq = read(
+    expect(cover).not.toMatch(/\bdefault:/);
+    expect(cover).not.toMatch(/\bGroup\s*\{/);
+    expect(cover).not.toContain("Color.clear");
+    expect(cover).not.toContain("Spacer()");
+    // One case per presentation, no more, no fewer.
+    const kit = read(
       "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/OnboardingSequence.swift",
     );
-    expect(seq).toContain("nameOnboarding.map { .displayName($0) }");
-    expect(seq).toContain("done.insert(step)");
+    const enumBody = between(kit, "public enum OnboardingPresentation", /\n {4}public var id/);
+    expect(cover.match(/^\s*case \./gm)?.length).toBe(enumBody.match(/^\s*case \w/gm)?.length);
+  });
+  it("clears the cover and staged inputs on an account change and at the start of each check", () => {
+    const change = between(root, ".onChange(of: session.userID) {", /\n {8}\}/);
+    for (const reset of [
+      "onboarding = nil",
+      "onboardingDone = []",
+      "nameConfirmed = nil",
+      "placementTaken = nil",
+      "nameOnboarding = nil",
+    ]) {
+      expect(change).toContain(reset);
+    }
+    const check = between(root, "private func checkOnboarding() async {", /guard let accessToken/);
+    expect(check).toContain("onboarding = nil");
   });
 });
