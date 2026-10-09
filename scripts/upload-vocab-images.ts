@@ -17,6 +17,8 @@ import {
   statusCounts,
 } from "../src/lib/vocab-images/manifest";
 import { publicUrlFor, sha8Of, storagePathFor } from "../src/lib/vocab-images/paths";
+import { keepPathsFromImages, planPrune } from "../src/lib/vocab-images/prune";
+import { VOCAB_IMAGES } from "../src/data/vocab-images";
 import { IMAGE_LANGS } from "../src/lib/vocab-images/types";
 import {
   SUPABASE_PROJECT_ORIGIN,
