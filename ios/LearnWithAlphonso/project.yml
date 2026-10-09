@@ -130,7 +130,11 @@ targets:
         # portrait; the four-orientation base key above stays only to keep
         # the upload validator happy. Pre-submission audit, 2026-09-29.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait"
-        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practice speaking English in conversation scenarios."
+        # Covers every course and every recording screen, and says what happens to the audio. Pinned by
+        # src/lib/ios-binary-polish.test.ts and checked in the exported .ipa by ios-release.yml.
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Learn with Alphonso uses your microphone so you can practise speaking in your lessons and conversations. Recordings are sent for transcription and aren't stored."
+        # The home-screen name. Without it iOS shows the product name, truncated.
+        INFOPLIST_KEY_CFBundleDisplayName: "Alphonso"
         MARKETING_VERSION: "1.0"
         # 35-38: the "Empty or missing audio"/short-recording saga, see
         # docs/BACKLOG.md §0.0-h for the full trail. 39-40: build 38 hung

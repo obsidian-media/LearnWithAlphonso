@@ -6,18 +6,14 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
-	<!-- The 8 categories from Hackaton/Shipaton/03-submission-materials/
-	     privacy-nutrition-labels.md's "What to declare" section (2026-09-26,
-	     independently re-verified 2026-09-28), kept in sync with that
-	     document and with privacy.tsx's own "What we collect" list so the
-	     manifest, the App Store Connect questionnaire, and the public
-	     policy all say the same thing. All eight are Linked (every row is
-	     keyed to a Supabase user_id) and none are used for tracking (no
-	     ad/analytics SDK anywhere in the project); see that document's
-	     "The two answers that shape everything else" section for the full
-	     reasoning, not repeated here. Found empty at first: this file was
-	     created to fix the missing-manifest submission blocker, but only
-	     its required-reason API section (below) was filled in. -->
+	<!-- Derived from what the code collects, and matched one-to-one to the
+	     App Store Connect App Privacy answers. src/lib/ios-privacy-manifest.test.ts
+	     pins this list, checks each type still has code behind it, and fails if
+	     code starts collecting an undeclared category. All types: linked to the
+	     account (every row is keyed to the Supabase user id), never used for
+	     tracking (no ad or analytics SDK), app functionality only. Other Data
+	     Types covers the 13+ self-declaration for stranger buddy matching and the
+	     AI consent record. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>
@@ -116,42 +112,46 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
-			<!-- UserDefaults: Session.swift/KeychainSessionStore.swift (own
-			     app state) and WidgetSharing.swift/WidgetProgressPublisher.swift
-			     (App Group group.com.obsidianmedia.learnwithalphonso, shared
-			     with LearnWithAlphonsoWidget). 1C8F.1 is the reason for
-			     App Group scoped access, a superset of the same app only
-			     case. Xcode's own build time manifest validation, in the
-			     archive step of ios-release.yml, is the authoritative check
-			     on this code, not this comment. -->
+			<!-- UserDefaults. CA92.1: the app's own defaults (UserDefaults.standard
+			     in the theme, leaderboard, league, nudge and recap caches;
+			     @AppStorage for the saved-word hint; the Kit's AI disclosure gate and
+			     goal cache). 1C8F.1: the App Group suite
+			     group.com.obsidianmedia.learnwithalphonso shared with the widget
+			     (WidgetProgressPublisher). Pinned by
+			     src/lib/ios-privacy-manifest.test.ts. -->
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
+				<string>CA92.1</string>
 				<string>1C8F.1</string>
 			</array>
 		</dict>
 		<dict>
-			<!-- File timestamp: PodcastDownloadManager.swift's own doc
-			     comment on this call explains why: attributesOfItem(atPath:)
-			     is one of Apple's specifically enumerated File Timestamp
-			     required-reason APIs regardless of which attribute key is
-			     actually read (only .size here, comparing the staged
-			     download's real size against the server's declared
-			     Content-Length as a belt-and-braces integrity check).
-			     Found missing in a 2026-09-28 audit: the app was using
-			     this API undeclared. 3B52.1 fits: the file being inspected
-			     (a staged podcast download) lives inside the app's own
-			     container, not a user-selected or shared location. -->
+			<!-- File timestamp/size. C617.1: files inside this app's own container
+			     (a staged podcast download). Not 3B52.1, which is for files the
+			     user picked. -->
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
-				<string>3B52.1</string>
+				<string>C617.1</string>
 			</array>
 		</dict>
 	</array>
