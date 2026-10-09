@@ -7,13 +7,19 @@ export const VOICE_PROVIDERS = ["deepgram", "elevenlabs", "edge-tts", "human", "
 export type VoiceProvider = (typeof VOICE_PROVIDERS)[number];
 
 /**
- * Audio the app may publish. Deepgram is licensed through the app's paid account; a
- * human recording is the owner's own. ElevenLabs free-tier and Edge TTS output are not
- * licensed for commercial distribution. A paid-plan provider value can be added here,
- * with the CHECK, if that ever changes.
+ * Audio the app may publish. Only providers whose output the app holds distribution
+ * rights to may be published: Deepgram through the app's paid account, and a human
+ * recording the owner made. Rows that predate provenance tracking default to 'unknown'
+ * and are not publishable until re-voiced. A further provider value can be added here,
+ * with both CHECKs in the migrations, if that ever changes.
  */
 export const LICENSED_PROVIDERS: readonly VoiceProvider[] = ["deepgram", "human"];
 
 export function isPublishableProvider(provider: string | null | undefined): boolean {
   return (LICENSED_PROVIDERS as readonly string[]).includes(provider ?? "");
 }
+
+/** Shown to an admin who tries to publish an episode whose audio the app may not distribute. */
+export const UNPUBLISHABLE_PROVIDER_MESSAGE =
+  "This episode cannot be published: its audio provider is not one the app may distribute " +
+  `(${LICENSED_PROVIDERS.join(" or ")}). Re-voice it, or record it, then publish.`;

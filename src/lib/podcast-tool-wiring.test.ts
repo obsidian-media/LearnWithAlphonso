@@ -29,10 +29,35 @@ describe("podcast-tool.ts wiring", () => {
   });
 
   it("does not pay for synthesis on a dry run", () => {
+    // The dry-run message must be followed by a return BEFORE the synthesise call; deleting
+    // the `return;` would still print the message and then bill the synthesis.
+    expect(tool).toMatch(
+      /Synthesis is billed, so it runs only with --confirm\.[\s\S]{0,40}?return;[\s\S]*?await synthesise\(/,
+    );
     const dryRun = tool.indexOf("Synthesis is billed, so it runs only with --confirm.");
     const synth = tool.indexOf("await synthesise(");
     expect(dryRun).toBeGreaterThan(-1);
     expect(synth).toBeGreaterThan(dryRun);
+  });
+
+  it("checks add --file --provider deepgram against the course before anything is written", () => {
+    expect(tool).toMatch(
+      /fileProviderProblem\(\{[^}]*provider[^}]*\}\);\s*if \(problem\) fail\(problem\);/,
+    );
+    const check = tool.indexOf("fileProviderProblem(");
+    expect(check).toBeGreaterThan(-1);
+    expect(check).toBeLessThan(tool.indexOf("await db.storage"));
+  });
+
+  it("warns for a course left with fewer than three published, as well as an empty one", () => {
+    expect(tool).toMatch(/for \(const \{ course, count \} of coursesLow\(counts\)\)/);
+    expect(tool).toMatch(/WARNING: only \$\{count\} would stay published for/);
+  });
+
+  it("--remove-audio deletes only the paths removableAudioPaths allows", () => {
+    expect(tool).toMatch(/removableAudioPaths\(plan, episodes\)/);
+    expect(tool).toMatch(/\.remove\(removable\.paths\)/);
+    expect(tool).not.toMatch(/\.remove\(audioPaths\)/);
   });
 
   it("routes the unpublish command and lists it in the usage text", () => {

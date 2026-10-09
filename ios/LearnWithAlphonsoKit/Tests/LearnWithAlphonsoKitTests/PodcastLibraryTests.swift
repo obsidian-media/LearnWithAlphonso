@@ -25,6 +25,10 @@ final class PodcastLibraryTests: XCTestCase {
         XCTAssertFalse(ids.contains("en-empty"))
         XCTAssertFalse(ids.contains("en-series"))
         XCTAssertFalse(ids.contains("shared"))
+        // The folder that DOES have content is visible: a filter that hid everything (or an
+        // early return) would fail one of these two sides.
+        XCTAssertTrue(ids.contains("en-a1"))
+        XCTAssertTrue(ids.contains("en"))
     }
 
     func testANestedEpisodeKeepsEveryAncestorVisible() {
@@ -35,6 +39,16 @@ final class PodcastLibraryTests: XCTestCase {
     func testACourseWithNothingPublishedIsEmpty() {
         XCTAssertEqual(PodcastLibrary.visibleFolders(tree, publishedFolderIDs: ["en-a1"], courseCode: "es"), [])
         XCTAssertEqual(PodcastLibrary.visibleFolders(tree, publishedFolderIDs: [], courseCode: "en"), [])
+        // The same tree does show something for the course that has content, so an
+        // always-empty result cannot pass.
+        XCTAssertFalse(PodcastLibrary.visibleFolders(tree, publishedFolderIDs: ["en-a1"], courseCode: "en").isEmpty)
+    }
+
+    func testAnEmptyFolderListNeverLicensesPruningDownloads() {
+        // An empty folder list with an empty index means a role or RLS problem, not
+        // "everything was unpublished": the sweep must not delete the learner's downloads.
+        XCTAssertFalse(PodcastLibrary.canPruneDownloads(afterLoading: []))
+        XCTAssertTrue(PodcastLibrary.canPruneDownloads(afterLoading: [folder("en", course: "en")]))
     }
 
     func testACycleIsNeverReachedAndNeverLoops() {

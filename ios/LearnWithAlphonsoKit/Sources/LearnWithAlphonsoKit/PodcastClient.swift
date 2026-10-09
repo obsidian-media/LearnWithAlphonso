@@ -109,19 +109,35 @@ public final class PodcastClient: Sendable {
         }
     }
 
+    /// Rows per request when reading the published index. Below PostgREST's `max_rows`
+    /// (1000 on Supabase), so a short page really is the last page.
+    public static let publishedIndexPageSize = 500
+
     /// Every published episode's id and folder. RLS already hides unpublished rows; the
     /// explicit filter states the intent and keeps this correct for any role.
+    ///
+    /// Paged (ordered by id, `limit` + `offset`) until a short page, because one request
+    /// returns at most `max_rows`: a larger catalogue would otherwise be truncated, and the
+    /// caller treats this list as the whole published set when it removes downloads.
     public func fetchPublishedIndex() async throws -> [PodcastPublishedEpisodeRef] {
-        let request = request(
-            path: "rest/v1/podcast_episodes",
-            query: "select=id,folder_id&published=eq.true",
-            method: "GET"
-        )
-        let (data, response) = try await requester(request)
-        try Self.requireSuccess(response: response)
-        return try Self.rows(from: data).compactMap { row in
-            guard let id = row["id"] as? String, let folderID = row["folder_id"] as? String else { return nil }
-            return PodcastPublishedEpisodeRef(episodeID: id, folderID: folderID)
+        var refs: [PodcastPublishedEpisodeRef] = []
+        var offset = 0
+        while true {
+            let request = request(
+                path: "rest/v1/podcast_episodes",
+                query: "select=id,folder_id&published=eq.true&order=id.asc"
+                    + "&limit=\(Self.publishedIndexPageSize)&offset=\(offset)",
+                method: "GET"
+            )
+            let (data, response) = try await requester(request)
+            try Self.requireSuccess(response: response)
+            let rows = try Self.rows(from: data)
+            refs += rows.compactMap { row in
+                guard let id = row["id"] as? String, let folderID = row["folder_id"] as? String else { return nil }
+                return PodcastPublishedEpisodeRef(episodeID: id, folderID: folderID)
+            }
+            if rows.count < Self.publishedIndexPageSize { return refs }
+            offset += Self.publishedIndexPageSize
         }
     }
 

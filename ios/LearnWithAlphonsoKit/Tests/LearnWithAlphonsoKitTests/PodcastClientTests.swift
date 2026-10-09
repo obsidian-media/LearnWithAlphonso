@@ -354,6 +354,48 @@ final class PodcastClientTests: XCTestCase {
         XCTAssertTrue(query.contains("published=eq.true"), query)
     }
 
+    func testFetchPublishedIndexPagesPastTheServersRowCapUntilAShortPage() async throws {
+        let box = RequestBox()
+        let pageSize = PodcastClient.publishedIndexPageSize
+        let client = makeClient { request in
+            await box.record(request)
+            let items = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!.queryItems ?? []
+            let offset = Int(items.first { $0.name == "offset" }?.value ?? "") ?? -1
+            let count = offset == 0 ? pageSize : (offset == pageSize ? 3 : 0)
+            let rows: [[String: Any]] = (0..<count).map { ["id": "e\(offset + $0)", "folder_id": "f1"] }
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+        let index = try await client.fetchPublishedIndex()
+        XCTAssertEqual(index.count, pageSize + 3, "a catalogue larger than max_rows must not be truncated")
+        XCTAssertEqual(index.last?.episodeID, "e\(pageSize + 2)")
+
+        let requests = await box.requests
+        XCTAssertEqual(requests.count, 2, "a short second page ends the loop: no third request")
+        for (position, request) in requests.enumerated() {
+            let query = request.url!.query ?? ""
+            XCTAssertTrue(query.contains("order=id.asc"), "stable paging needs a total order: \(query)")
+            XCTAssertTrue(query.contains("limit=\(pageSize)"), query)
+            XCTAssertTrue(query.contains("offset=\(position * pageSize)"), query)
+            XCTAssertTrue(query.contains("published=eq.true"), query)
+        }
+    }
+
+    func testFetchPublishedIndexAfterExactlyOneFullPageAsksForTheNextToBeSure() async throws {
+        let box = RequestBox()
+        let pageSize = PodcastClient.publishedIndexPageSize
+        let client = makeClient { request in
+            await box.record(request)
+            let items = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!.queryItems ?? []
+            let offset = Int(items.first { $0.name == "offset" }?.value ?? "") ?? -1
+            let rows: [[String: Any]] = offset == 0 ? (0..<pageSize).map { ["id": "e\($0)", "folder_id": "f1"] } : []
+            return self.jsonResponse(for: request.url!, body: rows)
+        }
+        let index = try await client.fetchPublishedIndex()
+        XCTAssertEqual(index.count, pageSize)
+        let requestCount = await box.requests.count
+        XCTAssertEqual(requestCount, 2)
+    }
+
     func testMarksCompletionWhenAskedTo() async throws {
         let box = RequestBox()
         let client = makeClient { request in

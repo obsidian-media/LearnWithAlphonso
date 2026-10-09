@@ -227,6 +227,9 @@ final class PodcastDownloadManager {
             }
             states[episode.id] = .downloaded(bytes: bytes)
         } catch let failure as PodcastDownloadFailure {
+            // The account was deleted mid-download: no alert, no failed state for an
+            // episode of an account that no longer exists here.
+            guard generation == cleanupGeneration else { return }
             if case .budgetExceeded = failure {
                 states[episode.id] = .notDownloaded
             } else {
@@ -234,6 +237,7 @@ final class PodcastDownloadManager {
             }
             throw failure
         } catch {
+            guard generation == cleanupGeneration else { return }
             let failure = PodcastDownloadValidation.classify(PodcastErrorCode.chain(from: error))
             states[episode.id] = .failed(reason: PodcastDownloadCopy.title(for: failure))
             throw failure

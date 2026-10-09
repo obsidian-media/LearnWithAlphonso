@@ -31,6 +31,14 @@ final class PodcastPlaybackFailureTests: XCTestCase {
         XCTAssertEqual(PodcastPlaybackFailure.classify(chain: [code("NSURLErrorDomain", -1020)], probe: .noResponse, isLocalFile: false), .offlineNotDownloaded)
     }
 
+    func testOfflineWinsOverANetworkCodeInTheSameChain() {
+        // A dropped connection (-1005) wrapping "not connected" (-1009) is offline, not a
+        // flaky network: the learner should be told to download, not to retry.
+        let chain = [code("NSURLErrorDomain", -1005), code("NSURLErrorDomain", -1009)]
+        XCTAssertEqual(PodcastPlaybackFailure.classify(chain: chain, probe: .notRun, isLocalFile: false), .offlineNotDownloaded)
+        XCTAssertEqual(PodcastPlaybackFailure.classify(chain: Array(chain.reversed()), probe: .noResponse, isLocalFile: false), .offlineNotDownloaded)
+    }
+
     // Supabase Storage answers a missing public object with 400 (probed 2026-10-07), not 404.
     func testTheProbeStatusDecidesNotFoundAndServer() {
         for status in [400, 403, 404, 410] {

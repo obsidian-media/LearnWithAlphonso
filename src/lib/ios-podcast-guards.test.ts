@@ -29,6 +29,27 @@ const source = (rel: string) => {
   return code(found!.text);
 };
 
+/**
+ * The text of one member function, from its signature to the closing brace at the same
+ * indentation. Bounded, unlike a lazy `[\s\S]*?` from the signature, which runs on into the
+ * NEXT function and lets a guard pass on code that belongs to somebody else.
+ */
+function functionBody(text: string, signature: string): string {
+  const start = text.indexOf(signature);
+  expect(start, `${signature} not found`).toBeGreaterThan(-1);
+  const lineStart = text.lastIndexOf("\n", start) + 1;
+  const indent = text.slice(lineStart, start).match(/^\s*/)![0];
+  const close = text.indexOf(`\n${indent}}`, start);
+  expect(close, `${signature} has no closing brace`).toBeGreaterThan(start);
+  return text.slice(start, close + 1);
+}
+
+/** Index of a call such as `Foo.register(`, not matching `XFoo.register(` or `Foo_.register(`. */
+function callIndex(text: string, call: string): number {
+  const escaped = call.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.search(new RegExp(`(?<![A-Za-z0-9_])${escaped}`));
+}
+
 describe("iOS podcast guards", () => {
   it("finds the Swift sources (guards that scan nothing cannot fail)", () => {
     expect(sources.some((s) => s.file.endsWith("PodcastAudioPlayer.swift"))).toBe(true);
@@ -71,7 +92,12 @@ describe("iOS podcast guards", () => {
 
   it("the voice pause hook is untouched and a voice turn pauses without resuming", () => {
     const player = source("Sources/PodcastAudioPlayer.swift");
-    expect(player).toMatch(/func pauseForVoice\(\)[\s\S]*?\.pausedExternally\(resumable: false\)/);
+    // Bounded to the function's own body: an unbounded match reaches into handleRouteChange,
+    // which also says resumable: false, so changing pauseForVoice would still pass.
+    const body = functionBody(player, "func pauseForVoice() {");
+    expect(body).toContain("handle(.pausedExternally(resumable: false))");
+    expect(body).not.toContain("resumable: true");
+    expect(body.length).toBeLessThan(400);
     expect(source("Sources/RootView.swift")).toContain(
       "VoiceAudioHooks.pauseOtherAudio = { [weak podcastPlayer] in podcastPlayer?.pauseForVoice() }",
     );
@@ -79,13 +105,24 @@ describe("iOS podcast guards", () => {
 
   it("registers the podcast lifecycle handlers after the core ones, leaving those in place", () => {
     const app = source("Sources/LearnWithAlphonsoApp.swift");
-    const core = app.indexOf("AccountDataCleanup.register(");
-    const podcast = app.indexOf("PodcastAccountCleanup.register(");
-    const auth = app.indexOf("AuthAccountCleanup.register(");
+    const core = callIndex(app, "AccountDataCleanup.register(");
+    const podcast = callIndex(app, "PodcastAccountCleanup.register(");
+    const auth = callIndex(app, "AuthAccountCleanup.register(");
     expect(core).toBeGreaterThan(-1);
     expect(podcast).toBeGreaterThan(core);
     expect(auth).toBeGreaterThan(podcast);
+    // Both handlers are wired to the real work, not to empty closures.
+    expect(app).toContain("stopPlayback: { PodcastLifecycleHooks.stopPlayback?() }");
     expect(app).toContain("removeDownloads: { podcastDownloads.removeAllDownloads() }");
+  });
+
+  it("the registration needles cannot be satisfied by a look-alike name", () => {
+    const lookalikes =
+      "OAuthAccountCleanup.register( XPodcastAccountCleanup.register( Podcast_AccountDataCleanup.register(";
+    expect(callIndex(lookalikes, "AuthAccountCleanup.register(")).toBe(-1);
+    expect(callIndex(lookalikes, "PodcastAccountCleanup.register(")).toBe(-1);
+    expect(callIndex(lookalikes, "AccountDataCleanup.register(")).toBe(-1);
+    expect(callIndex("AuthAccountCleanup.register(", "AuthAccountCleanup.register(")).toBe(0);
   });
 
   it("downloads are validated, land atomically and never read file timestamps", () => {
@@ -94,11 +131,20 @@ describe("iOS podcast guards", () => {
       "PodcastDownloadValidation.checkResponse",
       "PodcastDownloadValidation.checkBody",
       "replaceItemAt",
-      "cleanupGeneration",
       "defer { for url in leftovers",
     ]) {
       expect(manager, needle).toContain(needle);
     }
+    // The comparison, not the declaration: `private var cleanupGeneration` alone proves
+    // nothing. One guard before landing the file, and one at the top of EACH catch, so an
+    // account deleted mid-download gets no alert and no failed state.
+    expect(manager.match(/guard generation == cleanupGeneration else \{/g)?.length).toBe(3);
+    expect(manager).toMatch(
+      /catch let failure as PodcastDownloadFailure \{\s*(?:\/\/[^\n]*\s*)*guard generation == cleanupGeneration else \{ return \}/,
+    );
+    expect(manager).toMatch(
+      /\} catch \{\s*guard generation == cleanupGeneration else \{ return \}/,
+    );
     for (const { file, text } of sources) {
       expect(code(text), file).not.toContain("attributesOfItem");
       expect(code(text), file).not.toContain("PodcastDownloadRefusal");
@@ -140,5 +186,58 @@ describe("iOS podcast guards", () => {
       const literals = source(rel).match(/"[^"\n]*"/g) ?? [];
       for (const literal of literals) expect(literal, rel).not.toContain("--");
     }
+  });
+  it("Listen prunes downloads only after a read that returned folders", () => {
+    const listen = source("Sources/ListenView.swift");
+    expect(listen).toMatch(
+      /if PodcastLibrary\.canPruneDownloads\(afterLoading: loadedFolders\) \{\s*downloads\.removeDownloads\(/,
+    );
+    expect(listen.match(/removeDownloads\(/g)?.length).toBe(1);
+  });
+
+  it("Listen's failures say the connection failed when connected, and keep an offline message offline", () => {
+    const listen = source("Sources/ListenView.swift");
+    expect(listen).not.toContain("Something went wrong loading the library.");
+    expect(listen).not.toContain("Search isn't available right now");
+    expect(listen).toMatch(
+      /errorMessage = networkMonitor\.isConnected\s*\? Copy\.connectionFailure\s*: "You're offline\."/,
+    );
+    expect(listen).toMatch(
+      /message\(networkMonitor\.isConnected\s*\? Copy\.connectionFailure\s*: "You're offline\. Search needs a connection\."\)/,
+    );
+  });
+
+  it("the mini bar's Retry and Next pass the real connectivity, and every call site supplies the monitor", () => {
+    const bar = source("Sources/PodcastMiniBar.swift");
+    expect(bar).toContain("let networkMonitor: NetworkMonitor");
+    expect(bar).toMatch(/player\.retry\([\s\S]{0,160}?isOnline: networkMonitor\.isConnected/);
+    expect(bar).toMatch(/player\.play\([\s\S]{0,220}?isOnline: networkMonitor\.isConnected/);
+    const callers = sources
+      .map(({ file, text }) => ({ file, text: code(text) }))
+      .filter(({ text }) => /\.podcastMiniBar\(/.test(text));
+    expect(callers.length).toBeGreaterThan(1);
+    for (const { file, text } of callers) {
+      for (const call of text.match(/\.podcastMiniBar\([^)]*\)/g) ?? []) {
+        expect(call, file).toContain("networkMonitor: networkMonitor");
+      }
+    }
+  });
+
+  it("the player times out a load that never produces a first frame, as it does a stall", () => {
+    const player = source("Sources/PodcastAudioPlayer.swift");
+    expect(player).toMatch(
+      /case let \.scheduleLoadTimeout\(generation\):[\s\S]{0,260}?PodcastPlayerMachine\.loadTimeoutSeconds[\s\S]{0,160}?handle\(\.loadTimedOut\(generation: generation\)\)/,
+    );
+  });
+
+  it("an account change resets the save gate in place and every queued save checks its epoch", () => {
+    const player = source("Sources/PodcastAudioPlayer.swift");
+    const stop = functionBody(player, "func stopForAccountChange() {");
+    expect(stop).toContain("saveGate.resetForAccountChange()");
+    expect(stop).not.toMatch(/saveGate = PodcastSaveGate\(\)/);
+    const save = functionBody(player, "private func save(position: Double, completed: Bool) {");
+    expect(save).toContain("let epoch = saveGate.epoch");
+    // Before the request, after it, and in the stale and unauthorized handlers.
+    expect(save.match(/saveGate\.accepts\(epoch\)/g)?.length).toBe(4);
   });
 });

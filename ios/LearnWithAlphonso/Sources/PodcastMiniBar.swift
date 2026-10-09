@@ -37,6 +37,9 @@ struct PodcastMiniBar: View {
     /// PodcastAudioPlayer's own doc comment on why the player itself
     /// stays ignorant of the download manager.
     let downloads: PodcastDownloadManager
+    /// Retry and Next pass the real connectivity, so an offline tap on an episode that
+    /// is not downloaded fails at once (the machine's fast path) instead of spinning.
+    let networkMonitor: NetworkMonitor
 
     @State private var showTranscript = false
     @State private var transcript: String?
@@ -58,7 +61,10 @@ struct PodcastMiniBar: View {
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                         Button(PodcastPlaybackCopy.retryTitle) {
-                            player.retry(localURL: downloads.localURL(episodeID: episode.id))
+                            player.retry(
+                                localURL: downloads.localURL(episodeID: episode.id),
+                                isOnline: networkMonitor.isConnected
+                            )
                         }
                         .font(AlphonsoFont.sans(13, weight: .semiBold))
                         .tint(AlphonsoColor.moss)
@@ -114,7 +120,12 @@ struct PodcastMiniBar: View {
                     // than showing an inert control.
                     if let next = player.nextEpisode {
                         Button {
-                            player.play(next, localURL: downloads.localURL(episodeID: next.id), queue: player.queue)
+                            player.play(
+                                next,
+                                localURL: downloads.localURL(episodeID: next.id),
+                                queue: player.queue,
+                                isOnline: networkMonitor.isConnected
+                            )
                             downloads.markPlayed(episodeID: next.id)
                         } label: {
                             Image(systemName: "forward.end.fill")
@@ -289,9 +300,14 @@ extension View {
     /// so this was not run locally, and no automated check can see layout.
     /// Re-run device check #12 before trusting this comment any further
     /// than the last one.
-    func podcastMiniBar(player: PodcastAudioPlayer, session: Session, downloads: PodcastDownloadManager) -> some View {
+    func podcastMiniBar(
+        player: PodcastAudioPlayer,
+        session: Session,
+        downloads: PodcastDownloadManager,
+        networkMonitor: NetworkMonitor
+    ) -> some View {
         safeAreaInset(edge: .bottom, spacing: 0) {
-            PodcastMiniBar(player: player, session: session, downloads: downloads)
+            PodcastMiniBar(player: player, session: session, downloads: downloads, networkMonitor: networkMonitor)
         }
     }
 }

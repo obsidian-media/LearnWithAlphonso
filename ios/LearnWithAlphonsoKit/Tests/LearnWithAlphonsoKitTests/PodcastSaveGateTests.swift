@@ -47,4 +47,33 @@ final class PodcastSaveGateTests: XCTestCase {
         gate.userStartedPlayback()
         XCTAssertEqual(gate.lastSeenUpdatedAt, "a")
     }
+
+    func testASaveFromBeforeAnAccountChangeIsNotAcceptedByTheNewAccountsGate() {
+        var gate = PodcastSaveGate(lastSeenUpdatedAt: "old-account")
+        let ticket = gate.epoch
+        XCTAssertTrue(gate.accepts(ticket))
+        gate.resetForAccountChange()
+        XCTAssertFalse(gate.accepts(ticket), "a chained save from the previous account must not touch the new gate")
+        XCTAssertTrue(gate.accepts(gate.epoch))
+    }
+
+    func testAnAccountChangeClearsEverythingTheOldAccountLeftOnTheGate() {
+        var gate = PodcastSaveGate(lastSeenUpdatedAt: "old-account")
+        gate.recordStale()
+        gate.recordUnauthorized()
+        gate.resetForAccountChange()
+        XCTAssertNil(gate.lastSeenUpdatedAt)
+        XCTAssertTrue(gate.canSave)
+    }
+
+    func testEveryAccountChangeGetsItsOwnEpoch() {
+        var gate = PodcastSaveGate()
+        let first = gate.epoch
+        gate.resetForAccountChange()
+        let second = gate.epoch
+        gate.resetForAccountChange()
+        XCTAssertNotEqual(first, second)
+        XCTAssertNotEqual(second, gate.epoch)
+        XCTAssertFalse(gate.accepts(first))
+    }
 }

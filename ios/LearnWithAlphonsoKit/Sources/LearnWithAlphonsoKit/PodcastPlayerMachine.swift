@@ -25,6 +25,8 @@ public enum PodcastPlayerEvent: Equatable, Sendable {
     case timeControlPlaying
     case stalled
     case stallTimedOut(generation: Int)
+    /// No first frame arrived in `loadTimeoutSeconds` after a start or resume.
+    case loadTimedOut(generation: Int)
     case didPlayToEnd
     case togglePressed
     /// The system or the app paused us: a call (resumable), headphones pulled or a voice
@@ -43,6 +45,7 @@ public enum PodcastPlayerEffect: Equatable, Sendable {
     case saveCompletion
     case flushPlayEvent
     case scheduleStallTimeout(generation: Int)
+    case scheduleLoadTimeout(generation: Int)
 }
 
 /// The podcast player's rules, with no AVFoundation in sight.
@@ -53,10 +56,13 @@ public enum PodcastPlayerEffect: Equatable, Sendable {
 public struct PodcastPlayerMachine: Equatable, Sendable {
     /// How long a stall may last before it is reported as a network failure.
     public static let stallTimeoutSeconds: UInt64 = 20
+    /// How long loading may last with no first frame before it is reported as a network
+    /// failure with Retry (a stream that neither plays nor errors would spin forever).
+    public static let loadTimeoutSeconds: UInt64 = 20
 
     public private(set) var phase: PodcastPlayerPhase = .idle
-    /// Bumped by every stall, start and close, so a timeout scheduled for an earlier stall
-    /// does nothing.
+    /// Bumped by every stall, start, resume and close, so a stall or load timeout scheduled
+    /// earlier does nothing.
     public private(set) var stallGeneration = 0
     private var resumeAfterInterruption = false
 
@@ -92,7 +98,7 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
                 return []
             }
             phase = .loading
-            return [.loadItem, .play]
+            return [.loadItem, .play, .scheduleLoadTimeout(generation: stallGeneration)]
 
         case .itemReady:
             // Ready is not playing. timeControlPlaying decides.
@@ -119,6 +125,11 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
             stallGeneration += 1
             return [.scheduleStallTimeout(generation: stallGeneration)]
 
+        case let .loadTimedOut(generation):
+            guard phase == .loading, generation == stallGeneration else { return [] }
+            phase = .failed(.network)
+            return [.pause]
+
         case let .stallTimedOut(generation):
             guard phase == .buffering, generation == stallGeneration else { return [] }
             phase = .failed(.network)
@@ -137,7 +148,8 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
                 return [.pause, .savePosition]
             case .paused, .finished:
                 phase = .loading
-                return [.play]
+                stallGeneration += 1
+                return [.play, .scheduleLoadTimeout(generation: stallGeneration)]
             case .idle, .failed:
                 return []
             }
@@ -153,7 +165,8 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
             resumeAfterInterruption = false
             guard phase == .paused, shouldResume, mayResume else { return [] }
             phase = .loading
-            return [.play]
+            stallGeneration += 1
+            return [.play, .scheduleLoadTimeout(generation: stallGeneration)]
 
         case .closed:
             phase = .idle

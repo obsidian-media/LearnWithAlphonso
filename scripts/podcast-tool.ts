@@ -50,6 +50,7 @@ import {
   chunkScript,
   DEFAULT_VOICE_FOR_COURSE,
   deepgramSpeakUrl,
+  fileProviderProblem,
   voiceMatchesCourse,
 } from "../src/lib/podcast-tts";
 import {
@@ -59,10 +60,13 @@ import {
 } from "../src/lib/podcast-provenance";
 import {
   coursesLeftEmpty,
+  coursesLow,
   episodePath,
   parseUnpublishList,
   planUnpublishTargets,
   planUnpublishUnlicensed,
+  removableAudioPaths,
+  MIN_PUBLISHED_PER_COURSE,
   publishedCountsAfter,
   type UnpublishEpisode,
   type UnpublishTarget,
@@ -360,6 +364,12 @@ async function cmdAdd(flags: CliFlags) {
           "Only deepgram and human audio can be published.",
       );
     }
+    const problem = fileProviderProblem({
+      provider: named,
+      voice: flags.voice as string | undefined,
+      course: draft.course,
+    });
+    if (problem) fail(problem);
     provider = named;
     voiceModel = (flags.voice as string | undefined) ?? null;
   }
@@ -750,15 +760,24 @@ async function cmdUnpublish(flags: CliFlags) {
       `WARNING: nothing would stay published for "${course}". Listen shows its empty state.`,
     );
   }
+  for (const { course, count } of coursesLow(counts)) {
+    console.log(
+      `WARNING: only ${count} would stay published for "${course}" (fewer than ${MIN_PUBLISHED_PER_COURSE}). Listen will look nearly empty.`,
+    );
+  }
 
   const removeAudio = flags["remove-audio"] === true;
-  const audioPaths = [...plan.toUnpublish, ...plan.alreadyUnpublished].map(
-    (episode) => episode.audioPath,
-  );
+  // Never delete an object that an episode staying published still points at.
+  const removable = removableAudioPaths(plan, episodes);
+  if (removeAudio) {
+    for (const path of removable.keptBecauseShared) {
+      console.log(`Keeping ${path}: an episode that stays published still uses it.`);
+    }
+  }
   if (flags.confirm !== true) {
     console.log(
       removeAudio
-        ? `Dry run. Would also DELETE ${audioPaths.length} audio object(s) from ${BUCKET}.`
+        ? `Dry run. Would also DELETE ${removable.paths.length} audio object(s) from ${BUCKET}.`
         : "Dry run.",
     );
     console.log("Re-run with --confirm to write it.");
@@ -777,8 +796,10 @@ async function cmdUnpublish(flags: CliFlags) {
     console.log(`Unpublished ${updated?.length ?? 0} of ${ids.length}.`);
   }
 
-  if (removeAudio && audioPaths.length > 0) {
-    const { data: removed, error: removeError } = await db.storage.from(BUCKET).remove(audioPaths);
+  if (removeAudio && removable.paths.length > 0) {
+    const { data: removed, error: removeError } = await db.storage
+      .from(BUCKET)
+      .remove(removable.paths);
     if (removeError) {
       fail(
         `the episodes are unpublished, but deleting their audio failed: ${removeError.message}. ` +

@@ -116,6 +116,46 @@ export function coursesLeftEmpty(counts: Record<CourseId, number>): CourseId[] {
   return (["en", "fr", "es"] as const).filter((course) => counts[course] === 0);
 }
 
+/** A course with fewer than this many published episodes gets a WARNING from `unpublish`. */
+export const MIN_PUBLISHED_PER_COURSE = 3;
+
+/** Courses that would keep some episodes, but fewer than the minimum. Empty ones are coursesLeftEmpty. */
+export function coursesLow(
+  counts: Record<CourseId, number>,
+): { course: CourseId; count: number }[] {
+  return (["en", "fr", "es"] as const)
+    .filter((course) => counts[course] > 0 && counts[course] < MIN_PUBLISHED_PER_COURSE)
+    .map((course) => ({ course, count: counts[course] }));
+}
+
+/**
+ * The audio objects `--remove-audio` may delete: those of every listed episode, except any
+ * audio_path an episode that STAYS published still points at (deleting it would leave a
+ * published row with no audio).
+ */
+export function removableAudioPaths(
+  plan: UnpublishPlan,
+  episodes: UnpublishEpisode[],
+): { paths: string[]; keptBecauseShared: string[] } {
+  const leaving = new Set(plan.toUnpublish.map((episode) => episode.id));
+  const stillPublished = new Set(
+    episodes
+      .filter((episode) => episode.published && !leaving.has(episode.id))
+      .map((episode) => episode.audioPath),
+  );
+  const paths: string[] = [];
+  const keptBecauseShared: string[] = [];
+  for (const episode of [...plan.toUnpublish, ...plan.alreadyUnpublished]) {
+    const path = episode.audioPath;
+    if (stillPublished.has(path)) {
+      if (!keptBecauseShared.includes(path)) keptBecauseShared.push(path);
+    } else if (!paths.includes(path)) {
+      paths.push(path);
+    }
+  }
+  return { paths, keptBecauseShared };
+}
+
 export function episodePath(folders: PodcastFolder[], episode: UnpublishEpisode): string {
   const segments = slugPathFor(folders, episode.folderId);
   return `${segments ? segments.join("/") : "(unknown folder)"}/${episode.slug}`;

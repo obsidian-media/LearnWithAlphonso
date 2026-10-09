@@ -13,6 +13,7 @@ import {
   MAX_UPLOAD_BYTES,
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
+import { isPublishableProvider, UNPUBLISHABLE_PROVIDER_MESSAGE } from "./podcast-provenance";
 import { revokeAppleGrantForUser } from "./account.functions";
 import { socialReasonMessage } from "./social-reason-copy";
 
@@ -357,6 +358,26 @@ export const adminSetPublished = createServerFn({ method: "POST" })
     // the podcast-audio bucket is public-read, so an unpublished
     // episode's audio stays fetchable by anyone holding the URL. Any UI
     // built on this must say "not listed", never "private".
+    //
+    // Publishing is also the point where the audio's provenance is
+    // checked, the same rule scripts/podcast-tool.ts publish applies.
+    // Admin uploads are recorded as 'unknown', so they cannot be
+    // published from here until their audio is re-voiced. The database
+    // CHECK podcast_episodes_published_licensed is the backstop.
+    if (data.published) {
+      const { data: row, error: readError } = await context.supabaseAdmin
+        .from("podcast_episodes")
+        // "*" and a cast, not select("voice_provider"): types.ts gains the
+        // column only when regenerate-supabase-types runs after deploy.
+        .select("*")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (readError) throw new Error(readError.message);
+      if (!row) throw new Error("That episode no longer exists. Reload the list.");
+      if (!isPublishableProvider((row as { voice_provider?: string | null }).voice_provider)) {
+        throw new Error(UNPUBLISHABLE_PROVIDER_MESSAGE);
+      }
+    }
     const result = await context.supabaseAdmin
       .from("podcast_episodes")
       .update({ published: data.published }, { count: "exact" })

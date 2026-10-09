@@ -177,15 +177,19 @@ struct ListenView: View {
             publishedIndex = loadedIndex
             // Licensing: downloads of unpublished episodes go, but only after a
             // successful read. A failed read says nothing about what is published.
-            downloads.removeDownloads(
-                notIn: Set(loadedIndex.map(\.episodeID)),
-                keeping: player.episode?.id
-            )
+            // Skipped when no folders came back: that is a role or RLS problem, not
+            // "everything was unpublished" (PodcastLibrary.canPruneDownloads).
+            if PodcastLibrary.canPruneDownloads(afterLoading: loadedFolders) {
+                downloads.removeDownloads(
+                    notIn: Set(loadedIndex.map(\.episodeID)),
+                    keeping: player.episode?.id
+                )
+            }
         } catch PodcastClientError.unauthorized {
             errorMessage = "Please sign in again to load episodes."
         } catch {
             errorMessage = networkMonitor.isConnected
-                ? "Something went wrong loading the library."
+                ? Copy.connectionFailure
                 : "You're offline."
         }
         isLoading = false
@@ -365,7 +369,9 @@ private struct PodcastSearchResultsView: View {
         } else if isSearching {
             message("Searching…")
         } else if searchFailed {
-            message("Search isn't available right now. Check your connection and try again.")
+            message(networkMonitor.isConnected
+                ? Copy.connectionFailure
+                : "You're offline. Search needs a connection.")
         } else if results.isEmpty {
             message("No episodes match “\(query)”.")
         } else {

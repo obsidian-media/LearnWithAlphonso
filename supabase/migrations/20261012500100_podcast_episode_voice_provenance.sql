@@ -1,12 +1,14 @@
 -- Every episode records who made its audio, so "only licensed audio is
--- published" is a query, not a memory. On 2026-10-07 all 69 published episodes
--- were uploads made with the ElevenLabs free tier or Edge TTS, and nothing in
--- the database said so.
+-- published" is a query, not a memory. Existing rows predate provenance
+-- tracking and default to 'unknown'.
 --
 -- 'unknown' is the default on purpose: existing rows and admin-app uploads do
--- not know, and scripts/podcast-tool.ts refuses to publish anything that is
--- not 'deepgram' or 'human' (src/lib/podcast-provenance.ts). The allowed list
--- is pinned against that module by src/lib/podcast-migrations.test.ts.
+-- not know. Only providers whose output the app holds distribution rights to
+-- may be published ('deepgram' and 'human'): scripts/podcast-tool.ts and the
+-- admin publish action both refuse anything else
+-- (src/lib/podcast-provenance.ts), and 20261012500200 enforces it in the
+-- database. The allowed list is pinned against that module by
+-- src/lib/podcast-migrations.test.ts.
 --
 -- Clients already hold table-level SELECT on podcast_episodes, so the new
 -- columns are readable (harmless metadata). Client INSERT/UPDATE/DELETE were

@@ -94,3 +94,26 @@ export function voiceLanguage(voice: string): CourseId | null {
 export function voiceMatchesCourse(voice: string, course: CourseId): boolean {
   return voiceLanguage(voice) === course;
 }
+
+/**
+ * `add --file --provider deepgram` claims the MP3 is Deepgram audio, which makes it
+ * publishable. That claim needs the same voice/course check `--script` gets, so a mislabelled
+ * file cannot become a publishable row. Returns a message, or null when the combination is fine.
+ */
+export function fileProviderProblem(input: {
+  provider: string;
+  voice: string | undefined;
+  course: CourseId | null;
+}): string | null {
+  if (input.provider !== "deepgram") return null;
+  if (!input.voice) {
+    return "--voice is required with --file --provider deepgram: name the voice the audio was made with.";
+  }
+  if (!input.course) {
+    return "--course is required with --file --provider deepgram, so the voice can be checked against it.";
+  }
+  if (!voiceMatchesCourse(input.voice, input.course)) {
+    return `voice "${input.voice}" does not speak course "${input.course}". Use ${DEFAULT_VOICE_FOR_COURSE[input.course]}.`;
+  }
+  return null;
+}

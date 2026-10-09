@@ -25,7 +25,10 @@ final class PodcastPlayerMachineTests: XCTestCase {
 
     func testOfflineWithADownloadLoadsNormally() {
         var machine = PodcastPlayerMachine()
-        XCTAssertEqual(machine.send(.start(isRemote: false, isOnline: false)), [.loadItem, .play])
+        XCTAssertEqual(
+            machine.send(.start(isRemote: false, isOnline: false)),
+            [.loadItem, .play, .scheduleLoadTimeout(generation: machine.stallGeneration)]
+        )
         XCTAssertEqual(machine.phase, .loading)
     }
 
@@ -110,7 +113,7 @@ final class PodcastPlayerMachineTests: XCTestCase {
     func testPlayAfterFinishingStartsAgainFromTheTop() {
         var machine = playing()
         _ = machine.send(.didPlayToEnd)
-        XCTAssertEqual(machine.send(.togglePressed), [.play])
+        XCTAssertEqual(machine.send(.togglePressed), [.play, .scheduleLoadTimeout(generation: machine.stallGeneration)])
         XCTAssertEqual(machine.phase, .loading)
     }
 
@@ -131,7 +134,10 @@ final class PodcastPlayerMachineTests: XCTestCase {
     func testInterruptionResumesOnlyWhatItPaused() {
         var interrupted = playing()
         _ = interrupted.send(.pausedExternally(resumable: true))
-        XCTAssertEqual(interrupted.send(.interruptionEnded(shouldResume: true)), [.play])
+        XCTAssertEqual(
+            interrupted.send(.interruptionEnded(shouldResume: true)),
+            [.play, .scheduleLoadTimeout(generation: interrupted.stallGeneration)]
+        )
 
         var pausedFirst = playing()
         _ = pausedFirst.send(.togglePressed)
@@ -158,7 +164,10 @@ final class PodcastPlayerMachineTests: XCTestCase {
         var machine = started()
         _ = machine.send(.itemFailed(.network))
         XCTAssertEqual(machine.send(.togglePressed), [], "the bar shows Retry, not Play")
-        XCTAssertEqual(machine.send(.start(isRemote: true, isOnline: true)), [.loadItem, .play])
+        XCTAssertEqual(
+            machine.send(.start(isRemote: true, isOnline: true)),
+            [.loadItem, .play, .scheduleLoadTimeout(generation: machine.stallGeneration)]
+        )
         XCTAssertEqual(machine.phase, .loading)
     }
 
@@ -170,5 +179,63 @@ final class PodcastPlayerMachineTests: XCTestCase {
         XCTAssertEqual(machine.phase, .idle)
         XCTAssertEqual(machine.control, .none)
         XCTAssertEqual(machine.send(.stallTimedOut(generation: generation)), [])
+    }
+
+    // MARK: Loading timeout
+
+    func testAStartSchedulesALoadTimeoutThatIsLongerThanZero() {
+        var machine = PodcastPlayerMachine()
+        let effects = machine.send(.start(isRemote: true, isOnline: true))
+        XCTAssertTrue(effects.contains(.scheduleLoadTimeout(generation: machine.stallGeneration)))
+        XCTAssertEqual(PodcastPlayerMachine.loadTimeoutSeconds, 20)
+    }
+
+    func testLoadingThatNeverProducesAFrameBecomesANetworkFailureWithRetry() {
+        var machine = started()
+        let effects = machine.send(.loadTimedOut(generation: machine.stallGeneration))
+        XCTAssertEqual(machine.phase, .failed(.network))
+        XCTAssertEqual(machine.control, .retry)
+        XCTAssertEqual(effects, [.pause])
+        XCTAssertFalse(machine.isAudible)
+    }
+
+    func testALoadTimeoutAfterPlaybackStartedDoesNothing() {
+        var machine = started()
+        let generation = machine.stallGeneration
+        _ = machine.send(.timeControlPlaying)
+        XCTAssertEqual(machine.send(.loadTimedOut(generation: generation)), [])
+        XCTAssertEqual(machine.phase, .playing)
+    }
+
+    func testALoadTimeoutFromAnEarlierStartIsIgnored() {
+        var machine = started()
+        let old = machine.stallGeneration
+        _ = machine.send(.start(isRemote: true, isOnline: true))
+        XCTAssertEqual(machine.send(.loadTimedOut(generation: old)), [])
+        XCTAssertEqual(machine.phase, .loading)
+    }
+
+    func testALoadTimeoutAfterThePauseTapDoesNotOverrideIt() {
+        var machine = started()
+        let generation = machine.stallGeneration
+        _ = machine.send(.togglePressed)
+        XCTAssertEqual(machine.send(.loadTimedOut(generation: generation)), [])
+        XCTAssertEqual(machine.phase, .paused)
+    }
+
+    func testResumingFromPauseGetsItsOwnLoadTimeout() {
+        var machine = playing()
+        _ = machine.send(.togglePressed)
+        let effects = machine.send(.togglePressed)
+        XCTAssertEqual(effects, [.play, .scheduleLoadTimeout(generation: machine.stallGeneration)])
+        XCTAssertEqual(machine.send(.loadTimedOut(generation: machine.stallGeneration)), [.pause])
+    }
+
+    func testCloseInvalidatesALoadTimeout() {
+        var machine = started()
+        let generation = machine.stallGeneration
+        _ = machine.send(.closed)
+        XCTAssertEqual(machine.send(.loadTimedOut(generation: generation)), [])
+        XCTAssertEqual(machine.phase, .idle)
     }
 }

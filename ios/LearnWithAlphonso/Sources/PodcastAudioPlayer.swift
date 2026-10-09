@@ -149,7 +149,9 @@ final class PodcastAudioPlayer {
         teardownItem()
         saveTask?.cancel()
         saveTask = nil
-        saveGate = PodcastSaveGate()
+        // Not a fresh PodcastSaveGate(): the epoch must keep counting so a save already
+        // chained from the previous account is refused by `accepts`.
+        saveGate.resetForAccountChange()
         episode = nil
         queue = []
         elapsedSeconds = 0
@@ -204,6 +206,11 @@ final class PodcastAudioPlayer {
                 Task { @MainActor [weak self] in
                     try? await Task.sleep(nanoseconds: PodcastPlayerMachine.stallTimeoutSeconds * 1_000_000_000)
                     self?.handle(.stallTimedOut(generation: generation))
+                }
+            case let .scheduleLoadTimeout(generation):
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(nanoseconds: PodcastPlayerMachine.loadTimeoutSeconds * 1_000_000_000)
+                    self?.handle(.loadTimedOut(generation: generation))
                 }
             }
         }
@@ -480,10 +487,11 @@ final class PodcastAudioPlayer {
         guard saveGate.canSave, position.isFinite, let episode, let client = makeClient?() else { return }
         let episodeID = episode.id
         let seconds = Int(position.rounded())
+        let epoch = saveGate.epoch
         let previous = saveTask
         saveTask = Task { @MainActor [weak self] in
             await previous?.value
-            guard let self, !Task.isCancelled, self.saveGate.canSave else { return }
+            guard let self, !Task.isCancelled, self.saveGate.accepts(epoch), self.saveGate.canSave else { return }
             let isCurrentEpisode = self.episode?.id == episodeID
             // A save for an episode we have since left has no known observation: upsert it.
             let seen = isCurrentEpisode ? self.saveGate.lastSeenUpdatedAt : nil
@@ -494,12 +502,12 @@ final class PodcastAudioPlayer {
                     completed: completed,
                     lastSeenUpdatedAt: seen
                 )
-                guard !Task.isCancelled, self.episode?.id == episodeID else { return }
+                guard !Task.isCancelled, self.saveGate.accepts(epoch), self.episode?.id == episodeID else { return }
                 self.saveGate.recordSaved(updatedAt: stored)
             } catch PodcastClientError.staleWrite {
-                if !Task.isCancelled, self.episode?.id == episodeID { self.saveGate.recordStale() }
+                if !Task.isCancelled, self.saveGate.accepts(epoch), self.episode?.id == episodeID { self.saveGate.recordStale() }
             } catch PodcastClientError.unauthorized {
-                if !Task.isCancelled { self.saveGate.recordUnauthorized() }
+                if !Task.isCancelled, self.saveGate.accepts(epoch) { self.saveGate.recordUnauthorized() }
             } catch {
                 // Best effort: a failed save leaves the last known position alone.
             }

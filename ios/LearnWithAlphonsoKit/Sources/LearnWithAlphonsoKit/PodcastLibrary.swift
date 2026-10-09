@@ -38,6 +38,13 @@ public enum PodcastLibrary {
         return episodes.filter { visible.contains($0.folderID) }
     }
 
+    /// Whether a successful read may be used to remove downloads of unpublished episodes.
+    /// A read that returns no folders at all is a role or policy problem (the library is
+    /// never genuinely folder-less), so it says nothing about what is published.
+    public static func canPruneDownloads(afterLoading folders: [PodcastFolder]) -> Bool {
+        !folders.isEmpty
+    }
+
     public static func unpublishedDownloads(
         entries: [PodcastCacheEntry],
         publishedEpisodeIDs: Set<String>,

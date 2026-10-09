@@ -5,6 +5,7 @@ import {
   deepgramSpeakUrl,
   voiceLanguage,
   voiceMatchesCourse,
+  fileProviderProblem,
 } from "./podcast-tts";
 
 describe("chunkScript", () => {
@@ -88,5 +89,42 @@ describe("voice and course", () => {
     expect(voiceMatchesCourse("aura-2-thalia-en", "es")).toBe(false);
     expect(voiceMatchesCourse("aura-2-agathe-fr", "fr")).toBe(true);
     expect(voiceMatchesCourse("aura-2-selena-es", "es")).toBe(true);
+  });
+});
+
+describe("fileProviderProblem (add --file --provider)", () => {
+  it("lets a human or other recording through without a voice", () => {
+    expect(fileProviderProblem({ provider: "human", voice: undefined, course: "en" })).toBeNull();
+    expect(fileProviderProblem({ provider: "unknown", voice: undefined, course: null })).toBeNull();
+  });
+
+  it("requires --voice when the file is claimed to be Deepgram audio", () => {
+    expect(fileProviderProblem({ provider: "deepgram", voice: undefined, course: "en" })).toMatch(
+      /--voice is required/,
+    );
+    expect(fileProviderProblem({ provider: "deepgram", voice: "", course: "en" })).toMatch(
+      /--voice is required/,
+    );
+  });
+
+  it("requires the course so the voice can be checked", () => {
+    expect(
+      fileProviderProblem({ provider: "deepgram", voice: "aura-2-thalia-en", course: null }),
+    ).toMatch(/--course is required/);
+  });
+
+  it("refuses a voice that does not speak the course", () => {
+    expect(
+      fileProviderProblem({ provider: "deepgram", voice: "aura-2-thalia-en", course: "fr" }),
+    ).toMatch(/does not speak course "fr"/);
+    expect(
+      fileProviderProblem({ provider: "deepgram", voice: "not-a-voice", course: "en" }),
+    ).not.toBeNull();
+  });
+
+  it("accepts a matching Deepgram voice", () => {
+    expect(
+      fileProviderProblem({ provider: "deepgram", voice: "aura-2-agathe-fr", course: "fr" }),
+    ).toBeNull();
   });
 });
