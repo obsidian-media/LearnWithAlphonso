@@ -53,6 +53,57 @@ final class DisplayNameOnboardingTests: XCTestCase {
         XCTAssertFalse(DisplayNameOnboarding.needsPrompt(nameConfirmedAt: Date()))
     }
 
+    func testAGeneratedHandlePrefillIsAHintNotText() {
+        let state = DisplayNameOnboarding(prefill: "Learner-3807", currentName: "Learner-3807")
+        XCTAssertEqual(state.name, "", "typing must not append to the generated handle")
+        XCTAssertEqual(state.fieldPlaceholder, "Learner-3807")
+        XCTAssertEqual(state.check, .idle)
+        XCTAssertNil(state.pendingCheck)
+        XCTAssertNil(state.message, "no error is shown before the learner has typed anything")
+        XCTAssertFalse(state.canSave)
+        XCTAssertTrue(state.canSkip)
+    }
+
+    func testAnEmptyFieldNeverShowsAnErrorAndCannotBeSaved() {
+        var state = DisplayNameOnboarding(prefill: "Learner-3807", currentName: "Learner-3807")
+        // SwiftUI can set a text field to the value it already has, e.g. when it gains focus.
+        XCTAssertNil(state.edit(""))
+        XCTAssertEqual(state.check, .idle)
+        XCTAssertNil(state.message)
+        XCTAssertFalse(state.isProblem)
+        XCTAssertFalse(state.canSave)
+        XCTAssertNil(state.edit("   "))
+        XCTAssertEqual(state.check, .idle)
+    }
+
+    func testClearingARealPrefillGoesBackToIdleNotToAnError() {
+        var state = DisplayNameOnboarding(prefill: "Ana", currentName: "Learner-4F2A")
+        XCTAssertNil(state.edit(""))
+        XCTAssertEqual(state.check, .idle)
+        XCTAssertNil(state.message)
+        XCTAssertFalse(state.canSave)
+    }
+
+    func testTypingIntoTheEmptyFieldStartsACheckOfJustWhatWasTyped() throws {
+        var state = DisplayNameOnboarding(prefill: "Learner-3807", currentName: "Learner-3807")
+        let generation = try XCTUnwrap(state.edit("QA Delta"))
+        XCTAssertEqual(state.name, "QA Delta")
+        state.applyCheck(problem: nil, generation: generation)
+        XCTAssertTrue(state.canSave)
+    }
+
+    func testARealPrefillStaysAsText() {
+        let state = DisplayNameOnboarding(prefill: "Ana", currentName: "Learner-4F2A")
+        XCTAssertEqual(state.name, "Ana")
+        XCTAssertEqual(state.fieldPlaceholder, "Learner-4F2A")
+        XCTAssertEqual(state.pendingCheck, 1)
+    }
+
+    func testThePlaceholderFallsBackToTheLabelWhenTheCurrentNameIsNotAHandle() {
+        let state = DisplayNameOnboarding(prefill: "Old Name", currentName: "Old Name")
+        XCTAssertEqual(state.fieldPlaceholder, NameOnboardingCopy.fieldLabel)
+    }
+
     func testANewStateChecksItsPrefillAtOnce() {
         let state = DisplayNameOnboarding(prefill: "Ana", currentName: "Learner-4F2A")
         XCTAssertEqual(state.pendingCheck, 1)

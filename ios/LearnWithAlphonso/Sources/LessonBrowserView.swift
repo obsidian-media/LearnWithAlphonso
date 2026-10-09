@@ -11,6 +11,10 @@ struct LessonBrowserView: View {
     let notificationScheduler: NotificationScheduler
     let networkMonitor: NetworkMonitor
     let syncQueueStore: SyncQueueStore
+    /// False until RootView has finished deciding whether to show the name prompt and placement. The placement
+    /// banner stays hidden until then: tapping it earlier would put up a cover that stops RootView's own
+    /// onboarding cover from presenting.
+    let onboardingSettled: Bool
     /// TestFlight feedback (2026-09-29, with a screenshot): a lesson's
     /// "Begin lesson"/"Check"/"Continue" button could land exactly where
     /// the podcast mini-bar sits. `.podcastMiniBar()` on this view's own
@@ -29,6 +33,16 @@ struct LessonBrowserView: View {
     private var course: Course { activeCourse.course }
     @State private var showingSettings = false
     @State private var showingReview = false
+    // The cards below the goal card are loaded HERE, from tasks on the always-present List. A section that is
+    // empty until its data arrives produces no List row, so a .task attached to it never fires.
+    @StateObject private var missionModel = TeamMissionModel()
+    @State private var challenges: [WeeklyChallenge] = []
+    @State private var isCheckingPlacement = true
+    @State private var placementTaken = false
+    /// What the placement state above was last checked for (course and onboarding state), so re-appearing
+    /// does not flash the banner. Finishing onboarding changes it, which re-checks placement.
+    @State private var placementCheckedKey: String?
+    @State private var showingPlacementTest = false
     /// Which CEFR band is currently showing. Defaults to A1 until
     /// `loadLevel()` resolves the real value (or a placement test hasn't
     /// been taken yet, in which case A1 is also the right default) --
@@ -146,16 +160,16 @@ struct LessonBrowserView: View {
                 GoalCardView(session: session, course: course)
                     .id(course.translationCourseCode)
 
-                TeamMissionSection(session: session)
+                TeamMissionSection(mission: missionModel.mission)
 
-                WeeklyChallengesSection(session: session)
+                WeeklyChallengesSection(challenges: challenges)
 
                 // Fallback for anyone RootView's post-sign-in placement
                 // gate didn't reach (skipped it, or it fires for the
                 // account's default course only) -- mirrors learn.tsx's
                 // own persistent "Take the placement test" banner
                 // exactly. See PlacementView.swift's doc comment.
-                PlacementBannerSection(contentStore: contentStore, session: session, course: course)
+                PlacementBannerSection(isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken) { showingPlacementTest = true }
 
                 LevelBandPicker(selectedLevel: $selectedLevel)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
@@ -230,6 +244,15 @@ struct LessonBrowserView: View {
             // (a String) rather than `course` itself -- Course declares
             // only Sendable, not Equatable, which .task(id:) requires.
             .task(id: course.code) { await loadLevel() }
+            .task { await missionModel.load(session: session) }
+            .task { await loadChallenges() }
+            .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }
+            .fullScreenCover(isPresented: $showingPlacementTest) {
+                PlacementView(contentStore: contentStore, session: session, course: course) {
+                    showingPlacementTest = false
+                    placementTaken = true
+                }
+            }
             .navigationTitle("Learn with Alphonso")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -317,6 +340,40 @@ struct LessonBrowserView: View {
             try? await client.setCefrLevel(course: course.code, level: level)
         }
     }
+
+    /// Best-effort, shows nothing on failure. A cancelled load leaves the section as it was.
+    private func loadChallenges() async {
+        guard let accessToken = await session.freshAccessToken() else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let result = (try? await client.getWeeklyChallenges()) ?? []
+        guard !Task.isCancelled else { return }
+        challenges = result
+    }
+
+    /// Placement is per-course, so this re-runs when the course changes. A failed check leaves the banner
+    /// hidden rather than showing it on a network hiccup.
+    private func checkPlacement() async {
+        let key = "\(course.code)-\(onboardingSettled)"
+        if placementCheckedKey != key { isCheckingPlacement = true }
+        guard let accessToken = await session.freshAccessToken() else {
+            // No token: fail hidden, like a failed check.
+            placementTaken = true
+            isCheckingPlacement = false
+            return
+        }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let fetchedCourseCode = course.code
+        let taken: Bool
+        do {
+            taken = try await client.fetchPlacementTakenAt(course: fetchedCourseCode) != nil
+        } catch {
+            taken = true
+        }
+        guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
+        placementTaken = taken
+        placementCheckedKey = key
+        isCheckingPlacement = false
+    }
 }
 
 private extension Course {
@@ -368,121 +425,64 @@ private struct LevelBandPicker: View {
     }
 }
 
-/// Self-contained (fetches its own data), same shape as web's
-/// WeeklyChallengesCard -- renders nothing while loading or once
-/// resolved with no challenges, so it never disrupts LessonBrowserView's
-/// otherwise-offline content list.
+/// Same shape as web's WeeklyChallengesCard -- renders nothing until the host has loaded challenges (the host
+/// owns the load; see the note on LessonBrowserView's state), so it never disrupts the otherwise-offline list.
 private struct WeeklyChallengesSection: View {
-    let session: Session
-
-    @State private var challenges: [WeeklyChallenge] = []
-    @State private var isLoading = true
+    let challenges: [WeeklyChallenge]
 
     var body: some View {
-        Group {
-            if !isLoading && !challenges.isEmpty {
-                Section {
-                    ForEach(challenges) { c in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(c.title)
-                                .font(AlphonsoFont.sans(15, weight: .medium))
-                                .strikethrough(c.completed)
-                                .foregroundStyle(c.completed ? AlphonsoColor.inkSoft : AlphonsoColor.ink)
-                            AlphonsoProgressBar(progress: Double(min(c.progress, c.threshold)) / Double(max(c.threshold, 1)))
-                            Text("\(min(c.progress, c.threshold))/\(c.threshold)")
-                                .font(AlphonsoFont.sans(11))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        }
-                        .padding(.vertical, 2)
+        if !challenges.isEmpty {
+            Section {
+                ForEach(challenges) { c in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(c.title)
+                            .font(AlphonsoFont.sans(15, weight: .medium))
+                            .strikethrough(c.completed)
+                            .foregroundStyle(c.completed ? AlphonsoColor.inkSoft : AlphonsoColor.ink)
+                        AlphonsoProgressBar(progress: Double(min(c.progress, c.threshold)) / Double(max(c.threshold, 1)))
+                        Text("\(min(c.progress, c.threshold))/\(c.threshold)")
+                            .font(AlphonsoFont.sans(11))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
                     }
-                } header: {
-                    Text("This week's challenges")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
+                    .padding(.vertical, 2)
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+            } header: {
+                Text("This week's challenges")
+                    .font(AlphonsoFont.sans(12, weight: .semiBold))
+                    .tracking(0.4)
+                    .foregroundStyle(AlphonsoColor.ember)
             }
+            .listRowBackground(AlphonsoColor.parchment)
         }
-        // Group keeps a stable identity across the isLoading transition,
-        // so this fires exactly once when the section first appears --
-        // not once per branch, unlike attaching .task separately inside
-        // each conditional branch.
-        .task { await load() }
-    }
-
-    private func load() async {
-        guard let accessToken = session.accessToken else { isLoading = false; return }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        challenges = (try? await client.getWeeklyChallenges()) ?? []
-        isLoading = false
     }
 }
 
-/// Mirrors learn.tsx's own persistent "Take the placement test" banner:
-/// hidden until the check resolves (same `!hydrated` guard reasoning as
-/// WeeklyChallengesSection above), then shown only when this course's
-/// placement genuinely hasn't been taken. Re-checks whenever `course`
-/// changes -- placement is per-course, and this view's own CoursePicker
-/// can switch it at any time.
+/// Mirrors learn.tsx's own persistent "Take the placement test" banner: shown only when the host has resolved
+/// that this course's placement genuinely hasn't been taken.
 private struct PlacementBannerSection: View {
-    let contentStore: ContentStore
-    let session: Session
-    let course: Course
-
-    @State private var isChecking = true
-    @State private var isTaken = false
-    @State private var showingPlacementTest = false
+    let isVisible: Bool
+    let onTap: () -> Void
 
     var body: some View {
-        Group {
-            if !isChecking && !isTaken {
-                Section {
-                    Button {
-                        showingPlacementTest = true
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Not sure where to start?")
-                                .font(AlphonsoFont.sans(15, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Text("Take a quick placement test and we'll set your CEFR level for you.")
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                            Text("Take the placement test")
-                                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.moss)
-                        }
-                        .padding(.vertical, 4)
+        if isVisible {
+            Section {
+                Button(action: onTap) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Not sure where to start?")
+                            .font(AlphonsoFont.sans(15, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.ink)
+                        Text("Take a quick placement test and we'll set your CEFR level for you.")
+                            .font(AlphonsoFont.sans(12))
+                            .foregroundStyle(AlphonsoColor.inkSoft)
+                        Text("Take the placement test")
+                            .font(AlphonsoFont.sans(12, weight: .semiBold))
+                            .foregroundStyle(AlphonsoColor.moss)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.vertical, 4)
                 }
-                .listRowBackground(AlphonsoColor.ember.opacity(0.1))
+                .buttonStyle(.plain)
             }
+            .listRowBackground(AlphonsoColor.ember.opacity(0.1))
         }
-        // Same stable-identity-across-loading reasoning as
-        // WeeklyChallengesSection's own .task -- fires once per
-        // appearance, and again whenever `course` changes.
-        .task(id: course) { await check() }
-        .fullScreenCover(isPresented: $showingPlacementTest) {
-            PlacementView(contentStore: contentStore, session: session, course: course) {
-                showingPlacementTest = false
-                isTaken = true
-            }
-        }
-    }
-
-    private func check() async {
-        isChecking = true
-        guard let accessToken = session.accessToken else { isChecking = false; return }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        do {
-            isTaken = try await client.fetchPlacementTakenAt(course: course.code) != nil
-        } catch {
-            // Best-effort: leave the banner hidden for this check rather
-            // than showing it on a network hiccup -- same posture as
-            // WeeklyChallengesSection.load().
-            isTaken = true
-        }
-        isChecking = false
     }
 }

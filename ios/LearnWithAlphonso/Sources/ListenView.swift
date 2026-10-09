@@ -260,8 +260,8 @@ private struct PodcastFolderListing: View {
                             } label: {
                                 AlphonsoRowCard(
                                     title: episode.title,
-                                    subtitle: subtitle(for: episode),
-                                    accent: episode.positionSeconds > 0
+                                    subtitle: subtitle(for: player.resumed(episode)),
+                                    accent: player.resumed(episode).positionSeconds > 0
                                         ? AlphonsoColor.ember
                                         : AlphonsoColor.moss
                                 )
