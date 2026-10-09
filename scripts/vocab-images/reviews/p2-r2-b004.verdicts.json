@@ -1,0 +1,43 @@
+{
+  "batch": "r2-b004",
+  "pass": "first",
+  "reviewer": "agent:p2-r2-b004",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "tourist": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "trainers": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "tram": {
+      "verdict": "approve",
+      "alt": "A yellow tram climbs a narrow cobbled street between tall old buildings.",
+      "peopleVisible": false
+    },
+    "trousers": {
+      "verdict": "approve",
+      "alt": "Blue denim jeans with a grey leather belt and a metal buckle are seen up close.",
+      "peopleVisible": false
+    },
+    "video games": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "voiture": {
+      "verdict": "approve",
+      "alt": "A pink vintage car stands on a sandy track near the sea between painted buildings.",
+      "peopleVisible": false
+    },
+    "waiter": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "watching": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "batch": "q1-b005",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b005",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "la tortue": {
+      "verdict": "approve",
+      "alt": "A sea turtle swims in deep blue water.",
+      "peopleVisible": false
+    },
+    "la télécommande": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la télévision": {
+      "verdict": "approve",
+      "alt": "An old television set with a small screen stands on thin legs against a concrete wall.",
+      "peopleVisible": false
+    },
+    "la vache": {
+      "verdict": "approve",
+      "alt": "A brown cow with yellow ear tags looks at the camera against a blue sky.",
+      "peopleVisible": false
+    },
+    "la veste": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la viande": {
+      "verdict": "approve",
+      "alt": "Skewers of meat are grilled over hot coals.",
+      "peopleVisible": false
+    },
+    "la ville": {
+      "verdict": "approve",
+      "alt": "A city skyline with tall towers glows under an orange sunset sky.",
+      "peopleVisible": false
+    },
+    "la voiture": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le balcon": {
+      "verdict": "approve",
+      "alt": "An apartment building has rows of windows and balconies with blue frames.",
+      "peopleVisible": true
+    },
+    "le beurre": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le bureau": {
+      "verdict": "approve",
+      "alt": "An old wooden desk holds an open notebook, a pen, an inkwell, a clock and a leather bag.",
+      "peopleVisible": false
+    },
+    "le bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le bâtiment": {
+      "verdict": "approve",
+      "alt": "An old stone building with a pointed roof stands in a green field beside a tree.",
+      "peopleVisible": false
+    },
+    "le bébé": {
+      "verdict": "approve",
+      "alt": "A baby's small feet are wrapped in a white towel.",
+      "peopleVisible": true
+    },
+    "le cahier": {
+      "verdict": "approve",
+      "alt": "A spiral notebook with a fountain pen lies on a wooden table.",
+      "peopleVisible": false
+    },
+    "le camping": {
+      "verdict": "reject",
+      "reasons": ["stereotype-demeaning-poverty-distress"]
+    },
+    "le canapé": {
+      "verdict": "approve",
+      "alt": "A small sofa with cushions stands near a bed and a chest of drawers in a bright room.",
+      "peopleVisible": false
+    },
+    "le canard": {
+      "verdict": "approve",
+      "alt": "A mallard duck walks on green grass.",
+      "peopleVisible": false
+    },
+    "le centre-ville": {
+      "verdict": "approve",
+      "alt": "A city skyline with tall towers glows under an orange sunset sky.",
+      "peopleVisible": false
+    },
+    "le chapeau": {
+      "verdict": "approve",
+      "alt": "A straw hat with a black band rests among golden wheat stalks.",
+      "peopleVisible": false
+    },
+    "le chat": {
+      "verdict": "approve",
+      "alt": "A grey striped kitten lies on a white background.",
+      "peopleVisible": false
+    },
+    "le cheval": {
+      "verdict": "approve",
+      "alt": "A white horse rears up against a plain brown background.",
+      "peopleVisible": false
+    },
+    "le chien": {
+      "verdict": "approve",
+      "alt": "A brown puppy rests its paws on the edge of a wooden crate.",
+      "peopleVisible": false
+    },
+    "le ciel": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le cochon": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le coiffeur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le couteau": {
+      "verdict": "approve",
+      "alt": "Kitchen knives of different sizes lie on a black table beside a board with lemon slices.",
+      "peopleVisible": false
+    },
+    "le crayon": {
+      "verdict": "approve",
+      "alt": "Many coloured pencils stand in a black mesh pencil holder.",
+      "peopleVisible": false
+    },
+    "le cuisinier": {
+      "verdict": "approve",
+      "alt": "A chef in a white jacket slices fresh baguettes on a counter.",
+      "peopleVisible": true
+    },
+    "le dentiste": {
+      "verdict": "approve",
+      "alt": "A dentist in colourful scrubs and a mask treats a child who wears dark glasses and lies in a dental chair.",
+      "peopleVisible": true
+    },
+    "le dessert": {
+      "verdict": "approve",
+      "alt": "Two glasses of yoghurt with strawberries and blackberries stand on a wooden board.",
+      "peopleVisible": false
+    },
+    "le dictionnaire": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le doigt": {
+      "verdict": "approve",
+      "alt": "Two hands form a heart shape with their fingers against a white background.",
+      "peopleVisible": true
+    },
+    "le football": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "le fromage": {
+      "verdict": "approve",
+      "alt": "Slices of cheese and fresh figs sit on pieces of bread on a wooden board.",
+      "peopleVisible": false
+    },
+    "le garage": {
+      "verdict": "approve",
+      "alt": "A house with a two-car garage stands on a wet street at dusk.",
+      "peopleVisible": false
+    }
+  }
+}

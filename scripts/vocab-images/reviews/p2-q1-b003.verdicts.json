@@ -1,0 +1,178 @@
+{
+  "batch": "q1-b003",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b003",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "jardín": {
+      "verdict": "approve",
+      "alt": "A wooden arched bridge crosses a pond in a green Japanese garden with rocks and trees.",
+      "peopleVisible": false
+    },
+    "l'abeille": {
+      "verdict": "approve",
+      "alt": "A bumblebee collects pollen on a white flower with a yellow centre.",
+      "peopleVisible": false
+    },
+    "l'agriculteur": {
+      "verdict": "reject",
+      "reasons": ["stereotype-demeaning-poverty-distress"]
+    },
+    "l'appareil photo": {
+      "verdict": "approve",
+      "alt": "A black camera with a large lens and a neck strap lies on a white surface.",
+      "peopleVisible": false
+    },
+    "l'appartement": {
+      "verdict": "approve",
+      "alt": "A white apartment building with rows of balconies and dark railings.",
+      "peopleVisible": false
+    },
+    "l'araignée": {
+      "verdict": "approve",
+      "alt": "A jumping spider with big dark eyes stands on a pale surface.",
+      "peopleVisible": false
+    },
+    "l'arbre": {
+      "verdict": "approve",
+      "alt": "A single bare tree stands in a misty field at sunrise.",
+      "peopleVisible": false
+    },
+    "l'argent liquide": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "l'ascenseur": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'assiette": {
+      "verdict": "approve",
+      "alt": "A stack of pancakes with raspberries sits on a dark plate, with syrup pouring over them.",
+      "peopleVisible": false
+    },
+    "l'embouteillage": {
+      "verdict": "approve",
+      "alt": "Many cars crowd a city road in heavy traffic at sunset.",
+      "peopleVisible": false
+    },
+    "l'enfant": {
+      "verdict": "approve",
+      "alt": "A baby in a knitted hat sits on a soft carpet and holds its feet.",
+      "peopleVisible": true
+    },
+    "l'escalade": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'escalier": {
+      "verdict": "approve",
+      "alt": "A wide stone staircase with columns and statues leads up inside a grand building.",
+      "peopleVisible": false
+    },
+    "l'herbe": {
+      "verdict": "approve",
+      "alt": "Bright green grass fills the whole frame.",
+      "peopleVisible": false
+    },
+    "l'horloge": {
+      "verdict": "approve",
+      "alt": "A round station clock hangs from a metal strip ceiling.",
+      "peopleVisible": false
+    },
+    "l'imprimante": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "l'infirmier": {
+      "verdict": "approve",
+      "alt": "A smiling nurse in blue scrubs, a surgical cap and clear goggles wears a stethoscope.",
+      "peopleVisible": true
+    },
+    "l'océan": {
+      "verdict": "approve",
+      "alt": "A large turquoise ocean wave curls and breaks.",
+      "peopleVisible": false
+    },
+    "l'oiseau": {
+      "verdict": "approve",
+      "alt": "A robin with an orange chest perches on a branch with small buds.",
+      "peopleVisible": false
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "l'oreille": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'ours": {
+      "verdict": "approve",
+      "alt": "A brown bear stands at the edge of the water.",
+      "peopleVisible": false
+    },
+    "l'université": {
+      "verdict": "approve",
+      "alt": "A long ivy-covered brick university building stands behind a lawn.",
+      "peopleVisible": false
+    },
+    "l'école": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "l'électricien": {
+      "verdict": "approve",
+      "alt": "A man in a white hard hat and glasses works on a wall socket.",
+      "peopleVisible": true
+    },
+    "l'éléphant": {
+      "verdict": "approve",
+      "alt": "An elephant stands on a dry path in a dry grassland.",
+      "peopleVisible": false
+    },
+    "l'éolienne": {
+      "verdict": "approve",
+      "alt": "Three wind turbines turn on a hill under dark clouds.",
+      "peopleVisible": false
+    },
+    "l'étagère": {
+      "verdict": "approve",
+      "alt": "Old books with worn spines stand on a dark wooden shelf.",
+      "peopleVisible": false
+    },
+    "l'œil": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's blue eye.",
+      "peopleVisible": true
+    },
+    "la banane": {
+      "verdict": "approve",
+      "alt": "A single ripe yellow banana lies on a white background.",
+      "peopleVisible": false
+    },
+    "la banque": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la bibliothèque": {
+      "verdict": "approve",
+      "alt": "Tall wooden shelves full of books line a library aisle lit by hanging bulbs.",
+      "peopleVisible": false
+    },
+    "la bouche": {
+      "verdict": "approve",
+      "alt": "A boy with curly hair holds his hands around his open mouth to shout.",
+      "peopleVisible": true
+    },
+    "la calculatrice": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la ceinture": {
+      "verdict": "approve",
+      "alt": "A brown leather belt with a metal buckle lies on rough fabric.",
+      "peopleVisible": false
+    }
+  }
+}

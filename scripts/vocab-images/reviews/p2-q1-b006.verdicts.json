@@ -1,0 +1,170 @@
+{
+  "batch": "q1-b006",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b006",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "le genou": {
+      "verdict": "approve",
+      "alt": "A wooden artist's mannequin stands on one leg and holds its knee.",
+      "peopleVisible": false
+    },
+    "le golf": {
+      "verdict": "approve",
+      "alt": "A golfer swings a club in silhouette against a sunset sky.",
+      "peopleVisible": true
+    },
+    "le gâteau": {
+      "verdict": "approve",
+      "alt": "A slice of chocolate cake with cream and cherries sits on a white plate.",
+      "peopleVisible": false
+    },
+    "le jardin": {
+      "verdict": "approve",
+      "alt": "A wooden arched bridge crosses a pond in a green Japanese garden with rocks and trees.",
+      "peopleVisible": false
+    },
+    "le jus": {
+      "verdict": "approve",
+      "alt": "A glass of fresh green juice sits among limes, celery and green leaves.",
+      "peopleVisible": false
+    },
+    "le lac": {
+      "verdict": "approve",
+      "alt": "A turquoise mountain lake lies below grassy slopes, pine trees and rocky peaks.",
+      "peopleVisible": false
+    },
+    "le lapin": {
+      "verdict": "approve",
+      "alt": "A small golden rabbit sits in a person's hand.",
+      "peopleVisible": true
+    },
+    "le lion": {
+      "verdict": "approve",
+      "alt": "A lion with a full mane opens its mouth wide in a roar.",
+      "peopleVisible": false
+    },
+    "le lit": {
+      "verdict": "approve",
+      "alt": "A single bed with a lace-patterned cover, a pink blanket and an open book.",
+      "peopleVisible": false
+    },
+    "le loup": {
+      "verdict": "approve",
+      "alt": "A grey wolf rests on a mossy rock among green leaves.",
+      "peopleVisible": false
+    },
+    "le magasin": {
+      "verdict": "approve",
+      "alt": "A shop with shelves of handbags, shoes and boxes is lit from inside.",
+      "peopleVisible": false
+    },
+    "le marché": {
+      "verdict": "approve",
+      "alt": "Shoppers walk between stalls of fresh vegetables at an outdoor market under red umbrellas.",
+      "peopleVisible": true
+    },
+    "le miroir": {
+      "verdict": "approve",
+      "alt": "A hand holds a small mirror that reflects a man's face.",
+      "peopleVisible": true
+    },
+    "le mouton": {
+      "verdict": "approve",
+      "alt": "A sheep with a white face stands among a flock of woolly sheep.",
+      "peopleVisible": false
+    },
+    "le musée": {
+      "verdict": "approve",
+      "alt": "A grand museum hall with a large whale skeleton hanging from the ceiling.",
+      "peopleVisible": false
+    },
+    "le médecin": {
+      "verdict": "approve",
+      "alt": "A doctor in blue scrubs and a surgical cap wears a stethoscope around her neck.",
+      "peopleVisible": true
+    },
+    "le métro": {
+      "verdict": "approve",
+      "alt": "Two escalators and a staircase lead down to a metro platform.",
+      "peopleVisible": false
+    },
+    "le nez": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le panneau solaire": {
+      "verdict": "approve",
+      "alt": "Rows of solar panels stand on a green meadow under a cloudy sky.",
+      "peopleVisible": false
+    },
+    "le pantalon": {
+      "verdict": "approve",
+      "alt": "A pair of dark blue trousers is laid out on a white background.",
+      "peopleVisible": false
+    },
+    "le papillon": {
+      "verdict": "approve",
+      "alt": "A butterfly with brown and orange wings rests on a green leaf.",
+      "peopleVisible": false
+    },
+    "le parc": {
+      "verdict": "approve",
+      "alt": "Tall trees with red and green leaves stand in a sunny park.",
+      "peopleVisible": false
+    },
+    "le passage piéton": {
+      "verdict": "approve",
+      "alt": "Several white striped crosswalks cross a road junction, seen from above.",
+      "peopleVisible": true
+    },
+    "le petit-déjeuner": {
+      "verdict": "approve",
+      "alt": "A stack of pancakes with raspberries and syrup sits on a dark plate.",
+      "peopleVisible": false
+    },
+    "le pied": {
+      "verdict": "approve",
+      "alt": "The feet of several dancers in pink ballet slippers stand on a wooden floor.",
+      "peopleVisible": true
+    },
+    "le plombier": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "le poisson": {
+      "verdict": "approve",
+      "alt": "A white betta fish with long flowing fins swims in dark water.",
+      "peopleVisible": false
+    },
+    "le pompier": {
+      "verdict": "approve",
+      "alt": "Firefighters in dark protective gear with reflective stripes walk beside a red fire truck.",
+      "peopleVisible": true
+    },
+    "le pont": {
+      "verdict": "approve",
+      "alt": "A stone bridge with two tall towers crosses a river at night.",
+      "peopleVisible": false
+    },
+    "le portefeuille": {
+      "verdict": "approve",
+      "alt": "A yellow leather wallet with a zipper lies on a table.",
+      "peopleVisible": false
+    },
+    "le puzzle": {
+      "verdict": "approve",
+      "alt": "Two hands bring together two white jigsaw puzzle pieces.",
+      "peopleVisible": true
+    },
+    "le renard": {
+      "verdict": "approve",
+      "alt": "A red fox stands on short grass and looks to the side.",
+      "peopleVisible": false
+    },
+    "le reçu": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    }
+  }
+}

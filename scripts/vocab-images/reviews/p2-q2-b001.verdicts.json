@@ -1,0 +1,83 @@
+{
+  "batch": "q2-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-q2-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "cacahuètes": {
+      "verdict": "approve",
+      "alt": "A small bowl is full of unshelled peanuts, with more peanuts on rough cloth.",
+      "peopleVisible": false
+    },
+    "chimenea": {
+      "verdict": "approve",
+      "alt": "Logs burn with bright flames inside a dark fireplace.",
+      "peopleVisible": false
+    },
+    "colis": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "escuela": {
+      "verdict": "approve",
+      "alt": "Children with backpacks run up the front steps of a school building.",
+      "peopleVisible": true
+    },
+    "especia": {
+      "verdict": "approve",
+      "alt": "Four small wooden spoons each hold a different dried herb or spice.",
+      "peopleVisible": false
+    },
+    "ferry": {
+      "verdict": "approve",
+      "alt": "A white ferry carries cars across a wide river.",
+      "peopleVisible": false
+    },
+    "l'oreille": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's ear and dark hair.",
+      "peopleVisible": true
+    },
+    "l'école": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la banque": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la craie": {
+      "verdict": "approve",
+      "alt": "Four coloured sticks of chalk lie on a dark slate surface.",
+      "peopleVisible": false
+    },
+    "la cuillère": {
+      "verdict": "approve",
+      "alt": "Three metal spoons lie on a dark surface with dried pine needles.",
+      "peopleVisible": false
+    },
+    "la fourchette": {
+      "verdict": "approve",
+      "alt": "A row of silver forks leans against a pink wall.",
+      "peopleVisible": false
+    },
+    "la gomme": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la poule": {
+      "verdict": "approve",
+      "alt": "Several chickens stand on a round stone in the sun.",
+      "peopleVisible": false
+    },
+    "le nez": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's nose and lips.",
+      "peopleVisible": true
+    }
+  }
+}

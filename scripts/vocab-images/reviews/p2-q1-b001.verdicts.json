@@ -1,0 +1,174 @@
+{
+  "batch": "q1-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "acampar": {
+      "verdict": "approve",
+      "alt": "Two tents glow from inside at night in a dark field under a starry sky.",
+      "peopleVisible": false
+    },
+    "acantilado": {
+      "verdict": "approve",
+      "alt": "A tall white chalk cliff rises above a pebble beach under a blue sky.",
+      "peopleVisible": false
+    },
+    "actress": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "almohada": {
+      "verdict": "approve",
+      "alt": "Several soft pillows in grey and pink rest on a bed with white sheets.",
+      "peopleVisible": false
+    },
+    "arcoíris": {
+      "verdict": "approve",
+      "alt": "A rainbow arcs over green trees under a cloudy grey sky.",
+      "peopleVisible": false
+    },
+    "atm": {
+      "verdict": "approve",
+      "alt": "A hand takes banknotes from a cash machine, shown in a black and white collage.",
+      "peopleVisible": true
+    },
+    "autobús": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "bacon": {
+      "verdict": "approve",
+      "alt": "Thick strips of bacon sizzle in a frying pan.",
+      "peopleVisible": false
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "basketball": {
+      "verdict": "approve",
+      "alt": "A basketball hoop with a red rim and a net seen from below against a pale sky.",
+      "peopleVisible": false
+    },
+    "baño": {
+      "verdict": "approve",
+      "alt": "A tidy bathroom with a sink, a large mirror, a toilet and a striped shower curtain.",
+      "peopleVisible": false
+    },
+    "bell": {
+      "verdict": "approve",
+      "alt": "A brass hand bell with a wooden handle stands on a table set with glasses and plates.",
+      "peopleVisible": false
+    },
+    "bicicleta": {
+      "verdict": "approve",
+      "alt": "A rusty orange bicycle leans against a wall beside a barred window.",
+      "peopleVisible": false
+    },
+    "boca": {
+      "verdict": "approve",
+      "alt": "A close-up in black and white of a smiling mouth with white teeth.",
+      "peopleVisible": true
+    },
+    "boire": {
+      "verdict": "approve",
+      "alt": "Water pours into a glass standing on a wet dark surface.",
+      "peopleVisible": false
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "bolsa": {
+      "verdict": "approve",
+      "alt": "Four leather handbags in brown, black, grey and red stand on a white shelf.",
+      "peopleVisible": false
+    },
+    "bolígrafo": {
+      "verdict": "approve",
+      "alt": "A hand holds a red pen and signs a paper on a wooden desk.",
+      "peopleVisible": true
+    },
+    "bosque": {
+      "verdict": "approve",
+      "alt": "Green forest-covered hills glow in bright sunlight.",
+      "peopleVisible": false
+    },
+    "bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "cab": {
+      "verdict": "approve",
+      "alt": "A yellow taxi cab drives down a sunlit city street lined with tall buildings.",
+      "peopleVisible": false
+    },
+    "cacahuètes": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "calle": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "cama": {
+      "verdict": "approve",
+      "alt": "A single bed with a lace-patterned cover, a pink blanket and an open book.",
+      "peopleVisible": false
+    },
+    "caminar": {
+      "verdict": "approve",
+      "alt": "A person walks along a road lined with trees in autumn colours.",
+      "peopleVisible": true
+    },
+    "cantar": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "casa": {
+      "verdict": "approve",
+      "alt": "A large white house with balconies and columns stands beside a swimming pool.",
+      "peopleVisible": false
+    },
+    "centre-ville": {
+      "verdict": "approve",
+      "alt": "A city skyline with tall towers glows under an orange sunset sky.",
+      "peopleVisible": false
+    },
+    "chambre": {
+      "verdict": "approve",
+      "alt": "A bright bedroom with a large bed, pillows, a rug and white curtains.",
+      "peopleVisible": false
+    },
+    "chanter": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "checkout": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "chimenea": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "clínica": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "coche": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "cocina": {
+      "verdict": "approve",
+      "alt": "A bright kitchen with white cabinets, a gas range, a sink and a wooden table.",
+      "peopleVisible": false
+    }
+  }
+}

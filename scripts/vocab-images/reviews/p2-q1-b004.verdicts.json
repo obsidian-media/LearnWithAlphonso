@@ -1,0 +1,174 @@
+{
+  "batch": "q1-b004",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b004",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "la chambre": {
+      "verdict": "approve",
+      "alt": "A bright bedroom with a large bed, pillows, a rug and white curtains.",
+      "peopleVisible": false
+    },
+    "la colle": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la craie": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la cuillère": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la cuisine": {
+      "verdict": "approve",
+      "alt": "A bright kitchen with white cabinets, a gas range, a sink and a wooden table.",
+      "peopleVisible": false
+    },
+    "la dent": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la fenêtre": {
+      "verdict": "approve",
+      "alt": "A small square window in a pink wall holds two potted plants.",
+      "peopleVisible": false
+    },
+    "la fleur": {
+      "verdict": "approve",
+      "alt": "A single red rose against a black background.",
+      "peopleVisible": false
+    },
+    "la forêt": {
+      "verdict": "approve",
+      "alt": "Tall trees stand in a misty forest with mossy ground.",
+      "peopleVisible": false
+    },
+    "la fourchette": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la gare": {
+      "verdict": "approve",
+      "alt": "A long train waits beside a platform under the roof of a train station.",
+      "peopleVisible": false
+    },
+    "la gomme": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la grand-mère": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la grenouille": {
+      "verdict": "approve",
+      "alt": "A green tree frog sits on a dark surface.",
+      "peopleVisible": false
+    },
+    "la jupe": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la lampe": {
+      "verdict": "approve",
+      "alt": "A lit oil lantern stands on a cobblestone path in the dark.",
+      "peopleVisible": false
+    },
+    "la main": {
+      "verdict": "approve",
+      "alt": "An adult's hands hold a baby's small hand.",
+      "peopleVisible": true
+    },
+    "la mairie": {
+      "verdict": "approve",
+      "alt": "A grand town hall with a clock tower and a fountain is lit up at night.",
+      "peopleVisible": false
+    },
+    "la maison": {
+      "verdict": "approve",
+      "alt": "A large white house with balconies and columns stands beside a swimming pool.",
+      "peopleVisible": false
+    },
+    "la mer": {
+      "verdict": "approve",
+      "alt": "Waves roll onto a sandy beach as the sun sets under a streaked sky.",
+      "peopleVisible": false
+    },
+    "la montagne": {
+      "verdict": "approve",
+      "alt": "A sharp snow-covered mountain peak rises into a blue sky.",
+      "peopleVisible": false
+    },
+    "la moto": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la natation": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la peinture": {
+      "verdict": "approve",
+      "alt": "A watercolour painting of a woman's face lies beside brushes and paint pans.",
+      "peopleVisible": false
+    },
+    "la pierre": {
+      "verdict": "approve",
+      "alt": "Smooth stones are stacked on a rock in front of a waterfall.",
+      "peopleVisible": false
+    },
+    "la pomme": {
+      "verdict": "approve",
+      "alt": "A single shiny red apple is shown close up against a green blurred background.",
+      "peopleVisible": false
+    },
+    "la porte": {
+      "verdict": "approve",
+      "alt": "A blue wooden door with metal studs sits in a blue painted wall.",
+      "peopleVisible": false
+    },
+    "la poule": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la randonnée": {
+      "verdict": "approve",
+      "alt": "A hiker with a backpack walks along a path on a green mountain slope.",
+      "peopleVisible": true
+    },
+    "la rivière": {
+      "verdict": "approve",
+      "alt": "A blue river winds between green hills and a small town.",
+      "peopleVisible": false
+    },
+    "la route": {
+      "verdict": "approve",
+      "alt": "A long straight road with a yellow centre line runs through open country under a cloudy sky.",
+      "peopleVisible": false
+    },
+    "la rue": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la règle": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "la sculpture": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "la serviette": {
+      "verdict": "approve",
+      "alt": "Folded cream napkins, forks and glasses are set on a white table.",
+      "peopleVisible": false
+    },
+    "la souris": {
+      "verdict": "approve",
+      "alt": "A small brown mouse sits among white fuzzy plants.",
+      "peopleVisible": false
+    }
+  }
+}

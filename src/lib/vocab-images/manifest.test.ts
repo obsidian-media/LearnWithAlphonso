@@ -11,6 +11,7 @@ import {
   referencedObjectPaths,
   statusCounts,
   toVocabImages,
+  withPlannedUrls,
   type Candidate,
   type ManifestEntry,
 } from "./manifest";
@@ -209,5 +210,22 @@ describe("toVocabImages / statusCounts", () => {
       "no-image": 0,
     });
     expect(referencedObjectPaths(m)).toEqual(new Set(["en/apple.jpg"]));
+  });
+});
+
+describe("withPlannedUrls", () => {
+  it("gives every approved entry the url the upload will record, and leaves the rest alone", () => {
+    const approved = applyFirstVerdict(fetched(), approve, "agent:a", "2026-10-08").entry;
+    const m = { version: 1 as const, entries: { apple: approved, pear: fresh() } };
+    const planned = withPlannedUrls(m);
+    expect(planned.entries.apple).toMatchObject({ status: "uploaded", url: BUCKET_URL });
+    expect(planned.entries.pear.status).toBe("pending-fetch");
+    expect(m.entries.apple.status).toBe("approved");
+    expect(toVocabImages(planned).apple.url).toBe(BUCKET_URL);
+  });
+
+  it("does not invent urls for entries that are not approved", () => {
+    const m = { version: 1 as const, entries: { apple: fetched() } };
+    expect(toVocabImages(withPlannedUrls(m))).toEqual({});
   });
 });

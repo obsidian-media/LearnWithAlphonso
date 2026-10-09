@@ -1,0 +1,173 @@
+{
+  "batch": "r1-2nd-b003",
+  "pass": "second",
+  "reviewer": "agent:p2-second-b003",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "le musicien": {
+      "verdict": "approve",
+      "alt": "A person in a black jacket plays an acoustic guitar.",
+      "peopleVisible": true
+    },
+    "le pilote": {
+      "verdict": "approve",
+      "alt": "A pilot's hand rests on the controls in a small plane cockpit above city lights at night.",
+      "peopleVisible": true
+    },
+    "le ski": {
+      "verdict": "approve",
+      "alt": "A skier makes tracks down a snowy slope beside a chairlift, seen from above.",
+      "peopleVisible": true
+    },
+    "le smartphone": {
+      "verdict": "approve",
+      "alt": "A light green smartphone lies on its side on a wooden surface.",
+      "peopleVisible": false
+    },
+    "le supermarché": {
+      "verdict": "approve",
+      "alt": "Shelves and tables of colourful fruit and vegetables fill a supermarket, seen from above.",
+      "peopleVisible": true
+    },
+    "le surf": {
+      "verdict": "approve",
+      "alt": "A surfer rides a wave at sunset.",
+      "peopleVisible": true
+    },
+    "le volleyball": {
+      "verdict": "approve",
+      "alt": "People play volleyball on a beach at sunset, seen in silhouette.",
+      "peopleVisible": true
+    },
+    "les chaussures": {
+      "verdict": "approve",
+      "alt": "Two people in brown lace-up shoes and white socks stand on a striped crosswalk with small flowers in their socks.",
+      "peopleVisible": true
+    },
+    "les cheveux": {
+      "verdict": "approve",
+      "alt": "A woman with long hair blowing in the wind stands in front of red leaves.",
+      "peopleVisible": true
+    },
+    "les yeux": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's green-brown eye.",
+      "peopleVisible": true
+    },
+    "lunettes": {
+      "verdict": "approve",
+      "alt": "A man with shoulder-length blond hair wears dark-framed glasses and looks down.",
+      "peopleVisible": true
+    },
+    "marcher": {
+      "verdict": "approve",
+      "alt": "A person walks along a road lined with trees in autumn colours.",
+      "peopleVisible": true
+    },
+    "nube": {
+      "verdict": "approve",
+      "alt": "Pink and grey clouds float in a blue sky.",
+      "peopleVisible": false
+    },
+    "ojo": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's blue eye.",
+      "peopleVisible": true
+    },
+    "peindre": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "pelo": {
+      "verdict": "approve",
+      "alt": "A woman with long hair blowing in the wind stands in front of red leaves.",
+      "peopleVisible": true
+    },
+    "pincel": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "pintar": {
+      "verdict": "approve",
+      "alt": "A hand paints with a brush on watercolour paper.",
+      "peopleVisible": true
+    },
+    "robe": {
+      "verdict": "approve",
+      "alt": "A girl in a pink striped dress and a pink hat stands in tall grass at sunset.",
+      "peopleVisible": true
+    },
+    "skiing": {
+      "verdict": "approve",
+      "alt": "Four skiers in colourful jackets and helmets stand on a snowy slope with ski poles.",
+      "peopleVisible": true
+    },
+    "stir": {
+      "verdict": "approve",
+      "alt": "A hand stirs a pot of vegetable soup with a wooden spoon.",
+      "peopleVisible": true
+    },
+    "taxi driver": {
+      "verdict": "approve",
+      "alt": "A man drives an orange three-wheeled tuk-tuk taxi down a city street, seen from behind.",
+      "peopleVisible": true
+    },
+    "teclado": {
+      "verdict": "approve",
+      "alt": "A person types on a laptop keyboard at a wooden desk beside a notebook.",
+      "peopleVisible": true
+    },
+    "tricoter": {
+      "verdict": "approve",
+      "alt": "Hands knit a grey wool piece with two needles.",
+      "peopleVisible": true
+    },
+    "watching": {
+      "verdict": "approve",
+      "alt": "Two people sit close together on the floor and smile as they watch a laptop screen.",
+      "peopleVisible": true
+    },
+    "worksheet": {
+      "verdict": "approve",
+      "alt": "A boy in a green sweater writes with a pencil on a worksheet at a desk.",
+      "peopleVisible": true
+    },
+    "write": {
+      "verdict": "approve",
+      "alt": "A pen lies on a spiral notebook on a wooden desk beside a laptop and a cup of coffee.",
+      "peopleVisible": false
+    },
+    "yoga": {
+      "verdict": "approve",
+      "alt": "A person sits on a yoga mat and folds forward over their legs.",
+      "peopleVisible": true
+    },
+    "le scientifique": {
+      "verdict": "approve",
+      "alt": "A scientist in a white lab coat checks small plant samples on laboratory shelves.",
+      "peopleVisible": true
+    },
+    "le père": {
+      "verdict": "approve",
+      "alt": "A man sleeps with a newborn baby resting on his chest, wrapped in a soft blanket.",
+      "peopleVisible": true
+    },
+    "les vacances": {
+      "verdict": "approve",
+      "alt": "A pink-sand beach with turquoise water and palm trees stretches into the distance.",
+      "peopleVisible": false
+    },
+    "parler": {
+      "verdict": "approve",
+      "alt": "Two men talk beside parked motorbikes in a black and white street scene.",
+      "peopleVisible": true
+    },
+    "relajarse": {
+      "verdict": "approve",
+      "alt": "A person lies in a red hammock stretched between trees in a green park.",
+      "peopleVisible": true
+    }
+  }
+}

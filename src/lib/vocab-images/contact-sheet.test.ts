@@ -47,3 +47,31 @@ describe("buildContactSheetHtml", () => {
     expect(owner).toContain("Copy objections");
   });
 });
+
+describe("buildContactSheetHtml sections", () => {
+  const sectioned: SheetItem[] = [
+    { ...items[0], section: "English", gloss: "a <b>", license: "Pexels License" },
+    { ...items[0], key: "tree", section: "English" },
+    { ...items[1], section: "French" },
+  ];
+
+  it("groups consecutive items under one heading each, with their counts", () => {
+    const html = buildContactSheetHtml({ title: "t", items: sectioned, objections: false });
+    expect(html.match(/<h2>/g)).toHaveLength(2);
+    expect(html).toContain("<h2>English <small>2 images</small></h2>");
+    expect(html).toContain("<h2>French <small>1 images</small></h2>");
+    expect(html.match(/<div class="grid">/g)).toHaveLength(2);
+    expect(html.match(/<figure /g)).toHaveLength(3);
+    expect(html.match(/<\/div>/g)).toHaveLength(2);
+  });
+
+  it("shows the gloss and the licence line, escaped", () => {
+    const html = buildContactSheetHtml({ title: "t", items: sectioned, objections: false });
+    expect(html).toContain("Means: a &lt;b&gt;");
+    expect(html).toContain("· Pexels License");
+  });
+
+  it("adds no heading when no item has a section", () => {
+    expect(buildContactSheetHtml({ title: "t", items, objections: false })).not.toContain("<h2>");
+  });
+});

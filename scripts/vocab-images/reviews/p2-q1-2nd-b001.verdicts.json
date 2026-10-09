@@ -1,0 +1,283 @@
+{
+  "batch": "q1-2nd-b001",
+  "pass": "second",
+  "reviewer": "agent:p2-second-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "arcoíris": {
+      "verdict": "approve",
+      "alt": "A rainbow arcs over green trees under a cloudy grey sky.",
+      "peopleVisible": false
+    },
+    "atm": {
+      "verdict": "approve",
+      "alt": "A hand takes banknotes from a cash machine, shown in a black and white collage.",
+      "peopleVisible": true
+    },
+    "basketball": {
+      "verdict": "approve",
+      "alt": "A basketball hoop with a red rim and a net seen from below against a pale sky.",
+      "peopleVisible": false
+    },
+    "boca": {
+      "verdict": "approve",
+      "alt": "A close-up in black and white of a smiling mouth with white teeth.",
+      "peopleVisible": true
+    },
+    "boire": {
+      "verdict": "approve",
+      "alt": "Water pours into a glass standing on a wet dark surface.",
+      "peopleVisible": false
+    },
+    "bolígrafo": {
+      "verdict": "approve",
+      "alt": "A hand holds a red pen and signs a paper on a wooden desk.",
+      "peopleVisible": true
+    },
+    "cab": {
+      "verdict": "approve",
+      "alt": "A yellow taxi cab drives down a sunlit city street lined with tall buildings.",
+      "peopleVisible": false
+    },
+    "cacahuètes": {
+      "verdict": "approve",
+      "alt": "A small bowl is full of unshelled peanuts, with more peanuts on rough cloth.",
+      "peopleVisible": false
+    },
+    "caminar": {
+      "verdict": "approve",
+      "alt": "A person walks along a road lined with trees in autumn colours.",
+      "peopleVisible": true
+    },
+    "centre-ville": {
+      "verdict": "approve",
+      "alt": "A city skyline with tall towers glows under an orange sunset sky.",
+      "peopleVisible": false
+    },
+    "correr": {
+      "verdict": "approve",
+      "alt": "A woman with earphones runs along a forest path in the evening sun.",
+      "peopleVisible": true
+    },
+    "courir": {
+      "verdict": "approve",
+      "alt": "A woman with earphones runs along a forest path in the evening sun.",
+      "peopleVisible": true
+    },
+    "cubo": {
+      "verdict": "approve",
+      "alt": "A black puppy sits in a red bucket on the grass.",
+      "peopleVisible": false
+    },
+    "dancing": {
+      "verdict": "approve",
+      "alt": "A dancer moves in a cloud of white powder on a dark stage lit by bright lamps.",
+      "peopleVisible": true
+    },
+    "dentiste": {
+      "verdict": "approve",
+      "alt": "A dentist in colourful scrubs and a mask treats a child who wears dark glasses and lies in a dental chair.",
+      "peopleVisible": true
+    },
+    "dessiner": {
+      "verdict": "approve",
+      "alt": "A hand draws a sketch with a blue pencil on white paper.",
+      "peopleVisible": true
+    },
+    "dibujar": {
+      "verdict": "approve",
+      "alt": "A hand draws a sketch with a blue pencil on white paper.",
+      "peopleVisible": true
+    },
+    "diploma": {
+      "verdict": "approve",
+      "alt": "Graduates in black gowns throw their caps into a blue sky.",
+      "peopleVisible": true
+    },
+    "enfant": {
+      "verdict": "approve",
+      "alt": "A baby in a knitted hat sits on a soft carpet and holds its feet.",
+      "peopleVisible": true
+    },
+    "enfermera": {
+      "verdict": "approve",
+      "alt": "A smiling nurse in blue scrubs, a surgical cap and clear goggles wears a stethoscope.",
+      "peopleVisible": true
+    },
+    "escuela": {
+      "verdict": "approve",
+      "alt": "Children with backpacks run up the front steps of a school building.",
+      "peopleVisible": true
+    },
+    "finger": {
+      "verdict": "approve",
+      "alt": "Several hands point their index fingers on a white background.",
+      "peopleVisible": true
+    },
+    "jardiner": {
+      "verdict": "approve",
+      "alt": "A hand sprinkles water over a small green seedling growing in dark soil.",
+      "peopleVisible": true
+    },
+    "l'appartement": {
+      "verdict": "approve",
+      "alt": "A white apartment building with rows of balconies and dark railings.",
+      "peopleVisible": false
+    },
+    "l'enfant": {
+      "verdict": "approve",
+      "alt": "A baby in a knitted hat sits on a soft carpet and holds its feet.",
+      "peopleVisible": true
+    },
+    "l'infirmier": {
+      "verdict": "approve",
+      "alt": "A smiling nurse in blue scrubs, a surgical cap and clear goggles wears a stethoscope.",
+      "peopleVisible": true
+    },
+    "l'oiseau": {
+      "verdict": "approve",
+      "alt": "A robin with an orange chest perches on a branch with small buds.",
+      "peopleVisible": false
+    },
+    "l'oreille": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's ear and dark hair.",
+      "peopleVisible": true
+    },
+    "l'électricien": {
+      "verdict": "approve",
+      "alt": "A man in a white hard hat and glasses works on a wall socket.",
+      "peopleVisible": true
+    },
+    "l'étagère": {
+      "verdict": "approve",
+      "alt": "Old books with worn spines stand on a dark wooden shelf.",
+      "peopleVisible": false
+    },
+    "l'œil": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's blue eye.",
+      "peopleVisible": true
+    },
+    "la bouche": {
+      "verdict": "approve",
+      "alt": "A boy with curly hair holds his hands around his open mouth to shout.",
+      "peopleVisible": true
+    },
+    "la main": {
+      "verdict": "approve",
+      "alt": "An adult's hands hold a baby's small hand.",
+      "peopleVisible": true
+    },
+    "la randonnée": {
+      "verdict": "approve",
+      "alt": "A hiker with a backpack walks along a path on a green mountain slope.",
+      "peopleVisible": true
+    },
+    "la viande": {
+      "verdict": "approve",
+      "alt": "Skewers of meat are grilled over hot coals.",
+      "peopleVisible": false
+    },
+    "le balcon": {
+      "verdict": "approve",
+      "alt": "An apartment building has rows of windows and balconies with blue frames.",
+      "peopleVisible": true
+    },
+    "le bébé": {
+      "verdict": "approve",
+      "alt": "A baby's small feet are wrapped in a white towel.",
+      "peopleVisible": true
+    },
+    "le cahier": {
+      "verdict": "approve",
+      "alt": "A spiral notebook with a fountain pen lies on a wooden table.",
+      "peopleVisible": false
+    },
+    "le cuisinier": {
+      "verdict": "approve",
+      "alt": "A chef in a white jacket slices fresh baguettes on a counter.",
+      "peopleVisible": true
+    },
+    "le dentiste": {
+      "verdict": "approve",
+      "alt": "A dentist in colourful scrubs and a mask treats a child who wears dark glasses and lies in a dental chair.",
+      "peopleVisible": true
+    },
+    "le doigt": {
+      "verdict": "approve",
+      "alt": "Two hands form a heart shape with their fingers against a white background.",
+      "peopleVisible": true
+    },
+    "le golf": {
+      "verdict": "approve",
+      "alt": "A golfer swings a club in silhouette against a sunset sky.",
+      "peopleVisible": true
+    },
+    "le lac": {
+      "verdict": "approve",
+      "alt": "A turquoise mountain lake lies below grassy slopes, pine trees and rocky peaks.",
+      "peopleVisible": false
+    },
+    "le lapin": {
+      "verdict": "approve",
+      "alt": "A small golden rabbit sits in a person's hand.",
+      "peopleVisible": true
+    },
+    "le magasin": {
+      "verdict": "approve",
+      "alt": "A shop with shelves of handbags, shoes and boxes is lit from inside.",
+      "peopleVisible": false
+    },
+    "le marché": {
+      "verdict": "approve",
+      "alt": "Shoppers walk between stalls of fresh vegetables at an outdoor market under red umbrellas.",
+      "peopleVisible": true
+    },
+    "le miroir": {
+      "verdict": "approve",
+      "alt": "A hand holds a small mirror that reflects a man's face.",
+      "peopleVisible": true
+    },
+    "le mouton": {
+      "verdict": "approve",
+      "alt": "A sheep with a white face stands among a flock of woolly sheep.",
+      "peopleVisible": false
+    },
+    "le musée": {
+      "verdict": "approve",
+      "alt": "A grand museum hall with a large whale skeleton hanging from the ceiling.",
+      "peopleVisible": false
+    },
+    "le médecin": {
+      "verdict": "approve",
+      "alt": "A doctor in blue scrubs and a surgical cap wears a stethoscope around her neck.",
+      "peopleVisible": true
+    },
+    "le nez": {
+      "verdict": "approve",
+      "alt": "A close-up of a person's nose and lips.",
+      "peopleVisible": true
+    },
+    "le passage piéton": {
+      "verdict": "approve",
+      "alt": "Several white striped crosswalks cross a road junction, seen from above.",
+      "peopleVisible": true
+    },
+    "le pied": {
+      "verdict": "approve",
+      "alt": "The feet of several dancers in pink ballet slippers stand on a wooden floor.",
+      "peopleVisible": true
+    },
+    "le pompier": {
+      "verdict": "approve",
+      "alt": "Firefighters in dark protective gear with reflective stripes walk beside a red fire truck.",
+      "peopleVisible": true
+    },
+    "le puzzle": {
+      "verdict": "approve",
+      "alt": "Two hands bring together two white jigsaw puzzle pieces.",
+      "peopleVisible": true
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "batch": "r6-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-r6-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "jouer": {
+      "verdict": "approve",
+      "alt": "A smiling child plays on an orange slide at a playground.",
+      "peopleVisible": true
+    },
+    "la danse": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "la radio": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "relajarse": {
+      "verdict": "approve",
+      "alt": "A person lies in a red hammock stretched between trees in a green park.",
+      "peopleVisible": true
+    },
+    "sorprendido": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "surpris": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "viajar": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "voyager": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    }
+  }
+}

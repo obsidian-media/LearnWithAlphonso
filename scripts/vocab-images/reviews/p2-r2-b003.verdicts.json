@@ -1,0 +1,158 @@
+{
+  "batch": "r2-b003",
+  "pass": "first",
+  "reviewer": "agent:p2-r2-b003",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "les gants": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "libro": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "livre": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "llave": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "manger": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "mano": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "mapa": {
+      "verdict": "approve",
+      "alt": "A map of the world shows the continents in green and brown and the oceans in dark blue.",
+      "peopleVisible": false
+    },
+    "medicina": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "microondas": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "moneda": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "médicament": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "nariz": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "nose": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "oreja": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "palacio de justicia": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "papel": {
+      "verdict": "approve",
+      "alt": "A blank white sheet of paper lies on a marble desk with paper clips, scissors and a small plant.",
+      "peopleVisible": false
+    },
+    "pasaporte": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "passport": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "plumber": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "police officer": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion", "brand-logo-or-foreign-text"]
+    },
+    "post office": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "postman": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "programmer": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "recycling": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "rue": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "shirt": {
+      "verdict": "approve",
+      "alt": "A white shirt hangs on a white hanger in a closet full of clothes.",
+      "peopleVisible": false
+    },
+    "shopkeeper": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "shopping": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "shorts": {
+      "verdict": "reject",
+      "reasons": ["nudity-or-suggestive"]
+    },
+    "silla": {
+      "verdict": "approve",
+      "alt": "A grey upholstered chair with wooden legs stands at a desk in a bright room.",
+      "peopleVisible": false
+    },
+    "stamp": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "stir": {
+      "verdict": "approve",
+      "alt": "A hand stirs a pot of vegetable soup with a wooden spoon.",
+      "peopleVisible": true
+    },
+    "teacher": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "teclado": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "tenedor": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "toalla": {
+      "verdict": "approve",
+      "alt": "A stack of folded orange, grey and green towels sits on a white bed.",
+      "peopleVisible": false
+    }
+  }
+}

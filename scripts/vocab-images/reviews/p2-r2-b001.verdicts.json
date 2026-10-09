@@ -1,0 +1,170 @@
+{
+  "batch": "r2-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-r2-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "abogado": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "actress": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "autobús": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "avión": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "bailar": {
+      "verdict": "approve",
+      "alt": "A dancer in a purple top and black skirt stretches one leg high in a bright studio.",
+      "peopleVisible": true
+    },
+    "bank": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "barco": {
+      "verdict": "approve",
+      "alt": "A white sailboat sails alone on calm dark blue water.",
+      "peopleVisible": false
+    },
+    "boleto": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "bus": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "buzón": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "cab": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "calendario": {
+      "verdict": "approve",
+      "alt": "A paper wall calendar shows the days as numbers in boxes with red lines.",
+      "peopleVisible": false
+    },
+    "camisa": {
+      "verdict": "approve",
+      "alt": "A person in a plain white T-shirt and jeans stands against a pink and lilac background.",
+      "peopleVisible": true
+    },
+    "cartera": {
+      "verdict": "approve",
+      "alt": "Two brown leather wallets lie on a wooden table beside a vintage camera.",
+      "peopleVisible": false
+    },
+    "cash machine": {
+      "verdict": "approve",
+      "alt": "A hand takes banknotes from a cash machine, shown in a black and white collage.",
+      "peopleVisible": true
+    },
+    "cashier": {
+      "verdict": "approve",
+      "alt": "A woman stands at a shop counter and uses a tablet register.",
+      "peopleVisible": true
+    },
+    "coins": {
+      "verdict": "approve",
+      "alt": "A tarnished tray holds a large pile of old coins.",
+      "peopleVisible": false
+    },
+    "comisaría": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text", "off-term"]
+    },
+    "computadora": {
+      "verdict": "approve",
+      "alt": "Rows of desktop computers stand on white desks in a bright classroom.",
+      "peopleVisible": false
+    },
+    "danser": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "dedo": {
+      "verdict": "approve",
+      "alt": "A raised hand points one finger upward against a plain grey wall.",
+      "peopleVisible": true
+    },
+    "dinero": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "dormir": {
+      "verdict": "approve",
+      "alt": "A young woman sleeps on a white pillow in a bed.",
+      "peopleVisible": true
+    },
+    "dress": {
+      "verdict": "approve",
+      "alt": "A woman in a short white dress and sunglasses stands on a promenade beside a river.",
+      "peopleVisible": true
+    },
+    "espejo": {
+      "verdict": "approve",
+      "alt": "A bathroom has two round mirrors above sinks and a glass shower.",
+      "peopleVisible": false
+    },
+    "estampilla": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "farmacia": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "firefighter": {
+      "verdict": "approve",
+      "alt": "Firefighters in dark protective gear with reflective stripes walk beside a red fire truck.",
+      "peopleVisible": true
+    },
+    "freezer": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "fútbol": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "hotel": {
+      "verdict": "approve",
+      "alt": "A dim hotel room has a bed, an armchair and a table by a large window.",
+      "peopleVisible": false
+    },
+    "l'argent liquide": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "l'arrêt de bus": {
+      "verdict": "approve",
+      "alt": "A glass bus shelter stands in a green landscape with a sheep inside.",
+      "peopleVisible": false
+    },
+    "l'avion": {
+      "verdict": "approve",
+      "alt": "A view from an airplane window shows a wing and white clouds below.",
+      "peopleVisible": false
+    },
+    "l'aéroport": {
+      "verdict": "approve",
+      "alt": "An airliner stands at an airport gate on a grey cloudy day.",
+      "peopleVisible": false
+    },
+    "l'ordinateur": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "batch": "q1-b002",
+  "pass": "first",
+  "reviewer": "agent:p2-q1-b002",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "cocinar": {
+      "verdict": "approve",
+      "alt": "Raw filled dumplings sit on a floured board beside eggs and a rolling pin on a wooden table.",
+      "peopleVisible": false
+    },
+    "colis": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "comisaría": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "conduire": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "correr": {
+      "verdict": "approve",
+      "alt": "A woman with earphones runs along a forest path in the evening sun.",
+      "peopleVisible": true
+    },
+    "coudre": {
+      "verdict": "approve",
+      "alt": "Spools of coloured thread and a pair of scissors lie together.",
+      "peopleVisible": false
+    },
+    "courir": {
+      "verdict": "approve",
+      "alt": "A woman with earphones runs along a forest path in the evening sun.",
+      "peopleVisible": true
+    },
+    "cubo": {
+      "verdict": "approve",
+      "alt": "A black puppy sits in a red bucket on the grass.",
+      "peopleVisible": false
+    },
+    "cuchillo": {
+      "verdict": "approve",
+      "alt": "Kitchen knives of different sizes lie on a black table beside a board with lemon slices.",
+      "peopleVisible": false
+    },
+    "cuisiner": {
+      "verdict": "approve",
+      "alt": "Raw filled dumplings sit on a floured board beside eggs and a rolling pin on a wooden table.",
+      "peopleVisible": false
+    },
+    "dancing": {
+      "verdict": "approve",
+      "alt": "A dancer moves in a cloud of white powder on a dark stage lit by bright lamps.",
+      "peopleVisible": true
+    },
+    "danser": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "dentiste": {
+      "verdict": "approve",
+      "alt": "A dentist in colourful scrubs and a mask treats a child who wears dark glasses and lies in a dental chair.",
+      "peopleVisible": true
+    },
+    "dessiner": {
+      "verdict": "approve",
+      "alt": "A hand draws a sketch with a blue pencil on white paper.",
+      "peopleVisible": true
+    },
+    "dibujar": {
+      "verdict": "approve",
+      "alt": "A hand draws a sketch with a blue pencil on white paper.",
+      "peopleVisible": true
+    },
+    "diente": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "dinero": {
+      "verdict": "reject",
+      "reasons": ["politics-protest-religion"]
+    },
+    "diploma": {
+      "verdict": "approve",
+      "alt": "Graduates in black gowns throw their caps into a blue sky.",
+      "peopleVisible": true
+    },
+    "dormir": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "dormitorio": {
+      "verdict": "approve",
+      "alt": "A bright bedroom with a large bed, pillows, a rug and white curtains.",
+      "peopleVisible": false
+    },
+    "enfant": {
+      "verdict": "approve",
+      "alt": "A baby in a knitted hat sits on a soft carpet and holds its feet.",
+      "peopleVisible": true
+    },
+    "enfermera": {
+      "verdict": "approve",
+      "alt": "A smiling nurse in blue scrubs, a surgical cap and clear goggles wears a stethoscope.",
+      "peopleVisible": true
+    },
+    "equipaje": {
+      "verdict": "approve",
+      "alt": "Old leather suitcases in brown and orange are stacked on top of one another.",
+      "peopleVisible": false
+    },
+    "escuela": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "especia": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "estadio": {
+      "verdict": "approve",
+      "alt": "The inside of a large stadium with a curved roof opening to the sky and a running track.",
+      "peopleVisible": false
+    },
+    "estampilla": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "farmacia": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "ferry": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "finger": {
+      "verdict": "approve",
+      "alt": "Several hands point their index fingers on a white background.",
+      "peopleVisible": true
+    },
+    "freezer": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "fútbol": {
+      "verdict": "reject",
+      "reasons": ["brand-logo-or-foreign-text"]
+    },
+    "guitarra": {
+      "verdict": "approve",
+      "alt": "An acoustic guitar lies on grass beside water.",
+      "peopleVisible": false
+    },
+    "hielo": {
+      "verdict": "approve",
+      "alt": "Three clear ice cubes with drops of water sit on a dark surface.",
+      "peopleVisible": false
+    },
+    "invierno": {
+      "verdict": "approve",
+      "alt": "A snowy path runs between trees covered in frost.",
+      "peopleVisible": false
+    },
+    "jardiner": {
+      "verdict": "approve",
+      "alt": "A hand sprinkles water over a small green seedling growing in dark soil.",
+      "peopleVisible": true
+    }
+  }
+}

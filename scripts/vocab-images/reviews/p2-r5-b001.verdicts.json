@@ -1,0 +1,133 @@
+{
+  "batch": "r5-b001",
+  "pass": "first",
+  "reviewer": "agent:p2-r5-b001",
+  "reviewedAt": "2026-10-09",
+  "verdicts": {
+    "aburrido": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "aider": {
+      "verdict": "approve",
+      "alt": "A person in a face mask helps an older woman in a mask get out of a car.",
+      "peopleVisible": true
+    },
+    "asustado": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "cansado": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "contento": {
+      "verdict": "approve",
+      "alt": "A smiling woman and man laugh together as they sit in a dry field.",
+      "peopleVisible": true
+    },
+    "en colère": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "ennuyé": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "enojado": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "fatigué": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "heureux": {
+      "verdict": "approve",
+      "alt": "A smiling woman and man laugh together as they sit in a dry field.",
+      "peopleVisible": true
+    },
+    "jouer": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la danse": {
+      "verdict": "reject",
+      "reasons": ["nudity-or-suggestive"]
+    },
+    "la musique": {
+      "verdict": "approve",
+      "alt": "Printed sheet music lies on the keys of a piano.",
+      "peopleVisible": false
+    },
+    "la mère": {
+      "verdict": "approve",
+      "alt": "A woman in a yellow skirt holds a small girl's hand in a sunny park.",
+      "peopleVisible": true
+    },
+    "la pollution": {
+      "verdict": "approve",
+      "alt": "A thick grey haze hides tall buildings and construction cranes in a city.",
+      "peopleVisible": false
+    },
+    "la radio": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "la réunion": {
+      "verdict": "approve",
+      "alt": "Six people in business clothes meet around a table with a laptop and two of them shake hands.",
+      "peopleVisible": true
+    },
+    "le diplôme": {
+      "verdict": "approve",
+      "alt": "Graduates in black gowns throw their caps into a blue sky.",
+      "peopleVisible": true
+    },
+    "le père": {
+      "verdict": "approve",
+      "alt": "A man sleeps with a newborn baby resting on his chest, wrapped in a soft blanket.",
+      "peopleVisible": true
+    },
+    "les vacances": {
+      "verdict": "approve",
+      "alt": "A pink-sand beach with turquoise water and palm trees stretches into the distance.",
+      "peopleVisible": false
+    },
+    "parler": {
+      "verdict": "approve",
+      "alt": "Two men talk beside parked motorbikes in a black and white street scene.",
+      "peopleVisible": true
+    },
+    "relajarse": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "sorprendido": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "surpris": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "temperatura": {
+      "verdict": "approve",
+      "alt": "A glass thermometer lies on dark fabric.",
+      "peopleVisible": false
+    },
+    "viajar": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    },
+    "volar": {
+      "verdict": "approve",
+      "alt": "Two jet engines hang under the wing of an airliner, seen in black and white.",
+      "peopleVisible": false
+    },
+    "voyager": {
+      "verdict": "reject",
+      "reasons": ["off-term"]
+    }
+  }
+}
