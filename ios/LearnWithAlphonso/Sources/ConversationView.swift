@@ -28,6 +28,7 @@ struct ConversationView: View {
                         } label: {
                             AlphonsoRowCard(title: scenario.title, subtitle: scenario.blurb, leadingEmoji: scenario.emoji)
                         }
+                        .accessibilityIdentifier("practiceScenarioRow")
                     }
                 } header: {
                     if !campaigns.isEmpty {
