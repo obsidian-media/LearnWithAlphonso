@@ -1,4 +1,5 @@
 import { AI_REPORT_MESSAGE_MAX } from "./ai-consent-copy";
+import { reportMessageFits } from "./ai-report-budget";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -61,14 +62,29 @@ export const reportUser = createServerFn({ method: "POST" })
   });
 
 const aiReportReasonSchema = z.enum(["ai_inappropriate", "ai_harmful", "ai_incorrect", "ai_other"]);
-const aiReportContextSchema = z.object({
-  message: z.string().min(1).max(AI_REPORT_MESSAGE_MAX),
-  surface: z.enum(["hector", "conversation", "campaign"]),
-  course: z.enum(["en", "fr", "es"]),
-  scenario_id: z.string().max(100).optional(),
-  campaign_id: z.string().max(100).optional(),
-  scene_index: z.number().int().min(0).max(100).optional(),
-});
+const aiReportContextSchema = z
+  .object({
+    // A loose length bound first (UTF-16 units, so emoji count twice); the exact code point cap and the byte budget
+    // the database check needs are the refinement below.
+    message: z
+      .string()
+      .min(1)
+      .max(AI_REPORT_MESSAGE_MAX * 2),
+    surface: z.enum(["hector", "conversation", "campaign"]),
+    course: z.enum(["en", "fr", "es"]),
+    scenario_id: z.string().max(100).optional(),
+    campaign_id: z.string().max(100).optional(),
+    scene_index: z.number().int().min(0).max(100).optional(),
+  })
+  .refine(
+    (c) =>
+      reportMessageFits(c.message, {
+        course: c.course,
+        scenarioId: c.scenario_id,
+        campaignId: c.campaign_id,
+      }),
+    { message: "message too long", path: ["message"] },
+  );
 
 /**
  * A report on an AI message. The moderation queue (content_reports, kind 'ai_response', reported NULL) and its

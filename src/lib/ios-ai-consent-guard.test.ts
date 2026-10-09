@@ -10,9 +10,9 @@ const SRC = path.resolve(import.meta.dirname, "../../ios/LearnWithAlphonso/Sourc
 const files = fs.readdirSync(SRC).filter((f) => f.endsWith(".swift"));
 const code = (f: string) =>
   fs.readFileSync(path.join(SRC, f), "utf8").replace(/^\s*\/\/[^\n]*$/gm, "");
-// Files that still read the device mirror of the account consent (the store keeps it in step). Emptied when the
-// voice and conversation views read the store directly.
-const LEGACY_MIRROR_READERS = ["SpeakQuestionCard.swift"];
+// Files allowed to read the device mirror of the account consent (the store keeps it in step). None: every screen
+// reads the store.
+const LEGACY_MIRROR_READERS: string[] = [];
 
 describe("iOS AI consent wiring", () => {
   it("lesson, review and placement are never walled by consent", () => {
@@ -37,7 +37,7 @@ describe("iOS AI consent wiring", () => {
     for (const f of files) expect(code(f), f).not.toContain("AIDisclosureGate.acknowledge(");
   });
 
-  it("reads of the old device flag are confined to files not yet reading the store", () => {
+  it("nothing reads the old device flag; every screen reads the account store", () => {
     const readers = files
       .filter((f) => code(f).includes("AIDisclosureGate.isAcknowledged("))
       .sort();
@@ -91,5 +91,63 @@ describe("iOS AI consent wiring", () => {
     const body = s.slice(s.indexOf("private func save()"));
     expect(body.indexOf("phase = .saving")).toBeGreaterThan(-1);
     expect(body.indexOf("phase = .saving")).toBeLessThan(body.indexOf("aiConsent.refresh()"));
+  });
+
+  const TUTOR_SCREENS: [string, string][] = [
+    ["HectorView.swift", ".hector"],
+    ["ConversationView.swift", ".conversation"],
+    ["CampaignView.swift", ".campaign"],
+  ];
+  /** The text of every `AssistantReply(` call in a file (up to its closing `savingWord:` argument). */
+  const replyCalls = (f: string) =>
+    [...code(f).matchAll(/AssistantReply\(([\s\S]*?)savingWord:/g)].map((m) => m[1]);
+
+  it("every AI reply bubble is reportable, from the one place all three screens draw replies", () => {
+    const reply = code("AssistantReply.swift");
+    expect(reply).toMatch(/\.reportableAIMessage\(\s*turn\.content,\s*enabled: !isOpener,/);
+    expect(reply).toContain("surface: surface");
+    for (const [file, surface] of TUTOR_SCREENS) {
+      const calls = replyCalls(file);
+      expect(calls.length, file).toBeGreaterThan(0);
+      for (const call of calls) expect(call, file).toContain(`surface: ${surface},`);
+    }
+    // Nothing else draws an assistant reply around the wrapper.
+    for (const f of files.filter((f) => f !== "AssistantReply.swift")) {
+      expect(code(f), f).not.toContain("TappableText(text: turn.content");
+    }
+  });
+
+  it("each reply carries the ids the moderator needs, and the active course", () => {
+    expect(code("ConversationView.swift")).toContain("scenarioID: scenario.id");
+    const campaign = code("CampaignView.swift");
+    expect(campaign).toContain("campaignID: campaign.id");
+    expect(campaign).toContain("sceneIndex: sceneIndex");
+    const reply = code("AssistantReply.swift");
+    expect(reply).toContain("course: course.wireCode");
+    expect(reply).not.toMatch(/course: "(en|fr|es)"/);
+  });
+
+  it("scripted opening lines are excluded and the model's replies are not", () => {
+    expect(code("ConversationView.swift")).toContain(
+      "isOpener: conversation.openerIndices.contains(index)",
+    );
+    expect(code("CampaignView.swift")).toContain(
+      "isOpener: conversation.openerIndices.contains(index)",
+    );
+    // Hector has no scripted opener, so nothing there may be excluded.
+    for (const call of replyCalls("HectorView.swift")) expect(call).toContain("isOpener: false");
+  });
+
+  it("the tutor screens keep their consent wall", () => {
+    for (const [f] of TUTOR_SCREENS) expect(code(f), f).toContain(".aiDisclosureGate()");
+  });
+
+  it("the speak fallback names the real cause, from the account store", () => {
+    const s = code("SpeakQuestionCard.swift");
+    expect(s).toContain("AIConsentCopy.speakFallback(");
+    expect(s).toContain("hasAIConsent: hasAIConsent");
+    expect(s).toContain("aiConsent.isGranted");
+    expect(s).toContain("@EnvironmentObject private var aiConsent: AIConsentStore");
+    expect(s).not.toContain("You're offline");
   });
 });

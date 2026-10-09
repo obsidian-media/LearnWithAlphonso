@@ -148,7 +148,8 @@ private struct ConversationSessionView: View {
         if turn.role == "assistant" {
             // The scene's fixed opening line is ours, not the model's.
             AssistantReply(
-                turn: turn, isOpener: conversation.openerIndices.contains(index), course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
+                turn: turn, isOpener: conversation.openerIndices.contains(index), course: course, color: AlphonsoColor.ink,
+                surface: .conversation, scenarioID: scenario.id, session: session, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
         }

@@ -139,7 +139,8 @@ private struct HectorConversationView: View {
     private func bubbleText(for turn: ChatMessage) -> some View {
         if turn.role == "assistant" {
             AssistantReply(
-                turn: turn, isOpener: false, course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
+                turn: turn, isOpener: false, course: course, color: AlphonsoColor.ink,
+                surface: .hector, session: session, savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(AlphonsoColor.onAccent)
         }

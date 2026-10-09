@@ -39,8 +39,10 @@ struct SpeakQuestionCard: View {
     /// any AI provider) and offers voice as an opt-in -- it must NOT replace
     /// the card or pop the lesson, or declining blocks every lesson that has
     /// a speak question (BACKLOG 0.0-z #2).
-    @State private var hasAIConsent = AIDisclosureGate.isAcknowledged()
+    @EnvironmentObject private var aiConsent: AIConsentStore
     @State private var showDisclosure = false
+
+    private var hasAIConsent: Bool { aiConsent.isGranted }
 
     private var canCapture: Bool { isConnected && !micUnavailable && hasAIConsent }
     /// Voice would work if the learner opted in -- worth offering the choice.
@@ -87,10 +89,8 @@ struct SpeakQuestionCard: View {
         }
         // Consent is asked only if the learner chooses voice, and never by
         // blocking the lesson (see hasAIConsent above).
-        .aiDisclosureSheet(isPresented: $showDisclosure) { hasAIConsent = true }
+        .aiDisclosureSheet(isPresented: $showDisclosure) {}
         .onAppear {
-            // Allowed on another screen since this card was built.
-            if !hasAIConsent && AIDisclosureGate.isAcknowledged() { hasAIConsent = true }
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
         }
@@ -173,11 +173,8 @@ struct SpeakQuestionCard: View {
 
     private var typingFallback: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            Text(
-                micUnavailable
-                    ? "The microphone isn't available. Type the phrase instead."
-                    : "You're offline, so speech can't be checked. Type the phrase instead."
-            )
+            Text(AIConsentCopy.speakFallback(
+                micUnavailable: micUnavailable, isConnected: isConnected, hasAIConsent: hasAIConsent))
             .font(AlphonsoFont.sans(13))
             .foregroundStyle(AlphonsoColor.inkSoft)
             TextField(
@@ -226,8 +223,8 @@ struct SpeakQuestionCard: View {
             }
         } catch {
             let tutorError = TutorError.from(error)
-            // The account's consent was withdrawn elsewhere: back to typing, with voice offered as an opt-in.
-            if tutorError == .aiConsentRequired { hasAIConsent = false }
+            // A consent refusal is announced by the client, so the store (and with it this card) follows the account:
+            // back to typing, with voice offered as an opt-in.
             voice.fail(generation, tutorError)
         }
     }

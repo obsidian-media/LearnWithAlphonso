@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  AI_CONSENT_COPY,
-  AI_REPORT_MESSAGE_MAX,
-  AI_REPORT_REASONS,
-  type AiReportReason,
-} from "@/lib/ai-consent-copy";
+import { AI_CONSENT_COPY, AI_REPORT_REASONS, type AiReportReason } from "@/lib/ai-consent-copy";
+import { capReportMessage } from "@/lib/ai-report-budget";
 import { Modal } from "./Modal";
 import { reportAiResponse } from "@/lib/social-safety.functions";
 
@@ -53,8 +49,8 @@ export function AiMessageReport({
       const { ok } = await send({
         reason,
         context: {
-          // By code point, so an emoji or other surrogate pair is never cut in half.
-          message: Array.from(message).slice(0, AI_REPORT_MESSAGE_MAX).join(""),
+          // Cut by code point and by the database's byte budget, so the report can never fail the size check.
+          message: capReportMessage(message, { course, scenarioId, campaignId }),
           surface,
           course,
           ...(scenarioId ? { scenario_id: scenarioId } : {}),

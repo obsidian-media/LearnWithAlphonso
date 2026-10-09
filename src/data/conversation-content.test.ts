@@ -253,3 +253,57 @@ describe("ALL_SYSTEM_PROMPTS", () => {
     expect(ALL_SYSTEM_PROMPTS.size).toBe(45);
   });
 });
+
+describe("French and Spanish personas address the learner without assuming a gender", () => {
+  const FR_RULE = "Ne présume jamais le genre de l'apprenant";
+  const ES_RULE = "No supongas el género del estudiante";
+  /** Every line a persona speaks that we wrote: scenario and campaign-scene openers. */
+  const openers = (c: Course) => [
+    ...SCENARIOS.map((s) => ({ label: `${s.id}.opener`, text: s.opener[c] })),
+    ...CAMPAIGNS.flatMap((camp) =>
+      camp.scenes.map((sc) => ({ label: `${camp.id}/${sc.id}.opener`, text: sc.opener[c] })),
+    ),
+  ];
+  /** Every prompt text that reaches the model for a course. */
+  const prompts = (c: Course) => [
+    ...SCENARIOS.map((s) => ({ label: s.id, text: s.systemPrompt[c] })),
+    ...CAMPAIGNS.flatMap((camp) => [
+      { label: `${camp.id}.premise`, text: camp.premise[c] },
+      ...camp.scenes.map((sc) => ({ label: `${camp.id}/${sc.id}`, text: sc.systemPrompt[c] })),
+    ]),
+  ];
+
+  it("tells every persona, in its own language, not to assume the learner's gender", () => {
+    for (const s of SCENARIOS) {
+      expect(s.systemPrompt.fr, s.id).toContain(FR_RULE);
+      expect(s.systemPrompt.es, s.id).toContain(ES_RULE);
+    }
+    for (const camp of CAMPAIGNS) {
+      for (const sc of camp.scenes) {
+        expect(sc.systemPrompt.fr, sc.id).toContain(FR_RULE);
+        expect(sc.systemPrompt.es, sc.id).toContain(ES_RULE);
+      }
+    }
+  });
+
+  it("never opens with a form that marks the learner's gender", () => {
+    for (const { label, text } of openers("es")) {
+      expect(text, label).not.toMatch(
+        /(?<!la )\bbienvenid[oa]s?\b|\b(listo|lista|señor|señora)\b/i,
+      );
+    }
+    for (const { label, text } of openers("fr")) {
+      expect(text, label).not.toMatch(/\b(ravi|ravie|content|contente|monsieur|madame)\b/i);
+    }
+  });
+
+  it("does not call the learner he or him in the instructions", () => {
+    for (const { label, text } of prompts("fr")) {
+      // Madame Girard and the like are the persona's own name, not a form of address to the learner.
+      expect(text.replace(/Madame Girard/g, ""), label).not.toMatch(/(?<!-)\b(qu'il|il)\b/i);
+    }
+    for (const { label, text } of prompts("es")) {
+      expect(text, label).not.toMatch(/\bayúdalo\b|\bperdido\b/i);
+    }
+  });
+});

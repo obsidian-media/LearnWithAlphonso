@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { jsonBytes } from "@/lib/ai-report-budget";
 import { AiMessageReport } from "./AiMessageReport";
 
 vi.mock("@/lib/social-safety.functions", () => ({ reportAiResponse: vi.fn() }));
@@ -72,8 +73,37 @@ describe("AiMessageReport", () => {
     await user.click(screen.getByRole("button", { name: "Send report" }));
     const sent = (send.mock.calls[0] as unknown as [{ context: { message: string } }])[0].context
       .message;
-    expect(Array.from(sent)).toHaveLength(2500);
-    expect(sent).toBe("😀".repeat(2500));
+    // 4 bytes each: the byte budget, not the 2500 cap, decides where it stops, and never mid-emoji.
+    expect(Array.from(sent).length).toBeLessThan(2500);
+    expect(sent).toBe("😀".repeat(Array.from(sent).length));
+  });
+
+  it.each([
+    ["control characters", "\u0001"],
+    ["quotes and backslashes", '"\\'],
+    ["emoji", "\u{1F600}"],
+  ])("cuts a message full of %s to the database's byte budget", async (_name, unit) => {
+    const send = vi.fn(async () => ({ ok: true }));
+    const user = userEvent.setup();
+    render(
+      <AiMessageReport
+        message={unit.repeat(3000)}
+        surface="campaign"
+        course="es"
+        campaignId={"c".repeat(100)}
+        sceneIndex={2}
+        send={send}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "Report this response" }));
+    await user.click(screen.getByRole("button", { name: "Send report" }));
+    const sent = (send.mock.calls[0] as unknown as [{ context: { message: string } }])[0].context
+      .message;
+    expect(Array.from(sent).length).toBeLessThanOrEqual(2500);
+    expect(jsonBytes(sent)).toBeLessThanOrEqual(8192 - 400 - 2 - 100);
+    expect(Array.from(sent).length).toBeGreaterThan(1000);
+    // Whole units only: nothing is cut in half.
+    expect(sent).toBe(unit.repeat(Array.from(sent).length / Array.from(unit).length));
   });
 
   it("is a real modal: focus moves in and stays in, the page is inert, Escape closes it", async () => {
