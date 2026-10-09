@@ -78,7 +78,7 @@ Write-Host "ANDROID_HOME=$Sdk"
 - [ ] **Step 2: Run it**
 
 Run (PowerShell): `& "<playground>\setup-android-toolchain.ps1"`
-Expected: ends with `ANDROID_HOME=<playground>ndroid-sdk`; `dir android-sdk\platforms\android-36` lists `android.jar`. If the zip URL 404s, read the current filename from https://developer.android.com/studio#command-tools and update the script before retrying.
+Expected: ends with `ANDROID_HOME=<playground>\android-sdk`; `dir android-sdk\platforms\android-36` lists `android.jar`. If the zip URL 404s, read the current filename from https://developer.android.com/studio#command-tools and update the script before retrying.
 
 - [ ] **Step 3: Write TOOLING.md**
 

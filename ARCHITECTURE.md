@@ -1407,7 +1407,7 @@ metadata stripped, `?v=<hash>` cache key; migration `20261008140000`). Only
 picturable terms get an image (a closed-default classifier,
 `scripts/vocab-imageability.json`); abstract words, phrases and anything
 sensitive get a text-only card. **730 images are live** (English 240, French
-231, Spanish 260), each visually reviewed (every image showing a person, plus a
+230, Spanish 260), each visually reviewed (every image showing a person, plus a
 10% sample, twice) and signed off by the owner (`signoff.json` digest). The
 first pass (#249) was 415 images (English 212, Spanish 176, French 27); a
 second pass of 315 more (#268, 2026-10-09) ships in build 50, because the iOS

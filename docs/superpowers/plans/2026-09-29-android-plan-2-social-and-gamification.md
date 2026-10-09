@@ -18,7 +18,7 @@
 
 - Everything under `android/LearnWithAlphonso/`; no shared file changes except the docs listed in the last task.
 - The friend invite contract is the one on `main` after 2026-09-30: `get_or_create_my_friend_code` returns `{code}`, `accept_friend_invite(_code)` returns `{ok, message}` with messages `invalid-code`, `cannot invite yourself`, `blocked`, `friends`; `get_friend_invite_preview(_code)` returns `{ok, is_self, display_name, avatar_seed}`. Invite links are `https://learn.alphonsoecosystem.app/invite/{code}`. Never build a link from a user id.
-- Block and report copy is `SocialSafetyCopy` from `SocialSafetyControls.swift`, verbatim, including the the report mailbox address.
+- Block and report copy is `SocialSafetyCopy` from `SocialSafetyControls.swift`, verbatim, including the report mailbox address.
 - Every `core` port carries the same vectors as its Swift or TS test file; a vector may not be dropped.
 - All list rows that show another user carry the block/report menu, and a blocked user leaves every list on screen immediately.
 - Commits on `android`; run git from the worktree.

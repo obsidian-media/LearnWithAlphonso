@@ -19,7 +19,7 @@
 > → `scripts/write-vocab-images.ts` → owner sheet and
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
 > `scripts/seed-vocab-images-db.ts`. **Live today: 730 images** (English 240,
-> French 231, Spanish 260, all owner-signed-off and uploaded). The first pass
+> French 230, Spanish 260, all owner-signed-off and uploaded). The first pass
 > (415: English 212, Spanish 176, French 27) went live on 2026-10-08; the second
 > pass of 315 more (#268, 2026-10-09) ships in build 50, because the iOS app
 > bundles `vocab-images.json`. Run the upload and reseed from Git Bash with the

@@ -25,7 +25,7 @@ a separate account from your main Learn with Alphonso sign-in."*
 lives in a genuinely different Supabase project
 (`ywavjlmjbxuslbxactsx`), owned and operated by a different codebase
 (`AlphonsoEcosystem`, checked out locally at
-`the AlphonsoEcosystem checkout`). Deleting the main account
+the AlphonsoEcosystem checkout). Deleting the main account
 today leaves a Cloud Voice account alive in a database the deletion code
 has never heard of, and always will, until this is addressed.
 
