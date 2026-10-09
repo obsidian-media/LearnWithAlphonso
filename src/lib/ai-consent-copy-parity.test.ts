@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { AI_CONSENT_COPY, AI_REPORT_MESSAGE_MAX, AI_REPORT_REASONS } from "./ai-consent-copy";
+import { AI_REPORT_CONTEXT_BYTE_LIMIT, AI_REPORT_STRUCTURE_BYTES } from "./ai-report-budget";
 
 const KIT = path.resolve(
   import.meta.dirname,
@@ -28,5 +29,10 @@ describe("AI consent copy parity (web vs Kit)", () => {
 
   it("the report text cap is the same on both clients", () => {
     expect(reportSwift).toContain(`maxMessageLength = ${AI_REPORT_MESSAGE_MAX}`);
+  });
+
+  it("the report byte budget is the same on both clients", () => {
+    expect(reportSwift).toContain(`contextByteLimit = ${AI_REPORT_CONTEXT_BYTE_LIMIT}`);
+    expect(reportSwift).toContain(`contextStructureBytes = ${AI_REPORT_STRUCTURE_BYTES}`);
   });
 });

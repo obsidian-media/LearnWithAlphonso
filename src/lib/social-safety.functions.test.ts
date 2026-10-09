@@ -143,4 +143,19 @@ describe("reportAiResponse", () => {
       reportAiResponse({ context: ctx(supabase), data: { ...base, reason: "spam" } }),
     ).rejects.toThrow();
   });
+
+  it("refuses a message whose JSON size would fail the database check, and accepts one that fits", async () => {
+    const supabase = createSupabaseMock();
+    const send = (message: string) =>
+      reportAiResponse({
+        context: ctx(supabase),
+        data: { ...base, context: { ...base.context, message } },
+      });
+    // 2500 control characters are 15000 bytes of JSON: within the code point cap, over the 8192-byte limit.
+    await expect(send("\u0001".repeat(2500))).rejects.toThrow();
+    // 2500 emoji are 10000 bytes: refused. 1900 emoji (7600 bytes) fit, although they are 3800 UTF-16 units.
+    await expect(send("\u{1F600}".repeat(2500))).rejects.toThrow();
+    supabase.from.mockReturnValueOnce(chainable({ error: null }));
+    expect(await send("\u{1F600}".repeat(1900))).toEqual({ ok: true });
+  });
 });

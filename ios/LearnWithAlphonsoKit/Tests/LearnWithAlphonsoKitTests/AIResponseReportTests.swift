@@ -91,6 +91,15 @@ final class AIResponseReportTests: XCTestCase {
         XCTAssertLessThan(report.message.unicodeScalars.count, 1400)
     }
 
+    func testNulIsRemovedBecauseJsonbCannotStoreIt() {
+        let report = AIResponseReport(message: "a\u{0}b\u{0}", surface: .hector, course: "en", reason: .other)
+        XCTAssertEqual(report.message, "ab")
+        // The budget is not spent on what was removed.
+        let padded = AIResponseReport(
+            message: String(repeating: "\u{0}", count: 100) + "ok", surface: .hector, course: "en", reason: .other)
+        XCTAssertEqual(padded.message, "ok")
+    }
+
     func testLongIdentifiersTakeTheirShareOfTheBudget() throws {
         let report = AIResponseReport(
             message: String(repeating: "\u{1F600}", count: 2500), surface: .campaign, course: "en", reason: .other,

@@ -253,3 +253,71 @@ describe("ALL_SYSTEM_PROMPTS", () => {
     expect(ALL_SYSTEM_PROMPTS.size).toBe(45);
   });
 });
+
+describe("French and Spanish personas address the learner without assuming a gender", () => {
+  const FR_RULE =
+    "Ne présume jamais le genre de l'apprenant : évite les accords et les mots qui le supposent (prêt ou prête, ravi ou ravie, monsieur ou madame) et choisis des tournures neutres (par exemple « On peut commencer ? » plutôt que « Vous êtes prêt ? »), sauf si l'apprenant indique son genre ou sa préférence.";
+  const ES_RULE =
+    "No supongas el género del estudiante: evita adjetivos, participios y tratamientos que lo marquen (bienvenido o bienvenida, listo o lista, señor o señora) y usa fórmulas neutras (por ejemplo, «le damos la bienvenida» o «¿Empezamos?» en lugar de «¿Está listo?»), salvo que el estudiante indique su género o su preferencia.";
+  /** Every line a persona speaks that we wrote: scenario and campaign-scene openers. */
+  const openers = (c: Course) => [
+    ...SCENARIOS.map((s) => ({ label: `${s.id}.opener`, text: s.opener[c] })),
+    ...CAMPAIGNS.flatMap((camp) =>
+      camp.scenes.map((sc) => ({ label: `${camp.id}/${sc.id}.opener`, text: sc.opener[c] })),
+    ),
+  ];
+  /** Every prompt text that reaches the model for a course. */
+  const prompts = (c: Course) => [
+    ...SCENARIOS.map((s) => ({ label: s.id, text: s.systemPrompt[c] })),
+    ...CAMPAIGNS.flatMap((camp) => [
+      { label: `${camp.id}.premise`, text: camp.premise[c] },
+      ...camp.scenes.map((sc) => ({ label: `${camp.id}/${sc.id}`, text: sc.systemPrompt[c] })),
+    ]),
+  ];
+
+  it("tells every persona, in its own language, not to assume the learner's gender", () => {
+    for (const s of SCENARIOS) {
+      expect(s.systemPrompt.fr, s.id).toContain(FR_RULE);
+      expect(s.systemPrompt.es, s.id).toContain(ES_RULE);
+    }
+    for (const camp of CAMPAIGNS) {
+      for (const sc of camp.scenes) {
+        expect(sc.systemPrompt.fr, sc.id).toContain(FR_RULE);
+        expect(sc.systemPrompt.es, sc.id).toContain(ES_RULE);
+      }
+    }
+  });
+
+  it("never opens with a form that marks the learner's gender", () => {
+    for (const { label, text } of openers("es")) {
+      expect(text, label).not.toMatch(
+        /(?<!la )\bbienvenid[oa]s?\b|\b(listo|lista|señor|señora)\b/i,
+      );
+    }
+    for (const { label, text } of openers("fr")) {
+      expect(text, label).not.toMatch(/\b(ravi|ravie|content|contente|monsieur|madame)\b/i);
+    }
+  });
+
+  it("does not call the learner he or him in the instructions", () => {
+    for (const { label, text } of prompts("fr")) {
+      // Madame Girard and the like are the persona's own name, not a form of address to the learner.
+      const outside = text.replace(/Madame Girard/g, "").replace(FR_RULE, "");
+      expect(outside, label).not.toMatch(/(?<!-)\b(qu'il|il)\b/i);
+      expect(outside, label).not.toMatch(/\baide-le\b|\best perdu\b/i);
+    }
+    for (const { label, text } of prompts("es")) {
+      // The rule sentence names the forms to avoid, so it is the one place they may appear.
+      expect(text.replace(ES_RULE, ""), label).not.toMatch(/\bayúdalo\b|\bperdido\b|\blisto\b/i);
+    }
+  });
+
+  it("the ban list can fail: it sees a masculine form outside the rule sentence", () => {
+    const bad = "Ayúdalo si está perdido. " + ES_RULE;
+    expect(bad.replace(ES_RULE, "")).toMatch(/\bayúdalo\b|\bperdido\b|\blisto\b/i);
+    expect(ES_RULE).toMatch(/\blisto\b/i); // the rule itself would trip the check if it were not removed first
+    expect("Aide-le à choisir, il est perdu.".replace(FR_RULE, "")).toMatch(
+      /\baide-le\b|\best perdu\b/i,
+    );
+  });
+});

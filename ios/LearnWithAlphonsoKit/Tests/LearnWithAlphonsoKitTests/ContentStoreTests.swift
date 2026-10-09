@@ -103,7 +103,7 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertEqual(fr.title, "Au café")
         XCTAssertEqual(es.title, "En la cafetería")
         XCTAssertEqual(fr.opener, "Bonjour ! Bienvenue au Café des Lilas. Qu'est-ce que je vous sers ?")
-        XCTAssertEqual(es.opener, "¡Buenos días, bienvenidos a Café La Ceiba! ¿Qué le preparo?")
+        XCTAssertEqual(es.opener, "¡Buenos días! Le damos la bienvenida a Café La Ceiba. ¿Qué le preparo?")
         XCTAssertTrue(fr.systemPrompt.contains("Réponds toujours en français"))
         XCTAssertTrue(es.systemPrompt.contains("Responde siempre en español latinoamericano"))
         XCTAssertNil(store.scenario(id: "nope", course: .french))
@@ -119,7 +119,7 @@ final class ContentStoreTests: XCTestCase {
         XCTAssertEqual(store.campaign(id: "city-day", course: .french)?.title, "Une journée à Lyon")
         XCTAssertEqual(
             store.campaign(id: "city-day", course: .spanish)?.scenes.first?.opener,
-            "¡Buenos días! Bienvenidos a Café Jacaranda. ¿Qué le preparo?"
+            "¡Buenos días! Le damos la bienvenida a Café Jacaranda. ¿Qué le preparo?"
         )
         XCTAssertNil(store.campaign(id: "nope", course: .english))
     }

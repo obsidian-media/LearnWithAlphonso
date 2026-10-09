@@ -77,6 +77,41 @@ final class ConversationStoreTests: XCTestCase {
         XCTAssertFalse(after.openerIndices.contains(2))
     }
 
+    /// A report records the scene a reply was made in. Continue adds an opener; Restart cuts back to the scene's
+    /// opener; Finish leaves the last scene's replies in the last scene.
+    func testEachTurnKnowsItsOwnSceneThroughContinueRestartAndFinish() {
+        func reply(_ text: String) -> ChatMessage { ChatMessage(role: "assistant", content: text) }
+        var snapshot = ConversationSnapshot(turns: [reply("S1")], openerIndices: [0])
+        snapshot.turns.append(ChatMessage(role: "user", content: "a"))
+        snapshot.turns.append(reply("r1"))                       // 2: scene 0
+        snapshot.appendOpener("S2")                              // 3: Continue
+        snapshot.sceneAnchor = 3
+        snapshot.sceneIndex = 1
+        snapshot.turns.append(ChatMessage(role: "user", content: "b"))
+        snapshot.turns.append(reply("r2"))                       // 5: scene 1
+        XCTAssertEqual((0..<snapshot.turns.count).map(snapshot.sceneIndex(ofTurnAt:)), [0, 0, 0, 1, 1, 1])
+
+        // Restart scene 2: back to its opener; the earlier scene's replies keep their own scene.
+        snapshot.restartScene()
+        XCTAssertEqual((0..<snapshot.turns.count).map(snapshot.sceneIndex(ofTurnAt:)), [0, 0, 0, 1])
+        snapshot.turns.append(reply("r2 again"))                 // 4: scene 1 again
+        XCTAssertEqual(snapshot.sceneIndex(ofTurnAt: 4), 1)
+
+        // Continue to a third scene, then Finish: the last scene's replies stay in the last scene.
+        snapshot.appendOpener("S3")                              // 5
+        snapshot.sceneAnchor = 5
+        snapshot.sceneIndex = 2
+        snapshot.turns.append(reply("r3"))                       // 6
+        snapshot.finished = true
+        XCTAssertEqual(snapshot.sceneIndex(ofTurnAt: 6), 2)
+        XCTAssertEqual(snapshot.sceneIndex(ofTurnAt: 2), 0, "an earlier reply is not reassigned by finishing")
+        XCTAssertEqual(snapshot.sceneIndex(ofTurnAt: 4), 1)
+    }
+
+    func testATurnWithNoOpenerBeforeItIsSceneZero() {
+        XCTAssertEqual(ConversationSnapshot(turns: [], openerIndices: []).sceneIndex(ofTurnAt: 0), 0)
+    }
+
     func testRestartingASceneKeepsOnlyItsOpenerAndEarlierOnes() {
         var snapshot = ConversationSnapshot(turns: [ChatMessage(role: "assistant", content: "S1")], openerIndices: [0])
         snapshot.turns.append(ChatMessage(role: "user", content: "a"))

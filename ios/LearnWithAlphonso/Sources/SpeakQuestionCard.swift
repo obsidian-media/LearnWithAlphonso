@@ -39,8 +39,10 @@ struct SpeakQuestionCard: View {
     /// any AI provider) and offers voice as an opt-in -- it must NOT replace
     /// the card or pop the lesson, or declining blocks every lesson that has
     /// a speak question (BACKLOG 0.0-z #2).
-    @State private var hasAIConsent = AIDisclosureGate.isAcknowledged()
+    @EnvironmentObject private var aiConsent: AIConsentStore
     @State private var showDisclosure = false
+
+    private var hasAIConsent: Bool { aiConsent.isGranted }
 
     private var canCapture: Bool { isConnected && !micUnavailable && hasAIConsent }
     /// Voice would work if the learner opted in -- worth offering the choice.
@@ -72,8 +74,7 @@ struct SpeakQuestionCard: View {
                 typingFallback
             }
 
-            if let errorMessage = voice.failure?.cardMessage()
-                ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage {
+            if let errorMessage = visibleErrorMessage {
                 Text(errorMessage)
                     .font(AlphonsoFont.sans(13))
                     .foregroundStyle(AlphonsoColor.destructive)
@@ -87,10 +88,8 @@ struct SpeakQuestionCard: View {
         }
         // Consent is asked only if the learner chooses voice, and never by
         // blocking the lesson (see hasAIConsent above).
-        .aiDisclosureSheet(isPresented: $showDisclosure) { hasAIConsent = true }
+        .aiDisclosureSheet(isPresented: $showDisclosure) {}
         .onAppear {
-            // Allowed on another screen since this card was built.
-            if !hasAIConsent && AIDisclosureGate.isAcknowledged() { hasAIConsent = true }
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
         }
@@ -98,6 +97,14 @@ struct SpeakQuestionCard: View {
             voice.disappeared()
             voice.onCapture = nil
         }
+    }
+
+    /// The red line under the controls. A consent refusal has none: the typing fallback already says why voice is
+    /// off, the store follows the account, and a line left over from before would outlive the learner opting back in.
+    private var visibleErrorMessage: String? {
+        if voice.failure == .aiConsentRequired { return nil }
+        return voice.failure?.cardMessage()
+            ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage
     }
 
     private var phraseCard: some View {
@@ -173,11 +180,8 @@ struct SpeakQuestionCard: View {
 
     private var typingFallback: some View {
         VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            Text(
-                micUnavailable
-                    ? "The microphone isn't available. Type the phrase instead."
-                    : "You're offline, so speech can't be checked. Type the phrase instead."
-            )
+            Text(AIConsentCopy.speakFallback(
+                micUnavailable: micUnavailable, isConnected: isConnected, hasAIConsent: hasAIConsent))
             .font(AlphonsoFont.sans(13))
             .foregroundStyle(AlphonsoColor.inkSoft)
             TextField(
@@ -204,6 +208,7 @@ struct SpeakQuestionCard: View {
 
     private func transcribe(audio: Data, generation: Int, debugTiming: String) async {
         guard let accessToken = await session.freshAccessToken() else {
+            captureFailed = true
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
             return
         }
@@ -226,8 +231,11 @@ struct SpeakQuestionCard: View {
             }
         } catch {
             let tutorError = TutorError.from(error)
-            // The account's consent was withdrawn elsewhere: back to typing, with voice offered as an opt-in.
-            if tutorError == .aiConsentRequired { hasAIConsent = false }
+            // A consent refusal is announced by the client, so the store (and with it this card) follows the account:
+            // back to typing, with voice offered as an opt-in.
+            // Any other failure (a quota 429, repeated server errors) must not leave the card with no way to answer:
+            // typing opens, so the lesson can still be finished.
+            if tutorError != .aiConsentRequired { captureFailed = true }
             voice.fail(generation, tutorError)
         }
     }

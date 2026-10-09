@@ -172,7 +172,9 @@ private struct CampaignSessionView: View {
             // A scene's fixed opening line is ours, not the model's. Tracked by position, not by its words.
             AssistantReply(
                 turn: turn, isOpener: conversation.openerIndices.contains(index),
-                course: course, color: AlphonsoColor.ink, savingWord: $savingWord)
+                course: course, color: AlphonsoColor.ink,
+                surface: .campaign, campaignID: campaign.id, sceneIndex: conversation.sceneIndex(ofTurnAt: index), session: session,
+                savingWord: $savingWord)
         } else {
             Text(turn.content).foregroundStyle(.white)
         }
