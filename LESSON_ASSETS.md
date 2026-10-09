@@ -18,11 +18,11 @@
 > `scripts/upload-vocab-images.ts` (owner-run; bucket `vocab-images/<lang>/<slug>.jpg`; `--prune` is a dry run unless `--apply`, and refuses a tiny keep-set or more than 10% deletions without `--force-large`)
 > → `scripts/write-vocab-images.ts` → owner sheet and
 > `scripts/vocab-image-signoff.ts`. Then re-export iOS/Android content and run
-> `scripts/seed-vocab-images-db.ts`. **Live today: 415 images** (English 212,
-> Spanish 176, French 27, all owner-signed-off, uploaded and reseeded on
-> 2026-10-08). A second pass of 315 more photos (730 in total) is open as #268
-> (not merged) and ships in build 51, because the iOS app bundles `vocab-images.json`;
-> it is not live yet. Run the upload and reseed from Git Bash with the
+> `scripts/seed-vocab-images-db.ts`. **Live today: 730 images** (English 240,
+> French 231, Spanish 260, all owner-signed-off and uploaded). The first pass
+> (415: English 212, Spanish 176, French 27) went live on 2026-10-08; the second
+> pass of 315 more (#268, 2026-10-09) ships in build 50, because the iOS app
+> bundles `vocab-images.json`. Run the upload and reseed from Git Bash with the
 > service-role key; `--prune` is a dry run first. `src/data/vocab-images.guard.test.ts`
 > enforces host, denylist, review stamp, imageability and sign-off on every PR,
 > and `.github/workflows/vocab-image-links.yml` checks every URL on PRs and weekly.
@@ -32,7 +32,8 @@
 > no photo yet. After review, `bun scripts/vocab-image-review.ts owner-sheet-local --out <dir>` builds the
 > sign-off sheet from the staged files, and `bun scripts/write-vocab-images.ts --planned-urls` writes the
 > data before the upload (published entries are kept as they are). Photos on the rejected-sources list
-> may never be used again (checked by the data guard).>
+> may never be used again (checked by the data guard).
+>
 > **Audio (§1), Animations (§3), Icons (§4), Textures (§5), and Sound FX
 > (§6) all remain aspirational** — none of these have been built as of
 > this writing (no `public/audio/`, `public/animations/`, or per-topic
