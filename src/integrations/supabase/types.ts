@@ -2234,6 +2234,13 @@ export type Database = {
       moderation_contextual_terms: { Args: never; Returns: string[] };
       moderation_edge_patterns: { Args: never; Returns: string[] };
       moderation_fold: { Args: { input: string }; Returns: string };
+      name_policy_bare_brand_terms: { Args: never; Returns: string[] };
+      name_policy_blocked: { Args: { input: string }; Returns: boolean };
+      name_policy_brand_roles: { Args: never; Returns: string[] };
+      name_policy_brand_terms: { Args: never; Returns: string[] };
+      name_policy_edge_patterns: { Args: never; Returns: string[] };
+      name_policy_staff_terms: { Args: never; Returns: string[] };
+      name_policy_terms: { Args: never; Returns: string[] };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
