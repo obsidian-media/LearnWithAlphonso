@@ -457,7 +457,7 @@ describe("Lesson page", () => {
     expect(await screen.findByText("Nice.")).toBeInTheDocument();
   });
 
-  it("completes the lesson, records misses, and applies the returned progress", async () => {
+  it("completes the lesson with server-graded misses and applies the returned progress", async () => {
     completeLessonRemote.mockResolvedValue({
       xpGain: 60,
       newlyUnlocked: ["xp_100"],
@@ -486,15 +486,7 @@ describe("Lesson page", () => {
       await user.click(screen.getByRole("button", { name: label }));
     }
 
-    expect(recordMisses).toHaveBeenCalledWith({
-      data: {
-        lessonId: "u1l1",
-        level: "A1",
-        itemKeys: ["u1l1:q2"],
-        course: "en",
-        sessionToken: "session-tok",
-      },
-    });
+    expect(recordMisses).not.toHaveBeenCalled();
     expect(completeLessonRemote).toHaveBeenCalledWith({
       data: {
         lessonId: "u1l1",

@@ -25,7 +25,6 @@ import {
   startLessonSession,
 } from "../../lib/sync.functions";
 import { HeartsModal } from "../../components/HeartsModal";
-import { recordMisses } from "../../lib/review.functions";
 import { deriveAnswerCorrectness } from "../../lib/srs";
 import { useOptionalAiConsent } from "../../lib/ai-consent-context";
 import { requestTranslationVerdict } from "../../lib/grade-translation-request";
@@ -103,7 +102,6 @@ function LessonPage() {
 
   const [idx, setIdx] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [missed, setMissed] = useState<string[]>([]);
   const [missedQs, setMissedQs] = useState<{ q: Question; yours: string }[]>([]);
   // Every real (non-reinforcement) question's raw submission, correct or
   // not -- completeLessonRemote re-derives correctness itself from these
@@ -278,7 +276,6 @@ function LessonPage() {
     setAnsweredQs((a) => [...a, { questionId: q.id, answer: submittedAnswer }]);
     if (isCorrect) setCorrect((c) => c + 1);
     else {
-      setMissed((m) => [...m, `${lesson.id}:${q.id}`]);
       setMissedQs((m) => [...m, { q, yours: submittedAnswer }]);
       loseHeartLocal();
       void loseHeartRemote();
@@ -328,17 +325,9 @@ function LessonPage() {
       setTranslationVerdict(null);
       return;
     }
-    if (missed.length) {
-      void recordMisses({
-        data: {
-          lessonId: lesson.id,
-          level: lessonLevel,
-          itemKeys: missed,
-          course,
-          sessionToken: sessionToken ?? "",
-        },
-      }).catch(() => {});
-    }
+    // Misses are re-derived server-side and enrolled by the same atomic
+    // transaction as the completion. A separate fire-and-forget write here
+    // could leave review items behind when completion failed.
     try {
       const res = await completeLessonRemote({
         data: {

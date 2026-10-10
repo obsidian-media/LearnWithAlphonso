@@ -170,6 +170,20 @@ struct RootView: View {
                         await checkOnboarding()
                         if session.userID == onboardingUser { onboardingChecked = true }
                     }
+                    .task(id: syncQueueStore.queueRevision) {
+                        // SwiftUI cancels this sleep whenever an enqueue or sync pass changes the queue.
+                        // Foreground and reconnect handlers remain the safety net after iOS suspension.
+                        guard let userID = session.userID,
+                              let due = syncQueueStore.nextPendingAttempt(for: userID) else { return }
+                        let delay = max(0, due.timeIntervalSinceNow)
+                        if delay > 0 {
+                            do { try await Task.sleep(for: .seconds(delay)) }
+                            catch { return }
+                        }
+                        guard !Task.isCancelled, session.userID == userID, networkMonitor.isConnected else { return }
+                        // Do not tie the network pass to this task: apply() re-arms and cancels the sleeper.
+                        Task { await triggerSync() }
+                    }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
                             Task { await triggerSync() }

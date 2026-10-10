@@ -33,7 +33,12 @@ vi.mock("@tanstack/react-start", () => ({
 // account.functions.test.ts already established for deleteMyAccount.
 const supabaseAdminFrom = vi.fn();
 // The model-written question passes the blocked-term check (ai_output_blocked, service role) before it is stored.
-const adminRpc = vi.fn(async () => ({ data: [false], error: null }));
+const adminRpc = vi.fn(
+  async (_name?: string): Promise<{ data: unknown; error: { message: string } | null }> => ({
+    data: [false],
+    error: null,
+  }),
+);
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: supabaseAdminFrom, rpc: adminRpc },
 }));
@@ -66,6 +71,12 @@ beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
+  adminRpc.mockReset();
+  adminRpc.mockImplementation(async (name?: string) =>
+    name === "apply_lesson_completion"
+      ? { data: { status: "applied" }, error: null }
+      : { data: [false], error: null },
+  );
 });
 
 afterEach(() => {
@@ -339,7 +350,14 @@ describe("completeLessonRemote", () => {
     // the user's RLS client it is denied, completeLessonRemote throws after the other writes land, and the web
     // lesson screen shows 0 XP (found 2026-10-06 in the 0.0-ae review).
     expect(supabase.from.mock.calls.map((c) => c[0])).not.toContain("friend_activity_events");
-    expect(supabaseAdminFrom.mock.calls.map((c) => c[0])).toContain("friend_activity_events");
+    expect(adminRpc).toHaveBeenCalledWith(
+      "apply_lesson_completion",
+      expect.objectContaining({
+        _activity_events: expect.arrayContaining([
+          expect.objectContaining({ event_type: "lesson_completed" }),
+        ]),
+      }),
+    );
 
     expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8)
     expect(result.heartsBonus).toBe("perfect");
@@ -478,12 +496,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: null }))
       .mockReturnValueOnce(chainable({ data: null }));
-    supabaseAdminFrom
-      .mockReturnValueOnce(chainable({})) // user_progress upsert -- succeeds
-      .mockReturnValueOnce(chainable({})) // language_progress upsert -- succeeds
-      .mockReturnValueOnce(chainable({ error: { message: "connection reset" } })) // lesson_completions upsert -- fails
-      .mockReturnValueOnce(chainable({})) // activity_days upsert -- succeeds
-      .mockReturnValueOnce(chainable({})); // friend_activity_events insert (xpGain > 0), via admin
+    adminRpc.mockResolvedValueOnce({ data: null, error: { message: "connection reset" } });
 
     await expect(
       completeLessonRemote({
@@ -496,7 +509,7 @@ describe("completeLessonRemote", () => {
           sessionToken: validToken(),
         },
       }),
-    ).rejects.toThrow("connection reset");
+    ).rejects.toThrow("Could not save lesson completion; retry");
   });
 
   it("rejects a forged or expired session token", async () => {

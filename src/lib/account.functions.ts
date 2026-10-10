@@ -32,6 +32,7 @@ export const USER_ID_EXPORT_TABLES = [
   "podcast_play_events",
   "podcast_playback",
   "review_items",
+  "review_grade_attempts",
   "season_cohort_members",
   "season_placements",
   "team_members",
@@ -86,43 +87,84 @@ export const USER_DELETE_TABLES = [
 const USER_PROGRESS_EXPORT_COLUMNS =
   "user_id,streak,longest_streak,last_active_date,last_review_bonus_date,hearts,hearts_refill_at,streak_freezes,updated_at";
 
+const EXPORT_PAGE_SIZE = 500;
+
+type ExportPage = {
+  data: unknown[] | null;
+  error: { message: string } | null;
+  count: number | null;
+};
+
+/** Never interpret one capped PostgREST response as the whole table. */
+async function readAllExportPages(
+  table: string,
+  page: (first: number, last: number) => PromiseLike<ExportPage>,
+): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  let expectedCount: number | null = null;
+  for (let first = 0; ; first += EXPORT_PAGE_SIZE) {
+    const result = await page(first, first + EXPORT_PAGE_SIZE - 1);
+    if (result.error || !Array.isArray(result.data)) {
+      throw new Error(`exportMyData: could not read ${table}; the export would be incomplete`);
+    }
+    if (result.count !== null && result.count !== undefined) {
+      expectedCount ??= result.count;
+    }
+    rows.push(...result.data);
+    if (result.data.length < EXPORT_PAGE_SIZE) break;
+  }
+  if (expectedCount !== null && rows.length !== expectedCount) {
+    throw new Error(`exportMyData: ${table} changed during pagination; retry the export`);
+  }
+  return rows;
+}
+
 /** Export every row this account owns (GDPR data portability). */
 export const exportMyData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId, claims } = context;
-    // Independent selects -- batched instead of a sequential loop, so a GDPR
-    // export stays one round trip's worth of latency rather than one per
-    // table as this list grows.
-    const [userIdRows, otherOwnedRows, { data: profile }, rlsScopedRows] = await Promise.all([
+    // Tables are parallel; pages within a table are sequential so no capped
+    // PostgREST response silently truncates a large account.
+    const [userIdRows, otherOwnedRows, profileResult, rlsScopedRows] = await Promise.all([
       Promise.all(
         USER_ID_EXPORT_TABLES.map((table) =>
-          supabase
-            .from(table)
-            .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*")
-            .eq("user_id", userId),
+          readAllExportPages(table, (first, last) =>
+            supabase
+              // The migration's table is not in production-generated types yet.
+              // All members of this list have user_id; regenerate types after migration deployment.
+              .from(table as Exclude<typeof table, "review_grade_attempts">)
+              .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {
+                count: "exact",
+              })
+              .eq("user_id", userId)
+              .range(first, last),
+          ),
         ),
       ),
       Promise.all(
         OTHER_OWNED_EXPORT_TABLES.map(({ table, columns }) =>
-          supabase
-            .from(table)
-            .select("*")
-            .or(columns.map((c) => `${c}.eq.${userId}`).join(",")),
+          readAllExportPages(table, (first, last) =>
+            supabase
+              .from(table)
+              .select("*", { count: "exact" })
+              .or(columns.map((c) => `${c}.eq.${userId}`).join(","))
+              .range(first, last),
+          ),
         ),
       ),
       supabase.from("profiles").select("*").eq("id", userId),
-      Promise.all(RLS_SCOPED_EXPORT_TABLES.map((table) => supabase.from(table).select("*"))),
+      Promise.all(
+        RLS_SCOPED_EXPORT_TABLES.map((table) =>
+          readAllExportPages(table, (first, last) =>
+            supabase.from(table).select("*", { count: "exact" }).range(first, last),
+          ),
+        ),
+      ),
     ]);
     // A read that errors (revoked privilege, outage) used to become an empty array, so a GDPR export
     // could look complete while omitting a table. Fail instead and name the tables.
-    const failed = [
-      ...USER_ID_EXPORT_TABLES.filter((_, i) => userIdRows[i].error),
-      ...OTHER_OWNED_EXPORT_TABLES.map(({ table }) => table).filter(
-        (_, i) => otherOwnedRows[i].error,
-      ),
-      ...RLS_SCOPED_EXPORT_TABLES.filter((_, i) => rlsScopedRows[i].error),
-    ];
+    const failed = profileResult.error ? ["profiles"] : [];
     if (failed.length > 0) {
       throw new Error(
         `exportMyData: could not read ${failed.join(", ")}; the export would be incomplete`,
@@ -130,14 +172,14 @@ export const exportMyData = createServerFn({ method: "POST" })
     }
     const tables: Record<string, unknown[]> = {};
     USER_ID_EXPORT_TABLES.forEach((table, i) => {
-      tables[table] = (userIdRows[i].data as unknown[]) ?? [];
+      tables[table] = userIdRows[i];
     });
     OTHER_OWNED_EXPORT_TABLES.forEach(({ table }, i) => {
-      tables[table] = (otherOwnedRows[i].data as unknown[]) ?? [];
+      tables[table] = otherOwnedRows[i];
     });
-    tables.profiles = profile ?? [];
+    tables.profiles = profileResult.data ?? [];
     RLS_SCOPED_EXPORT_TABLES.forEach((table, i) => {
-      tables[table] = (rlsScopedRows[i].data as unknown[]) ?? [];
+      tables[table] = rlsScopedRows[i];
     });
     return {
       exported_at: new Date().toISOString(),
@@ -225,13 +267,18 @@ export async function revokeAppleGrantForUser(
       return "not_configured";
     }
 
-    const { data } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("apple_auth_tokens")
       .select("refresh_token")
       .eq("user_id", userId)
       .maybeSingle();
+    if (error) return "failed";
     const refreshToken = data?.refresh_token;
-    if (!refreshToken) return "not_applicable";
+    if (!refreshToken) {
+      // No stored credential does not prove a linked Apple grant is absent:
+      // authorization-code exchange can fail after sign-in succeeds.
+      return (await appleIdentityOf(supabaseAdmin, userId)) === false ? "not_applicable" : "failed";
+    }
 
     const revoked = await revokeAppleGrant(config, refreshToken);
     return revoked ? "revoked" : "failed";

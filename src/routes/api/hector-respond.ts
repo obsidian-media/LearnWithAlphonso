@@ -14,6 +14,23 @@ import {
   type TutorHistoryMessage,
 } from "@/lib/hector-conversation";
 
+async function boundedAudio(response: Response, maxBytes: number): Promise<Buffer | null> {
+  if (!response.body) return Buffer.alloc(0);
+  const reader = response.body.getReader();
+  const chunks: Buffer[] = [];
+  let bytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) return Buffer.concat(chunks, bytes);
+    bytes += value.byteLength;
+    if (bytes > maxBytes) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(Buffer.from(value));
+  }
+}
+
 async function handleTurn(request: Request, timer: StageTimer): Promise<Response> {
   const nvidiaKey = process.env.NVIDIA_API_KEY;
   const deepgramKey = process.env.DEEPGRAM_API_KEY;
@@ -42,14 +59,17 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "hector-respond" });
   if (denied) return denied;
 
-  // Pro gate, fail-closed -- same posture as /api/hector-shadow-account.
-  const entitled = await timer.time("entitlement", async () => {
-    const { revenueCatConfigFromEnv, isProSubscriber } =
+  // A failed entitlement lookup must not masquerade as a lapsed subscription.
+  const entitlement = await timer.time("entitlement", async () => {
+    const { revenueCatConfigFromEnv, getProEntitlementStatus } =
       await import("@/lib/revenuecat-entitlement");
     const rcConfig = revenueCatConfigFromEnv();
-    return !!rcConfig && (await isProSubscriber(rcConfig, userId));
+    return rcConfig ? getProEntitlementStatus(rcConfig, userId) : "unavailable";
   });
-  if (!entitled) {
+  if (entitlement === "unavailable") {
+    return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
+  }
+  if (entitlement === "inactive") {
     return Response.json({ error: "not-entitled" }, { status: 403 });
   }
 
@@ -86,33 +106,45 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   // --- LLM turn (NVIDIA NIM, OpenAI-compatible, same as /api/chat) ---
   const llmStart = performance.now();
   const llm = await timer.time("llm", async () => {
-    const llmResp = await nvidiaChatCompletion({
-      apiKey: nvidiaKey,
-      body: {
-        model: resolveNvidiaChatModel(),
-        messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
-      },
-    });
-    if (!llmResp.ok) {
+    try {
+      const llmResp = await nvidiaChatCompletion({
+        apiKey: nvidiaKey,
+        signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
+        body: {
+          model: resolveNvidiaChatModel(),
+          messages: buildHectorMessages(body.history ?? [], text, systemPrompt),
+          max_tokens: 512,
+        },
+      });
+      if (!llmResp.ok) {
+        return {
+          ok: false as const,
+          failure: await upstreamErrorResponse(
+            "NVIDIA",
+            llmResp.status,
+            await llmResp.text().catch(() => ""),
+          ),
+        };
+      }
+      const llmData = (await llmResp.json()) as {
+        choices?: { message?: { content?: string } }[];
+      };
+      return { ok: true as const, reply: (llmData.choices?.[0]?.message?.content ?? "").trim() };
+    } catch {
       return {
         ok: false as const,
-        failure: await upstreamErrorResponse(
-          "NVIDIA",
-          llmResp.status,
-          await llmResp.text().catch(() => ""),
-        ),
+        failure: Response.json({ error: "Hector reply unavailable" }, { status: 504 }),
       };
     }
-    const llmData = (await llmResp.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    return { ok: true as const, reply: (llmData.choices?.[0]?.message?.content ?? "").trim() };
   });
   if (!llm.ok) return llm.failure;
   const reply = llm.reply;
   const llmMs = performance.now() - llmStart;
   if (!reply) {
     return Response.json({ error: "empty reply from model" }, { status: 502 });
+  }
+  if (reply.length > 2_000) {
+    return Response.json({ error: "Hector reply too long" }, { status: 502 });
   }
 
   // What the learner hears is what they read: a blocked reply is replaced before it is spoken.
@@ -128,28 +160,43 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const ttsModel = deepgramVoiceForLanguage(course);
   const ttsStart = performance.now();
   const tts = await timer.time("tts", async () => {
-    const ttsResp = await fetch(
-      `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(ttsModel)}&encoding=mp3&mip_opt_out=true`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Token ${deepgramKey}` },
-        body: JSON.stringify({ text: safeReply }),
-      },
-    );
-    if (!ttsResp.ok) {
+    try {
+      const ttsResp = await fetch(
+        `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(ttsModel)}&encoding=mp3&mip_opt_out=true`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Token ${deepgramKey}` },
+          body: JSON.stringify({ text: safeReply }),
+          signal: AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]),
+        },
+      );
+      if (!ttsResp.ok) {
+        return {
+          ok: false as const,
+          failure: await upstreamErrorResponse(
+            "Deepgram TTS",
+            ttsResp.status,
+            await ttsResp.text().catch(() => ""),
+          ),
+        };
+      }
+      const audio = await boundedAudio(ttsResp, 1_500_000);
+      if (!audio) {
+        return {
+          ok: false as const,
+          failure: Response.json({ error: "Hector audio too large" }, { status: 502 }),
+        };
+      }
+      return {
+        ok: true as const,
+        audioBase64: audio.toString("base64"),
+      };
+    } catch {
       return {
         ok: false as const,
-        failure: await upstreamErrorResponse(
-          "Deepgram TTS",
-          ttsResp.status,
-          await ttsResp.text().catch(() => ""),
-        ),
+        failure: Response.json({ error: "Hector voice unavailable" }, { status: 504 }),
       };
     }
-    return {
-      ok: true as const,
-      audioBase64: Buffer.from(await ttsResp.arrayBuffer()).toString("base64"),
-    };
   });
   if (!tts.ok) return tts.failure;
   const audioBase64 = tts.audioBase64;

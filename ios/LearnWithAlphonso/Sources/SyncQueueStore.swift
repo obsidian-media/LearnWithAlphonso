@@ -244,6 +244,9 @@ final class SyncQueueStore: AccountScopedQueue {
     /// Bumps whenever dead letters change, so the Learn-tab notice re-renders.
     private(set) var deadLetterRevision = 0
 
+    /// Changes whenever the pending queue changes, so RootView can re-arm its retry wakeup.
+    private(set) var queueRevision = 0
+
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
@@ -285,6 +288,7 @@ final class SyncQueueStore: AccountScopedQueue {
     func appendLessonCompletion(_ pending: PendingLessonCompletion) {
         modelContext.insert(PendingLessonCompletionRecord(pending))
         try? modelContext.save()
+        queueRevision += 1
     }
 
     func pendingLessonCompletions() -> [PendingLessonCompletion] {
@@ -297,11 +301,23 @@ final class SyncQueueStore: AccountScopedQueue {
     func appendReviewGrade(_ pending: PendingReviewGrade) {
         modelContext.insert(PendingReviewGradeRecord(pending))
         try? modelContext.save()
+        queueRevision += 1
     }
 
     func pendingReviewGrades() -> [PendingReviewGrade] {
         let records = (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? []
         return records.map(\.asPending)
+    }
+
+    /// Earliest retry for this account; nil means there is nothing to wake for.
+    func nextPendingAttempt(for userID: String, now: Date = Date()) -> Date? {
+        let lessonDates = pendingLessonCompletions()
+            .filter { $0.ownerUserID == userID }
+            .map { $0.nextAttemptAt ?? now }
+        let gradeDates = pendingReviewGrades()
+            .filter { $0.ownerUserID == userID }
+            .map { $0.nextAttemptAt ?? now }
+        return (lessonDates + gradeDates).min()
     }
 
     // MARK: - Last-known cache (for offline display)
@@ -430,6 +446,7 @@ final class SyncQueueStore: AccountScopedQueue {
 
         trimDeadLetters(keeping: 50)
         do { try modelContext.save() } catch { print("[SyncQueueStore] apply save failed: \(error)") }
+        queueRevision += 1
         if !result.deadLetteredLessonCompletions.isEmpty || !result.deadLetteredReviewGrades.isEmpty {
             deadLetterRevision += 1
         }
@@ -471,6 +488,7 @@ final class SyncQueueStore: AccountScopedQueue {
         }
         dueReviewRevision += 1
         deadLetterRevision += 1
+        queueRevision += 1
     }
 
     private func deleteAll<Model: PersistentModel>(_ type: Model.Type) {
