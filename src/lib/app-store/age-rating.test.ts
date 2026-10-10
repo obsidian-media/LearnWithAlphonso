@@ -88,11 +88,16 @@ describe("resolveComputedRating", () => {
       rating: "THIRTEEN_PLUS",
       source: "appInfo",
     });
-    expect(resolveComputedRating({ ageRatingOverrideV2: "NONE" }, undefined)).toEqual({ rating: "", source: "none" });
-    expect(resolveComputedRating({ ageRatingOverrideV2: "SIXTEEN_PLUS" }, "THIRTEEN_PLUS")).toEqual({
-      rating: "SIXTEEN_PLUS",
-      source: "ageRatingDeclaration",
+    expect(resolveComputedRating({ ageRatingOverrideV2: "NONE" }, undefined)).toEqual({
+      rating: "",
+      source: "none",
     });
+    expect(resolveComputedRating({ ageRatingOverrideV2: "SIXTEEN_PLUS" }, "THIRTEEN_PLUS")).toEqual(
+      {
+        rating: "SIXTEEN_PLUS",
+        source: "ageRatingDeclaration",
+      },
+    );
   });
 });
 
