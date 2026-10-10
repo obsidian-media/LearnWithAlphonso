@@ -32,45 +32,13 @@ export const Route = createFileRoute("/api/stt")({
         // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md.
         const rawCourse = inForm?.get("course");
         const course = typeof rawCourse === "string" && isCourse(rawCourse) ? rawCourse : "en";
-        // TEMPORARY (2026-09-28): a live "recorder buffers for a couple
-        // seconds then just goes back to the mic icon, doesn't record
-        // anything" report, with AIConversationClient.transcribe's
-        // matching debugTiming parameter -- see that doc comment. The box
-        // walker below already ruled out the file being corrupt: `moov`
-        // and `mdat` sizes agree with each other and with Deepgram's own
-        // reported duration -- the file is genuinely short, not
-        // mis-parsed. This settles WHY: whether the client's own
-        // press-to-release span was already short (a gesture bug) or
-        // AVAudioRecorder took most of that span just to start actually
-        // capturing (a session-reconfiguration race, most likely right
-        // after Hector's own TTS reply playback).
-        const debugTiming = inForm?.get("debugTiming");
+        // iOS builds up to 50 still send a `debugTiming` field. It is accepted and ignored: nothing reads it.
         // Deepgram's pre-recorded /v1/listen endpoint takes the raw audio
         // bytes as the request body with Content-Type set to the audio's
         // actual mime type — it detects webm/mp4/wav/etc. from that header,
         // no multipart wrapper or transcoding needed.
         const forwardedContentType = file.type || "audio/webm";
-        // Confirmed live on build 37 (2026-09-28): `moov` and `mdat` sizes
-        // agree with each other and with Deepgram's own reported duration
-        // -- the file itself is genuinely short and internally consistent,
-        // not corrupt or mis-parsed. Kept as a box walker (not a raw hex
-        // dump) since it settled that on the first real sample.
-        const audioBuffer = await file.arrayBuffer();
-        const audioBytes = new Uint8Array(audioBuffer);
-        const view = new DataView(audioBuffer);
-        function walkBoxes(bytes: Uint8Array): string {
-          const boxes: string[] = [];
-          let offset = 0;
-          while (offset + 8 <= bytes.length) {
-            const size = view.getUint32(offset, false);
-            const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
-            boxes.push(`${type}(${size})`);
-            if (size < 8) break; // 0/1 means "rest of file"/64-bit size -- stop rather than misparse
-            offset += size;
-          }
-          if (offset !== bytes.length) boxes.push(`[${bytes.length - offset} trailing bytes]`);
-          return boxes.join(" ");
-        }
+        const audioBytes = new Uint8Array(await file.arrayBuffer());
         const resp = await fetch(
           `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true&mip_opt_out=true`,
           {
@@ -94,13 +62,6 @@ export const Route = createFileRoute("/api/stt")({
         };
         const alt = data.results?.channels?.[0]?.alternatives?.[0];
         const text = alt?.transcript ?? "";
-        if (!text) {
-          console.error(
-            `[stt] Empty transcript. file.type="${file.type}" forwarded="${forwardedContentType}"` +
-              ` size=${file.size} debugTiming="${typeof debugTiming === "string" ? debugTiming : "none"}"` +
-              `\n[stt] boxes=${walkBoxes(audioBytes)}\n[stt] metadata=${JSON.stringify(data.metadata)}`,
-          );
-        }
         // V3 package 3a: Deepgram's own utterance-level confidence (0-1),
         // used as a lightweight pronunciation-clarity heuristic client-side
         // -- not real phoneme-level pronunciation scoring (see the design

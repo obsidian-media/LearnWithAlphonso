@@ -180,3 +180,33 @@ describe("OAuth redirect allowlist and Google provider", () => {
     expect(IOS_OAUTH_CALLBACK).toBe("com.obsidianmedia.learnwithalphonso://login-callback");
   });
 });
+
+describe("the sign-in email body the update script applies", () => {
+  it("shows the code and carries no link at all", async () => {
+    const { CODE_EMAIL } = await import("../../scripts/auth-email-template");
+    expect(CODE_EMAIL).toContain("{{ .Token }}");
+    expect(CODE_EMAIL).not.toMatch(/ConfirmationURL|<a\b|href|https?:\/\/|Prefer a link/i);
+    // What the old body had, minus the link: the rest of the copy is unchanged.
+    expect(CODE_EMAIL).toContain("<h2>Your sign-in code</h2>");
+    expect(CODE_EMAIL).toContain("can only be used once");
+    // The shared body satisfies the live-config guard for both templates.
+    expect(
+      findAuthConfigProblems({
+        ...GOOD,
+        mailer_templates_magic_link_content: CODE_EMAIL,
+        mailer_templates_confirmation_content: CODE_EMAIL,
+      }),
+    ).toEqual([]);
+  });
+
+  it("is the body update-auth-email-template.ts sends for both templates", () => {
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "scripts", "update-auth-email-template.ts"),
+      "utf8",
+    );
+    expect(src).toContain('from "./auth-email-template"');
+    expect(src).toContain("mailer_templates_magic_link_content: CODE_EMAIL");
+    expect(src).toContain("mailer_templates_confirmation_content: CODE_EMAIL");
+    expect(src).not.toMatch(/Prefer a link|<a href/);
+  });
+});
