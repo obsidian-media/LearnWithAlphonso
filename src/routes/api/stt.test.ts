@@ -14,10 +14,11 @@ const handler = (
   }
 ).POST;
 
-function reqWithFile(file: Blob | null, course?: string) {
+function reqWithFile(file: Blob | null, course?: string, debugTiming?: string) {
   const form = new FormData();
   if (file) form.set("file", file, "audio.webm");
   if (course !== undefined) form.set("course", course);
+  if (debugTiming !== undefined) form.set("debugTiming", debugTiming);
   return new Request("https://example.com/api/stt", { method: "POST", body: form });
 }
 
@@ -182,6 +183,24 @@ describe("POST /api/stt", () => {
     await handler({ request });
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("audio/webm");
+  });
+
+  it("still succeeds when an older iOS build sends the retired debugTiming field, and never logs it", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const logs = vi.spyOn(console, "log").mockImplementation(() => {});
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(JSON.stringify({ results: { channels: [] } }), { status: 200 }),
+    );
+    const res = await handler({
+      request: reqWithFile(new Blob(["x".repeat(600)]), "en", "press=0.10 capture=0.40"),
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ text: "", confidence: null });
+    // An empty transcript is the case the retired diagnostics logged on.
+    const written = JSON.stringify([...errors.mock.calls, ...logs.mock.calls]);
+    expect(written).not.toMatch(/debugTiming|press=0.10|boxes/);
+    errors.mockRestore();
+    logs.mockRestore();
   });
 
   it("returns empty text when Deepgram finds no alternatives", async () => {

@@ -59,23 +59,23 @@ SIGN IN (no password)
 1. Enter ${i.demoAccountEmail} and tap "Send code".
 2. Open ${i.demoCodeURL} (no login) to see the current code. Opening it issues a new code, so do step 1 first.
 3. Enter the code. It submits at 6 digits (or tap "Verify").
-The account (display name Alex) has lessons done, a streak, due reviews, a placement in all 3 courses and a promotional Pro entitlement. Contact: ${i.reviewContactEmail}
+The account (display name Alex) has lessons done, a streak, due reviews, a placement in all 3 courses and promotional Pro. Contact: ${i.reviewContactEmail}
 
 LEARNING
 - Learn tab: course picker (EN, FR, ES) top left, the Review row (due reviews) at the top, then any lesson.
-- Hearts: a wrong lesson answer costs a heart. At 0 a lesson cannot start: wait, spend 50 XP on a heart, or review or practice (no hearts needed).
+- Hearts: a wrong answer costs one. At 0 a lesson cannot start: wait, spend 50 XP on one, or use review or practice.
 - Practice tab: pick a scenario, hold the mic to talk (active course).
-- Hector tab (Pro, unlocked here): same mic; replies follow the active course and level.
+- Hector tab (Pro, unlocked): same mic; replies follow the course and level.
 - Listen tab follows the Learn course: English > A1 > "Ordering Coffee". FR and ES: switch course. Plays when locked; downloadable.
-- New since build 49: account-level AI consent, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
+- New since build 49: AI consent, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
 
 AI CONSENT
 Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and NVIDIA (text). The choice is saved on the account and enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Press and hold any AI reply, then "Report this response", to report it.
 
 SOCIAL SAFETY
 - New accounts choose a public display name once (filtered; Skip gives a name like Learner-4F2A). Emails are never shown.
-- Profile > Friends, League (Teams inside), Duels. Every other learner shown has a "..." menu with Block and Report; team names have Report Team Name. Reports email us and we act within 24 hours.
-- Study buddy (Profile > Friends): this account is already paired with a demo learner, shown as "Matched learner", so you can try the preset messages, Block and Report. "End study buddy" ends it and shows the opt-in: stranger matching is per course and needs "I'm 13 or older". Similar level only; never a blocked or past partner. Matched learners see only a name and weekly progress and can send only preset messages (no free text, 20 an hour). Block ends the pair. A server switch stops new matches and messages between matched strangers without an app update.
+- Profile > Friends (top-right Duels can pair you with a random learner at your level; only the course and XP scores show, no names) and League (Teams inside). Every other learner shown has a "..." menu with Block and Report; team names have Report Team Name. Reports email us and we act within 24 hours.
+- Study buddy (Profile > Friends): this account is already paired with a demo learner, shown as "Matched learner", so you can try the preset messages, Block and Report. "End study buddy" ends it and shows the opt-in: stranger matching is per course and needs "I'm 13 or older". Similar level only; never a blocked or past partner. Matched learners see only a name and weekly progress and can send only preset messages (no free text, 20 an hour). Block ends the pair. A server switch pauses matching and messages between matched strangers.
 - Delete account: Profile > Settings > Account > Delete My Account (type DELETE). Export My Data is next to it.
 
 SUBSCRIPTION

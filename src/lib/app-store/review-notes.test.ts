@@ -72,6 +72,20 @@ describe("buildReviewNotes", () => {
     expect(reviewNotesProblems(notes, unlucky)).toEqual([]);
   });
 
+  it("puts Duels inside Friends (the top-right button), not beside it, and says what a random duel shows", () => {
+    const notes = buildReviewNotes(worst);
+    expect(notes).toContain(
+      "Profile > Friends (top-right Duels can pair you with a random learner at your level",
+    );
+    expect(notes).toContain("only the course and XP scores show, no names");
+    expect(notes).not.toContain("only names and scores");
+    expect(notes).toContain(
+      "A server switch pauses matching and messages between matched strangers.",
+    );
+    expect(notes).not.toContain("League (Teams inside), Duels");
+    expect(notes).not.toMatch(/Profile > (Friends, League|League, Duels)/);
+  });
+
   it("never names the old league tiers", () => {
     expect(buildReviewNotes(worst)).not.toMatch(/Bronze|Silver|Sapphire|Ruby|Diamond/i);
   });
