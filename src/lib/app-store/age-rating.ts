@@ -43,7 +43,10 @@ export function resolveComputedRating(
   live: Record<string, unknown>,
   appInfoRating?: string,
 ): { rating: string; source: "ageRatingDeclaration" | "appInfo" | "none" } {
-  const fromDeclaration = live.appStoreAgeRating ?? live.ageRatingOverrideV2;
+  // An override of "NONE" means no override was set, not a rating: fall through to the computed rating.
+  const override = live.ageRatingOverrideV2;
+  const fromDeclaration =
+    live.appStoreAgeRating ?? (override && String(override) !== "NONE" ? override : undefined);
   if (fromDeclaration) return { rating: String(fromDeclaration), source: "ageRatingDeclaration" };
   if (appInfoRating) return { rating: appInfoRating, source: "appInfo" };
   return { rating: "", source: "none" };
