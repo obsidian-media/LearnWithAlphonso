@@ -1386,8 +1386,9 @@ separate PRs because the generated types had to be regenerated between them.
   reply that says "support" or "sex education" must not be withheld. Existing
   names are never renamed by the migration; a name that now fails is refused
   the next time it is written. Guard: `src/lib/name-policy-migrations.test.ts`
-  holds blocked and allowed lists, including real-name false positives. Not
-  covered yet: Cyrillic look-alikes and some leetspeak variants.
+  holds blocked and allowed lists, including real-name false positives.
+  Look-alike folding is the shared `moderation_fold` (11 leetspeak, 10 Cyrillic
+  and 8 Greek letters); look-alikes outside that table are not caught.
 - **Public-name step.** A new account sees "What should other learners call
   you?" once (iOS full-screen cover, web dialog), prefilled from the Apple or
   Google first name and checked live. A generated handle is shown as a grey
@@ -1574,8 +1575,8 @@ pure tested module.
   (replace, never append), `check-app-store-screenshots.ts`.
 - `capture-app-store-screenshots.yml` runs the UI `ScreenshotTests`
   (01-learn, 02-lesson, 03-practice-fr, 05-listen, 06-listen-episode,
-  07-review, 09-profile; the lesson shot first scrolls the lazy list until the
-  row exists). The Hector shot is not automated because a Simulator
+  07-review, 09-profile; the lesson shot first swipes the lazy list up, at most 8 times, until
+  the row exists). The Hector shot is not automated because a Simulator
   has no microphone input, and League, leaderboard and Friends are never
   captured so no other learner's public name appears in marketing assets.
 - `scripts/seed-demo-account.ts` resumes the published podcast episode looked
