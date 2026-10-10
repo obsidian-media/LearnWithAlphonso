@@ -1,7 +1,7 @@
 name: ASC Release Ops
 
 # Manual only. Release operations: list builds, expire old builds, attach an exact build,
-# TestFlight Beta App Review info, Content Rights, release type, and a read-only submission
+# TestFlight Beta App Review info, external TestFlight test info, Content Rights, release type, and a read-only submission
 # check. Every write needs apply=true; the default only reads. Expiring builds is irreversible:
 # run only after the build 49 to 50 upgrade test has passed.
 # Nothing here submits anything for review.
@@ -21,8 +21,9 @@ on:
           - content-rights
           - release-type
           - submission-check
+          - testflight
       arg:
-        description: "expire-builds: highest build to expire (run only after the build 49 to 50 upgrade test has passed). attach-build and submission-check: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
+        description: "expire-builds: highest build to expire (run only after the build 49 to 50 upgrade test has passed). attach-build, submission-check and testflight: the build number. release-type: MANUAL or AFTER_APPROVAL. Otherwise empty."
         required: false
         type: string
       apply:

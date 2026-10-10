@@ -76,3 +76,28 @@ describe("update-age-rating wiring", () => {
     expect(direct[0]).toContain('"PATCH"');
   });
 });
+
+describe("asc-release-ops testflight", () => {
+  const src = read("asc-release-ops.ts");
+  const fn = src.slice(
+    src.indexOf("async function testflight"),
+    src.indexOf("async function main"),
+  );
+
+  it("checks the copy before any request", () => {
+    expect(fn.indexOf("testflightCopyProblems(")).toBeGreaterThan(-1);
+    expect(fn.indexOf("testflightCopyProblems(")).toBeLessThan(fn.indexOf("await "));
+  });
+
+  it("writes nothing before the apply gate", () => {
+    const gate = fn.indexOf("if (!APPLY) return;");
+    expect(gate).toBeGreaterThan(-1);
+    expect(fn.slice(0, gate)).not.toMatch(/"(PATCH|POST|DELETE)"/);
+  });
+
+  it("never adds a build to a group or submits it for Beta App Review", () => {
+    expect(src).not.toMatch(
+      /betaAppReviewSubmissions|relationships\/builds|relationships\/betaGroups/,
+    );
+  });
+});
