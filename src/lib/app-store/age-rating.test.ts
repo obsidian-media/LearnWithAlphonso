@@ -5,6 +5,8 @@ import {
   ageRatingPatch,
   ageRatingProblems,
   resolveComputedRating,
+  ageRatingDeclarationReadPath,
+  parseAgeRatingDeclaration,
 } from "./age-rating";
 
 describe("age rating (13+, AI chat and stranger matching declared)", () => {
@@ -99,5 +101,56 @@ describe("ageRatingPatch", () => {
       messagingAndChat: false,
     });
     expect(Object.keys(patch)).toEqual(["messagingAndChat"]);
+  });
+});
+
+describe("reading the declaration through its app info", () => {
+  it("uses the relationship path, never GET on the declaration itself", () => {
+    const path = ageRatingDeclarationReadPath("info-1");
+    expect(path).toBe("/appInfos/info-1/ageRatingDeclaration");
+    expect(path).not.toMatch(/^\/ageRatingDeclarations/);
+  });
+
+  const response = {
+    data: {
+      type: "ageRatingDeclarations",
+      id: "decl-1",
+      attributes: { userGeneratedContent: true, messagingAndChat: true, violenceRealistic: "NONE" },
+      links: { self: "https://api.appstoreconnect.apple.com/v1/ageRatingDeclarations/decl-1" },
+    },
+    links: {
+      self: "https://api.appstoreconnect.apple.com/v1/appInfos/info-1/ageRatingDeclaration",
+    },
+  };
+
+  it("parses id and attributes out of the relationship response", () => {
+    const parsed = parseAgeRatingDeclaration(response);
+    expect(parsed.id).toBe("decl-1");
+    expect(parsed.attributes.userGeneratedContent).toBe(true);
+    expect(parsed.attributes.messagingAndChat).toBe(true);
+  });
+
+  it("rejects an empty, wrong-typed or id-less response", () => {
+    expect(() => parseAgeRatingDeclaration({ data: null })).toThrow(/no age rating declaration/);
+    expect(() => parseAgeRatingDeclaration(null)).toThrow(/no age rating declaration/);
+    expect(() =>
+      parseAgeRatingDeclaration({ data: { type: "appInfos", id: "x", attributes: {} } }),
+    ).toThrow(/expected an ageRatingDeclarations/);
+    expect(() =>
+      parseAgeRatingDeclaration({ data: { type: "ageRatingDeclarations", attributes: {} } }),
+    ).toThrow(/no id/);
+  });
+
+  it("feeds the check: required fields still flagged when missing from the parsed attributes", () => {
+    const parsed = parseAgeRatingDeclaration({
+      data: {
+        type: "ageRatingDeclarations",
+        id: "d",
+        attributes: { appStoreAgeRating: "FOUR_PLUS" },
+      },
+    });
+    const problems = ageRatingProblems(parsed.attributes);
+    expect(problems.some((p) => p.startsWith("userGeneratedContent: missing"))).toBe(true);
+    expect(problems.some((p) => p.startsWith("messagingAndChat: missing"))).toBe(true);
   });
 });
