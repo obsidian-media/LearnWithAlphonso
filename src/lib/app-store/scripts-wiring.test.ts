@@ -89,6 +89,7 @@ describe("asc-release-ops testflight", () => {
     expect(fn.indexOf("testflightCopyProblems(")).toBeLessThan(fn.indexOf("await "));
   });
 
+  // Sees literal methods only: a write through a helper or a variable method would slip past it.
   it("writes nothing before the apply gate", () => {
     const gate = fn.indexOf("if (!APPLY) return;");
     expect(gate).toBeGreaterThan(-1);
@@ -97,7 +98,11 @@ describe("asc-release-ops testflight", () => {
 
   it("never adds a build to a group or submits it for Beta App Review", () => {
     expect(src).not.toMatch(
-      /betaAppReviewSubmissions|relationships\/builds|relationships\/betaGroups/,
+      /betaAppReviewSubmissions|buildBetaNotifications|relationships\/builds|relationships\/betaGroups|\/betaGroups[`"],\s*"POST"/,
     );
+  });
+
+  it("fails the run on a read-back mismatch", () => {
+    expect(fn.match(/!== (v|whatsNew)\) process\.exitCode = 1/g)).toHaveLength(2);
   });
 });

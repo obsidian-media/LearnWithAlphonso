@@ -335,17 +335,20 @@ async function testflight(): Promise<void> {
   const status = (set: unknown) => (set ? "SET" : "(empty)");
 
   const enc = await api(`/builds/${build.id}?fields[builds]=usesNonExemptEncryption`);
+  if (!enc.ok) throw new Error(`read build failed: ${enc.status}`);
   const usesEnc = dataOf<Resource>(enc).attributes?.usesNonExemptEncryption;
   console.log(
     `build ${build.attributes.version}: ${build.attributes.processingState}, expired=${build.attributes.expired}, usesNonExemptEncryption=${String(usesEnc)}`,
   );
   const detail = await api(`/builds/${build.id}/buildBetaDetail`);
+  if (!detail.ok) throw new Error(`read beta detail failed: ${detail.status}`);
   const d = dataOf<Resource>(detail).attributes ?? {};
   console.log(
     `  internal: ${String(d.internalBuildState)}  external: ${String(d.externalBuildState)}`,
   );
 
   const groups = await api(`/apps/${APP_ID}/betaGroups?limit=50`);
+  if (!groups.ok) throw new Error(`read beta groups failed: ${groups.status}`);
   for (const g of dataOf<Resource[]>(groups)) {
     const a = g.attributes ?? {};
     console.log(
@@ -354,11 +357,22 @@ async function testflight(): Promise<void> {
   }
 
   const review = await api(`/apps/${APP_ID}/betaAppReviewDetail`);
+  if (!review.ok) throw new Error(`read beta review detail failed: ${review.status}`);
   const r = dataOf<Resource>(review).attributes ?? {};
-  for (const k of ["contactEmail", "contactPhone", "demoAccountName", "notes"])
+  for (const k of [
+    "contactFirstName",
+    "contactLastName",
+    "contactEmail",
+    "contactPhone",
+    "demoAccountRequired",
+    "demoAccountName",
+    "notes",
+  ])
     console.log(`  beta review ${k}: ${status(r[k])}`);
 
-  const appLocs = dataOf<Resource[]>(await api(`/apps/${APP_ID}/betaAppLocalizations`));
+  const appLocsRes = await api(`/apps/${APP_ID}/betaAppLocalizations`);
+  if (!appLocsRes.ok) throw new Error(`read test info failed: ${appLocsRes.status}`);
+  const appLocs = dataOf<Resource[]>(appLocsRes);
   const appLoc = appLocs.find((l) => l.attributes?.locale === "en-US") ?? null;
   const appWanted = {
     description: TESTFLIGHT.betaDescription,
@@ -369,7 +383,9 @@ async function testflight(): Promise<void> {
   for (const k of Object.keys(appWanted))
     console.log(`  test info ${k}: ${status(appLoc?.attributes?.[k])}`);
 
-  const buildLocs = dataOf<Resource[]>(await api(`/builds/${build.id}/betaBuildLocalizations`));
+  const buildLocsRes = await api(`/builds/${build.id}/betaBuildLocalizations`);
+  if (!buildLocsRes.ok) throw new Error(`read What to Test failed: ${buildLocsRes.status}`);
+  const buildLocs = dataOf<Resource[]>(buildLocsRes);
   const buildLoc = buildLocs.find((l) => l.attributes?.locale === "en-US") ?? null;
   console.log(`  What to Test: ${status(buildLoc?.attributes?.whatsNew)}`);
 
@@ -388,8 +404,10 @@ async function testflight(): Promise<void> {
   if (!appRes.ok)
     throw new Error(`test info write failed: ${appRes.status} ${JSON.stringify(appRes.json)}`);
   const savedApp = dataOf<Resource>(appRes).attributes ?? {};
-  for (const [k, v] of Object.entries(appWanted))
+  for (const [k, v] of Object.entries(appWanted)) {
     console.log(`  test info ${k}: ${savedApp[k] === v ? "OK" : "MISMATCH"}`);
+    if (savedApp[k] !== v) process.exitCode = 1;
+  }
 
   const whatsNew = TESTFLIGHT.whatToTest;
   const buildRes = buildLoc
@@ -407,9 +425,9 @@ async function testflight(): Promise<void> {
     throw new Error(
       `What to Test write failed: ${buildRes.status} ${JSON.stringify(buildRes.json)}`,
     );
-  console.log(
-    `  What to Test: ${dataOf<Resource>(buildRes).attributes?.whatsNew === whatsNew ? "OK" : "MISMATCH"}`,
-  );
+  const savedWhatsNew = dataOf<Resource>(buildRes).attributes?.whatsNew;
+  console.log(`  What to Test: ${savedWhatsNew === whatsNew ? "OK" : "MISMATCH"}`);
+  if (savedWhatsNew !== whatsNew) process.exitCode = 1;
   console.log(
     "Nothing was submitted. Adding the build to the external group is done in App Store Connect.",
   );
@@ -481,8 +499,10 @@ async function main() {
     });
     if (!r.ok) throw new Error(`write failed: ${r.status}`);
     const saved = dataOf<Resource>(r).attributes ?? {};
-    for (const [k, v] of Object.entries(wanted))
+    for (const [k, v] of Object.entries(wanted)) {
       console.log(`  ${k}: ${saved[k] === v ? "OK" : "MISMATCH"}`);
+      if (saved[k] !== v) process.exitCode = 1;
+    }
   } else if (cmd === "content-rights") {
     const a = await api(`/apps/${APP_ID}?fields[apps]=contentRightsDeclaration`);
     console.log(

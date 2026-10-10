@@ -1,3 +1,5 @@
+import { LISTING, PRIVACY } from "./listing-copy";
+
 /**
  * What external TestFlight testers (and Beta App Review) read: the beta app description, the feedback
  * address, the two links, and the per-build "What to Test" note. One reviewed source, like listing-copy.
@@ -20,14 +22,16 @@ Take a short placement test, then learn through CEFR-graded lessons from A1 to C
 
 Sign in with Apple, Google or your email (you get a 6-digit code). AI features run only after you allow them and can be turned off in Settings.`,
   feedbackEmail: "support@alphonsoecosystem.app",
-  marketingUrl: "https://discover.alphonsoecosystem.app",
-  privacyPolicyUrl: "https://learn.alphonsoecosystem.app/privacy",
+  marketingUrl: LISTING.marketingUrl,
+  privacyPolicyUrl: PRIVACY,
+  // Remove the "Known in this build" paragraph once the Paid Apps Agreement is active and Pro can be
+  // bought in TestFlight; this note is reused for every build until then.
   whatToTest: `Thanks for testing! Please try:
 - Sign up, take the placement test and finish a few lessons in any course.
 - Review, speaking practice in Practice, and an audio episode in Listen (also with the screen locked).
 - Friends, leagues and teams, if you like.
 
-Known in this build: buying Alphonso Pro is not open to testers yet, so the subscription screen may say it couldn't load the options. Everything else is free to use.
+Known in this build: Alphonso Pro cannot be bought by testers yet, so Hector (the AI voice tutor, a Pro feature) is not available and the subscription screen may say it couldn't load the options. Lessons, review, speaking practice and listening are free to use.
 
 Send feedback with a screenshot from TestFlight, or write to support@alphonsoecosystem.app.`,
 };

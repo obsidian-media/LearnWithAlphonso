@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LISTING } from "./listing-copy";
+import { LISTING, PRIVACY } from "./listing-copy";
 import { TESTFLIGHT, TESTFLIGHT_TEXT_LIMIT, testflightCopyProblems } from "./testflight-copy";
 
 describe("testflight copy", () => {
@@ -7,12 +7,16 @@ describe("testflight copy", () => {
     expect(testflightCopyProblems(TESTFLIGHT)).toEqual([]);
   });
 
-  it("uses the same marketing link as the listing", () => {
+  it("uses the same links as the listing", () => {
     expect(TESTFLIGHT.marketingUrl).toBe(LISTING.marketingUrl);
+    expect(TESTFLIGHT.privacyPolicyUrl).toBe(PRIVACY);
   });
 
   it("tells testers the subscription cannot be bought yet", () => {
-    expect(TESTFLIGHT.whatToTest).toMatch(/not open to testers yet/);
+    expect(TESTFLIGHT.whatToTest).toMatch(/cannot be bought by testers yet/);
+    // Hector is a Pro feature, so the note must not claim everything else works.
+    expect(TESTFLIGHT.whatToTest).toMatch(/Hector[^.]*not available/);
+    expect(TESTFLIGHT.whatToTest).not.toMatch(/everything else is free/i);
   });
 
   it("flags text over Apple's limit", () => {
