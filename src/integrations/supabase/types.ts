@@ -1859,6 +1859,7 @@ export type Database = {
         Args: { _x: string; _y: string };
         Returns: undefined;
       };
+      _my_team_id: { Args: never; Returns: string };
       _new_join_code: { Args: never; Returns: string };
       _random_team_name: { Args: never; Returns: string };
       _reset_failing_public_names: {
