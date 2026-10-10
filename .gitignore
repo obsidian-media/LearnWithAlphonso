@@ -70,6 +70,7 @@ ClaudeCodeComprehensiveMulti-AngleAudit—2026-09-18.md
 # it drifts fast and would calcify into stale "documentation" if
 # committed. See the file itself for how to keep it current.
 docs/BACKLOG.md
+docs/BACKLOG.backup-*.md
 
 # V4 kickoff docs — same pattern as the V2/V3 kickoff docs above
 # (2026-09-21): local-only briefing docs for handing off individual V4
