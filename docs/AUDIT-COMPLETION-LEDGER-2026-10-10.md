@@ -5,6 +5,8 @@
 **Plan:** [Audit verification and closure](AUDIT-VERIFICATION-AND-CLOSURE-2026-10-10.md).
 
 **Execution report:** [Audit remediation completion, 2026-10-10](AUDIT-REMEDIATION-COMPLETION-2026-10-10.md).
+
+**Work and PR report:** [Audit remediation work and PR report](AUDIT-REMEDIATION-WORK-AND-PR-REPORT-2026-10-10.md).
 **Status convention:** `OPEN` means closure evidence is missing; `IN PROGRESS` requires a named owner/change; `COMPLETE` requires an artifact and a passing acceptance check; `NOT APPLICABLE` requires a documented reason. A green generic CI run alone does not close a behavioral item.
 
 ## Work completed during this verification

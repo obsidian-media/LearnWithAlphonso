@@ -10,6 +10,8 @@
 
 **Release decision:** **NO-GO** for production submission or unrestricted paid launch. The work below is proposed on `codex/audit-remediation-2026-10-10`; it has not been deployed to production, included in a signed iOS archive, or certified on a physical device. The draft PR automatically generated Vercel preview deployments; those are not production or acceptance evidence.
 
+For the source-control history, PR state, and end-to-end summary of this work, see [Audit remediation work and PR report](AUDIT-REMEDIATION-WORK-AND-PR-REPORT-2026-10-10.md).
+
 ## Executive result
 
 The remediation pass produced substantive local code fixes for F01–F08, F10 and F11; F09 and human/device/operations evidence F12–F15 remain open. No finding is declared end-to-end **COMPLETE** because closure requires the specific deployed, exact-build, and/or independent evidence in the audit plan. F01 and F02 now have additive database transactions and real-Postgres failure-injection tests, but the migrations have not been deployed and exact-client recovery/concurrency is unproven. F03 still has no durable Apple-revocation retry after account deletion. These residuals preserve the no-go decision.
