@@ -20,7 +20,7 @@ export const LISTING_LIMITS = {
 } as const;
 
 const TERMS = "https://learn.alphonsoecosystem.app/terms";
-const PRIVACY = "https://learn.alphonsoecosystem.app/privacy";
+export const PRIVACY = "https://learn.alphonsoecosystem.app/privacy";
 const EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 const DESCRIPTION = `Learn With Alphonso helps you build a language habit in English, French or Spanish, a few minutes at a time.
