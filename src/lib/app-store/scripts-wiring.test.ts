@@ -53,6 +53,11 @@ describe("asc-release-ops wiring", () => {
     expect(src).toContain("resolveComputedRating(live, infoRating)");
     expect(src).toContain("(from ${source})");
   });
+
+  it("never GETs an ageRatingDeclarations resource directly", () => {
+    expect(src).toContain("ageRatingDeclarationReadPath(info.id)");
+    expect(src).not.toMatch(/api\(`\/ageRatingDeclarations/);
+  });
 });
 
 describe("update-age-rating wiring", () => {
@@ -61,5 +66,13 @@ describe("update-age-rating wiring", () => {
   it("falls back to the app info rating and prints the source used", () => {
     expect(src).toContain("ageRatingProblems(attributes, infoRating)");
     expect(src).toContain("(source: ${source})");
+  });
+
+  it("reads through the app info and only PATCHes the declaration", () => {
+    expect(src).toContain("ageRatingDeclarationReadPath(info.id)");
+    expect(src).toContain("parseAgeRatingDeclaration(result.json)");
+    const direct = src.match(/api\(`\/ageRatingDeclarations[^)]*\)/g) ?? [];
+    expect(direct).toHaveLength(1);
+    expect(direct[0]).toContain('"PATCH"');
   });
 });

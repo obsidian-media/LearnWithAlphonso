@@ -16,7 +16,12 @@
  * Nothing here submits anything for review.
  */
 import { createSign } from "node:crypto";
-import { ageRatingProblems, resolveComputedRating } from "../src/lib/app-store/age-rating";
+import {
+  ageRatingDeclarationReadPath,
+  ageRatingProblems,
+  parseAgeRatingDeclaration,
+  resolveComputedRating,
+} from "../src/lib/app-store/age-rating";
 import {
   attachedBuildNumberProblem,
   attachedBuildProblems,
@@ -40,8 +45,6 @@ const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
 const KEY_P8_BASE64 = process.env.APP_STORE_CONNECT_KEY_P8_BASE64;
 const APP_ID = process.env.APP_ID ?? "6813969159";
 const SUBSCRIPTION_ID = process.env.SUBSCRIPTION_ID ?? "6815009725";
-const DECLARATION_ID =
-  process.env.AGE_RATING_DECLARATION_ID ?? "74c50170-c089-4201-8fb6-2e6155eae246";
 // --apply is honoured only in the last argument slot (the workflow's dedicated apply input); the free-text
 // argument can never switch a write on.
 const { cmd, arg, apply: APPLY } = parseOpsArgs(process.argv.slice(2));
@@ -269,8 +272,12 @@ async function submissionCheck(): Promise<void> {
   }
 
   await attempt("age rating", async () => {
-    const r = await api(`/ageRatingDeclarations/${DECLARATION_ID}`);
-    const live = dataOf<Resource>(r).attributes ?? {};
+    // GET on /ageRatingDeclarations/{id} is not allowed; read it through the editable app info.
+    const infos = dataOf<Resource[]>(await api(`/apps/${APP_ID}/appInfos`));
+    const info = pickEditableAppInfo(infos as Parameters<typeof pickEditableAppInfo>[0]);
+    const r = await api(ageRatingDeclarationReadPath(info.id));
+    if (!r.ok) throw new Error(`age rating declaration read failed: ${r.status}`);
+    const live = parseAgeRatingDeclaration(r.json).attributes;
     const infoRating = await appInfoAgeRating();
     const { rating, source } = resolveComputedRating(live, infoRating);
     const problems = ageRatingProblems(live, infoRating);

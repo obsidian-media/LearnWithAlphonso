@@ -63,3 +63,29 @@ export function ageRatingProblems(live: Record<string, unknown>, appInfoRating?:
   else if (RANK[rating] < 13) p.push(`computed rating ${rating} is below 13+`);
   return p;
 }
+
+/**
+ * App Store Connect no longer allows GET /v1/ageRatingDeclarations/{id} (403: only UPDATE is allowed).
+ * The declaration is read through its parent: GET /v1/appInfos/{appInfoId}/ageRatingDeclaration.
+ */
+export function ageRatingDeclarationReadPath(appInfoId: string): string {
+  return `/appInfos/${appInfoId}/ageRatingDeclaration`;
+}
+
+/** The declaration out of a relationship response, or a thrown error naming what was wrong. */
+export function parseAgeRatingDeclaration(json: unknown): {
+  id: string;
+  attributes: Record<string, unknown>;
+} {
+  const data = (json as { data?: unknown } | null)?.data as
+    { id?: unknown; type?: unknown; attributes?: unknown } | null | undefined;
+  if (!data || typeof data !== "object")
+    throw new Error("the app info has no age rating declaration in the response");
+  if (data.type !== "ageRatingDeclarations")
+    throw new Error(`expected an ageRatingDeclarations resource, got ${String(data.type)}`);
+  if (typeof data.id !== "string" || data.id === "")
+    throw new Error("the age rating declaration has no id");
+  if (!data.attributes || typeof data.attributes !== "object")
+    throw new Error("the age rating declaration has no attributes");
+  return { id: data.id, attributes: data.attributes as Record<string, unknown> };
+}
