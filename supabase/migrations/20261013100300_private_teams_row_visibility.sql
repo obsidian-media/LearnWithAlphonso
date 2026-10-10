@@ -34,8 +34,8 @@ GRANT EXECUTE ON FUNCTION public._my_team_id() TO authenticated;
 
 DROP POLICY "teams_select_all" ON public.teams;
 CREATE POLICY "teams_select_visible" ON public.teams FOR SELECT TO authenticated
-  USING (visibility = 'public' OR id = public._my_team_id());
+  USING (visibility = 'public' OR id = (SELECT public._my_team_id()));
 
 DROP POLICY "team_members_select_all" ON public.team_members;
 CREATE POLICY "team_members_select_own_team" ON public.team_members FOR SELECT TO authenticated
-  USING (team_id = public._my_team_id());
+  USING (team_id = (SELECT public._my_team_id()));

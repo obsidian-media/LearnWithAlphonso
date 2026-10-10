@@ -15,12 +15,13 @@ const flat = code.replace(/\s+/g, " ");
 
 describe("private teams row visibility migration", () => {
   it("sorts after main's newest and the leaderboard fix, with a unique version", () => {
+    const files = fs.readdirSync(MIGRATIONS);
+    // Both pinned predecessors really exist, so this file applies after them (the comparisons below then mean something).
+    expect(files.some((f) => f.startsWith(MAIN_MAX_AT_AUTHORING))).toBe(true);
+    expect(files.some((f) => f.startsWith(LEADERBOARD_FIX))).toBe(true);
     expect(FILE.slice(0, 14) > MAIN_MAX_AT_AUTHORING).toBe(true);
     expect(FILE.slice(0, 14) > LEADERBOARD_FIX).toBe(true);
-    const versions = fs
-      .readdirSync(MIGRATIONS)
-      .filter((f) => f.endsWith(".sql"))
-      .map((f) => f.slice(0, 14));
+    const versions = files.filter((f) => f.endsWith(".sql")).map((f) => f.slice(0, 14));
     expect(versions.filter((v) => v === FILE.slice(0, 14))).toHaveLength(1);
   });
 
@@ -33,13 +34,13 @@ describe("private teams row visibility migration", () => {
 
   it("pins the teams policy: public teams, or the caller's own team", () => {
     expect(flat).toContain(
-      `CREATE POLICY "teams_select_visible" ON public.teams FOR SELECT TO authenticated USING (visibility = 'public' OR id = public._my_team_id());`,
+      `CREATE POLICY "teams_select_visible" ON public.teams FOR SELECT TO authenticated USING (visibility = 'public' OR id = (SELECT public._my_team_id()));`,
     );
   });
 
   it("pins the team_members policy: only the caller's own team", () => {
     expect(flat).toContain(
-      `CREATE POLICY "team_members_select_own_team" ON public.team_members FOR SELECT TO authenticated USING (team_id = public._my_team_id());`,
+      `CREATE POLICY "team_members_select_own_team" ON public.team_members FOR SELECT TO authenticated USING (team_id = (SELECT public._my_team_id()));`,
     );
   });
 
