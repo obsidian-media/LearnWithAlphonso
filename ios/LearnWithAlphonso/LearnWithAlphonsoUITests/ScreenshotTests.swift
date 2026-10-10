@@ -106,7 +106,15 @@ final class ScreenshotTests: XCTestCase {
         // "firstLessonRow" is a stable identifier on whichever lesson
         // actually renders first (LessonBrowserView.swift), independent
         // of which CEFR band is showing.
-        guard app.buttons["firstLessonRow"].waitForExistence(timeout: 10) else {
+        // The goal, team mission and weekly challenge cards sit above the lessons, so the first lesson row is
+        // below the fold on a fresh launch; a lazily built List does not create it until it scrolls into view.
+        let firstLesson = app.buttons["firstLessonRow"]
+        var swipes = 0
+        while !firstLesson.exists && swipes < 8 {
+            app.swipeUp()
+            swipes += 1
+        }
+        guard firstLesson.waitForExistence(timeout: 10) else {
             XCTContext.runActivity(named: "Missing element: firstLessonRow") { _ in }
             return
         }
