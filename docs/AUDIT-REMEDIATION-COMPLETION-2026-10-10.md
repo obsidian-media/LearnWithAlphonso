@@ -8,7 +8,7 @@
 
 **Scope:** F01–F15 and S01–S10, excluding any action to accept or change the Paid Apps Agreement.
 
-**Release decision:** **NO-GO** for production submission or unrestricted paid launch. The work below is proposed on `codex/audit-remediation-2026-10-10`; it has not been deployed, included in a signed iOS archive, or certified on a physical device.
+**Release decision:** **NO-GO** for production submission or unrestricted paid launch. The work below is proposed on `codex/audit-remediation-2026-10-10`; it has not been deployed to production, included in a signed iOS archive, or certified on a physical device. The draft PR automatically generated Vercel preview deployments; those are not production or acceptance evidence.
 
 ## Executive result
 
@@ -79,4 +79,4 @@ The first deployable candidate should: (1) run both migrations against a disposa
 
 The critical path is (1) deploy/verify the F01/F02 migrations and implement F03 durable Apple revocation; (2) deployed database/client failure tests, iOS build and device checks; (3) release controls and deployed-version manifest; (4) privacy/ASC, moderation and operations drills; (5) independent language/rights approvals and final S01–S10 evidence. Deploy both additive migrations **before** either updated caller; independently validate the SQL against the full production schema before rollout. Do not mark a local test as production verification. Keep the candidate closed to unrestricted paid users until all release gates are signed on one immutable build/backend/migration combination.
 
-No deployment or App Store Connect setting was edited, no production data was mutated, and no account secret value was intentionally retrieved during remediation. The `.vercel/project.json` link and `vercel env ls production` exposed variable names but not hidden secret values. Branch/PR review is a source-control handoff, not release verification.
+No production deployment or App Store Connect setting was edited, no production data was mutated, and no account secret value was intentionally retrieved during remediation. The `.vercel/project.json` link and `vercel env ls production` exposed variable names but not hidden secret values. Branch/PR review and automatically generated preview deployments are not release verification.
