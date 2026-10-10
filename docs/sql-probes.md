@@ -97,3 +97,14 @@ Same harness, both migrations installed inside `BEGIN ... ROLLBACK` after checki
 | `ai_output_blocked` (`20261011100100`) | blocked-term verdicts on prose (English profanity and French `retard` blocked; `râpé` and `cono` not blocked by the v2 filter); 20-element cap (exactly 20 passes; 21, a 2-D array and a 4x10 array are refused with `invalid-argument`); empty and NULL inputs; anon refused; service role allowed |
 
 `ai_output_blocked` service-role only (`20261012300000`), same harness, rolled back; leak check 0 users, 0 idle transactions: before the migration a signed-in user can call it (one call with 20 strings of 8000 characters measured about 2 seconds of database time, which made it a load vector); after it, `authenticated` and `anon` get `42501 permission denied`, `service_role` still gets verdicts and still refuses a two-dimensional array.
+
+## Private teams and the name policy (merged 2026-10-09 and 2026-10-10; migration versions 20261013* and 20261014*)
+
+Same harness: each migration's exact final SQL installed inside `BEGIN ... ROLLBACK` against production, queried as seeded users, nothing committed; leak check afterwards (0 users, 0 idle transactions).
+
+| Migration | What the script showed |
+|---|---|
+| `get_team_leaderboard` hides private teams (`20261013100200`) | a stranger does not see a private team; a member sees their own private team; a stranger still sees a public team; grants preserved (no `anon`, `authenticated` yes, definer) |
+| `teams_select_visible`, `team_members_select_own_team`, `_my_team_id` (`20261013100300`) | stranger: private team rows 0, public team report lookup 1, member rows of any team 0, helper returns NULL; owner: own private team 1, own member rows 1, another team's members 0, `get_my_team`, `get_team_members` and the account export of the own row still work; `anon` has no SELECT and cannot execute the helper. Mutation: changing the members policy back to `USING (true)` turns the migration test red |
+| `name_policy_blocked` (`20261014100000`) | 15 names that must be blocked were blocked for both display and team names (self-harm phrases, drug words in English and Spanish, sexual terms, staff and app impersonation, bidi and emoji tricks); 14 names that must pass passed (Thai names containing `porn`, bare Hector with and without the accent, Alphonso, Essex, Sexton, Methodist); no existing production name would now be refused. `name_policy_blocked` and `contains_blocked_term` were exercised together |
+| `admin_users_added_by_set_null` (`20261014100100`) | the foreign key is confirmed as `ON DELETE SET NULL` |
