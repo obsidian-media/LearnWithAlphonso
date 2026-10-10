@@ -61,7 +61,7 @@ over "what the answer currently is," since the latter goes stale fast.
 | `ai_rate_limits`                                                 | Per-minute per-kind request counter, read by `consume_ai_rate_limit`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `levels` / `units` / `lessons` / `questions`                     | Curriculum data mirrored from `src/data/curriculum.ts`/etc. into real tables (`scripts/seed-curriculum-db.ts` populates them) — exists so the `complete-lesson` Edge Function can validate a completion claim server-side without bundling curriculum JSON. **The web app itself still reads `curriculum.ts` directly, not these tables** — same precedent as `achievements` below. See `docs/superpowers/specs/2026-09-18-curriculum-db-schema-design.md`.                                                                                                                                                                                     |
 | `vocab_images` / `placement_questions` / `scenarios`             | Same mirroring, for the rest of the curriculum-adjacent static data (`src/data/vocab-images.ts`, `placement.ts`, `scenarios.ts`) — currently no consumer queries these yet. The `vocab_images` rows point at the self-hosted public `vocab-images` Storage bucket (see "Vocab images" below)                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `teams` / `team_members` / `team_weekly_rewards`                 | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`. **Broken until 2026-10-06:** `_join_team_impl` and `get_my_team` shipped with an unqualified `team_id` that clashed with their own `RETURNS TABLE(team_id ...)` column (run-time error 42702), so no team could be created or joined and a member could not load their team (`claim_weekly_quest` had the same mistake in a `SELECT xp INTO` and stopped every weekly quest claim); fixed in `20261006170000_fix_team_joins_and_course_aware_payouts.sql`, and `src/lib/plpgsql-output-column-clash.test.ts` now guards the class. The weekly +100 team bonus pays each member on the course they study (their latest completed lesson), not `profiles.active_language`. |
+| `teams` / `team_members` / `team_weekly_rewards`                 | V4 #7 (deeper gamification) — persistent groups: invite code, public/private, `switch_locked_until` (7-day anti-hop lock), `_random_team_name`/`_join_team_impl` shared join logic with `FOR UPDATE` locking. Weekly-XP-sum leaderboard (`get_team_leaderboard`) and a lazy-resolved weekly win bonus (+100 XP to last week's #1 team's members, granted as a side effect of the next `get_my_team` read, no cron). Added `supabase/migrations/20260922040000_teams.sql`. **Broken until 2026-10-06:** `_join_team_impl` and `get_my_team` shipped with an unqualified `team_id` that clashed with their own `RETURNS TABLE(team_id ...)` column (run-time error 42702), so no team could be created or joined and a member could not load their team (`claim_weekly_quest` had the same mistake in a `SELECT xp INTO` and stopped every weekly quest claim); fixed in `20261006170000_fix_team_joins_and_course_aware_payouts.sql`, and `src/lib/plpgsql-output-column-clash.test.ts` now guards the class. The weekly +100 team bonus pays each member on the course they study (their latest completed lesson), not `profiles.active_language`. **Private teams are private (2026-10-10, #272, #273):** `get_team_leaderboard` lists public teams plus the caller's own team; the `teams` SELECT policy `teams_select_visible` shows a row only when the team is public or the caller belongs to it, and `team_members_select_own_team` shows membership rows only for the caller's own team, both via the `SECURITY DEFINER` helper `_my_team_id()` (callable by signed-in users, not by `anon`). The apps read these tables directly only for the team-name report lookup (a team shown on the public board) and the account export (the caller's own row); everything else goes through definer functions. The `get_my_team` last-week winner is deliberately global (it only decides the payout). |
 | `season_cohorts` / `season_cohort_members` / `season_placements` | V4 #7 — Duolingo-style weekly promotion/demotion ladder, ~30-person cohorts ranked by weekly XP, 5 divisions. Resolved by the `get-season-status` Edge Function (below), not raw SQL — the ranking/promotion math (`floor(size/3)` promote, `floor(size/6)` demote) is unit-tested Deno/TS, not PL/pgSQL. No client RLS policy — only the Edge Function (service_role) touches these directly. Added `supabase/migrations/20260922050000_season_ladder.sql`.                                                                                                                                                                                    |
 | `challenge_templates` / `challenge_completions`                  | V4 #7 — fixed weekly solo goals (6 seeded templates), same DB-seeded pattern as `achievements` rather than hardcoded TS constants (a deliberate deviation from that plan's original framing). `get_weekly_challenges()` RPC computes live progress per caller.                                                                                                                                                                                                                                                                                                                                                                                  |
 | `team_missions` / `team_mission_rewards` | Study-together Part 1 (`docs/superpowers/specs/2026-10-06-study-together-design.md`) -- a weekly shared goal per team of 2+ members: target = members x 4 lessons, snapshotted on the first read of the ISO week (UTC) so late joiners raise it only next week. Progress is lessons (one `lesson_completions` row per user per lesson, so replays do not count) first completed this week by current members, counted from the later of the week start and their `joined_at`. Reaching the target pays +50 XP to each member with a contributing lesson, once, lazily on the next read (previous week resolved too), guarded by an atomic `UPDATE ... rewarded_at IS NULL`; no cron. `team_missions` is server-only (no client grant); `team_mission_rewards` is readable by its owner for the data export. All logic is in `get_team_mission()` (SECURITY DEFINER; helpers `_team_mission_count`/`_resolve_team_mission` are not client-callable); the web wording lives in `src/lib/team-mission.ts`, pinned by `team-mission.fixtures.json` for iOS/Android. Members who are paid also unlock the `team_player` achievement (category `team`, granted by `_resolve_team_mission` in the same payout via `20261006160000_team_player_badge.sql`; no client stat exists for that category, so only the server can unlock it; the catalog entry is mirrored in `src/data/achievements.ts` and the three bundled JSON copies). Added `supabase/migrations/20261006150000_team_missions.sql`. |
@@ -259,7 +259,7 @@ admin files and every utility they use is missing from the generated CSS,
 producing an unstyled app with no error anywhere. The admin shell sets
 `data-theme="canopy"` explicitly, since `:root` is Meadow.
 
-Authorization is `admin_users`: **RLS enabled with zero policies**, plus
+Authorization is `admin_users` (`added_by` references `auth.users` with `ON DELETE SET NULL`, so deleting the admin who added another admin no longer blocks the account deletion): **RLS enabled with zero policies**, plus
 `REVOKE ALL FROM anon, authenticated`, so only `service_role` (which
 bypasses RLS) can read it. An allowlist the guarded application can read
 is one an attacker can enumerate, and one it can write is not an
@@ -1272,7 +1272,9 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   caller's own fields. Measured on the app's own prompts: Save word 17.4 s to
   1.2 s, Practice reply 18.1 s (78.7 s uncapped) to 0.8 s. Before the change
   Save word hit its 20 s limit on every call and generated practice timed out
-  twice at 8 s. Prompt-level switches (`/no_think`, `reasoning_effort`) do not
+  twice at 8 s. Save word's lookup (`saved-word.server.ts`) then got two
+  attempts of 9 s each (#272), retried only after a timeout, a network error
+  or a 5xx. Prompt-level switches (`/no_think`, `reasoning_effort`) do not
   work on this model. Guards: `src/lib/nvidia-no-thinking.test.ts` and a Deno
   test. Routes: `src/routes/api/chat.ts`, `hector-respond.ts`.
 - **TTS/STT:** Deepgram directly (Aura-2 / Nova-3) —
@@ -1280,7 +1282,9 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   Aura-2 voice per course (en `thalia`, fr `agathe`, es `selena`). Every
   Deepgram URL carries `mip_opt_out=true` (the model-improvement opt-out the
   privacy policy promises), built by one tested helper. STT takes the
-  course for Deepgram's `language` parameter.
+  course for Deepgram's `language` parameter. The temporary recording-timing
+  debug output was removed (#275); the route still accepts a `debugTiming`
+  form field from older iOS builds and ignores it.
 - **Course-aware tutor (2026-10-08).** The active course (shared with Learn,
   remembered per account) drives Hector, Practice, Campaigns and speaking
   questions. Scenarios and campaigns are course-keyed (`en`/`fr`/`es`: 12
@@ -1365,6 +1369,26 @@ separate PRs because the generated types had to be regenerated between them.
   name was refused from one shared copy table
   (`social-reason.fixtures.json`, mirrored to iOS and Android; a test requires
   copy for every reason code the database can return).
+- **Name policy (2026-10-10, #275).** `name_policy_blocked(text)` adds a second
+  layer on top of the shared rule set, called only from `display_name_problem`
+  (and so from `team_name_problem`, `create_team`, `confirm_display_name`, the
+  profile trigger and the admin rename). It refuses self-harm phrases ("kill
+  yourself", KYS), drug words (English and Spanish spellings), sexual terms
+  and impersonation of staff or the app (Admin, Support, Moderator, a bare
+  "Apple"). Words match as whole tokens, so Essex, Sussex, Sexton and
+  Methodist pass; `porn` is a whole word only (plus pornstar and pornking), so
+  Thai names such as Pornthip and Siriporn pass; accented Spanish forms fold
+  to their plain spelling (`cocaína`). "Alphonso" and "Hector" are real given
+  names and stay allowed alone or with a surname; they are blocked only when
+  joined to a role word ("Hector Support", "Alphonso Admin"). The error code
+  is the existing `blocked-content`, so no client copy changed. The shared AI
+  output matcher (`contains_blocked_term`) is untouched on purpose: a chatbot
+  reply that says "support" or "sex education" must not be withheld. Existing
+  names are never renamed by the migration; a name that now fails is refused
+  the next time it is written. Guard: `src/lib/name-policy-migrations.test.ts`
+  holds blocked and allowed lists, including real-name false positives.
+  Look-alike folding is the shared `moderation_fold` (11 leetspeak, 10 Cyrillic
+  and 8 Greek letters); look-alikes outside that table are not caught.
 - **Public-name step.** A new account sees "What should other learners call
   you?" once (iOS full-screen cover, web dialog), prefilled from the Apple or
   Google first name and checked live. A generated handle is shown as a grey
@@ -1542,12 +1566,17 @@ pure tested module.
   length, disclosure, link and forbidden-copy checks),
   `update-app-review-info.ts` (review notes built from one tested module, under
   4,000 characters in the worst case; `check` is read-only),
-  `update-age-rating.ts` (`check` exits non-zero on any problem),
+  `update-age-rating.ts` (`check` exits non-zero on any problem; it reads the
+  declaration through the app info, `GET /appInfos/{id}/ageRatingDeclaration`,
+  because App Store Connect no longer allows a direct read, and an
+  `ageRatingOverrideV2` of `NONE` means no override, so the computed rating
+  is used instead),
   `upload-app-store-screenshots.ts` and `upload-review-screenshot.ts`
   (replace, never append), `check-app-store-screenshots.ts`.
 - `capture-app-store-screenshots.yml` runs the UI `ScreenshotTests`
   (01-learn, 02-lesson, 03-practice-fr, 05-listen, 06-listen-episode,
-  07-review, 09-profile). The Hector shot is not automated because a Simulator
+  07-review, 09-profile; the lesson shot first swipes the lazy list up, at most 8 times, until
+  the row exists). The Hector shot is not automated because a Simulator
   has no microphone input, and League, leaderboard and Friends are never
   captured so no other learner's public name appears in marketing assets.
 - `scripts/seed-demo-account.ts` resumes the published podcast episode looked
@@ -1620,7 +1649,12 @@ note in README.md's Documentation section for why.)
   Supabase's single "Magic Link" template with every OTP request, and
   that template ships showing only a clickable link, never the raw
   `{{ .Token }}` code the iOS UI asks the user to type in — so even a
-  successfully-delivered email was the wrong shape for iOS's flow.
+  successfully-delivered email was the wrong shape for iOS's flow. Since
+  2026-10-10 (#275) the email body is the single exported `CODE_EMAIL`
+  (`scripts/auth-email-template.ts`): the code only, no link. A link built
+  from the confirmation URL opened Safari on an iPhone and could spend the
+  code the learner was about to type; both Supabase templates (first-time
+  and returning addresses) carry the same body.
   `scripts/configure-custom-smtp.ts` (Resend) and `scripts/
 update-auth-email-template.ts` fix these via the Supabase Management
   API directly (no CLI/MCP wrapper exists for either setting), runnable

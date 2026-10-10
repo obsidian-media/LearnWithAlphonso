@@ -333,7 +333,7 @@ compile verification that exists):
   Android; no cron. Language buddies (friend pairing, opt-in matching, a shared weekly goal, preset messages only) are
   built on web, iOS and Android: `docs/superpowers/specs/2026-10-06-study-together-design.md`
 - **Teams, weekly challenges, open duels, season ladder**: persistent
-  teams with weekly-XP competition; fixed weekly solo goals plus
+  teams with weekly-XP competition (private teams are join-by-code only and are not listed on the board or readable by non-members); fixed weekly solo goals plus
   stranger-matchmaking duels (alongside friend duels); a weekly
   promotion/demotion season ladder distinct from the permanent league
   tier — linked from Leaderboards, real push (not push-style local
