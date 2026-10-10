@@ -5,7 +5,7 @@ import type { FakeSupabaseState } from "@/lib/__testutils__/fake-supabase";
 /**
  * End to end through the real consent and quota helpers: only Supabase, RevenueCat and the vendors are faked.
  * Every gated endpoint refuses without consent before any vendor call or quota spend, succeeds with consent, and
- * is a plain pass-through when ENFORCE_AI_CONSENT=false (without reading the consent at all).
+ * still refuses consent when the obsolete ENFORCE_AI_CONSENT=false flag is present.
  */
 const h = vi.hoisted(() => ({
   state: {
@@ -26,7 +26,7 @@ vi.mock("@/integrations/supabase/client.server", async () => {
 });
 vi.mock("@/lib/revenuecat-entitlement", () => ({
   revenueCatConfigFromEnv: () => ({ secretApiKey: "sk_test" }),
-  isProSubscriber: async () => true,
+  getProEntitlementStatus: async () => "active",
 }));
 
 type Handler = (opts: { request: Request }) => Promise<Response>;
@@ -178,11 +178,12 @@ describe.each(GATED)("%s", (route, makeRequest) => {
     expect(vendorCalls.length).toBeGreaterThan(0);
   });
 
-  it("ENFORCE_AI_CONSENT=false bypasses the check without reading it", async () => {
+  it("ENFORCE_AI_CONSENT=false does not bypass the check", async () => {
     process.env.ENFORCE_AI_CONSENT = "false";
     const res = await (await post(route))({ request: makeRequest() });
-    expect(res.status).toBe(200);
-    expect(h.state.consentReads).toBe(0);
+    expect(res.status).toBe(403);
+    expect(h.state.consentReads).toBe(1);
+    expect(vendorCalls).toEqual([]);
   });
 });
 

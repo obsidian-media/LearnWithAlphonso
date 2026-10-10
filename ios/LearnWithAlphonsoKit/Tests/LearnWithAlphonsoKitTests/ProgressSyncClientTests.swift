@@ -340,7 +340,7 @@ final class ProgressSyncClientTests: XCTestCase {
             return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-09-22"])
         }
 
-        let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en")
+        let result = try await client.gradeReview(itemKey: "u1l1:q1", answer: "cat", course: "en", attemptID: "stable-queue-id")
 
         XCTAssertEqual(result, ReviewGradeOutcome(retired: false, dueOn: "2026-09-22"))
         let request = try XCTUnwrap(captured.value)
@@ -350,6 +350,7 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(payload["itemKey"] as? String, "u1l1:q1")
         XCTAssertEqual(payload["answer"] as? String, "cat")
         XCTAssertEqual(payload["course"] as? String, "en")
+        XCTAssertEqual(payload["attemptId"] as? String, "stable-queue-id")
     }
 
     func testGradeReviewSurfacesANotDueError() async {

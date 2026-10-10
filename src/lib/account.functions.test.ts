@@ -90,6 +90,16 @@ describe("exportMyData", () => {
     await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/challenge_completions/);
   });
 
+  it("fails rather than exporting an empty profile after a profile read error", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles"
+        ? chainable({ data: null, error: { message: "temporary database failure" } })
+        : chainable({ data: [], error: null }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/profiles/);
+  });
+
   it("also fails when a table read through the sender/recipient columns errors", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation((table: string) =>
@@ -176,13 +186,44 @@ describe("exportMyData", () => {
     await expect(exportMyData({ context: ctx(failing) })).rejects.toThrow(/buddy_messages/);
   });
 
-  it("falls back to an empty array/object when a table has no rows", async () => {
+  it("fails on a null table response rather than silently treating it as no rows", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation(() => chainable({ data: null }));
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/incomplete/);
+  });
+
+  it("exports empty arrays when reads positively return no rows", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation(() => chainable({ data: [], error: null, count: 0 }));
     const result = await exportMyData({ context: ctx(supabase) });
     const tables = JSON.parse(result.tables);
     expect(tables.review_items).toEqual([]);
     expect(tables.profiles).toEqual([]);
+  });
+
+  it("reads every page of a large table instead of stopping at the PostgREST cap", async () => {
+    const supabase = createSupabaseMock();
+    const large = Array.from({ length: 750 }, (_, i) => ({ item_key: `card-${i}` }));
+    const ranges: [number, number][] = [];
+    supabase.from.mockImplementation((table: string) => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        or: () => query,
+        range: (first: number, last: number) => {
+          if (table === "review_items") ranges.push([first, last]);
+          const data = table === "review_items" ? large.slice(first, last + 1) : [];
+          return Promise.resolve({ data, error: null, count: table === "review_items" ? 750 : 0 });
+        },
+      };
+      return query as never;
+    });
+    const result = await exportMyData({ context: ctx(supabase) });
+    expect(JSON.parse(result.tables).review_items).toHaveLength(750);
+    expect(ranges).toEqual([
+      [0, 499],
+      [500, 999],
+    ]);
   });
 
   it("exports null for email when the JWT claims don't carry one", async () => {
@@ -553,5 +594,42 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
     );
     expect(status).toBe("not_configured");
     expect(String(log.mock.calls[0][0])).toContain("NOT CONFIGURED");
+  });
+});
+
+describe("revokeAppleGrantForUser with Apple configuration", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  function configureApple() {
+    vi.stubEnv("APPLE_TEAM_ID", "test-team");
+    vi.stubEnv("APPLE_KEY_ID", "test-key");
+    vi.stubEnv("APPLE_PRIVATE_KEY", "test-private-key");
+    vi.stubEnv("APPLE_CLIENT_ID", "test-client");
+  }
+
+  it("does not classify a token lookup failure as not applicable", async () => {
+    configureApple();
+    const admin = {
+      from: () => chainable({ data: null, error: { message: "temporary database failure" } }),
+    };
+    await expect(accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).resolves.toBe(
+      "failed",
+    );
+  });
+
+  it("does not call a missing token not-applicable for a linked Apple identity", async () => {
+    configureApple();
+    const admin = {
+      from: () => chainable({ data: null, error: null }),
+      auth: {
+        admin: {
+          getUserById: async () => ({
+            data: { user: { app_metadata: { providers: ["apple"] }, identities: [] } },
+            error: null,
+          }),
+        },
+      },
+    };
+    expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
   });
 });

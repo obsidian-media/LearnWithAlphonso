@@ -16,8 +16,11 @@ const requireAiConsent = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
 
 const revenueCatConfigFromEnv = vi.fn();
-const isProSubscriber = vi.fn();
-vi.mock("@/lib/revenuecat-entitlement", () => ({ revenueCatConfigFromEnv, isProSubscriber }));
+const getProEntitlementStatus = vi.fn();
+vi.mock("@/lib/revenuecat-entitlement", () => ({
+  revenueCatConfigFromEnv,
+  getProEntitlementStatus,
+}));
 
 const consumeQuota = vi.fn();
 vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
@@ -45,7 +48,7 @@ const realFetch = globalThis.fetch;
 beforeEach(() => {
   getUser.mockReset();
   revenueCatConfigFromEnv.mockReset();
-  isProSubscriber.mockReset();
+  getProEntitlementStatus.mockReset();
   consumeQuota.mockReset();
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
@@ -54,7 +57,7 @@ beforeEach(() => {
   process.env.DEEPGRAM_API_KEY = "dg_test";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
   revenueCatConfigFromEnv.mockReturnValue({ secretApiKey: "sk_test" });
-  isProSubscriber.mockResolvedValue(true);
+  getProEntitlementStatus.mockResolvedValue("active");
   consumeQuota.mockResolvedValue({ ok: true });
 });
 
@@ -82,23 +85,62 @@ describe("POST /api/hector-respond", () => {
     expect(res.status).toBe(401);
   });
 
-  it("fails closed (403) when RevenueCat is not configured, not open", async () => {
+  it("fails closed (503) when RevenueCat is not configured, without a paywall", async () => {
     revenueCatConfigFromEnv.mockReturnValue(null);
     const res = await handler({ request: req() });
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "entitlement-unavailable" });
     // Must not have proceeded to a tutor turn.
-    expect(isProSubscriber).not.toHaveBeenCalled();
+    expect(getProEntitlementStatus).not.toHaveBeenCalled();
   });
 
   it("refuses a non-Pro subscriber (403) -- the authorization gate itself", async () => {
-    isProSubscriber.mockResolvedValue(false);
+    getProEntitlementStatus.mockResolvedValue("inactive");
     const res = await handler({ request: req() });
     expect(res.status).toBe(403);
+  });
+
+  it("returns retryable 503 rather than a paywall when RevenueCat is unavailable", async () => {
+    getProEntitlementStatus.mockResolvedValue("unavailable");
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "entitlement-unavailable" });
+    expect(consumeQuota).not.toHaveBeenCalled();
   });
 
   it("returns text required (400) for an empty utterance", async () => {
     const res = await handler({ request: req({ text: "  ", language: "en" }) });
     expect(res.status).toBe(400);
+  });
+
+  it("bounds provider calls and returns retryable failure when the model times out", async () => {
+    globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+      expect(JSON.parse(String(init?.body)).max_tokens).toBe(512);
+      throw new DOMException("timed out", "AbortError");
+    }) as unknown as typeof fetch;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(504);
+    expect(consumeQuota).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not send an oversized model reply to speech synthesis", async () => {
+    globalThis.fetch = vi.fn(async () =>
+      Response.json({ choices: [{ message: { content: "x".repeat(2_001) } }] }),
+    ) as typeof fetch;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(502);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops reading oversized speech audio and does not return it to the app", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ choices: [{ message: { content: "Hello" } }] }))
+      .mockResolvedValueOnce(new Response(new Uint8Array(1_500_001))) as typeof fetch;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "Hector audio too large" });
   });
 
   it("returns a TutorReply with the exact keys the iOS client decodes", async () => {
@@ -218,7 +260,7 @@ describe("POST /api/hector-respond", () => {
       "user-1",
       expect.objectContaining({ route: "hector-respond" }),
     );
-    expect(isProSubscriber).not.toHaveBeenCalled();
+    expect(getProEntitlementStatus).not.toHaveBeenCalled();
     expect(consumeQuota).not.toHaveBeenCalled();
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });

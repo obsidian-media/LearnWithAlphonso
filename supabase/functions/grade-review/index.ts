@@ -33,6 +33,7 @@ const gradeReviewSchema = z.object({
   itemKey: itemKeySchema,
   answer: z.string().max(200),
   course: courseSchema,
+  attemptId: z.string().min(1).max(200).optional(),
 });
 
 function todayStr(): string {
@@ -76,7 +77,6 @@ async function authenticate(
   return { userId: data.claims.sub as string, userClient: anonClient };
 }
 
-
 export async function handleRequest(req: Request): Promise<Response> {
   if (req.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);
@@ -91,12 +91,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   try {
     parsed = gradeReviewSchema.parse(await req.json());
   } catch (err) {
-    return jsonResponse(
-      { error: "Invalid request body", details: `${err}` },
-      400,
-    );
+    return jsonResponse({ error: "Invalid request body", details: `${err}` }, 400);
   }
-  const { itemKey, answer, course } = parsed;
+  const { itemKey, answer, course, attemptId } = parsed;
   const [lessonId, questionId] = itemKey.split(":");
 
   const admin = createClient(
@@ -107,13 +104,50 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   const today = todayStr();
 
-  const { data: row } = await admin
+  // A queued native retry may arrive after the first request committed but
+  // its response was lost. Return the original result before checking due_on.
+  if (attemptId) {
+    const { data: previous, error: attemptError } = await admin
+      .from("review_grade_attempts")
+      .select("result,item_key,language")
+      .eq("user_id", userId)
+      .eq("attempt_id", attemptId)
+      .maybeSingle();
+    if (attemptError) return jsonResponse({ error: "Could not load review attempt" }, 503);
+    if (previous) {
+      if (previous.item_key !== itemKey || previous.language !== course) {
+        return jsonResponse({ error: "Review attempt identity collision" }, 400);
+      }
+      return jsonResponse(previous.result, 200);
+    }
+  }
+
+  const { data: row, error: rowError } = await admin
     .from("review_items")
     .select("*")
     .eq("user_id", userId)
     .eq("item_key", itemKey)
     .eq("language", course)
     .maybeSingle();
+  if (rowError) return jsonResponse({ error: "Could not load review item" }, 503);
+
+  // If a first attempt committed between the early replay lookup and this
+  // row read, the row can now be retired/not-due. Check the receipt again.
+  if (attemptId && (!row || row.due_on > today)) {
+    const { data: committed, error: committedError } = await admin
+      .from("review_grade_attempts")
+      .select("result,item_key,language")
+      .eq("user_id", userId)
+      .eq("attempt_id", attemptId)
+      .maybeSingle();
+    if (committedError) return jsonResponse({ error: "Could not load review attempt" }, 503);
+    if (committed) {
+      if (committed.item_key !== itemKey || committed.language !== course) {
+        return jsonResponse({ error: "Review attempt identity collision" }, 400);
+      }
+      return jsonResponse(committed.result, 200);
+    }
+  }
 
   if (!row) {
     return jsonResponse({ retired: false, dueOn: today }, 200);
@@ -126,7 +160,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   if (isSelfContainedSource(row.source)) {
     correct = gradeSelfContained(row, answer);
   } else {
-    const { data: question } = await admin
+    const { data: question, error: questionError } = await admin
       .from("questions")
       // `prompt` and `bank` are here for "translate": the curated phrasings
       // live in `bank`, and the prompt is what the AI grader is marking
@@ -136,6 +170,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       .eq("lesson_id", lessonId)
       .eq("id", questionId)
       .maybeSingle();
+    if (questionError) return jsonResponse({ error: "Could not load review question" }, 503);
     if (!question) {
       return jsonResponse({ error: "Unknown review item" }, 400);
     }
@@ -147,13 +182,22 @@ export async function handleRequest(req: Request): Promise<Response> {
     };
     correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, ai);
     if (consent && !(await consent)) {
-      console.log(JSON.stringify({ event: "ai_grading_skipped", fn: "grade-review", reason: "no-ai-consent" }));
+      console.log(
+        JSON.stringify({
+          event: "ai_grading_skipped",
+          fn: "grade-review",
+          reason: "no-ai-consent",
+        }),
+      );
     }
   }
 
   // Same overdue-growth-bonus reasoning as review.functions.ts's gradeReview.
   const sinceIso = row.last_reviewed_at ?? row.created_at;
-  const elapsedDays = Math.max(0, Math.round((Date.now() - new Date(sinceIso).getTime()) / 86_400_000));
+  const elapsedDays = Math.max(
+    0,
+    Math.round((Date.now() - new Date(sinceIso).getTime()) / 86_400_000),
+  );
 
   const outcome = computeReviewOutcome(
     {
@@ -168,38 +212,40 @@ export async function handleRequest(req: Request): Promise<Response> {
     addDays,
   );
 
-  if (outcome.retired) {
-    await admin
-      .from("review_items")
-      .delete()
-      .eq("user_id", userId)
-      .eq("item_key", itemKey)
-      .eq("language", course);
-    // V3 package 3b: same resolved-event logging as review.functions.ts's
-    // gradeReview -- see that file's comment.
-    if (row.source === "weakness" && row.weakness_label) {
-      await admin
-        .from("weakness_events")
-        .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
-    }
-    return jsonResponse({ retired: true, dueOn: outcome.dueOn, correct }, 200);
+  const { data: transition, error: transitionError } = await admin.rpc("apply_review_grade", {
+    _user_id: userId,
+    _item_key: itemKey,
+    _language: course,
+    _attempt_id: attemptId ?? null,
+    _expected_last_reviewed_at: row.last_reviewed_at,
+    _expected_due_on: row.due_on,
+    _retired: outcome.retired,
+    _correct: correct,
+    _new_due_on: outcome.dueOn,
+    _ease: outcome.retired ? null : outcome.ease,
+    _interval_days: outcome.retired ? null : outcome.intervalDays,
+    _repetitions: outcome.retired ? null : outcome.repetitions,
+    _lapses: outcome.retired ? null : outcome.lapses,
+  });
+  if (transitionError || !transition) {
+    return jsonResponse({ error: "Could not save review grade" }, 503);
   }
-
-  await admin
-    .from("review_items")
-    .update({
-      ease: outcome.ease,
-      interval_days: outcome.intervalDays,
-      repetitions: outcome.repetitions,
-      lapses: outcome.lapses,
-      due_on: outcome.dueOn,
-      last_reviewed_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId)
-    .eq("item_key", itemKey)
-    .eq("language", course);
-
-  return jsonResponse({ retired: false, dueOn: outcome.dueOn, correct }, 200);
+  if (transition.status === "conflict") {
+    return jsonResponse({ error: "Review changed; retry" }, 503);
+  }
+  if (transition.status === "not_due") {
+    return jsonResponse({ error: "This item isn't due yet" }, 400);
+  }
+  if (transition.status === "missing") {
+    return jsonResponse({ retired: false, dueOn: today }, 200);
+  }
+  if (transition.status !== "applied") {
+    return jsonResponse({ error: "Unknown review transition" }, 503);
+  }
+  return jsonResponse(
+    { retired: transition.retired, dueOn: transition.dueOn, correct: transition.correct },
+    200,
+  );
 }
 
 Deno.serve(handleRequest);

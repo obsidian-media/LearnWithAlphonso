@@ -17,6 +17,7 @@ import FoundationNetworking
 public enum TutorError: Error, Equatable, Sendable {
     case signedOut
     case notEntitled
+    case entitlementUnavailable
     case aiConsentRequired
     case quotaExceeded(resetsAt: Date?)
     case network
@@ -38,6 +39,7 @@ public enum TutorError: Error, Equatable, Sendable {
 
         switch code {
         case "not-entitled": return .notEntitled
+        case "entitlement-unavailable": return .entitlementUnavailable
         case "ai-consent-required": return .aiConsentRequired
         case "quota-exceeded": return .quotaExceeded(resetsAt: parseDate(object?["resetsAt"] as? String))
         default: break
@@ -61,6 +63,8 @@ public enum TutorError: Error, Equatable, Sendable {
             return "You've been signed out. Please sign in again."
         case .notEntitled:
             return "Hector is part of Alphonso Pro."
+        case .entitlementUnavailable:
+            return "We can't check your Pro access right now. Please try again shortly."
         case .aiConsentRequired:
             return "Turn on AI features to practise speaking with a tutor."
         case let .quotaExceeded(resetsAt):

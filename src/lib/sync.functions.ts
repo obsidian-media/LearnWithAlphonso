@@ -314,29 +314,34 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
 
     // Batch every read this handler needs that doesn't depend on another
     // read's result -- was 3+ sequential round trips, now 1.
-    const [{ data: pRow }, { data: lpRow }, { data: existingComp }, { data: existingDay }] =
-      await Promise.all([
-        supabase.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
-        supabase
-          .from("language_progress")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("language", course)
-          .maybeSingle(),
-        supabase
-          .from("lesson_completions")
-          .select("correct,xp_earned")
-          .eq("user_id", userId)
-          .eq("lesson_id", lessonId)
-          .eq("language", course)
-          .maybeSingle(),
-        supabase
-          .from("activity_days")
-          .select("xp_earned")
-          .eq("user_id", userId)
-          .eq("day", today)
-          .maybeSingle(),
-      ]);
+    const [pResult, lpResult, compResult, dayResult] = await Promise.all([
+      supabase.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("language_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("language", course)
+        .maybeSingle(),
+      supabase
+        .from("lesson_completions")
+        .select("correct,xp_earned")
+        .eq("user_id", userId)
+        .eq("lesson_id", lessonId)
+        .eq("language", course)
+        .maybeSingle(),
+      supabase
+        .from("activity_days")
+        .select("xp_earned")
+        .eq("user_id", userId)
+        .eq("day", today)
+        .maybeSingle(),
+    ]);
+    const readError = [pResult, lpResult, compResult, dayResult].find((r) => r.error);
+    if (readError) throw new Error("Could not load lesson progress");
+    const pRow = pResult.data;
+    const lpRow = lpResult.data;
+    const existingComp = compResult.data;
+    const existingDay = dayResult.data;
 
     // Replay-farming fix: a repeat completion of an already-completed
     // lesson only pays out the XP delta over its previous best score (0 if
@@ -429,75 +434,46 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       });
     }
 
-    // Independent writes -- none reads another's result -- batched into
-    // one round trip instead of several sequential ones. user_progress/
-    // language_progress/lesson_completions/activity_days no longer grant
-    // direct INSERT/UPDATE to `authenticated` (see supabase/migrations/
-    // 20260920050000_revoke_direct_gamification_writes.sql) -- every value
-    // here is already server-computed above (trust boundary already
-    // crossed), so supabaseAdmin is the correct client for the actual
-    // persist, same as the complete-lesson Edge Function's own writes.
-    // friend_activity_events has a SELECT policy only (readable by friends),
-    // so its insert must also go through supabaseAdmin, exactly like the
-    // complete-lesson Edge Function does. Through the user's RLS client it
-    // was denied, which made this function throw after the other writes had
-    // landed and left the lesson screen showing 0 XP (found 2026-10-06).
+    // One service-role-only database transaction serializes core completion
+    // writes and rejects stale snapshots. A caller can retry after rereading
+    // without losing XP or reporting a partial success.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // 2026-09-30 audit (Codex #4): none of these five results' own
-    // `{ error }` was ever checked -- a failed upsert (RLS gap, network
-    // blip, whatever) silently proceeded as if the write succeeded, and
-    // this function still returned success to the caller. This can't fix
-    // the lack of atomicity across five separate REST calls (a real fix
-    // needs a single SECURITY DEFINER RPC with row locking, same shape as
-    // _join_team_impl's -- flagged as its own follow-up, not attempted
-    // here), but silently swallowing a real failure is strictly worse
-    // than surfacing it, so a partial failure now throws rather than
-    // reporting success.
-    const writeResults = await Promise.all([
-      supabaseAdmin.from("user_progress").upsert({
-        user_id: userId,
-        streak,
-        longest_streak: longest,
-        last_active_date: today,
-        hearts: heartsResult.hearts,
-        hearts_refill_at: heartsResult.heartsRefillAt
-          ? new Date(heartsResult.heartsRefillAt).toISOString()
-          : null,
-        streak_freezes: freezes,
-      }),
-      supabaseAdmin
-        .from("language_progress")
-        .upsert(
-          { user_id: userId, language: course, xp, league_tier: leagueTier },
-          { onConflict: "user_id,language" },
-        ),
-      // Best score kept: correct/xp_earned reflect the best attempt ever
-      // recorded for this lesson, not just this attempt.
-      supabaseAdmin.from("lesson_completions").upsert(
-        {
-          user_id: userId,
-          lesson_id: lessonId,
-          correct: bestCorrect,
-          total,
-          xp_earned: bestXp,
-          language: course,
+    const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
+      "apply_lesson_completion" as never,
+      {
+        _user_id: userId,
+        _course: course,
+        _lesson_id: lessonId,
+        _level: found.unit.level,
+        _today: today,
+        _expected: {
+          p_updated_at: pRow?.updated_at ?? null,
+          lp_updated_at: lpRow?.updated_at ?? null,
+          completion_xp: existingComp?.xp_earned ?? null,
+          day_xp: existingDay?.xp_earned ?? null,
         },
-        { onConflict: "user_id,lesson_id" },
-      ),
-      supabaseAdmin.from("activity_days").upsert({
-        user_id: userId,
-        day: today,
-        xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
-      }),
-      ...(activityEvents.length > 0
-        ? [supabaseAdmin.from("friend_activity_events").insert(activityEvents)]
-        : []),
-    ]);
-    const failedWrite = writeResults.find((r) => r.error);
-    if (failedWrite) {
-      throw new Error(
-        `completeLessonRemote: gamification write failed -- ${failedWrite.error!.message}`,
-      );
+        _next: {
+          streak,
+          longest_streak: longest,
+          last_active_date: today,
+          hearts: heartsResult.hearts,
+          hearts_refill_at: heartsResult.heartsRefillAt
+            ? new Date(heartsResult.heartsRefillAt).toISOString()
+            : null,
+          streak_freezes: freezes,
+          xp,
+          league_tier: leagueTier,
+          best_correct: bestCorrect,
+          total,
+          best_xp: bestXp,
+          day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+        },
+        _missed_question_ids: missedQuestionIds,
+        _activity_events: activityEvents,
+      } as never,
+    )) as { data: { status: string } | null; error: { message: string } | null };
+    if (transitionError || !transition || transition.status !== "applied") {
+      throw new Error("Could not save lesson completion; retry");
     }
 
     // Both reads below depend on the writes above having landed (lesson
