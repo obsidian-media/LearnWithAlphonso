@@ -270,8 +270,8 @@ export async function revokeAppleGrantForUser(
       if (apple === false) return "not_applicable";
       console.error(
         apple === true
-          ? `[apple-revocation] NOT CONFIGURED: user ${userId} signed in with Apple, but APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY or APPLE_CLIENT_ID is missing, so the Apple grant was not revoked.`
-          : `[apple-revocation] NOT CONFIGURED: the Apple secrets are missing and the identity lookup for user ${userId} failed, so an Apple grant may not have been revoked.`,
+          ? `[apple-revocation] NOT CONFIGURED: a deleted account signed in with Apple, but APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY or APPLE_CLIENT_ID is missing, so the Apple grant was not revoked.`
+          : `[apple-revocation] NOT CONFIGURED: the Apple secrets are missing and the identity lookup for a deleted account failed, so an Apple grant may not have been revoked.`,
       );
       return "not_configured";
     }
@@ -298,9 +298,7 @@ export async function revokeAppleGrantForUser(
       .from("apple_revocation_pending")
       .insert({ refresh_token: refreshToken });
     if (parkError) {
-      console.error(
-        `[apple-revocation] could not queue a retry for user ${userId}: ${parkError.message}`,
-      );
+      console.error(`[apple-revocation] could not queue a retry: ${parkError.message}`);
     }
     return "failed";
   } catch {
@@ -310,7 +308,9 @@ export async function revokeAppleGrantForUser(
 
 /**
  * After the account is gone: erase its subscriber record at RevenueCat. Best-effort and never throws, because
- * the deletion has already happened and must be reported as done. A failure is logged for a manual erase.
+ * the deletion has already happened and must be reported as done. A failed erase is queued in
+ * revenuecat_erasure_pending and retried by the scheduled pass (maintenance.server.ts), so nothing depends on
+ * someone reading a log, and no account id is written to the logs.
  * Exported for adminDeleteReportedUser, which deletes accounts too.
  */
 export async function eraseSubscriberRecord(userId: string): Promise<void> {
@@ -319,14 +319,19 @@ export async function eraseSubscriberRecord(userId: string): Promise<void> {
       await import("@/lib/revenuecat-entitlement");
     const config = revenueCatConfigFromEnv();
     const outcome = config ? await deleteRevenueCatSubscriber(config, userId) : "failed";
-    if (outcome === "failed") {
-      console.error(
-        `[account-deletion] the RevenueCat subscriber record for deleted user ${userId} was NOT erased${config ? "" : " (RevenueCat is not configured)"}; erase it by hand in the RevenueCat dashboard.`,
-      );
-    }
+    if (outcome === "erased") return;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("revenuecat_erasure_pending")
+      .upsert({ app_user_id: userId }, { onConflict: "app_user_id", ignoreDuplicates: true });
+    console.error(
+      error
+        ? `[account-deletion] a RevenueCat subscriber record was NOT erased and could not be queued for a retry: ${error.message}`
+        : `[account-deletion] a RevenueCat subscriber record was not erased${config ? "" : " (RevenueCat is not configured)"}; queued for a retry.`,
+    );
   } catch (e) {
     console.error(
-      `[account-deletion] erasing the RevenueCat subscriber record for deleted user ${userId} threw: ${e instanceof Error ? e.message : String(e)}`,
+      `[account-deletion] erasing a RevenueCat subscriber record threw: ${e instanceof Error ? e.message : String(e)}`,
     );
   }
 }
@@ -366,7 +371,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // revokeAppleGrantForUser; this line keeps the failure visible in the logs.
     if (appleRevocationStatus === "failed") {
       console.error(
-        `[apple-revocation] FAILED to revoke Apple grant for user ${userId} during account deletion -- a live grant may still exist.`,
+        `[apple-revocation] FAILED to revoke an Apple grant during account deletion -- a live grant may still exist.`,
       );
     }
 
