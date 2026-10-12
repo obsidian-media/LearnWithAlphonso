@@ -140,4 +140,18 @@ describe("atomic lesson completion migration (real Postgres)", () => {
     expect((await complete(afterProgress, [])).rows[0]?.result.status).toBe("conflict");
     expect((await complete(await current(), [])).rows[0]?.result.status).toBe("applied");
   });
+
+  it("refuses NULL arguments instead of skipping the writes they carry", async () => {
+    const next = JSON.stringify({ streak: 1 });
+    const raw = `SELECT public.apply_lesson_completion(
+      $1::uuid,$2::text,'u1l1','A1',current_date,'{}'::jsonb,$3::jsonb,$4::jsonb,$5::jsonb)`;
+    for (const args of [
+      [USER, null, next, "[]", "[]"],
+      [USER, "en", next, null, "[]"],
+      [USER, "en", next, "[]", null],
+      [USER, "en", null, "[]", "[]"],
+    ]) {
+      await expect(db.query(raw, args)).rejects.toThrow(/invalid completion transition/);
+    }
+  });
 });

@@ -29,9 +29,11 @@ DECLARE
   _question_id text;
   _event jsonb;
 BEGIN
-  IF _course NOT IN ('en', 'fr', 'es') OR _lesson_id IS NULL OR _today IS NULL
-     OR jsonb_typeof(_missed_question_ids) <> 'array'
-     OR jsonb_typeof(_activity_events) <> 'array' THEN
+  -- IS DISTINCT FROM / IS NOT TRUE: a NULL argument must fail this guard, not slip past it as NULL.
+  IF (_course IN ('en', 'fr', 'es')) IS NOT TRUE OR _lesson_id IS NULL OR _today IS NULL
+     OR _expected IS NULL OR _next IS NULL
+     OR jsonb_typeof(_missed_question_ids) IS DISTINCT FROM 'array'
+     OR jsonb_typeof(_activity_events) IS DISTINCT FROM 'array' THEN
     RAISE EXCEPTION 'invalid completion transition';
   END IF;
 
