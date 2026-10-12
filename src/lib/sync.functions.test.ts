@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
+import {
+  asTestFns,
+  chainable,
+  createSupabaseMock,
+  type ChainCall,
+} from "./__testutils__/supabase-mock";
 
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@tanstack/react-start", () => ({
@@ -692,6 +697,54 @@ describe("completeLessonRemote", () => {
     expect(calls[1]?._next).toMatchObject({ xp: 500, hearts: 4 });
     expect(result.xpGain).toBe(100);
     expect(result.progress.xp).toBe(500);
+  });
+
+  /** Admin tables by name, recording what each received. */
+  function adminTables(results: Record<string, unknown>) {
+    const calls: Record<string, ChainCall[]> = {};
+    supabaseAdminFrom.mockImplementation((table: string) =>
+      chainable(results[table] ?? { data: null, error: null }, (calls[table] ??= [])),
+    );
+    return calls;
+  }
+  const upserts = (calls: ChainCall[] | undefined) =>
+    (calls ?? []).filter((c) => c.method === "upsert").flatMap((c) => c.args[0] as unknown[]);
+
+  it("still reports the saved lesson, and writes no achievements, when the unlock list cannot be read", async () => {
+    const supabase = createSupabaseMock();
+    queueSnapshot(supabase, { hearts: 4, progressVersion: "v1", xp: 0, courseVersion: "v1" });
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }], error: null }))
+      // An unreadable unlock list must not be read as "nothing unlocked yet".
+      .mockReturnValueOnce(chainable({ data: null, error: { message: "read unavailable" } }));
+    const calls = adminTables({});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await completePerfect(supabase);
+
+    expect(result.xpGain).toBe(100);
+    expect(result.newlyUnlocked).toEqual([]);
+    expect(upserts(calls.user_achievements)).toEqual([]);
+    expect(error.mock.calls.flat().join(" ")).toContain("achievements_skipped");
+    error.mockRestore();
+  });
+
+  it("takes the promotion count from saved promotion events when the stored counter fell behind", async () => {
+    const supabase = createSupabaseMock();
+    queueSnapshot(supabase, { hearts: 4, progressVersion: "v1", xp: 0, courseVersion: "v1" });
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }], error: null }))
+      // The counter says 1, but three promotions were saved (two responses were lost after the save).
+      .mockReturnValueOnce(
+        chainable({ data: [{ achievement_id: "league_promote_1", progress: 1 }], error: null }),
+      );
+    const calls = adminTables({ friend_activity_events: { data: null, error: null, count: 3 } });
+
+    const result = await completePerfect(supabase);
+
+    const rows = upserts(calls.user_achievements) as { achievement_id: string; progress: number }[];
+    expect(rows.find((r) => r.achievement_id === "league_promote_1")?.progress).toBe(3);
+    expect(result.newlyUnlocked).toContain("league_promote_3");
   });
 
   it("gives up with an error, never a silent success, when every attempt is refused", async () => {
