@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ERASURE_RETRY_WINDOW_MS,
   handleMaintenance,
   OVERDUE_AFTER_MS,
   retryAppleRevocations,
+  retryRevenueCatErasures,
   REVOCATION_RETRY_WINDOW_MS,
   sweepReports,
   UNDELIVERED_AFTER_MS,
@@ -81,6 +83,8 @@ function makeDeps(tables: Record<string, Row[]>, over: Partial<MaintenanceDeps> 
     send: async (m) => void sent.push(m),
     appleConfig: () => APPLE,
     revoke: async () => true,
+    revenueCatConfig: () => ({ secretApiKey: "sk_test" }),
+    eraseSubscriber: async () => "erased",
     alertTo: "owner@example.com",
     ...over,
   };
@@ -158,6 +162,65 @@ describe("retryAppleRevocations", () => {
     expect(await retryAppleRevocations(deps)).toEqual({ revoked: 0, stillPending: 1, expired: 0 });
     expect(revoke).not.toHaveBeenCalled();
     expect(tables.apple_revocation_pending).toHaveLength(1);
+  });
+});
+
+describe("retryRevenueCatErasures", () => {
+  const pending = (id: string, age: number, attempts = 0): Row => ({
+    app_user_id: id,
+    created_at: ago(age),
+    attempts,
+    last_attempt_at: null,
+  });
+
+  it("removes the row once RevenueCat confirms the erase", async () => {
+    const tables = { revenuecat_erasure_pending: [pending("user-a", 60_000)] };
+    const eraseSubscriber = vi.fn(async () => "erased" as const);
+    const { deps, sent } = makeDeps(tables, { eraseSubscriber });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 1, stillPending: 0, expired: 0 });
+    expect(eraseSubscriber).toHaveBeenCalledWith({ secretApiKey: "sk_test" }, "user-a");
+    expect(tables.revenuecat_erasure_pending).toEqual([]);
+    expect(sent).toEqual([]);
+  });
+
+  it("keeps the row, and counts the attempt, while the erase keeps failing or throwing", async () => {
+    const tables = {
+      revenuecat_erasure_pending: [pending("user-a", 60_000, 4), pending("user-b", 30_000)],
+    };
+    const eraseSubscriber = vi.fn(async (_c: unknown, id: string) => {
+      if (id === "user-b") throw new Error("network");
+      return "failed" as const;
+    });
+    const { deps } = makeDeps(tables, { eraseSubscriber });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 0, stillPending: 2, expired: 0 });
+    expect(tables.revenuecat_erasure_pending.map((r) => r.attempts)).toEqual([5, 1]);
+  });
+
+  it("after 30 days hands the id to the owner by email, once, and never logs it", async () => {
+    const tables = {
+      revenuecat_erasure_pending: [
+        pending("11111111-aaaa-4bbb-8ccc-222222222222", ERASURE_RETRY_WINDOW_MS + 1),
+        pending("user-new", 1),
+      ],
+    };
+    const { deps, sent } = makeDeps(tables, { eraseSubscriber: async () => "failed" });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 0, stillPending: 1, expired: 1 });
+    expect(tables.revenuecat_erasure_pending.map((r) => r.app_user_id)).toEqual(["user-new"]);
+    expect(sent).toHaveLength(1);
+    expect(sent[0].text).toContain("11111111-aaaa-4bbb-8ccc-222222222222");
+    expect(sent[0].text).not.toContain("user-new");
+    const logged = vi.mocked(console.error).mock.calls.flat().join(" ");
+    expect(logged).not.toContain("11111111-aaaa-4bbb-8ccc-222222222222");
+    expect(await retryRevenueCatErasures(deps)).toMatchObject({ expired: 0 });
+    expect(sent).toHaveLength(1);
+  });
+
+  it("holds rows while RevenueCat is not configured on the server", async () => {
+    const tables = { revenuecat_erasure_pending: [pending("user-a", 60_000)] };
+    const eraseSubscriber = vi.fn(async () => "erased" as const);
+    const { deps } = makeDeps(tables, { revenueCatConfig: () => null, eraseSubscriber });
+    expect(await retryRevenueCatErasures(deps)).toEqual({ erased: 0, stillPending: 1, expired: 0 });
+    expect(eraseSubscriber).not.toHaveBeenCalled();
   });
 });
 
@@ -320,6 +383,7 @@ describe("handleMaintenance", () => {
       failures: [],
       revocations: { revoked: 1, stillPending: 0, expired: 0 },
       reports: { delivered: 1, escalated: 0 },
+      erasures: { erased: 0, stillPending: 0, expired: 0 },
     });
     expect(body).not.toContain("token-a");
   });

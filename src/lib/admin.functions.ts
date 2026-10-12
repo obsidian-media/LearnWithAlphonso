@@ -910,7 +910,7 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
     );
     if (appleRevocationStatus === "failed") {
       console.error(
-        `[apple-revocation] FAILED to revoke Apple grant for user ${report.reported} during an admin-initiated deletion -- a live grant may still exist.`,
+        `[apple-revocation] FAILED to revoke an Apple grant during an admin-initiated deletion -- a live grant may still exist.`,
       );
     }
     const { error: deleteError } = await context.supabaseAdmin.auth.admin.deleteUser(

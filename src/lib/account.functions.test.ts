@@ -586,7 +586,8 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
     expect(status).toBe("not_configured");
     expect(log).toHaveBeenCalledOnce();
     expect(String(log.mock.calls[0][0])).toContain("[apple-revocation] NOT CONFIGURED");
-    expect(String(log.mock.calls[0][0])).toContain(USER_ID);
+    // The account is being deleted: its id is not written to the logs.
+    expect(String(log.mock.calls[0][0])).not.toContain(USER_ID);
   });
 
   it("finds an Apple identity linked to an email account too", async () => {
@@ -729,5 +730,70 @@ describe("revokeAppleGrantForUser with Apple configuration", () => {
     expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
     expect(error.mock.calls.flat().join(" ")).toContain("could not queue a retry");
     error.mockRestore();
+  });
+});
+
+describe("eraseSubscriberRecord", () => {
+  const DELETED = "99999999-aaaa-4bbb-8ccc-000000000000";
+  const realFetch = globalThis.fetch;
+  let error: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    error = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubEnv("REVENUECAT_SECRET_API_KEY", "sk_test");
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.unstubAllEnvs();
+    error.mockRestore();
+  });
+
+  /** The service client's retry list, recording what was queued. */
+  function queue(result: { error: { message: string } | null } = { error: null }) {
+    const queued: unknown[] = [];
+    supabaseAdminFrom.mockImplementation((table: string) =>
+      table === "revenuecat_erasure_pending"
+        ? {
+            upsert: async (row: unknown) => {
+              queued.push(row);
+              return result;
+            },
+          }
+        : chainable({ data: null, error: null }),
+    );
+    return queued;
+  }
+
+  it("queues nothing and logs nothing when RevenueCat erased the record", async () => {
+    globalThis.fetch = vi.fn(async () => new Response("{}", { status: 200 })) as never;
+    const queued = queue();
+    await accountModule.eraseSubscriberRecord(DELETED);
+    expect(queued).toEqual([]);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("queues the id for a retry when the erase fails, and keeps it out of the logs", async () => {
+    globalThis.fetch = vi.fn(async () => new Response("{}", { status: 500 })) as never;
+    const queued = queue();
+    await accountModule.eraseSubscriberRecord(DELETED);
+    expect(queued).toEqual([{ app_user_id: DELETED }]);
+    expect(error.mock.calls.flat().join(" ")).not.toContain(DELETED);
+  });
+
+  it("queues the id when RevenueCat is not configured, instead of dropping it", async () => {
+    vi.stubEnv("REVENUECAT_SECRET_API_KEY", "");
+    const queued = queue();
+    await accountModule.eraseSubscriberRecord(DELETED);
+    expect(queued).toEqual([{ app_user_id: DELETED }]);
+  });
+
+  it("never throws, even when the retry list cannot be written", async () => {
+    globalThis.fetch = vi.fn(async () => {
+      throw new Error("network");
+    }) as never;
+    queue({ error: { message: "permission denied" } });
+    await expect(accountModule.eraseSubscriberRecord(DELETED)).resolves.toBeUndefined();
+    const logged = error.mock.calls.flat().join(" ");
+    expect(logged).toContain("could not be queued");
+    expect(logged).not.toContain(DELETED);
   });
 });

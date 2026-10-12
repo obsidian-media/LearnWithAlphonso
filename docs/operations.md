@@ -30,10 +30,12 @@ With `ai` off, a correct translation that is not in a question's curated answer 
 1. Deletes review-grade receipts (`review_grade_attempts`) older than 30 days.
 2. Calls `POST /api/internal/maintenance` on the web app, authenticated by the Vault secret `report_notify_secret` (the same shared secret as the report notification route; the web app reads it from `REPORT_NOTIFY_SECRET`). Without the Vault secret, step 2 is skipped.
 
-The route (`src/lib/maintenance.server.ts`) does two things and reports counts only:
+The route (`src/lib/maintenance.server.ts`) does three things and reports counts only:
 
 - **Apple revocation retries.** When an account is deleted and Apple does not confirm that the Sign in with Apple grant was revoked, the stored credential is moved to `apple_revocation_pending` (no link to the deleted account). Each pass retries it. On success the row is removed. After 7 days it is removed anyway and the owner is emailed.
 - **Report delivery.** Each moderation report is emailed to the owner when it is filed. Delivery is recorded in `content_report_delivery`. A report whose email did not go out is listed in a digest email on a later pass. A report still open after 20 hours gets one reminder, ahead of the 24-hour response window. Resolving a report in the admin app deletes it, so an open report is any row still in `content_reports`.
+
+- **RevenueCat erasure retries.** See "Account deletion and other processors" below.
 
 Owner emails go to `REPORT_NOTIFY_TO` through Resend. If that is not set, the same events are logged with `console.error` and no email is sent.
 
@@ -53,7 +55,9 @@ Stop it: `SELECT cron.unschedule('maintenance-sweep');`
 Deleting an account (by the learner or by an admin) also:
 
 - revokes the Sign in with Apple grant, with the retry above if Apple is unreachable;
-- erases the subscriber record at RevenueCat. This does not cancel an App Store subscription, which only the learner can do in their Apple account. A failure is logged (`[account-deletion]`) so the record can be erased by hand in the RevenueCat dashboard.
+- erases the subscriber record at RevenueCat. This does not cancel an App Store subscription, which only the learner can do in their Apple account. If the erase fails, the account id waits in `revenuecat_erasure_pending` and the scheduled pass retries it. After 30 days the id is emailed to the owner to erase by hand in the RevenueCat dashboard, and removed from the list.
+
+Account ids are not written to the server logs on any of these paths.
 
 ## Deadlines on provider calls
 

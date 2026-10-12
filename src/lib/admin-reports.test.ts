@@ -12,6 +12,11 @@ import {
 // admin.functions.ts doesn't pull in the real middleware chain (which
 // dynamically imports client.server.ts) just to test these two handlers.
 vi.mock("./admin-middleware", () => ({ requireAdmin: {} }));
+// eraseSubscriberRecord (called after an admin deletes an account) queues a failed RevenueCat erase through the
+// module-level service client; stubbed so no test reaches a real database.
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { from: () => ({ upsert: async () => ({ error: null }) }) },
+}));
 // admin.functions.ts imports revokeAppleGrantForUser from
 // account.functions.ts, which imports requireSupabaseAuth -- same reason
 // as above, one level further out.

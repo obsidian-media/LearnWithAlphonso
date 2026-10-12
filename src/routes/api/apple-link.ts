@@ -67,9 +67,7 @@ export const Route = createFileRoute("/api/apple-link")({
         // upstream (the iOS client, or Apple's own endpoint) changed
         // shape, not that this is expected background noise.
         if (!refreshToken) {
-          console.error(
-            `[apple-link] Apple rejected the authorization code exchange for user ${userData.user.id}`,
-          );
+          console.error(`[apple-link] Apple rejected the authorization code exchange`);
           return Response.json({ linked: false, reason: "exchange-failed" });
         }
 
@@ -84,9 +82,7 @@ export const Route = createFileRoute("/api/apple-link")({
           { onConflict: "user_id" },
         );
         if (error) {
-          console.error(
-            `[apple-link] Failed to store the Apple refresh token for user ${userData.user.id}: ${error.message}`,
-          );
+          console.error(`[apple-link] Failed to store the Apple refresh token: ${error.message}`);
           return Response.json({ linked: false, reason: "store-failed" });
         }
 

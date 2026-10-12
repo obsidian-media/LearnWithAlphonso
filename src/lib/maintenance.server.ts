@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import type { AppleConfig } from "./apple-revocation";
+import type { RevenueCatConfig } from "./revenuecat-entitlement";
 import {
   REPORT_NOTIFY_HEADER,
   sendEmailViaResend,
@@ -13,10 +14,11 @@ import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server"
  * supabase/migrations/20261015100000_maintenance_sweep.sql) through pg_net, never by a client, and authenticated
  * with the same shared secret as the report notification route.
  *
- * It does three things, each on its own so one failing does not stop the others:
+ * It does four things, each on its own so one failing does not stop the others:
  *   1. Retries Sign in with Apple revocations that failed when an account was deleted.
  *   2. Emails the owner about reports whose first notification never went out.
  *   3. Emails the owner once about reports still unresolved near the 24-hour response window.
+ *   4. Retries RevenueCat subscriber erasures that failed when an account was deleted.
  */
 type Admin = SupabaseClient<Database>;
 
@@ -26,6 +28,8 @@ export const REVOCATION_RETRY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 export const UNDELIVERED_AFTER_MS = 10 * 60 * 1000;
 /** Reports must be answered within 24 hours; the reminder leaves time to act. */
 export const OVERDUE_AFTER_MS = 20 * 60 * 60 * 1000;
+/** A failed RevenueCat erase is retried for this long, then handed to the owner by email. */
+export const ERASURE_RETRY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const BATCH = 20;
 
 export type MaintenanceDeps = {
@@ -34,6 +38,8 @@ export type MaintenanceDeps = {
   send: (msg: EmailMessage) => Promise<void>;
   appleConfig: () => AppleConfig | null;
   revoke: (config: AppleConfig, refreshToken: string) => Promise<boolean>;
+  revenueCatConfig: () => RevenueCatConfig | null;
+  eraseSubscriber: (config: RevenueCatConfig, appUserId: string) => Promise<"erased" | "failed">;
   /** Where owner alerts go; empty means alerts are logged only. */
   alertTo: string;
 };
@@ -91,6 +97,73 @@ export async function retryAppleRevocations(deps: MaintenanceDeps): Promise<Revo
         "",
         "The stored credentials have now been removed, so no further automatic retry is possible.",
         "Check that the Apple sign-in key and identifiers in the server configuration are still valid.",
+      ].join("\n"),
+    });
+  }
+  return result;
+}
+
+export type ErasureResult = { erased: number; stillPending: number; expired: number };
+
+export async function retryRevenueCatErasures(deps: MaintenanceDeps): Promise<ErasureResult> {
+  const { db } = deps;
+  const { data: rows, error } = await db
+    .from("revenuecat_erasure_pending")
+    .select("app_user_id, created_at, attempts")
+    .order("created_at", { ascending: true })
+    .limit(BATCH);
+  if (error) throw new Error(`could not read pending erasures: ${error.message}`);
+  const result: ErasureResult = { erased: 0, stillPending: 0, expired: 0 };
+  if (!rows || rows.length === 0) return result;
+
+  const config = deps.revenueCatConfig();
+  const nowMs = deps.now().getTime();
+  const handedOver: string[] = [];
+  for (const row of rows) {
+    const outcome = config
+      ? await deps.eraseSubscriber(config, row.app_user_id).catch(() => "failed" as const)
+      : "failed";
+    const expired = nowMs - new Date(row.created_at).getTime() >= ERASURE_RETRY_WINDOW_MS;
+    if (outcome === "erased" || expired) {
+      const { error: gone } = await db
+        .from("revenuecat_erasure_pending")
+        .delete()
+        .eq("app_user_id", row.app_user_id);
+      if (gone) throw new Error(`could not clear a pending erasure: ${gone.message}`);
+      if (outcome === "erased") result.erased += 1;
+      else {
+        result.expired += 1;
+        handedOver.push(row.app_user_id);
+      }
+    } else {
+      await db
+        .from("revenuecat_erasure_pending")
+        .update({ attempts: row.attempts + 1, last_attempt_at: deps.now().toISOString() })
+        .eq("app_user_id", row.app_user_id);
+      result.stillPending += 1;
+    }
+  }
+
+  if (!config) {
+    console.error(
+      "[maintenance] RevenueCat erasures are pending but RevenueCat is not configured on the server",
+    );
+  }
+  if (handedOver.length > 0) {
+    console.error(
+      `[maintenance] ${handedOver.length} RevenueCat subscriber record(s) could not be erased within 30 days`,
+    );
+    // The ids go to the owner by email, which is where a person acts on them; they are not logged.
+    await alertOwner(deps, {
+      subject: "[Alphonso] RevenueCat subscriber records to erase by hand",
+      text: [
+        `${handedOver.length} subscriber record(s) could not be erased at RevenueCat within 30 days of the account being deleted.`,
+        "",
+        "Erase each one in the RevenueCat dashboard (Customers > search the id > Delete customer):",
+        "",
+        ...handedOver.map((id) => `- ${id}`),
+        "",
+        "They have been removed from the retry list, so this is the only notice.",
       ].join("\n"),
     });
   }
@@ -244,12 +317,16 @@ const json = (body: unknown, status: number) =>
 async function defaultDeps(): Promise<MaintenanceDeps> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { appleConfigFromEnv, revokeAppleGrant } = await import("./apple-revocation");
+  const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber } =
+    await import("./revenuecat-entitlement");
   return {
     db: supabaseAdmin,
     now: () => new Date(),
     send: (m) => sendEmailViaResend(m),
     appleConfig: () => appleConfigFromEnv(),
     revoke: (config, token) => revokeAppleGrant(config, token),
+    revenueCatConfig: () => revenueCatConfigFromEnv(),
+    eraseSubscriber: (config, id) => deleteRevenueCatSubscriber(config, id),
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
   };
 }
@@ -279,9 +356,10 @@ export async function handleMaintenance(
   };
   const revocations = await run("apple-revocations", () => retryAppleRevocations(deps));
   const reports = await run("reports", () => sweepReports(deps));
+  const erasures = await run("revenuecat-erasures", () => retryRevenueCatErasures(deps));
   // Counts only: this response is stored in the database's request log.
   return json(
-    { ok: failures.length === 0, failures, revocations, reports },
+    { ok: failures.length === 0, failures, revocations, reports, erasures },
     failures.length ? 500 : 200,
   );
 }
