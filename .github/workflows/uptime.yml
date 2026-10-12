@@ -1,0 +1,49 @@
+name: Uptime check
+
+# Every 15 minutes, from outside the app: is the site up, is the server answering, are sign-in, the database
+# API and the Edge Functions reachable. A failed run is the alert: GitHub notifies the repository's watchers
+# of a failing scheduled workflow. Everything here is an unauthenticated public request; no secret is used.
+# Each check asserts the status a healthy service gives, so a wrong answer fails as loudly as no answer.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: uptime
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://learn.alphonsoecosystem.app
+      API: https://qhcjpfbxfcltjbiuknyt.supabase.co
+      # The public client key that ships in the app and the web bundle.
+      PUBLIC_KEY: sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9
+    steps:
+      - name: Check every public surface
+        run: |
+          failures=0
+          # check <label> <expected status> <curl args...>; one retry so a single dropped connection is not an alert.
+          check() {
+            label="$1"; want="$2"; shift 2
+            for attempt in 1 2; do
+              got=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$@" || true)
+              [ "$got" = "$want" ] && { echo "ok    $label ($got)"; return 0; }
+              [ "$attempt" = 1 ] && sleep 10
+            done
+            echo "::error::$label answered $got, expected $want"
+            failures=$((failures + 1))
+          }
+          check "landing page" 200 "$SITE/"
+          check "privacy policy" 200 "$SITE/privacy"
+          # A server route answering 401 proves the server runtime is up, not just static files.
+          check "server routes" 401 -X POST "$SITE/api/internal/maintenance" -H 'Content-Type: application/json' -d '{}'
+          check "sign-in service" 200 "$API/auth/v1/health" -H "apikey: $PUBLIC_KEY"
+          check "database API" 200 "$API/rest/v1/achievements?select=id&limit=1" -H "apikey: $PUBLIC_KEY"
+          check "edge functions" 401 -X POST "$API/functions/v1/grade-review" -H 'Content-Type: application/json' -d '{}'
+          [ "$failures" -eq 0 ] || { echo "$failures check(s) failed"; exit 1; }
