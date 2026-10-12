@@ -150,17 +150,10 @@ describe("head()", () => {
     expect(links).toContainEqual({ rel: "manifest", href: "/site.webmanifest" });
   });
 
-  it("preconnects to the font hosts it then loads stylesheets from", () => {
-    const links = head.links;
-    const preconnects = links.filter((l) => l.rel === "preconnect").map((l) => l.href);
-    expect(preconnects).toContain("https://fonts.googleapis.com");
-    expect(preconnects).toContain("https://fonts.gstatic.com");
-    // Every Google-hosted stylesheet must be covered by one of those
-    // preconnects, or the preconnect is doing nothing.
-    const googleSheets = links.filter(
-      (l) => l.rel === "stylesheet" && String(l.href).startsWith("https://fonts.googleapis.com"),
-    );
-    expect(googleSheets.length).toBeGreaterThan(0);
+  it("loads nothing from another origin: fonts come from this site", () => {
+    // A stylesheet, preconnect or preload on a third-party host sends each visitor's IP address there.
+    const external = head.links.filter((l) => /^(https?:)?\/\//.test(String(l.href)));
+    expect(external).toEqual([]);
   });
 });
 

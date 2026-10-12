@@ -9,11 +9,24 @@
 @source "../admin";
 @import "tw-animate-css";
 
+/* Fonts are served from this site, not a font CDN: loading them from a third party would send every
+   visitor's IP address to it. One import per face the themes use; the browser fetches only the files
+   for the theme on screen and the characters on the page. */
+@import "@fontsource-variable/fraunces/opsz.css";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource-variable/instrument-sans/wght.css";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/source-sans-3/wght.css";
+@import "@fontsource-variable/baloo-2/wght.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
   --color-surface: oklch(0.958 0.012 80);
   --color-parchment: oklch(0.923 0.019 75);
   --color-ink: oklch(0.24 0.035 155);
@@ -162,7 +175,7 @@
 
 [data-theme="studio-ink"] {
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: oklch(0.16 0.01 260);
   --color-parchment: oklch(0.2 0.012 260);
@@ -184,8 +197,8 @@
 }
 
 [data-theme="manuscript"] {
-  --font-display: "Newsreader", ui-serif, Georgia, serif;
-  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
+  --font-sans: "Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: oklch(0.97 0.004 250);
   --color-parchment: oklch(0.94 0.005 250);
@@ -207,8 +220,8 @@
 }
 
 [data-theme="canopy"] {
-  --font-display: "Baloo 2", ui-rounded, "Segoe UI", sans-serif;
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Baloo 2 Variable", "Baloo 2", ui-rounded, "Segoe UI", sans-serif;
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: oklch(0.975 0.014 165);
   --color-parchment: oklch(0.945 0.028 165);
