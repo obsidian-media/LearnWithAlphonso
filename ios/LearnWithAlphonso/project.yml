@@ -292,7 +292,7 @@ targets:
         # accident, which made App Store Connect require 13-inch iPad
         # screenshots at Add for Review. No code change.
         # 50: first build after build 49; resubmission.
-        CURRENT_PROJECT_VERSION: "50"
+        CURRENT_PROJECT_VERSION: "51"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -423,7 +423,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "50"
+        CURRENT_PROJECT_VERSION: "51"
         SKIP_INSTALL: true
       configs:
         Release:

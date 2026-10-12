@@ -30,6 +30,7 @@ Sign in with Apple, Google or your email (you get a 6-digit code). AI features r
 - Sign up, take the placement test and finish a few lessons in any course.
 - Review, speaking practice in Practice, and an audio episode in Listen (also with the screen locked).
 - Friends, leagues and teams, if you like.
+- Finish a lesson in airplane mode, then go back online: the Learn tab shows it waiting, then syncs it.
 
 Known in this build: Alphonso Pro cannot be bought by testers yet, so Hector (the AI voice tutor, a Pro feature) is not available and the subscription screen may say it couldn't load the options. Lessons, review, speaking practice and listening are free to use.
 
