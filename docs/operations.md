@@ -59,11 +59,12 @@ Deleting an account (by the learner or by an admin) also:
 
 No request waits on a provider without a limit. A timeout returns a retryable `504`.
 
-| Call                                                     | Deadline                            |
-| -------------------------------------------------------- | ----------------------------------- |
-| Model call with no caller deadline (web and Edge helper) | 30 s                                |
-| Conversation reply (`/api/chat`)                         | 25 s, output capped at 1,024 tokens |
-| Tutor reply / tutor speech                               | 20 s / 10 s                         |
-| Speech-to-text (`/api/stt`)                              | 20 s                                |
-| Text-to-speech (`/api/tts`)                              | 30 s                                |
-| Subscription check and RevenueCat erase                  | 5 s                                 |
+| Call                                                          | Deadline                            |
+| ------------------------------------------------------------- | ----------------------------------- |
+| Model call with no caller deadline (web and Edge helper)      | 30 s                                |
+| Owner-run authoring calls (pack drafts, vocabulary proposals) | 120 s                               |
+| Conversation reply (`/api/chat`)                              | 25 s, output capped at 1,024 tokens |
+| Tutor reply / tutor speech                                    | 20 s / 10 s                         |
+| Speech-to-text (`/api/stt`)                                   | 20 s                                |
+| Text-to-speech (`/api/tts`)                                   | 30 s                                |
+| Subscription check and RevenueCat erase                       | 5 s                                 |
