@@ -29,23 +29,26 @@ struct StreakTimelineProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (StreakEntry) -> Void) {
-        completion(StreakEntry(date: Date(), snapshot: Self.readSnapshot()))
+        let now = Date()
+        completion(StreakEntry(date: now, snapshot: Self.readSnapshot()?.asOf(now)))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<StreakEntry>) -> Void) {
-        let entry = StreakEntry(date: Date(), snapshot: Self.readSnapshot())
-        // This app has no push-widget-update plumbing (that's a separate,
-        // materially bigger lift -- see V4 candidate #2's push-notification
-        // scoping for the closest equivalent) -- WidgetProgressPublisher's
-        // explicit WidgetCenter.reloadTimelines() call after every
-        // completion/sync is the real refresh signal while the app is
-        // actually being used. This fixed 4-hour reload is only a
-        // safety net against the widget going visibly stale (e.g. showing
-        // "not studied today" into the next calendar day) if the app is
-        // never reopened.
-        let nextRefresh = Calendar.current.date(byAdding: .hour, value: 4, to: entry.date)
-            ?? entry.date.addingTimeInterval(4 * 60 * 60)
-        completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
+        let now = Date()
+        let stored = Self.readSnapshot()
+        // WidgetProgressPublisher's WidgetCenter.reloadTimelines() call after every completion or sync is the
+        // real refresh signal while the app is in use. Two things cover the app not being opened:
+        //  - a second entry at the next UTC midnight, so "Studied today" turns off the moment the day changes
+        //    (the stored value is only true for the day it was written);
+        //  - a 4-hour reload as a general safety net.
+        let midnight = nextUTCMidnight(after: now)
+        let entries = [
+            StreakEntry(date: now, snapshot: stored?.asOf(now)),
+            StreakEntry(date: midnight, snapshot: stored?.asOf(midnight)),
+        ]
+        let fourHours = Calendar.current.date(byAdding: .hour, value: 4, to: now) ?? now.addingTimeInterval(4 * 60 * 60)
+        let nextRefresh = max(fourHours, midnight.addingTimeInterval(60))
+        completion(Timeline(entries: entries, policy: .after(nextRefresh)))
     }
 
     private static func readSnapshot() -> StreakWidgetSnapshot? {
