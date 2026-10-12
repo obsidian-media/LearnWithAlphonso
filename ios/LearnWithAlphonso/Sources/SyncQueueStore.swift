@@ -309,6 +309,17 @@ final class SyncQueueStore: AccountScopedQueue {
         return records.map(\.asPending)
     }
 
+    /// How much is waiting for this account, for the Learn-tab line. Rows with no owner (queued by an older
+    /// build) are synced as the current account's, so they count too.
+    func pendingCounts(for userID: String?) -> (lessons: Int, reviewAnswers: Int) {
+        guard let userID else { return (0, 0) }
+        let mine: (String?) -> Bool = { $0 == nil || $0 == userID }
+        return (
+            pendingLessonCompletions().filter { mine($0.ownerUserID) }.count,
+            pendingReviewGrades().filter { mine($0.ownerUserID) }.count
+        )
+    }
+
     /// When the next sync pass could send something for this account; nil means there is nothing to wake for.
     /// Mirrors SyncEngine: every lesson completion is tried on its own schedule, but review grades are sent
     /// strictly oldest first, so only the oldest grade's time counts (a later grade cannot go before it).

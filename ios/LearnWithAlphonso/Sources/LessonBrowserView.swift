@@ -131,6 +131,9 @@ struct LessonBrowserView: View {
                 // Finished lessons the server permanently rejected. Hidden when none.
                 DeadLetterNoticeSection(syncQueueStore: syncQueueStore)
 
+                // Finished work still waiting to reach the server. Hidden when the queue is empty.
+                PendingSyncSection(syncQueueStore: syncQueueStore, session: session, isConnected: networkMonitor.isConnected)
+
                 // The way into the review queue. Before Phase 0 this was a
                 // tab of its own and ReviewQueueView was instantiated in
                 // exactly one place -- the tab bar -- so this row is what
