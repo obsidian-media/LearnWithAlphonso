@@ -48,7 +48,7 @@ struct StreakWidgetView: View {
         VStack(spacing: 4) {
             Text("\u{1F525}")
                 .font(.title)
-            Text("Open Learn with Alphonso to start your streak")
+            Text("Open Alphonso to start your streak")
                 .font(.caption2)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
