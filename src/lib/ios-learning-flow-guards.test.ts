@@ -20,7 +20,7 @@ describe("Learn level load", () => {
   it("loads the level again when onboarding settles or a placement test finishes", () => {
     // Keyed on the course alone, a level set by placement stayed hidden until the app was relaunched.
     expect(src).toContain(
-      '.task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }',
+      String.raw`.task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }`,
     );
   });
   it("drops a fetch that lands after the course changed", () => {
