@@ -10,8 +10,9 @@ name: Regenerate Supabase Types
 # place a real type error could pass silently. Trigger from the Actions
 # tab (or `gh workflow run regenerate-supabase-types.yml`).
 #
-# Required repo secret:
+# Required repo secrets:
 #   SUPABASE_ACCESS_TOKEN -- already configured (deploy-supabase uses it)
+#   TYPES_REGEN_DEPLOY_KEY -- private half of the repository deploy key "types-regen workflow (push to main)"
 on:
   workflow_dispatch:
 
@@ -29,7 +30,12 @@ jobs:
     name: Regenerate types.ts from the live schema and commit
     runs-on: ubuntu-latest
     steps:
+      # Checked out with a deploy key, so the push below is made by that key and not by the Actions token.
+      # main requires passing checks before anything lands; this job commits a generated file straight to main,
+      # and the ruleset lets this one key through (GitHub does not allow exempting the Actions token itself).
       - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.TYPES_REGEN_DEPLOY_KEY }}
 
       # Pinned, same reason as ci.yml's deploy-supabase job: `latest`
       # resolves through the GitHub API and can fail on rate limits alone.
