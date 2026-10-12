@@ -109,6 +109,9 @@ const EXPECTED_COLLECTED: Record<string, RegExp> = {
   NSPrivacyCollectedDataTypeProductInteraction: /complete-lesson/, // the learning record
   NSPrivacyCollectedDataTypePurchaseHistory: /import RevenueCat/, // subscription state
   NSPrivacyCollectedDataTypeOtherDataTypes: /_age_confirmed/, // 13+ self-declaration (buddy matching); AI consent record
+  // The servers log how long each stage of an AI request took and short failure details, with no account id.
+  NSPrivacyCollectedDataTypePerformanceData: /api\/chat/,
+  NSPrivacyCollectedDataTypeOtherDiagnosticData: /api\/chat/,
 };
 
 /** Categories the app must not touch while they are undeclared. */
@@ -122,7 +125,6 @@ const UNDECLARED_PROBES: [string, RegExp][] = [
     /\bimport (AdSupport|AppTrackingTransparency)\b|\bASIdentifierManager\b/,
   ],
   ["Device ID beyond the APNs token", /\bidentifierForVendor\b/],
-  ["Diagnostics", /\bimport (Sentry|FirebaseCrashlytics|Bugsnag|MetricKit)\b/],
 ];
 
 const APP_FUNCTIONALITY = "NSPrivacyCollectedDataTypePurposeAppFunctionality";
@@ -190,9 +192,15 @@ describe("app privacy manifest: collected data types (match the App Store Connec
     expect(types.map((t) => t.type).sort()).toEqual(Object.keys(EXPECTED_COLLECTED).sort());
   });
 
-  it("every type is linked to the user, never used for tracking, for app functionality only", () => {
+  /** Server-side timing and failure logs: declared, and kept free of account ids so "not linked" is true. */
+  const NOT_LINKED = [
+    "NSPrivacyCollectedDataTypePerformanceData",
+    "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+  ];
+
+  it("every type is linked to the user except diagnostics, never used for tracking, for app functionality only", () => {
     for (const t of types) {
-      expect(t.linked, t.type).toBe(true);
+      expect(t.linked, t.type).toBe(!NOT_LINKED.includes(t.type));
       expect(t.tracking, t.type).toBe(false);
       expect(t.purposes, t.type).toEqual([APP_FUNCTIONALITY]);
     }
