@@ -140,9 +140,7 @@ export const exportMyData = createServerFn({ method: "POST" })
         USER_ID_EXPORT_TABLES.map((table) =>
           readAllExportPages(table, (first, last) =>
             supabase
-              // The migration's table is not in production-generated types yet.
-              // All members of this list have user_id; regenerate types after migration deployment.
-              .from(table as Exclude<typeof table, "review_grade_attempts">)
+              .from(table)
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {
                 count: "exact",
               })

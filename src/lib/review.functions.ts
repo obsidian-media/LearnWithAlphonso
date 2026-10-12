@@ -293,7 +293,7 @@ export const gradeReview = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     type Transition = { status: string; retired?: boolean; dueOn?: string; correct?: boolean };
     const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
-      "apply_review_grade" as never,
+      "apply_review_grade",
       {
         _user_id: userId,
         _item_key: data.itemKey,
@@ -308,6 +308,8 @@ export const gradeReview = createServerFn({ method: "POST" })
         _interval_days: outcome.retired ? null : outcome.intervalDays,
         _repetitions: outcome.retired ? null : outcome.repetitions,
         _lapses: outcome.retired ? null : outcome.lapses,
+        // The generated argument types mark every parameter non-null; the function takes NULL for the
+        // attempt id, a never-reviewed item's review time, and the unused schedule fields of a retirement.
       } as never,
     )) as { data: Transition | null; error: { message: string } | null };
     if (transitionError || !transition) throw new Error("Could not save review grade");

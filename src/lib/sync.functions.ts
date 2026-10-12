@@ -450,7 +450,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       // writes and rejects stale snapshots. A caller can retry after rereading
       // without losing XP or reporting a partial success.
       const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
-        "apply_lesson_completion" as never,
+        "apply_lesson_completion",
         {
           _user_id: userId,
           _course: course,
@@ -481,7 +481,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           },
           _missed_question_ids: missedQuestionIds,
           _activity_events: activityEvents,
-        } as never,
+        },
       )) as { data: { status: string } | null; error: { message: string } | null };
       if (transitionError || !transition) {
         throw new Error("Could not save lesson completion; retry");
