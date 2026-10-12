@@ -1294,9 +1294,16 @@ private struct OfflineFinishView: View {
                 .font(AlphonsoFont.display(19, weight: .semiBold))
                 .foregroundStyle(AlphonsoColor.ink)
                 .multilineTextAlignment(.center)
-            Text("About +\(pending.optimisticXpEstimate) XP (estimated)")
+            // "Up to": the number is this attempt's full value. A lesson completed before only earns the
+            // improvement over its best score, which this screen cannot know offline.
+            Text("Up to +\(pending.optimisticXpEstimate) XP once it syncs")
                 .font(AlphonsoFont.display(24, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ember)
+                .multilineTextAlignment(.center)
+            Text("A lesson you've already finished only earns XP for a better score.")
+                .font(AlphonsoFont.sans(13))
+                .foregroundStyle(AlphonsoColor.inkSoft)
+                .multilineTextAlignment(.center)
             Text("\(correct)/\(total) correct")
                 .font(AlphonsoFont.sans(14))
                 .foregroundStyle(AlphonsoColor.inkSoft)

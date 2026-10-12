@@ -12,6 +12,9 @@ public enum AIConsentCopy {
     public static let gateAction = "Review and allow"
     public static let checkFailedTitle = "Couldn't check your AI setting"
     public static let checkFailedBody = "Check your connection and try again."
+    /// Shown in place of the two above when the device has no connection (iOS only; the web app has no offline mode).
+    public static let offlineTitle = "You're offline"
+    public static let offlineBody = "This needs a connection. Reconnect and try again."
     public static let retry = "Try again"
     public static let settingsTitle = "AI features"
     public static let settingsFooter = "When this is on, Alphonso sends your voice to Deepgram and your conversation text and written answers to NVIDIA so the tutor can reply, transcribe and grade. When it's off, nothing is sent, and lessons, review and placement keep working."

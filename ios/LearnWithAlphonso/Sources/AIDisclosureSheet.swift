@@ -23,6 +23,9 @@ import LearnWithAlphonsoKit
 private struct AIDisclosureGateModifier: ViewModifier {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var aiConsent: AIConsentStore
+    /// Optional, so a screen built outside the app's root (a preview) reads "connected" instead of crashing.
+    @Environment(NetworkMonitor.self) private var networkMonitor: NetworkMonitor?
+    private var isConnected: Bool { networkMonitor?.isConnected ?? true }
     @State private var hasBeenGranted = false
     @State private var didRefresh = false
     @State private var showDisclosure = false
@@ -85,10 +88,14 @@ private struct AIDisclosureGateModifier: ViewModifier {
     @ViewBuilder
     private func prompt(_ kind: AIConsentGatePrompt) -> some View {
         if kind == .retry {
+            // With no connection the setting was never the problem: say "offline", not "couldn't check your AI
+            // setting", which reads as something the learner has to fix in Settings.
             ContentUnavailableView {
-                Label(AIConsentCopy.checkFailedTitle, systemImage: "wifi.exclamationmark")
+                Label(
+                    isConnected ? AIConsentCopy.checkFailedTitle : AIConsentCopy.offlineTitle,
+                    systemImage: isConnected ? "exclamationmark.triangle" : "wifi.slash")
             } description: {
-                Text(AIConsentCopy.checkFailedBody)
+                Text(isConnected ? AIConsentCopy.checkFailedBody : AIConsentCopy.offlineBody)
             } actions: {
                 Button(AIConsentCopy.retry) { Task { await aiConsent.refresh() } }
                     .buttonStyle(.alphonsoPrimary)
