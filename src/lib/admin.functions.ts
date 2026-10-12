@@ -14,7 +14,7 @@ import {
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 import { isPublishableProvider, UNPUBLISHABLE_PROVIDER_MESSAGE } from "./podcast-provenance";
-import { revokeAppleGrantForUser } from "./account.functions";
+import { eraseSubscriberRecord, revokeAppleGrantForUser } from "./account.functions";
 import { socialReasonMessage } from "./social-reason-copy";
 
 // Matches podcast_folders/podcast_episodes.course's own CHECK constraint
@@ -917,6 +917,7 @@ export const adminDeleteReportedUser = createServerFn({ method: "POST" })
       report.reported,
     );
     if (deleteError) throw new Error(deleteError.message);
+    await eraseSubscriberRecord(report.reported);
     logAdminAction("delete_account", data.reportId, report.reported, context.userId);
 
     return { ok: true };

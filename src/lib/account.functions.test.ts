@@ -672,4 +672,62 @@ describe("revokeAppleGrantForUser with Apple configuration", () => {
     };
     expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
   });
+
+  /** A service client whose stored grant is "rt-1" and whose retry-queue inserts are recorded. */
+  function adminWithStoredGrant(parkError: { message: string } | null = null) {
+    const parked: unknown[] = [];
+    const admin = {
+      from: (table: string) =>
+        table === "apple_revocation_pending"
+          ? {
+              insert: async (row: unknown) => {
+                parked.push(row);
+                return { error: parkError };
+              },
+            }
+          : chainable({ data: { refresh_token: "rt-1" }, error: null }),
+    };
+    return { admin, parked };
+  }
+
+  it("queues the credential for a retry when Apple does not confirm the revocation", async () => {
+    configureApple();
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn(async () => new Response("", { status: 503 })) as never;
+    const { admin, parked } = adminWithStoredGrant();
+    try {
+      expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+    // Only the credential: nothing that ties the row to the account being deleted.
+    expect(parked).toEqual([{ refresh_token: "rt-1" }]);
+  });
+
+  it("queues nothing when Apple confirms the revocation", async () => {
+    const { generateKeyPairSync } = await import("node:crypto");
+    const { privateKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
+    configureApple();
+    vi.stubEnv("APPLE_PRIVATE_KEY", privateKey.export({ type: "pkcs8", format: "pem" }).toString());
+    const realFetch = globalThis.fetch;
+    const fetchMock = vi.fn(async () => new Response("", { status: 200 }));
+    globalThis.fetch = fetchMock as never;
+    const { admin, parked } = adminWithStoredGrant();
+    try {
+      expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("revoked");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(parked).toEqual([]);
+  });
+
+  it("still reports the failure, without throwing, when the retry cannot be queued", async () => {
+    configureApple();
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { admin } = adminWithStoredGrant({ message: "permission denied" });
+    expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
+    expect(error.mock.calls.flat().join(" ")).toContain("could not queue a retry");
+    error.mockRestore();
+  });
 });

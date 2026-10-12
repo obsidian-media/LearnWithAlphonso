@@ -55,7 +55,14 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
 
   // Account consent comes before entitlement and quota: a learner who has not allowed AI sees the consent sheet,
   // not the paywall, and a refused request spends nothing.
-  const { requireAiConsent } = await import("@/lib/ai-consent.server");
+  const { requireAiConsent, requireAiSwitchedOn } = await import("@/lib/ai-consent.server");
+  const { isSwitchOn } = await import("@/lib/app-switches.server");
+  const off = await requireAiSwitchedOn("hector-respond");
+  if (off) return off;
+  if (!(await isSwitchOn("tutor"))) {
+    console.info(JSON.stringify({ event: "tutor_switched_off" }));
+    return Response.json({ error: "tutor-unavailable" }, { status: 503 });
+  }
   const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "hector-respond" });
   if (denied) return denied;
 

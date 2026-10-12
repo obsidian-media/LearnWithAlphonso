@@ -390,7 +390,8 @@ src/
 └── routes/                # File-based routes (TanStack Router)
     ├── api/               # Server routes: AI (chat, TTS, STT, hector-respond, define-word,
     │                      #   generate-practice, grade-translation, analyze-weaknesses),
-    │                      #   learning-goal, account export/delete, apple-link, internal/ (report-notify)
+    │                      #   learning-goal, account export/delete, apple-link, internal/ (report-notify,
+    │                      #   maintenance; see docs/operations.md)
     └── _authenticated/    # Protected routes (learn, lesson, review, profile, league, converse, friends)
 e2e/                      # Playwright + axe-core E2E/accessibility tests
 supabase/

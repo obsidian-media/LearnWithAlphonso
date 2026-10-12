@@ -39,6 +39,10 @@ const VALID_SYSTEM_PROMPTS: ReadonlySet<string> = ALL_SYSTEM_PROMPTS;
  */
 /** The most recent turns forwarded to the model, matching the tutor route's cap. */
 const MAX_TURNS_SENT = 40;
+/** A conversation reply normally arrives in about a second; past this the learner gets a retryable error. */
+const CHAT_TIMEOUT_MS = 25_000;
+/** A partner turn is a few sentences. The cap bounds cost and time if the model runs on. */
+const CHAT_MAX_TOKENS = 1024;
 
 const CEFR_DIFFICULTY_HINTS: Record<string, (language: string) => string> = {
   A1: () =>
@@ -126,10 +130,20 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // model id lives there instead of being hardcoded here.
   const model = resolveNvidiaChatModel();
   const llm = await timer.time("llm", async () => {
-    const resp = await nvidiaChatCompletion({
-      apiKey: key,
-      body: { model, messages: finalMessages },
-    });
+    let resp: Response;
+    try {
+      resp = await nvidiaChatCompletion({
+        apiKey: key,
+        signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
+        body: { model, messages: finalMessages, max_tokens: CHAT_MAX_TOKENS },
+      });
+    } catch {
+      // Timed out, or the learner went away: retryable, and never an unhandled 500.
+      return {
+        ok: false as const,
+        failure: Response.json({ error: "reply-unavailable" }, { status: 504 }),
+      };
+    }
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
       return { ok: false as const, failure: upstreamErrorResponse("NVIDIA", resp.status, text) };

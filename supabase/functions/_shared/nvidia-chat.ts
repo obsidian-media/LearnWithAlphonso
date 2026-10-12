@@ -17,6 +17,9 @@ export function withNoThinking(body: NvidiaChatBody): NvidiaChatBody {
   return { ...body, chat_template_kwargs: { ...NVIDIA_NO_THINKING, ...callerKwargs } };
 }
 
+/** The deadline for a model call whose caller sets none. A normal reply takes about a second. */
+export const NVIDIA_DEFAULT_TIMEOUT_MS = 30_000;
+
 export function nvidiaChatCompletion(args: {
   apiKey: string;
   body: { model: string; messages: LlmMessage[] } & Record<string, unknown>;
@@ -28,6 +31,7 @@ export function nvidiaChatCompletion(args: {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({ ...withNoThinking(body), messages: applySafety(body.messages) }),
-    ...(signal ? { signal } : {}),
+    // No call may wait on the provider without a limit: a caller that sets no deadline gets this one.
+    signal: signal ?? AbortSignal.timeout(NVIDIA_DEFAULT_TIMEOUT_MS),
   });
 }

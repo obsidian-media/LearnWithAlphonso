@@ -1,3 +1,4 @@
+import { isSwitchOn } from "./app-switches.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { quotaFailureResponse } from "./ai-quota-response";
@@ -5,7 +6,7 @@ import { consumeQuotaFor, verifyAuth, type QuotaKind } from "./ai-quota.server";
 
 /**
  * AI consent is on the account (profiles.ai_consent_at) and every AI endpoint enforces it. Order everywhere: auth
- * (401), consent (403), quota (429), so a refused request never spends quota.
+ * (401), the owner's AI switch (503), consent (403), quota (429), so a refused request never spends quota.
  * There is no environment-controlled bypass. Edge mirror: supabase/functions/_shared/ai-consent.ts.
  */
 export const AI_CONSENT_REQUIRED = "ai-consent-required" as const;
@@ -30,7 +31,18 @@ export async function readAiConsent(
 
 /** For paths that degrade to local grading: anything but a stored consent means "no AI". */
 export async function hasAiConsent(db: ConsentReader, userId: string): Promise<boolean> {
+  // AI switched off by the owner: these paths fall back to local grading, exactly as without consent.
+  if (!(await isSwitchOn("ai"))) return false;
   return (await readAiConsent(db, userId)) === "granted";
+}
+
+export const AI_UNAVAILABLE = "ai-unavailable" as const;
+
+/** null = go ahead. A 503 means the owner has switched AI features off; it is not about this learner. */
+export async function requireAiSwitchedOn(route?: string): Promise<Response | null> {
+  if (await isSwitchOn("ai")) return null;
+  console.info(JSON.stringify({ event: "ai_switched_off", route: route ?? "unknown" }));
+  return Response.json({ error: AI_UNAVAILABLE }, { status: 503 });
 }
 
 /**
@@ -62,6 +74,8 @@ export async function authorizeAiRequest(
   const auth = await verifyAuth(request);
   if (!auth.ok)
     return { ok: false, response: Response.json({ error: auth.message }, { status: auth.status }) };
+  const off = await requireAiSwitchedOn(opts.route);
+  if (off) return { ok: false, response: off };
   if (opts.requireConsent !== false) {
     const denied = await requireAiConsent(auth.userId, { db: auth.supabase, route: opts.route });
     if (denied) return { ok: false, response: denied };
