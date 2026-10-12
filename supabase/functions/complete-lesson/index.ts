@@ -413,44 +413,75 @@ export async function handleRequest(req: Request): Promise<Response> {
     }
   }
 
-  const [{ data: allComps }, { data: achievements }, { data: prevUnlocks }] = await Promise.all([
+  // The lesson is already saved. Nothing below may turn that into an error, and nothing below may write from
+  // a failed read: an unreadable unlock list looks like "nothing unlocked yet", which would re-announce every
+  // achievement and reset the promotion count.
+  const newlyUnlocked: string[] = [];
+  const [compsRead, catalogRead, unlocksRead, promotionsRead] = await Promise.all([
     admin.from("lesson_completions").select("correct,total").eq("user_id", userId),
     admin.from("achievements").select("id, category, threshold"),
     admin.from("user_achievements").select("achievement_id,progress").eq("user_id", userId),
+    admin
+      .from("friend_activity_events")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("event_type", "league_promotion"),
   ]);
-  const totalLessons = allComps?.length ?? 0;
-  const perfectLessons = (allComps ?? []).filter((c) => c.correct === c.total).length;
+  if (compsRead.error || catalogRead.error || unlocksRead.error) {
+    console.error(
+      JSON.stringify({
+        event: "achievements_skipped",
+        fn: "complete-lesson",
+        reason: "read-failed",
+      }),
+    );
+  } else {
+    const allComps = compsRead.data ?? [];
+    const prevUnlocks = unlocksRead.data ?? [];
+    const totalLessons = allComps.length;
+    const perfectLessons = allComps.filter((c) => c.correct === c.total).length;
+    const prevMap = new Map(prevUnlocks.map((u) => [u.achievement_id, u.progress]));
 
-  const prevMap = new Map((prevUnlocks ?? []).map((u) => [u.achievement_id, u.progress]));
-  const newlyUnlocked: string[] = [];
+    // Promotions are written as feed events inside the completion transaction, so their count survives a
+    // response that was lost before this step ran. The stored counter covers promotions older than the feed.
+    const prevPromoteCount =
+      prevMap.get("league_promote_3") ?? prevMap.get("league_promote_1") ?? 0;
+    const promoteCount = Math.max(
+      prevPromoteCount + (newIdx > oldIdx ? 1 : 0),
+      promotionsRead.error ? 0 : (promotionsRead.count ?? 0),
+    );
 
-  const prevPromoteCount = prevMap.get("league_promote_3") ?? prevMap.get("league_promote_1") ?? 0;
-  const promoteCount = prevPromoteCount + (newIdx > oldIdx ? 1 : 0);
+    const stats: Record<string, number> = {
+      streak,
+      xp,
+      perfect: perfectLessons,
+      lessons: totalLessons,
+      league: promoteCount,
+      freeze: freezes,
+    };
 
-  const stats: Record<string, number> = {
-    streak,
-    xp,
-    perfect: perfectLessons,
-    lessons: totalLessons,
-    league: promoteCount,
-    freeze: freezes,
-  };
-
-  const rows: { user_id: string; achievement_id: string; progress: number }[] = [];
-  for (const a of achievements ?? []) {
-    const val = stats[a.category] ?? 0;
-    const wasUnlocked = prevMap.has(a.id);
-    if (val >= a.threshold && !wasUnlocked) {
-      newlyUnlocked.push(a.id);
-      rows.push({ user_id: userId, achievement_id: a.id, progress: val });
-    } else if (wasUnlocked && a.category === "league") {
-      rows.push({ user_id: userId, achievement_id: a.id, progress: val });
+    const rows: { user_id: string; achievement_id: string; progress: number }[] = [];
+    for (const a of catalogRead.data ?? []) {
+      const val = stats[a.category] ?? 0;
+      const wasUnlocked = prevMap.has(a.id);
+      if (val >= a.threshold && !wasUnlocked) {
+        newlyUnlocked.push(a.id);
+        rows.push({ user_id: userId, achievement_id: a.id, progress: val });
+      } else if (wasUnlocked && a.category === "league") {
+        rows.push({ user_id: userId, achievement_id: a.id, progress: val });
+      }
     }
-  }
-  if (rows.length) {
-    await admin.from("user_achievements").upsert(rows, {
-      onConflict: "user_id,achievement_id",
-    });
+    if (rows.length) {
+      const { error: unlockError } = await admin.from("user_achievements").upsert(rows, {
+        onConflict: "user_id,achievement_id",
+      });
+      // Derived from saved state, so the next completion writes them again.
+      if (unlockError) {
+        console.error(
+          JSON.stringify({ event: "achievements_write_failed", fn: "complete-lesson" }),
+        );
+      }
+    }
   }
 
   return jsonResponse(
