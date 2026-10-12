@@ -68,3 +68,9 @@ No request waits on a provider without a limit. A timeout returns a retryable `5
 | Speech-to-text (`/api/stt`)                                   | 20 s                                |
 | Text-to-speech (`/api/tts`)                                   | 30 s                                |
 | Subscription check and RevenueCat erase                       | 5 s                                 |
+
+## Uptime check
+
+`.github/workflows/uptime.yml` runs every 15 minutes from GitHub, outside the app. It makes six unauthenticated requests (landing page, privacy policy, a server route, the sign-in service, the database API, an Edge Function) and fails if any does not give the status a healthy service gives. A failed run is the alert: GitHub notifies people watching the repository's Actions. Turn that on under GitHub **Settings > Notifications > Actions** ("Send notifications for failed workflows only").
+
+It does not see slow responses, errors inside a signed-in session, or a scheduled job that stopped running. For the scheduled job use the queries above.
