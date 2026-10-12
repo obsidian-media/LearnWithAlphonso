@@ -38,7 +38,7 @@ BEGIN
   -- A user's concurrent completions (even in different courses) cannot
   -- both calculate totals from the same stale state and then overwrite one
   -- another. Other account-progress writers are caught by row version checks.
-  PERFORM 1 FROM auth.users WHERE id = _user_id FOR UPDATE;
+  PERFORM 1 FROM auth.users WHERE id = _user_id FOR NO KEY UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'completion account no longer exists'; END IF;
 
   SELECT updated_at INTO _p_updated FROM public.user_progress

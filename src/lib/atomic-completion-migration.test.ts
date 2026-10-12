@@ -112,4 +112,32 @@ describe("atomic lesson completion migration (real Postgres)", () => {
       expect((await db.query(`SELECT * FROM public.${table}`)).rows).toHaveLength(0);
     }
   });
+
+  it("rejects a snapshot when only a progress row's version moved", async () => {
+    expect((await complete()).rows[0]?.result.status).toBe("applied");
+    const snapshot = async () =>
+      (
+        await db.query<{ p: string; lp: string }>(
+          `SELECT (SELECT updated_at::text FROM public.user_progress) AS p,
+                  (SELECT updated_at::text FROM public.language_progress) AS lp`,
+        )
+      ).rows[0]!;
+    const current = async () => {
+      const { p, lp } = await snapshot();
+      return { p_updated_at: p, lp_updated_at: lp, completion_xp: 100, day_xp: 100 };
+    };
+    // A correct snapshot is accepted, so the conflicts below are caused by the version alone.
+    const before = await current();
+    expect((await complete(before, [])).rows[0]?.result.status).toBe("applied");
+
+    await db.exec("UPDATE public.user_progress SET updated_at = updated_at + interval '1 second'");
+    expect((await complete(before, [])).rows[0]?.result.status).toBe("conflict");
+
+    const afterProgress = await current();
+    await db.exec(
+      "UPDATE public.language_progress SET updated_at = updated_at + interval '1 second'",
+    );
+    expect((await complete(afterProgress, [])).rows[0]?.result.status).toBe("conflict");
+    expect((await complete(await current(), [])).rows[0]?.result.status).toBe("applied");
+  });
 });

@@ -53,7 +53,7 @@ DECLARE
 BEGIN
   -- All attempts for one account are serialized, including a retry racing
   -- the first attempt's commit. auth.users exists for any live account.
-  PERFORM 1 FROM auth.users WHERE id = _user_id FOR UPDATE;
+  PERFORM 1 FROM auth.users WHERE id = _user_id FOR NO KEY UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'review account no longer exists';
   END IF;
@@ -76,7 +76,7 @@ BEGIN
   IF NOT FOUND THEN
     RETURN jsonb_build_object('status', 'missing');
   END IF;
-  IF _row.due_on > current_date THEN
+  IF _row.due_on > (now() AT TIME ZONE 'utc')::date THEN
     RETURN jsonb_build_object('status', 'not_due');
   END IF;
   IF _row.last_reviewed_at IS DISTINCT FROM _expected_last_reviewed_at

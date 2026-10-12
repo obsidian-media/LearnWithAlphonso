@@ -48,6 +48,12 @@ describe("atomic review grade migration (real Postgres)", () => {
     await db.close();
   });
 
+  // The database's own date: the fixture seeds with current_date, and a JS UTC date differs from it for part of
+  // every day on a machine that is not on UTC.
+  async function today(): Promise<string> {
+    return (await db.query<{ d: string }>("SELECT current_date::text AS d")).rows[0]!.d;
+  }
+
   async function retire(attempt = "queue-attempt-1") {
     return db.query<{ result: { status: string; retired: boolean; correct: boolean } }>(call, [
       USER,
@@ -55,10 +61,10 @@ describe("atomic review grade migration (real Postgres)", () => {
       "en",
       attempt,
       null,
-      new Date().toISOString().slice(0, 10),
+      await today(),
       true,
       true,
-      new Date().toISOString().slice(0, 10),
+      await today(),
       null,
       null,
       null,
@@ -102,15 +108,81 @@ describe("atomic review grade migration (real Postgres)", () => {
         "en",
         "queue-attempt-1",
         null,
-        new Date().toISOString().slice(0, 10),
+        await today(),
         true,
         true,
-        new Date().toISOString().slice(0, 10),
+        await today(),
         null,
         null,
         null,
         null,
       ]),
     ).rejects.toThrow(/identity collision/);
+  });
+
+  const LESSON_ROW = "00000000-0000-4000-8000-000000000003";
+  async function seedLessonItem(dueOn = "current_date") {
+    await db.query(
+      `INSERT INTO public.review_items
+       (id,user_id,item_key,language,source,due_on,ease,interval_days,repetitions,lapses)
+       VALUES ($1,$2,'u1l1:q1','en','lesson',${dueOn},2.3,0,0,0)`,
+      [LESSON_ROW, USER],
+    );
+  }
+  async function grade(expectedDueOn: string, expectedLastReviewedAt: string | null = null) {
+    const res = await db.query<{ result: { status: string } }>(call, [
+      USER,
+      "u1l1:q1",
+      "en",
+      null,
+      expectedLastReviewedAt,
+      expectedDueOn,
+      false,
+      true,
+      "2099-01-01",
+      2.4,
+      1,
+      1,
+      0,
+    ]);
+    return res.rows[0]?.result.status;
+  }
+
+  it("updates a non-retired item in place and logs no weakness event", async () => {
+    await seedLessonItem();
+    expect(await grade(await today())).toBe("applied");
+    const rows = (
+      await db.query<{ due_on: string; repetitions: number; last_reviewed_at: string | null }>(
+        "SELECT due_on::text, repetitions, last_reviewed_at::text FROM public.review_items WHERE id = $1",
+        [LESSON_ROW],
+      )
+    ).rows;
+    expect(rows[0]).toMatchObject({ due_on: "2099-01-01", repetitions: 1 });
+    expect(rows[0]?.last_reviewed_at).not.toBeNull();
+    expect((await db.query("SELECT * FROM public.weakness_events")).rows).toHaveLength(0);
+  });
+
+  it("rejects a grade computed from a stale due date or review time", async () => {
+    await seedLessonItem();
+    expect(await grade("2000-01-01")).toBe("conflict");
+    expect(await grade(await today(), "2000-01-01T00:00:00Z")).toBe("conflict");
+    expect(
+      (
+        await db.query("SELECT 1 FROM public.review_items WHERE repetitions = 0 AND id = $1", [
+          LESSON_ROW,
+        ])
+      ).rows,
+    ).toHaveLength(1);
+  });
+
+  it("refuses an item that is not due yet", async () => {
+    await seedLessonItem("current_date + 5");
+    const due = (
+      await db.query<{ d: string }>(
+        "SELECT due_on::text AS d FROM public.review_items WHERE id = $1",
+        [LESSON_ROW],
+      )
+    ).rows[0]!.d;
+    expect(await grade(due)).toBe("not_due");
   });
 });
