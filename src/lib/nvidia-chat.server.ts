@@ -28,6 +28,9 @@ export function withNoThinking(body: NvidiaChatBody): NvidiaChatBody {
 /** The deadline for a model call whose caller sets none. A normal reply takes about a second. */
 export const NVIDIA_DEFAULT_TIMEOUT_MS = 30_000;
 
+/** For owner-run authoring calls, which ask for a whole pack or word list in one reply. */
+export const NVIDIA_AUTHORING_TIMEOUT_MS = 120_000;
+
 export function nvidiaChatCompletion(args: {
   apiKey: string;
   body: NvidiaChatBody;

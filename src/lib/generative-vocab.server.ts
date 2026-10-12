@@ -3,7 +3,7 @@ import nlp from "compromise";
 import type { Level } from "../data/levels";
 import type { VocabEntry } from "../data/generative/vocab";
 import { mergeVocabEntries } from "./generative-vocab-authoring";
-import { nvidiaChatCompletion } from "./nvidia-chat.server";
+import { NVIDIA_AUTHORING_TIMEOUT_MS, nvidiaChatCompletion } from "./nvidia-chat.server";
 
 /**
  * Generative sentence-content pilot -- LLM proposes vocab candidates
@@ -61,6 +61,7 @@ export async function proposeVocabCandidates(params: {
   try {
     const resp = await nvidiaChatCompletion({
       apiKey: params.nvidiaApiKey,
+      signal: AbortSignal.timeout(NVIDIA_AUTHORING_TIMEOUT_MS),
       body: {
         model: params.nvidiaModel,
         messages: [{ role: "user", content: vocabProposalPrompt(params.topic, params.posTypes) }],
