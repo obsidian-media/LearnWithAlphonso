@@ -171,7 +171,7 @@ describe("the owner's AI switch", () => {
 
   it("also stops a route that is exempt from consent", async () => {
     isSwitchOn.mockImplementation(async (key) => key !== "ai");
-    const r = await authorizeAiRequest(req(), "practice", {
+    const r = await authorizeAiRequest(req(), "chat", {
       route: "generate-practice",
       requireConsent: false,
     });
