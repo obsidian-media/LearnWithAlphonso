@@ -5,14 +5,10 @@ import { consumeQuotaFor, verifyAuth, type QuotaKind } from "./ai-quota.server";
 
 /**
  * AI consent is on the account (profiles.ai_consent_at) and every AI endpoint enforces it. Order everywhere: auth
- * (401), consent (403), quota (429), so a refused request never spends quota. ENFORCE_AI_CONSENT=false is the
- * emergency switch: every check passes and nothing is read. Edge mirror: supabase/functions/_shared/ai-consent.ts.
+ * (401), consent (403), quota (429), so a refused request never spends quota.
+ * There is no environment-controlled bypass. Edge mirror: supabase/functions/_shared/ai-consent.ts.
  */
 export const AI_CONSENT_REQUIRED = "ai-consent-required" as const;
-
-export function isAiConsentEnforced(): boolean {
-  return process.env.ENFORCE_AI_CONSENT !== "false";
-}
 
 type ConsentReader = Pick<SupabaseClient<Database>, "from">;
 
@@ -34,7 +30,6 @@ export async function readAiConsent(
 
 /** For paths that degrade to local grading: anything but a stored consent means "no AI". */
 export async function hasAiConsent(db: ConsentReader, userId: string): Promise<boolean> {
-  if (!isAiConsentEnforced()) return true;
   return (await readAiConsent(db, userId)) === "granted";
 }
 
@@ -46,7 +41,6 @@ export async function requireAiConsent(
   userId: string,
   opts: { db?: ConsentReader; route?: string } = {},
 ): Promise<Response | null> {
-  if (!isAiConsentEnforced()) return null;
   const db = opts.db ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   const state = await readAiConsent(db, userId);
   if (state === "granted") return null;

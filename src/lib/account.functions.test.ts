@@ -90,6 +90,16 @@ describe("exportMyData", () => {
     await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/challenge_completions/);
   });
 
+  it("fails rather than exporting an empty profile after a profile read error", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles"
+        ? chainable({ data: null, error: { message: "temporary database failure" } })
+        : chainable({ data: [], error: null }),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/profiles/);
+  });
+
   it("also fails when a table read through the sender/recipient columns errors", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation((table: string) =>
@@ -176,13 +186,84 @@ describe("exportMyData", () => {
     await expect(exportMyData({ context: ctx(failing) })).rejects.toThrow(/buddy_messages/);
   });
 
-  it("falls back to an empty array/object when a table has no rows", async () => {
+  it("fails on a null table response rather than silently treating it as no rows", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation(() => chainable({ data: null }));
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(/incomplete/);
+  });
+
+  it("exports empty arrays when reads positively return no rows", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation(() => chainable({ data: [], error: null, count: 0 }));
     const result = await exportMyData({ context: ctx(supabase) });
     const tables = JSON.parse(result.tables);
     expect(tables.review_items).toEqual([]);
     expect(tables.profiles).toEqual([]);
+  });
+
+  it("reads every page of a large table instead of stopping at the PostgREST cap", async () => {
+    const supabase = createSupabaseMock();
+    const large = Array.from({ length: 750 }, (_, i) => ({ item_key: `card-${i}` }));
+    const ranges: [number, number][] = [];
+    supabase.from.mockImplementation((table: string) => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        or: () => query,
+        range: (first: number, last: number) => {
+          if (table === "review_items") ranges.push([first, last]);
+          const data = table === "review_items" ? large.slice(first, last + 1) : [];
+          return Promise.resolve({ data, error: null, count: table === "review_items" ? 750 : 0 });
+        },
+      };
+      return query as never;
+    });
+    const result = await exportMyData({ context: ctx(supabase) });
+    expect(JSON.parse(result.tables).review_items).toHaveLength(750);
+    expect(ranges).toEqual([
+      [0, 499],
+      [500, 999],
+    ]);
+  });
+
+  /** A review_items table of `total` rows served by `pageOf`; every other table is empty. */
+  function pagedReviewItems(total: number, pageOf: (first: number, last: number) => unknown[]) {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        or: () => query,
+        range: (first: number, last: number) =>
+          Promise.resolve(
+            table === "review_items"
+              ? { data: pageOf(first, last), error: null, count: total }
+              : { data: [], error: null, count: 0 },
+          ),
+      };
+      return query as never;
+    });
+    return supabase;
+  }
+
+  it("fails when a row moved between pages, so one is read twice and another is skipped", async () => {
+    const rows = Array.from({ length: 750 }, (_, i) => ({ item_key: `card-${i}` }));
+    // The second page starts one row early: card-499 comes back twice and card-749 is never read, while the
+    // row count still matches.
+    const supabase = pagedReviewItems(750, (first, last) =>
+      first === 0 ? rows.slice(0, 500) : rows.slice(first - 1, last),
+    );
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(
+      /review_items changed during pagination/,
+    );
+  });
+
+  it("fails when the table grew or shrank while it was being read", async () => {
+    const rows = Array.from({ length: 700 }, (_, i) => ({ item_key: `card-${i}` }));
+    const supabase = pagedReviewItems(750, (first, last) => rows.slice(first, last + 1));
+    await expect(exportMyData({ context: ctx(supabase) })).rejects.toThrow(
+      /review_items changed during pagination/,
+    );
   });
 
   it("exports null for email when the JWT claims don't carry one", async () => {
@@ -319,10 +400,6 @@ describe("GDPR export table coverage", () => {
     //  3. Deletion is already handled: user_id REFERENCES auth.users
     //     ON DELETE CASCADE, so the row goes when the account does.
     "admin_users",
-    // review_grade_attempts (20261014100200_atomic_review_grade.sql) is listed here only until the table exists in
-    // production: reading it in the export before the migration is applied would fail every export. The change
-    // that starts writing it moves it to USER_ID_EXPORT_TABLES.
-    "review_grade_attempts",
     // buddy_members (20261006180000_buddy_pairing.sql) is server-only (no SELECT policy) and holds nothing the
     // export lacks: an active membership is the account's open row in buddy_pairs, which IS exported.
     "buddy_members",
@@ -557,5 +634,42 @@ describe("revokeAppleGrantForUser without Apple secrets", () => {
     );
     expect(status).toBe("not_configured");
     expect(String(log.mock.calls[0][0])).toContain("NOT CONFIGURED");
+  });
+});
+
+describe("revokeAppleGrantForUser with Apple configuration", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  function configureApple() {
+    vi.stubEnv("APPLE_TEAM_ID", "test-team");
+    vi.stubEnv("APPLE_KEY_ID", "test-key");
+    vi.stubEnv("APPLE_PRIVATE_KEY", "test-private-key");
+    vi.stubEnv("APPLE_CLIENT_ID", "test-client");
+  }
+
+  it("does not classify a token lookup failure as not applicable", async () => {
+    configureApple();
+    const admin = {
+      from: () => chainable({ data: null, error: { message: "temporary database failure" } }),
+    };
+    await expect(accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).resolves.toBe(
+      "failed",
+    );
+  });
+
+  it("does not call a missing token not-applicable for a linked Apple identity", async () => {
+    configureApple();
+    const admin = {
+      from: () => chainable({ data: null, error: null }),
+      auth: {
+        admin: {
+          getUserById: async () => ({
+            data: { user: { app_metadata: { providers: ["apple"] }, identities: [] } },
+            error: null,
+          }),
+        },
+      },
+    };
+    expect(await accountModule.revokeAppleGrantForUser(admin as never, USER_ID)).toBe("failed");
   });
 });

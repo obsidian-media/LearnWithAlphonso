@@ -245,6 +245,9 @@ const completeLessonSchema = z.object({
   sessionToken: z.string().min(1).max(2000),
 });
 
+/** How many times a completion is recomputed from a fresh read after the transaction refuses a stale snapshot. */
+const COMPLETION_CONFLICT_RETRIES = 3;
+
 export const completeLessonRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
@@ -312,10 +315,14 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
 
     const today = todayStr();
 
-    // Batch every read this handler needs that doesn't depend on another
-    // read's result -- was 3+ sequential round trips, now 1.
-    const [{ data: pRow }, { data: lpRow }, { data: existingComp }, { data: existingDay }] =
-      await Promise.all([
+    // Read the current state, derive the next one, and write it in one transaction. Another write to the same
+    // account (a lost heart, a quest reward, a second device) between the read and the write makes the snapshot
+    // stale; the transaction refuses it and this runs again from a fresh read, so the lesson is never dropped.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const applyOnce = async () => {
+      // Batch every read this handler needs that doesn't depend on another
+      // read's result -- was 3+ sequential round trips, now 1.
+      const [pResult, lpResult, compResult, dayResult] = await Promise.all([
         supabase.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
         supabase
           .from("language_progress")
@@ -337,168 +344,182 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           .eq("day", today)
           .maybeSingle(),
       ]);
+      const readError = [pResult, lpResult, compResult, dayResult].find((r) => r.error);
+      if (readError) throw new Error("Could not load lesson progress");
+      const pRow = pResult.data;
+      const lpRow = lpResult.data;
+      const existingComp = compResult.data;
+      const existingDay = dayResult.data;
 
-    // Replay-farming fix: a repeat completion of an already-completed
-    // lesson only pays out the XP delta over its previous best score (0 if
-    // this attempt doesn't improve on it), instead of the full amount
-    // every time -- previously completeLessonRemote had no dedup check at
-    // all, so a scripted loop of startLessonSession+completeLessonRemote
-    // against any lesson farmed unlimited XP and hearts.
-    const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
-      existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
-      correct,
-      total,
-    );
-
-    const cur = pRow ?? {
-      user_id: userId,
-      streak: 0,
-      longest_streak: 0,
-      last_active_date: null as string | null,
-      hearts: MAX_HEARTS,
-      hearts_refill_at: null as string | null,
-      streak_freezes: 0,
-    };
-
-    const {
-      streak,
-      longestStreak: longest,
-      freezes,
-    } = computeStreakUpdate({
-      lastActiveDate: cur.last_active_date,
-      today,
-      streak: cur.streak,
-      longestStreak: cur.longest_streak,
-      freezes: cur.streak_freezes,
-    });
-
-    // Resolve any pending passive regen first, then layer bonuses on top:
-    // a streak milestone grants a full refill (takes priority), otherwise
-    // a perfect lesson (zero misses) grants a single heart back.
-    const regen = resolveHeartsRefill(
-      cur.hearts,
-      cur.hearts_refill_at ? new Date(cur.hearts_refill_at).getTime() : null,
-      Date.now(),
-    );
-    let heartsResult = regen;
-    let heartsBonus: "streak" | "perfect" | null = null;
-    if (streakHeartMilestoneReached(cur.streak, streak)) {
-      heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
-      heartsBonus = "streak";
-      // Gated on xpGain > 0 (a genuine improvement, not a replay) so the
-      // same replay-farming loop this session's XP fix closes can't still
-      // farm free hearts by repeatedly "completing" an already-perfect
-      // lesson with no new XP.
-    } else if (
-      perfectLessonBonusEarned(correct, total) &&
-      xpGain > 0 &&
-      regen.hearts < MAX_HEARTS
-    ) {
-      heartsResult = gainHearts(regen.hearts, 1);
-      heartsBonus = "perfect";
-    }
-
-    // per-course state: xp and league live in language_progress
-    const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
-    const xp = curLp.xp + xpGain;
-
-    const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
-    const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
-
-    // Friends activity feed (supabase/migrations/20260920010000_friend_activity_events.sql).
-    // Kept in sync by hand with the same logic in
-    // supabase/functions/complete-lesson/index.ts (the native iOS path) --
-    // see that file's comment for why only xpGain > 0 completions are
-    // logged, not every replay.
-    const activityEvents: { user_id: string; event_type: string; payload: Json }[] = [];
-    if (xpGain > 0) {
-      activityEvents.push({
-        user_id: userId,
-        event_type: "lesson_completed",
-        payload: { lessonId, xpGain },
-      });
-    }
-    if (heartsBonus === "streak") {
-      activityEvents.push({ user_id: userId, event_type: "streak_milestone", payload: { streak } });
-    }
-    if (newIdx > oldIdx) {
-      activityEvents.push({
-        user_id: userId,
-        event_type: "league_promotion",
-        payload: { newTier: leagueTier },
-      });
-    }
-
-    // Independent writes -- none reads another's result -- batched into
-    // one round trip instead of several sequential ones. user_progress/
-    // language_progress/lesson_completions/activity_days no longer grant
-    // direct INSERT/UPDATE to `authenticated` (see supabase/migrations/
-    // 20260920050000_revoke_direct_gamification_writes.sql) -- every value
-    // here is already server-computed above (trust boundary already
-    // crossed), so supabaseAdmin is the correct client for the actual
-    // persist, same as the complete-lesson Edge Function's own writes.
-    // friend_activity_events has a SELECT policy only (readable by friends),
-    // so its insert must also go through supabaseAdmin, exactly like the
-    // complete-lesson Edge Function does. Through the user's RLS client it
-    // was denied, which made this function throw after the other writes had
-    // landed and left the lesson screen showing 0 XP (found 2026-10-06).
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // 2026-09-30 audit (Codex #4): none of these five results' own
-    // `{ error }` was ever checked -- a failed upsert (RLS gap, network
-    // blip, whatever) silently proceeded as if the write succeeded, and
-    // this function still returned success to the caller. This can't fix
-    // the lack of atomicity across five separate REST calls (a real fix
-    // needs a single SECURITY DEFINER RPC with row locking, same shape as
-    // _join_team_impl's -- flagged as its own follow-up, not attempted
-    // here), but silently swallowing a real failure is strictly worse
-    // than surfacing it, so a partial failure now throws rather than
-    // reporting success.
-    const writeResults = await Promise.all([
-      supabaseAdmin.from("user_progress").upsert({
-        user_id: userId,
-        streak,
-        longest_streak: longest,
-        last_active_date: today,
-        hearts: heartsResult.hearts,
-        hearts_refill_at: heartsResult.heartsRefillAt
-          ? new Date(heartsResult.heartsRefillAt).toISOString()
-          : null,
-        streak_freezes: freezes,
-      }),
-      supabaseAdmin
-        .from("language_progress")
-        .upsert(
-          { user_id: userId, language: course, xp, league_tier: leagueTier },
-          { onConflict: "user_id,language" },
-        ),
-      // Best score kept: correct/xp_earned reflect the best attempt ever
-      // recorded for this lesson, not just this attempt.
-      supabaseAdmin.from("lesson_completions").upsert(
-        {
-          user_id: userId,
-          lesson_id: lessonId,
-          correct: bestCorrect,
-          total,
-          xp_earned: bestXp,
-          language: course,
-        },
-        { onConflict: "user_id,lesson_id" },
-      ),
-      supabaseAdmin.from("activity_days").upsert({
-        user_id: userId,
-        day: today,
-        xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
-      }),
-      ...(activityEvents.length > 0
-        ? [supabaseAdmin.from("friend_activity_events").insert(activityEvents)]
-        : []),
-    ]);
-    const failedWrite = writeResults.find((r) => r.error);
-    if (failedWrite) {
-      throw new Error(
-        `completeLessonRemote: gamification write failed -- ${failedWrite.error!.message}`,
+      // Replay-farming fix: a repeat completion of an already-completed
+      // lesson only pays out the XP delta over its previous best score (0 if
+      // this attempt doesn't improve on it), instead of the full amount
+      // every time -- previously completeLessonRemote had no dedup check at
+      // all, so a scripted loop of startLessonSession+completeLessonRemote
+      // against any lesson farmed unlimited XP and hearts.
+      const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
+        existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
+        correct,
+        total,
       );
+
+      const cur = pRow ?? {
+        user_id: userId,
+        streak: 0,
+        longest_streak: 0,
+        last_active_date: null as string | null,
+        hearts: MAX_HEARTS,
+        hearts_refill_at: null as string | null,
+        streak_freezes: 0,
+      };
+
+      const {
+        streak,
+        longestStreak: longest,
+        freezes,
+      } = computeStreakUpdate({
+        lastActiveDate: cur.last_active_date,
+        today,
+        streak: cur.streak,
+        longestStreak: cur.longest_streak,
+        freezes: cur.streak_freezes,
+      });
+
+      // Resolve any pending passive regen first, then layer bonuses on top:
+      // a streak milestone grants a full refill (takes priority), otherwise
+      // a perfect lesson (zero misses) grants a single heart back.
+      const regen = resolveHeartsRefill(
+        cur.hearts,
+        cur.hearts_refill_at ? new Date(cur.hearts_refill_at).getTime() : null,
+        Date.now(),
+      );
+      let heartsResult = regen;
+      let heartsBonus: "streak" | "perfect" | null = null;
+      if (streakHeartMilestoneReached(cur.streak, streak)) {
+        heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
+        heartsBonus = "streak";
+        // Gated on xpGain > 0 (a genuine improvement, not a replay) so the
+        // same replay-farming loop this session's XP fix closes can't still
+        // farm free hearts by repeatedly "completing" an already-perfect
+        // lesson with no new XP.
+      } else if (
+        perfectLessonBonusEarned(correct, total) &&
+        xpGain > 0 &&
+        regen.hearts < MAX_HEARTS
+      ) {
+        heartsResult = gainHearts(regen.hearts, 1);
+        heartsBonus = "perfect";
+      }
+
+      // per-course state: xp and league live in language_progress
+      const curLp = lpRow ?? { xp: 0, league_tier: "bronze" };
+      const xp = curLp.xp + xpGain;
+
+      const oldIdx = LEAGUES.indexOf(curLp.league_tier as LeagueTier);
+      const { leagueTier, newIdx } = computeLeaguePromotion(xp, oldIdx);
+
+      // Friends activity feed (supabase/migrations/20260920010000_friend_activity_events.sql).
+      // Kept in sync by hand with the same logic in
+      // supabase/functions/complete-lesson/index.ts (the native iOS path) --
+      // see that file's comment for why only xpGain > 0 completions are
+      // logged, not every replay.
+      const activityEvents: { user_id: string; event_type: string; payload: Json }[] = [];
+      if (xpGain > 0) {
+        activityEvents.push({
+          user_id: userId,
+          event_type: "lesson_completed",
+          payload: { lessonId, xpGain },
+        });
+      }
+      if (heartsBonus === "streak") {
+        activityEvents.push({
+          user_id: userId,
+          event_type: "streak_milestone",
+          payload: { streak },
+        });
+      }
+      if (newIdx > oldIdx) {
+        activityEvents.push({
+          user_id: userId,
+          event_type: "league_promotion",
+          payload: { newTier: leagueTier },
+        });
+      }
+
+      // One service-role-only database transaction serializes core completion
+      // writes and rejects stale snapshots. A caller can retry after rereading
+      // without losing XP or reporting a partial success.
+      const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
+        "apply_lesson_completion",
+        {
+          _user_id: userId,
+          _course: course,
+          _lesson_id: lessonId,
+          _level: found.unit.level,
+          _today: today,
+          _expected: {
+            p_updated_at: pRow?.updated_at ?? null,
+            lp_updated_at: lpRow?.updated_at ?? null,
+            completion_xp: existingComp?.xp_earned ?? null,
+            day_xp: existingDay?.xp_earned ?? null,
+          },
+          _next: {
+            streak,
+            longest_streak: longest,
+            last_active_date: today,
+            hearts: heartsResult.hearts,
+            hearts_refill_at: heartsResult.heartsRefillAt
+              ? new Date(heartsResult.heartsRefillAt).toISOString()
+              : null,
+            streak_freezes: freezes,
+            xp,
+            league_tier: leagueTier,
+            best_correct: bestCorrect,
+            total,
+            best_xp: bestXp,
+            day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+          },
+          _missed_question_ids: missedQuestionIds,
+          _activity_events: activityEvents,
+        },
+      )) as { data: { status: string } | null; error: { message: string } | null };
+      if (transitionError || !transition) {
+        throw new Error("Could not save lesson completion; retry");
+      }
+      if (transition.status === "conflict") return null;
+      if (transition.status !== "applied") {
+        throw new Error("Could not save lesson completion; retry");
+      }
+      return {
+        xpGain,
+        streak,
+        longest,
+        freezes,
+        heartsResult,
+        heartsBonus,
+        xp,
+        oldIdx,
+        newIdx,
+        leagueTier,
+      };
+    };
+    let applied = await applyOnce();
+    for (let retry = 0; !applied && retry < COMPLETION_CONFLICT_RETRIES; retry++) {
+      applied = await applyOnce();
     }
+    if (!applied) throw new Error("Could not save lesson completion; retry");
+    const {
+      xpGain,
+      streak,
+      longest,
+      freezes,
+      heartsResult,
+      heartsBonus,
+      xp,
+      oldIdx,
+      newIdx,
+      leagueTier,
+    } = applied;
 
     // Both reads below depend on the writes above having landed (lesson
     // count/perfect count must include this attempt), but not on each

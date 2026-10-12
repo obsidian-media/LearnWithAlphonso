@@ -19,6 +19,12 @@ final class TutorErrorTests: XCTestCase {
         XCTAssertEqual(TutorError.from(status: 403, body: body(["error": "not-entitled"])), .notEntitled)
     }
 
+    func testEntitlementOutageDoesNotOpenPaywall() {
+        let error = TutorError.from(status: 503, body: body(["error": "entitlement-unavailable"]))
+        XCTAssertEqual(error, .entitlementUnavailable)
+        XCTAssertFalse(error.userMessage().contains("part of Alphonso Pro"))
+    }
+
     func testConsentRequiredCode() {
         XCTAssertEqual(TutorError.from(status: 403, body: body(["error": "ai-consent-required"])), .aiConsentRequired)
     }
@@ -133,7 +139,7 @@ final class TutorErrorTests: XCTestCase {
     /// Never a raw code, never a literal "--", never empty.
     func testEveryCaseHasLearnerCopy() {
         let all: [TutorError] = [
-            .signedOut, .notEntitled, .aiConsentRequired, .quotaExceeded(resetsAt: nil),
+            .signedOut, .notEntitled, .entitlementUnavailable, .aiConsentRequired, .quotaExceeded(resetsAt: nil),
             .quotaExceeded(resetsAt: midnight), .network, .server(message: "quota-exceeded"), .server(message: nil),
         ]
         for error in all {

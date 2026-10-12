@@ -28,6 +28,7 @@ export const Route = createFileRoute("/api/account-export")({
           return Response.json({
             exported_at: result.exported_at,
             user_id: result.user_id,
+            email: result.email,
             ...tables,
           });
         } catch (error) {

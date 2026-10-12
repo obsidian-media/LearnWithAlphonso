@@ -21,12 +21,12 @@ Deno.test("a failed read means no AI (grading stays local)", async () => {
   assertEquals(await hasAiConsent(fakeAdmin({ data: null, error: { message: "boom" } }), "u"), false);
 });
 
-Deno.test("ENFORCE_AI_CONSENT=false allows without reading", async () => {
+Deno.test("ENFORCE_AI_CONSENT=false cannot bypass stored consent", async () => {
   Deno.env.set("ENFORCE_AI_CONSENT", "false");
   const calls: string[] = [];
   try {
-    assertEquals(await hasAiConsent(fakeAdmin({ data: null, error: null }, calls), "u"), true);
-    assertEquals(calls, []);
+    assertEquals(await hasAiConsent(fakeAdmin({ data: null, error: null }, calls), "u"), false);
+    assertEquals(calls, ["profiles"]);
   } finally {
     Deno.env.delete("ENFORCE_AI_CONSENT");
   }

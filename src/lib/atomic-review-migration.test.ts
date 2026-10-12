@@ -185,4 +185,28 @@ describe("atomic review grade migration (real Postgres)", () => {
     ).rows[0]!.d;
     expect(await grade(due)).toBe("not_due");
   });
+
+  it("retires a lesson item without logging a weakness event", async () => {
+    await seedLessonItem();
+    const res = await db.query<{ result: { status: string; retired: boolean } }>(call, [
+      USER,
+      "u1l1:q1",
+      "en",
+      null,
+      null,
+      await today(),
+      true,
+      true,
+      await today(),
+      null,
+      null,
+      null,
+      null,
+    ]);
+    expect(res.rows[0]?.result).toMatchObject({ status: "applied", retired: true });
+    expect(
+      (await db.query("SELECT 1 FROM public.review_items WHERE id = $1", [LESSON_ROW])).rows,
+    ).toHaveLength(0);
+    expect((await db.query("SELECT * FROM public.weakness_events")).rows).toHaveLength(0);
+  });
 });

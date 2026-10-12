@@ -182,13 +182,16 @@ final class SyncEngineTests: XCTestCase {
         let first = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow.addingTimeInterval(-60))
         let second = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
         let calledKeys = TestCapture<[String]>([])
+        let calledAttempts = TestCapture<[String]>([])
         let client = makeClient { request in
             let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
             calledKeys.value.append(body["itemKey"] as! String)
+            calledAttempts.value.append(body["attemptId"] as! String)
             return self.jsonResponse(for: request.url!, body: [:], status: 502)
         }
         let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [first, second], client: client, now: fixedNow)
         XCTAssertEqual(calledKeys.value, ["u1l1:q1"], "SM-2 ordering: never apply grade N+1 before N landed")
+        XCTAssertEqual(calledAttempts.value, [first.queueIdentity])
         XCTAssertEqual(result.rescheduledReviewGrades, [first.rescheduled(attemptCount: 1, nextAttemptAt: fixedNow.addingTimeInterval(30))])
     }
 

@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { isProSubscriber, revenueCatConfigFromEnv } from "./revenuecat-entitlement";
+import { describe, expect, it, vi } from "vitest";
+import {
+  getProEntitlementStatus,
+  isProSubscriber,
+  revenueCatConfigFromEnv,
+} from "./revenuecat-entitlement";
 
 describe("revenueCatConfigFromEnv", () => {
   it("returns null when the secret key is missing", () => {
@@ -59,6 +63,40 @@ describe("isProSubscriber", () => {
       throw new Error("ECONNREFUSED");
     }) as typeof fetch;
     await expect(isProSubscriber(CONFIG, "user-1", fake)).resolves.toBe(false);
+  });
+
+  it("distinguishes an inactive subscriber from an upstream failure", async () => {
+    const missing = (async () => new Response("{}", { status: 404 })) as typeof fetch;
+    const outage = (async () => new Response("{}", { status: 503 })) as typeof fetch;
+    expect(await getProEntitlementStatus(CONFIG, "user-1", missing)).toBe("inactive");
+    expect(await getProEntitlementStatus(CONFIG, "user-1", outage)).toBe("unavailable");
+  });
+
+  it("treats malformed success responses as unavailable", async () => {
+    const malformed = (async () =>
+      new Response(JSON.stringify({ subscriber: {} }))) as typeof fetch;
+    expect(await getProEntitlementStatus(CONFIG, "user-1", malformed)).toBe("unavailable");
+  });
+
+  it("sets a five-second deadline on the upstream request", async () => {
+    const deadline = new AbortController().signal;
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(deadline);
+    let sent: AbortSignal | null | undefined;
+    const fake = (async (_url: string, init?: RequestInit) => {
+      sent = init?.signal;
+      return new Response(JSON.stringify({ subscriber: { entitlements: {} } }));
+    }) as unknown as typeof fetch;
+    expect(await getProEntitlementStatus(CONFIG, "user-1", fake)).toBe("inactive");
+    expect(timeout).toHaveBeenCalledWith(5000);
+    expect(sent).toBe(deadline);
+    timeout.mockRestore();
+  });
+
+  it("reports unavailable, not inactive, when the request hits its deadline", async () => {
+    const fake = (async () => {
+      throw new DOMException("timed out", "TimeoutError");
+    }) as unknown as typeof fetch;
+    expect(await getProEntitlementStatus(CONFIG, "user-1", fake)).toBe("unavailable");
   });
 
   it("looks up the subscriber by the exact app_user_id passed in, with the secret key as the bearer token", async () => {

@@ -18,14 +18,30 @@ import { describe, expect, it } from "vitest";
  */
 const bash = spawnSync("bash", ["--version"]);
 const hasBash = bash.status === 0;
+const bashCwd = hasBash
+  ? spawnSync("bash", ["-lc", "pwd"], { encoding: "utf8" }).stdout.trim()
+  : "";
 
 function run(stdin: string) {
   const dir = mkdtempSync(join(tmpdir(), "masked-env-"));
   const envFile = join(dir, "github_env");
   writeFileSync(envFile, "");
+  // WSL only imports named Windows env vars listed in WSLENV; /p also
+  // translates the path. Git Bash inherits env vars but needs /d/... form.
+  const isWsl = process.platform === "win32" && bashCwd.startsWith("/mnt/");
+  const bashEnvFile =
+    process.platform === "win32" && !isWsl
+      ? envFile
+          .replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`)
+          .replace(/\\/g, "/")
+      : envFile;
   const result = spawnSync("bash", ["scripts/export-masked-env.sh"], {
     input: stdin,
-    env: { ...process.env, GITHUB_ENV: envFile },
+    env: {
+      ...process.env,
+      GITHUB_ENV: bashEnvFile,
+      ...(isWsl ? { WSLENV: [process.env.WSLENV, "GITHUB_ENV/p"].filter(Boolean).join(":") } : {}),
+    },
     encoding: "utf8",
   });
   return { ...result, envFile: readFileSync(envFile, "utf8") };
@@ -34,7 +50,7 @@ function run(stdin: string) {
 describe.skipIf(!hasBash)("scripts/export-masked-env.sh", () => {
   it("masks every value before it is written to GITHUB_ENV", () => {
     const r = run("UI_TEST_ACCESS_TOKEN=aaa.bbb.ccc\nUI_TEST_REFRESH_TOKEN=refresh-secret\n");
-    expect(r.status).toBe(0);
+    expect(r.status, r.stderr).toBe(0);
     expect(r.stdout).toContain("::add-mask::aaa.bbb.ccc");
     expect(r.stdout).toContain("::add-mask::refresh-secret");
   });
