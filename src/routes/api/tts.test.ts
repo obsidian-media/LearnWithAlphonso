@@ -173,4 +173,21 @@ describe("POST /api/tts", () => {
     expect(urls[0]).toContain("model=aura-2-hector-fr");
     expect(urls[1]).toContain("model=aura-2-thalia-en");
   });
+
+  it("gives up with a retryable 504 when the speech provider does not answer in time", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    let sent: RequestInit | undefined;
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_url: string, init?: RequestInit) => {
+        sent = init;
+        throw new DOMException("timed out", "TimeoutError");
+      },
+    );
+    const res = await handler({ request: req({ text: "hi" }) });
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({ error: "speech-unavailable" });
+    expect(timeout).toHaveBeenCalledWith(30_000);
+    expect(sent?.signal).toBeInstanceOf(AbortSignal);
+    timeout.mockRestore();
+  });
 });

@@ -520,4 +520,24 @@ describe("empty model reply", () => {
     });
     expect(res.status).toBe(502);
   });
+
+  it("gives up with a retryable 504 when the model does not answer in time", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    let sent: RequestInit | undefined;
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_url: string, init?: RequestInit) => {
+        sent = init;
+        throw new DOMException("timed out", "TimeoutError");
+      },
+    );
+    const res = await handler({
+      request: req({ systemPrompt: REAL_PROMPT, messages: [{ role: "user", content: "hi" }] }),
+    });
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({ error: "reply-unavailable" });
+    expect(timeout).toHaveBeenCalledWith(25_000);
+    expect(sent?.signal).toBeInstanceOf(AbortSignal);
+    expect(JSON.parse(String(sent?.body)).max_tokens).toBe(1024);
+    timeout.mockRestore();
+  });
 });

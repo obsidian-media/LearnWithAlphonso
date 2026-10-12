@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { isCourse } from "@/data/courses";
 
+/** A spoken answer is a few seconds of audio; transcription normally returns in about a second. */
+const STT_TIMEOUT_MS = 20_000;
+
 export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
@@ -39,17 +42,23 @@ export const Route = createFileRoute("/api/stt")({
         // no multipart wrapper or transcoding needed.
         const forwardedContentType = file.type || "audio/webm";
         const audioBytes = new Uint8Array(await file.arrayBuffer());
-        const resp = await fetch(
-          `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true&mip_opt_out=true`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${key}`,
-              "Content-Type": forwardedContentType,
+        let resp: Response;
+        try {
+          resp = await fetch(
+            `https://api.deepgram.com/v1/listen?model=nova-3&language=${course}&smart_format=true&mip_opt_out=true`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Token ${key}`,
+                "Content-Type": forwardedContentType,
+              },
+              body: audioBytes,
+              signal: AbortSignal.any([request.signal, AbortSignal.timeout(STT_TIMEOUT_MS)]),
             },
-            body: audioBytes,
-          },
-        );
+          );
+        } catch {
+          return Response.json({ error: "transcription-unavailable" }, { status: 504 });
+        }
         if (!resp.ok) {
           const t = await resp.text().catch(() => "");
           return upstreamErrorResponse("Deepgram STT", resp.status, t);

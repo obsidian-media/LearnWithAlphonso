@@ -3,6 +3,9 @@ import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { isCourse } from "@/data/courses";
 import { deepgramVoiceForLanguage } from "@/lib/hector-conversation";
 
+/** Speech for the 2,000-character cap streams in a few seconds. */
+const TTS_TIMEOUT_MS = 30_000;
+
 export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
@@ -30,17 +33,24 @@ export const Route = createFileRoute("/api/tts")({
           (typeof body.course === "string" && isCourse(body.course)
             ? deepgramVoiceForLanguage(body.course)
             : "aura-2-thalia-en");
-        const resp = await fetch(
-          `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(model)}&encoding=mp3&mip_opt_out=true`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Token ${key}`,
+        let resp: Response;
+        try {
+          resp = await fetch(
+            `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(model)}&encoding=mp3&mip_opt_out=true`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Token ${key}`,
+              },
+              body: JSON.stringify({ text: text.slice(0, 2000) }),
+              // Covers the audio stream too: the body is piped to the client below.
+              signal: AbortSignal.any([request.signal, AbortSignal.timeout(TTS_TIMEOUT_MS)]),
             },
-            body: JSON.stringify({ text: text.slice(0, 2000) }),
-          },
-        );
+          );
+        } catch {
+          return Response.json({ error: "speech-unavailable" }, { status: 504 });
+        }
         if (!resp.ok) {
           const t = await resp.text().catch(() => "");
           return upstreamErrorResponse("Deepgram TTS", resp.status, t);

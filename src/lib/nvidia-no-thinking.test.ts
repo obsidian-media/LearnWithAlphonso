@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { NVIDIA_NO_THINKING, nvidiaChatCompletion } from "./nvidia-chat.server";
+import {
+  NVIDIA_DEFAULT_TIMEOUT_MS,
+  NVIDIA_NO_THINKING,
+  nvidiaChatCompletion,
+} from "./nvidia-chat.server";
 import { SAFETY_PREAMBLE } from "./ai-safety";
 
 // The default model reasons before answering unless the request turns it off. With it on, Practice replies took
@@ -42,6 +46,23 @@ describe("NVIDIA requests", () => {
     expect((sent.messages as { content: string }[])[0].content).toBe(SAFETY_PREAMBLE);
   });
 
+  it("always carry a deadline: the caller's, or a default when the caller sets none", async () => {
+    const signals: (AbortSignal | null | undefined)[] = [];
+    const fetchImpl = ((_u: string, init?: RequestInit) => {
+      signals.push(init?.signal);
+      return Promise.resolve(new Response("{}"));
+    }) as typeof fetch;
+    const body = { model: "m", messages: [{ role: "user" as const, content: "x" }] };
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    await nvidiaChatCompletion({ apiKey: "k", body, fetchImpl });
+    expect(timeout).toHaveBeenCalledWith(NVIDIA_DEFAULT_TIMEOUT_MS);
+    expect(signals[0]).toBeInstanceOf(AbortSignal);
+    const own = new AbortController().signal;
+    await nvidiaChatCompletion({ apiKey: "k", body, fetchImpl, signal: own });
+    expect(signals[1]).toBe(own);
+    timeout.mockRestore();
+  });
+
   it("are configured the same way in the edge functions' twin", () => {
     const edge = fs.readFileSync(
       path.resolve(__dirname, "../../supabase/functions/_shared/nvidia-chat.ts"),
@@ -53,5 +74,9 @@ describe("NVIDIA requests", () => {
     );
     expect(edge).toContain("chat_template_kwargs: { ...NVIDIA_NO_THINKING, ...callerKwargs }");
     expect(edge).toMatch(/JSON\.stringify\(\{ \.\.\.withNoThinking\(body\), messages:/);
+    expect(edge).toContain(
+      `export const NVIDIA_DEFAULT_TIMEOUT_MS = ${NVIDIA_DEFAULT_TIMEOUT_MS / 1000}_000;`,
+    );
+    expect(edge).toContain("signal: signal ?? AbortSignal.timeout(NVIDIA_DEFAULT_TIMEOUT_MS),");
   });
 });

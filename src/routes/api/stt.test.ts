@@ -231,4 +231,21 @@ describe("POST /api/stt", () => {
     expect(global.fetch).not.toHaveBeenCalled();
     expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "stt", { route: "stt" });
   });
+
+  it("gives up with a retryable 504 when the transcription provider does not answer in time", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    let sent: RequestInit | undefined;
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_url: string, init?: RequestInit) => {
+        sent = init;
+        throw new DOMException("timed out", "TimeoutError");
+      },
+    );
+    const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({ error: "transcription-unavailable" });
+    expect(timeout).toHaveBeenCalledWith(20_000);
+    expect(sent?.signal).toBeInstanceOf(AbortSignal);
+    timeout.mockRestore();
+  });
 });
