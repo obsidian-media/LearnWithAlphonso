@@ -319,6 +319,10 @@ describe("GDPR export table coverage", () => {
     //  3. Deletion is already handled: user_id REFERENCES auth.users
     //     ON DELETE CASCADE, so the row goes when the account does.
     "admin_users",
+    // review_grade_attempts (20261014100200_atomic_review_grade.sql) is listed here only until the table exists in
+    // production: reading it in the export before the migration is applied would fail every export. The change
+    // that starts writing it moves it to USER_ID_EXPORT_TABLES.
+    "review_grade_attempts",
     // buddy_members (20261006180000_buddy_pairing.sql) is server-only (no SELECT policy) and holds nothing the
     // export lacks: an active membership is the account's open row in buddy_pairs, which IS exported.
     "buddy_members",
