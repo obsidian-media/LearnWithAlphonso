@@ -386,9 +386,7 @@ struct ReviewQueueView: View {
         if let gradeAttempt, gradeAttempt.itemKey == item.itemKey {
             return gradeAttempt
         }
-        let started = PendingReviewGrade(
-            itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
-            ownerUserID: session.userID)
+        let started = PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(), ownerUserID: session.userID)
         gradeAttempt = started
         return started
     }

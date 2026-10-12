@@ -207,7 +207,8 @@ describe("Sync store", () => {
     expect(run.match(/guard isCurrentAccount\(\) else \{ return \}/g)?.length).toBe(3);
     expect(run).toContain("currentUserID: userID");
     expect(run).toContain("guard !isSyncing else { return }");
-    expect(run).toContain("defer { isSyncing = false }");
+    // Released in a defer (so every early return clears it), together with the retry-wakeup re-arm.
+    expect(run).toMatch(/defer \{\s*isSyncing = false\s*queueRevision \+= 1\s*\}/);
   });
   it("the review count shown is the resolved queue, not the server total", () => {
     const review = read(`${APP}/ReviewQueueView.swift`);
