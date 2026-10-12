@@ -57,14 +57,15 @@ export function parseWeaknesses(content: string): Weakness[] {
   try {
     parsed = JSON.parse(stripped);
   } catch {
+    // Length only: the reply is written from the learner's own conversation and does not belong in logs.
     console.error(
-      `[weakness-detection] Model response was not valid JSON: ${stripped.slice(0, 200)}`,
+      `[weakness-detection] Model response was not valid JSON (${stripped.length} characters)`,
     );
     return [];
   }
   const result = weaknessesSchema.safeParse(parsed);
   if (!result.success) {
-    console.error(`[weakness-detection] Response shape mismatch: ${stripped.slice(0, 200)}`);
+    console.error(`[weakness-detection] Response shape mismatch (${stripped.length} characters)`);
     return [];
   }
   return result.data;
@@ -127,15 +128,15 @@ export async function detectAndRecordWeaknesses(params: {
       },
     });
     if (!resp.ok) {
-      console.error(
-        `[weakness-detection] NVIDIA API returned ${resp.status} for user ${params.userId}`,
-      );
+      console.error(`[weakness-detection] NVIDIA API returned ${resp.status}`);
       return 0;
     }
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     content = data.choices?.[0]?.message?.content ?? "";
   } catch (err) {
-    console.error(`[weakness-detection] NVIDIA API call threw for user ${params.userId}: ${err}`);
+    console.error(
+      `[weakness-detection] NVIDIA API call threw: ${err instanceof Error ? err.name : "error"}`,
+    );
     return 0;
   }
 
@@ -156,7 +157,7 @@ export async function detectAndRecordWeaknesses(params: {
       await params.adminInsertEvent(weakness.label);
     } else {
       const { label } = weakness;
-      console.error(`[weakness-detection] Insert failed for "${label}", user ${params.userId}`);
+      console.error(`[weakness-detection] Insert failed for "${label}"`);
     }
   }
   return inserted;
