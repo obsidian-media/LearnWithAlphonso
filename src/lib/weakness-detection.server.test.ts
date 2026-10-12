@@ -133,4 +133,33 @@ describe("detectAndRecordWeaknesses", () => {
     const count = await detectAndRecordWeaknesses(callbacks());
     expect(count).toBe(0);
   });
+
+  it("logs failures without the learner's id or anything the model wrote", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const logged = () => error.mock.calls.flat().join(" ");
+    const who = { userId: "learner-id-9f3" };
+
+    global.fetch = vi.fn().mockResolvedValue(new Response("error", { status: 500 }));
+    await detectAndRecordWeaknesses(callbacks(who));
+    global.fetch = vi.fn().mockRejectedValue(new Error("network down"));
+    await detectAndRecordWeaknesses(callbacks(who));
+    // A reply that is not the expected JSON, quoting what the learner said.
+    global.fetch = vi.fn().mockResolvedValue(
+      Response.json({
+        choices: [{ message: { content: "The learner wrote: I go to the park yesterday." } }],
+      }),
+    );
+    await detectAndRecordWeaknesses(callbacks(who));
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({ choices: [{ message: { content: '{"said":"I go to the park"}' } }] }),
+      );
+    await detectAndRecordWeaknesses(callbacks(who));
+
+    expect(error).toHaveBeenCalledTimes(4);
+    expect(logged()).not.toContain("learner-id-9f3");
+    expect(logged()).not.toContain("park");
+    error.mockRestore();
+  });
 });
