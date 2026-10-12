@@ -170,6 +170,20 @@ struct RootView: View {
                         await checkOnboarding()
                         if session.userID == onboardingUser { onboardingChecked = true }
                     }
+                    .task(id: syncQueueStore.queueRevision) {
+                        // Wakes the queue when its next retry is due. SwiftUI cancels this sleep and starts a new one
+                        // whenever something is queued or a sync pass ends. Foreground and reconnect handlers remain
+                        // the safety net after iOS suspension.
+                        guard let userID = session.userID,
+                              let due = syncQueueStore.nextPendingAttempt(for: userID) else { return }
+                        // The floor is what stops a loop: an item that is due but cannot be sent yet (the session
+                        // could not be refreshed, say) would otherwise start a new pass the moment the last one ended.
+                        let delay = max(Self.minimumSyncWakeupSeconds, due.timeIntervalSinceNow)
+                        do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+                        guard !Task.isCancelled, session.userID == userID, networkMonitor.isConnected else { return }
+                        // Not awaited here: the pass ends by changing queueRevision, which cancels this task.
+                        Task { await triggerSync() }
+                    }
                     .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
                         if !wasConnected && isConnected {
                             Task { await triggerSync() }
@@ -288,6 +302,9 @@ struct RootView: View {
     /// connectivity transition can be missed entirely while backgrounded.
     /// Safe to call opportunistically: an empty queue is a no-op, and
     /// SyncEngine.sync leaves any failed item queued for the next trigger.
+    /// The shortest wait between a sync pass ending and the retry wakeup starting another.
+    private static let minimumSyncWakeupSeconds: TimeInterval = 30
+
     private func triggerSync() async {
         // The drain, progress and per-course due refresh live in SyncQueueStore.runSync. The same-account guard
         // is preserved: nothing is written back if the signed-in account changed while this ran.

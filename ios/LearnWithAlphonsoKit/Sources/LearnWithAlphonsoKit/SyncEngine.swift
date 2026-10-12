@@ -100,12 +100,12 @@ public enum SyncEngine {
             if let next = grade.nextAttemptAt, next > now { break gradeLoop }
             do {
                 do {
-                    _ = try await makeClient(tokenBox.value).gradeReview(itemKey: grade.itemKey, answer: grade.answer, course: grade.course)
+                    _ = try await makeClient(tokenBox.value).gradeReview(itemKey: grade.itemKey, answer: grade.answer, course: grade.course, attemptID: grade.queueIdentity)
                 } catch let ProgressSyncError.server(status, _) where status == 401 && !gradeRefreshed {
                     gradeRefreshed = true
                     guard let refreshAccessToken, let fresh = await refreshAccessToken() else { break gradeLoop }
                     tokenBox.value = fresh
-                    _ = try await makeClient(fresh).gradeReview(itemKey: grade.itemKey, answer: grade.answer, course: grade.course)
+                    _ = try await makeClient(fresh).gradeReview(itemKey: grade.itemKey, answer: grade.answer, course: grade.course, attemptID: grade.queueIdentity)
                 }
                 syncedGrades.append(grade)
             } catch {

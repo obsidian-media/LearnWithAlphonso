@@ -244,6 +244,9 @@ final class SyncQueueStore: AccountScopedQueue {
     /// Bumps whenever dead letters change, so the Learn-tab notice re-renders.
     private(set) var deadLetterRevision = 0
 
+    /// Changes when something is queued and when a sync pass ends, so RootView can re-arm its retry wakeup.
+    private(set) var queueRevision = 0
+
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
@@ -285,6 +288,7 @@ final class SyncQueueStore: AccountScopedQueue {
     func appendLessonCompletion(_ pending: PendingLessonCompletion) {
         modelContext.insert(PendingLessonCompletionRecord(pending))
         try? modelContext.save()
+        queueRevision += 1
     }
 
     func pendingLessonCompletions() -> [PendingLessonCompletion] {
@@ -297,11 +301,28 @@ final class SyncQueueStore: AccountScopedQueue {
     func appendReviewGrade(_ pending: PendingReviewGrade) {
         modelContext.insert(PendingReviewGradeRecord(pending))
         try? modelContext.save()
+        queueRevision += 1
     }
 
     func pendingReviewGrades() -> [PendingReviewGrade] {
         let records = (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? []
         return records.map(\.asPending)
+    }
+
+    /// When the next sync pass could send something for this account; nil means there is nothing to wake for.
+    /// Mirrors SyncEngine: every lesson completion is tried on its own schedule, but review grades are sent
+    /// strictly oldest first, so only the oldest grade's time counts (a later grade cannot go before it).
+    /// Rows with no owner (queued by an older build) are synced as the current account's, so they count too.
+    func nextPendingAttempt(for userID: String, now: Date = Date()) -> Date? {
+        let mine: (String?) -> Bool = { $0 == nil || $0 == userID }
+        let lessonDates = pendingLessonCompletions()
+            .filter { mine($0.ownerUserID) }
+            .map { $0.nextAttemptAt ?? now }
+        let oldestGrade = pendingReviewGrades()
+            .filter { mine($0.ownerUserID) }
+            .min { $0.queuedAt < $1.queuedAt }
+        let gradeDates = oldestGrade.map { [$0.nextAttemptAt ?? now] } ?? []
+        return (lessonDates + gradeDates).min()
     }
 
     // MARK: - Last-known cache (for offline display)
@@ -372,7 +393,12 @@ final class SyncQueueStore: AccountScopedQueue {
     ) async {
         guard !isSyncing else { return }
         isSyncing = true
-        defer { isSyncing = false }
+        // The wakeup is re-armed only once the whole pass is over. Re-arming from apply(), mid-pass, let the new
+        // wakeup fire into the `isSyncing` guard above, do nothing, and never be re-armed.
+        defer {
+            isSyncing = false
+            queueRevision += 1
+        }
         badgeUserID = userID
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         let result = await SyncEngine.sync(
@@ -471,6 +497,7 @@ final class SyncQueueStore: AccountScopedQueue {
         }
         dueReviewRevision += 1
         deadLetterRevision += 1
+        queueRevision += 1
     }
 
     private func deleteAll<Model: PersistentModel>(_ type: Model.Type) {

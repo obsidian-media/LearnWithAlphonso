@@ -35,6 +35,10 @@ struct ReviewQueueView: View {
     /// it again -- a second call would re-grade, spend a second vendor call,
     /// and be rejected as not-yet-due by the freshly moved due date.
     @State private var alreadySubmitted = false
+    /// The current answer's submission, created before the first network attempt and reused by every retry
+    /// (Check, Next, and the offline queue). Its `queueIdentity` is the attempt id the server stores with the
+    /// result, so a grade whose response was lost is replayed instead of being graded a second time.
+    @State private var gradeAttempt: PendingReviewGrade?
     @State private var checked = false
     @State private var isLoading = true
     @State private var isSubmitting = false
@@ -254,7 +258,8 @@ struct ReviewQueueView: View {
             accessToken: accessToken)
         do {
             let outcome = try await client.gradeReview(
-                itemKey: currentItem.itemKey, answer: submission, course: course.wireCode)
+                itemKey: currentItem.itemKey, answer: submission, course: course.wireCode,
+                attemptID: attempt(for: currentItem, answer: submission).queueIdentity)
             dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
             guard let correct = outcome.correct else {
                 // Server predates the field: nothing was displayed wrongly, it
@@ -292,7 +297,9 @@ struct ReviewQueueView: View {
         if networkMonitor.isConnected, let accessToken = session.accessToken {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
-                let outcome = try await client.gradeReview(itemKey: currentItem.itemKey, answer: picked, course: course.wireCode)
+                let outcome = try await client.gradeReview(
+                    itemKey: currentItem.itemKey, answer: picked, course: course.wireCode,
+                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity)
                 // Before advance(): currentItem moves on with idx.
                 dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
@@ -343,7 +350,8 @@ struct ReviewQueueView: View {
         let input = ReviewGradeInput(correct: correct, ease: item.ease, intervalDays: item.intervalDays, repetitions: item.repetitions, lapses: 0, elapsedDays: item.intervalDays)
         let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
 
-        syncQueueStore.appendReviewGrade(PendingReviewGrade(itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(), ownerUserID: session.userID))
+        // The same submission the online attempt used, so the queued retry carries the same attempt id.
+        syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer))
 
         switch outcome {
         case .retired:
@@ -368,6 +376,21 @@ struct ReviewQueueView: View {
         // `alreadySubmitted` would make the next one skip its own grading.
         translationVerdict = nil
         alreadySubmitted = false
+        gradeAttempt = nil
+    }
+
+    /// The submission for this item and answer: the one already started, or a new one.
+    private func attempt(for item: ReviewItem, answer: String) -> PendingReviewGrade {
+        // Matched on the card alone: the first submission for a card is the one that stands, even if the text
+        // sent on a later tap differs (Check trims the answer, Next does not).
+        if let gradeAttempt, gradeAttempt.itemKey == item.itemKey {
+            return gradeAttempt
+        }
+        let started = PendingReviewGrade(
+            itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
+            ownerUserID: session.userID)
+        gradeAttempt = started
+        return started
     }
 
     private func claimBonusIfCleared(client: ProgressSyncClient) async {

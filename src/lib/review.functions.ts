@@ -198,13 +198,14 @@ export const gradeReview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { course } = data;
-    const { data: row } = await supabase
+    const { data: row, error: rowError } = await supabase
       .from("review_items")
       .select("*")
       .eq("user_id", userId)
       .eq("item_key", data.itemKey)
       .eq("language", course)
       .maybeSingle();
+    if (rowError) throw new Error("Could not load review item");
     if (!row) return { retired: false, dueOn: today(), correct: false };
     if (row.due_on > today()) {
       throw new Error("This item isn't due yet");
@@ -286,45 +287,41 @@ export const gradeReview = createServerFn({ method: "POST" })
       addDays,
     );
 
-    if (outcome.retired) {
-      await supabase
-        .from("review_items")
-        .delete()
-        .eq("user_id", userId)
-        .eq("item_key", data.itemKey)
-        .eq("language", course);
-      // V3 package 3b: log a durable "resolved" event before the row (and
-      // its weakness_label) is gone for good -- review_items rows don't
-      // survive retirement, so this is the only history a trend dashboard
-      // can read later. Only weakness-sourced items count as a resolved
-      // *weakness*; a real lesson-question item retiring isn't part of
-      // that taxonomy at all.
-      if (row.source === "weakness" && row.weakness_label) {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin
-          .from("weakness_events")
-          .insert({ user_id: userId, category: row.weakness_label, event_type: "resolved" });
-      }
-      return { retired: true, dueOn: outcome.dueOn, correct };
-    }
-
-    // Same admin-write rationale as recordMisses above -- outcome is
-    // already server-derived from the real question, not client-trusted.
+    // Both the review mutation and a weakness-resolution event now happen
+    // in one database transaction. The RPC is service-role-only; the
+    // correctness/outcome above are still derived on the server.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin
-      .from("review_items")
-      .update({
-        ease: outcome.ease,
-        interval_days: outcome.intervalDays,
-        repetitions: outcome.repetitions,
-        lapses: outcome.lapses,
-        due_on: outcome.dueOn,
-        last_reviewed_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .eq("item_key", data.itemKey)
-      .eq("language", course);
-    return { retired: false, dueOn: outcome.dueOn, correct };
+    type Transition = { status: string; retired?: boolean; dueOn?: string; correct?: boolean };
+    const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
+      "apply_review_grade" as never,
+      {
+        _user_id: userId,
+        _item_key: data.itemKey,
+        _language: course,
+        _attempt_id: null,
+        _expected_last_reviewed_at: row.last_reviewed_at,
+        _expected_due_on: row.due_on,
+        _retired: outcome.retired,
+        _correct: correct,
+        _new_due_on: outcome.dueOn,
+        _ease: outcome.retired ? null : outcome.ease,
+        _interval_days: outcome.retired ? null : outcome.intervalDays,
+        _repetitions: outcome.retired ? null : outcome.repetitions,
+        _lapses: outcome.retired ? null : outcome.lapses,
+      } as never,
+    )) as { data: Transition | null; error: { message: string } | null };
+    if (transitionError || !transition) throw new Error("Could not save review grade");
+    if (transition.status === "conflict") throw new Error("Review changed; retry");
+    if (transition.status === "not_due") throw new Error("This item isn't due yet");
+    if (transition.status === "missing") return { retired: false, dueOn: today(), correct: false };
+    if (transition.status !== "applied" || transition.retired === undefined || !transition.dueOn) {
+      throw new Error("Unknown review transition");
+    }
+    return {
+      retired: transition.retired,
+      dueOn: transition.dueOn,
+      correct: transition.correct ?? correct,
+    };
   });
 
 /**

@@ -33,7 +33,12 @@ vi.mock("@tanstack/react-start", () => ({
 // account.functions.test.ts already established for deleteMyAccount.
 const supabaseAdminFrom = vi.fn();
 // The model-written question passes the blocked-term check (ai_output_blocked, service role) before it is stored.
-const adminRpc = vi.fn(async () => ({ data: [false], error: null }));
+const adminRpc = vi.fn(
+  async (_name?: string): Promise<{ data: unknown; error: { message: string } | null }> => ({
+    data: [false],
+    error: null,
+  }),
+);
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: supabaseAdminFrom, rpc: adminRpc },
 }));
@@ -66,6 +71,12 @@ beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
+  adminRpc.mockReset();
+  adminRpc.mockImplementation(async (name?: string) =>
+    name === "apply_lesson_completion"
+      ? { data: { status: "applied" }, error: null }
+      : { data: [false], error: null },
+  );
 });
 
 afterEach(() => {
@@ -339,7 +350,14 @@ describe("completeLessonRemote", () => {
     // the user's RLS client it is denied, completeLessonRemote throws after the other writes land, and the web
     // lesson screen shows 0 XP (found 2026-10-06 in the 0.0-ae review).
     expect(supabase.from.mock.calls.map((c) => c[0])).not.toContain("friend_activity_events");
-    expect(supabaseAdminFrom.mock.calls.map((c) => c[0])).toContain("friend_activity_events");
+    expect(adminRpc).toHaveBeenCalledWith(
+      "apply_lesson_completion",
+      expect.objectContaining({
+        _activity_events: expect.arrayContaining([
+          expect.objectContaining({ event_type: "lesson_completed" }),
+        ]),
+      }),
+    );
 
     expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8)
     expect(result.heartsBonus).toBe("perfect");
@@ -478,12 +496,7 @@ describe("completeLessonRemote", () => {
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: null }))
       .mockReturnValueOnce(chainable({ data: null }));
-    supabaseAdminFrom
-      .mockReturnValueOnce(chainable({})) // user_progress upsert -- succeeds
-      .mockReturnValueOnce(chainable({})) // language_progress upsert -- succeeds
-      .mockReturnValueOnce(chainable({ error: { message: "connection reset" } })) // lesson_completions upsert -- fails
-      .mockReturnValueOnce(chainable({})) // activity_days upsert -- succeeds
-      .mockReturnValueOnce(chainable({})); // friend_activity_events insert (xpGain > 0), via admin
+    adminRpc.mockResolvedValueOnce({ data: null, error: { message: "connection reset" } });
 
     await expect(
       completeLessonRemote({
@@ -496,7 +509,7 @@ describe("completeLessonRemote", () => {
           sessionToken: validToken(),
         },
       }),
-    ).rejects.toThrow("connection reset");
+    ).rejects.toThrow("Could not save lesson completion; retry");
   });
 
   it("rejects a forged or expired session token", async () => {
@@ -601,6 +614,106 @@ describe("completeLessonRemote", () => {
 
     expect(result.xpGain).toBe(0);
     expect(result.heartsBonus).toBeNull();
+    // The web player no longer enrols misses itself: the server-derived list in this call is the only path
+    // that puts a missed question into the review queue.
+    expect(adminRpc).toHaveBeenCalledWith(
+      "apply_lesson_completion",
+      expect.objectContaining({
+        _missed_question_ids: ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"],
+      }),
+    );
+  });
+
+  /** The four reads one attempt makes, in order: user_progress, language_progress, completion, activity day. */
+  function queueSnapshot(
+    supabase: ReturnType<typeof createSupabaseMock>,
+    state: { hearts: number; progressVersion: string; xp: number; courseVersion: string },
+  ) {
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: state.hearts,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+            updated_at: state.progressVersion,
+          },
+        }),
+      )
+      .mockReturnValueOnce(
+        chainable({
+          data: { xp: state.xp, league_tier: "bronze", updated_at: state.courseVersion },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }));
+  }
+
+  function completePerfect(supabase: ReturnType<typeof createSupabaseMock>) {
+    return completeLessonRemote({
+      context: ctx(supabase),
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        answers: answers(),
+        course: "en",
+        sessionToken: validToken(),
+      },
+    });
+  }
+
+  type CompletionArgs = { _expected: Record<string, unknown>; _next: Record<string, unknown> };
+  const completionCalls = () =>
+    (adminRpc.mock.calls as unknown as [string, CompletionArgs][])
+      .filter(([name]) => name === "apply_lesson_completion")
+      .map(([, args]) => args);
+
+  it("recomputes from a fresh read when the transaction refuses a stale snapshot", async () => {
+    const supabase = createSupabaseMock();
+    // First read, then another write lands (a quest reward: +400 XP, one heart lost) before the transaction.
+    queueSnapshot(supabase, { hearts: 4, progressVersion: "v1", xp: 0, courseVersion: "v1" });
+    queueSnapshot(supabase, { hearts: 3, progressVersion: "v2", xp: 400, courseVersion: "v2" });
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    adminRpc.mockImplementationOnce(async () => ({ data: { status: "conflict" }, error: null }));
+
+    const result = await completePerfect(supabase);
+
+    const calls = completionCalls();
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?._expected).toMatchObject({ p_updated_at: "v1", lp_updated_at: "v1" });
+    expect(calls[0]?._next).toMatchObject({ xp: 100 });
+    // The retry is built on the new state, not the stale one: the other write's XP and heart are kept.
+    expect(calls[1]?._expected).toMatchObject({ p_updated_at: "v2", lp_updated_at: "v2" });
+    expect(calls[1]?._next).toMatchObject({ xp: 500, hearts: 4 });
+    expect(result.xpGain).toBe(100);
+    expect(result.progress.xp).toBe(500);
+  });
+
+  it("gives up with an error, never a silent success, when every attempt is refused", async () => {
+    const supabase = createSupabaseMock();
+    for (let i = 0; i < 4; i++) {
+      queueSnapshot(supabase, {
+        hearts: 4,
+        progressVersion: `v${i}`,
+        xp: 0,
+        courseVersion: `v${i}`,
+      });
+    }
+    adminRpc.mockImplementation(async (name?: string) =>
+      name === "apply_lesson_completion"
+        ? { data: { status: "conflict" }, error: null }
+        : { data: [false], error: null },
+    );
+
+    await expect(completePerfect(supabase)).rejects.toThrow(
+      "Could not save lesson completion; retry",
+    );
+    expect(completionCalls()).toHaveLength(4);
   });
 
   it("unifies weakness signals: a real miss on a real completion triggers weakness detection", async () => {

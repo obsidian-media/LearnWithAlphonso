@@ -166,13 +166,15 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   const found = await findLesson(admin, course, lessonId);
   if (!lessonPayloadMatches(found, total, answers)) {
-    console.log(JSON.stringify({
-      event: "lesson_version_mismatch",
-      lessonId,
-      course,
-      total,
-      serverTotal: found?.questions.length ?? null,
-    }));
+    console.log(
+      JSON.stringify({
+        event: "lesson_version_mismatch",
+        lessonId,
+        course,
+        total,
+        serverTotal: found?.questions.length ?? null,
+      }),
+    );
     return jsonResponse({ error: "lesson-version-mismatch" }, 409);
   }
   const lesson = found!;
@@ -203,36 +205,47 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!isCorrect) missedQuestionIds.push(questionId);
   }
   if (consent && !(await consent)) {
-    console.log(JSON.stringify({ event: "ai_grading_skipped", fn: "complete-lesson", reason: "no-ai-consent" }));
+    console.log(
+      JSON.stringify({
+        event: "ai_grading_skipped",
+        fn: "complete-lesson",
+        reason: "no-ai-consent",
+      }),
+    );
   }
   const correct = answers.length - missedQuestionIds.length;
 
   const today = todayStr();
 
   // Batch every read that doesn't depend on another read's result.
-  const [{ data: pRow }, { data: lpRow }, { data: existingComp }, { data: existingDay }] =
-    await Promise.all([
-      admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
-      admin
-        .from("language_progress")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("language", course)
-        .maybeSingle(),
-      admin
-        .from("lesson_completions")
-        .select("correct,xp_earned")
-        .eq("user_id", userId)
-        .eq("lesson_id", lessonId)
-        .eq("language", course)
-        .maybeSingle(),
-      admin
-        .from("activity_days")
-        .select("xp_earned")
-        .eq("user_id", userId)
-        .eq("day", today)
-        .maybeSingle(),
-    ]);
+  const [pResult, lpResult, compResult, dayResult] = await Promise.all([
+    admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
+    admin
+      .from("language_progress")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .maybeSingle(),
+    admin
+      .from("lesson_completions")
+      .select("correct,xp_earned")
+      .eq("user_id", userId)
+      .eq("lesson_id", lessonId)
+      .eq("language", course)
+      .maybeSingle(),
+    admin
+      .from("activity_days")
+      .select("xp_earned")
+      .eq("user_id", userId)
+      .eq("day", today)
+      .maybeSingle(),
+  ]);
+  const readError = [pResult, lpResult, compResult, dayResult].find((r) => r.error);
+  if (readError) return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  const pRow = pResult.data;
+  const lpRow = lpResult.data;
+  const existingComp = compResult.data;
+  const existingDay = dayResult.data;
 
   // Replay-farming fix, mirrors src/lib/sync.functions.ts's
   // completeLessonRemote: a repeat completion only pays the XP delta over
@@ -321,17 +334,19 @@ export async function handleRequest(req: Request): Promise<Response> {
     });
   }
 
-  // 2026-09-30 audit (Codex #4): none of these results' own `{ error }`
-  // was ever checked -- a failed upsert silently proceeded as if the
-  // write succeeded, and this function still returned success. Doesn't
-  // fix the lack of atomicity across several separate REST calls (a real
-  // fix needs a single SECURITY DEFINER RPC with row locking, flagged as
-  // its own follow-up), but a partial failure now throws (500) rather
-  // than reporting success. Kept in sync by hand with the identical fix
-  // in src/lib/sync.functions.ts's completeLessonRemote.
-  const writeResults = await Promise.all([
-    admin.from("user_progress").upsert({
-      user_id: userId,
+  const { data: transition, error: transitionError } = await admin.rpc("apply_lesson_completion", {
+    _user_id: userId,
+    _course: course,
+    _lesson_id: lessonId,
+    _level: lesson.level,
+    _today: today,
+    _expected: {
+      p_updated_at: pRow?.updated_at ?? null,
+      lp_updated_at: lpRow?.updated_at ?? null,
+      completion_xp: existingComp?.xp_earned ?? null,
+      day_xp: existingDay?.xp_earned ?? null,
+    },
+    _next: {
       streak,
       longest_streak: longest,
       last_active_date: today,
@@ -340,58 +355,18 @@ export async function handleRequest(req: Request): Promise<Response> {
         ? new Date(heartsResult.heartsRefillAt).toISOString()
         : null,
       streak_freezes: freezes,
-    }),
-    admin
-      .from("language_progress")
-      .upsert(
-        { user_id: userId, language: course, xp, league_tier: leagueTier },
-        { onConflict: "user_id,language" },
-      ),
-    admin.from("lesson_completions").upsert(
-      {
-        user_id: userId,
-        lesson_id: lessonId,
-        correct: bestCorrect,
-        total,
-        xp_earned: bestXp,
-        language: course,
-      },
-      { onConflict: "user_id,lesson_id" },
-    ),
-    admin.from("activity_days").upsert({
-      user_id: userId,
-      day: today,
-      xp_earned: (existingDay?.xp_earned ?? 0) + xpGain,
-    }),
-    // Feeds the review queue -- mirrors recordMisses (src/lib/review.functions.ts)
-    // exactly, folded in here since this function already has the
-    // validated lesson/question data recordMisses would otherwise need a
-    // second session-token round trip to re-verify.
-    ...(missedQuestionIds.length > 0
-      ? [
-          admin.from("review_items").upsert(
-            missedQuestionIds.map((questionId) => ({
-              user_id: userId,
-              item_key: `${lessonId}:${questionId}`,
-              lesson_id: lessonId,
-              level: lesson.level,
-              language: course,
-              ease: 2.3,
-              interval_days: 0,
-              repetitions: 0,
-              due_on: today,
-            })),
-            { onConflict: "user_id,item_key,language" },
-          ),
-        ]
-      : []),
-    ...(activityEvents.length > 0
-      ? [admin.from("friend_activity_events").insert(activityEvents)]
-      : []),
-  ]);
-  const failedWrite = writeResults.find((r) => r.error);
-  if (failedWrite) {
-    throw new Error(`complete-lesson: gamification write failed -- ${failedWrite.error!.message}`);
+      xp,
+      league_tier: leagueTier,
+      best_correct: bestCorrect,
+      total,
+      best_xp: bestXp,
+      day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+    },
+    _missed_question_ids: missedQuestionIds,
+    _activity_events: activityEvents,
+  });
+  if (transitionError || !transition || transition.status !== "applied") {
+    return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
   }
 
   // Real (remote) push for leaderboard "you've been overtaken" -- V4

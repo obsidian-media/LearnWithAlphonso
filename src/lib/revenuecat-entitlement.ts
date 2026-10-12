@@ -50,42 +50,50 @@ export function revenueCatConfigFromEnv(
   return { secretApiKey };
 }
 
-/**
- * Whether `appUserId` (this app's Supabase user id -- see this module's
- * own header comment on why that's the right lookup key) currently has
- * an active "pro" entitlement.
- *
- * **Fails closed on every "we could not tell"**: RevenueCat unreachable,
- * a non-2xx response (including 404 -- a subscriber RevenueCat has
- * never seen, e.g. one who hasn't opened the app since `logIn` shipped),
- * or a malformed body. Never throws. The one thing this returns `true`
- * for is a confirmed, currently-active entitlement -- anything else is
- * "no", which is the safe direction for an authorization gate.
- */
-export async function isProSubscriber(
+export type ProEntitlementStatus = "active" | "inactive" | "unavailable";
+
+/** Keep an upstream outage distinct from a confirmed lack of entitlement. */
+export async function getProEntitlementStatus(
   config: RevenueCatConfig,
   appUserId: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<boolean> {
+): Promise<ProEntitlementStatus> {
   try {
     const res = await fetchImpl(
       `${REVENUECAT_API_HOST}/v1/subscribers/${encodeURIComponent(appUserId)}`,
       {
         headers: { Authorization: `Bearer ${config.secretApiKey}` },
+        signal: AbortSignal.timeout(5000),
       },
     );
-    if (!res.ok) return false;
+    if (res.status === 404) return "inactive";
+    if (!res.ok) return "unavailable";
 
     const body = (await res.json()) as {
       subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> };
     };
+    if (!body?.subscriber?.entitlements || typeof body.subscriber.entitlements !== "object") {
+      return "unavailable";
+    }
     const entitlement = body.subscriber?.entitlements?.[PRO_ENTITLEMENT_ID];
-    if (!entitlement) return false;
+    if (!entitlement) return "inactive";
     // A null expires_date is RevenueCat's shape for a non-expiring
     // (lifetime, or promotional) entitlement.
-    if (!entitlement.expires_date) return true;
-    return new Date(entitlement.expires_date).getTime() > Date.now();
+    if (entitlement.expires_date === null) return "active";
+    if (typeof entitlement.expires_date !== "string") return "unavailable";
+    const expiry = new Date(entitlement.expires_date).getTime();
+    if (Number.isNaN(expiry)) return "unavailable";
+    return expiry > Date.now() ? "active" : "inactive";
   } catch {
-    return false;
+    return "unavailable";
   }
+}
+
+/** Boolean compatibility helper for authorization-only callers. */
+export async function isProSubscriber(
+  config: RevenueCatConfig,
+  appUserId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  return (await getProEntitlementStatus(config, appUserId, fetchImpl)) === "active";
 }

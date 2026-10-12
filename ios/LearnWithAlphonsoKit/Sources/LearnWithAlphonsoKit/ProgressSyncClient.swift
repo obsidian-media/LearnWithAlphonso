@@ -557,13 +557,14 @@ public final class ProgressSyncClient: Sendable {
     /// server-side against the real question, same trust-boundary
     /// reasoning as completeLesson. See
     /// supabase/functions/grade-review/index.ts.
-    public func gradeReview(itemKey: String, answer: String, course: String) async throws -> ReviewGradeOutcome {
+    public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil) async throws -> ReviewGradeOutcome {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/grade-review"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        let payload: [String: Any] = ["itemKey": itemKey, "answer": answer, "course": course]
+        var payload: [String: Any] = ["itemKey": itemKey, "answer": answer, "course": course]
+        if let attemptID { payload["attemptId"] = attemptID }
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
         let (data, response) = try await requester(request)

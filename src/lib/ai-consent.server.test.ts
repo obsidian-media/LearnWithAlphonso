@@ -48,10 +48,11 @@ describe("hasAiConsent", () => {
     expect(await hasAiConsent({ from } as never, "user-1")).toBe(false);
   });
 
-  it("is true without reading anything when the flag is off", async () => {
+  it("still reads and denies when the obsolete bypass flag is off", async () => {
     process.env.ENFORCE_AI_CONSENT = "false";
-    expect(await hasAiConsent({ from } as never, "user-1")).toBe(true);
-    expect(from).not.toHaveBeenCalled();
+    maybeSingle.mockResolvedValueOnce({ data: { ai_consent_at: null }, error: null });
+    expect(await hasAiConsent({ from } as never, "user-1")).toBe(false);
+    expect(from).toHaveBeenCalled();
   });
 });
 
@@ -79,10 +80,11 @@ describe("requireAiConsent", () => {
     expect(await res?.json()).toEqual({ error: "consent-check-failed" });
   });
 
-  it("is a no-op when ENFORCE_AI_CONSENT=false", async () => {
+  it("does not bypass consent when ENFORCE_AI_CONSENT=false", async () => {
     process.env.ENFORCE_AI_CONSENT = "false";
-    expect(await requireAiConsent("user-1")).toBeNull();
-    expect(adminFrom).not.toHaveBeenCalled();
+    adminMaybeSingle.mockResolvedValueOnce({ data: { ai_consent_at: null }, error: null });
+    expect((await requireAiConsent("user-1"))?.status).toBe(403);
+    expect(adminFrom).toHaveBeenCalled();
   });
 });
 

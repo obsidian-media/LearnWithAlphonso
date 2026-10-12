@@ -32,8 +32,9 @@ vi.mock("@tanstack/react-start", () => ({
 // path in gradeReview's retire branch is unaffected and stays on the
 // RLS-scoped client).
 const supabaseAdminFrom = vi.fn();
+const supabaseAdminRpc = vi.fn();
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: supabaseAdminFrom },
+  supabaseAdmin: { from: supabaseAdminFrom, rpc: supabaseAdminRpc },
 }));
 
 const hasAiConsent = vi.fn(async () => true);
@@ -59,6 +60,16 @@ beforeEach(() => {
   process.env.LESSON_SESSION_SECRET = "test-secret";
   supabaseAdminFrom.mockReset();
   supabaseAdminFrom.mockReturnValue(chainable({ data: null, error: null }));
+  supabaseAdminRpc.mockReset();
+  supabaseAdminRpc.mockImplementation(async (_name: string, args: Record<string, unknown>) => ({
+    data: {
+      status: "applied",
+      retired: args._retired,
+      dueOn: args._new_due_on,
+      correct: args._correct,
+    },
+    error: null,
+  }));
 });
 
 afterEach(() => {
@@ -227,6 +238,81 @@ describe("gradeReview", () => {
     expect(result.retired).toBe(false);
   });
 
+  it("does not treat a failed review read as a missing item", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: null, error: { message: "read unavailable" } }),
+    );
+    await expect(
+      gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+      }),
+    ).rejects.toThrow("Could not load review item");
+  });
+
+  it("does not acknowledge a failed review update", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase } }));
+    supabaseAdminRpc.mockResolvedValueOnce({ data: null, error: { message: "write unavailable" } });
+    await expect(
+      gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+      }),
+    ).rejects.toThrow("Could not save review grade");
+  });
+
+  async function gradeWithTransition(transition: Record<string, unknown>) {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(
+      chainable({ data: { ...rowBase, last_reviewed_at: "2026-01-02T03:04:05.678901+00:00" } }),
+    );
+    supabaseAdminRpc.mockResolvedValueOnce({ data: transition, error: null });
+    return gradeReview({
+      context: ctx(supabase),
+      data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
+    });
+  }
+
+  it("sends the row it graded from, so the database can refuse a grade computed from a stale read", async () => {
+    await gradeWithTransition({ status: "applied", retired: false, dueOn: "2099-01-01" });
+    expect(supabaseAdminRpc).toHaveBeenCalledWith(
+      "apply_review_grade",
+      expect.objectContaining({
+        _user_id: USER_ID,
+        _expected_last_reviewed_at: "2026-01-02T03:04:05.678901+00:00",
+        _expected_due_on: rowBase.due_on,
+      }),
+    );
+  });
+
+  it("does not report a grade as saved when the database refused it as stale", async () => {
+    await expect(gradeWithTransition({ status: "conflict" })).rejects.toThrow(
+      "Review changed; retry",
+    );
+  });
+
+  it("reports not-due when the item was graded by another request in between", async () => {
+    await expect(gradeWithTransition({ status: "not_due" })).rejects.toThrow(
+      "This item isn't due yet",
+    );
+  });
+
+  it("treats an item removed in between as already retired elsewhere", async () => {
+    expect(await gradeWithTransition({ status: "missing" })).toEqual({
+      retired: false,
+      dueOn: rowBase.due_on,
+      correct: false,
+    });
+  });
+
+  it("does not report success for a transition it does not recognise", async () => {
+    await expect(gradeWithTransition({ status: "surprise" })).rejects.toThrow(
+      "Unknown review transition",
+    );
+  });
+
   it("a translate answer is not sent to the AI, and no quota is spent, without consent", async () => {
     hasAiConsent.mockResolvedValue(false);
     const { getCourse } = await import("@/data/courses");
@@ -317,39 +403,34 @@ describe("gradeReview", () => {
     }
   });
 
-  it("retires the item after enough correct repetitions and deletes the row", async () => {
+  it("retires the item through the atomic database transition", async () => {
     const supabase = createSupabaseMock();
-    const deleteChain = chainable({});
-    supabase.from
-      .mockReturnValueOnce(chainable({ data: { ...rowBase, repetitions: 3 } }))
-      .mockReturnValueOnce(deleteChain);
+    supabase.from.mockReturnValueOnce(chainable({ data: { ...rowBase, repetitions: 3 } }));
     const result = await gradeReview({
       context: ctx(supabase),
       data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en" },
     });
     expect(result.retired).toBe(true);
-    expect(deleteChain.calls.some((c) => c.method === "delete")).toBe(true);
+    expect(supabaseAdminRpc).toHaveBeenCalledWith(
+      "apply_review_grade",
+      expect.objectContaining({ _retired: true, _correct: true }),
+    );
   });
 
-  it("logs a resolved weakness_events row when a weakness-sourced item retires", async () => {
+  it("passes a retiring weakness to the atomic transition (which logs its event)", async () => {
     const supabase = createSupabaseMock();
-    const deleteChain = chainable({});
-    supabase.from
-      .mockReturnValueOnce(
-        chainable({
-          data: {
-            ...rowBase,
-            repetitions: 3,
-            source: "weakness",
-            weakness_label: "past-tense",
-            choices: ["went", "go", "goed", "gone"],
-            answer_index: 0,
-          },
-        }),
-      )
-      .mockReturnValueOnce(deleteChain);
-    const eventInsert = chainable({});
-    supabaseAdminFrom.mockReturnValueOnce(eventInsert);
+    supabase.from.mockReturnValueOnce(
+      chainable({
+        data: {
+          ...rowBase,
+          repetitions: 3,
+          source: "weakness",
+          weakness_label: "past-tense",
+          choices: ["went", "go", "goed", "gone"],
+          answer_index: 0,
+        },
+      }),
+    );
 
     const result = await gradeReview({
       context: ctx(supabase),
@@ -357,31 +438,25 @@ describe("gradeReview", () => {
     });
 
     expect(result.retired).toBe(true);
-    expect(supabaseAdminFrom).toHaveBeenCalledWith("weakness_events");
-    const insertArgs = eventInsert.calls.find((c) => c.method === "insert")?.args[0];
-    expect(insertArgs).toEqual({
-      user_id: USER_ID,
-      category: "past-tense",
-      event_type: "resolved",
-    });
+    expect(supabaseAdminRpc).toHaveBeenCalledWith(
+      "apply_review_grade",
+      expect.objectContaining({ _retired: true, _item_key: "weakness:abc123" }),
+    );
   });
 
-  it("grades a saved_word item from its stored choices, and does not log a weakness event", async () => {
+  it("grades a saved_word item from its stored choices", async () => {
     const supabase = createSupabaseMock();
-    const deleteChain = chainable({});
-    supabase.from
-      .mockReturnValueOnce(
-        chainable({
-          data: {
-            ...rowBase,
-            repetitions: 3,
-            source: "saved_word",
-            choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
-            answer_index: 1,
-          },
-        }),
-      )
-      .mockReturnValueOnce(deleteChain);
+    supabase.from.mockReturnValueOnce(
+      chainable({
+        data: {
+          ...rowBase,
+          repetitions: 3,
+          source: "saved_word",
+          choices: ["a sad ending", "a happy accident", "a long journey", "a loud noise"],
+          answer_index: 1,
+        },
+      }),
+    );
 
     const result = await gradeReview({
       context: ctx(supabase),
@@ -389,7 +464,10 @@ describe("gradeReview", () => {
     });
 
     expect(result.retired).toBe(true);
-    expect(supabaseAdminFrom).not.toHaveBeenCalledWith("weakness_events");
+    expect(supabaseAdminRpc).toHaveBeenCalledWith(
+      "apply_review_grade",
+      expect.objectContaining({ _retired: true, _item_key: "savedword:0123456789abcdef" }),
+    );
   });
 
   it("marks a wrong saved_word answer incorrect (it lapses, it does not retire)", async () => {
