@@ -1303,6 +1303,27 @@ export type Database = {
           },
         ];
       };
+      revenuecat_erasure_pending: {
+        Row: {
+          app_user_id: string;
+          attempts: number;
+          created_at: string;
+          last_attempt_at: string | null;
+        };
+        Insert: {
+          app_user_id: string;
+          attempts?: number;
+          created_at?: string;
+          last_attempt_at?: string | null;
+        };
+        Update: {
+          app_user_id?: string;
+          attempts?: number;
+          created_at?: string;
+          last_attempt_at?: string | null;
+        };
+        Relationships: [];
+      };
       review_grade_attempts: {
         Row: {
           attempt_id: string;
