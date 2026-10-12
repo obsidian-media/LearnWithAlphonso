@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  deleteRevenueCatSubscriber,
   getProEntitlementStatus,
   isProSubscriber,
   revenueCatConfigFromEnv,
@@ -112,5 +113,37 @@ describe("isProSubscriber", () => {
 
     expect(sentUrl).toBe("https://api.revenuecat.com/v1/subscribers/user%20with%20spaces");
     expect(sentAuth).toBe("Bearer sk_test");
+  });
+});
+
+describe("deleteRevenueCatSubscriber", () => {
+  const CONFIG = { secretApiKey: "sk_test_delete" };
+  it("sends a DELETE for the exact subscriber, with the secret key and a deadline", async () => {
+    let sent: { url: string; init?: RequestInit } | undefined;
+    const fake = (async (url: string, init?: RequestInit) => {
+      sent = { url, init };
+      return new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    expect(await deleteRevenueCatSubscriber(CONFIG, "user with spaces", fake)).toBe("erased");
+    expect(sent?.url).toBe("https://api.revenuecat.com/v1/subscribers/user%20with%20spaces");
+    expect(sent?.init?.method).toBe("DELETE");
+    expect((sent?.init?.headers as Record<string, string>).Authorization).toBe(
+      `Bearer ${CONFIG.secretApiKey}`,
+    );
+    expect(sent?.init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("counts a subscriber RevenueCat never saw as erased", async () => {
+    const fake = (async () => new Response("{}", { status: 404 })) as unknown as typeof fetch;
+    expect(await deleteRevenueCatSubscriber(CONFIG, "user-1", fake)).toBe("erased");
+  });
+
+  it("reports a failure, without throwing, on an error status or a network error", async () => {
+    const down = (async () => new Response("{}", { status: 500 })) as unknown as typeof fetch;
+    expect(await deleteRevenueCatSubscriber(CONFIG, "user-1", down)).toBe("failed");
+    const broken = (async () => {
+      throw new Error("network");
+    }) as unknown as typeof fetch;
+    expect(await deleteRevenueCatSubscriber(CONFIG, "user-1", broken)).toBe("failed");
   });
 });

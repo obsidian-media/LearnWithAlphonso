@@ -49,6 +49,27 @@ describe("POST /api/internal/report-notify", () => {
     expect(msg.text).toContain("Reason: harassment");
     expect(msg.text).toContain("Respond within 24 hours");
   });
+  it("records the delivery for that report once the email has gone out", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    const delivered = vi.fn().mockResolvedValue(undefined);
+    expect((await handleReportNotify(req(payload, SECRET), send, delivered)).status).toBe(200);
+    expect(delivered).toHaveBeenCalledWith(payload.id);
+  });
+  it("records nothing when the email fails, so the scheduled sweep picks the report up", async () => {
+    const send = vi.fn().mockRejectedValue(new Error("mail down"));
+    const delivered = vi.fn();
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect((await handleReportNotify(req(payload, SECRET), send, delivered)).status).toBe(502);
+    expect(delivered).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+  it("still answers 200 when the email went out but the delivery could not be recorded", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    const delivered = vi.fn().mockRejectedValue(new Error("db down"));
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect((await handleReportNotify(req(payload, SECRET), send, delivered)).status).toBe(200);
+    error.mockRestore();
+  });
   it("401 on a wrong secret, send never called", async () => {
     const send = vi.fn();
     expect((await handleReportNotify(req(payload, "x".repeat(40)), send)).status).toBe(401);

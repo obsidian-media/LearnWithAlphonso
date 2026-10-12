@@ -212,7 +212,8 @@ export const exportMyData = createServerFn({ method: "POST" })
  * sign in with Apple (or the lookup failed, so we cannot tell). A live
  * grant may remain, which App Review treats as a deletion defect. Logged
  * with console.error so it shows in Vercel logs.
- * "failed": a grant may still be live. Either Apple's revoke call did not
+ * "failed": a grant may still be live. When Apple's call failed with a
+ * stored grant in hand, a retry is queued (apple_revocation_pending). Either Apple's revoke call did not
  * succeed, or the stored grant could not be read, or the learner has an
  * Apple identity (or one could not be ruled out) but no stored grant.
  * See the call sites.
@@ -289,9 +290,44 @@ export async function revokeAppleGrantForUser(
     }
 
     const revoked = await revokeAppleGrant(config, refreshToken);
-    return revoked ? "revoked" : "failed";
+    if (revoked) return "revoked";
+    // The stored grant is deleted with the account (ON DELETE CASCADE), which used to make this failure
+    // permanent. Park the credential, with nothing that links it to the account, so the scheduled pass
+    // (maintenance.server.ts) can keep trying for a bounded time.
+    const { error: parkError } = await supabaseAdmin
+      .from("apple_revocation_pending")
+      .insert({ refresh_token: refreshToken });
+    if (parkError) {
+      console.error(
+        `[apple-revocation] could not queue a retry for user ${userId}: ${parkError.message}`,
+      );
+    }
+    return "failed";
   } catch {
     return "failed";
+  }
+}
+
+/**
+ * After the account is gone: erase its subscriber record at RevenueCat. Best-effort and never throws, because
+ * the deletion has already happened and must be reported as done. A failure is logged for a manual erase.
+ * Exported for adminDeleteReportedUser, which deletes accounts too.
+ */
+export async function eraseSubscriberRecord(userId: string): Promise<void> {
+  try {
+    const { revenueCatConfigFromEnv, deleteRevenueCatSubscriber } =
+      await import("@/lib/revenuecat-entitlement");
+    const config = revenueCatConfigFromEnv();
+    const outcome = config ? await deleteRevenueCatSubscriber(config, userId) : "failed";
+    if (outcome === "failed") {
+      console.error(
+        `[account-deletion] the RevenueCat subscriber record for deleted user ${userId} was NOT erased${config ? "" : " (RevenueCat is not configured)"}; erase it by hand in the RevenueCat dashboard.`,
+      );
+    }
+  } catch (e) {
+    console.error(
+      `[account-deletion] erasing the RevenueCat subscriber record for deleted user ${userId} threw: ${e instanceof Error ? e.message : String(e)}`,
+    );
   }
 }
 
@@ -326,9 +362,8 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     const appleRevocationStatus = await revokeAppleGrantForUser(supabaseAdmin, userId);
     // Was computed and returned to the caller but never actually looked
     // at anywhere -- neither this server log nor the iOS client read it
-    // (found in a 2026-09-28 audit). This is the one line that makes a
-    // real failure visible at all right now; a proper alert/retry queue
-    // is future work if this ever fires in practice.
+    // (found in a 2026-09-28 audit). The retry itself is queued inside
+    // revokeAppleGrantForUser; this line keeps the failure visible in the logs.
     if (appleRevocationStatus === "failed") {
       console.error(
         `[apple-revocation] FAILED to revoke Apple grant for user ${userId} during account deletion -- a live grant may still exist.`,
@@ -339,6 +374,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("friendships").delete().eq("friend_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw new Error(error.message);
+    await eraseSubscriberRecord(userId);
 
     return { deleted: true, appleRevocationStatus };
   });

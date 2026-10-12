@@ -97,3 +97,30 @@ export async function isProSubscriber(
 ): Promise<boolean> {
   return (await getProEntitlementStatus(config, appUserId, fetchImpl)) === "active";
 }
+
+/**
+ * Erases this account's subscriber record at RevenueCat (purchase history tied to our user id). Called after
+ * an account is deleted, because the privacy policy promises associated records are erased and RevenueCat is
+ * the one processor that keys data by the account id. It does not cancel an App Store subscription: only the
+ * learner can do that, in their Apple account. Never throws. A subscriber RevenueCat never saw (404) counts
+ * as erased.
+ */
+export async function deleteRevenueCatSubscriber(
+  config: RevenueCatConfig,
+  appUserId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<"erased" | "failed"> {
+  try {
+    const res = await fetchImpl(
+      `${REVENUECAT_API_HOST}/v1/subscribers/${encodeURIComponent(appUserId)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${config.secretApiKey}` },
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+    return res.ok || res.status === 404 ? "erased" : "failed";
+  } catch {
+    return "failed";
+  }
+}

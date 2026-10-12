@@ -48,6 +48,7 @@ import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedListenSplatRouteImport } from './routes/_authenticated/listen.$'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
+import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
 import { Route as ApiInternalReportNotifyRouteImport } from './routes/api/internal/report-notify'
 
 const IndexRoute = IndexRouteImport.update({
@@ -249,6 +250,11 @@ const AuthenticatedTeamsTeamIdRoute =
     path: '/teams/$teamId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiInternalMaintenanceRoute = ApiInternalMaintenanceRouteImport.update({
+  id: '/api/internal/maintenance',
+  path: '/api/internal/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInternalReportNotifyRoute = ApiInternalReportNotifyRouteImport.update({
   id: '/api/internal/report-notify',
   path: '/api/internal/report-notify',
@@ -294,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
+  '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
 }
 export interface FileRoutesByTo {
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/listen/$': typeof AuthenticatedListenSplatRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
+  '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
 }
 export interface FileRoutesById {
@@ -378,6 +386,7 @@ export interface FileRoutesById {
   '/_authenticated/listen/$': typeof AuthenticatedListenSplatRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
+  '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
 }
 export interface FileRouteTypes {
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/listen/$'
     | '/profile/friends'
     | '/teams/$teamId'
+    | '/api/internal/maintenance'
     | '/api/internal/report-notify'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/listen/$'
     | '/profile/friends'
     | '/teams/$teamId'
+    | '/api/internal/maintenance'
     | '/api/internal/report-notify'
   id:
     | '__root__'
@@ -504,6 +515,7 @@ export interface FileRouteTypes {
     | '/_authenticated/listen/$'
     | '/_authenticated/profile_/friends'
     | '/_authenticated/teams_/$teamId'
+    | '/api/internal/maintenance'
     | '/api/internal/report-notify'
   fileRoutesById: FileRoutesById
 }
@@ -530,6 +542,7 @@ export interface RootRouteChildren {
   ApiReviewDemoCodeRoute: typeof ApiReviewDemoCodeRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiInternalMaintenanceRoute: typeof ApiInternalMaintenanceRoute
   ApiInternalReportNotifyRoute: typeof ApiInternalReportNotifyRoute
 }
 
@@ -808,6 +821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamsTeamIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/internal/maintenance': {
+      id: '/api/internal/maintenance'
+      path: '/api/internal/maintenance'
+      fullPath: '/api/internal/maintenance'
+      preLoaderRoute: typeof ApiInternalMaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/report-notify': {
       id: '/api/internal/report-notify'
       path: '/api/internal/report-notify'
@@ -893,6 +913,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReviewDemoCodeRoute: ApiReviewDemoCodeRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiInternalMaintenanceRoute: ApiInternalMaintenanceRoute,
   ApiInternalReportNotifyRoute: ApiInternalReportNotifyRoute,
 }
 export const routeTree = rootRouteImport

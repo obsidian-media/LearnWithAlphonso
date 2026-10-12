@@ -76,9 +76,23 @@ const json = (body: unknown, status: number) =>
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 
+/** Records that the owner was emailed, so the scheduled sweep (maintenance.server.ts) does not send it again. */
+async function recordDelivered(reportId: string): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const now = new Date().toISOString();
+  const { error } = await supabaseAdmin
+    .from("content_report_delivery")
+    .upsert(
+      { report_id: reportId, notified_at: now, updated_at: now },
+      { onConflict: "report_id" },
+    );
+  if (error) throw new Error(error.message);
+}
+
 export async function handleReportNotify(
   request: Request,
   send: (msg: EmailMessage) => Promise<void> = (m) => sendEmailViaResend(m),
+  markDelivered: (reportId: string) => Promise<void> = recordDelivered,
 ): Promise<Response> {
   const expected = process.env.REPORT_NOTIFY_SECRET ?? "";
   const to = process.env.REPORT_NOTIFY_TO ?? "";
@@ -103,6 +117,15 @@ export async function handleReportNotify(
   } catch (e) {
     console.error("[report-notify] send failed:", e instanceof Error ? e.message : String(e));
     return json({ error: "send-failed" }, 502);
+  }
+  try {
+    await markDelivered(payload.id);
+  } catch (e) {
+    // The email went out. Unrecorded, the sweep lists this report once more: a duplicate, never a miss.
+    console.error(
+      "[report-notify] could not record delivery:",
+      e instanceof Error ? e.message : String(e),
+    );
   }
   return json({ ok: true }, 200);
 }
