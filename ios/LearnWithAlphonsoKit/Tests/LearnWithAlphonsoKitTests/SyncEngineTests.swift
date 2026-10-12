@@ -84,6 +84,29 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(result.rescheduledLessonCompletions, [item.rescheduled(attemptCount: 1, nextAttemptAt: fixedNow.addingTimeInterval(30))])
     }
 
+    /// No connection is not server trouble: the item waits the shortest delay and its failure count does not
+    /// grow, so a lesson finished offline syncs soon after the phone is back online, not hours later.
+    func testALessonCompletionThatFailsOfflineIsRetriedSoonWithoutGrowingItsBackoff() async {
+        let item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
+            .rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(-1))
+        let client = makeClient { _ in throw URLError(.notConnectedToInternet) }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: fixedNow)
+        XCTAssertTrue(result.deadLetteredLessonCompletions.isEmpty)
+        XCTAssertEqual(result.rescheduledLessonCompletions, [item.rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(30))])
+    }
+
+    func testAReviewGradeThatFailsOfflineIsRetriedSoonWithoutGrowingItsBackoff() async {
+        let first = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow.addingTimeInterval(-60))
+            .rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(-1))
+        let second = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
+        let calls = TestCapture<Int>(0)
+        let client = makeClient { _ in calls.value += 1; throw URLError(.networkConnectionLost) }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [first, second], client: client, now: fixedNow)
+        XCTAssertEqual(calls.value, 1, "order is kept: the second grade is not sent past the first")
+        XCTAssertTrue(result.deadLetteredReviewGrades.isEmpty)
+        XCTAssertEqual(result.rescheduledReviewGrades, [first.rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(30))])
+    }
+
     /// A flaky network never loses a lesson: an item failing transiently 20 times is still queued, never
     /// dead-lettered, and its wait stays capped.
     func testALessonCompletionFailingTransientlyTwentyTimesIsStillQueued() async {
