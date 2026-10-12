@@ -153,6 +153,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      app_switches: {
+        Row: {
+          enabled: boolean;
+          key: string;
+          note: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          enabled?: boolean;
+          key: string;
+          note?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          enabled?: boolean;
+          key?: string;
+          note?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       apple_auth_tokens: {
         Row: {
           created_at: string;
@@ -171,6 +192,30 @@ export type Database = {
           refresh_token?: string;
           updated_at?: string;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      apple_revocation_pending: {
+        Row: {
+          attempts: number;
+          created_at: string;
+          id: string;
+          last_attempt_at: string | null;
+          refresh_token: string;
+        };
+        Insert: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          last_attempt_at?: string | null;
+          refresh_token: string;
+        };
+        Update: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          last_attempt_at?: string | null;
+          refresh_token?: string;
         };
         Relationships: [];
       };
@@ -490,6 +535,38 @@ export type Database = {
           type?: string;
         };
         Relationships: [];
+      };
+      content_report_delivery: {
+        Row: {
+          attempts: number;
+          escalated_at: string | null;
+          notified_at: string | null;
+          report_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          escalated_at?: string | null;
+          notified_at?: string | null;
+          report_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          escalated_at?: string | null;
+          notified_at?: string | null;
+          report_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_report_delivery_report_id_fkey";
+            columns: ["report_id"];
+            isOneToOne: true;
+            referencedRelation: "content_reports";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       content_reports: {
         Row: {
@@ -2338,6 +2415,7 @@ export type Database = {
           hearts_refill_at: string;
         }[];
       };
+      run_maintenance_sweep: { Args: never; Returns: undefined };
       save_placement_result: {
         Args: { _language: string; _level: string; _score: number };
         Returns: string;
