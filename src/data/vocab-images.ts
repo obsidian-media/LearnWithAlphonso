@@ -1647,7 +1647,7 @@ export const VOCAB_IMAGES: Record<string, VocabImage> = {
   },
   dancing: {
     url: "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/dancing.jpg?v=600eb481",
-    alt: "A dancer moves in a cloud of white powder on a dark stage lit by bright lamps.",
+    alt: "A dancer moves in a cloud of white dust on a dark stage lit by bright lamps.",
     credit: "marcelkessler",
     source: "pixabay",
     sourcePageUrl: "https://pixabay.com/photos/dancer-dancing-sand-beach-dance-5576002/",
