@@ -17,6 +17,12 @@ const between = (src: string, start: string, end: RegExp) => {
 describe("Learn level load", () => {
   const src = read(`${APP}/LessonBrowserView.swift`);
   const fn = between(src, "private func loadLevel()", /\n {4}\/\/\/ Fire-and-forget/);
+  it("loads the level again when onboarding settles or a placement test finishes", () => {
+    // Keyed on the course alone, a level set by placement stayed hidden until the app was relaunched.
+    expect(src).toContain(
+      '.task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }',
+    );
+  });
   it("drops a fetch that lands after the course changed", () => {
     expect(fn).toContain("let fetchedCourseCode = course.code");
     const guards =
