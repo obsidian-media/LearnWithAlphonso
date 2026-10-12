@@ -1226,6 +1226,33 @@ export type Database = {
           },
         ];
       };
+      review_grade_attempts: {
+        Row: {
+          attempt_id: string;
+          created_at: string;
+          item_key: string;
+          language: string;
+          result: Json;
+          user_id: string;
+        };
+        Insert: {
+          attempt_id: string;
+          created_at?: string;
+          item_key: string;
+          language: string;
+          result: Json;
+          user_id: string;
+        };
+        Update: {
+          attempt_id?: string;
+          created_at?: string;
+          item_key?: string;
+          language?: string;
+          result?: Json;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       review_items: {
         Row: {
           answer_index: number | null;
@@ -1892,6 +1919,38 @@ export type Database = {
       };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
       ai_output_blocked: { Args: { _texts: string[] }; Returns: boolean[] };
+      apply_lesson_completion: {
+        Args: {
+          _activity_events: Json;
+          _course: string;
+          _expected: Json;
+          _lesson_id: string;
+          _level: string;
+          _missed_question_ids: Json;
+          _next: Json;
+          _today: string;
+          _user_id: string;
+        };
+        Returns: Json;
+      };
+      apply_review_grade: {
+        Args: {
+          _attempt_id: string;
+          _correct: boolean;
+          _ease: number;
+          _expected_due_on: string;
+          _expected_last_reviewed_at: string;
+          _interval_days: number;
+          _item_key: string;
+          _language: string;
+          _lapses: number;
+          _new_due_on: string;
+          _repetitions: number;
+          _retired: boolean;
+          _user_id: string;
+        };
+        Returns: Json;
+      };
       auto_join_team: {
         Args: never;
         Returns: {
