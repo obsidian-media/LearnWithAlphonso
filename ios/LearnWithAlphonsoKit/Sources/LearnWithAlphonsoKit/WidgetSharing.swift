@@ -58,6 +58,22 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
         self.studiedToday = studiedToday
         self.updatedAt = updatedAt
     }
+
+    /// This snapshot as it should read at `date`. "Studied today" was true for the UTC day it was written on;
+    /// read on a later day it is false. Without this the widget kept saying "Studied today" after midnight
+    /// until the app was next opened.
+    public func asOf(_ date: Date) -> StreakWidgetSnapshot {
+        guard studiedToday, utcDateString(date) != utcDateString(updatedAt) else { return self }
+        return StreakWidgetSnapshot(streak: streak, longestStreak: longestStreak, studiedToday: false, updatedAt: updatedAt)
+    }
+}
+
+/// The first instant of the next UTC day after `date`: when a widget showing "Studied today" must redraw.
+public func nextUTCMidnight(after date: Date) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    let startOfDay = calendar.startOfDay(for: date)
+    return calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? date.addingTimeInterval(24 * 60 * 60)
 }
 
 /// Pure builder -- same "pure logic separated from I/O" split as

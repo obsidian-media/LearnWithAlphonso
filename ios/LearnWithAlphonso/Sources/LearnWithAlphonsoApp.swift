@@ -110,6 +110,7 @@ struct LearnWithAlphonsoApp: App {
                 .task { await entitlementStore.start() }
                 .environment(\.sessionLifecycle, sessionLifecycle)
                 .environmentObject(aiConsentStore)
+                .environment(networkMonitor)
                 // Account consent follows the signed-in account and is re-read whenever the app comes forward, so a
                 // withdrawal on the web takes effect here without a relaunch.
                 .task(id: session.userID) { await aiConsentStore.refresh() }

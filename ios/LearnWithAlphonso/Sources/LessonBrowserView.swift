@@ -243,7 +243,9 @@ struct LessonBrowserView: View {
             // isn't necessarily right for French. Keyed by `course.code`
             // (a String) rather than `course` itself -- Course declares
             // only Sendable, not Equatable, which .task(id:) requires.
-            .task(id: course.code) { await loadLevel() }
+            // Also re-run when onboarding settles and when a placement test is finished: both can change the
+            // saved level while this screen is already on screen, and it used to keep showing A1 until relaunch.
+            .task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }
             .task { await missionModel.load(session: session) }
             .task { await loadChallenges() }
             .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }

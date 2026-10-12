@@ -78,6 +78,13 @@ public enum SyncEngine {
                     nextAttemptAt: now.addingTimeInterval(HeartsEconomy.heartRefillSeconds)))
             case .failure(.unauthorized):
                 continue
+            case .failure(.offline):
+                // No connection is not the server struggling, so it earns no growing backoff: the item waits the
+                // shortest delay and its failure count is left alone. Backing off here left a lesson finished on
+                // a train unsynced for up to hours after the phone was back online.
+                rescheduled.append(completion.rescheduled(
+                    attemptCount: completion.attemptCount,
+                    nextAttemptAt: now.addingTimeInterval(policy.baseDelay)))
             case let .failure(error) where error.shouldQueue:
                 // Transient: back off and keep it, however many times it fails. attemptCount only drives the backoff.
                 let failures = completion.attemptCount + 1
@@ -111,6 +118,13 @@ public enum SyncEngine {
             } catch {
                 let classified = LessonCompletionError.classify(error)
                 if classified == .unauthorized { break gradeLoop }
+                if classified == .offline {
+                    // Same as a lesson completion: no connection earns the shortest wait and no backoff growth.
+                    rescheduledGrades.append(grade.rescheduled(
+                        attemptCount: grade.attemptCount,
+                        nextAttemptAt: now.addingTimeInterval(policy.baseDelay)))
+                    break gradeLoop
+                }
                 if classified.shouldQueue {
                     let failures = grade.attemptCount + 1
                     rescheduledGrades.append(grade.rescheduled(
