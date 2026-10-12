@@ -12,6 +12,9 @@ const adminFrom = vi.fn(() => ({
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: adminFrom } }));
 
+const isSwitchOn = vi.fn(async (_key: string) => true);
+vi.mock("./app-switches.server", () => ({ isSwitchOn }));
+
 const { authorizeAiRequest, hasAiConsent, requireAiConsent } = await import("./ai-consent.server");
 
 const req = (auth = "Bearer tok") =>
@@ -22,6 +25,7 @@ const req = (auth = "Bearer tok") =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  isSwitchOn.mockImplementation(async () => true);
   delete process.env.ENFORCE_AI_CONSENT;
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "pk";
@@ -145,5 +149,48 @@ describe("authorizeAiRequest", () => {
     });
     expect(r.ok).toBe(true);
     expect(from).not.toHaveBeenCalled();
+  });
+});
+
+describe("the owner's AI switch", () => {
+  const consented = () =>
+    maybeSingle.mockResolvedValue({ data: { ai_consent_at: "2026-10-09T10:00:00Z" }, error: null });
+
+  it("refuses with 503 ai-unavailable, before consent is read and before quota is spent", async () => {
+    consented();
+    isSwitchOn.mockImplementation(async (key) => key !== "ai");
+    const r = await authorizeAiRequest(req(), "chat", { route: "chat" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.response.status).toBe(503);
+      expect(await r.response.json()).toEqual({ error: "ai-unavailable" });
+    }
+    expect(from).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("also stops a route that is exempt from consent", async () => {
+    isSwitchOn.mockImplementation(async (key) => key !== "ai");
+    const r = await authorizeAiRequest(req(), "practice", {
+      route: "generate-practice",
+      requireConsent: false,
+    });
+    expect(r.ok).toBe(false);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("makes the local-grading paths behave as if there were no consent", async () => {
+    consented();
+    isSwitchOn.mockImplementation(async (key) => key !== "ai");
+    expect(await hasAiConsent({ from } as never, "user-1")).toBe(false);
+    isSwitchOn.mockImplementation(async () => true);
+    expect(await hasAiConsent({ from } as never, "user-1")).toBe(true);
+  });
+
+  it("is not affected by the tutor switch", async () => {
+    consented();
+    isSwitchOn.mockImplementation(async (key) => key !== "tutor");
+    const r = await authorizeAiRequest(req(), "chat", { route: "chat" });
+    expect(r.ok).toBe(true);
   });
 });

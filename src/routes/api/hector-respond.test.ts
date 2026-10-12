@@ -13,7 +13,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 
 const requireAiConsent = vi.fn();
-vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent }));
+const requireAiSwitchedOn = vi.fn(async (_route?: string): Promise<Response | null> => null);
+vi.mock("@/lib/ai-consent.server", () => ({ requireAiConsent, requireAiSwitchedOn }));
+const isSwitchOn = vi.fn(async (_key: string) => true);
+vi.mock("@/lib/app-switches.server", () => ({ isSwitchOn }));
 
 const revenueCatConfigFromEnv = vi.fn();
 const getProEntitlementStatus = vi.fn();
@@ -52,6 +55,10 @@ beforeEach(() => {
   consumeQuota.mockReset();
   requireAiConsent.mockReset();
   requireAiConsent.mockResolvedValue(null);
+  requireAiSwitchedOn.mockReset();
+  requireAiSwitchedOn.mockResolvedValue(null);
+  isSwitchOn.mockReset();
+  isSwitchOn.mockResolvedValue(true);
   blockedRpc.mockClear();
   process.env.NVIDIA_API_KEY = "nv_test";
   process.env.DEEPGRAM_API_KEY = "dg_test";
@@ -106,6 +113,28 @@ describe("POST /api/hector-respond", () => {
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: "entitlement-unavailable" });
     expect(consumeQuota).not.toHaveBeenCalled();
+  });
+
+  it("returns 503 tutor-unavailable when the owner has switched the tutor off, before any lookup", async () => {
+    isSwitchOn.mockImplementation(async (key) => key !== "tutor");
+    globalThis.fetch = vi.fn() as unknown as typeof fetch;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "tutor-unavailable" });
+    expect(requireAiConsent).not.toHaveBeenCalled();
+    expect(getProEntitlementStatus).not.toHaveBeenCalled();
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("passes through the AI switch's refusal", async () => {
+    requireAiSwitchedOn.mockResolvedValue(
+      Response.json({ error: "ai-unavailable" }, { status: 503 }),
+    );
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "ai-unavailable" });
+    expect(getProEntitlementStatus).not.toHaveBeenCalled();
   });
 
   it("returns text required (400) for an empty utterance", async () => {
