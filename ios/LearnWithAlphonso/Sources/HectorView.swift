@@ -43,6 +43,9 @@ private struct HectorConversationView: View {
     let conversationStore: ConversationStore
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The safety note is shown once per device, before the first time hands-free is turned on.
+    @AppStorage("handsFree.safetyNoteSeen.v1") private var handsFreeNoteSeen = false
+    @State private var showHandsFreeNote = false
 
     @State private var conversation = ConversationSnapshot()
     @State private var voice = VoiceSessionController()
@@ -173,9 +176,53 @@ private struct HectorConversationView: View {
 
     // MARK: - Mic
 
+    /// While hands-free is on there is no hold button: a status line, and one Pause or Resume button.
+    private var handsFreeControls: some View {
+        let status = voice.handsFree.status
+        let paused: Bool = { if case .paused = status { return true } else { return false } }()
+        return VStack(spacing: 8) {
+            if let line = HandsFreeCopy.statusLine(status) {
+                Text(line)
+                    .font(AlphonsoFont.sans(13))
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.updatesFrequently)
+            }
+            Button(paused ? HandsFreeCopy.resume : HandsFreeCopy.pause) {
+                voice.toggleHandsFreePause()
+            }
+            .buttonStyle(.alphonsoSecondary)
+            .accessibilityIdentifier("hectorHandsFreePause")
+            if voice.microphoneUnavailable {
+                Text(VoiceCopy.microphoneOff)
+                    .font(AlphonsoFont.sans(12))
+                    .foregroundStyle(AlphonsoColor.destructive)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, AlphonsoSpacing.md)
+    }
+
     private var micButton: some View {
         VStack(spacing: 6) {
-            if voice.isBusy {
+            Toggle(HandsFreeCopy.toggle, isOn: Binding(
+                get: { voice.handsFree.isOn },
+                set: { on in
+                    if on, !handsFreeNoteSeen {
+                        showHandsFreeNote = true
+                    } else {
+                        voice.setHandsFree(on)
+                    }
+                }
+            ))
+            .font(AlphonsoFont.sans(14, weight: .medium))
+            .tint(AlphonsoColor.moss)
+            .padding(.horizontal, AlphonsoSpacing.md)
+            .accessibilityIdentifier("hectorHandsFreeToggle")
+
+            if voice.handsFree.isOn {
+                handsFreeControls
+            } else if voice.isBusy {
                 ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
             } else {
                 HoldToTalkButton(
@@ -198,6 +245,15 @@ private struct HectorConversationView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
+            Button(HandsFreeCopy.firstUseConfirm) {
+                handsFreeNoteSeen = true
+                voice.setHandsFree(true)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(HandsFreeCopy.firstUseBody)
+        }
     }
 
     // MARK: - Turn
