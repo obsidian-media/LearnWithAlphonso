@@ -226,11 +226,15 @@ CI (`.github/workflows/ci.yml`, workflow name "CI") has these jobs on every
 PR and push to `main`: `lint-and-typecheck` (lint, typecheck, the Vitest
 suite, and a check that the bundled iOS content is up to date), `types-fresh`
 (the generated Supabase types; advisory, it does not gate the deploy),
-`admin-build`, `e2e` (Playwright + axe-core), `deno-tests`, `ios-swift-tests`
-and `ios-app-build` (a real `xcodebuild` of the app target, plus a check that
-RevenueCat resolved to the pinned version, both on a macOS runner). On a push
-to `main`, `deploy-supabase` applies the migrations and redeploys the Edge
-Functions once `lint-and-typecheck`, `e2e` and `deno-tests` pass. The Android
+`admin-build`, `web-build`, `e2e` (Playwright + axe-core), `deno-tests`,
+`ios-swift-tests` and `ios-app-build` (a real `xcodebuild` of the app target,
+plus a check that RevenueCat resolved to the pinned version, both on a macOS
+runner). On a push to `main`, `deploy-supabase` applies the migrations and
+redeploys the Edge Functions once `lint-and-typecheck`, `web-build`,
+`admin-build`, `e2e` and `deno-tests` pass. `main` is protected: those checks
+plus `ios-swift-tests` and `ios-app-build` must pass before a merge, and
+force-pushes and deletion are blocked. `uptime.yml` checks six public endpoints
+every 15 minutes (see `docs/operations.md`). The Android
 app has its own pipeline (`android-ci.yml`), and the release, App Store
 Connect and QA tooling lives in manually-dispatched workflows (for example
 `ios-release.yml`, `asc-release-ops.yml`, `capture-app-store-screenshots.yml`,
@@ -352,7 +356,7 @@ compile verification that exists):
   manual trigger) — no interactive Apple ID login needed anywhere in the
   pipeline. App Store Connect app record exists ("Learn With Alphonso",
   bundle `com.obsidianmedia.learnwithalphonso`). The checked-in project is
-  version 1.0, **build 50** (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in
+  version 1.0, **build 51** (`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in
   `ios/LearnWithAlphonso/project.yml`). Build numbers are set by hand, twice
   (app and widget), and **must be bumped before each upload** — App Store
   Connect rejects a duplicate and `ios-release.yml` fails an upload whose build

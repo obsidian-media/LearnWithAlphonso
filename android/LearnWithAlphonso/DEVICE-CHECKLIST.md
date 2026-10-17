@@ -103,3 +103,16 @@ Two test accounts that are friends (A and B).
 - [ ] Block from that menu asks for confirmation, then the card returns to the no-buddy state on both; A and B are never matched again.
 - [ ] With matching switched off on the server (`UPDATE public.buddy_settings SET matching_enabled = false;`), the find buttons disappear; a learner who was waiting still sees Stop looking. Switch it back on afterwards.
 
+## Hearts gate and AI errors (#302, #303, nothing here has been run on a device)
+
+Use a QA account, never the App Review account. Drain its hearts by answering five questions wrong.
+
+- [ ] At 0 hearts, open any lesson: the out-of-hearts screen shows instead of the lesson, with "Out of hearts", a countdown that ticks every second, "Use 50 XP for a heart" and "Review instead". TalkBack reads the countdown without interrupting.
+- [ ] "Use 50 XP for a heart" with at least 50 XP in the course: the lesson opens and plays; finishing it shows the normal finish screen (not "Saved. This will sync").
+- [ ] The same with less than 50 XP: "Not enough XP for a heart. You have N XP in this course." and the lesson stays blocked.
+- [ ] "Review instead" opens Review for the same course; Back from there returns to the Learn tab.
+- [ ] Airplane mode at 0 hearts: the screen shows without the buy button, and still offers "Review instead".
+- [ ] Wait for the countdown to reach zero with the screen open: the lesson opens by itself.
+- [ ] Rotate the phone on the out-of-hearts screen and inside a lesson: nothing restarts and no second session is opened.
+- [ ] Scenario practice on an account at today's AI limit: the message says "You've reached today's AI practice limit. It resets at h:mm AM/PM.", never `quota-exceeded`.
+- [ ] Hector on a non-Pro account that reaches the tutor (for example after Pro expires): "Hector is part of Alphonso Pro."; with the server's `tutor` switch off: the generic "Something went wrong on our side. Try again."
