@@ -19,27 +19,73 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.io.File
 import java.util.Collections
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Routes viewModelScope onto an unconfined dispatcher: launched work runs
  * inline until its first real suspension (a Ktor call on the mock engine's
  * thread) and resumes there, so tests wait on concrete conditions with
  * awaitTrue instead of virtual time.
+ *
+ * Main is installed ONCE for the whole JVM ([GatedMainDispatcher]) and the rule
+ * only flips its open flag, so test boundaries never write TestMainDispatcher's
+ * delegate (a late resume reading it during a write can throw "Dispatchers.Main
+ * is used concurrently with setting it"). While a test runs the dispatcher is
+ * open and behaves like Unconfined. When the test ends it closes: view-model
+ * work still suspended on the mock engine that resumes afterwards is dropped
+ * and counted, instead of crashing on an unset Main and failing whichever test
+ * happens to be running. A late resume that lands after the NEXT test has
+ * started is not dropped (the dispatcher is open again) and runs inline; that
+ * only touches the previous test's own fakes. Dropped work is reported on
+ * System.err with the name of the test that leaked it.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRule : TestWatcher() {
-    override fun starting(description: Description) = Dispatchers.setMain(Dispatchers.Unconfined)
-    override fun finished(description: Description) = Dispatchers.resetMain()
+    public override fun starting(description: Description) {
+        GatedMainDispatcher.install()
+        GatedMainDispatcher.open = true
+    }
+
+    public override fun finished(description: Description) {
+        GatedMainDispatcher.finishedTest = description.displayName
+        GatedMainDispatcher.open = false
+    }
+}
+
+/** The single Main for every view-model test. Open: like Unconfined. Closed: late dispatches are dropped and counted. */
+@OptIn(ExperimentalCoroutinesApi::class)
+object GatedMainDispatcher : CoroutineDispatcher() {
+    @Volatile var open = false
+
+    /** The test that closed the gate last, named in the warning for work it leaked. */
+    @Volatile var finishedTest: String? = null
+    private val dropped = AtomicInteger(0)
+    val droppedCount: Int get() = dropped.get()
+
+    private val installOnce: Unit by lazy { Dispatchers.setMain(this) }
+    fun install() = installOnce
+
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean = !open
+
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        if (open) {
+            block.run()
+        } else {
+            dropped.incrementAndGet()
+            System.err.println("Dropped a late Main dispatch: work still running when test '${finishedTest ?: "?"}' ended")
+        }
+    }
 }
 
 /** Polls a condition for up to `timeoutMs` of real time. */
