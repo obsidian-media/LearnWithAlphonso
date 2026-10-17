@@ -6,6 +6,7 @@ import com.obsidianmedia.learnwithalphonso.core.sync.SyncWakeup
 import com.obsidianmedia.learnwithalphonso.core.sync.sync
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +41,11 @@ class SyncCoordinator(
     private val now: () -> Long = System::currentTimeMillis,
     /** How long to sleep for an item due at the first argument; the floor keeps a loop from starting. Tests shorten it. */
     private val wakeupDelayMillis: (dueAtMillis: Long, nowMillis: Long) -> Long = SyncWakeup::delayMillis,
+    /**
+     * Completed once the session has been restored and the ownerless rows resolved. A pass waits for it, so no pass
+     * can run (and adopt nothing, or send under the wrong account) before that decision is made.
+     */
+    private val startup: Deferred<Unit>? = null,
 ) {
     private val lock = Mutex()
 
@@ -68,13 +74,16 @@ class SyncCoordinator(
     }
 
     suspend fun triggerSync() {
+        startup?.await()
         val userId = currentUserId()
         lock.withLock {
             val c = client() ?: return
             _syncing.value = true
             try {
-                userId?.let { store.resolveOrphanedRows(it) }
-                val result = SyncEngine.sync(store.pendingLessonCompletions(), store.pendingReviewGrades(), c, userId, now())
+                val result = SyncEngine.sync(
+                    store.pendingLessonCompletions(), store.pendingReviewGrades(), c, userId, now(),
+                    isCurrentAccount = { currentUserId() == userId },
+                )
                 if (currentUserId() != userId) return
                 store.applySyncResult(result, now())
                 val progress = result.lastKnownProgress ?: runCatching { c.fetchProgress() }.getOrNull()

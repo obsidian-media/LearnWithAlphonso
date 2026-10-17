@@ -124,7 +124,7 @@ abstract class AlphonsoDatabase : RoomDatabase() {
         /**
          * Offline-sync reliability (iOS SyncSchemaV2): who queued each row, the session token held when the lesson
          * opened, retry bookkeeping, and the dead-letter table. Rows written before this have no owner; the first
-         * account that syncs adopts them.
+         * account restored at the first launch after the upgrade adopts them (see SyncQueueStore.resolveOrphanedRows).
          */
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {

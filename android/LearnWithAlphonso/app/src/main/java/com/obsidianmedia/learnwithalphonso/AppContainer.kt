@@ -2,6 +2,11 @@ package com.obsidianmedia.learnwithalphonso
 
 import android.content.Context
 import androidx.room.Room
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
+import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
 import com.obsidianmedia.learnwithalphonso.audio.AudioPlayback
 import com.obsidianmedia.learnwithalphonso.audio.MicPermission
@@ -132,13 +137,33 @@ class AppContainer(context: Context) {
         .build()
     val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } })
 
+    /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
+    private val startup = CompletableDeferred<Unit>()
+
     val syncCoordinator = SyncCoordinator(
         store = syncStore,
         client = { if (session.currentAccessToken() != null) progressClient else null },
         currentUserId = { session.userId },
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
+        startup = startup,
     ).also { it.start(connectivity.isConnected) }
+
+    init {
+        // Restore here, not in a screen: a sync, a sign-out or a rejected refresh can happen with no screen composed.
+        appScope.launch {
+            try {
+                session.restore()
+                // Rows queued before owners were recorded go to the account restored now, or are dropped if nobody was.
+                runCatching { syncStore.resolveOrphanedRows(session.userId) }
+            } finally {
+                startup.complete(Unit)
+            }
+        }
+    }
+
+    /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
+    private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { syncStore.clearAll() }
 
     // ---- Plan 4: podcasts, reminders, push ----
 

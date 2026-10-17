@@ -136,38 +136,72 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `rows without an owner are adopted by the first account that syncs, foreign rows are dropped unsent`() = runBlocking {
+    fun `foreign rows are dropped unsent`() = runBlocking {
         val s = server(failFirst = 0)
         val store = MemorySyncStore().apply {
-            completions.add(row(owner = null))
+            completions.add(row())
             completions.add(PendingLessonCompletion("theirs", 5, emptyList(), "en", now - 500, 50, ownerUserId = "u2"))
         }
         SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }).triggerSync()
         assertTrue(store.completions.isEmpty())
-        assertEquals("only the adopted row was sent", 1, completes(s))
+        assertEquals("only the signed-in account's row was sent", 1, completes(s))
         assertTrue(s.seen.none { it.body.contains("theirs") })
     }
 
     @Test
-    fun `ownerless rows are adopted once, then dropped unsent so they can never move to another account`() = runBlocking {
+    fun `no pass runs before the session is restored and the ownerless rows are resolved`() = runBlocking {
+        val startup = CompletableDeferred<Unit>()
         val s = server(failFirst = 0)
-        val store = MemorySyncStore().apply {
-            orphansResolved = true // the first launch after the upgrade already happened
-            completions.add(row(owner = null))
-        }
-        SyncCoordinator(store, { s.progressClient }, { "u2" }, { true }, null, { now }).triggerSync()
-        assertTrue(store.completions.isEmpty())
-        assertEquals("an ownerless row found later belongs to nobody and is never sent", 0, completes(s))
+        val store = MemorySyncStore().apply { completions.add(row()) }
+        val coordinator = SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }, startup = startup)
+        val pass = async(Dispatchers.Default) { coordinator.triggerSync() }
+        delay(200)
+        assertEquals("waiting for startup", 0, completes(s))
+        startup.complete(Unit)
+        pass.await()
+        assertEquals(1, completes(s))
     }
 
     @Test
-    fun `an adopted row belongs to the adopting account from then on, even when it stays queued`() = runBlocking {
-        val s = server(failFirst = 5)
-        val store = MemorySyncStore().apply { completions.add(row(owner = null)) }
-        SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }).triggerSync()
-        val kept = store.completions.single()
-        assertEquals("u1", kept.ownerUserId)
-        assertEquals(1, kept.attemptCount)
+    fun `a pass stops the moment the account changes, so account A's rows never go out under B's token`() = runBlocking {
+        var user = "u1"
+        val completes = AtomicInteger(0)
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("start-lesson-session") -> json("""{"token":"tok"}""")
+                req.path.endsWith("complete-lesson") -> {
+                    completes.incrementAndGet()
+                    user = "u2" // the learner signs out and into another account while the first row is on the wire
+                    json(done)
+                }
+                else -> json("[]")
+            }
+        }
+        val store = MemorySyncStore().apply {
+            completions.add(row())
+            completions.add(PendingLessonCompletion("second", 5, emptyList(), "en", now - 500, 50, ownerUserId = "u1"))
+        }
+        SyncCoordinator(store, { s.progressClient }, { user }, { true }, null, { now }).triggerSync()
+        assertEquals("the second row was not sent after the account changed", 1, completes.get())
+        assertTrue("and it was not discarded either", store.completions.any { it.lessonId == "second" })
+    }
+
+    @Test
+    fun `signing out clears the queue from the app scope, and the launch before a session is restored does not`() = runBlocking {
+        val ids = MutableStateFlow<String?>(null)
+        var cleared = 0
+        SignOutCleanup(scope(), ids) { cleared++ }
+        delay(100)
+        assertEquals("cold launch: nobody signed in yet", 0, cleared)
+        ids.value = "u1"
+        delay(100)
+        assertEquals(0, cleared)
+        ids.value = null
+        awaitTrue("cleared on sign-out") { cleared == 1 }
+        ids.value = "u2"
+        delay(100) // a StateFlow conflates: let the collector see u2 before the next change
+        ids.value = null
+        awaitTrue("and on the next sign-out") { cleared == 2 }
     }
 
     @Test

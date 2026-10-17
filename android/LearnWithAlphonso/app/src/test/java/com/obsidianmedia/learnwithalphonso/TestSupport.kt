@@ -160,16 +160,16 @@ class MemorySyncStore : SyncQueueStore {
     override suspend fun appendReviewGrade(pending: PendingReviewGrade) { yield(); grades.add(pending); publish() }
     override suspend fun removeSyncedReviewGrades(synced: List<PendingReviewGrade>) { yield(); grades.removeAll(synced.toSet()); publish() }
 
-    override suspend fun resolveOrphanedRows(userId: String) {
+    override suspend fun resolveOrphanedRows(restoredUserId: String?) {
         yield()
-        if (orphansResolved) {
+        if (!orphansResolved && restoredUserId != null) {
+            synchronized(completions) { completions.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = restoredUserId) else it } }
+            synchronized(grades) { grades.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = restoredUserId) else it } }
+        } else {
             completions.removeAll { it.ownerUserId == null }
             grades.removeAll { it.ownerUserId == null }
-        } else {
-            synchronized(completions) { completions.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
-            synchronized(grades) { grades.replaceAll { if (it.ownerUserId == null) it.copy(ownerUserId = userId) else it } }
-            orphansResolved = true
         }
+        orphansResolved = true
         publish()
     }
 

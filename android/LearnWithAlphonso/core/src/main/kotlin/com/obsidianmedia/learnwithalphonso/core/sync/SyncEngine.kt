@@ -54,6 +54,11 @@ object SyncEngine {
         currentUserId: String? = null,
         nowMillis: Long = System.currentTimeMillis(),
         policy: SyncRetryPolicy = SyncRetryPolicy.STANDARD,
+        /**
+         * Asked before every request. The client sends whichever account's token is current, so once the account
+         * changes the rest of the pass must not run: account A's rows would go out under account B's token.
+         */
+        isCurrentAccount: () -> Boolean = { true },
     ): SyncResult {
         fun isForeign(owner: String?) = owner != null && currentUserId != null && owner != currentUserId
         val service = LessonCompletionService(client)
@@ -67,6 +72,7 @@ object SyncEngine {
         for (completion in pendingLessonCompletions.sortedBy { it.queuedAt }) {
             if (isForeign(completion.ownerUserId)) { foreign.add(completion); continue }
             if (completion.nextAttemptAt?.let { it > nowMillis } == true) continue
+            if (!isCurrentAccount()) break
             val result = service.complete(LessonCompletionRequest(completion))
             val error = result.exceptionOrNull() as? LessonCompletionError
             when {
@@ -100,6 +106,7 @@ object SyncEngine {
         for (grade in pendingReviewGrades.sortedBy { it.queuedAt }) {
             if (isForeign(grade.ownerUserId)) { foreignGrades.add(grade); continue }
             if (grade.nextAttemptAt?.let { it > nowMillis } == true) break
+            if (!isCurrentAccount()) break
             try {
                 client.gradeReview(grade.itemKey, grade.answer, grade.course, grade.queueIdentity)
                 syncedGrades.add(grade)
@@ -139,7 +146,8 @@ suspend fun SyncEngine.sync(
     currentUserId: String? = null,
     nowMillis: Long = System.currentTimeMillis(),
     policy: SyncRetryPolicy = SyncRetryPolicy.STANDARD,
-): SyncResult = sync(pendingLessonCompletions, pendingReviewGrades, ProgressSyncApi(client), currentUserId, nowMillis, policy)
+    isCurrentAccount: () -> Boolean = { true },
+): SyncResult = sync(pendingLessonCompletions, pendingReviewGrades, ProgressSyncApi(client), currentUserId, nowMillis, policy, isCurrentAccount)
 
 /** An adapter from the real client to [SyncApi]. */
 class ProgressSyncApi(private val client: ProgressSyncClient) : SyncApi, LessonCompletionApi by client {
