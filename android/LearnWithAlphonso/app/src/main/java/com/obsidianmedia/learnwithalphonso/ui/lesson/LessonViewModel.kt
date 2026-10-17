@@ -21,6 +21,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionResult
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationGradingClient
+import com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionError
+import com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionRequest
+import com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionService
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
@@ -37,7 +40,11 @@ sealed interface LessonPhase {
     data object Vocab : LessonPhase
     data object Quiz : LessonPhase
     data class Finished(val result: LessonCompletionResult, val isLeaguePromotion: Boolean) : LessonPhase
-    data class QueuedOffline(val pending: PendingLessonCompletion) : LessonPhase
+    /** Saved on this phone; [message] says why it did not reach the server yet (offline, a timeout, server trouble, waiting for hearts). */
+    data class QueuedOffline(val pending: PendingLessonCompletion, val message: String = LessonCompletionError.Offline.userMessage) : LessonPhase
+
+    /** The server will never accept this attempt: say why, and where to ask for help when waiting cannot fix it. */
+    data class SaveFailed(val message: String, val supportLine: String?) : LessonPhase
     data class Error(val message: String) : LessonPhase
 }
 
@@ -84,6 +91,8 @@ class LessonViewModel(
     private val now: () -> Long = System::currentTimeMillis,
     /** The account's AI consent. Without it a written answer never leaves the device (TranslationGradingPolicy). */
     private val hasAiConsent: () -> Boolean,
+    /** The signed-in account, recorded on a queued completion so another account never syncs it. */
+    private val ownerUserId: () -> String? = { null },
 ) : ViewModel() {
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
@@ -256,37 +265,44 @@ class LessonViewModel(
         val s = _state.value
         _state.update { it.copy(isSubmitting = true) }
         try {
-            if (!isConnected()) { queueOffline(); return }
-            val held = sessionToken
-            val result = if (held == null) {
-                client.completeLesson(s.lesson.id, s.total, s.answers, course.code, client.startLessonSession(s.lesson.id, course.code))
-            } else {
-                try {
-                    client.completeLesson(s.lesson.id, s.total, s.answers, course.code, held)
-                } catch (e: ProgressSyncError.Server) {
-                    // A token held since the lesson opened expires after 3 hours: mint a fresh one once.
-                    if (e.status != 403) throw e
-                    client.completeLesson(s.lesson.id, s.total, s.answers, course.code, client.startLessonSession(s.lesson.id, course.code))
+            if (!isConnected()) { queueOffline(LessonCompletionError.Offline); return }
+            // The same attempt the sync queue makes (LessonCompletionService), so a live finish and a queued one
+            // handle every failure identically.
+            val outcome = LessonCompletionService(client).complete(
+                LessonCompletionRequest(s.lesson.id, s.total, s.answers, course.code, sessionToken),
+            )
+            val error = outcome.exceptionOrNull()
+            if (error != null) {
+                // A refresh that could not reach the server leaves the session in place: that is connection trouble, not a sign-out.
+                val classified = LessonCompletionError.classify(error).whileSession(stillSignedIn = ownerUserId() != null)
+                when (classified.finishDisposition) {
+                    // Everything waiting can fix is queued and said to be saved; a rejection is never called offline.
+                    LessonCompletionError.FinishDisposition.QUEUE -> queueOffline(classified)
+                    LessonCompletionError.FinishDisposition.SHOW_FAILURE ->
+                        _state.update { it.copy(phase = LessonPhase.SaveFailed(classified.userMessage, classified.supportLine)) }
                 }
+                return
             }
+            val result = outcome.getOrThrow()
             sessionToken = null
             val previousTier = lastKnownTier()
             rememberTier(result.progress.leagueTier)
             val promoted = previousTier != null && previousTier != result.progress.leagueTier
             syncStore.updateLastKnownProgress(result.progress)
             _state.update { it.copy(phase = LessonPhase.Finished(result, promoted)) }
-        } catch (e: Exception) {
-            queueOffline()
         } finally {
             _state.update { it.copy(isSubmitting = false) }
         }
     }
 
-    private suspend fun queueOffline() {
+    private suspend fun queueOffline(reason: LessonCompletionError) {
         val s = _state.value
-        val pending = PendingLessonCompletion(s.lesson.id, s.total, s.answers, course.code, now(), computeXpGain(s.correctCount, s.total))
+        val pending = PendingLessonCompletion(
+            s.lesson.id, s.total, s.answers, course.code, now(), computeXpGain(s.correctCount, s.total),
+            ownerUserId = ownerUserId(), sessionToken = sessionToken,
+        )
         syncStore.appendLessonCompletion(pending)
-        _state.update { it.copy(phase = LessonPhase.QueuedOffline(pending)) }
+        _state.update { it.copy(phase = LessonPhase.QueuedOffline(pending, reason.userMessage)) }
     }
 }
 

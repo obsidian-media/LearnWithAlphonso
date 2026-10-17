@@ -1336,6 +1336,53 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `GET auth/v1/user` user_metadata (`SupabaseAuthClient.fetchUserNames`);
   Android has no Apple given-name source. `NameReasonCopy` words the refusal
   codes for this prompt and for Settings' name save.
+- **Offline queue reliability (iOS #261, #284, #291, #293).** `core.sync` has
+  `LessonCompletionError` (offline, timeout, server 5xx and 429, a rejected 4xx
+  with its stable code, unauthorized, invalid payload; `shouldQueue`,
+  `finishDisposition`, the learner copy, a support line and a reason code),
+  `LessonCompletionService` (one attempt shared by the live finish and the
+  queue; a held session token is used as is and replaced once on a 403) and the
+  rewritten `SyncEngine`. Per item, transient failures reschedule with
+  `SyncRetryPolicy` (30 s doubling, capped at 6 h) and are never dead-lettered;
+  no connection waits the base delay and keeps the failure count (a lesson
+  finished on a train must not wait hours); out of hearts waits for a refill
+  and keeps the count; a 401 leaves the row alone; only a permanent rejection
+  becomes a `DeadLetter`. Grades still stop at a transient failure to keep
+  SM-2 order and carry `queueIdentity` as the server's `attemptId`; a rejected
+  grade is dead-lettered and the next continues. Rows with another owner are
+  dropped unsent. Rows with no owner (queued before owners were recorded) are
+  adopted once, by the account restored at the first launch after the upgrade,
+  and dropped on every later pass, so they can never move to a different
+  account. Room is at version 3 (`MIGRATION_2_3`: owner, session token, attempt
+  count and next attempt on both queues, an `orphansResolved` flag, and a
+  `dead_letters` table that records its owner; the newest 50 are kept).
+  `SyncCoordinator` applies a whole pass in one transaction
+  (`applySyncResult`), writes nothing back if the signed-in account changed
+  while the pass ran, exposes `syncing`, and after each pass sleeps until the
+  next due item (`SyncWakeup`, with a 30 s floor that stops a loop; skipped
+  offline or after an account change). The pass the timer starts runs in its
+  own job, because it ends by re-arming the timer and would otherwise cancel
+  itself. Two triggers need no screen: the connection coming back (false to
+  true) starts a pass, and any change to the queue re-arms the wake-up, so
+  work queued after the last pass is not left for the next foreground. A real
+  sign-out (not the launch before the session is restored) clears the queue,
+  dead letters, due cache and last-known progress (`clearAll`), as on iOS.
+  Known limit: the server prunes `review_grade_attempts` receipts after 30
+  days, while a queued grade retries forever; a grade whose first response
+  was lost and which then waits more than 30 days is graded again. The same
+  holds on iOS and is accepted. The lesson finish says it is saved only for causes
+  waiting can fix and otherwise shows `LessonPhase.SaveFailed` with the reason
+  and a support line. A 401 that survives the HTTP seam's one refresh is
+  connection trouble (queued) while the session is still there, and "signed
+  out" only when it is gone. The review screen creates its submission before the first
+  network attempt and reuses it for Check, Next and the queue, and drops an item
+  from the due cache once the server says it is no longer due. The Learn tab
+  shows `PendingSyncNotice` with "Sync now" (counts are for the signed-in
+  account) and the dead-letter notice for lesson completions only ("N lessons
+  couldn't be saved. Contact support." with the queue identities and reason
+  codes in a mailto; a lost review grade only reschedules a card and is not
+  shown; dismissals are kept in preferences and pruned only against a
+  non-empty list).
 - **Podcast resume reliability and the AI-narrated label.** Ports of
   PodcastSaveGate.swift and PodcastSavedPositions.swift (`core.podcast`):
   `PodcastClient.savePlaybackPosition` returns the `updated_at` the SERVER

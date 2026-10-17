@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
@@ -25,11 +26,15 @@ data class PendingLessonCompletionRecord(
     val course: String,
     val queuedAt: Long,
     val optimisticXpEstimate: Int,
+    val ownerUserId: String? = null,
+    val sessionToken: String? = null,
+    @ColumnInfo(defaultValue = "0") val attemptCount: Int = 0,
+    val nextAttemptAt: Long? = null,
 ) {
     fun asPending() = PendingLessonCompletion(
         lessonId, total,
         ContentJson.json.decodeFromString(ListSerializer(LessonAnswer.serializer()), answersJson),
-        course, queuedAt, optimisticXpEstimate,
+        course, queuedAt, optimisticXpEstimate, ownerUserId, sessionToken, attemptCount, nextAttemptAt,
     )
 
     companion object {
@@ -37,6 +42,7 @@ data class PendingLessonCompletionRecord(
             lessonId = p.lessonId, total = p.total,
             answersJson = ContentJson.json.encodeToString(ListSerializer(LessonAnswer.serializer()), p.answers),
             course = p.course, queuedAt = p.queuedAt, optimisticXpEstimate = p.optimisticXpEstimate,
+            ownerUserId = p.ownerUserId, sessionToken = p.sessionToken, attemptCount = p.attemptCount, nextAttemptAt = p.nextAttemptAt,
         )
     }
 }
@@ -48,13 +54,36 @@ data class PendingReviewGradeRecord(
     val answer: String,
     val course: String,
     val queuedAt: Long,
+    val ownerUserId: String? = null,
+    @ColumnInfo(defaultValue = "0") val attemptCount: Int = 0,
+    val nextAttemptAt: Long? = null,
 ) {
-    fun asPending() = PendingReviewGrade(itemKey, answer, course, queuedAt)
+    fun asPending() = PendingReviewGrade(itemKey, answer, course, queuedAt, ownerUserId, attemptCount, nextAttemptAt)
 
     companion object {
-        fun from(p: PendingReviewGrade) = PendingReviewGradeRecord(itemKey = p.itemKey, answer = p.answer, course = p.course, queuedAt = p.queuedAt)
+        fun from(p: PendingReviewGrade) = PendingReviewGradeRecord(
+            itemKey = p.itemKey, answer = p.answer, course = p.course, queuedAt = p.queuedAt,
+            ownerUserId = p.ownerUserId, attemptCount = p.attemptCount, nextAttemptAt = p.nextAttemptAt,
+        )
     }
 }
+
+/**
+ * A queued item the server will never accept, moved out of the queue so it stops blocking it (the dead-letter table).
+ * The Learn tab shows a notice with a support address; the record stays for support.
+ */
+@Entity(tableName = "dead_letters")
+data class DeadLetterRecord(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    /** "lesson" or "grade". */
+    val kind: String,
+    /** The item's queue identity (lesson id or item key, course, queued time). */
+    val identity: String,
+    val reason: String,
+    val deadAt: Long,
+    /** Who queued it, so one account never sees (or mails support about) another's lost lesson. */
+    val ownerUserId: String? = null,
+)
 
 @Entity(tableName = "cached_due_reviews")
 data class CachedDueReviewRecord(
@@ -74,6 +103,8 @@ data class AppSyncStateRecord(
     @PrimaryKey val id: Int = 1,
     val lastSyncedAt: Long? = null,
     val progressJson: String? = null,
+    /** True once rows queued by a build that did not record an owner have been adopted (or dropped); it happens once. */
+    @ColumnInfo(defaultValue = "0") val orphansResolved: Boolean = false,
 ) {
     fun progress(): LessonCompletionProgress? =
         progressJson?.let { runCatching { ContentJson.json.decodeFromString(LessonCompletionProgress.serializer(), it) }.getOrNull() }

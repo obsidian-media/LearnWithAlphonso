@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
+import com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionApi
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -30,7 +31,7 @@ import java.time.format.DateTimeParseException
 class ProgressSyncClient(
     internal val http: SupabaseHttp,
     internal val nowMillis: () -> Long = System::currentTimeMillis,
-) {
+) : LessonCompletionApi {
     suspend fun loseHeart(): HeartsResult {
         val rows = rowsOf(http.rpc("lose_heart", buildJsonObject {}))
         val hearts = rows.firstOrNull()?.int("hearts") ?: throw ProgressSyncError.InvalidPayload()
@@ -58,7 +59,7 @@ class ProgressSyncClient(
     }
 
     /** The HMAC session token complete-lesson requires as proof the lesson was opened. */
-    suspend fun startLessonSession(lessonId: String, course: String): String {
+    override suspend fun startLessonSession(lessonId: String, course: String): String {
         val response = http.function("start-lesson-session", buildJsonObject { put("lessonId", lessonId); put("course", course) })
         if (response.status.value == 409) {
             val body = runCatching { http.json.parseToJsonElement(response.bodyAsText()).jsonObject }.getOrNull()
@@ -86,7 +87,7 @@ class ProgressSyncClient(
         }
     }
 
-    suspend fun completeLesson(
+    override suspend fun completeLesson(
         lessonId: String,
         total: Int,
         answers: List<LessonAnswer>,
@@ -148,8 +149,12 @@ class ProgressSyncClient(
         return DueReviews(due, total)
     }
 
-    suspend fun gradeReview(itemKey: String, answer: String, course: String): ReviewGradeOutcome {
-        val obj = objectOf(http.function("grade-review", buildJsonObject { put("itemKey", itemKey); put("answer", answer); put("course", course) }))
+    /**
+     * `attemptId` is the submission's stable identity: the server stores it with the graded result, so a grade whose
+     * response was lost is replayed instead of being graded a second time.
+     */
+    suspend fun gradeReview(itemKey: String, answer: String, course: String, attemptId: String? = null): ReviewGradeOutcome {
+        val obj = objectOf(http.function("grade-review", buildJsonObject { put("itemKey", itemKey); put("answer", answer); put("course", course); if (attemptId != null) put("attemptId", attemptId) }))
         val retired = obj.bool("retired") ?: throw ProgressSyncError.InvalidPayload()
         val dueOn = obj.string("dueOn") ?: throw ProgressSyncError.InvalidPayload()
         // Nullable for a deployed function predating the field.
